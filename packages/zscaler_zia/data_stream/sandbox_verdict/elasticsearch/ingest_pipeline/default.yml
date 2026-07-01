@@ -1,0 +1,412 @@
+---
+description: Pipeline for processing Sandbox Verdict logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '8.11.0'
+
+  # parse the event JSON
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original `message` field to `event.original` to store a copy of the original message.
+        The `event.original` field is not touched if the document already has one.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - remove:
+      field: json
+      tag: remove_json_if_input_type_http_endpoint
+      ignore_missing: true
+      description: >-
+        For the http_endpoint input, Filebeat auto-parses the JSON request body into `json.*`.
+        Drop it so the pipeline parses again from `event.original`.
+      if: ctx.input?.type == 'http_endpoint'
+
+  - json:
+      field: event.original
+      tag: json_parse_event_original
+      target_field: zscaler_zia.sandbox_verdict
+      if: ctx.event?.original != null
+
+  - script:
+      tag: check_template_version
+      lang: painless
+      params:
+        pkg_version: 4.2.0
+        data_stream: sandbox_verdict
+        expect:
+          version: v1
+      if: ctx.zscaler_zia?.sandbox_verdict != null && ctx._conf?.strict_fields == true
+      source: |-
+        if (ctx.zscaler_zia.sandbox_verdict.version != params.expect.version) {
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message ?: [];
+          ctx.error.message.add('template version mismatch: ' + (ctx.zscaler_zia.sandbox_verdict.version == null ? 'null' : ctx.zscaler_zia.sandbox_verdict.version.toString()) + ' is not expected version (see ' + params.data_stream + ' https://epr.elastic.co/package/zscaler_zia/' + params.pkg_version + '/docs/README.md)');
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # convert values
+  - convert:
+      field: zscaler_zia.sandbox_verdict.record_id
+      tag: convert_record_id_to_string
+      type: string
+      ignore_missing: true
+
+  # split pipe-delimited multi-value fields into arrays
+  - script:
+      lang: painless
+      tag: script_split_pipe_delimited_multi_value_fields
+      description: Split NSS pipe-delimited strings into arrays for multi-value fields.
+      source: |-
+        void splitStr(Map m, String key) {
+          if (m == null || key == null) return;
+          def v = m.get(key);
+          if (!(v instanceof String)) return;
+          String s = (String) v;
+          if (s.length() == 0) return;
+          List out = new ArrayList();
+          int from = 0;
+          int n = s.length();
+          for (int i = 0; i < n; i++) {
+            if (s.charAt(i) == (char)'|') {
+              out.add(s.substring(from, i));
+              from = i + 1;
+            }
+          }
+          out.add(s.substring(from, n));
+          m.put(key, out);
+        }
+        def sv = ctx.zscaler_zia?.sandbox_verdict;
+        if (sv == null) return;
+        if (sv.threat instanceof Map) {
+          if (sv.threat.tactic instanceof Map) {
+            splitStr(sv.threat.tactic, 'id');
+          }
+          if (sv.threat.technique instanceof Map) {
+            splitStr(sv.threat.technique, 'id');
+          }
+        }
+        if (sv.file instanceof Map && sv.file.hash instanceof Map) {
+          splitStr(sv.file.hash, 'children_md5');
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # date parsing
+  - date:
+      field: zscaler_zia.sandbox_verdict.time
+      tag: date_nanolog_time_string_to_date
+      target_field: zscaler_zia.sandbox_verdict.time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
+      timezone: '{{{zscaler_zia.sandbox_verdict.tz}}}'
+      if: ctx.zscaler_zia?.sandbox_verdict?.time != null && ctx.zscaler_zia.sandbox_verdict.time != ''
+      on_failure:
+        - remove:
+            tag: remove_zscaler_zia_sandbox_verdict_time
+            field: zscaler_zia.sandbox_verdict.time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: zscaler_zia.sandbox_verdict.event_time
+      tag: date_event_time_string_to_date
+      target_field: zscaler_zia.sandbox_verdict.event_time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
+      timezone: '{{{zscaler_zia.sandbox_verdict.tz}}}'
+      if: ctx.zscaler_zia?.sandbox_verdict?.event_time != null && ctx.zscaler_zia.sandbox_verdict.event_time != ''
+      on_failure:
+        - remove:
+            tag: remove_zscaler_zia_sandbox_verdict_event_time
+            field: zscaler_zia.sandbox_verdict.event_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_event_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: zscaler_zia.sandbox_verdict.analysis_completed_time
+      tag: date_analysis_completed_time_string_to_date
+      target_field: zscaler_zia.sandbox_verdict.analysis_completed_time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
+      timezone: '{{{zscaler_zia.sandbox_verdict.tz}}}'
+      if: ctx.zscaler_zia?.sandbox_verdict?.analysis_completed_time != null && ctx.zscaler_zia.sandbox_verdict.analysis_completed_time != ''
+      on_failure:
+        - remove:
+            tag: remove_zscaler_zia_sandbox_verdict_analysis_completed_time
+            field: zscaler_zia.sandbox_verdict.analysis_completed_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_analysis_completed_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: zscaler_zia.sandbox_verdict.feed_time
+      tag: date_feed_time_string_to_date
+      target_field: zscaler_zia.sandbox_verdict.feed_time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
+      timezone: '{{{zscaler_zia.sandbox_verdict.tz}}}'
+      if: ctx.zscaler_zia?.sandbox_verdict?.feed_time != null && ctx.zscaler_zia.sandbox_verdict.feed_time != ''
+      on_failure:
+        - remove:
+            tag: remove_zscaler_zia_sandbox_verdict_feed_time
+            field: zscaler_zia.sandbox_verdict.feed_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_feed_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # populate ECS fields
+
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_time
+      copy_from: zscaler_zia.sandbox_verdict.time
+      ignore_empty_value: true
+
+  # event.*
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category_malware
+      value: malware
+      allow_duplicates: false
+      if: >-
+        ctx.zscaler_zia?.sandbox_verdict?.threat?.indicator?.name != null &&
+        ctx.zscaler_zia.sandbox_verdict.threat.indicator.name != 'None' &&
+        !ctx.zscaler_zia.sandbox_verdict.verdict.toLowerCase().contains('benign')
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+      allow_duplicates: false
+  - set:
+      field: event.provider
+      tag: set_event_provider_to_zscaler
+      value: Zscaler
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_tz
+      copy_from: zscaler_zia.sandbox_verdict.tz
+      ignore_empty_value: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_record_id
+      copy_from: zscaler_zia.sandbox_verdict.record_id
+      ignore_empty_value: true
+
+  # observer.*
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor_to_zscaler
+      value: Zscaler
+  - set:
+      field: observer.product
+      tag: set_observer_product_to_zia
+      value: Zscaler ZIA
+  - set:
+      field: observer.name
+      tag: set_observer_name_from_datacenter_name
+      copy_from: zscaler_zia.sandbox_verdict.datacenter.name
+      ignore_empty_value: true
+  - set:
+      field: observer.geo.name
+      tag: set_observer_geo_name_from_datacenter_name
+      copy_from: zscaler_zia.sandbox_verdict.datacenter.name
+      ignore_empty_value: true
+  - set:
+      field: observer.geo.city_name
+      tag: set_observer_geo_city_name_from_datacenter_city
+      copy_from: zscaler_zia.sandbox_verdict.datacenter.city
+      ignore_empty_value: true
+  - set:
+      field: observer.geo.country_iso_code
+      tag: set_observer_geo_country_iso_code_from_datacenter_country
+      copy_from: zscaler_zia.sandbox_verdict.datacenter.country
+      ignore_empty_value: true
+
+  # organization.*
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_company_name
+      copy_from: zscaler_zia.sandbox_verdict.company.name
+      ignore_empty_value: true
+
+  # file.*
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_sandbox_verdict_file_hash_md5
+      copy_from: zscaler_zia.sandbox_verdict.file.hash.md5
+      ignore_empty_value: true
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256_from_sandbox_verdict_file_hash_sha256
+      copy_from: zscaler_zia.sandbox_verdict.file.hash.sha256
+      ignore_empty_value: true
+  - set:
+      field: file.extension
+      tag: set_file_extension_from_sandbox_verdict_file_extension
+      copy_from: zscaler_zia.sandbox_verdict.file.extension
+      ignore_empty_value: true
+
+  # url.*
+  - set:
+      field: url.original
+      tag: set_url_original_from_file_ba_md5_url
+      copy_from: zscaler_zia.sandbox_verdict.file.ba_md5_url
+      ignore_empty_value: true
+
+  # threat.*
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_sandbox_verdict_threat_indicator_name
+      copy_from: zscaler_zia.sandbox_verdict.threat.indicator.name
+      ignore_empty_value: true
+  - set:
+      field: threat.tactic.id
+      tag: set_threat_tactic_id_from_sandbox_verdict_threat_tactic_id
+      copy_from: zscaler_zia.sandbox_verdict.threat.tactic.id
+      ignore_empty_value: true
+  - set:
+      field: threat.technique.id
+      tag: set_threat_technique_id_from_sandbox_verdict_threat_technique_id
+      copy_from: zscaler_zia.sandbox_verdict.threat.technique.id
+      ignore_empty_value: true
+
+  # related.*
+  - append:
+      field: related.hash
+      tag: append_file_hash_md5_into_related_hash
+      value: '{{{zscaler_zia.sandbox_verdict.file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.sandbox_verdict?.file?.hash?.md5 != null
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha256_into_related_hash
+      value: '{{{zscaler_zia.sandbox_verdict.file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.sandbox_verdict?.file?.hash?.sha256 != null
+  - foreach:
+      field: zscaler_zia.sandbox_verdict.file.hash.children_md5
+      tag: foreach_file_hash_children_md5_into_related_hash
+      ignore_missing: true
+      if: ctx.zscaler_zia?.sandbox_verdict?.file?.hash?.children_md5 instanceof List
+      processor:
+        append:
+          tag: append_file_hash_children_md5_into_related_hash
+          field: related.hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+
+  # cleanup
+  - remove:
+      field:
+        - zscaler_zia.sandbox_verdict.time
+        - zscaler_zia.sandbox_verdict.tz
+        - zscaler_zia.sandbox_verdict.record_id
+        - zscaler_zia.sandbox_verdict.company.name
+        - zscaler_zia.sandbox_verdict.datacenter.name
+        - zscaler_zia.sandbox_verdict.datacenter.city
+        - zscaler_zia.sandbox_verdict.datacenter.country
+        - zscaler_zia.sandbox_verdict.file.hash.md5
+        - zscaler_zia.sandbox_verdict.file.hash.sha256
+        - zscaler_zia.sandbox_verdict.file.extension
+        - zscaler_zia.sandbox_verdict.file.ba_md5_url
+        - zscaler_zia.sandbox_verdict.threat.indicator.name
+        - zscaler_zia.sandbox_verdict.threat.tactic.id
+        - zscaler_zia.sandbox_verdict.threat.technique.id
+        - _conf
+      tag: remove_unused
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        boolean dropScalar(Object v) {
+          return v == null || v == '' || v == 'None' || v == 'Null';
+        }
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap((Map) v);
+            } else if (v instanceof List) {
+              handleList((List) v);
+            }
+            return dropScalar(v)
+              || (v instanceof Map && ((Map) v).size() == 0)
+              || (v instanceof List && ((List) v).size() == 0);
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap((Map) v);
+            } else if (v instanceof List) {
+              handleList((List) v);
+            }
+            return dropScalar(v)
+              || (v instanceof Map && ((Map) v).size() == 0)
+              || (v instanceof List && ((List) v).size() == 0);
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_pipeline_error
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_preserve_original_event_into_tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_pipeline_error
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_into_tags
+      value: preserve_original_event
+      allow_duplicates: false

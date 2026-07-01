@@ -52,6 +52,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
                 - **Firewall**: 9012
                 - **SaaS Security Activity**: 9026
                 - **SaaS Security**: 9024
+                - **Sandbox Verdict**: 9027
                 - **Tunnel**: 9013
                 - **Web**: 9014
             - **Feed Output Type**: Select Custom in Feed output type and paste the appropriate response format in Feed output format as follows:
@@ -77,6 +78,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
               - **Firewall**: 9557
               - **SaaS Security Activity**: 9565
               - **SaaS Security**: 9563
+              - **Sandbox Verdict**: 9566
               - **Tunnel**: 9558
               - **Web**: 9559
           - Select JSON as feed output type.
@@ -282,6 +284,25 @@ Recommended Feed Output Format — Zscaler SaaS Security (Repository), v1:
 \{"version":"v1","sourcetype":"zscalernss-saas_security","sourcesubtype":"repository","time":"%d{epochtime}","tz":"%s{tz}","record_id":"%d{recordid}","severity":"%s{severity}","policy":"%s{policy}","rule":\{"label":"%s{rulelabel}","label_obfuscated":"%s{orulelabel}","type":"%s{ruletype}"\},"company":\{"name":"%s{company}"\},"datacenter":\{"name":"%s{datacenter}","city":"%s{datacentercity}","country":"%s{datacentercountry}"\},"tenant":"%s{tenant}","tenant_obfuscated":"%s{otenant}","threat":\{"indicator":\{"name":"%s{threatname}"\},"malware":"%s{malware}","malware_class":"%s{malwareclass}"\},"department":"%s{department}","application":\{"name":"%s{applicationname}"\},"dlp":\{"identifier":"%llu{dlpidentifier}","dict_names":"%s{dlpdictnames}","dict_names_obfuscated":"%s{odlpdictnames}","dict_counts":"%s{dlpdictcount}","engine_names":"%s{dlpenginenames}","engine_names_obfuscated":"%s{odlpenginenames}"\},"document":\{"type":"%s{upload_doctypename}"\},"user_name":"%s{owner}","user_name_obfuscated":"%s{oowner}","external_collab_count":"%d{num_external_collab}","external_collab_names":"%s{external_collabnames}","external_collab_names_obfuscated":"%s{oexternal_collabnames}","internal_collab_names":"%s{internal_collabnames}","internal_collab_names_obfuscated":"%s{ointernal_collabnames}","repository":\{"name":"%s{reponame}","project_name":"%s{projectname}"\},"file":\{"owner":"%s{extownername}","owner_obfuscated":"%s{oextownername}","id":"%s{fileid}","id_obfuscated":"%s{ofileid}","name":"%s{filename}","path":"%s{filepath}","size":"%d{filesize}","type_category":"%s{filetypecategory}","hash":\{"md5":"%s{filemd5}","sha256":"%s{sha}"\}\}\}
 ```
 
+### Sandbox Verdict Log
+
+- Default port (NSS Feed): _9027_
+- Default port (Cloud NSS Feed): _9566_
+
+See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output-format-sandbox-verdict-logs)
+
+To collect Sandbox Verdict logs, configure the NSS feed in the ZIA Admin Console using the **Feed Output Format** below.
+
+Zscaler Sandbox Verdict Log response format (v1):
+```
+\{"version":"v1","sourcetype":"zscalernss-sandbox_verdict","time":"%s{time}","tz":"%s{tz}","event_time":"%s{eventtime}","analysis_completed_time":"%s{analysis_completed_time}","feed_time":"%s{rtime}","record_id":"%llu{recordid}","company":\{"name":"%s{company}"\},"datacenter":\{"name":"%s{datacenter}","city":"%s{datacentercity}","country":"%s{datacentercountry}"\},"verdict":"%s{verdict}","threat":\{"indicator":\{"name":"%s{threatname}"\},"tactic":\{"id":"%s{mitre_tactics}"\},"technique":\{"id":"%s{mitre_tekniks}"\}\},"file":\{"extension":"%s{filetype}","type_category":"%s{filetypecategory}","ba_md5_url":"%s{bamd5url}","hash":\{"md5":"%s{file_md5}","sha256":"%s{file_sha256}","children_md5":"%s{children_md5_values}"\}\}\}
+```
+
+Sample Response:
+```json
+{"version":"v1","sourcetype":"zscalernss-sandbox_verdict","time":"Thu Feb 13 16:13:12 2025","tz":"GMT","event_time":"Thu Feb 13 16:13:14 2025","analysis_completed_time":"Thu Feb 13 16:13:12 2025","feed_time":"Thu Feb 13 16:13:15 2025","record_id":"7353686396818817024","company":{"name":"Example Corp"},"datacenter":{"name":"Georgia","city":"Atlanta","country":"US"},"verdict":"Advance Threat Ransomware","threat":{"indicator":{"name":"Win32.Ransom.HardBit"},"tactic":{"id":"TAC028|TAC035|TAC016"},"technique":{"id":"T1005|T1543.002"}},"file":{"extension":"exe","type_category":"Windows Executable (exe)","ba_md5_url":"zsapi/v1/baSso?md5ReportId=8eb2dc2ea50d8b9b654810f11d3e6d93&sourceURL=admin.example.net/","hash":{"md5":"61bd49a3522de01c41d4ba107503d3d9","sha256":"1f80ee9949b0d09d4bd5d429435c384a0b75263b382133035bab58b04e4bfb7a","children_md5":"7940dd19117414265bd7156305bd8756|5e0063b16b916b53181d8ef73c954825"}}}
+```
+
 ### Tunnel Log
 
 - Default port (NSS Feed): _9013_
@@ -434,6 +455,16 @@ This is the `sandbox_report` dataset.
 {{event "sandbox_report"}}
 
 {{fields "sandbox_report"}}
+
+### sandbox_verdict
+
+This is the `sandbox_verdict` dataset.
+
+#### Example
+
+{{event "sandbox_verdict"}}
+
+{{fields "sandbox_verdict"}}
 
 ### tunnel
 

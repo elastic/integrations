@@ -10,10 +10,10 @@
                 "ignoreValidations": false
             },
             "panelsJSON": {
-                "20032cd4-8a4c-4452-86ab-4313611c2093": {
+                "3cd76f48-1162-4644-8346-863f95ce0259": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
-                        "fieldName": "observer.name",
+                        "fieldName": "observer.geo.name",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -27,34 +27,17 @@
                     "type": "optionsListControl",
                     "width": "medium"
                 },
-                "5cc8cb18-020e-41f6-bf24-ff4673b257cc": {
+                "7d2c5cee-34ce-4aa5-a724-69ad5f8fabb9": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
-                        "fieldName": "zscaler_zia.saas_security.tenant",
+                        "fieldName": "organization.name",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
                             "by": "_count",
                             "direction": "desc"
                         },
-                        "title": "Tenant"
-                    },
-                    "grow": true,
-                    "order": 2,
-                    "type": "optionsListControl",
-                    "width": "medium"
-                },
-                "c8c5f993-8f5c-426d-871b-26f5641ca56d": {
-                    "explicitInput": {
-                        "dataViewId": "logs-*",
-                        "fieldName": "user.name",
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "User"
+                        "title": "Company"
                     },
                     "grow": true,
                     "order": 1,
@@ -64,7 +47,7 @@
             },
             "showApplySelections": false
         },
-        "description": "",
+        "description": "This dashboard shows Sandbox Verdict logs collected by the Zscaler ZIA integration.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -80,13 +63,13 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "zscaler_zia.saas_security"
+                                "query": "zscaler_zia.sandbox_verdict"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "zscaler_zia.saas_security"
+                                "data_stream.dataset": "zscaler_zia.sandbox_verdict"
                             }
                         }
                     }
@@ -111,12 +94,12 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-2c45484b-214a-468b-8349-ffeb101acb75",
+                                "name": "indexpattern-datasource-layer-046efa9f-ddf6-40a1-bf95-df6dbd0c0dfd",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "9de522ab-2800-45b5-91bf-8a6127d8863b",
+                                "name": "30151d90-a39c-463a-92de-3ed8c68809fa",
                                 "type": "index-pattern"
                             }
                         ],
@@ -125,35 +108,18 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "2c45484b-214a-468b-8349-ffeb101acb75": {
+                                        "046efa9f-ddf6-40a1-bf95-df6dbd0c0dfd": {
                                             "columnOrder": [
-                                                "f0c63968-c32e-42ab-9e1c-a9464b4a334c",
-                                                "1f86a5c5-3f9b-4c5d-b4b3-34dc483b07d0"
+                                                "2256fc93-3036-461f-b084-ce5c678ae4eb",
+                                                "a753b69c-1a22-4b24-b979-f60b3008ca02",
+                                                "f604bad5-5766-414d-949e-e28a9d62bd0c"
                                             ],
                                             "columns": {
-                                                "1f86a5c5-3f9b-4c5d-b4b3-34dc483b07d0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "f0c63968-c32e-42ab-9e1c-a9464b4a334c": {
+                                                "2256fc93-3036-461f-b084-ce5c678ae4eb": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Application Name",
+                                                    "label": "Verdict",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -162,7 +128,33 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "1f86a5c5-3f9b-4c5d-b4b3-34dc483b07d0",
+                                                            "columnId": "f604bad5-5766-414d-949e-e28a9d62bd0c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "zscaler_zia.sandbox_verdict.verdict"
+                                                },
+                                                "a753b69c-1a22-4b24-b979-f60b3008ca02": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "File Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "f604bad5-5766-414d-949e-e28a9d62bd0c",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -174,7 +166,25 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "zscaler_zia.saas_security.application.name"
+                                                    "sourceField": "zscaler_zia.sandbox_verdict.file.type_category"
+                                                },
+                                                "f604bad5-5766-414d-949e-e28a9d62bd0c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -199,17 +209,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "9de522ab-2800-45b5-91bf-8a6127d8863b",
+                                        "index": "30151d90-a39c-463a-92de-3ed8c68809fa",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "zscaler_zia.saas_security"
+                                            "query": "zscaler_zia.sandbox_verdict"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "zscaler_zia.saas_security"
+                                            "data_stream.dataset": "zscaler_zia.sandbox_verdict"
                                         }
                                     }
                                 }
@@ -220,51 +230,30 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "layers": [
+                                "columns": [
                                     {
-                                        "accessors": [
-                                            "1f86a5c5-3f9b-4c5d-b4b3-34dc483b07d0"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "2c45484b-214a-468b-8349-ffeb101acb75",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_horizontal_stacked",
-                                        "showGridlines": false,
-                                        "xAccessor": "f0c63968-c32e-42ab-9e1c-a9464b4a334c"
+                                        "columnId": "a753b69c-1a22-4b24-b979-f60b3008ca02",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "2256fc93-3036-461f-b084-ce5c678ae4eb",
+                                        "isMetric": false,
+                                        "isTransposed": true
+                                    },
+                                    {
+                                        "columnId": "f604bad5-5766-414d-949e-e28a9d62bd0c",
+                                        "isMetric": true,
+                                        "isTransposed": false
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right",
-                                    "shouldTruncate": false,
-                                    "showSingleSeries": false
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide"
+                                "layerId": "046efa9f-ddf6-40a1-bf95-df6dbd0c0dfd",
+                                "layerType": "data"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {
                         "dynamicActions": {
@@ -284,13 +273,13 @@
                                 "key": "data_stream.dataset",
                                 "negate": false,
                                 "params": {
-                                    "query": "zscaler_zia.saas_security"
+                                    "query": "zscaler_zia.sandbox_verdict"
                                 },
                                 "type": "phrase"
                             },
                             "query": {
                                 "match_phrase": {
-                                    "data_stream.dataset": "zscaler_zia.saas_security"
+                                    "data_stream.dataset": "zscaler_zia.sandbox_verdict"
                                 }
                             }
                         }
@@ -305,13 +294,13 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "28f47691-92a7-4ed5-9ad5-250a2cccd546",
-                    "w": 19,
-                    "x": 29,
-                    "y": 0
+                    "i": "b1c2b4c7-4f2d-4150-b225-e8835f602e44",
+                    "w": 31,
+                    "x": 17,
+                    "y": 27
                 },
-                "panelIndex": "28f47691-92a7-4ed5-9ad5-250a2cccd546",
-                "title": "SaaS Security logs by Application",
+                "panelIndex": "b1c2b4c7-4f2d-4150-b225-e8835f602e44",
+                "title": "File Type Count by Metric",
                 "type": "lens"
             },
             {
@@ -320,12 +309,12 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-2c45484b-214a-468b-8349-ffeb101acb75",
+                                "name": "indexpattern-datasource-layer-046efa9f-ddf6-40a1-bf95-df6dbd0c0dfd",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "b1cd4cc9-1ab7-4f13-812c-3b6b768d7d3d",
+                                "name": "0d821657-48a0-4169-bae3-7c1baa5b55fe",
                                 "type": "index-pattern"
                             }
                         ],
@@ -334,13 +323,13 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "2c45484b-214a-468b-8349-ffeb101acb75": {
+                                        "046efa9f-ddf6-40a1-bf95-df6dbd0c0dfd": {
                                             "columnOrder": [
-                                                "f0c63968-c32e-42ab-9e1c-a9464b4a334c",
-                                                "1f86a5c5-3f9b-4c5d-b4b3-34dc483b07d0"
+                                                "44759324-adb9-4155-a473-3249b2b3953e",
+                                                "3b8158fc-2265-4a36-8404-ed818911aab2"
                                             ],
                                             "columns": {
-                                                "1f86a5c5-3f9b-4c5d-b4b3-34dc483b07d0": {
+                                                "3b8158fc-2265-4a36-8404-ed818911aab2": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -358,11 +347,11 @@
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
                                                 },
-                                                "f0c63968-c32e-42ab-9e1c-a9464b4a334c": {
+                                                "44759324-adb9-4155-a473-3249b2b3953e": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Sub Type",
+                                                    "label": "Verdict",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -371,226 +360,18 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "1f86a5c5-3f9b-4c5d-b4b3-34dc483b07d0",
+                                                            "columnId": "3b8158fc-2265-4a36-8404-ed818911aab2",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "zscaler_zia.saas_security.sourcesubtype"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "data_stream.dataset",
-                                        "index": "b1cd4cc9-1ab7-4f13-812c-3b6b768d7d3d",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "zscaler_zia.saas_security"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "zscaler_zia.saas_security"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "1f86a5c5-3f9b-4c5d-b4b3-34dc483b07d0"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "2c45484b-214a-468b-8349-ffeb101acb75",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_horizontal_stacked",
-                                        "showGridlines": false,
-                                        "xAccessor": "f0c63968-c32e-42ab-9e1c-a9464b4a334c"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right",
-                                    "shouldTruncate": false,
-                                    "showSingleSeries": false
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "data_stream.dataset",
-                                "index": "logs-*",
-                                "key": "data_stream.dataset",
-                                "negate": false,
-                                "params": {
-                                    "query": "zscaler_zia.saas_security"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "data_stream.dataset": "zscaler_zia.saas_security"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "d0e0dbe1-029b-4411-8594-8f6a525f621a",
-                    "w": 19,
-                    "x": 10,
-                    "y": 0
-                },
-                "panelIndex": "d0e0dbe1-029b-4411-8594-8f6a525f621a",
-                "title": "SaaS Security logs by Application Type",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-6cdd378b-44e6-4d6d-9ff1-742fc7dd9669",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "b5e79788-93ec-46cb-aa8e-fb0b533f9530",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "6cdd378b-44e6-4d6d-9ff1-742fc7dd9669": {
-                                            "columnOrder": [
-                                                "7c49d7a1-04a9-4911-af16-6972ee2cd8ea",
-                                                "8d58204f-0750-4307-ac46-7ee79fad5c2e"
-                                            ],
-                                            "columns": {
-                                                "7c49d7a1-04a9-4911-af16-6972ee2cd8ea": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Severity",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "8d58204f-0750-4307-ac46-7ee79fad5c2e",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
+                                                        "otherBucket": true,
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "log.level"
-                                                },
-                                                "8d58204f-0750-4307-ac46-7ee79fad5c2e": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "zscaler_zia.sandbox_verdict.verdict"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -615,17 +396,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "b5e79788-93ec-46cb-aa8e-fb0b533f9530",
+                                        "index": "0d821657-48a0-4169-bae3-7c1baa5b55fe",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "zscaler_zia.saas_security"
+                                            "query": "zscaler_zia.sandbox_verdict"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "zscaler_zia.saas_security"
+                                            "data_stream.dataset": "zscaler_zia.sandbox_verdict"
                                         }
                                     }
                                 }
@@ -657,16 +438,16 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "6cdd378b-44e6-4d6d-9ff1-742fc7dd9669",
+                                        "layerId": "046efa9f-ddf6-40a1-bf95-df6dbd0c0dfd",
                                         "layerType": "data",
                                         "legendDisplay": "show",
                                         "metrics": [
-                                            "8d58204f-0750-4307-ac46-7ee79fad5c2e"
+                                            "3b8158fc-2265-4a36-8404-ed818911aab2"
                                         ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "7c49d7a1-04a9-4911-af16-6972ee2cd8ea"
+                                            "44759324-adb9-4155-a473-3249b2b3953e"
                                         ],
                                         "truncateLegend": false
                                     }
@@ -696,13 +477,13 @@
                                 "key": "data_stream.dataset",
                                 "negate": false,
                                 "params": {
-                                    "query": "zscaler_zia.saas_security"
+                                    "query": "zscaler_zia.sandbox_verdict"
                                 },
                                 "type": "phrase"
                             },
                             "query": {
                                 "match_phrase": {
-                                    "data_stream.dataset": "zscaler_zia.saas_security"
+                                    "data_stream.dataset": "zscaler_zia.sandbox_verdict"
                                 }
                             }
                         }
@@ -716,14 +497,14 @@
                     "syncTooltips": false
                 },
                 "gridData": {
-                    "h": 18,
-                    "i": "e7cbab43-1b3f-43ac-8238-36a0cbb0e187",
-                    "w": 16,
-                    "x": 10,
-                    "y": 15
+                    "h": 15,
+                    "i": "6ef35bbc-43d1-49b0-8018-5ab2e7d0154f",
+                    "w": 17,
+                    "x": 0,
+                    "y": 27
                 },
-                "panelIndex": "e7cbab43-1b3f-43ac-8238-36a0cbb0e187",
-                "title": "SaaS Security logs by Severity",
+                "panelIndex": "6ef35bbc-43d1-49b0-8018-5ab2e7d0154f",
+                "title": "Sandbox Verdict Events by Verdict",
                 "type": "lens"
             },
             {
@@ -732,12 +513,12 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-6cdd378b-44e6-4d6d-9ff1-742fc7dd9669",
+                                "name": "indexpattern-datasource-layer-490ff585-bb38-4a88-9413-ecf02dabec72",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "f4645a43-7706-45c5-8481-29bfdbbac4d5",
+                                "name": "b68dac22-b5a5-40c4-a146-5919fb900a3c",
                                 "type": "index-pattern"
                             }
                         ],
@@ -746,20 +527,20 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "6cdd378b-44e6-4d6d-9ff1-742fc7dd9669": {
+                                        "490ff585-bb38-4a88-9413-ecf02dabec72": {
                                             "columnOrder": [
-                                                "ab35f0e2-643a-44b6-a03d-2d433a6a489d",
-                                                "8d58204f-0750-4307-ac46-7ee79fad5c2e"
+                                                "c6d9ab01-b135-4ee2-b983-4c9a1696ada2",
+                                                "8f066d7d-adce-4c9f-8e79-17c50906ccee"
                                             ],
                                             "columns": {
-                                                "8d58204f-0750-4307-ac46-7ee79fad5c2e": {
+                                                "8f066d7d-adce-4c9f-8e79-17c50906ccee": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false,
+                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
@@ -770,18 +551,31 @@
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
                                                 },
-                                                "ab35f0e2-643a-44b6-a03d-2d433a6a489d": {
-                                                    "dataType": "date",
+                                                "c6d9ab01-b135-4ee2-b983-4c9a1696ada2": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
+                                                    "label": "Tactic",
+                                                    "operationType": "terms",
                                                     "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "8f066d7d-adce-4c9f-8e79-17c50906ccee",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
                                                     },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
+                                                    "scale": "ordinal",
+                                                    "sourceField": "threat.tactic.id"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -806,17 +600,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "f4645a43-7706-45c5-8481-29bfdbbac4d5",
+                                        "index": "b68dac22-b5a5-40c4-a146-5919fb900a3c",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "zscaler_zia.saas_security"
+                                            "query": "zscaler_zia.sandbox_verdict"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "zscaler_zia.saas_security"
+                                            "data_stream.dataset": "zscaler_zia.sandbox_verdict"
                                         }
                                     }
                                 }
@@ -827,26 +621,10 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "8d58204f-0750-4307-ac46-7ee79fad5c2e"
+                                            "8f066d7d-adce-4c9f-8e79-17c50906ccee"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -866,10 +644,12 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "6cdd378b-44e6-4d6d-9ff1-742fc7dd9669",
+                                        "layerId": "490ff585-bb38-4a88-9413-ecf02dabec72",
                                         "layerType": "data",
-                                        "seriesType": "line",
-                                        "xAccessor": "ab35f0e2-643a-44b6-a03d-2d433a6a489d"
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "c6d9ab01-b135-4ee2-b983-4c9a1696ada2"
                                     }
                                 ],
                                 "legend": {
@@ -878,12 +658,8 @@
                                     "shouldTruncate": false,
                                     "showSingleSeries": false
                                 },
-                                "preferredSeriesType": "line",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
                                 "valueLabels": "hide"
                             }
                         },
@@ -909,13 +685,13 @@
                                 "key": "data_stream.dataset",
                                 "negate": false,
                                 "params": {
-                                    "query": "zscaler_zia.saas_security"
+                                    "query": "zscaler_zia.sandbox_verdict"
                                 },
                                 "type": "phrase"
                             },
                             "query": {
                                 "match_phrase": {
-                                    "data_stream.dataset": "zscaler_zia.saas_security"
+                                    "data_stream.dataset": "zscaler_zia.sandbox_verdict"
                                 }
                             }
                         }
@@ -929,56 +705,15 @@
                     "syncTooltips": false
                 },
                 "gridData": {
-                    "h": 18,
-                    "i": "e1b309b6-0d88-4fcb-b6bd-d1f5ff56d02c",
-                    "w": 22,
-                    "x": 26,
-                    "y": 15
-                },
-                "panelIndex": "e1b309b6-0d88-4fcb-b6bd-d1f5ff56d02c",
-                "title": "SaaS Security logs over Time",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "id": "",
-                        "params": {
-                            "fontSize": 12,
-                            "markdown": "**Zscaler ZIA**\n\nThis dashboard provides an overview of SaaS security events. It features bar charts for application types and names, as well as pie charts for severity. Additionally, it includes a line chart for tracking SaaS security events over time, along with tables for the top 10 rule names and threat indicator names.\n\n[**Integrations Page**](/app/integrations/detail/zscaler_zia/overview)",
-                            "openLinksInNewTab": false
-                        },
-                        "title": "",
-                        "type": "markdown",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 18,
-                    "i": "7b6c479c-97e1-4e59-a368-5d557c645a5a",
-                    "w": 10,
+                    "h": 15,
+                    "i": "859a3354-601a-475a-835a-145625e856e3",
+                    "w": 24,
                     "x": 0,
-                    "y": 15
+                    "y": 42
                 },
-                "panelIndex": "7b6c479c-97e1-4e59-a368-5d557c645a5a",
-                "title": "Overview",
-                "type": "visualization"
+                "panelIndex": "859a3354-601a-475a-835a-145625e856e3",
+                "title": "Top MITRE Tactics",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -986,12 +721,12 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-40af3182-1471-4f50-adf3-d4aa730da324",
+                                "name": "indexpattern-datasource-layer-490ff585-bb38-4a88-9413-ecf02dabec72",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "7d9db883-81df-4122-b517-cd189f7505ad",
+                                "name": "614679d0-8ae2-4924-bb91-05cafbee53af",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1000,39 +735,13 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "40af3182-1471-4f50-adf3-d4aa730da324": {
+                                        "490ff585-bb38-4a88-9413-ecf02dabec72": {
                                             "columnOrder": [
-                                                "2ae7f096-2827-4f17-aad0-1c6cd20e0138",
-                                                "b3969121-49ed-41f6-b406-b2c483bb4992"
+                                                "c6d9ab01-b135-4ee2-b983-4c9a1696ada2",
+                                                "8f066d7d-adce-4c9f-8e79-17c50906ccee"
                                             ],
                                             "columns": {
-                                                "2ae7f096-2827-4f17-aad0-1c6cd20e0138": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Rule Name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "b3969121-49ed-41f6-b406-b2c483bb4992",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "rule.name"
-                                                },
-                                                "b3969121-49ed-41f6-b406-b2c483bb4992": {
+                                                "8f066d7d-adce-4c9f-8e79-17c50906ccee": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -1049,150 +758,12 @@
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "data_stream.dataset",
-                                        "index": "7d9db883-81df-4122-b517-cd189f7505ad",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "zscaler_zia.saas_security"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "zscaler_zia.saas_security"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "b3969121-49ed-41f6-b406-b2c483bb4992",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "2ae7f096-2827-4f17-aad0-1c6cd20e0138",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "layerId": "40af3182-1471-4f50-adf3-d4aa730da324",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "data_stream.dataset",
-                                "index": "logs-*",
-                                "key": "data_stream.dataset",
-                                "negate": false,
-                                "params": {
-                                    "query": "zscaler_zia.saas_security"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "data_stream.dataset": "zscaler_zia.saas_security"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "549a8268-5ad9-49a2-bb48-9c427dfe69b3",
-                    "w": 24,
-                    "x": 0,
-                    "y": 33
-                },
-                "panelIndex": "549a8268-5ad9-49a2-bb48-9c427dfe69b3",
-                "title": "Top 10 Rule Name",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-40af3182-1471-4f50-adf3-d4aa730da324",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "1185c80d-08de-45c5-99e0-edd6c016d9b9",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "40af3182-1471-4f50-adf3-d4aa730da324": {
-                                            "columnOrder": [
-                                                "2ae7f096-2827-4f17-aad0-1c6cd20e0138",
-                                                "b3969121-49ed-41f6-b406-b2c483bb4992"
-                                            ],
-                                            "columns": {
-                                                "2ae7f096-2827-4f17-aad0-1c6cd20e0138": {
+                                                },
+                                                "c6d9ab01-b135-4ee2-b983-4c9a1696ada2": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Threat Indicator Name",
+                                                    "label": "Techniques",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1201,11 +772,11 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "b3969121-49ed-41f6-b406-b2c483bb4992",
+                                                            "columnId": "8f066d7d-adce-4c9f-8e79-17c50906ccee",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
-                                                        "otherBucket": false,
+                                                        "otherBucket": true,
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
@@ -1213,25 +784,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "threat.indicator.name"
-                                                },
-                                                "b3969121-49ed-41f6-b406-b2c483bb4992": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "threat.technique.id"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -1256,17 +809,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "1185c80d-08de-45c5-99e0-edd6c016d9b9",
+                                        "index": "614679d0-8ae2-4924-bb91-05cafbee53af",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "zscaler_zia.saas_security"
+                                            "query": "zscaler_zia.sandbox_verdict"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "zscaler_zia.saas_security"
+                                            "data_stream.dataset": "zscaler_zia.sandbox_verdict"
                                         }
                                     }
                                 }
@@ -1277,25 +830,51 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "columns": [
+                                "layers": [
                                     {
-                                        "columnId": "b3969121-49ed-41f6-b406-b2c483bb4992",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "2ae7f096-2827-4f17-aad0-1c6cd20e0138",
-                                        "isMetric": false,
-                                        "isTransposed": false
+                                        "accessors": [
+                                            "8f066d7d-adce-4c9f-8e79-17c50906ccee"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "490ff585-bb38-4a88-9413-ecf02dabec72",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "c6d9ab01-b135-4ee2-b983-4c9a1696ada2"
                                     }
                                 ],
-                                "layerId": "40af3182-1471-4f50-adf3-d4aa730da324",
-                                "layerType": "data"
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsDatatable"
+                        "visualizationType": "lnsXY"
                     },
                     "enhancements": {
                         "dynamicActions": {
@@ -1315,13 +894,13 @@
                                 "key": "data_stream.dataset",
                                 "negate": false,
                                 "params": {
-                                    "query": "zscaler_zia.saas_security"
+                                    "query": "zscaler_zia.sandbox_verdict"
                                 },
                                 "type": "phrase"
                             },
                             "query": {
                                 "match_phrase": {
-                                    "data_stream.dataset": "zscaler_zia.saas_security"
+                                    "data_stream.dataset": "zscaler_zia.sandbox_verdict"
                                 }
                             }
                         }
@@ -1336,13 +915,309 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "6b8eddd7-2cb3-4c94-adc4-77b95518b122",
+                    "i": "5c3d8b9c-8d72-4a8e-a7d5-4dad00f7720e",
                     "w": 24,
                     "x": 24,
-                    "y": 33
+                    "y": 42
                 },
-                "panelIndex": "6b8eddd7-2cb3-4c94-adc4-77b95518b122",
-                "title": "Top 10 Threat Name",
+                "panelIndex": "5c3d8b9c-8d72-4a8e-a7d5-4dad00f7720e",
+                "title": "Top MITRE Techniques",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-0cfae789-078a-4750-a52b-89b811bf1243",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "1b85316d-94a8-4078-a394-06d2bab52034",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "0cfae789-078a-4750-a52b-89b811bf1243": {
+                                            "columnOrder": [
+                                                "1ad24fee-175b-4af7-8626-597afafb5a53"
+                                            ],
+                                            "columns": {
+                                                "1ad24fee-175b-4af7-8626-597afafb5a53": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unique Threats Detected",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "reducedTimeRange": "",
+                                                    "scale": "ratio",
+                                                    "sourceField": "threat.indicator.name",
+                                                    "timeShift": ""
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "1b85316d-94a8-4078-a394-06d2bab52034",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "zscaler_zia.sandbox_verdict"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "zscaler_zia.sandbox_verdict"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#E7664C",
+                                "layerId": "0cfae789-078a-4750-a52b-89b811bf1243",
+                                "layerType": "data",
+                                "metricAccessor": "1ad24fee-175b-4af7-8626-597afafb5a53"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "zscaler_zia.sandbox_verdict"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "zscaler_zia.sandbox_verdict"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "8f5fbb34-f272-4345-ab51-60e309777b04",
+                    "w": 18,
+                    "x": 30,
+                    "y": 0
+                },
+                "panelIndex": "8f5fbb34-f272-4345-ab51-60e309777b04",
+                "title": "Unique Threats Detected",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-0cfae789-078a-4750-a52b-89b811bf1243",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "e87bdb1a-9ab2-40ab-a3fe-6cf4018517c2",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "0cfae789-078a-4750-a52b-89b811bf1243": {
+                                            "columnOrder": [
+                                                "1ad24fee-175b-4af7-8626-597afafb5a53"
+                                            ],
+                                            "columns": {
+                                                "1ad24fee-175b-4af7-8626-597afafb5a53": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Files Analyzed",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "reducedTimeRange": "",
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___",
+                                                    "timeShift": ""
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "e87bdb1a-9ab2-40ab-a3fe-6cf4018517c2",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "zscaler_zia.sandbox_verdict"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "zscaler_zia.sandbox_verdict"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "0cfae789-078a-4750-a52b-89b811bf1243",
+                                "layerType": "data",
+                                "metricAccessor": "1ad24fee-175b-4af7-8626-597afafb5a53"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "zscaler_zia.sandbox_verdict"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "zscaler_zia.sandbox_verdict"
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "5204aa81-a1c8-4dba-a7e3-ab7a2f1b1dde",
+                    "w": 18,
+                    "x": 12,
+                    "y": 0
+                },
+                "panelIndex": "5204aa81-a1c8-4dba-a7e3-ab7a2f1b1dde",
+                "title": "Total Files Analyzed",
                 "type": "lens"
             },
             {
@@ -1512,24 +1387,259 @@
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "c157a7c9-f6f5-4eab-9587-daa500a65047",
-                    "w": 10,
+                    "h": 14,
+                    "i": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9",
+                    "w": 12,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "c157a7c9-f6f5-4eab-9587-daa500a65047",
+                "panelIndex": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9",
                 "title": "Table of Contents",
                 "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-74cf20bb-4f1a-4ea1-b67f-3a61ff13c111",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "83479f32-c45a-42d1-9806-cc960429dce2",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "74cf20bb-4f1a-4ea1-b67f-3a61ff13c111": {
+                                            "columnOrder": [
+                                                "79ee118b-dde1-4211-8947-90de194f697e",
+                                                "79208794-d762-4f56-b3e8-4fc433940010"
+                                            ],
+                                            "columns": {
+                                                "79208794-d762-4f56-b3e8-4fc433940010": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "79ee118b-dde1-4211-8947-90de194f697e": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "83479f32-c45a-42d1-9806-cc960429dce2",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "zscaler_zia.sandbox_verdict"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "zscaler_zia.sandbox_verdict"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "79208794-d762-4f56-b3e8-4fc433940010"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "74cf20bb-4f1a-4ea1-b67f-3a61ff13c111",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "79ee118b-dde1-4211-8947-90de194f697e"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "zscaler_zia.sandbox_verdict"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "zscaler_zia.sandbox_verdict"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 18,
+                    "i": "6f3cd80c-0c91-4be6-a98b-2c39ef4d73ec",
+                    "w": 36,
+                    "x": 12,
+                    "y": 9
+                },
+                "panelIndex": "6f3cd80c-0c91-4be6-a98b-2c39ef4d73ec",
+                "title": "Sandbox Verdict Events over Time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**Zscaler ZIA**\n\nThis dashboard delivers a comprehensive overview of Sandbox Verdict logs. It features key metrics highlighting total files analyzed and unique threats detected. It highlights a pie chart breakdown by verdict and a table showing file type counts broken down by verdict. Additionally, it includes a timeline chart that tracks sandbox verdict logs over time, while bar charts surface the top MITRE tactics and top MITRE techniques.\n\n[**Integration Page**](/app/integrations/detail/zscaler_zia/overview)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "f6e0ce52-ec7b-4912-9000-82a2f96df09c",
+                    "w": 12,
+                    "x": 0,
+                    "y": 14
+                },
+                "panelIndex": "f6e0ce52-ec7b-4912-9000-82a2f96df09c",
+                "type": "visualization"
             }
         ],
         "timeRestore": false,
-        "title": "[Logs Zscaler ZIA] SaaS Security Logs",
+        "title": "[Logs Zscaler ZIA] Sandbox Verdict Logs",
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-06-22T05:48:20.699Z",
-    "id": "zscaler_zia-a9875c50-7745-4feb-9c9c-8c2c54618e06",
+    "created_at": "2026-06-22T05:53:31.850Z",
+    "id": "zscaler_zia-2afc923e-2e2c-4d18-a8d0-5cb31baae152",
     "references": [
         {
             "id": "logs-*",
@@ -1538,142 +1648,147 @@
         },
         {
             "id": "logs-*",
-            "name": "28f47691-92a7-4ed5-9ad5-250a2cccd546:indexpattern-datasource-layer-2c45484b-214a-468b-8349-ffeb101acb75",
+            "name": "b1c2b4c7-4f2d-4150-b225-e8835f602e44:indexpattern-datasource-layer-046efa9f-ddf6-40a1-bf95-df6dbd0c0dfd",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "28f47691-92a7-4ed5-9ad5-250a2cccd546:9de522ab-2800-45b5-91bf-8a6127d8863b",
+            "name": "b1c2b4c7-4f2d-4150-b225-e8835f602e44:30151d90-a39c-463a-92de-3ed8c68809fa",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "d0e0dbe1-029b-4411-8594-8f6a525f621a:indexpattern-datasource-layer-2c45484b-214a-468b-8349-ffeb101acb75",
+            "name": "6ef35bbc-43d1-49b0-8018-5ab2e7d0154f:indexpattern-datasource-layer-046efa9f-ddf6-40a1-bf95-df6dbd0c0dfd",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "d0e0dbe1-029b-4411-8594-8f6a525f621a:b1cd4cc9-1ab7-4f13-812c-3b6b768d7d3d",
+            "name": "6ef35bbc-43d1-49b0-8018-5ab2e7d0154f:0d821657-48a0-4169-bae3-7c1baa5b55fe",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "e7cbab43-1b3f-43ac-8238-36a0cbb0e187:indexpattern-datasource-layer-6cdd378b-44e6-4d6d-9ff1-742fc7dd9669",
+            "name": "859a3354-601a-475a-835a-145625e856e3:indexpattern-datasource-layer-490ff585-bb38-4a88-9413-ecf02dabec72",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "e7cbab43-1b3f-43ac-8238-36a0cbb0e187:b5e79788-93ec-46cb-aa8e-fb0b533f9530",
+            "name": "859a3354-601a-475a-835a-145625e856e3:b68dac22-b5a5-40c4-a146-5919fb900a3c",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "e1b309b6-0d88-4fcb-b6bd-d1f5ff56d02c:indexpattern-datasource-layer-6cdd378b-44e6-4d6d-9ff1-742fc7dd9669",
+            "name": "5c3d8b9c-8d72-4a8e-a7d5-4dad00f7720e:indexpattern-datasource-layer-490ff585-bb38-4a88-9413-ecf02dabec72",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "e1b309b6-0d88-4fcb-b6bd-d1f5ff56d02c:f4645a43-7706-45c5-8481-29bfdbbac4d5",
+            "name": "5c3d8b9c-8d72-4a8e-a7d5-4dad00f7720e:614679d0-8ae2-4924-bb91-05cafbee53af",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "549a8268-5ad9-49a2-bb48-9c427dfe69b3:indexpattern-datasource-layer-40af3182-1471-4f50-adf3-d4aa730da324",
+            "name": "8f5fbb34-f272-4345-ab51-60e309777b04:indexpattern-datasource-layer-0cfae789-078a-4750-a52b-89b811bf1243",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "549a8268-5ad9-49a2-bb48-9c427dfe69b3:7d9db883-81df-4122-b517-cd189f7505ad",
+            "name": "8f5fbb34-f272-4345-ab51-60e309777b04:1b85316d-94a8-4078-a394-06d2bab52034",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "6b8eddd7-2cb3-4c94-adc4-77b95518b122:indexpattern-datasource-layer-40af3182-1471-4f50-adf3-d4aa730da324",
+            "name": "5204aa81-a1c8-4dba-a7e3-ab7a2f1b1dde:indexpattern-datasource-layer-0cfae789-078a-4750-a52b-89b811bf1243",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "6b8eddd7-2cb3-4c94-adc4-77b95518b122:1185c80d-08de-45c5-99e0-edd6c016d9b9",
+            "name": "5204aa81-a1c8-4dba-a7e3-ab7a2f1b1dde:e87bdb1a-9ab2-40ab-a3fe-6cf4018517c2",
             "type": "index-pattern"
         },
         {
             "id": "zscaler_zia-44e6d836-f55d-495d-93e0-79da0637042e",
-            "name": "c157a7c9-f6f5-4eab-9587-daa500a65047:link_zscaler_zia-44e6d836-f55d-495d-93e0-79da0637042e_dashboard",
+            "name": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9:link_zscaler_zia-44e6d836-f55d-495d-93e0-79da0637042e_dashboard",
             "type": "dashboard"
         },
         {
             "id": "zscaler_zia-03b699de-70f6-4ef0-9fa9-49c035b62635",
-            "name": "c157a7c9-f6f5-4eab-9587-daa500a65047:link_zscaler_zia-03b699de-70f6-4ef0-9fa9-49c035b62635_dashboard",
+            "name": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9:link_zscaler_zia-03b699de-70f6-4ef0-9fa9-49c035b62635_dashboard",
             "type": "dashboard"
         },
         {
             "id": "zscaler_zia-b335cb40-3811-11ed-aa11-3bf35d6f0a84",
-            "name": "c157a7c9-f6f5-4eab-9587-daa500a65047:link_zscaler_zia-b335cb40-3811-11ed-aa11-3bf35d6f0a84_dashboard",
+            "name": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9:link_zscaler_zia-b335cb40-3811-11ed-aa11-3bf35d6f0a84_dashboard",
             "type": "dashboard"
         },
         {
             "id": "zscaler_zia-9e15a8ff-f35e-46c1-8c93-43576194ee59",
-            "name": "c157a7c9-f6f5-4eab-9587-daa500a65047:link_a8d905e3-05da-4d8e-9200-b0e1132908c1_dashboard",
+            "name": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9:link_a8d905e3-05da-4d8e-9200-b0e1132908c1_dashboard",
             "type": "dashboard"
         },
         {
             "id": "zscaler_zia-eec7265e-2cd3-422a-924a-c3db6f5d0a42",
-            "name": "c157a7c9-f6f5-4eab-9587-daa500a65047:link_zscaler_zia-eec7265e-2cd3-422a-924a-c3db6f5d0a42_dashboard",
+            "name": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9:link_zscaler_zia-eec7265e-2cd3-422a-924a-c3db6f5d0a42_dashboard",
             "type": "dashboard"
         },
         {
             "id": "zscaler_zia-78eeb3f0-381d-11ed-aa11-3bf35d6f0a84",
-            "name": "c157a7c9-f6f5-4eab-9587-daa500a65047:link_zscaler_zia-78eeb3f0-381d-11ed-aa11-3bf35d6f0a84_dashboard",
+            "name": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9:link_zscaler_zia-78eeb3f0-381d-11ed-aa11-3bf35d6f0a84_dashboard",
             "type": "dashboard"
         },
         {
             "id": "zscaler_zia-a9875c50-7745-4feb-9c9c-8c2c54618e06",
-            "name": "c157a7c9-f6f5-4eab-9587-daa500a65047:link_1a369d77-c160-41b4-b082-dec666020856_dashboard",
+            "name": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9:link_1a369d77-c160-41b4-b082-dec666020856_dashboard",
             "type": "dashboard"
         },
         {
             "id": "zscaler_zia-b2e57cb6-5852-4e47-9abc-d3002c19dffb",
-            "name": "c157a7c9-f6f5-4eab-9587-daa500a65047:link_a20983f7-0595-4b2d-b5a1-92245306548b_dashboard",
+            "name": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9:link_a20983f7-0595-4b2d-b5a1-92245306548b_dashboard",
             "type": "dashboard"
         },
         {
             "id": "zscaler_zia-5de5ab5a-fd15-40bf-8f4c-5206f0ed7416",
-            "name": "c157a7c9-f6f5-4eab-9587-daa500a65047:link_zscaler_zia-5de5ab5a-fd15-40bf-8f4c-5206f0ed7416_dashboard",
+            "name": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9:link_zscaler_zia-5de5ab5a-fd15-40bf-8f4c-5206f0ed7416_dashboard",
             "type": "dashboard"
         },
         {
             "id": "zscaler_zia-2afc923e-2e2c-4d18-a8d0-5cb31baae152",
-            "name": "c157a7c9-f6f5-4eab-9587-daa500a65047:link_e9ff8c4a-5d86-448a-bc52-6df16123656f_dashboard",
+            "name": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9:link_e9ff8c4a-5d86-448a-bc52-6df16123656f_dashboard",
             "type": "dashboard"
         },
         {
             "id": "zscaler_zia-7b9f74b0-3820-11ed-aa11-3bf35d6f0a84",
-            "name": "c157a7c9-f6f5-4eab-9587-daa500a65047:link_zscaler_zia-7b9f74b0-3820-11ed-aa11-3bf35d6f0a84_dashboard",
+            "name": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9:link_zscaler_zia-7b9f74b0-3820-11ed-aa11-3bf35d6f0a84_dashboard",
             "type": "dashboard"
         },
         {
             "id": "zscaler_zia-579d9380-382a-11ed-aa11-3bf35d6f0a84",
-            "name": "c157a7c9-f6f5-4eab-9587-daa500a65047:link_zscaler_zia-579d9380-382a-11ed-aa11-3bf35d6f0a84_dashboard",
+            "name": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9:link_zscaler_zia-579d9380-382a-11ed-aa11-3bf35d6f0a84_dashboard",
             "type": "dashboard"
         },
         {
             "id": "zscaler_zia-c12fb7c5-0f5c-4341-98fb-12dd197f00a6",
-            "name": "c157a7c9-f6f5-4eab-9587-daa500a65047:link_zscaler_zia-c12fb7c5-0f5c-4341-98fb-12dd197f00a6_dashboard",
+            "name": "e5d65df3-9ee7-4569-9fe9-4ce3a68681c9:link_zscaler_zia-c12fb7c5-0f5c-4341-98fb-12dd197f00a6_dashboard",
             "type": "dashboard"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_20032cd4-8a4c-4452-86ab-4313611c2093:optionsListDataView",
+            "name": "6f3cd80c-0c91-4be6-a98b-2c39ef4d73ec:indexpattern-datasource-layer-74cf20bb-4f1a-4ea1-b67f-3a61ff13c111",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_c8c5f993-8f5c-426d-871b-26f5641ca56d:optionsListDataView",
+            "name": "6f3cd80c-0c91-4be6-a98b-2c39ef4d73ec:83479f32-c45a-42d1-9806-cc960429dce2",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_5cc8cb18-020e-41f6-bf24-ff4673b257cc:optionsListDataView",
+            "name": "controlGroup_3cd76f48-1162-4644-8346-863f95ce0259:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_7d2c5cee-34ce-4aa5-a724-69ad5f8fabb9:optionsListDataView",
             "type": "index-pattern"
         },
         {
