@@ -129,9 +129,6 @@ func processPackage(pkgPath, pkgName string, dryRun bool) (*packageSummary, erro
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
-		if stdout.Len() == 0 {
-			return nil, nil
-		}
 		return nil, fmt.Errorf("elastic-package requires update: %w\nstderr: %s", err, stderr.String())
 	}
 

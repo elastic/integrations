@@ -28,8 +28,14 @@ jobs:
         run: go install github.com/magefile/mage
 
       - name: Install elastic-package
+        # Installs the version pinned in go.mod, rather than floating to the
+        # latest release, since this job runs unattended and depends on exact
+        # elastic-package JSON output fields (kind, codeowner,
+        # kibana_constraint, new_version, skip_reason). Dependabot already
+        # bumps this pin deliberately via PR (gomod ecosystem).
         run: |
-          go install github.com/elastic/elastic-package@latest
+          version=$(go list -m -f '{{.Version}}' github.com/elastic/elastic-package)
+          go install "github.com/elastic/elastic-package@${version}"
           echo "ELASTIC_PACKAGE_BIN=$(go env GOPATH)/bin/elastic-package" >> $GITHUB_ENV
 
       - name: Configure git
