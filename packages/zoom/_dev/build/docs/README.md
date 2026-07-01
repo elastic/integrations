@@ -24,7 +24,7 @@ The **activity** data stream periodically queries the Zoom REST API using Server
 The Zoom integration collects the following data:
 
 - `webhook`: real-time Zoom event notifications, including account, team chat (channel and message), meeting, phone, recording, user, webinar, and Zoom Room events.
-- `activity`: account-wide sign in and sign out activity logs from the Zoom REST API reports endpoint.
+- `activity`: account-wide sign in and sign out activity logs from the Zoom REST API reports endpoint. Please note that the API does not provide data for failed sign-in or authentication attempts, so those logs will not be available here.
 
 ### Supported use cases
 
