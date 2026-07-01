@@ -1,0 +1,78 @@
+format_version: "3.4.2"
+name: harfang_labs
+title: "HarfangLab EDR"
+version: "0.1.0"
+source:
+  license: "Elastic-2.0"
+description: "Collect alerts, threats, agent inventory, audit logs, and endpoint telemetry from HarfangLab EDR via REST API or syslog."
+type: integration
+categories:
+  - security
+  - edr_xdr
+conditions:
+  kibana:
+    version: "^8.19.0 || ^9.1.0"
+icons:
+  - src: /img/harfang_labs-logo.svg
+    title: HarfangLab logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: api
+    title: HarfangLab EDR (API)
+    description: Collect alerts, threats, and agent inventory from the HarfangLab EDR REST API.
+    categories:
+      - edr_xdr
+    inputs:
+      - type: cel
+        title: Collect HarfangLab EDR events via REST API
+        description: Poll the HarfangLab REST API for alerts, threats, and agent inventory.
+        vars:
+          - name: url
+            type: text
+            title: URL
+            description: Full base URL of the HarfangLab tenant including scheme and port (e.g. https://tenant.example.com:8443).
+            required: true
+            show_user: true
+            default: https://tenant.example.com:8443
+          - name: api_token
+            type: password
+            title: API Token
+            description: Static API token from Administration → Users → Generate token. Sent as Authorization Token header.
+            required: true
+            show_user: true
+            secret: true
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: HTTP request timeout (e.g. 60s).
+            required: false
+            show_user: false
+            default: 60s
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: HTTP proxy URL for outbound API requests.
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: TLS configuration for outbound API requests.
+            required: false
+            show_user: false
+  - name: syslog
+    title: HarfangLab EDR (Syslog)
+    description: Receive RFC 5424 JSON syslog from the HarfangLab EDR Syslog connector (alerts, threats, audit logs, and telemetry).
+    categories:
+      - edr_xdr
+    inputs:
+      - type: tcp
+        title: Collect HarfangLab EDR events over TCP
+        description: Receive RFC 5424 JSON syslog messages from HarfangLab over TCP (optionally TLS).
+      - type: udp
+        title: Collect HarfangLab EDR events over UDP
+        description: Receive RFC 5424 JSON syslog messages from HarfangLab over UDP.
+owner:
+  github: elastic/security-service-integrations
+  type: elastic

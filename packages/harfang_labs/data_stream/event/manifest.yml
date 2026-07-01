@@ -1,0 +1,161 @@
+title: HarfangLab EDR Events
+type: logs
+streams:
+  - input: tcp
+    title: HarfangLab EDR Events (TCP)
+    description: Receive RFC 5424 JSON syslog from HarfangLab EDR over TCP (optionally TLS).
+    template_path: tcp.yml.hbs
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: Bind address for the TCP listener. Defaults to `0.0.0.0` so the listener accepts connections from remote HarfangLab connectors.
+        required: true
+        show_user: true
+        default: 0.0.0.0
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: TCP port for the HarfangLab syslog listener.
+        required: true
+        show_user: true
+        default: 9514
+      - name: framing
+        type: text
+        title: Framing
+        description: Framing mode for incoming TCP messages (`delimiter` or `rfc6587`). HarfangLab uses newline-delimited RFC 5424 records.
+        required: false
+        show_user: false
+        default: delimiter
+      - name: line_delimiter
+        type: text
+        title: Line Delimiter
+        description: Delimiter used when framing is set to `delimiter`.
+        required: false
+        show_user: false
+        default: "\\n"
+      - name: max_message_size
+        type: text
+        title: Max Message Size
+        description: Maximum size of a TCP message (e.g. 20MiB).
+        required: false
+        show_user: false
+      - name: keep_null
+        type: bool
+        title: Keep Null Values
+        description: Publish fields with null values in the output document.
+        required: false
+        show_user: false
+        default: false
+      - name: tz_offset
+        type: text
+        title: Timezone Offset
+        description: >-
+          IANA timezone name or UTC offset (e.g. `America/New_York` or `-05:00`) to use when syslog timestamps do not include a timezone. Defaults to `Local`.
+        required: true
+        show_user: true
+        default: Local
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - harfang_labs-event
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: Preserves a raw copy of the original event in `event.original`.
+        required: false
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors to apply to events before they are shipped.
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: TLS configuration for TCP/SSL syslog from HarfangLab. See Filebeat SSL documentation for details.
+        required: false
+        show_user: false
+        default: |
+          #certificate: |
+          #    -----BEGIN CERTIFICATE-----
+          #    ...
+          #    -----END CERTIFICATE-----
+          #key: |
+          #    -----BEGIN PRIVATE KEY-----
+          #    ...
+          #    -----END PRIVATE KEY-----
+  - input: udp
+    title: HarfangLab EDR Events (UDP)
+    description: Receive RFC 5424 JSON syslog from HarfangLab EDR over UDP.
+    template_path: udp.yml.hbs
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: Bind address for the UDP listener. Defaults to `0.0.0.0` so the listener accepts datagrams from remote HarfangLab connectors.
+        required: true
+        show_user: true
+        default: 0.0.0.0
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: UDP port for the HarfangLab syslog listener.
+        required: true
+        show_user: true
+        default: 9515
+      - name: max_message_size
+        type: text
+        title: Max Message Size
+        description: Maximum size of a UDP datagram (e.g. 10KiB).
+        required: false
+        show_user: false
+        default: 10KiB
+      - name: keep_null
+        type: bool
+        title: Keep Null Values
+        description: Publish fields with null values in the output document.
+        required: false
+        show_user: false
+        default: false
+      - name: tz_offset
+        type: text
+        title: Timezone Offset
+        description: >-
+          IANA timezone name or UTC offset (e.g. `America/New_York` or `-05:00`) to use when syslog timestamps do not include a timezone. Defaults to `Local`.
+        required: true
+        show_user: true
+        default: Local
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - harfang_labs-event
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: Preserves a raw copy of the original event in `event.original`.
+        required: false
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors to apply to events before they are shipped.
+        required: false
+        show_user: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

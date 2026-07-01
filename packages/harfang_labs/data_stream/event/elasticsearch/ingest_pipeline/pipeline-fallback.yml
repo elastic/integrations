@@ -1,0 +1,43 @@
+---
+description: Fallback parser for unrecognized HarfangLab syslog log_type values.
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-common-agent" }}'
+      tag: map_common_agent
+      if: ctx.harfang_labs?.agent != null
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: host
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - set:
+      field: event.outcome
+      tag: set_event_outcome
+      value: unknown
+  - remove:
+      field:
+        - _temp
+      ignore_missing: true
+      tag: remove_temp_fields
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
