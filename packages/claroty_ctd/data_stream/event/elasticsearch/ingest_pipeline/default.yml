@@ -429,7 +429,7 @@ processors:
       field: cef.extensions.CtdDestinationHost
       tag: split_CtdDestinationHost_into_destination_host
       target_field: claroty_ctd.event.destination.host
-      separator: ', '
+      separator: ',\s*'
       ignore_missing: true
       if: ctx.cef?.extensions?.CtdDestinationHost != ''
       on_failure:
@@ -455,7 +455,7 @@ processors:
       field: cef.extensions.CtdDestinationIp
       tag: split_CtdDestinationIp_into_destination_ip
       target_field: claroty_ctd.event.destination.ip
-      separator: ', '
+      separator: ',\s*'
       ignore_missing: true
       if: ctx.cef?.extensions?.CtdDestinationIp != ''
       on_failure:
@@ -464,7 +464,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: claroty_ctd.event.destination.ip
-      tag: foreach_claroty_ctd_event_destination_ip
+      tag: foreach_claroty_ctd_event_destination_ip_1
       if: ctx.claroty_ctd?.event?.destination?.ip instanceof List
       processor:
         convert:
@@ -486,7 +486,7 @@ processors:
       ignore_empty_value: true
   - foreach:
       field: claroty_ctd.event.destination.ip
-      tag: foreach_claroty_ctd_event_destination_ip
+      tag: foreach_claroty_ctd_event_destination_ip_2
       if: ctx.claroty_ctd?.event?.destination?.ip instanceof List
       processor:
         append:
@@ -498,7 +498,7 @@ processors:
       field: cef.extensions.CtdDestinationMac
       tag: split_CtdDestinationMac_into_destination_mac
       target_field: claroty_ctd.event.destination.mac
-      separator: ', '
+      separator: ',\s*'
       ignore_missing: true
       if: ctx.cef?.extensions?.CtdDestinationMac != ''
       on_failure:
@@ -1698,7 +1698,7 @@ processors:
       field: cef.extensions.CtdSourceHost
       tag: split_CtdSourceHost_into_source_host
       target_field: claroty_ctd.event.source.host
-      separator: ', '
+      separator: ',\s*'
       ignore_missing: true
       if: ctx.cef?.extensions?.CtdSourceHost != ''
       on_failure:
@@ -1724,7 +1724,7 @@ processors:
       field: cef.extensions.CtdSourceIp
       tag: split_CtdSourceIp_into_source_ip
       target_field: claroty_ctd.event.source.ip
-      separator: ', '
+      separator: ',\s*'
       ignore_missing: true
       if: ctx.cef?.extensions?.CtdSourceIp != ''
       on_failure:
@@ -1733,7 +1733,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: claroty_ctd.event.source.ip
-      tag: foreach_claroty_ctd_event_source_ip
+      tag: foreach_claroty_ctd_event_source_ip_1
       if: ctx.claroty_ctd?.event?.source?.ip instanceof List
       processor:
         convert:
@@ -1755,7 +1755,7 @@ processors:
       ignore_empty_value: true
   - foreach:
       field: claroty_ctd.event.source.ip
-      tag: foreach_claroty_ctd_event_source_ip
+      tag: foreach_claroty_ctd_event_source_ip_2
       if: ctx.claroty_ctd?.event?.source?.ip instanceof List
       processor:
         append:
@@ -1767,7 +1767,7 @@ processors:
       field: cef.extensions.CtdSourceMac
       tag: split_CtdSourceMac_into_source_mac
       target_field: claroty_ctd.event.source.mac
-      separator: ', '
+      separator: ',\s*'
       ignore_missing: true
       if: ctx.cef?.extensions?.CtdSourceMac != ''
       on_failure:
