@@ -39,8 +39,6 @@ THOR Cloud Lite is supported when scans produce unencrypted `thor.json` logs thr
 
 This integration supports Agentless and Elastic Agent-based data collection.
 
-The minimum **kibana.version** required is **9.2.0**.
-
 For agent-based collection, install Elastic Agent using the [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## How it works
