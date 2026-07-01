@@ -34,9 +34,8 @@ This integration requires Elastic Agent. If you have none, check the [Elastic Ag
 1. Open Kibana and navigate to **Integrations**.
 2. Search for **Ticura**.
 3. Select **Add Ticura**.
-4. Enter your feed name into **Advanced Options** → **Namespace** — this becomes part of the data-stream name (`logs-ti_ticura.indicator-{namespace}`), so each Ticura feed you configure ends up in its own queryable index. Use lowercase ASCII; the value is stored as the `data_stream.namespace` field on every raw document and drives the dashboard's `Namespace` control. The raw `logs-ti_ticura.indicator-{namespace}` stream is fully isolated per feed; note that the deduplicated *latest* index that dashboards and Indicator Match rules read is shared across feeds (see **Multiple feeds** below). For unambiguous per-feed dashboards, run one feed per integration policy.
-5. Enter your API key into **Ticura API key**.
-6. Select your **Download Interval** and your **Agent**, then click **Save and continue** to enable the integration.
+4. Enter your API key into **Ticura API key**.
+5. Select your **Download Interval** and your **Agent**, then click **Save and continue** to enable the integration.
 
 After the integration is enabled, indicators are periodically retrieved and ingested into Elastic.
 
@@ -74,12 +73,7 @@ If you need to retain raw indicator history longer (for example, for forensic qu
 
 ### Multiple feeds
 
-You can configure several Ticura feeds, each with its own namespace. Two levels of behavior apply:
-
-- **Raw streams are isolated per feed.** `logs-ti_ticura.indicator-{namespace}` is unique per feed, and `data_stream.namespace` lets you query each feed's raw events independently — use these streams for exact per-feed analysis.
-- **The latest index is shared and globally deduplicated.** The latest-IOC transform deduplicates by `ticura.indicator.uuid` (not by namespace) into the single `logs-ti_ticura_latest.indicator` index — the same pattern every Elastic threat-intel integration uses. So an indicator delivered by more than one feed is kept **once** there (a deliberate choice that avoids duplicate Indicator Match alerts for the same IOC), tagged with the feed that most recently ingested it. The dashboards' `Namespace` control and per-feed counts on the *latest* index therefore reflect the last-ingesting feed, not strict per-feed membership.
-
-**Recommendation:** for unambiguous per-feed dashboards and saved searches, run **one feed per integration policy**. If you run several feeds that share indicators, treat the latest index, dashboards, and Indicator Match rules as a single unified, deduplicated view across all your feeds, and use the raw `logs-ti_ticura.indicator-{namespace}` streams when you need exact per-feed membership.
+If you run more than one Ticura feed, the latest-IOC transform deduplicates across all of them by `ticura.indicator.uuid` into the single `logs-ti_ticura_latest.indicator` index — the unified, deduplicated view every Elastic threat-intel integration provides. An indicator delivered by more than one feed is kept **once**, which avoids duplicate Indicator Match alerts for the same IOC. To break the deduplicated view down by source, slice on `threat.feed.name` (as the Overview's *Indicators by origin* panel does).
 
 ### Operational considerations
 
@@ -103,7 +97,7 @@ Three dashboards are bundled, all scoped to `event.module: ti_ticura` and `label
 
 Strategic view of the current feed: counts and distributions by type, country, industry, actor, malware family, MITRE technique, and feed source.
 
-The dashboard has nine interactive controls at the top, with **hierarchical chaining** — each control's options are filtered by selections made to its left:
+The dashboard has eight interactive controls at the top, with **hierarchical chaining** — each control's options are filtered by selections made to its left:
 
 | Control | Field | Use |
 |---------|-------|-----|
@@ -114,7 +108,6 @@ The dashboard has nine interactive controls at the top, with **hierarchical chai
 | Country | `threat.indicator.geo.country_iso_code` | Country of origin (GeoIP-derived) |
 | Threat Actor | `ticura.indicator.merged.actors` | Attribution to a known actor |
 | Inbound Only | `ticura.indicator.is_inbound` | Limit to indicators flagged as inbound-only |
-| Namespace | `data_stream.namespace` | Filter to a feed — in the deduplicated latest index this reflects the last-ingesting feed (see **Multiple feeds**) |
 | Severity (range slider) | `event.severity` | Slide to a min/max severity window |
 
 ### Triage
