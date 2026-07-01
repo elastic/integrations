@@ -50,26 +50,21 @@ type packageSummary struct {
 	name      string
 	applied   []proposal
 	skipped   []proposal
-	codeowner string
+	codeowner string   // bare "org/team", no leading '@'
 	files     []string // paths written to disk, relative to repo root; empty on dry-run
 }
 
-// packageJSON is the per-package record written by writeJSONReport. Each
-// entry becomes one PR (or, if all proposals were skipped, one issue) — see
-// .github/scripts/requires-update.sh.
-type packageJSON struct {
-	Name      string     `json:"name"`
-	Codeowner string     `json:"codeowner"`
-	Files     []string   `json:"files"`
-	Applied   []proposal `json:"applied"`
-	Skipped   []proposal `json:"skipped"`
-}
-
 // Run walks all integration packages, runs elastic-package requires update,
-// adds changelog entries for packages with actual updates, and prints a summary
-// grouped by codeowner. Set DRY_RUN=true to see proposals without applying.
+// adds changelog entries for packages with actual updates, opens one PR (or,
+// if every proposal was skipped, one issue) per package via Publish, and
+// prints a summary grouped by codeowner.
+//
+// Set DRY_RUN=true to see proposals without applying (this also skips
+// publishing, since no files were written). Set PREVIEW=true to print what
+// Publish would do without touching git or GitHub.
 func Run() error {
 	dryRun := os.Getenv("DRY_RUN") == "true"
+	preview := os.Getenv("PREVIEW") == "true"
 
 	paths, err := citools.ListPackages(packagesDir)
 	if err != nil {
@@ -106,10 +101,10 @@ func Run() error {
 	printSummary(summaries, dryRun)
 	printScanStats(len(paths), eligible, len(summaries), len(errs))
 
-	if jsonOut := os.Getenv("REQUIRES_UPDATE_JSON_OUT"); jsonOut != "" {
-		if err := writeJSONReport(summaries, jsonOut); err != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to write JSON report to %s: %v\n", jsonOut, err)
-		}
+	if dryRun {
+		fmt.Println("DRY_RUN=true — skipping PR/issue creation.")
+	} else if err := Publish(summaries, preview); err != nil {
+		errs = append(errs, fmt.Sprintf("publishing: %v", err))
 	}
 
 	if len(errs) > 0 {
@@ -178,6 +173,8 @@ func processPackage(pkgPath, pkgName string, dryRun bool) (*packageSummary, erro
 	}, nil
 }
 
+// resolveOwner returns the package's codeowner as a bare "org/team" string
+// (no leading '@'), preferring CODEOWNERS over the JSON fallback field.
 func resolveOwner(pkgName, fallback string) (string, error) {
 	owners, err := codeowners.PackageOwners(pkgName, "", codeowners.DefaultCodeownersPath)
 	if err != nil || len(owners) == 0 {
@@ -186,41 +183,20 @@ func resolveOwner(pkgName, fallback string) (string, error) {
 		}
 		return "", fmt.Errorf("no codeowner found for %s: %w", pkgName, err)
 	}
-	primary := owners[0]
-	// CODEOWNERS entries carry '@' prefix; JSON field does not — strip before comparing.
-	if fallback != "" && strings.TrimPrefix(primary, "@") != fallback {
+	// CODEOWNERS entries carry a '@' prefix; the JSON fallback field does
+	// not — normalize to the bare form so callers get a consistent value
+	// regardless of which path resolved it.
+	primary := strings.TrimPrefix(owners[0], "@")
+	if fallback != "" && primary != fallback {
 		fmt.Fprintf(os.Stderr, "warning: codeowner mismatch for %s: CODEOWNERS=%s JSON=%s (using CODEOWNERS)\n",
 			pkgName, primary, fallback)
 	}
 	return primary, nil
 }
 
-func writeJSONReport(summaries []packageSummary, path string) error {
-	sorted := make([]packageSummary, len(summaries))
-	copy(sorted, summaries)
-	sort.Slice(sorted, func(i, j int) bool { return sorted[i].name < sorted[j].name })
-
-	out := make([]packageJSON, 0, len(sorted))
-	for _, s := range sorted {
-		out = append(out, packageJSON{
-			Name:      s.name,
-			Codeowner: s.codeowner,
-			Files:     s.files,
-			Applied:   s.applied,
-			Skipped:   s.skipped,
-		})
-	}
-
-	data, err := json.MarshalIndent(out, "", "  ")
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(path, data, 0644)
-}
-
 // printScanStats prints a one-line scan summary distinguishing "nothing to do
 // because adoption of requires: is low" from "the walk found nothing due to a
-// bug" — both currently produce an empty JSON report. Also appended to
+// bug" — both currently produce zero proposals. Also appended to
 // $GITHUB_STEP_SUMMARY when set, so it's visible without opening the job log.
 func printScanStats(total, eligible, withProposals, errored int) {
 	line := fmt.Sprintf("Scanned %d packages, %d eligible (requires: present), %d with proposals, %d errored.\n",

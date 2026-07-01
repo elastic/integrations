@@ -50,17 +50,13 @@ jobs:
         run: git fetch origin
 
       - name: Run RequiresUpdate
+        # Scans packages, applies proposals, and opens one PR (or issue) per
+        # package — see dev/requiresupdate.
         id: requires_update
         env:
-          REQUIRES_UPDATE_JSON_OUT: /tmp/requires-update.json
-        run: |
-          mage RequiresUpdate 2>&1 | tee /tmp/requires-update-summary.txt
-        continue-on-error: true
-
-      - name: Open PRs and issues per package
-        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash .github/scripts/requires-update.sh /tmp/requires-update.json
+        run: mage RequiresUpdate
+        continue-on-error: true
 
       - name: Fail if RequiresUpdate reported errors
         # continue-on-error above lets already-succeeded packages still get a
