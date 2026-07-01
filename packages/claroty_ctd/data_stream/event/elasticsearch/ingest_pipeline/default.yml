@@ -441,28 +441,49 @@ processors:
       value: "{{{claroty_ctd.event.destination.host}}}"
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.destination?.host != null
-  - convert:
+  - split:
       field: cef.extensions.CtdDestinationIp
-      tag: convert_CtdDestinationIp_to_ip
+      tag: split_CtdDestinationIp_into_destination_ip
       target_field: claroty_ctd.event.destination.ip
-      type: ip
+      separator: ', '
       ignore_missing: true
       if: ctx.cef?.extensions?.CtdDestinationIp != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.event.destination.ip
+      tag: foreach_claroty_ctd_event_destination_ip
+      if: ctx.claroty_ctd?.event?.destination?.ip instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_destination_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
       tag: set_destination_ip_from_event_destination_ip
       copy_from: claroty_ctd.event.destination.ip
       ignore_empty_value: true
-  - append:
-      field: related.ip
-      tag: append_CtdDestinationIp_into_related_ip
-      value: "{{{claroty_ctd.event.destination.ip}}}"
-      allow_duplicates: false
-      if: ctx.claroty_ctd?.event?.destination?.ip != null
+  - foreach:
+      field: claroty_ctd.event.destination.ip
+      tag: foreach_claroty_ctd_event_destination_ip
+      if: ctx.claroty_ctd?.event?.destination?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_destination_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - rename:
       field: cef.extensions.CtdDestinationMac
       tag: rename_CtdDestinationMac
@@ -1669,28 +1690,49 @@ processors:
       value: "{{{claroty_ctd.event.source.host}}}"
       allow_duplicates: false
       if: ctx.claroty_ctd?.event?.source?.host != null
-  - convert:
+  - split:
       field: cef.extensions.CtdSourceIp
-      tag: convert_CtdSourceIp_to_ip
+      tag: split_CtdSourceIp_into_source_ip
       target_field: claroty_ctd.event.source.ip
-      type: ip
+      separator: ', '
       ignore_missing: true
       if: ctx.cef?.extensions?.CtdSourceIp != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.event.source.ip
+      tag: foreach_claroty_ctd_event_source_ip
+      if: ctx.claroty_ctd?.event?.source?.ip instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_source_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
       tag: set_source_ip_from_event_source_ip
       copy_from: claroty_ctd.event.source.ip
       ignore_empty_value: true
-  - append:
-      field: related.ip
-      tag: append_CtdSourceIp_into_related_ip
-      value: "{{{claroty_ctd.event.source.ip}}}"
-      allow_duplicates: false
-      if: ctx.claroty_ctd?.event?.source?.ip != null
+  - foreach:
+      field: claroty_ctd.event.source.ip
+      tag: foreach_claroty_ctd_event_source_ip
+      if: ctx.claroty_ctd?.event?.source?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_source_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - rename:
       field: cef.extensions.CtdSourceMac
       tag: rename_CtdSourceMac
