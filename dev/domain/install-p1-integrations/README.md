@@ -251,13 +251,52 @@ packages/<name>/data_stream/*/_dev/test/pipeline/
 | `*.log` | One document per non-empty line, wrapped as `{"message": "<line>"}` (same as pipeline tests) |
 | `*.json` | Uses the `events` array when present; otherwise a single object or top-level array |
 
+**Pipeline test config (required for correct parsing):**
+
+Before bulk ingest, the script merges fields from companion config files — the same files
+`elastic-package test` uses:
+
+- `test-common-config.yml` in the fixture directory (if present)
+- `<fixture-name>-config.yml` (e.g. `test-login-eventlogfile.log-config.yml`)
+
+These set routing fields such as `event.provider: EventLogFile` that select sub-pipelines.
+Without them you only get generic ECS fields (e.g. `event.action: login-attempt`) and **not**
+the vendor fields in `*-expected.json` (e.g. `salesforce.login.*`).
+
+**Agent metadata (``data_stream.*``, ``event.dataset``, ``event.module``):**
+
+Fixtures that ship as bare ``.log`` lines do not include Fleet/Agent metadata. Before bulk
+ingest, the script adds (via ``setdefault`` — existing values are kept):
+
+- `data_stream.type`, `data_stream.dataset`, `data_stream.namespace` from the data stream manifest
+- `event.dataset` — same as `data_stream.dataset`
+- `event.module` — integration package name, or a beat-style prefix (`azure_*` → `azure`, etc.)
+
+JSON fixtures that already include these fields (e.g. Metricbeat-shaped metrics tests) are
+unchanged. Ingest pipelines may still overwrite `event.dataset` / `event.module` when they set
+those fields explicitly (e.g. Salesforce login).
+
 **Skipped files:**
 
-- `*-expected.json`
-- `*-config.yml`
-- `test-common-config.yml`
+- `*-expected.json` (post-pipeline expected output — used for comparison, not ingest input)
+- `*-config.yml` (loaded as metadata, not ingested as documents)
+- `test-common-config.yml` (loaded as metadata, not ingested as documents)
 
-Documents are bulk-indexed to `logs-<dataset>-default` using ingest pipeline `logs-<dataset>`.
+Documents are bulk-indexed to `logs-<dataset>-default` using the Fleet **default** ingest pipeline for that data stream (e.g. `logs-azure_openai.logs-0.11.0`).
+
+Fleet also installs auxiliary sub-pipelines (e.g. `logs-azure_openai.logs-0.11.0.azure-shared-pipeline`). The script resolves the versioned **main** pipeline only. Using a sub-pipeline by mistake leaves raw `message` JSON in the document with only partial fields like `cloud.provider`.
+
+If you see unparsed `message` after ingest, re-run ingest for that package after updating the script.
+
+Verify a past run without re-ingesting:
+
+```bash
+python3 install_and_ingest.py --insecure --verify-only \
+  --run-id pipeline-fix-v2 \
+  --packages azure_openai,salesforce
+```
+
+The script prints how many docs still have raw `message` vs `event.original`, and which Fleet pipeline was resolved per stream.
 
 Each document is tagged for validation:
 

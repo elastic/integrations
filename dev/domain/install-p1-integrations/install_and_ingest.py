@@ -110,6 +110,8 @@ class FixtureResult:
     stream: str
     submitted: int
     bulk_errors: int
+    pipeline: str | None = None
+    config_files: list[str] = field(default_factory=list)
     error: str | None = None
 
 
@@ -127,6 +129,9 @@ class IntegrationReport:
     timestamp_max: str | None = None
     datasets: dict[str, int] = field(default_factory=dict)
     failed_datasets: dict[str, int] = field(default_factory=dict)
+    unparsed_with_message: int = 0
+    parsed_with_event_original: int = 0
+    pipeline_errors: int = 0
     fixtures: list[FixtureResult] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
 
@@ -324,6 +329,161 @@ def _dig(doc: dict[str, Any], path: str) -> Any:
     return cur
 
 
+def _set_nested(doc: dict[str, Any], path: str, value: Any) -> None:
+    parts = path.split(".")
+    cur: dict[str, Any] = doc
+    for part in parts[:-1]:
+        nxt = cur.get(part)
+        if not isinstance(nxt, dict):
+            nxt = {}
+            cur[part] = nxt
+        cur = nxt
+    cur[parts[-1]] = value
+
+
+def _deep_merge_dict(base: dict[str, Any], overlay: dict[str, Any]) -> dict[str, Any]:
+    merged = dict(base)
+    for key, value in overlay.items():
+        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+            merged[key] = _deep_merge_dict(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
+def _load_yaml_mapping(path: Path) -> dict[str, Any]:
+    text = path.read_text()
+    try:
+        import yaml  # type: ignore[import-untyped]
+    except ImportError:
+        yaml = None
+    if yaml is not None:
+        data = yaml.safe_load(text)
+        return data if isinstance(data, dict) else {}
+    return _parse_pipeline_config_fallback(text)
+
+
+def _parse_pipeline_config_fallback(text: str) -> dict[str, Any]:
+    """Minimal parser for pipeline test configs when PyYAML is unavailable."""
+    fields: dict[str, Any] = {}
+    in_fields = False
+    fields_indent = 0
+    list_key: str | None = None
+
+    for raw_line in text.splitlines():
+        if not raw_line.strip() or raw_line.lstrip().startswith("#"):
+            continue
+        indent = len(raw_line) - len(raw_line.lstrip())
+        line = raw_line.strip()
+
+        if line == "fields:":
+            in_fields = True
+            fields_indent = indent
+            list_key = None
+            continue
+
+        if not in_fields:
+            continue
+
+        if indent <= fields_indent and line.endswith(":"):
+            break
+
+        if line.startswith("- "):
+            if list_key is None:
+                continue
+            fields.setdefault(list_key, [])
+            if isinstance(fields[list_key], list):
+                fields[list_key].append(line[2:].strip().strip("'\""))
+            continue
+
+        if ":" not in line:
+            continue
+
+        key, value = line.split(":", 1)
+        key = key.strip()
+        value = value.strip()
+        list_key = None
+
+        if not value:
+            list_key = key
+            fields[key] = []
+            continue
+
+        if value.startswith("[") and value.endswith("]"):
+            inner = value[1:-1].strip()
+            fields[key] = [item.strip().strip("'\"") for item in inner.split(",") if item.strip()]
+        elif value in {"true", "false"}:
+            fields[key] = value == "true"
+        elif (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+            fields[key] = value[1:-1]
+        else:
+            try:
+                if "." in value:
+                    fields[key] = float(value)
+                else:
+                    fields[key] = int(value)
+            except ValueError:
+                fields[key] = value
+
+    return {"fields": fields}
+
+
+def fixture_config_paths(fixture: Path) -> list[Path]:
+    """Pipeline test configs applied before ingest, same as elastic-package test runner."""
+    configs: list[Path] = []
+    common = fixture.parent / "test-common-config.yml"
+    if common.is_file():
+        configs.append(common)
+    per_fixture = fixture.parent / f"{fixture.name}-config.yml"
+    if per_fixture.is_file():
+        configs.append(per_fixture)
+    return configs
+
+
+def load_pipeline_config_fields(config_path: Path) -> dict[str, Any]:
+    data = _load_yaml_mapping(config_path)
+    fields = data.get("fields")
+    return dict(fields) if isinstance(fields, dict) else {}
+
+
+def apply_pipeline_config_fields(doc: dict[str, Any], fields: dict[str, Any]) -> None:
+    """Merge config ``fields`` into a document before bulk ingest (matches pipeline tests)."""
+    for key, value in fields.items():
+        if key == "tags" and isinstance(value, list):
+            existing = doc.get("tags")
+            if existing is None:
+                doc["tags"] = list(value)
+            elif isinstance(existing, str):
+                doc["tags"] = [existing, *value]
+            else:
+                merged = list(existing)
+                for tag in value:
+                    if tag not in merged:
+                        merged.append(tag)
+                doc["tags"] = merged
+            continue
+
+        if "." in key:
+            _set_nested(doc, key, value)
+            continue
+
+        if isinstance(value, dict) and isinstance(doc.get(key), dict):
+            doc[key] = _deep_merge_dict(doc[key], value)
+        else:
+            doc[key] = value
+
+
+def apply_fixture_configs(doc: dict[str, Any], fixture: Path) -> list[str]:
+    """Apply test-common-config.yml and per-fixture *-config.yml fields."""
+    applied: list[str] = []
+    for config_path in fixture_config_paths(fixture):
+        fields = load_pipeline_config_fields(config_path)
+        if fields:
+            apply_pipeline_config_fields(doc, fields)
+            applied.append(str(config_path.relative_to(REPO)))
+    return applied
+
+
 def _to_iso_timestamp(value: Any) -> str | None:
     if value is None:
         return None
@@ -394,6 +554,38 @@ def ensure_timestamp(doc: dict[str, Any]) -> None:
     doc["@timestamp"] = iso
 
 
+def default_event_module(package: str) -> str:
+    """Beat-style event.module for integrations that omit it in log fixtures."""
+    for prefix, module in (
+        ("azure_", "azure"),
+        ("aws_", "aws"),
+        ("google_", "google"),
+        ("microsoft_", "microsoft"),
+        ("o365_", "o365"),
+    ):
+        if package.startswith(prefix):
+            return module
+    return package
+
+
+def apply_agent_metadata(doc: dict[str, Any], target: StreamTarget, package: str) -> None:
+    """Add Fleet/Agent data_stream metadata when fixtures omit it (typical for ``.log`` files)."""
+    ds = doc.get("data_stream")
+    if not isinstance(ds, dict):
+        ds = {}
+        doc["data_stream"] = ds
+    ds.setdefault("type", target.data_type)
+    ds.setdefault("dataset", target.dataset)
+    ds.setdefault("namespace", "default")
+
+    event = doc.get("event")
+    if not isinstance(event, dict):
+        event = {}
+        doc["event"] = event
+    event.setdefault("dataset", target.dataset)
+    event.setdefault("module", default_event_module(package))
+
+
 def load_documents(fixture: Path, package: str, run_id: str) -> list[dict[str, Any]]:
     text = fixture.read_text()
     docs: list[dict[str, Any]] = []
@@ -420,6 +612,7 @@ def load_documents(fixture: Path, package: str, run_id: str) -> list[dict[str, A
     tagged: list[dict[str, Any]] = []
     for doc in docs:
         merged = dict(doc)
+        apply_fixture_configs(merged, fixture)
         existing_tags = merged.get("tags")
         if existing_tags is None:
             tags: list[str] = []
@@ -439,17 +632,54 @@ def load_documents(fixture: Path, package: str, run_id: str) -> list[dict[str, A
     return tagged
 
 
+def pick_fleet_main_pipeline(candidates: list[str], base_name: str) -> str | None:
+    """Pick the Fleet default pipeline, not auxiliary sub-pipelines.
+
+    Fleet installs:
+      - logs-dataset-1.2.3              (default — runs message parsing)
+      - logs-dataset-1.2.3.shared       (sub-pipeline, e.g. azure-shared-pipeline)
+
+    A naive ``sorted(keys, reverse=True)`` picks the sub-pipeline because its name
+  is longer, leaving raw ``message`` in the document.
+    """
+    if not candidates:
+        return None
+
+    # logs-<dataset>-<major.minor.patch> with no extra ".segment" after the version
+    main = re.compile(rf"^{re.escape(base_name)}-(\d+\.\d+\.\d+)$")
+    main_matches = [name for name in candidates if main.match(name)]
+    if main_matches:
+        return sorted(main_matches, reverse=True)[0]
+
+    # Fallback: versioned name without @custom / @package suffix pipelines
+    versioned = [name for name in candidates if name.startswith(f"{base_name}-") and "@" not in name]
+    if versioned:
+        return sorted(versioned, key=lambda n: (n.count("."), n), reverse=True)[0]
+
+    return None
+
+
+def list_fleet_pipelines(es_url: str, auth: Auth | None, base_name: str) -> list[str]:
+    status, body = http_json("GET", f"{es_url}/_ingest/pipeline/{base_name}-*", auth=auth, timeout=60)
+    if status == 200 and isinstance(body, dict):
+        return sorted(body.keys())
+    return []
+
+
 def resolve_ingest_pipeline(es_url: str, auth: Auth | None, base_name: str) -> str | None:
-    """Resolve Fleet-installed pipeline name (may include package version suffix)."""
-    status, body = http_json("GET", f"{es_url}/_ingest/pipeline/{base_name}", auth=auth)
+    """Resolve Fleet default ingest pipeline (versioned main, not sub-pipelines or stubs).
+
+    Fleet may register an unversioned ``logs-dataset`` stub; always prefer the versioned
+    main pipeline ``logs-dataset-1.2.3`` when present.
+    """
+    candidates = list_fleet_pipelines(es_url, auth, base_name)
+    picked = pick_fleet_main_pipeline(candidates, base_name)
+    if picked:
+        return picked
+
+    status, _ = http_json("GET", f"{es_url}/_ingest/pipeline/{base_name}", auth=auth, timeout=60)
     if status == 200:
         return base_name
-
-    # Fleet registers versioned pipelines, e.g. logs-slack.audit-1.28.0
-    status, body = http_json("GET", f"{es_url}/_ingest/pipeline/{base_name}*", auth=auth)
-    if status == 200 and isinstance(body, dict) and body:
-        matches = sorted(body.keys(), reverse=True)
-        return matches[0]
 
     return None
 
@@ -584,6 +814,42 @@ def install_package(
         return False, f"HTTP {status}: {detail}; poll result: {poll_err}"
 
     return True, None
+
+
+def verify_parsed_events(
+    es_url: str,
+    auth: Auth | None,
+    package: str,
+    run_id: str,
+) -> dict[str, int]:
+    """Count docs that still have raw ``message`` vs properly parsed ``event.original``."""
+    body = {
+        "size": 0,
+        "track_total_hits": True,
+        "query": _tagged_count_query(package, run_id),
+        "aggs": {
+            "with_message": {"filter": {"exists": {"field": "message"}}},
+            "with_event_original": {"filter": {"exists": {"field": "event.original"}}},
+            "pipeline_errors": {"filter": {"term": {"event.kind": "pipeline_error"}}},
+        },
+    }
+    payload = json.dumps(body).encode()
+    total = with_message = with_event_original = pipeline_errors = 0
+    for index in ("logs-*", "metrics-*"):
+        status, resp = http_json("POST", f"{es_url}/{index}/_search", auth=auth, body=payload)
+        if status == 200 and isinstance(resp, dict):
+            hits = resp.get("hits", {}).get("total", {})
+            total += hits.get("value", 0) if isinstance(hits, dict) else int(hits or 0)
+            aggs = resp.get("aggregations", {})
+            with_message += aggs.get("with_message", {}).get("doc_count", 0)
+            with_event_original += aggs.get("with_event_original", {}).get("doc_count", 0)
+            pipeline_errors += aggs.get("pipeline_errors", {}).get("doc_count", 0)
+    return {
+        "total": total,
+        "with_message": with_message,
+        "with_event_original": with_event_original,
+        "pipeline_errors": pipeline_errors,
+    }
 
 
 def bulk_ingest(
@@ -754,7 +1020,7 @@ def ingest_package_fixtures(
             target = stream_target(package, stream)
         except FileNotFoundError as exc:
             report.fixtures.append(
-                FixtureResult(str(fixture.relative_to(REPO)), stream, 0, 0, str(exc))
+                FixtureResult(str(fixture.relative_to(REPO)), stream, 0, 0, error=str(exc))
             )
             continue
 
@@ -762,36 +1028,57 @@ def ingest_package_fixtures(
             documents = load_documents(fixture, package, run_id)
         except (json.JSONDecodeError, ValueError) as exc:
             report.fixtures.append(
-                FixtureResult(str(fixture.relative_to(REPO)), stream, 0, 0, str(exc))
+                FixtureResult(str(fixture.relative_to(REPO)), stream, 0, 0, error=str(exc))
             )
             continue
 
+        for doc in documents:
+            apply_agent_metadata(doc, target, package)
+
+        config_files = [str(p.relative_to(REPO)) for p in fixture_config_paths(fixture)]
+
         if dry_run:
             report.fixtures.append(
-                FixtureResult(str(fixture.relative_to(REPO)), stream, len(documents), 0)
+                FixtureResult(
+                    str(fixture.relative_to(REPO)), stream, len(documents), 0, config_files=config_files
+                )
             )
             report.events_submitted += len(documents)
             continue
 
         pipeline = resolve_ingest_pipeline(es_url, auth, target.pipeline)
         if not pipeline:
+            candidates = list_fleet_pipelines(es_url, auth, target.pipeline)
             msg = f"ingest pipeline not found: {target.pipeline}"
+            if candidates:
+                msg += f" (found: {', '.join(candidates)})"
             report.fixtures.append(
-                FixtureResult(str(fixture.relative_to(REPO)), stream, 0, 0, msg)
+                FixtureResult(str(fixture.relative_to(REPO)), stream, 0, 0, error=msg)
             )
             report.notes.append(msg)
             continue
+
+        print(f"    pipeline: {pipeline} -> {target.data_stream}")
 
         try:
             submitted, bulk_errors = bulk_ingest(es_url, auth, target, pipeline, documents)
         except Exception as exc:  # noqa: BLE001
             report.fixtures.append(
-                FixtureResult(str(fixture.relative_to(REPO)), stream, 0, 0, str(exc))
+                FixtureResult(
+                    str(fixture.relative_to(REPO)), stream, 0, 0, pipeline=pipeline, error=str(exc)
+                )
             )
             continue
 
         report.fixtures.append(
-            FixtureResult(str(fixture.relative_to(REPO)), stream, submitted, bulk_errors)
+            FixtureResult(
+                str(fixture.relative_to(REPO)),
+                stream,
+                submitted,
+                bulk_errors,
+                pipeline=pipeline,
+                config_files=config_files,
+            )
         )
         report.events_submitted += submitted
         report.bulk_errors += bulk_errors
@@ -823,6 +1110,9 @@ def write_reports(run_id: str, reports: list[IntegrationReport]) -> None:
                 "timestamp_max": r.timestamp_max,
                 "datasets": r.datasets,
                 "failed_datasets": r.failed_datasets,
+                "unparsed_with_message": r.unparsed_with_message,
+                "parsed_with_event_original": r.parsed_with_event_original,
+                "pipeline_errors": r.pipeline_errors,
                 "notes": r.notes,
                 "fixtures": [f.__dict__ for f in r.fixtures],
             }
@@ -873,8 +1163,8 @@ def write_reports(run_id: str, reports: list[IntegrationReport]) -> None:
         "Counts use `logs-*` and `metrics-*` with **no time range** (fixtures may have historical `@timestamp` values).",
         "Failed docs are counted from `::failures` backing indices when present.",
         "",
-        "| Package | Installed | Fixtures | Submitted | Bulk errors | Saved | Failed | @timestamp range |",
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| Package | Installed | Fixtures | Submitted | Bulk errors | Saved | Failed | Pipeline errors | Unparsed `message` | @timestamp range |",
+        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for r in reports:
         ts_range = ""
@@ -883,7 +1173,8 @@ def write_reports(run_id: str, reports: list[IntegrationReport]) -> None:
         installed = "—" if r.installed is None else ("yes" if r.installed else "no")
         lines.append(
             f"| {r.package} | {installed} | {r.fixture_files} | {r.events_submitted} "
-            f"| {r.bulk_errors} | {r.events_saved} | {r.events_failed} | {ts_range} |"
+            f"| {r.bulk_errors} | {r.events_saved} | {r.events_failed} | {r.pipeline_errors} "
+            f"| {r.unparsed_with_message} | {ts_range} |"
         )
 
     lines.extend(["", "## Per-integration query (no time filter)", ""])
@@ -931,6 +1222,11 @@ def main() -> int:
         default=float(os.environ.get("FLEET_INSTALL_WAIT", "900")),
         help="Seconds to poll Fleet after an interrupted install (default: 900)",
     )
+    parser.add_argument(
+        "--verify-only",
+        action="store_true",
+        help="Check saved docs for a run_id (message vs event.original); no install/ingest",
+    )
     args = parser.parse_args()
 
     ssl_verify = _parse_ssl_verify_env()
@@ -940,8 +1236,8 @@ def main() -> int:
         ssl_verify = False
     configure_http_ssl(verify=ssl_verify, ca_cert=os.environ.get("ELASTIC_SSL_CA_CERT"))
 
-    do_install = not args.ingest_only
-    do_ingest = not args.install_only
+    do_install = not args.ingest_only and not args.verify_only
+    do_ingest = not args.install_only and not args.verify_only
 
     selected = args.packages.split(",") if args.packages else None
     packages = list_p1_packages(selected)
@@ -987,6 +1283,36 @@ def main() -> int:
     elif os.environ.get("ELASTIC_SSL_CA_CERT"):
         print(f"TLS: custom CA {os.environ['ELASTIC_SSL_CA_CERT']}")
     print(f"Packages: {len(packages)}")
+
+    if args.verify_only:
+        run_id = args.run_id
+        print(f"\nVerify run `{run_id}` on {es_url}\n")
+        exit_code = 0
+        for package in packages:
+            stats = verify_parsed_events(es_url, es_auth, package, run_id)
+            saved = query_saved_events(es_url, es_auth, package, run_id)
+            base = f"logs-{package}"  # rough; show resolved pipelines per stream
+            print(f"=== {package} ===")
+            print(
+                f"  saved: {saved['total']}, pipeline_error: {stats['pipeline_errors']}, "
+                f"with message: {stats['with_message']}, event.original: {stats['with_event_original']}"
+            )
+            for fixture in discover_fixtures(package):
+                stream = fixture_stream(package, fixture)
+                try:
+                    target = stream_target(package, stream)
+                except FileNotFoundError:
+                    continue
+                candidates = list_fleet_pipelines(es_url, es_auth, target.pipeline)
+                picked = resolve_ingest_pipeline(es_url, es_auth, target.pipeline)
+                print(f"  stream {stream}: pipeline={picked or 'NOT FOUND'}")
+                if candidates:
+                    print(f"    candidates: {', '.join(candidates)}")
+            if stats["pipeline_errors"] > 0:
+                exit_code = 1
+            elif stats["with_message"] and stats["with_message"] == stats["total"] and stats["total"] > 0:
+                exit_code = 1
+        return exit_code
 
     if do_install and not args.dry_run:
         print("Running Fleet setup...")
@@ -1052,10 +1378,22 @@ def main() -> int:
             report.failed_datasets = stats.get("failed_datasets", {})
             report.timestamp_min = stats["timestamp_min"]
             report.timestamp_max = stats["timestamp_max"]
+            parse_stats = verify_parsed_events(es_url, es_auth, report.package, run_id)
+            report.unparsed_with_message = parse_stats["with_message"]
+            report.parsed_with_event_original = parse_stats["with_event_original"]
+            report.pipeline_errors = parse_stats["pipeline_errors"]
             print(
-                f"  {report.package}: saved={report.events_saved}, failed={report.events_failed} "
+                f"  {report.package}: saved={report.events_saved}, failed={report.events_failed}, "
+                f"pipeline_error={report.pipeline_errors} "
                 f"(@timestamp {report.timestamp_min} .. {report.timestamp_max})"
             )
+            if parse_stats["pipeline_errors"]:
+                print(f"    WARNING: {parse_stats['pipeline_errors']}/{parse_stats['total']} docs have event.kind=pipeline_error")
+            elif parse_stats["with_message"]:
+                print(
+                    f"    WARNING: {parse_stats['with_message']}/{parse_stats['total']} docs still have "
+                    f"raw `message` (only {parse_stats['with_event_original']} have event.original)"
+                )
 
     write_reports(run_id, reports)
     return 0
