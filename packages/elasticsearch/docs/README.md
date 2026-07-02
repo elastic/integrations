@@ -2597,7 +2597,7 @@ An example event for `pending_tasks` looks as following:
 
 ### Security stats
 
-`security_stats` interrogates the [Security Stats API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-get-stats) endpoint to fetch per-node security statistics. Currently this surfaces the Document Level Security (DLS) bitset cache metrics for each node, which are useful for understanding the memory footprint and hit/miss behavior of DLS enforcement.
+`security_stats` interrogates the [Security Stats API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-get-stats) endpoint to fetch per-node security statistics. Currently this surfaces the Document Level Security (DLS) bitset cache metrics for each node, which are useful for understanding the memory footprint and cache efficiency of DLS enforcement.
 
 This data stream requires Elasticsearch 9.2.0 or later. On earlier versions the Security Stats API is not available and no metrics will be collected.
 
