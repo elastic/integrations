@@ -1,0 +1,69 @@
+---
+name: Update required package versions
+
+on:
+  workflow_dispatch:
+  # Manual-only for now: adoption of `requires:` blocks is just starting (first
+  # package is landing). Re-enable the schedule once a manual run has been
+  # verified end-to-end against a real package (PR/issue creation included).
+  # schedule:
+  #   - cron: '0 9 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  requires-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: .go-version
+
+      - name: Install mage
+        run: go install github.com/magefile/mage
+
+      - name: Install elastic-package
+        # Installs the version pinned in go.mod, rather than floating to the
+        # latest release, since this job runs unattended and depends on exact
+        # elastic-package JSON output fields (kind, codeowner,
+        # kibana_constraint, new_version, skip_reason). Dependabot already
+        # bumps this pin deliberately via PR (gomod ecosystem).
+        run: |
+          version=$(go list -m -f '{{.Version}}' github.com/elastic/elastic-package)
+          go install "github.com/elastic/elastic-package@${version}"
+          echo "ELASTIC_PACKAGE_BIN=$(go env GOPATH)/bin/elastic-package" >> $GITHUB_ENV
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch remote branch states
+        run: git fetch origin
+
+      - name: Run RequiresUpdate
+        # Scans packages, applies proposals, and opens one PR (or issue) per
+        # package — see dev/requiresupdate.
+        id: requires_update
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mage RequiresUpdate
+        continue-on-error: true
+
+      - name: Fail if RequiresUpdate reported errors
+        # continue-on-error above lets already-succeeded packages still get a
+        # PR/issue when one package errors, but that must not make the job
+        # look green — otherwise a real failure and "nothing to do" (today's
+        # expected state) are indistinguishable in the Actions UI.
+        if: always() && steps.requires_update.outcome == 'failure'
+        run: |
+          echo "::error::RequiresUpdate reported errors — see the 'Run RequiresUpdate' step log above."
+          exit 1

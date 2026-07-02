@@ -61,7 +61,7 @@ func TestCheckManifest(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.codeownersPath+"_"+c.manifestPath, func(t *testing.T) {
-			owners, err := readGithubOwners(c.codeownersPath)
+			owners, err := LoadOwners(c.codeownersPath)
 			require.NoError(t, err)
 
 			err = owners.checkManifest(c.manifestPath)
@@ -124,7 +124,7 @@ func TestValidatePackages(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.codeownersPath, func(t *testing.T) {
-			owners, err := readGithubOwners(c.codeownersPath)
+			owners, err := LoadOwners(c.codeownersPath)
 			require.NoError(t, err)
 
 			err = validatePackages(owners, c.packageDir)
@@ -174,7 +174,7 @@ func TestReadGithubOwners(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.codeownersPath, func(t *testing.T) {
-			_, err := readGithubOwners(c.codeownersPath)
+			_, err := LoadOwners(c.codeownersPath)
 			if c.valid {
 				assert.NoError(t, err)
 			} else {
