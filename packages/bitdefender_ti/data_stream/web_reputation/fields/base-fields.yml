@@ -1,0 +1,132 @@
+# -------------------------------------------------------------------
+# Data stream metadata (REQUIRED)
+# -------------------------------------------------------------------
+- name: data_stream.type
+  type: constant_keyword
+  description: Data stream type
+- name: data_stream.dataset
+  type: constant_keyword
+  description: Data stream dataset
+- name: data_stream.namespace
+  type: constant_keyword
+  description: Data stream namespace
+# -------------------------------------------------------------------
+# Event metadata
+# -------------------------------------------------------------------
+- name: '@timestamp'
+  type: date
+  description: Event timestamp
+- name: event.kind
+  type: keyword
+  description: Event kind (enrichment)
+- name: event.category
+  type: keyword
+  description: Event category (threat)
+- name: event.type
+  type: keyword
+  description: Event type (indicator)
+- name: event.dataset
+  type: keyword
+  description: Event dataset
+- name: event.module
+  type: keyword
+  description: Event module
+# -------------------------------------------------------------------
+# Threat feed metadata
+# -------------------------------------------------------------------
+- name: threat.feed.vendor
+  type: keyword
+  description: Threat intelligence feed vendor
+- name: threat.feed.name
+  type: keyword
+  description: Threat intelligence feed name
+# -------------------------------------------------------------------
+# Indicator identity & core (CRITICAL for TI UI)
+# -------------------------------------------------------------------
+- name: threat.indicator.id
+  type: keyword
+  description: Stable identifier for the indicator
+- name: threat.indicator.provider
+  type: keyword
+  description: Indicator provider name
+- name: threat.indicator.description
+  type: text
+  description: Analyst-friendly indicator context
+- name: threat.indicator.reference
+  type: keyword
+  description: Provider reference for the indicator
+- name: threat.indicator.name
+  type: keyword
+  description: Display name of the indicator
+- name: threat.indicator.type
+  type: keyword
+  description: Indicator type (domain-name or url)
+# -------------------------------------------------------------------
+# URL indicator fields
+# -------------------------------------------------------------------
+- name: threat.indicator.url.domain
+  type: keyword
+  description: Domain value of the indicator
+# -------------------------------------------------------------------
+# Indicator attributes
+# -------------------------------------------------------------------
+- name: threat.indicator.confidence
+  type: keyword
+  description: Confidence label of the indicator (low, medium, high)
+- name: threat.indicator.first_seen
+  type: date
+  description: First time the indicator was observed
+- name: threat.indicator.last_seen
+  type: date
+  description: Last time the indicator was observed
+- name: threat.indicator.ttl
+  type: long
+  description: Time-to-live for the indicator in seconds
+- name: threat.indicator.valid_until
+  type: date
+  description: Expiration timestamp derived from first_seen or @timestamp plus TTL
+# -------------------------------------------------------------------
+# Geo enrichment
+# -------------------------------------------------------------------
+- name: threat.indicator.geo.country_iso_code
+  type: keyword
+  description: Country ISO codes associated with the indicator
+# -------------------------------------------------------------------
+# Correlation helpers
+# -------------------------------------------------------------------
+- name: related.ip
+  type: ip
+  description: Related hosting IPs for correlation
+# -------------------------------------------------------------------
+# Tags
+# -------------------------------------------------------------------
+- name: tags
+  type: keyword
+  description: Tags describing the indicator
+# -------------------------------------------------------------------
+# Vendor-specific enrichment (SAFE namespace)
+# -------------------------------------------------------------------
+- name: bitdefender.threat_types
+  type: keyword
+  description: Threat types associated with the indicator
+- name: bitdefender.web_content_categories
+  type: keyword
+  description: Web content categories assigned to the indicator
+- name: bitdefender.popularity
+  type: long
+  description: Popularity score of the indicator (1-5)
+- name: bitdefender.tags
+  type: keyword
+  description: Vendor tags preserved before normalization into tags
+- name: timestamp
+  type: long
+  description: Vendor timestamp (unix seconds)
+- name: first_seen
+  type: long
+  description: Vendor first_seen (unix seconds)
+- name: type
+  type: keyword
+  description: Vendor indicator type
+- name: bitdefender.confidence_score
+  type: long
+  description: Raw vendor confidence score (0-100)
