@@ -28,6 +28,7 @@ The XM Cyber integration collects the following types of data:
 | `vulnerability` | CVE records from XM Cyber's Vulnerability Risk Management (VRM) feed, including CVSS v2/v3/v4 scores, EPSS metrics, CISA KEV / in-the-wild exploitation flags, and per-CVE counts of devices, products, and critical assets at risk | `/api/v2/vrm/public/vulnerabilities` |
 | `entity_inventory` | Inventory of entities (devices, identities, and cloud resources) tracked by XM Cyber, enriched with OS, network, agent, and cloud-account metadata. | `/api/entityInventory/entities` |
 | `risk_score` | Organization-level security grade (A–F), numeric risk score, trend data, and per-scenario breakdowns | `/api/scenarios/v2/scenarios/riskScore` |
+| `device` | Device inventory from XM Cyber VRM: identity (device id, name, type), network and directory context (IP, subnet, FQDN, domain, OU, OS), choke-point and critical-asset flags, aggregate vulnerability counts and max CVSS scores, XM Cyber risk score, per-device installed applications with active CVEs and remediation hints | `/api/v2/vrm/public/devices` |
 
 ### Supported use cases
 
@@ -36,6 +37,9 @@ The XM Cyber integration collects the following types of data:
 - **Attack-path-aware exposure analysis**: Correlate detected CVEs with XM Cyber's attack-technique simulations to identify which vulnerabilities act as choke points or stepping stones to crown-jewel assets.
 - **Asset and exposure visibility**: Maintain a unified inventory of the devices, identities, and cloud resources XM Cyber discovers across hybrid environments — with OS, network, agent, and cloud-account context — to support asset management, attack-surface monitoring, and prioritization of critical assets.
 - **Security posture tracking**: Monitor your organization's XM Cyber risk score over time and correlate score changes with security events.
+- **Hybrid device inventory**: Track which assets XM Cyber has discovered, how they are classified, and how they are labeled across on-premises and cloud footprints.
+- **Exposure-aware asset triage**: Use choke-point and critical-asset signals together with per-device vulnerability counts and max CVSS to prioritize which hosts warrant review first.
+- **Application-level context**: Inspect installed products under each device, including active CVEs, closed CVEs, and suggested safe versions where the API provides them.
 
 ## What do I need to use this integration?
 
@@ -976,6 +980,203 @@ An example event for `risk_score` looks as following:
 }
 ```
 
+### Device
+
+#### Device fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| xm_cyber.device.affected_entities | Number of related entities affected for this device context. | long |
+| xm_cyber.device.apps.active_cves | CVE identifiers currently active for this application. | keyword |
+| xm_cyber.device.apps.active_cves_safe_version.cve | CVE identifier. | keyword |
+| xm_cyber.device.apps.active_cves_safe_version.safe_version | Vendor-recommended safe version for the CVE. | keyword |
+| xm_cyber.device.apps.affected_critical_assets | Number of critical assets affected by this application exposure. | long |
+| xm_cyber.device.apps.choke_point_found_on | Vendor count of choke-point occurrences for this app; may be sent as a numeric string (e.g. "4") from the API. | keyword |
+| xm_cyber.device.apps.closed_cves | CVE identifiers remediated or closed for this application. | keyword |
+| xm_cyber.device.apps.device_found_on | Number of devices where this application instance was observed. | long |
+| xm_cyber.device.apps.name | Application or product display name. | keyword |
+| xm_cyber.device.apps.product_operating_systems | Operating systems on which the product is reported. | keyword |
+| xm_cyber.device.apps.product_vulnerabilities | Count of vulnerabilities associated with the product. | long |
+| xm_cyber.device.apps.products_critical_assets_at_risk | Critical assets at risk attributed to this product context. | long |
+| xm_cyber.device.apps.vendor | Application vendor. | keyword |
+| xm_cyber.device.apps.version | Installed application version. | keyword |
+| xm_cyber.device.choke_point_level | Qualitative choke-point level (e.g. text tier from the API). | keyword |
+| xm_cyber.device.choke_point_score | Numeric choke-point score from XM Cyber. | long |
+| xm_cyber.device.critical_assets_at_risk | Count of critical assets at risk in relation to this device. | long |
+| xm_cyber.device.critical_vulnerabilities | Count of critical-severity vulnerabilities on the device. | long |
+| xm_cyber.device.device_id | XM Cyber device identifier. | keyword |
+| xm_cyber.device.device_name | Human-readable device name. | keyword |
+| xm_cyber.device.device_type | XM Cyber device type classification. | keyword |
+| xm_cyber.device.domain | Active Directory or DNS domain name. | keyword |
+| xm_cyber.device.enitity_vulnerabilities | Entity vulnerability count as returned by the API (vendor field name retains the historical spelling "enitity"). | long |
+| xm_cyber.device.enrichment_labels | Enrichment labels applied by XM Cyber. | keyword |
+| xm_cyber.device.fqdn | Fully qualified domain name when present. | keyword |
+| xm_cyber.device.high_vulnerabilities | Count of high-severity vulnerabilities on the device. | long |
+| xm_cyber.device.ip_address | Primary IP address associated with the device. | ip |
+| xm_cyber.device.is_choke_point | Whether the device is classified as a choke point. | boolean |
+| xm_cyber.device.is_critical_asset | Whether the device is treated as a critical asset. | boolean |
+| xm_cyber.device.labels | Vendor-supplied labels attached to the device. | keyword |
+| xm_cyber.device.last_compromised | Timestamp of the last simulated or observed compromise when provided; may be absent. | date |
+| xm_cyber.device.last_scan | Timestamp of the last vulnerability or inventory scan for the device. | date |
+| xm_cyber.device.low_vulnerabilities | Count of low-severity vulnerabilities on the device. | long |
+| xm_cyber.device.max_cvss_v2 | Maximum CVSS v2 base score observed on the device. | double |
+| xm_cyber.device.max_cvss_v3 | Maximum CVSS v3.0 base score observed on the device. | double |
+| xm_cyber.device.max_cvss_v31 | Maximum CVSS v3.1 base score observed on the device. | double |
+| xm_cyber.device.max_cvss_v4 | Maximum CVSS v4 base score observed on the device. | double |
+| xm_cyber.device.medium_vulnerabilities | Count of medium-severity vulnerabilities on the device. | long |
+| xm_cyber.device.os | Operating system string reported for the device. | keyword |
+| xm_cyber.device.ou | Organizational unit path or label. | keyword |
+| xm_cyber.device.products | Number of distinct products detected on the device. | long |
+| xm_cyber.device.risk_score | XM Cyber risk score for the device. | long |
+| xm_cyber.device.subnet | Subnet associated with the device. | keyword |
+| xm_cyber.device.type | Device type or category label from the vendor payload. | keyword |
+| xm_cyber.device.unknown_vulnerabilities | Count of unknown-severity vulnerabilities on the device. | long |
+
+
+### Example event
+
+#### Device
+
+An example event for `device` looks as following:
+
+```json
+{
+    "@timestamp": "2026-05-12T21:54:01.641Z",
+    "agent": {
+        "ephemeral_id": "b726a2c8-74ea-472d-b1e7-6e3a973cd7a2",
+        "id": "8969c161-0027-4cdb-a060-db0116873dcb",
+        "name": "elastic-agent-13439",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "xm_cyber.device",
+        "namespace": "80803",
+        "type": "logs"
+    },
+    "device": {
+        "id": "1017176037145946592",
+        "type": "Workstation"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "8969c161-0027-4cdb-a060-db0116873dcb",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "dataset": "xm_cyber.device",
+        "ingested": "2026-07-01T15:14:47Z",
+        "kind": "event",
+        "original": "{\"affectedEntities\":4,\"apps\":[{\"activeCves\":[\"CVE-2023-0001\"],\"activeCvesSafeVersion\":[{\"cve\":\"CVE-2023-0001\",\"safeVersion\":\"2.0.0\"}],\"affectedCriticalAssets\":0,\"chokePointFoundOn\":\"1\",\"closedCves\":[],\"deviceFoundOn\":2,\"name\":\"Example Product\",\"productOperatingSystems\":[\"Windows\"],\"productVulnerabilities\":3,\"productsCriticalAssetsAtRisk\":1,\"vendor\":\"VendorCo\",\"version\":\"1.2.3\"}],\"chokePointLevel\":\"Critical\",\"chokePointScore\":100,\"criticalAssetsAtRisk\":2,\"criticalVulnerabilities\":2,\"deviceId\":\"1017176037145946592\",\"deviceName\":\"Hugh\",\"deviceType\":\"Workstation\",\"domain\":\"corp.example.com\",\"enitityVulnerabilities\":1,\"enrichmentLabels\":[\"enriched\"],\"fqdn\":\"hugh.corp.example.com\",\"highVulnerabilities\":5,\"ipAddress\":\"192.168.1.10\",\"isChokePoint\":true,\"isCriticalAsset\":true,\"labels\":[\"lab\",\"xm-cyber-test\"],\"lastCompromised\":null,\"lastScan\":\"2026-05-12T21:54:01.641Z\",\"lowVulnerabilities\":3,\"maxCvssV2\":8,\"maxCvssV3\":9.1,\"maxCvssV31\":8.8,\"maxCvssV4\":7.2,\"mediumVulnerabilities\":10,\"os\":\"Windows 11\",\"ou\":\"OU=Workstations,DC=corp,DC=example,DC=com\",\"products\":5,\"riskScore\":75,\"subnet\":\"192.168.1.0/24\",\"type\":\"Endpoint\",\"unknownVulnerabilities\":0}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "domain": "corp.example.com",
+        "hostname": "Hugh",
+        "id": "1017176037145946592",
+        "ip": [
+            "192.168.1.10"
+        ],
+        "name": "hugh.corp.example.com",
+        "os": {
+            "full": "Windows 11"
+        },
+        "type": "Workstation"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "xm_cyber-device"
+    ],
+    "vulnerability": {
+        "classification": "CVSS",
+        "score": {
+            "base": 7.2,
+            "version": "4.0"
+        }
+    },
+    "xm_cyber": {
+        "device": {
+            "affected_entities": 4,
+            "apps": [
+                {
+                    "active_cves": [
+                        "CVE-2023-0001"
+                    ],
+                    "active_cves_safe_version": [
+                        {
+                            "cve": "CVE-2023-0001",
+                            "safe_version": "2.0.0"
+                        }
+                    ],
+                    "affected_critical_assets": 0,
+                    "choke_point_found_on": "1",
+                    "device_found_on": 2,
+                    "name": "Example Product",
+                    "product_operating_systems": [
+                        "Windows"
+                    ],
+                    "product_vulnerabilities": 3,
+                    "products_critical_assets_at_risk": 1,
+                    "vendor": "VendorCo",
+                    "version": "1.2.3"
+                }
+            ],
+            "choke_point_level": "Critical",
+            "choke_point_score": 100,
+            "critical_assets_at_risk": 2,
+            "critical_vulnerabilities": 2,
+            "enitity_vulnerabilities": 1,
+            "enrichment_labels": [
+                "enriched"
+            ],
+            "high_vulnerabilities": 5,
+            "is_choke_point": true,
+            "is_critical_asset": true,
+            "labels": [
+                "lab",
+                "xm-cyber-test"
+            ],
+            "low_vulnerabilities": 3,
+            "max_cvss_v2": 8,
+            "max_cvss_v3": 9.1,
+            "max_cvss_v31": 8.8,
+            "max_cvss_v4": 7.2,
+            "medium_vulnerabilities": 10,
+            "ou": "OU=Workstations,DC=corp,DC=example,DC=com",
+            "products": 5,
+            "risk_score": 75,
+            "subnet": "192.168.1.0/24",
+            "type": "Endpoint",
+            "unknown_vulnerabilities": 0
+        }
+    }
+}
+```
+
 ### Inputs used
 
 These inputs can be used with this integration:
@@ -1017,6 +1218,7 @@ These XM Cyber REST API endpoints are used by this integration:
 | `/api/v2/vrm/public/vulnerabilities` | GET | `vulnerabilities` | Paginated exposure rows (attack techniques / CVE context) |
 | `/api/entityInventory/entities` | GET | `entity_inventory` | List entities (devices, identities, cloud resources) tracked by XM Cyber |
 | `/api/scenarios/v2/scenarios/riskScore` | GET | `risk_score` | Organization risk score and grade |
+| `/api/v2/vrm/public/devices` | GET | `device` | Paginated device inventory with vulnerability aggregates and per-application CVE context |
 
 ### ILM Policy
 

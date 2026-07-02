@@ -28,6 +28,7 @@ The XM Cyber integration collects the following types of data:
 | `vulnerability` | CVE records from XM Cyber's Vulnerability Risk Management (VRM) feed, including CVSS v2/v3/v4 scores, EPSS metrics, CISA KEV / in-the-wild exploitation flags, and per-CVE counts of devices, products, and critical assets at risk | `/api/v2/vrm/public/vulnerabilities` |
 | `entity_inventory` | Inventory of entities (devices, identities, and cloud resources) tracked by XM Cyber, enriched with OS, network, agent, and cloud-account metadata. | `/api/entityInventory/entities` |
 | `risk_score` | Organization-level security grade (A–F), numeric risk score, trend data, and per-scenario breakdowns | `/api/scenarios/v2/scenarios/riskScore` |
+| `device` | Device inventory from XM Cyber VRM: identity (device id, name, type), network and directory context (IP, subnet, FQDN, domain, OU, OS), choke-point and critical-asset flags, aggregate vulnerability counts and max CVSS scores, XM Cyber risk score, per-device installed applications with active CVEs and remediation hints | `/api/v2/vrm/public/devices` |
 
 ### Supported use cases
 
@@ -36,6 +37,9 @@ The XM Cyber integration collects the following types of data:
 - **Attack-path-aware exposure analysis**: Correlate detected CVEs with XM Cyber's attack-technique simulations to identify which vulnerabilities act as choke points or stepping stones to crown-jewel assets.
 - **Asset and exposure visibility**: Maintain a unified inventory of the devices, identities, and cloud resources XM Cyber discovers across hybrid environments — with OS, network, agent, and cloud-account context — to support asset management, attack-surface monitoring, and prioritization of critical assets.
 - **Security posture tracking**: Monitor your organization's XM Cyber risk score over time and correlate score changes with security events.
+- **Hybrid device inventory**: Track which assets XM Cyber has discovered, how they are classified, and how they are labeled across on-premises and cloud footprints.
+- **Exposure-aware asset triage**: Use choke-point and critical-asset signals together with per-device vulnerability counts and max CVSS to prioritize which hosts warrant review first.
+- **Application-level context**: Inspect installed products under each device, including active CVEs, closed CVEs, and suggested safe versions where the API provides them.
 
 ## What do I need to use this integration?
 
@@ -157,6 +161,18 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 {{event "risk_score"}}
 
+### Device
+
+#### Device fields
+
+{{fields "device"}}
+
+### Example event
+
+#### Device
+
+{{event "device"}}
+
 ### Inputs used
 
 {{ inputDocs }}
@@ -173,6 +189,7 @@ These XM Cyber REST API endpoints are used by this integration:
 | `/api/v2/vrm/public/vulnerabilities` | GET | `vulnerabilities` | Paginated exposure rows (attack techniques / CVE context) |
 | `/api/entityInventory/entities` | GET | `entity_inventory` | List entities (devices, identities, cloud resources) tracked by XM Cyber |
 | `/api/scenarios/v2/scenarios/riskScore` | GET | `risk_score` | Organization risk score and grade |
+| `/api/v2/vrm/public/devices` | GET | `device` | Paginated device inventory with vulnerability aggregates and per-application CVE context |
 
 ### ILM Policy
 
