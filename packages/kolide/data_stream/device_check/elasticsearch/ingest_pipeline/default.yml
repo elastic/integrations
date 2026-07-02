@@ -1,0 +1,190 @@
+---
+description: >-
+  Parse Kolide device check-run results (type "check_result") collected from the
+  Kolide Log Pipeline via the aws-s3 input. Unlike the issues data stream (which
+  tracks the failure lifecycle), check-run results include every run: passing,
+  failing, inapplicable, and unknown. Reference:
+  https://www.kolide.com/docs/admins/log-pipeline/overview
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.4.0'
+
+  # The aws-s3 input delivers the raw object in `message`. Keep a raw copy in
+  # event.original, then decode it into the working `json` object below.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+  # Decode the Kolide check_result object from event.original into json.
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.json == null && ctx.event?.original != null
+      description: Decode the Kolide check_result object into the working json object.
+
+  # event.action is set here; ECS kind/category/type/outcome are assigned
+  # centrally by categorization.yml at the end of the pipeline.
+  - set:
+      field: event.action
+      tag: set_event_action
+      value: check_result
+
+  # @timestamp from the envelope timestamp (ISO8601).
+  - date:
+      field: json.timestamp
+      tag: date_timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'failed to parse json.timestamp: {{{ _ingest.on_failure_message }}}'
+
+  # Check metadata.
+  - convert:
+      field: json.data.check_id
+      tag: convert_check_id
+      target_field: kolide.device_check.check_id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'failed to convert check_id: {{{ _ingest.on_failure_message }}}'
+  - convert:
+      field: kolide.device_check.check_id
+      tag: set_rule_id
+      target_field: rule.id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.data.check_slug
+      tag: rename_check_slug
+      target_field: kolide.device_check.check_slug
+      ignore_missing: true
+      if: ctx.kolide?.device_check?.check_slug == null
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: kolide.device_check.check_slug
+      ignore_empty_value: true
+  - convert:
+      field: json.data.device_id
+      tag: convert_device_id
+      target_field: kolide.device_check.device_id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'failed to convert device_id: {{{ _ingest.on_failure_message }}}'
+  - convert:
+      field: kolide.device_check.device_id
+      tag: set_host_id
+      target_field: host.id
+      type: string
+      ignore_missing: true
+
+  # Status: passing/failing/inapplicable/unknown. event.outcome is derived from
+  # this in categorization.yml.
+  - rename:
+      field: json.data.status
+      tag: rename_status
+      target_field: kolide.device_check.status
+      ignore_missing: true
+      if: ctx.kolide?.device_check?.status == null
+
+  # The per-check result rows are highly variable (arbitrary keys per check), so
+  # keep them as a single flattened field rather than mapping each key.
+  - rename:
+      field: json.data.check_result_data
+      tag: rename_check_result_data
+      target_field: kolide.device_check.check_result_data
+      ignore_missing: true
+      if: ctx.kolide?.device_check?.check_result_data == null
+
+  # Device correlation is carried by host.id (the Kolide numeric device ID),
+  # consistent with the auth, device, and issues data streams. related.hosts is
+  # intentionally left unset here because device check-run results do not carry a
+  # hostname, and ECS related.hosts is meant for host names (not numeric IDs).
+
+  # ECS categorization (kind/category/type/outcome) from the resolved status.
+  - pipeline:
+      name: '{{ IngestPipeline "categorize" }}'
+      tag: categorize
+      ignore_missing_pipeline: true
+
+  # event.id / deduplication: check-run results have no native id, so derive a
+  # stable event.id from device_id + check_id + @timestamp. aws-s3 is
+  # at-least-once, so fingerprint it to _id to upsert re-delivered objects.
+  - set:
+      field: event.id
+      tag: set_event_id
+      value: '{{{kolide.device_check.device_id}}}-{{{kolide.device_check.check_id}}}-{{{json.timestamp}}}'
+      if: ctx.kolide?.device_check?.device_id != null && ctx.kolide?.device_check?.check_id != null && ctx.json?.timestamp != null
+  - fingerprint:
+      fields:
+        - event.id
+      target_field: _id
+      method: SHA-256
+      tag: fingerprint_event_id
+      if: ctx.event?.id != null && ctx.event.id != ''
+  - fingerprint:
+      fields:
+        - event.original
+      target_field: _id
+      method: SHA-256
+      tag: fingerprint_event_original
+      if: ctx.event?.id == null && ctx.event?.original != null
+
+  # Cleanup working object.
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,243 @@
+title: "auth"
+type: logs
+streams:
+  - input: cel
+    title: "Kolide auth logs via the REST API"
+    description: |-
+      Collect Kolide SSO authentication sessions from the Kolide REST API (GET /auth_logs).
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: How often the Kolide REST API is polled. Supports seconds, minutes, and hours.
+        required: true
+        show_user: true
+        default: 5m
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to look the first time the integration runs. Supports seconds, minutes, and hours (for example, 24h, 720h). Days (d) are not supported.
+        required: true
+        show_user: true
+        default: 24h
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Number of records to request per page (per_page, 1-100).
+        required: true
+        show_user: false
+        default: 100
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out.
+        required: false
+        show_user: false
+        default: 30s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: URL of the proxy to use, for example `http://proxy:3128`.
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: TLS settings. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+        required: false
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: >-
+          The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging.
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - forwarded
+          - kolide-auth
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        required: false
+        show_user: false
+  - input: aws-s3
+    title: "Kolide auth logs via AWS S3 (Log Pipeline)"
+    description: |-
+      Collect Kolide authentication logs (the `auth_logs/` prefix) that the Kolide Log Pipeline writes to a customer-owned S3 bucket, via SQS notifications or direct bucket polling.
+    template_path: aws-s3.yml.hbs
+    enabled: false
+    vars:
+      - name: queue_url
+        type: text
+        title: "[SQS] Queue URL"
+        description: |-
+          URL of the AWS SQS queue that S3 object-created notifications are delivered to. Set this to collect via SQS notifications. Leave empty to poll the bucket directly. For SQS, configure the bucket notification to deliver only the `auth_logs/` prefix to this queue.
+        required: false
+        show_user: true
+      - name: bucket_arn
+        type: text
+        title: "[S3] Bucket ARN"
+        description: |-
+          ARN of the S3 bucket to poll directly (for example, `arn:aws:s3:::kolide-bucket`). Used when no Queue URL is set.
+        required: false
+        show_user: true
+      - name: access_point_arn
+        type: text
+        title: "[S3] Access Point ARN"
+        description: |-
+          ARN of the S3 Access Point to poll directly. Alternative to the Bucket ARN.
+        required: false
+        show_user: false
+      - name: non_aws_bucket_name
+        type: text
+        title: "[S3] Non-AWS Bucket Name"
+        description: |-
+          Name of the bucket to poll for 3rd-party S3-compatible services.
+        required: false
+        show_user: false
+      - name: bucket_list_prefix
+        type: text
+        title: "[S3] Bucket List Prefix"
+        description: |-
+          Prefix used to list objects in the bucket (polling mode). Defaults to the Kolide Log Pipeline prefix for this data type.
+        required: false
+        show_user: true
+        default: kolide/auth_logs/
+      - name: number_of_workers
+        type: integer
+        title: "[S3/SQS] Number of Workers"
+        description: |-
+          Number of workers that will process the S3 objects or SQS messages.
+        required: false
+        show_user: true
+        default: 5
+      - name: bucket_list_interval
+        type: text
+        title: "[S3] Bucket List Interval"
+        description: |-
+          Time interval for polling the listing of the S3 bucket.
+        required: false
+        show_user: false
+        default: 120s
+      - name: start_timestamp
+        type: text
+        title: "[S3] Start Timestamp"
+        description: |-
+          If set, only read S3 objects with a last-modified timestamp newer than the given timestamp. Accepts a timestamp in `YYYY-MM-DDTHH:MM:SSZ` format.
+        required: false
+        show_user: false
+      - name: ignore_older
+        type: text
+        title: "[S3] Ignore Older Timespan"
+        description: |-
+          If set, ignore S3 objects whose last-modified time is older than this timespan. Accepts a duration like `48h`, `2h30m`.
+        required: false
+        show_user: false
+      - name: visibility_timeout
+        type: text
+        title: "[SQS] Visibility Timeout"
+        description: |-
+          The duration that received messages are hidden from subsequent retrieve requests after being retrieved. The maximum is 12 hours.
+        required: false
+        show_user: false
+      - name: api_timeout
+        type: text
+        title: "[SQS] API Timeout"
+        description: |-
+          The maximum duration of an AWS API call. The maximum is half of the visibility timeout value.
+        required: false
+        show_user: false
+      - name: sqs.max_receive_count
+        type: integer
+        title: "[SQS] Maximum Receive Count"
+        description: |-
+          The maximum number of times an SQS message should be received (retried) before being deleted.
+        required: false
+        show_user: false
+        default: 5
+      - name: sqs.wait_time
+        type: text
+        title: "[SQS] Maximum Wait Time"
+        description: |-
+          The maximum duration an SQS `ReceiveMessage` call waits for a message before returning. The maximum is `20s`.
+        required: false
+        show_user: false
+        default: 20s
+      - name: max_number_of_messages
+        type: integer
+        title: "[SQS] Maximum Concurrent SQS Messages"
+        description: |-
+          The maximum number of SQS messages that can be inflight at any time.
+        required: false
+        show_user: false
+        default: 5
+      - name: file_selectors
+        type: yaml
+        title: "[S3] File Selectors"
+        description: |-
+          A list of selectors that limit which S3 objects are processed, matched against the object key. Useful in SQS mode when a single queue receives notifications for multiple prefixes.
+        required: false
+        show_user: false
+      - name: fips_enabled
+        type: bool
+        title: "Enable S3 FIPS"
+        description: |-
+          Enabling this option changes the service name from `s3` to `s3-fips` for connecting to the correct service endpoint.
+        required: false
+        show_user: false
+        default: false
+      - name: tags
+        type: text
+        title: "Tags"
+        description: |-
+          Tags to include in the published event.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - kolide-auth-s3
+      - name: preserve_original_event
+        type: bool
+        title: "Preserve original event"
+        description: |-
+          Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: "Processors"
+        description: |-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        required: false
+        show_user: false
+      - name: custom
+        type: yaml
+        title: "Custom configurations"
+        description: |-
+          Additional settings to be added to the configuration. Be careful using this as it might break the input. See [`aws-s3` input settings docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html) for details.
+        required: false
+        show_user: false
+        default: ""
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
