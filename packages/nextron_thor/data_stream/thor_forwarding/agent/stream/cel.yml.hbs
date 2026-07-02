@@ -85,7 +85,10 @@ program: |-
                   )
                 :
                   [],
-                "more_pages": body.data.size() >= int(state.batch_size),
+                "more_pages": has(body.total) ?
+                  (int(state.offset) + int(state.batch_size) < int(body.total))
+                :
+                  (body.data.size() >= int(state.batch_size)),
               }
             )
           :
@@ -109,80 +112,88 @@ program: |-
         )
       )
   ).as(state,
-    state.with(
-      !has(state.worklist) ?
-        state
-      : (size(state.worklist) > 0) ?
-        request(
-          "GET",
-          state.url.trim_right("/") + "/v1/scan/log?" + {
-            "scan": [state.worklist[0].id],
-            "log": ["thor.json"],
-          }.format_query()
-        ).with(
-          {
-            "Header": {
-              "Accept": ["application/json"],
-              "Authorization": [state.api_key],
-            },
-          }
-        ).do_request().as(resp, (resp.StatusCode == 200) ?
-          string(resp.Body).split("\n").filter(line, line != "").transformList(i, line,
+    // If the scan-search stage already produced an error, surface it and halt;
+    // do not let the empty-worklist branch overwrite it with an empty page.
+    (has(state.events) && type(state.events) == map) ?
+      state
+    :
+      state.with(
+        !has(state.worklist) ?
+          state
+        : (size(state.worklist) > 0) ?
+          request(
+            "GET",
+            state.url.trim_right("/") + "/v1/scan/log?" + {
+              "scan": [state.worklist[0].id],
+              "log": ["thor.json"],
+            }.format_query()
+          ).with(
             {
-              "message": has(state.worklist[0].campaign_id) ?
-                line.decode_json().with({"campaign_id": state.worklist[0].campaign_id}).encode_json()
-              :
-                line,
-              "log_line": string(i + 1),
+              "Header": {
+                "Accept": ["application/json"],
+                "Authorization": [state.api_key],
+              },
             }
-          ).as(events,
-            state.with(
+          ).do_request().as(resp, (resp.StatusCode == 200) ?
+            string(resp.Body).split("\n").filter(line, line != "").transformList(i, line,
               {
-                "events": events,
-                "worklist": tail(state.worklist, 1),
-                // offset is a variable used to control paging on the scan search API that fills 'worklist'
-                // increment when the worklist is empty
-                "offset": (size(state.worklist) == 1) ? (int(state.offset) + int(state.batch_size)) : state.offset,
-                "cursor": {
-                  "latest_scan_ts": has(state.worklist[0].last_launcher_update) ?
-                    int(state.worklist[0].last_launcher_update)
-                  :
-                    int(state.worklist[0].creation_date),
-                  "latest_scan_id": state.worklist[0].id,
-                },
-                "want_more": size(state.worklist) > 1 || state.more_pages,
+                "message": has(state.worklist[0].campaign_id) ?
+                  line.decode_json().with({"campaign_id": state.worklist[0].campaign_id}).encode_json()
+                :
+                  line,
+                "log_line": string(i + 1),
               }
+            ).as(events,
+              state.with(
+                {
+                  "events": events,
+                  "worklist": tail(state.worklist, 1),
+                  // offset is a variable used to control paging on the scan search API that fills 'worklist'
+                  // increment when the worklist is empty
+                  "offset": (size(state.worklist) == 1) ?
+                    (state.more_pages ? (int(state.offset) + int(state.batch_size)) : 0)
+                  :
+                    state.offset,
+                  "cursor": {
+                    "latest_scan_ts": has(state.worklist[0].last_launcher_update) ?
+                      int(state.worklist[0].last_launcher_update)
+                    :
+                      int(state.worklist[0].creation_date),
+                    "latest_scan_id": state.worklist[0].id,
+                  },
+                  "want_more": size(state.worklist) > 1 || state.more_pages,
+                }
+              )
             )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + state.url.trim_right("/") + "/v1/scan/log: " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "offset": 0,
+              "want_more": false,
+            }
           )
         :
           {
-            "events": {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET " + state.url.trim_right("/") + "/v1/scan/log: " + (
-                  (size(resp.Body) != 0) ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                ),
-              },
+            "events": [],
+            "offset": state.more_pages ? (int(state.offset) + int(state.batch_size)) : 0,
+            "want_more": state.more_pages,
+            "cursor": {
+              ?"latest_scan_ts": state.?cursor.latest_scan_ts,
+              ?"latest_scan_id": state.?cursor.latest_scan_id,
             },
-            "offset": 0,
-            "want_more": false,
           }
-        )
-      :
-        {
-          "events": [],
-          "offset": state.more_pages ? (int(state.offset) + int(state.batch_size)) : 0,
-          "want_more": state.more_pages,
-          "cursor": {
-            ?"latest_scan_ts": state.?cursor.latest_scan_ts,
-            ?"latest_scan_id": state.?cursor.latest_scan_id,
-          },
-        }
-    )
+      )
   )
 tags:
 {{#if preserve_original_event}}
