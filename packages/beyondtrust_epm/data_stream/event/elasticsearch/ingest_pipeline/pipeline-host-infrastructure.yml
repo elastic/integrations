@@ -238,16 +238,38 @@ processors:
           tag: append_container_image_hash_all_into_container_image_hash_all
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
-  - foreach:
-      field: beyondtrust_epm.event.container.image.hash.all
-      tag: foreach_container_image_hash_all
+  # container.image.hash.all values are digest-type-decorated (e.g.
+  # "sha256:<hash>"). Strip the decoration before adding to related.hash so the
+  # bare digest is searchable for hash identity lookups.
+  - script:
+      lang: painless
+      tag: script_container_image_hash_all_into_related_hash
+      description: Add bare container image digests to related.hash.
       if: ctx.beyondtrust_epm?.event?.container?.image?.hash?.all instanceof List
-      processor:
-        append:
-          field: related.hash
-          tag: append_container_image_hash_all_into_related_hash
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
+      source: |-
+        if (ctx.related == null) {
+          ctx.related = new HashMap();
+        }
+        if (ctx.related.hash == null) {
+          ctx.related.hash = new ArrayList();
+        }
+        for (def entry : ctx.beyondtrust_epm.event.container.image.hash.all) {
+          if (entry == null) {
+            continue;
+          }
+          def digest = entry.toString().replace('[', '').replace(']', '');
+          int sep = digest.indexOf(':');
+          if (sep >= 0) {
+            digest = digest.substring(sep + 1);
+          }
+          if (digest.length() > 0 && !ctx.related.hash.contains(digest)) {
+            ctx.related.hash.add(digest);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: container.image.name
       tag: set_container_image_name_from_event_container_image_name

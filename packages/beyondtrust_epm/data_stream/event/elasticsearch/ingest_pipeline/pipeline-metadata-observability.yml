@@ -15,6 +15,9 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Set @timestamp from the event occurrence time. override defaults to true, so
+  # this overwrites the receipt time (ReceivedAt) seeded earlier in the
+  # service-application pipeline when both values are present.
   - set:
       field: '@timestamp'
       tag: set_@timestamp_from_event_timestamp

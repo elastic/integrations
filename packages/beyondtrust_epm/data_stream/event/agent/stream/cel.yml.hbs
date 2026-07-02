@@ -68,10 +68,10 @@ program: |-
                 ?"last_timestamp": (has(body.events) && size(body.events) > 0) ?
                   (has(state.?cursor.last_timestamp) ?
                     optional.of(
-                      max([
+                      max(
                         state.cursor.last_timestamp,
                         body.events[0].event.ingested
-                      ])
+                      )
                     )
                   :
                     optional.of(body.events[0].event.ingested)
@@ -86,12 +86,12 @@ program: |-
             "events": {
               "error": {
                 "code": string(resp.StatusCode),
-                "id": string(resp.Status),
+                "id": resp.Status,
                 "message": "GET " + state.url.trim_suffix("/") + "/management-api/v3/Events/search: " + (
                   (size(resp.Body) != 0) ?
                     string(resp.Body)
                   :
-                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
                 ),
               },
             },

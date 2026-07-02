@@ -479,6 +479,10 @@ processors:
       tag: set_service_version_from_event_service_version
       copy_from: beyondtrust_epm.event.service.version
       ignore_empty_value: true
+  # Seed @timestamp from the event receipt time (ReceivedAt). override:false keeps
+  # any value already present on the document. The metadata-observability pipeline
+  # later sets @timestamp from the event occurrence time with override enabled, so
+  # occurrence time takes precedence over receipt time when both are present.
   - set:
       field: '@timestamp'
       tag: set_timestamp_from_event_ReceivedAt
