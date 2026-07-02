@@ -63,6 +63,11 @@ processors:
       field: tmp.process_start_time_seconds.value
       target_field: package_registry.start_time_seconds
       ignore_missing: true
+  - remove:
+      tag: remove_null_package_registry_start_time_seconds_c1f2a9e0
+      field: package_registry.start_time_seconds
+      if: ctx.package_registry?.start_time_seconds == null
+      ignore_missing: true
   - rename:
       tag: rename_tmp_epr_http_request_duration_seconds_histogram_to_package_registry_http_request_duration_seconds_histogram_051ecfcc
       field: tmp.epr_http_request_duration_seconds.histogram
@@ -92,7 +97,7 @@ processors:
       field: package_registry.start_time_seconds
       formats: ["UNIX"]
       target_field: package_registry.start_time
-      if: ctx?.package_registry?.containsKey("start_time_seconds")
+      if: ctx.package_registry?.start_time_seconds != null
   - script:
       tag: script_1e179be8
       description: Get process uptime
