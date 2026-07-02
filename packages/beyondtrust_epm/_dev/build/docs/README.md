@@ -2,9 +2,9 @@
 
 ## Overview
 
-[BeyondTrust Endpoint Privilege Management (EPM)](https://www.beyondtrust.com/products/endpoint-privilege-management) is a security solution that enforces least-privilege policies across endpoints, controls application usage, and audits privileged activity. It helps organizations reduce their attack surface by managing and monitoring privilege escalation, application control, and configuration changes across users and devices.
+[BeyondTrust Endpoint Privilege Management (EPM)](https://www.beyondtrust.com/products/endpoint-privilege-management) is a security solution that enforces least-privilege policies across endpoints, controls application usage, audits privileged activity, and tracks event activity. It helps organizations reduce their attack surface by managing and monitoring privilege escalation, application control, event activity, and configuration changes across users and devices.
 
-The BeyondTrust EPM integration for Elastic collects audit logs using the **BeyondTrust EPM Management API** or through **AWS S3/SQS** cloud storage, and visualizes them in Kibana.
+The BeyondTrust EPM integration for Elastic collects audit and event logs using the **BeyondTrust EPM Management API** or through **AWS S3/SQS** cloud storage, and visualizes them in Kibana.
 
 ### Compatibility
 
@@ -15,18 +15,18 @@ The BeyondTrust EPM integration is compatible with BeyondTrust EPM version **26.
 This integration supports two collection methods:
 
 - **Direct API polling** via CEL input, which periodically queries the BeyondTrust EPM Management API using OAuth 2.0 (Client Credentials) authentication.
-- **Cloud storage** via AWS S3/SQS, for organizations that export audit logs from BeyondTrust EPM to an AWS S3 bucket using the built-in SIEM integration.
+- **Cloud storage** via AWS S3/SQS, for organizations that export audit and event logs from BeyondTrust EPM to an AWS S3 bucket using the built-in SIEM integration.
 
 ## What data does this integration collect?
 
 This integration collects log messages of the following type:
 
 - `Audit`: Collects audit logs via the **BeyondTrust EPM Management API** (endpoint: `/management-api/v3/ActivityAudits/Details`) or via **AWS S3/SQS** for organizations that export logs from BeyondTrust EPM to an S3 bucket.
+- `Event`: Collects event logs via the **BeyondTrust EPM Management API** (endpoint: `/management-api/v3/Events/search`) or via **AWS S3/SQS** for organizations that export logs from BeyondTrust EPM to an S3 bucket.
 
 ### Supported use cases
 
 Integrating BeyondTrust EPM with Elastic provides centralized visibility into privileged activity and configuration changes across your endpoints, enabling efficient monitoring, investigation, and compliance reporting within Kibana dashboards.
-
 
 ## What do I need to use this integration?
 
@@ -143,3 +143,4 @@ These inputs are used in the integration:
 This integration dataset uses the following API:
 
 * List Activity Audit Details (endpoint: `/management-api/v3/ActivityAudits/Details`)
+* List Event Details (endpoint: `/management-api/v3/Events/search`)

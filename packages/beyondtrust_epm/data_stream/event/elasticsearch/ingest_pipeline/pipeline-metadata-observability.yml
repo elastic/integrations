@@ -1,0 +1,154 @@
+---
+description: Pipeline for processing metadata and observability fields (timestamp, trace, transaction, span, organization, labels, message).
+processors:
+  - date:
+      field: beyondtrust_epm.event.@timestamp
+      tag: date_@timestamp
+      if: ctx.beyondtrust_epm?.event != null && ctx.beyondtrust_epm.event['@timestamp'] != null && ctx.beyondtrust_epm.event['@timestamp'] != ''
+      target_field: beyondtrust_epm.event.timestamp
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.@timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Set @timestamp from the event occurrence time. override defaults to true, so
+  # this overwrites the receipt time (ReceivedAt) seeded earlier in the
+  # service-application pipeline when both values are present.
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_event_timestamp
+      copy_from: beyondtrust_epm.event.timestamp
+      ignore_empty_value: true
+  - set:
+      field: organization.id
+      tag: set_organization_id_from_event_EPMWinMac_GroupId
+      copy_from: beyondtrust_epm.event.EPMWinMac.GroupId
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: append_beyondtrust_epm_event_message_into_message
+      if: ctx.beyondtrust_epm?.event?.message != null
+      copy_from: beyondtrust_epm.event.message
+      ignore_empty_value: true
+  - append:
+      field: organization.id
+      tag: append_beyondtrust_epm_event_organization_id_into_organization_id
+      if: ctx.beyondtrust_epm?.event?.organization?.id != null
+      value: '{{{beyondtrust_epm.event.organization.id}}}'
+      allow_duplicates: false
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_event_organization_name
+      copy_from: beyondtrust_epm.event.organization.name
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.related.hash
+      tag: foreach_related_hash
+      if: ctx.beyondtrust_epm?.event?.related?.hash instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_related_hash_into_related_hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.related.hosts
+      tag: foreach_related_hosts
+      if: ctx.beyondtrust_epm?.event?.related?.hosts instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_related_hosts_into_related_hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.related.ip
+      tag: foreach_convert_related_ip_to_ip
+      if: ctx.beyondtrust_epm?.event?.related?.ip instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_related_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: beyondtrust_epm.event.related.ip
+      tag: foreach_related_ip
+      if: ctx.beyondtrust_epm?.event?.related?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_related_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.related.user
+      tag: foreach_related_user
+      if: ctx.beyondtrust_epm?.event?.related?.user instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_related_user_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: span.id
+      tag: set_span_id_from_event_span_id
+      copy_from: beyondtrust_epm.event.span.id
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.tags
+      tag: foreach_tags
+      if: ctx.beyondtrust_epm?.event?.tags instanceof List
+      processor:
+        append:
+          field: tags
+          tag: append_tags_into_tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: trace.id
+      tag: set_trace_id_from_event_trace_id
+      copy_from: beyondtrust_epm.event.trace.id
+      ignore_empty_value: true
+  - set:
+      field: transaction.id
+      tag: set_transaction_id_from_event_transaction_id
+      copy_from: beyondtrust_epm.event.transaction.id
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_event_EPMWinMac_Configuration_RuleScript_Outcome_Output
+      copy_from: beyondtrust_epm.event.EPMWinMac.Configuration.RuleScript.Outcome.Output
+      ignore_empty_value: true
+      override: false
+  - remove:
+      field:
+        - beyondtrust_epm.event.EPMWinMac.Configuration.RuleScript.Outcome.Output
+        - beyondtrust_epm.event.EPMWinMac.GroupId
+        - beyondtrust_epm.event.message
+        - beyondtrust_epm.event.organization.id
+        - beyondtrust_epm.event.organization.name
+        - beyondtrust_epm.event.related.hash
+        - beyondtrust_epm.event.related.hosts
+        - beyondtrust_epm.event.related.ip
+        - beyondtrust_epm.event.related.user
+        - beyondtrust_epm.event.span.id
+        - beyondtrust_epm.event.tags
+        - beyondtrust_epm.event.timestamp
+        - beyondtrust_epm.event.trace.id
+        - beyondtrust_epm.event.transaction.id
+      tag: remove_fields_mapped_with_ecs
+      ignore_missing: true
