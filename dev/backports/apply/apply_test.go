@@ -117,6 +117,148 @@ func TestBumpPatchVersion(t *testing.T) {
 	}
 }
 
+func TestResolveManifestVersionConflict(t *testing.T) {
+	tests := []struct {
+		name        string
+		content     string
+		wantContent string
+		wantOK      bool
+	}{
+		{
+			name:        "no conflict markers",
+			content:     "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
+			wantContent: "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
+			wantOK:      true,
+		},
+		{
+			name: "version-only conflict on our side keeps theirs",
+			content: "name: aws\n" +
+				"<<<<<<< HEAD\n" +
+				"version: 6.14.2\n" +
+				"=======\n" +
+				"version: 6.15.0\n" +
+				">>>>>>> abc1234 (Add feature)\n" +
+				"format_version: 3.0.0\n",
+			wantContent: "name: aws\n" +
+				"version: 6.15.0\n" +
+				"format_version: 3.0.0\n",
+			wantOK: true,
+		},
+		{
+			name: "version-only conflict on our side preserves theirs' adjacent addition",
+			content: "name: aws\n" +
+				"<<<<<<< HEAD\n" +
+				"version: 1.0.2\n" +
+				"=======\n" +
+				"version: 1.0.1\n" +
+				"categories:\n" +
+				"  - kubernetes\n" +
+				">>>>>>> abc1234 (Add categories field)\n" +
+				"format_version: 3.0.0\n",
+			wantContent: "name: aws\n" +
+				"version: 1.0.1\n" +
+				"categories:\n" +
+				"  - kubernetes\n" +
+				"format_version: 3.0.0\n",
+			wantOK: true,
+		},
+		{
+			name: "conflict with other content is left untouched",
+			content: "name: aws\n" +
+				"<<<<<<< HEAD\n" +
+				"version: 6.14.2\n" +
+				"owner:\n" +
+				"  github: elastic/obs-infraobs-integrations\n" +
+				"=======\n" +
+				"version: 6.15.0\n" +
+				">>>>>>> abc1234 (Add feature)\n" +
+				"format_version: 3.0.0\n",
+			wantContent: "name: aws\n" +
+				"<<<<<<< HEAD\n" +
+				"version: 6.14.2\n" +
+				"owner:\n" +
+				"  github: elastic/obs-infraobs-integrations\n" +
+				"=======\n" +
+				"version: 6.15.0\n" +
+				">>>>>>> abc1234 (Add feature)\n" +
+				"format_version: 3.0.0\n",
+			wantOK: false,
+		},
+		{
+			name: "unrelated conflict on both sides is left untouched",
+			content: "name: aws\n" +
+				"version: 6.14.2\n" +
+				"<<<<<<< HEAD\n" +
+				"description: Old description.\n" +
+				"=======\n" +
+				"description: New description.\n" +
+				">>>>>>> abc1234 (Add feature)\n",
+			wantContent: "name: aws\n" +
+				"version: 6.14.2\n" +
+				"<<<<<<< HEAD\n" +
+				"description: Old description.\n" +
+				"=======\n" +
+				"description: New description.\n" +
+				">>>>>>> abc1234 (Add feature)\n",
+			wantOK: false,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "manifest.yml")
+			require.NoError(t, os.WriteFile(path, []byte(tc.content), 0o644))
+
+			gotOK, err := resolveManifestVersionConflict(path)
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantOK, gotOK)
+
+			updated, err := os.ReadFile(path)
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantContent, string(updated))
+		})
+	}
+}
+
+func TestSetManifestVersion(t *testing.T) {
+	tests := []struct {
+		name        string
+		content     string
+		version     string
+		wantContent string
+	}{
+		{
+			name:        "unquoted",
+			content:     "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
+			version:     "6.14.5",
+			wantContent: "name: aws\nversion: 6.14.5\nformat_version: 3.0.0\n",
+		},
+		{
+			name:        "double-quoted",
+			content:     "name: zscaler\nversion: \"1.23.3\"\nformat_version: 3.0.0\n",
+			version:     "1.23.9",
+			wantContent: "name: zscaler\nversion: \"1.23.9\"\nformat_version: 3.0.0\n",
+		},
+		{
+			name:        "no-op when already set",
+			content:     "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
+			version:     "6.14.2",
+			wantContent: "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "manifest.yml")
+			require.NoError(t, os.WriteFile(path, []byte(tc.content), 0o644))
+
+			require.NoError(t, setManifestVersion(path, tc.version))
+
+			updated, err := os.ReadFile(path)
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantContent, string(updated))
+		})
+	}
+}
+
 func TestParseEntryFields(t *testing.T) {
 	tests := []struct {
 		name  string
