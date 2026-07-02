@@ -617,5 +617,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vulnerability.cve | The CVE id of the vulnerability. | keyword |
 | vulnerability.published_date | When the vulnerability was published. | date |
 | vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
+| vulnerability.status | Lifecycle state of the vulnerability finding on the asset. Expected values: open, fixed, reopened, unknown. | keyword |
 | vulnerability.title | The human readeable title of the vulnerability. | keyword |
 
