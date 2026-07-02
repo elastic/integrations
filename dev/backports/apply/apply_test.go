@@ -129,16 +129,18 @@ func TestBumpPatchVersion(t *testing.T) {
 // value seen here never survives into the final commit.
 func TestResolveManifestVersionConflict(t *testing.T) {
 	tests := []struct {
-		name        string
-		content     string
-		wantContent string
-		wantOK      bool
+		name            string
+		content         string
+		wantContent     string
+		wantHadConflict bool
+		wantResolved    bool
 	}{
 		{
-			name:        "no conflict markers",
-			content:     "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
-			wantContent: "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
-			wantOK:      true,
+			name:            "no conflict markers",
+			content:         "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
+			wantContent:     "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
+			wantHadConflict: false,
+			wantResolved:    true,
 		},
 		{
 			// Branch is at 6.14.2 (its own lineage); main's commit shows 6.15.0,
@@ -156,7 +158,8 @@ func TestResolveManifestVersionConflict(t *testing.T) {
 			wantContent: "name: aws\n" +
 				"version: 6.15.0\n" +
 				"format_version: 3.0.0\n",
-			wantOK: true,
+			wantHadConflict: true,
+			wantResolved:    true,
 		},
 		{
 			// Branch is at 6.14.2; by the time this fix landed, main had advanced
@@ -180,7 +183,8 @@ func TestResolveManifestVersionConflict(t *testing.T) {
 				"categories:\n" +
 				"  - kubernetes\n" +
 				"format_version: 3.0.0\n",
-			wantOK: true,
+			wantHadConflict: true,
+			wantResolved:    true,
 		},
 		{
 			name: "version-only conflict with empty theirs is left untouched",
@@ -196,7 +200,8 @@ func TestResolveManifestVersionConflict(t *testing.T) {
 				"=======\n" +
 				">>>>>>> abc1234 (Delete version)\n" +
 				"format_version: 3.0.0\n",
-			wantOK: false,
+			wantHadConflict: true,
+			wantResolved:    false,
 		},
 		{
 			name: "conflict with other content is left untouched",
@@ -218,7 +223,8 @@ func TestResolveManifestVersionConflict(t *testing.T) {
 				"version: 6.15.0\n" +
 				">>>>>>> abc1234 (Add feature)\n" +
 				"format_version: 3.0.0\n",
-			wantOK: false,
+			wantHadConflict: true,
+			wantResolved:    false,
 		},
 		{
 			name: "unrelated conflict on both sides is left untouched",
@@ -236,7 +242,8 @@ func TestResolveManifestVersionConflict(t *testing.T) {
 				"=======\n" +
 				"description: New description.\n" +
 				">>>>>>> abc1234 (Add feature)\n",
-			wantOK: false,
+			wantHadConflict: true,
+			wantResolved:    false,
 		},
 	}
 	for _, tc := range tests {
@@ -244,9 +251,10 @@ func TestResolveManifestVersionConflict(t *testing.T) {
 			path := filepath.Join(t.TempDir(), "manifest.yml")
 			require.NoError(t, os.WriteFile(path, []byte(tc.content), 0o644))
 
-			gotOK, err := resolveManifestVersionConflict(path)
+			gotHadConflict, gotResolved, err := resolveManifestVersionConflict(path)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantOK, gotOK)
+			assert.Equal(t, tc.wantHadConflict, gotHadConflict, "hadConflict")
+			assert.Equal(t, tc.wantResolved, gotResolved, "resolved")
 
 			updated, err := os.ReadFile(path)
 			require.NoError(t, err)

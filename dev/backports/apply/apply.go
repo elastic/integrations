@@ -278,7 +278,7 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 	}
 
 	if cherryErr != nil {
-		manifestResolved, err := resolveManifestVersionConflict(manifestPath)
+		manifestHadConflict, manifestResolved, err := resolveManifestVersionConflict(manifestPath)
 		if err != nil {
 			_ = a.git.Run("reset", "--hard", "HEAD")
 			return nil, fmt.Errorf("resolving manifest.yml conflict: %w", err)
@@ -287,6 +287,9 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 			if err := a.git.Run("add", manifestPath); err != nil {
 				_ = a.git.Run("reset", "--hard", "HEAD")
 				return nil, fmt.Errorf("staging resolved manifest.yml: %w", err)
+			}
+			if manifestHadConflict {
+				fmt.Fprintf(os.Stderr, "note: %s had a version-only conflict, auto-resolved by keeping the incoming change\n", manifestPath)
 			}
 		} else {
 			fmt.Fprintf(os.Stderr, "note: %s has conflicts beyond the version line — manual resolution required\n", manifestPath)
@@ -379,9 +382,13 @@ func buildConflictResult(sha, branchName, pkg string, files []string) *Result {
 // trigger from two legitimately-committed manifest.yml states — a valid
 // "theirs" can't drop or duplicate a mandatory field either — but guards
 // against writing an invalid manifest.yml if that assumption is ever wrong.
-// Returns true if the file has no remaining conflict markers (either none
-// were present, or all were resolved).
-func resolveManifestVersionConflict(manifestPath string) (bool, error) {
+// hadConflict reports whether manifestPath contained any conflict markers at
+// all (false if the cherry-pick failed for an unrelated file and manifest.yml
+// merged cleanly on its own). resolved reports whether the file has no
+// remaining conflict markers (either none were present, or all were
+// resolved) — the caller uses this, not hadConflict, to decide whether to
+// stage the file.
+func resolveManifestVersionConflict(manifestPath string) (hadConflict, resolved bool, err error) {
 	const (
 		conflictStartPrefix = "<<<<<<<"
 		conflictMidPrefix   = "======="
@@ -390,16 +397,16 @@ func resolveManifestVersionConflict(manifestPath string) (bool, error) {
 
 	data, err := os.ReadFile(manifestPath)
 	if err != nil {
-		return false, fmt.Errorf("reading %s: %w", manifestPath, err)
+		return false, false, fmt.Errorf("reading %s: %w", manifestPath, err)
 	}
 	lines := strings.Split(string(data), "\n")
 	if !slices.ContainsFunc(lines, func(l string) bool { return strings.HasPrefix(l, conflictStartPrefix) }) {
-		return true, nil
+		return false, true, nil
 	}
 
 	info, err := os.Stat(manifestPath)
 	if err != nil {
-		return false, err
+		return true, false, err
 	}
 
 	var out []string
@@ -418,7 +425,7 @@ func resolveManifestVersionConflict(manifestPath string) (bool, error) {
 			i++
 		}
 		if i >= len(lines) {
-			return false, fmt.Errorf("malformed conflict markers in %s: missing %q", manifestPath, conflictMidPrefix)
+			return true, false, fmt.Errorf("malformed conflict markers in %s: missing %q", manifestPath, conflictMidPrefix)
 		}
 		ours := lines[oursStart:i]
 		midLine := lines[i]
@@ -428,7 +435,7 @@ func resolveManifestVersionConflict(manifestPath string) (bool, error) {
 			i++
 		}
 		if i >= len(lines) {
-			return false, fmt.Errorf("malformed conflict markers in %s: missing %q", manifestPath, conflictEndPrefix)
+			return true, false, fmt.Errorf("malformed conflict markers in %s: missing %q", manifestPath, conflictEndPrefix)
 		}
 		theirs := lines[theirsStart:i]
 		endLine := lines[i]
@@ -447,7 +454,7 @@ func resolveManifestVersionConflict(manifestPath string) (bool, error) {
 	}
 
 	if !fullyResolved {
-		return false, nil
+		return true, false, nil
 	}
 
 	versionLines := 0
@@ -457,13 +464,13 @@ func resolveManifestVersionConflict(manifestPath string) (bool, error) {
 		}
 	}
 	if versionLines != 1 {
-		return false, nil
+		return true, false, nil
 	}
 
 	if err := os.WriteFile(manifestPath, []byte(strings.Join(out, "\n")), info.Mode()); err != nil {
-		return false, fmt.Errorf("writing resolved %s: %w", manifestPath, err)
+		return true, false, fmt.Errorf("writing resolved %s: %w", manifestPath, err)
 	}
-	return true, nil
+	return true, true, nil
 }
 
 // extractChangelogFields reads changelog.yml directly from the source commit
