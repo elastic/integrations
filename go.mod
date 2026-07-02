@@ -224,7 +224,7 @@ require (
 	golang.org/x/time v0.15.0 // indirect
 	google.golang.org/adk v1.4.0 // indirect
 	google.golang.org/api v0.279.0 // indirect
-	google.golang.org/genai v1.61.0 // indirect
+	google.golang.org/genai v1.62.0 // indirect
 	google.golang.org/genproto v0.0.0-20260319201613-d00831a3d3e7 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260427160629-7cedc36a6bc4 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260511170946-3700d4141b60 // indirect
@@ -258,3 +258,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.2 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
+
+replace github.com/elastic/elastic-package => github.com/andrewkroh/elastic-package v0.0.0-20260701160657-b7cc81dd6d4c

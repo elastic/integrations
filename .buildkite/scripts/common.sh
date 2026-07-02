@@ -471,6 +471,7 @@ prepare_stack() {
 
     local requiredSubscription="${ELASTIC_SUBSCRIPTION:-""}"
     local requiredLogsDB="${STACK_LOGSDB_ENABLED:-"false"}"
+    local requiredLogsDBColumnar="${STACK_LOGSDB_COLUMNAR_ENABLED:-"false"}"
 
     local args="-v"
     local version_set=""
@@ -504,6 +505,11 @@ prepare_stack() {
     if [ "${requiredLogsDB:-false}" == "true" ]; then
         echoerr "- Enable LogsDB"
         args="${args} -U stack.logsdb_enabled=true"
+    fi
+
+    if [ "${requiredLogsDBColumnar:-false}" == "true" ]; then
+        echoerr "- Enable LogsDB Columnar"
+        args="${args} -U stack.logsdb_columnar_enabled=true"
     fi
 
     if [ "${requiredSubscription}" != "" ]; then
@@ -733,7 +739,7 @@ is_pr_affected() {
         return 1
     fi
 
-    if [[ "${STACK_LOGSDB_ENABLED:-"false"}" == "true" ]]; then
+    if [[ "${STACK_LOGSDB_ENABLED:-"false"}" == "true" || "${STACK_LOGSDB_COLUMNAR_ENABLED:-"false"}" == "true" ]]; then
         # Packages require to support 8.17.0 or higher as part of their Kibana constraints (manifest)
         local logsdb_compatible=""
         if ! logsdb_compatible=$(is_logsdb_compatible); then
