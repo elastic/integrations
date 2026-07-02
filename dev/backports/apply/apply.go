@@ -663,12 +663,9 @@ func bumpPatchVersion(manifestPath string) (string, error) {
 	return newVersion, nil
 }
 
-// readManifestVersion returns the value of the "version" field in manifestPath.
-func readManifestVersion(manifestPath string) (string, error) {
-	data, err := os.ReadFile(manifestPath)
-	if err != nil {
-		return "", fmt.Errorf("reading %s: %w", manifestPath, err)
-	}
+// parseManifestVersion extracts the "version" field from already-read
+// manifest.yml content.
+func parseManifestVersion(data []byte, manifestPath string) (string, error) {
 	var m manifestYAML
 	if err := yaml.Unmarshal(data, &m); err != nil {
 		return "", fmt.Errorf("parsing %s: %w", manifestPath, err)
@@ -679,10 +676,23 @@ func readManifestVersion(manifestPath string) (string, error) {
 	return m.Version, nil
 }
 
+// readManifestVersion returns the value of the "version" field in manifestPath.
+func readManifestVersion(manifestPath string) (string, error) {
+	data, err := os.ReadFile(manifestPath)
+	if err != nil {
+		return "", fmt.Errorf("reading %s: %w", manifestPath, err)
+	}
+	return parseManifestVersion(data, manifestPath)
+}
+
 // setManifestVersion rewrites the line starting with "version:" in manifestPath
 // to version, preserving quoting and the rest of the file's formatting.
 func setManifestVersion(manifestPath, version string) error {
-	current, err := readManifestVersion(manifestPath)
+	data, err := os.ReadFile(manifestPath)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", manifestPath, err)
+	}
+	current, err := parseManifestVersion(data, manifestPath)
 	if err != nil {
 		return err
 	}
@@ -690,10 +700,6 @@ func setManifestVersion(manifestPath, version string) error {
 		return nil
 	}
 
-	data, err := os.ReadFile(manifestPath)
-	if err != nil {
-		return fmt.Errorf("reading %s: %w", manifestPath, err)
-	}
 	info, err := os.Stat(manifestPath)
 	if err != nil {
 		return err
