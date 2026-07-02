@@ -1,0 +1,86 @@
+---
+description: Pipeline for processing alarm events
+processors:
+  - drop:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Skip pipeline processing for CEL input collection errors.
+  - set:
+      field: event.original
+      copy_from: message
+      tag: set_event_original
+      ignore_empty_value: true
+      if: ctx.event?.original == null
+  - json:
+      field: message
+      target_field: alarm
+      tag: json_decode_message
+      ignore_failure: true
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: threat
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: indicator
+      allow_duplicates: false
+  - date:
+      field: alarm.date
+      target_field: '@timestamp'
+      tag: date_alarm_date
+      formats:
+        - "yyyy-MM-dd HH:mm:ss"
+      timezone: UTC
+      ignore_failure: false
+  - set:
+      field: alarm.alarm_sub_type
+      copy_from: alarm.alarm_type_details.alarm_sub_type
+      tag: set_alarm_sub_type
+      ignore_empty_value: true
+      ignore_failure: true
+  - set:
+      field: alarm.alarm_main_type
+      copy_from: alarm.alarm_type_details.alarm_main_type
+      tag: set_alarm_main_type
+      ignore_empty_value: true
+      ignore_failure: true
+  - set:
+      field: alarm.alarm_generic_title
+      copy_from: alarm.alarm_type_details.alarm_generic_title
+      tag: set_alarm_generic_title
+      ignore_empty_value: true
+      ignore_failure: true
+  - set:
+      field: alarm.alarm_default_risk_level
+      copy_from: alarm.alarm_type_details.alarm_default_risk_level
+      tag: set_alarm_default_risk_level
+      ignore_empty_value: true
+      ignore_failure: true
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
