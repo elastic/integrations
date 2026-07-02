@@ -43,7 +43,7 @@ program: |
         "x-api-key": [state.api_token],
       }
     }).do_request().as(meta, meta.StatusCode == 200 ?
-      bytes(meta.Body).decode_json().as(m, has(m.downloadUrl) ?
+      meta.Body.decode_json().as(m, has(m.downloadUrl) ?
         // Step 2: download the feed directly from the resolved URL (no redirect).
         request("GET", m.downloadUrl).do_request().as(resp, resp.StatusCode == 200 ?
           {
@@ -58,7 +58,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET (feed download): " + (
+                "message": "GET (feed download) " + m.downloadUrl + ": " + (
                   size(resp.Body) != 0 ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")"
                 ),
               },
