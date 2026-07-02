@@ -74,24 +74,25 @@ processors:
       tag: set_event_action_sign_out
       value: sign-out
       if: ctx.zoom?.activity?.type == 'Sign out'
-  - set:
+  - append:
       field: event.category
-      tag: set_event_category_auth_session
+      tag: append_event_category_auth_session
       value:
         - authentication
         - session
+      allow_duplicates: false
       if: ctx.zoom?.activity?.type == 'Sign in' || ctx.zoom?.activity?.type == 'Sign out'
-  - set:
+  - append:
       field: event.type
-      tag: set_event_type_start
-      value:
-        - start
+      tag: append_event_type_start
+      value: start
+      allow_duplicates: false
       if: ctx.zoom?.activity?.type == 'Sign in'
-  - set:
+  - append:
       field: event.type
-      tag: set_event_type_end
-      value:
-        - end
+      tag: append_event_type_end
+      value: end
+      allow_duplicates: false
       if: ctx.zoom?.activity?.type == 'Sign out'
   - set:
       field: event.outcome

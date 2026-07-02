@@ -63,10 +63,10 @@ program: |-
       state.from_date,
       (now - duration("4320h")).format("2006-01-02"),
     ].max().as(from_date,
-      [
+      min(
         (timestamp(from_date + "T00:00:00Z") + duration("720h")).format("2006-01-02"),
-        now.format("2006-01-02"),
-      ].min().as(to_date,
+        now.format("2006-01-02")
+      ).as(to_date,
         // Step 3 - if the window start already passed the end, everything up to now
         // is collected: emit a dropped placeholder (no API call) and hold the cursor.
         (from_date > to_date) ?
@@ -124,13 +124,13 @@ program: |-
                           "poll_start": (next_token != "") ?
                             from_date
                           :
-                            [
+                            min(
                               (size(logs) > 0 && logs.map(e, e.time).max() >= from_date + "T00:00:00Z") ?
                                 (timestamp(logs.map(e, e.time).max()) + duration("24h")).format("2006-01-02")
                               :
                                 (timestamp(to_date + "T00:00:00Z") + duration("24h")).format("2006-01-02"),
-                              now.format("2006-01-02"),
-                            ].min(),
+                              now.format("2006-01-02")
+                            ),
                         },
                       }
                     )
@@ -174,10 +174,7 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 processors:
-  - drop_event:
-      when:
-        equals:
-          retry: true
+- drop_event.when.equals.retry: true
 {{#if processors}}
 {{processors}}
 {{/if}}
