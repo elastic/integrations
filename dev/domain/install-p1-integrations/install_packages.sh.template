@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# Install all 47 P1 domain integrations via Kibana Fleet API.
+#
+# Usage (basic auth):
+#   export KIBANA_URL="http://localhost:5601/ftw"
+#   export ELASTIC_USER="elastic"
+#   export ELASTIC_PASSWORD="changeme"
+#   bash install_packages.sh.template
+#
+# Usage (API key — Elastic Cloud / serverless):
+#   export KIBANA_URL="https://<deployment>.kb.<region>.elastic.cloud"
+#   export ELASTIC_API_KEY="<encoded-api-key>"
+#   bash install_packages.sh.template
+#
+# Local serverless with self-signed TLS:
+#   export ES_URL="https://localhost:9200"
+#   export KIBANA_URL="https://localhost:5601/"
+#   export ELASTIC_API_KEY="<encoded-api-key>"
+#   export ELASTIC_SSL_VERIFY=false
+#   bash install_packages.sh.template
+#
+# Or embed credentials in KIBANA_URL:
+#   export KIBANA_URL="http://elastic:changeme@localhost:5601/ftw"
+
+set -euo pipefail
+
+KIBANA_URL="${KIBANA_URL:-http://localhost:5601/ftw}"
+ELASTIC_USER="${ELASTIC_USER:-elastic}"
+ELASTIC_PASSWORD="${ELASTIC_PASSWORD:-changeme}"
+ELASTIC_API_KEY="${ELASTIC_API_KEY:-}"
+ELASTIC_SSL_VERIFY="${ELASTIC_SSL_VERIFY:-true}"
+
+# Strip trailing slash
+KIBANA_URL="${KIBANA_URL%/}"
+
+curl_tls_args() {
+  if [[ "${ELASTIC_SSL_VERIFY}" =~ ^([Ff]alse|0|[Nn]o|[Oo]ff|[Nn]one)$ ]]; then
+    echo -k
+  fi
+}
+
+install_package() {
+  local package="$1"
+  echo "Installing ${package}..."
+  if [[ -n "${ELASTIC_API_KEY}" ]]; then
+    curl -sS $(curl_tls_args) --max-time "${FLEET_INSTALL_TIMEOUT:-600}" \
+      "${KIBANA_URL}/api/fleet/epm/packages/${package}?ignoreMappingUpdateErrors=true" \
+      -X POST \
+      -H "kbn-xsrf: true" \
+      -H "Authorization: ApiKey ${ELASTIC_API_KEY}" \
+      -w "\nHTTP %{http_code}\n"
+  else
+    curl -sS $(curl_tls_args) --max-time "${FLEET_INSTALL_TIMEOUT:-600}" \
+      "${KIBANA_URL}/api/fleet/epm/packages/${package}?ignoreMappingUpdateErrors=true" \
+      -X POST \
+      -H "kbn-xsrf: true" \
+      -u "${ELASTIC_USER}:${ELASTIC_PASSWORD}" \
+      -w "\nHTTP %{http_code}\n"
+  fi
+}
+
+# --- P1 integrations (47) ---
+PACKAGES=(
+  aws_bedrock
+  aws_bedrock_agentcore
+  aws_cloudtrail_otel
+  aws_securityhub
+  aws_vpcflow_otel
+  azure_ai_foundry
+  azure_app_service
+  azure_openai
+  checkpoint_email
+  cisco_meraki
+  cisco_secure_email_gateway
+  cisco_umbrella
+  citrix_waf
+  corelight
+  cyera
+  darktrace
+  entityanalytics_ad
+  entityanalytics_okta
+  extrahop
+  forgerock
+  fortinet_fortigate
+  gcp_vertexai
+  gitlab
+  greenhouse
+  infoblox_bloxone_ddi
+  jamf_pro
+  linux
+  m365_defender
+  microsoft_dhcp
+  microsoft_intune
+  openai
+  osquery
+  ping_federate
+  ping_one
+  prisma_cloud
+  qualys_vmdr
+  salesforce
+  servicenow
+  slack
+  snort
+  snyk
+  suricata
+  sysdig
+  tanium
+  ti_misp
+  wiz
+  zscaler_zia
+)
+
+for pkg in "${PACKAGES[@]}"; do
+  install_package "${pkg}" || echo "WARN: failed to install ${pkg}" >&2
+  sleep "${FLEET_INSTALL_DELAY:-2}"
+done
+
+echo "Done."
