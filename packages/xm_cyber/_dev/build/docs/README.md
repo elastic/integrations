@@ -27,6 +27,7 @@ The XM Cyber integration collects the following types of data:
 | `audit_trail` | Audit Records | `/api/audit-trail/auditRecords` |
 | `vulnerability` | CVE records from XM Cyber's Vulnerability Risk Management (VRM) feed, including CVSS v2/v3/v4 scores, EPSS metrics, CISA KEV / in-the-wild exploitation flags, and per-CVE counts of devices, products, and critical assets at risk | `/api/v2/vrm/public/vulnerabilities` |
 | `entity_inventory` | Inventory of entities (devices, identities, and cloud resources) tracked by XM Cyber, enriched with OS, network, agent, and cloud-account metadata. | `/api/entityInventory/entities` |
+| `risk_score` | Organization-level security grade (A–F), numeric risk score, trend data, and per-scenario breakdowns | `/api/scenarios/v2/scenarios/riskScore` |
 
 ### Supported use cases
 
@@ -34,6 +35,7 @@ The XM Cyber integration collects the following types of data:
 - **Risk-based vulnerability prioritization**: Rank CVEs by CVSS impact, EPSS exploit probability, and CISA KEV / in-the-wild exploitation flags to focus remediation effort where it actually reduces business risk.
 - **Attack-path-aware exposure analysis**: Correlate detected CVEs with XM Cyber's attack-technique simulations to identify which vulnerabilities act as choke points or stepping stones to crown-jewel assets.
 - **Asset and exposure visibility**: Maintain a unified inventory of the devices, identities, and cloud resources XM Cyber discovers across hybrid environments — with OS, network, agent, and cloud-account context — to support asset management, attack-surface monitoring, and prioritization of critical assets.
+- **Security posture tracking**: Monitor your organization's XM Cyber risk score over time and correlate score changes with security events.
 
 ## What do I need to use this integration?
 
@@ -69,6 +71,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
    - **URL**: Your XM Cyber base URL, for example `https://your-org.clients.xmcyber.com`
    - **API Key**: Your XM Cyber API key.
    - **Interval**: How often to poll for new data (default: `24h`).
+   - **Initial interval**: How far back to fetch risk score data, in days (e.g. `30`, `90`, `200`). Default: `30`.
 4. Select **Save and continue** to save the integration.
 
 ### Validation
@@ -142,6 +145,18 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 {{event "entity_inventory"}}
 
+### Risk Score
+
+#### Risk Score fields
+
+{{fields "risk_score"}}
+
+### Example event
+
+#### Risk Score
+
+{{event "risk_score"}}
+
 ### Inputs used
 
 {{ inputDocs }}
@@ -157,6 +172,7 @@ These XM Cyber REST API endpoints are used by this integration:
 | `/api/audit-trail/auditRecords` | GET | `audit_trail` | Audit Records |
 | `/api/v2/vrm/public/vulnerabilities` | GET | `vulnerabilities` | Paginated exposure rows (attack techniques / CVE context) |
 | `/api/entityInventory/entities` | GET | `entity_inventory` | List entities (devices, identities, cloud resources) tracked by XM Cyber |
+| `/api/scenarios/v2/scenarios/riskScore` | GET | `risk_score` | Organization risk score and grade |
 
 ### ILM Policy
 
