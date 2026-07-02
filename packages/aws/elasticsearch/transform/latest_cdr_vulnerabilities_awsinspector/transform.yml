@@ -4,8 +4,9 @@ source:
   query:
     bool:
       must:
-        - match:
-            aws.inspector.status: ACTIVE
+        # All finding statuses (ACTIVE, SUPPRESSED, CLOSED) are included so the latest
+        # document per finding reflects the current status. The status is surfaced as
+        # vulnerability.status (CLOSED -> fixed) for filtering on the Findings page.
         - match:
             aws.inspector.type: PACKAGE_VULNERABILITY
         - range:
@@ -43,4 +44,4 @@ _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.2.0
+  fleet_transform_version: 0.3.0
