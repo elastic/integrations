@@ -98,7 +98,7 @@ Run the [Elastic Distribution of the OpenTelemetry Collector](https://github.com
 
 ### Validation
 
-After deploying, run a short Claude Code session with telemetry enabled and confirm events appear in the `logs-claude_code.events.otel-*` data stream. For example, in Kibana Discover, filter on `data_stream.dataset: claude_code.events`.
+After deploying, run a short Claude Code session with telemetry enabled and confirm events appear in the `logs-claude_code.events.otel-*` data stream. For example, in Kibana Discover, filter on `data_stream.dataset: claude_code.events.otel`.
 
 ## Troubleshooting
 
