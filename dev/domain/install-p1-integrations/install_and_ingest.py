@@ -295,6 +295,112 @@ def stream_target(package: str, stream: str) -> StreamTarget:
     return StreamTarget(package=package, stream=stream, data_type=data_type, dataset=dataset)
 
 
+def _parse_simple_yaml(text: str) -> dict[str, Any]:
+    """Parse simple nested-mapping YAML with scalar values and flat list sequences."""
+    lines = [
+        ln.rstrip()
+        for ln in text.splitlines()
+        if ln.strip() and not ln.lstrip().startswith("#")
+    ]
+
+    def _unquote(s: str) -> str:
+        if len(s) >= 2 and s[0] == s[-1] and s[0] in ('"', "'"):
+            return s[1:-1]
+        return s
+
+    pos = [0]  # mutable cursor shared across recursive calls
+
+    def parse_mapping(min_indent: int) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        while pos[0] < len(lines):
+            line = lines[pos[0]]
+            indent = len(line) - len(line.lstrip())
+            if indent < min_indent:
+                break
+            content = line.lstrip()
+            if ":" not in content or content.startswith("- "):
+                pos[0] += 1
+                continue
+            key, _, value = content.partition(":")
+            key = _unquote(key.strip())
+            value = value.strip()
+            pos[0] += 1
+            if value:
+                result[key] = _unquote(value)
+            else:
+                # Look ahead to decide: list or nested mapping
+                if pos[0] < len(lines):
+                    next_content = lines[pos[0]].lstrip()
+                    if next_content.startswith("- "):
+                        lst: list[Any] = []
+                        next_indent = len(lines[pos[0]]) - len(next_content)
+                        while pos[0] < len(lines):
+                            nl = lines[pos[0]]
+                            ni = len(nl) - len(nl.lstrip())
+                            nc = nl.lstrip()
+                            if ni < next_indent or not nc.startswith("- "):
+                                break
+                            lst.append(_unquote(nc[2:].strip()))
+                            pos[0] += 1
+                        result[key] = lst
+                    else:
+                        child_indent = len(lines[pos[0]]) - len(next_content)
+                        result[key] = parse_mapping(child_indent)
+        return result
+
+    return parse_mapping(0)
+
+
+def _expand_dotted_keys(d: dict[str, Any]) -> dict[str, Any]:
+    """Expand dotted keys like {'event.provider': 'X'} into nested dicts {'event': {'provider': 'X'}}."""
+    result: dict[str, Any] = {}
+    for key, value in d.items():
+        if isinstance(value, dict):
+            value = _expand_dotted_keys(value)
+        if "." in key:
+            parts = key.split(".")
+            node = result
+            for part in parts[:-1]:
+                node = node.setdefault(part, {})
+            node[parts[-1]] = value
+        else:
+            result[key] = value
+    return result
+
+
+def _deep_merge(base: dict[str, Any], overlay: dict[str, Any]) -> None:
+    """Merge overlay into base in-place; nested dicts are merged recursively."""
+    for key, value in overlay.items():
+        if key in base and isinstance(base[key], dict) and isinstance(value, dict):
+            _deep_merge(base[key], value)
+        else:
+            base[key] = value
+
+
+def _fixture_config_fields(fixture: Path) -> dict[str, Any]:
+    """Return merged 'fields' from test-common-config.yml and per-fixture *-config.yml."""
+    merged: dict[str, Any] = {}
+    common = fixture.parent / "test-common-config.yml"
+    if common.exists():
+        try:
+            parsed = _parse_simple_yaml(common.read_text())
+            fields = parsed.get("fields", {})
+            if isinstance(fields, dict):
+                _deep_merge(merged, fields)
+        except Exception:
+            pass
+    per_file = fixture.parent / (fixture.name + "-config.yml")
+    if per_file.exists():
+        try:
+            parsed = _parse_simple_yaml(per_file.read_text())
+            fields = parsed.get("fields", {})
+            if isinstance(fields, dict):
+                _deep_merge(merged, fields)
+        except Exception:
+            pass
+    return _expand_dotted_keys(merged)
+
+
 def is_fixture_file(path: Path) -> bool:
     name = path.name
     if name in SKIP_FIXTURE_NAMES:
@@ -309,8 +415,14 @@ def discover_fixtures(package: str) -> list[Path]:
     if not pkg_dir.is_dir():
         return []
     fixtures: list[Path] = []
+    streams_with_fixtures: set[str] = set()
     for path in sorted(pkg_dir.glob("data_stream/*/_dev/test/pipeline/*")):
         if path.is_file() and is_fixture_file(path):
+            fixtures.append(path)
+            streams_with_fixtures.add(path.relative_to(pkg_dir).parts[1])
+    # Fallback: for any stream without pipeline fixtures, index sample_event.json directly
+    for path in sorted(pkg_dir.glob("data_stream/*/sample_event.json")):
+        if path.is_file() and path.relative_to(pkg_dir).parts[1] not in streams_with_fixtures:
             fixtures.append(path)
     return fixtures
 
@@ -331,8 +443,13 @@ def _to_iso_timestamp(value: Any) -> str | None:
         text = value.strip()
         return text if text else None
     if isinstance(value, (int, float)):
-        # Heuristic: epoch ms vs sec
-        seconds = value / 1000 if value > 1e11 else value
+        # Heuristic: epoch ns vs ms vs sec
+        if value > 1e15:
+            seconds = value / 1e9   # nanoseconds (e.g. sysdig.timestamp)
+        elif value > 1e11:
+            seconds = value / 1000  # milliseconds
+        else:
+            seconds = value         # seconds
         return datetime.fromtimestamp(seconds, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
     return None
 
@@ -397,6 +514,7 @@ def ensure_timestamp(doc: dict[str, Any]) -> None:
 def load_documents(fixture: Path, package: str, run_id: str) -> list[dict[str, Any]]:
     text = fixture.read_text()
     docs: list[dict[str, Any]] = []
+    config_fields = _fixture_config_fields(fixture)
 
     if fixture.suffix == ".log":
         for line in text.splitlines():
@@ -420,6 +538,8 @@ def load_documents(fixture: Path, package: str, run_id: str) -> list[dict[str, A
     tagged: list[dict[str, Any]] = []
     for doc in docs:
         merged = dict(doc)
+        if config_fields:
+            _deep_merge(merged, config_fields)
         existing_tags = merged.get("tags")
         if existing_tags is None:
             tags: list[str] = []
@@ -439,8 +559,17 @@ def load_documents(fixture: Path, package: str, run_id: str) -> list[dict[str, A
     return tagged
 
 
+_VERSION_ONLY_RE = re.compile(r"^-\d+\.\d+\.\d+$")
+
+
 def resolve_ingest_pipeline(es_url: str, auth: Auth | None, base_name: str) -> str | None:
-    """Resolve Fleet-installed pipeline name (may include package version suffix)."""
+    """Resolve Fleet-installed pipeline name (may include package version suffix).
+
+    Fleet installs both a main versioned pipeline (e.g. logs-azure_openai.logs-1.13.0)
+    and named sub-pipelines (e.g. logs-azure_openai.logs-1.13.0-azure-shared-pipeline).
+    A plain reverse sort picks the sub-pipeline first because the extra suffix sorts later.
+    We filter to only bare versioned names before falling back to all matches.
+    """
     status, body = http_json("GET", f"{es_url}/_ingest/pipeline/{base_name}", auth=auth)
     if status == 200:
         return base_name
@@ -448,8 +577,10 @@ def resolve_ingest_pipeline(es_url: str, auth: Auth | None, base_name: str) -> s
     # Fleet registers versioned pipelines, e.g. logs-slack.audit-1.28.0
     status, body = http_json("GET", f"{es_url}/_ingest/pipeline/{base_name}*", auth=auth)
     if status == 200 and isinstance(body, dict) and body:
-        matches = sorted(body.keys(), reverse=True)
-        return matches[0]
+        # Prefer pipelines whose only suffix is a bare version (-X.Y.Z), excluding
+        # sub-pipelines like logs-azure_openai.logs-1.13.0-azure-shared-pipeline.
+        main = [k for k in body if _VERSION_ONLY_RE.match(k[len(base_name):])]
+        return sorted(main, reverse=True)[0] if main else sorted(body, reverse=True)[0]
 
     return None
 
@@ -590,7 +721,7 @@ def bulk_ingest(
     es_url: str,
     auth: Auth | None,
     target: StreamTarget,
-    pipeline: str,
+    pipeline: str | None,
     documents: list[dict[str, Any]],
     *,
     chunk_size: int = 200,
@@ -602,12 +733,10 @@ def bulk_ingest(
         chunk = documents[i : i + chunk_size]
         lines: list[str] = []
         for doc in chunk:
-            action = {
-                "create": {
-                    "_index": target.data_stream,
-                    "pipeline": pipeline,
-                }
-            }
+            create: dict[str, Any] = {"_index": target.data_stream}
+            if pipeline:
+                create["pipeline"] = pipeline
+            action = {"create": create}
             lines.append(json.dumps(action, separators=(",", ":")))
             lines.append(json.dumps(doc, separators=(",", ":")))
         payload = ("\n".join(lines) + "\n").encode()
@@ -766,6 +895,16 @@ def ingest_package_fixtures(
             )
             continue
 
+        # Ensure data_stream.dataset is set so constant_keyword fields get a value.
+        # Many fixtures omit it; without it the field is invisible in Kibana Discover.
+        for doc in documents:
+            if not isinstance(doc.get("data_stream"), dict):
+                doc["data_stream"] = {
+                    "dataset": target.dataset,
+                    "type": target.data_type,
+                    "namespace": "default",
+                }
+
         if dry_run:
             report.fixtures.append(
                 FixtureResult(str(fixture.relative_to(REPO)), stream, len(documents), 0)
@@ -773,17 +912,21 @@ def ingest_package_fixtures(
             report.events_submitted += len(documents)
             continue
 
-        pipeline = resolve_ingest_pipeline(es_url, auth, target.pipeline)
-        if not pipeline:
-            msg = f"ingest pipeline not found: {target.pipeline}"
-            report.fixtures.append(
-                FixtureResult(str(fixture.relative_to(REPO)), stream, 0, 0, msg)
-            )
-            report.notes.append(msg)
-            continue
+        is_sample = fixture.name == "sample_event.json"
+        if is_sample:
+            pipeline_name: str | None = "_none"  # bypass default pipeline; doc is already processed
+        else:
+            pipeline_name = resolve_ingest_pipeline(es_url, auth, target.pipeline)
+            if not pipeline_name:
+                msg = f"ingest pipeline not found: {target.pipeline}"
+                report.fixtures.append(
+                    FixtureResult(str(fixture.relative_to(REPO)), stream, 0, 0, msg)
+                )
+                report.notes.append(msg)
+                continue
 
         try:
-            submitted, bulk_errors = bulk_ingest(es_url, auth, target, pipeline, documents)
+            submitted, bulk_errors = bulk_ingest(es_url, auth, target, pipeline_name, documents)
         except Exception as exc:  # noqa: BLE001
             report.fixtures.append(
                 FixtureResult(str(fixture.relative_to(REPO)), stream, 0, 0, str(exc))

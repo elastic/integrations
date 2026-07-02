@@ -306,7 +306,7 @@ flowchart LR
 **Stream:** `m365_defender.alert` · **Fixture:** `packages/m365_defender/data_stream/alert/_dev/test/pipeline/test-alert.log-expected.json`
 
 ```
-Actor (user, CDPUserIS-38411) → detected → Target (host, clw555test)
+Actor (user, CDPUserIS-38411) → Suspicious PowerShell command line → Target (host, clw555test)
 ```
 
 #### Actor
@@ -325,11 +325,11 @@ Actor (user, CDPUserIS-38411) → detected → Target (host, clw555test)
 
 | Field | Value |
 | --- | --- |
-| action | detected |
-| source_field | `event.action` |
-| source_value | detected |
+| action | Suspicious PowerShell command line |
+| source_field | `m365_defender.alert.title` |
+| source_value | Suspicious PowerShell command line |
 
-Note: `event.action` reflects evidence `detectionStatus` (detection outcome), not the alert title (`Suspicious PowerShell command line`).
+Note: ES\|QL overrides the ingest-time `event.action` (`detectionStatus: detected`) with `m365_defender.alert.title` — the human-readable detection name.
 
 #### Target
 
@@ -350,7 +350,7 @@ Note: `event.action` reflects evidence `detectionStatus` (detection outcome), no
 
 ```mermaid
 flowchart LR
-  A["Actor: CDPUserIS-38411"] --> E["detected"]
+  A["Actor: CDPUserIS-38411"] --> E["Suspicious PowerShell command line"]
   E --> T["Target: clw555test"]
 ```
 
@@ -380,7 +380,7 @@ flowchart LR
 | `user.id` | `m365_defender.event.initiating_process.account_sid` | `data_stream.dataset == "m365_defender.event" AND user.id IS NULL` | high | **vendor fallback** (device telemetry) |
 | `user.name` | `user.name` | `user.name IS NOT NULL` | high | **preserve existing** — column-level |
 | `user.name` | `m365_defender.event.initiating_process.account_name` | `data_stream.dataset == "m365_defender.event" AND user.name IS NULL` | high | **vendor fallback** (`test-device.log-expected.json`) |
-| `user.name` | `process.user.name` | `data_stream.dataset IN ("m365_defender.alert", "m365_defender.incident") AND user.name IS NULL` | high | **vendor fallback** — evidence process owner (`test-alert.log-expected.json`) |
+| `user.name` | `process.user.name` | `data_stream.dataset IN ("m365_defender.event", "m365_defender.alert", "m365_defender.incident") AND user.name IS NULL` | high | **vendor fallback** — endpoint/evidence process owner (`test-alert.log-expected.json`) |
 | `user.email` | — | — | high | **ingest-only — no ES\|QL** — pipelines set `user.email` / `AccountUpn`; no alternate query-time path |
 | `user.domain` | — | — | high | **ingest-only — no ES\|QL** — pipelines set `user.domain`; no alternate query-time path |
 | `host.ip` | `host.ip` | `host.ip IS NOT NULL` | high | **preserve existing** — column-level |
@@ -393,11 +393,11 @@ flowchart LR
 | `host.target.id` | `host.target.id` | `host.target.id IS NOT NULL` | high | **preserve existing** (none today) |
 | `host.target.id` | `m365_defender.event.additional_fields.DestinationComputerObjectGuid` | `data_stream.dataset == "m365_defender.event" AND event.action IN ("samr-query", "dns-query")` | high | **vendor fallback** — SAMR fixture GUID |
 | `host.target.id` | `host.id` | `data_stream.dataset IN ("m365_defender.alert", "m365_defender.incident") AND host.id IS NOT NULL` | high | **de-facto** evidence device (`test-alert.log-expected.json`) |
-| `host.target.id` | `host.id` | `data_stream.dataset == "m365_defender.event" AND event.action NOT IN ("samr-query", "dns-query", "logonsuccess", "logonfailed") AND host.id IS NOT NULL` | high | **de-facto** onboarded sensor host (e.g. `dpapiaccessed`) |
+| `host.target.id` | `host.id` | `data_stream.dataset == "m365_defender.event" AND user.name IS NOT NULL AND event.action NOT IN ("samr-query", "dns-query", "logonsuccess", "logonfailed") AND host.id IS NOT NULL` | high | **de-facto** onboarded sensor host (e.g. `dpapiaccessed`); guard prevents self-loop when host is actor |
 | `host.target.name` | `host.target.name` | `host.target.name IS NOT NULL` | high | **preserve existing** |
 | `host.target.name` | `m365_defender.event.destination.device_name` | `data_stream.dataset == "m365_defender.event" AND m365_defender.event.destination.device_name IS NOT NULL` | high | **de-facto** identity query target |
 | `host.target.name` | `host.name` | `data_stream.dataset IN ("m365_defender.alert", "m365_defender.incident") AND host.name IS NOT NULL` | high | **de-facto** evidence hostname |
-| `host.target.name` | `host.name` | `data_stream.dataset == "m365_defender.event" AND event.action NOT IN ("samr-query", "dns-query", "logonsuccess", "logonfailed") AND host.name IS NOT NULL` | high | **de-facto** device telemetry target host |
+| `host.target.name` | `host.name` | `data_stream.dataset == "m365_defender.event" AND user.name IS NOT NULL AND event.action NOT IN ("samr-query", "dns-query", "logonsuccess", "logonfailed") AND host.name IS NOT NULL` | high | **de-facto** device telemetry target host; guard prevents self-loop when host is actor |
 | `host.target.ip` | `host.target.ip` | `host.target.ip IS NOT NULL` | high | **preserve existing** |
 | `host.target.ip` | `destination.ip` | `data_stream.dataset == "m365_defender.event" AND destination.ip IS NOT NULL` | high | **de-facto** remote peer (`test-app-and-identity.log-expected.json`) |
 | `user.target.name` | `user.target.name` | `user.target.name IS NOT NULL` | high | **preserve existing** |
@@ -416,7 +416,8 @@ flowchart LR
 
 | Output column | Source field(s) | Condition (dataset + optional) | Confidence | Notes |
 | --- | --- | --- | --- | --- |
-| `event.action` | `event.action` | `event.action IS NOT NULL` | high | **preserve existing** (arrays on alert/incident) |
+| `event.action` | `m365_defender.alert.title` | `data_stream.dataset == "m365_defender.alert" AND m365_defender.alert.title IS NOT NULL` | high | **override** — alert title as human-readable action; replaces ingest-time evidence `detectionStatus` (`detected`) |
+| `event.action` | `event.action` | `event.action IS NOT NULL` | high | **preserve existing** (arrays on non-alert datasets) |
 | `event.action` | `m365_defender.event.action.type` | `data_stream.dataset == "m365_defender.event" AND event.action IS NULL AND m365_defender.event.action.type IS NOT NULL` | medium | **vendor fallback** — BehaviorInfo/AlertInfo hunting gap; raw vendor verb |
 
 ### Detection flags (mandatory — run first)
@@ -467,7 +468,7 @@ Set **`entity.target.type`** only in the fallback branch (correct ECS name — n
   user.name = CASE(
     user.name IS NOT NULL, user.name,
     data_stream.dataset == "m365_defender.event" AND m365_defender.event.initiating_process.account_name IS NOT NULL, m365_defender.event.initiating_process.account_name,
-    data_stream.dataset IN ("m365_defender.alert", "m365_defender.incident") AND process.user.name IS NOT NULL, process.user.name,
+    data_stream.dataset IN ("m365_defender.event", "m365_defender.alert", "m365_defender.incident") AND process.user.name IS NOT NULL, process.user.name,
     null
   ),
   host.ip = CASE(
@@ -484,6 +485,7 @@ Set **`entity.target.type`** only in the fallback branch (correct ECS name — n
 ```esql
 | EVAL
   event.action = CASE(
+    data_stream.dataset == "m365_defender.alert" AND m365_defender.alert.title IS NOT NULL, m365_defender.alert.title,
     event.action IS NOT NULL, event.action,
     data_stream.dataset == "m365_defender.event" AND m365_defender.event.action.type IS NOT NULL, m365_defender.event.action.type,
     null
@@ -498,14 +500,14 @@ Set **`entity.target.type`** only in the fallback branch (correct ECS name — n
     host.target.id IS NOT NULL, host.target.id,
     data_stream.dataset == "m365_defender.event" AND event.action IN ("samr-query", "dns-query") AND m365_defender.event.additional_fields.DestinationComputerObjectGuid IS NOT NULL, m365_defender.event.additional_fields.DestinationComputerObjectGuid,
     data_stream.dataset IN ("m365_defender.alert", "m365_defender.incident") AND host.id IS NOT NULL, host.id,
-    data_stream.dataset == "m365_defender.event" AND event.action NOT IN ("samr-query", "dns-query", "logonsuccess", "logonfailed") AND host.id IS NOT NULL, host.id,
+    data_stream.dataset == "m365_defender.event" AND user.name IS NOT NULL AND event.action NOT IN ("samr-query", "dns-query", "logonsuccess", "logonfailed") AND host.id IS NOT NULL, host.id,
     null
   ),
   host.target.name = CASE(
     host.target.name IS NOT NULL, host.target.name,
     data_stream.dataset == "m365_defender.event" AND m365_defender.event.destination.device_name IS NOT NULL, m365_defender.event.destination.device_name,
     data_stream.dataset IN ("m365_defender.alert", "m365_defender.incident") AND host.name IS NOT NULL, host.name,
-    data_stream.dataset == "m365_defender.event" AND event.action NOT IN ("samr-query", "dns-query", "logonsuccess", "logonfailed") AND host.name IS NOT NULL, host.name,
+    data_stream.dataset == "m365_defender.event" AND user.name IS NOT NULL AND event.action NOT IN ("samr-query", "dns-query", "logonsuccess", "logonfailed") AND host.name IS NOT NULL, host.name,
     null
   ),
   host.target.ip = CASE(
@@ -554,13 +556,13 @@ FROM logs-*
   action_exists = event.action IS NOT NULL
 | EVAL
   user.id = CASE(user.id IS NOT NULL, user.id, data_stream.dataset == "m365_defender.event" AND m365_defender.event.additional_fields.SourceAccountSid IS NOT NULL, m365_defender.event.additional_fields.SourceAccountSid, data_stream.dataset == "m365_defender.event" AND m365_defender.event.initiating_process.account_sid IS NOT NULL, m365_defender.event.initiating_process.account_sid, null),
-  user.name = CASE(user.name IS NOT NULL, user.name, data_stream.dataset == "m365_defender.event" AND m365_defender.event.initiating_process.account_name IS NOT NULL, m365_defender.event.initiating_process.account_name, data_stream.dataset IN ("m365_defender.alert", "m365_defender.incident") AND process.user.name IS NOT NULL, process.user.name, null),
+  user.name = CASE(user.name IS NOT NULL, user.name, data_stream.dataset == "m365_defender.event" AND m365_defender.event.initiating_process.account_name IS NOT NULL, m365_defender.event.initiating_process.account_name, data_stream.dataset IN ("m365_defender.event", "m365_defender.alert", "m365_defender.incident") AND process.user.name IS NOT NULL, process.user.name, null),
   host.ip = CASE(host.ip IS NOT NULL, host.ip, data_stream.dataset == "m365_defender.event" AND user.name IS NULL AND source.ip IS NOT NULL, source.ip, null)
 | EVAL
-  event.action = CASE(event.action IS NOT NULL, event.action, data_stream.dataset == "m365_defender.event" AND m365_defender.event.action.type IS NOT NULL, m365_defender.event.action.type, null)
+  event.action = CASE(data_stream.dataset == "m365_defender.alert" AND m365_defender.alert.title IS NOT NULL, m365_defender.alert.title, event.action IS NOT NULL, event.action, data_stream.dataset == "m365_defender.event" AND m365_defender.event.action.type IS NOT NULL, m365_defender.event.action.type, null)
 | EVAL
-  host.target.id = CASE(host.target.id IS NOT NULL, host.target.id, data_stream.dataset == "m365_defender.event" AND event.action IN ("samr-query", "dns-query") AND m365_defender.event.additional_fields.DestinationComputerObjectGuid IS NOT NULL, m365_defender.event.additional_fields.DestinationComputerObjectGuid, data_stream.dataset IN ("m365_defender.alert", "m365_defender.incident") AND host.id IS NOT NULL, host.id, data_stream.dataset == "m365_defender.event" AND event.action NOT IN ("samr-query", "dns-query", "logonsuccess", "logonfailed") AND host.id IS NOT NULL, host.id, null),
-  host.target.name = CASE(host.target.name IS NOT NULL, host.target.name, data_stream.dataset == "m365_defender.event" AND m365_defender.event.destination.device_name IS NOT NULL, m365_defender.event.destination.device_name, data_stream.dataset IN ("m365_defender.alert", "m365_defender.incident") AND host.name IS NOT NULL, host.name, data_stream.dataset == "m365_defender.event" AND event.action NOT IN ("samr-query", "dns-query", "logonsuccess", "logonfailed") AND host.name IS NOT NULL, host.name, null),
+  host.target.id = CASE(host.target.id IS NOT NULL, host.target.id, data_stream.dataset == "m365_defender.event" AND event.action IN ("samr-query", "dns-query") AND m365_defender.event.additional_fields.DestinationComputerObjectGuid IS NOT NULL, m365_defender.event.additional_fields.DestinationComputerObjectGuid, data_stream.dataset IN ("m365_defender.alert", "m365_defender.incident") AND host.id IS NOT NULL, host.id, data_stream.dataset == "m365_defender.event" AND user.name IS NOT NULL AND event.action NOT IN ("samr-query", "dns-query", "logonsuccess", "logonfailed") AND host.id IS NOT NULL, host.id, null),
+  host.target.name = CASE(host.target.name IS NOT NULL, host.target.name, data_stream.dataset == "m365_defender.event" AND m365_defender.event.destination.device_name IS NOT NULL, m365_defender.event.destination.device_name, data_stream.dataset IN ("m365_defender.alert", "m365_defender.incident") AND host.name IS NOT NULL, host.name, data_stream.dataset == "m365_defender.event" AND user.name IS NOT NULL AND event.action NOT IN ("samr-query", "dns-query", "logonsuccess", "logonfailed") AND host.name IS NOT NULL, host.name, null),
   host.target.ip = CASE(host.target.ip IS NOT NULL, host.target.ip, data_stream.dataset == "m365_defender.event" AND destination.ip IS NOT NULL, destination.ip, null),
   user.target.name = CASE(user.target.name IS NOT NULL, user.target.name, data_stream.dataset == "m365_defender.event" AND m365_defender.event.query.target IS NOT NULL, m365_defender.event.query.target, null),
   user.target.email = CASE(user.target.email IS NOT NULL, user.target.email, data_stream.dataset == "m365_defender.event" AND email.to.address IS NOT NULL, email.to.address, null),
@@ -588,4 +590,4 @@ FROM logs-*
 - **Multi-valued `host.*` on alerts/incidents** — arrays from evidence flattening; consumers may need `MV_FIRST()` when scalar host targets are required.
 - **Identity logon (`logonsuccess`/`logonfailed`)** — `host.*` is source sensor; prefer `service.target.name` ← `application.name`, not `host.target.*` from `host.id`.
 - **Cloud audit rows** — may lack user principal; only `source.ip` available as weak actor context.
-- **`event.action` on alert/incident** — array of `detectionStatus` values (`detected`, `prevented`); semantically detection outcome, not hunting `ActionType` or alert title.
+- **`event.action` on alert** — ingest populates an array of evidence `detectionStatus` values (`detected`, `prevented`); ES|QL overrides this with `m365_defender.alert.title` (the human-readable detection name) via the CASE block above. The `incident` stream has no equivalent title field and retains `detectionStatus`.
