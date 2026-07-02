@@ -1,0 +1,270 @@
+# Claude Code namespaced fields
+- name: claude_code.events
+  type: group
+  fields:
+    # Session and identity
+    - name: session.id
+      type: keyword
+      description: Claude Code session identifier.
+    - name: prompt.id
+      type: keyword
+      description: Prompt turn identifier within a session.
+    - name: organization.id
+      type: keyword
+      description: Anthropic organization identifier.
+    - name: user.account_id
+      type: keyword
+      description: Anthropic account identifier.
+    - name: user.account_uuid
+      type: keyword
+      description: Anthropic account UUID.
+    - name: user.email
+      type: keyword
+      description: User email address.
+    - name: user.id
+      type: keyword
+      description: User identifier hash.
+    - name: terminal.type
+      type: keyword
+      description: Terminal emulator type or "non-interactive" for Cowork.
+    # OTel event metadata
+    - name: event.name
+      type: keyword
+      description: Event name from OTel attributes.
+    - name: event.sequence
+      type: long
+      description: Event sequence number within a prompt turn.
+    - name: event.timestamp
+      type: date
+      description: Event timestamp from OTel attributes.
+    # Tool events
+    - name: tool_name
+      type: keyword
+      description: Name of the tool invoked (for example Bash, Read, Write, mcp_tool).
+    - name: tool_use_id
+      type: keyword
+      description: Unique identifier for this tool invocation.
+    - name: tool_parameters
+      type: text
+      description: >-
+        JSON-encoded tool parameters. Only present when OTEL_LOG_TOOL_DETAILS is enabled.
+    - name: tool_parameters_flattened
+      type: flattened
+      description: >-
+        Parsed tool_parameters as a flattened object for structured queries. Populated by the ingest pipeline.
+    - name: tool_input
+      type: text
+      description: >-
+        JSON-encoded tool input. Only present when OTEL_LOG_TOOL_DETAILS is enabled.
+    - name: tool_input_flattened
+      type: flattened
+      description: >-
+        Parsed tool_input as a flattened object for structured queries. Populated by the ingest pipeline.
+    - name: tool_input_size_bytes
+      type: long
+      description: Size of tool input in bytes.
+    - name: tool_result_size_bytes
+      type: long
+      description: Size of tool result in bytes.
+    - name: success
+      type: keyword
+      description: Whether the tool call succeeded ("true" or "false").
+    - name: duration_ms
+      type: long
+      description: Duration of the operation in milliseconds.
+    # Tool decision events
+    - name: decision
+      type: keyword
+      description: Permission decision (accept, reject).
+    - name: decision_source
+      type: keyword
+      description: >-
+        Source of the permission decision (config, user_temporary, user_permanent).
+    - name: decision_type
+      type: keyword
+      description: Decision type (accept, reject).
+    - name: source
+      type: keyword
+      description: Source of the event (for example user, system).
+    # API request events
+    - name: model
+      type: keyword
+      description: AI model used for the request (for example claude-sonnet-4-6).
+    - name: cost_usd
+      type: double
+      description: Cost of the API request in USD.
+    - name: cost_usd_micros
+      type: long
+      description: Cost of the API request in millionths of a USD.
+    - name: input_tokens
+      type: long
+      description: Number of input tokens consumed.
+    - name: output_tokens
+      type: long
+      description: Number of output tokens generated.
+    - name: cache_read_tokens
+      type: long
+      description: Number of tokens served from cache.
+    - name: cache_creation_tokens
+      type: long
+      description: Number of tokens used for cache creation.
+    - name: query_source
+      type: keyword
+      description: >-
+        Source of the API query (repl_main_thread, sdk, generate_session_title, tool_feedback).
+    - name: request_id
+      type: keyword
+      description: Anthropic API request identifier.
+    - name: speed
+      type: keyword
+      description: Request speed tier (normal, fast).
+    - name: effort
+      type: keyword
+      description: Thinking effort level (high, medium, low).
+    # User prompt events
+    - name: prompt_text
+      type: text
+      description: >-
+        User prompt text. Only present when OTEL_LOG_USER_PROMPTS is enabled. Renamed from OTel attribute 'prompt' to avoid conflict with prompt.id path.
+    - name: prompt_length
+      type: long
+      description: Length of the user prompt in characters.
+    # Error events
+    - name: error
+      type: keyword
+      description: Error message from a failed operation.
+    - name: error_type
+      type: keyword
+      description: Error classification (for example ShellError).
+    - name: error_code
+      type: keyword
+      description: Error code (for example ENOENT).
+    # MCP events
+    - name: mcp_server_name
+      type: keyword
+      description: >-
+        Name of the MCP server. Extracted from tool_parameters_flattened by the ingest pipeline.
+    - name: mcp_tool_name
+      type: keyword
+      description: >-
+        Name of the MCP tool invoked. Extracted from tool_parameters_flattened by the ingest pipeline.
+    - name: server_name
+      type: keyword
+      description: MCP server name from connection events.
+    - name: server_scope
+      type: keyword
+      description: MCP server scope (for example project, user).
+    - name: mcp_server_scope
+      type: keyword
+      description: MCP server scope from tool_parameters.
+    - name: transport_type
+      type: keyword
+      description: MCP transport type (for example stdio, sse).
+    - name: status
+      type: keyword
+      description: Connection status (for example connected, failed).
+    - name: is_plugin
+      type: boolean
+      description: Whether the MCP server is a plugin.
+    - name: managed_only
+      type: keyword
+      description: Whether the MCP server is managed-only ("true" or "false").
+    # Permission mode events
+    - name: from_mode
+      type: keyword
+      description: Permission mode before the change.
+    - name: to_mode
+      type: keyword
+      description: Permission mode after the change.
+    - name: trigger
+      type: keyword
+      description: What triggered the permission mode change.
+    # Hook events
+    - name: hook_name
+      type: keyword
+      description: Name of the registered hook.
+    - name: hook_event
+      type: keyword
+      description: Hook event type (for example SessionStart, PreToolUse).
+    - name: hook_source
+      type: keyword
+      description: Source of the hook definition (for example settings.json).
+    - name: hook_type
+      type: keyword
+      description: Hook type (for example command).
+    - name: hook_matcher
+      type: keyword
+      description: Pattern the hook matches against (for example Bash).
+    - name: num_hooks
+      type: long
+      description: Number of hooks registered for this event.
+    - name: num_success
+      type: long
+      description: Number of hooks that completed successfully.
+    - name: num_blocking
+      type: long
+      description: Number of hooks that blocked execution.
+    - name: num_non_blocking_error
+      type: long
+      description: Number of hooks that failed without blocking.
+    - name: num_cancelled
+      type: long
+      description: Number of hooks that were cancelled.
+    - name: total_duration_ms
+      type: long
+      description: Total duration of all hook executions in milliseconds.
+    # Plugin events
+    - name: plugin.name
+      type: keyword
+      description: Plugin name.
+    - name: plugin.scope
+      type: keyword
+      description: Plugin scope (for example project, user).
+    - name: plugin.version
+      type: keyword
+      description: Plugin version.
+    - name: plugin_id_hash
+      type: keyword
+      description: Hash of the plugin identifier.
+    - name: enabled_via
+      type: keyword
+      description: How the plugin was enabled (for example user-install).
+    - name: agent_path_count
+      type: long
+      description: Number of agent paths in the plugin.
+    - name: command_path_count
+      type: long
+      description: Number of command paths in the plugin.
+    - name: skill_path_count
+      type: long
+      description: Number of skill paths in the plugin.
+    # Skill events
+    - name: skill.name
+      type: keyword
+      description: Activated skill name.
+    - name: skill.source
+      type: keyword
+      description: Source of the skill definition.
+    - name: invocation_trigger
+      type: keyword
+      description: How the skill was invoked (for example user-slash).
+    # Session-level flags
+    - name: has_hooks
+      type: boolean
+      description: Whether the session has registered hooks.
+    - name: has_mcp
+      type: boolean
+      description: Whether the session has MCP servers.
+    - name: host_owned_mcp
+      type: boolean
+      description: Whether MCP servers are host-owned ("true" or "false").
+    - name: safe_mode
+      type: keyword
+      description: Whether safe mode is active ("true" or "false").
+    - name: command_name
+      type: keyword
+      description: Slash command name from user_prompt events.
+    # Marketplace
+    - name: marketplace.name
+      type: keyword
+      description: Name of the marketplace entry.
