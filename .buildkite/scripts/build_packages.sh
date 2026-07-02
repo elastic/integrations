@@ -27,6 +27,7 @@ skipPublishing() {
         return 1
     fi
 
+    # feature/* and other non-publishing branches fall through here
     return 0
 }
 

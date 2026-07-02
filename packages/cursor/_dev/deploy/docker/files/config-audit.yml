@@ -1,0 +1,118 @@
+rules:
+  # Page 2 (final page).
+  # Returns 3 events and hasNextPage=false, ending pagination.
+  # Timestamps use now-relative offsets so they never age past the CEL
+  # program's 30-day API clamp.
+  - path: /teams/audit-logs
+    methods: ["GET"]
+    query_params:
+      page: "2"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      pageSize: "{pageSize:.*}"
+    request_headers:
+      Authorization:
+        - "Basic a2V5X3Rlc3QxMjM6"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "events": [
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0004",
+                "timestamp": "{{ (now "-237h").Format "2006-01-02T15:04:05.000Z" }}",
+                "ip_address": "203.0.113.10",
+                "user_email": "unknown",
+                "event_type": "remove_user",
+                "event_data": { "user_email": "gone@example.com" }
+              },
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0005",
+                "timestamp": "{{ (now "-236h").Format "2006-01-02T15:04:05.000Z" }}",
+                "ip_address": "198.51.100.20",
+                "user_email": "cloud@example.com",
+                "event_type": "cloud_agent_user_settings",
+                "event_data": { "agent_enabled": true }
+              },
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0006",
+                "timestamp": "{{ (now "-235h").Format "2006-01-02T15:04:05.000Z" }}",
+                "ip_address": "198.51.100.21",
+                "user_email": "ops@example.com",
+                "event_type": "login",
+                "event_data": { "login_type": "LOGIN_TYPE_WEB", "success": true }
+              }
+            ],
+            "pagination": {
+              "page": 2,
+              "pageSize": 100,
+              "totalCount": 6,
+              "totalPages": 2,
+              "hasNextPage": false,
+              "hasPreviousPage": true
+            },
+            "params": { "teamId": 9990001, "startDate": 0, "endDate": 0 }
+          }
+  # Page 1 (catchall).
+  # Returns 3 events and hasNextPage=true, driving the CEL to fetch page 2.
+  # startTime and endTime are dynamic (runtime values) so both use a regex.
+  - path: /teams/audit-logs
+    methods: ["GET"]
+    query_params:
+      page: "1"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      pageSize: "{pageSize:.*}"
+    request_headers:
+      Authorization:
+        - "Basic a2V5X3Rlc3QxMjM6"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "events": [
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0001",
+                "timestamp": "{{ (now "-240h").Format "2006-01-02T15:04:05.000Z" }}",
+                "ip_address": "198.51.100.10",
+                "user_email": "alice@example.com",
+                "event_type": "login",
+                "event_data": { "login_type": "LOGIN_TYPE_WEB", "success": true }
+              },
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0002",
+                "timestamp": "{{ (now "-239h").Format "2006-01-02T15:04:05.000Z" }}",
+                "ip_address": "192.0.2.50",
+                "user_email": "mcp@example.com",
+                "event_type": "mcp_server_config",
+                "event_data": { "action": "add", "scope": "team", "server_name": "docs", "server_type": "http" }
+              },
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0003",
+                "timestamp": "{{ (now "-238h").Format "2006-01-02T15:04:05.000Z" }}",
+                "ip_address": "198.51.100.11",
+                "user_email": "bob@example.com",
+                "event_type": "cloud_agent_user_settings",
+                "event_data": { "theme": "dark" }
+              }
+            ],
+            "pagination": {
+              "page": 1,
+              "pageSize": 100,
+              "totalCount": 6,
+              "totalPages": 2,
+              "hasNextPage": true,
+              "hasPreviousPage": false
+            },
+            "params": { "teamId": 9990001, "startDate": 0, "endDate": 0 }
+          }

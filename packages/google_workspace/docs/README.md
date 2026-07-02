@@ -1636,6 +1636,8 @@ An example event for `alert` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | google_workspace.alert.create_time | The time this alert was created. | date |
@@ -4298,6 +4300,10 @@ An example event for `gmail` looks as following:
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | google_workspace.gmail.domain_name |  | keyword |

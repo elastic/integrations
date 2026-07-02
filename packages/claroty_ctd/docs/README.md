@@ -6,6 +6,11 @@
 
 Claroty CTD integration collects and parses data using a Syslog server and REST API, then visualizes it in Kibana.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Compatibility
 
 This module has been tested against the latest Claroty CTD version **4.10.0**.
@@ -81,11 +86,11 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2023-08-13T01:00:00.000Z",
     "agent": {
-        "ephemeral_id": "df6c1cae-2ea3-4724-97aa-d6c92437e0e9",
-        "id": "6ea84e08-53d0-41db-9bba-a7856c1f22de",
-        "name": "elastic-agent-75928",
+        "ephemeral_id": "dd0f88ed-3643-4c24-b2e5-b6ac693c12ea",
+        "id": "4c43ff7a-b186-4386-8f6c-ccea4bb3beb3",
+        "name": "elastic-agent-74704",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.2"
     },
     "claroty_ctd": {
         "event": {
@@ -396,23 +401,22 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "claroty_ctd.event",
-        "namespace": "94226",
+        "namespace": "85446",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "6ea84e08-53d0-41db-9bba-a7856c1f22de",
+        "id": "4c43ff7a-b186-4386-8f6c-ccea4bb3beb3",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "claroty_ctd.event",
-        "ingested": "2025-07-08T10:58:50Z",
+        "ingested": "2026-07-01T10:47:29Z",
         "kind": "event",
-        "module": "claroty_ctd",
         "original": "<134>1 2023-08-15T01:00:00Z Site syslog-HealthCheck-Default - - - CEF:0|Claroty|CTD|4.10.0|HealthCheck|Health|0|CtdRealTime=Aug 14 2023 01:00:00 CtdTimeGenerated=Aug 13 2023 01:00:00 CtdMessage=Successfully ran health monitoring CtdSite=Default CtdCpu=12.21 CtdMem=13.31 CtdUsedOptIcsranger=14.41 CtdUsedVar=15.51 CtdUsedTmp=16.61 CtdUsedEtc=17.71 CtdBusyFd=0.11 CtdBusySda=0.22 CtdBusySdaA=0.33 CtdBusySdaB=0.44 CtdBusySr=0.55 CtdBusyDm=0.66 CtdBusyDmA=0.77 CtdQuBaselineTracker=1 CtdQuBridge=2 CtdQuCentralBridge=3 CtdQuConcluding=4 CtdQuDiodeFeeder=5 CtdQuDissector=6 CtdQuDissectorA=7 CtdQuDissectorNg=8 CtdQuIndicatorService=9 CtdQuLeecher=10 CtdQuMonitor=11 CtdQuNetworkStatistics=12 CtdQuPackets=13 CtdQuPacketsErrors=14 CtdQuPreprocessing=15 CtdQuPreprocessingNg=16 CtdQuPriorityProcessing=17 CtdQuProcessing=18 CtdQuProcessingHigh=19 CtdQuStatisticsNg=20 CtdQuZordonUpdates=21 CtdQueuePurge=22 CtdQuSyslogAlerts=23 CtdQuSyslogEvents=24 CtdQuSyslogInsights=25 CtdRdDissector=26 CtdRdDissectorA=27 CtdRdDissectorNg=28 CtdRdPreprocessing=29 CtdRdPreprocessingNg=30 CtdSvcMariaDb=Down CtdSvcPostgres=Down CtdSvcRedis=Down CtdSvcRabbitMq=Down CtdSvcIcsranger=Down CtdSvcWatchdog=Down CtdSvcFirewalld=Down CtdSvcNetunnel=Down CtdSvcJwthenticator=Down CtdSvcDocker=Down CtdExceptions=31 CtdInputPacketDrops=32 CtdOutputPacketDrops=33 CtdFullOutputPacketDrops=34 CtdDissectorNgPacketDrops=35 CtdTagArtifactsDropsPreprocessor=36 CtdTagArtifactsDropsPreprocessorSum=37 CtdTagArtifactsDropsProcessor=38 CtdTagArtifactsDropsProcessorSum=39 CtdTagArtifactsDropsSniffer=40 CtdTagArtifactsDropsSnifferSum=41 CtdTagArtifactsDropsDissectorPypy=42 CtdTagArtifactsDropsDissectorPypySum=43 CtdCapsaverFolderCleanup=TRUE CtdDissectionCoverage=44 CtdCapsaverUtilzationTest=N/A CtdYaraScannerTest=45 CtdWrkrWorkersStop=46 CtdWrkrWorkersRestart=47 CtdWrkrActiveExecuter={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrSensor={'api': 'Available', 'last_restart': '18 min, 34 sec'} CtdWrkrAuthentication={'api': 'Not Available', 'last_restart': '21 min, 18 sec'} CtdWrkrMailer={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrMitre={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrNotifications={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrProcessor={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrCloudAgent={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrCloudClient={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrScheduler={'api': 'Available', 'last_restart': '21 min, 19 sec'} CtdWrkrknownThreats={'api': 'Available', 'last_restart': '18 min, 58 sec'} CtdWrkrCacher={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrInsights={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrActive={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrEnricher={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrIndicators={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrIndicatorsApi={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrConcluder={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrPreprocessor={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrLeecher={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrSyncManager={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrBridge={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrWebRanger={'api': 'Not Available', 'last_restart': '21 min, 6 sec'} CtdWrkrWebWs={'api': 'Not Available', 'last_restart': '21 min, 1 sec'} CtdWrkrWebAuth={'api': 'Not Available', 'last_restart': '21 min, 1 sec'} CtdWrkrWebNginx={'api': 'Not Available', 'last_restart': '21 min, 1 sec'} CtdWrkrConfigurator={'api': 'Available', 'last_restart': '21 min, 18 sec'} CtdWrkrConfiguratorNginx={'api': 'Not Available', 'last_restart': '19 min, 17 sec'} CtdWrkrCapsaver={'api': 'Not Available', 'last_restart': '19 min, 17 sec'} CtdWrkrBaselineTracker={'api': 'Not Available', 'last_restart': '19316 days, 15 hrs, 56 min, 43 sec'} CtdWrkrDissector={'api': 'Available', 'last_restart': '18 min, 34 sec'} CtdWrkrDissectorA={'api': 'Available', 'last_restart': '18 min, 34 sec'} CtdSensorName=Sensor-1 CtdCtrlSite=48 CtdLoopCallDurationBaselineTrackerWrkerHandleNetworkStatistics=1.2345 CtdDissectionEfficiencyModbus=2.2345 CtdDissectionEfficiencySmb=3.2345 CtdDissectionEfficiencyDcerpc=4.2345 CtdDissectionEfficiencyZabbix=5.2345 CtdDissectionEfficiencyFactorytalkRna=6.2345 CtdDissectionEfficiencySsl=7.2345 CtdDissectionEfficiencyVrrpProtocolMatcher=8.2345 CtdDissectionEfficiencyRdp=9.2345 CtdDissectionEfficiencySsh=10.2345 CtdDissectionEfficiencyHttp=11.2345 CtdDissectionEfficiencyTcpHttp=12.2345 CtdDissectionEfficiencyLdap=13.2345 CtdDissectionEfficiencyJrmi=14.2345 CtdDissectionEfficiencyGeIfix=15.2345 CtdDissectionEfficiencyLlc=16.2345 CtdDissectionEfficiencyMatrikonNopc=17.2345 CtdDissectionEfficiencyVnc=18.2345 CtdUnhandledEvents=49 CtdConcludeTime=50 CtdMysqlQuery=19.2345 CtdPostgresQuery=20.2345 CtdDroppedEntities=51 CtdPsqlIdleSessions=52 CtdPsqlIdleInTransactionSessions=53 CtdSnifferStatus=N/A CtdLoopCallDurationPollObjects=21.2345 CtdLoopCallDurationCloudClientWrkrBaseRunCloudConnected=22.2345 CtdSnifferStatusCentral=N/A CtdSnifferStatusSite=23.2345"
     },
     "host": {
@@ -425,7 +429,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.244.3:50569"
+            "address": "172.19.0.3:36529"
         }
     },
     "message": "Successfully ran health monitoring",

@@ -58,7 +58,7 @@ func Check(ctx context.Context, resultsPath string, options CheckOptions) error 
 	})
 
 	if len(packageErrors) > options.MaxTestsReported {
-		fmt.Printf("Skip creating GitHub issues, hit the maximum number (%d) of tests to be reported. Total failing tests: %d.\n", options.MaxTestsReported, len(packageErrors))
+		fmt.Printf("Skip creating GitHub issues, hit the maximum number (%d) of tests to report. Total failing tests: %d.\n", options.MaxTestsReported, len(packageErrors))
 		packages, err := packagesFromTests(resultsPath)
 		if err != nil {
 			return fmt.Errorf("failed to get packages from results files: %w", err)

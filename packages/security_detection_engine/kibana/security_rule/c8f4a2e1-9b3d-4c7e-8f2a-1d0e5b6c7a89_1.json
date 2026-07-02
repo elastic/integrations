@@ -1,0 +1,149 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Flags an existing Role or ClusterRole being changed (patch or update) so the effective rules become cluster-admin-like: wildcard on every API resource and wildcard on every verb. That is usually a deliberate privilege expansion, not a typo. RequestResponse audit and the response body are required so the detection reads the merged role after apply; loopback source IPs are ignored.",
+        "false_positives": [
+            "Platform installers, GitOps controllers, and emergency break-glass roles sometimes ship or widen wildcard ClusterRoles; correlate with change records and narrow by user or service account when baselined."
+        ],
+        "from": "now-9m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Kubernetes RBAC Wildcard Elevation on Existing Role",
+        "note": "## Triage and analysis\n\n### Investigating Kubernetes RBAC Wildcard Elevation on Existing Role\n\nSomeone patched or updated a Role or ClusterRole so the stored rules grant star verbs and star resources\u2014near\ncluster-admin breadth on that scope. Confirm the actor (user, group, impersonation), client, and non-loopback source\nIP; then see who can bind that role.\n\n### Possible investigation steps\n\n- Diff the role YAML before and after; list RoleBindings and ClusterRoleBindings that reference it and which subjects\n  gained the widened access.\n- In the same window, check secret reads, exec, and further RBAC changes from the same identity.\n\n### False positive analysis\n\n- Approved GitOps or vendor upgrades sometimes widen a known ClusterRole; allowlist stable automation when documented.\n\n### Response and remediation\n\n- Revert the role, drop unexpected bindings, rotate credentials for the actor, and block future wildcard RBAC outside\n  governed pipelines (policy-as-code, PR-only RBAC).\n",
+        "query": "from logs-kubernetes.audit_logs-* metadata _id, _index, _version\n| where\n  kubernetes.audit.objectRef.resource in (\"roles\", \"clusterroles\") and\n  kubernetes.audit.verb in (\"update\", \"patch\") and\n  `kubernetes.audit.annotations.authorization_k8s_io/decision` == \"allow\" and\n  kubernetes.audit.level == \"RequestResponse\" and\n  kubernetes.audit.stage == \"ResponseComplete\" and\n  kubernetes.audit.sourceIPs is not null and\n  not kubernetes.audit.sourceIPs in (\"::1\", \"127.0.0.1\") and\n  KQL(\"\"\" kubernetes.audit.responseObject.rules.verbs:\"*\" and kubernetes.audit.responseObject.rules.resources:\"*\" \"\"\")\n| keep user.name, user_agent.original, event.action, source.ip, kubernetes.audit.verb, kubernetes.audit.objectRef.resource, kubernetes.audit.objectRef.name, kubernetes.audit.requestURI, kubernetes.audit.user.username, kubernetes.audit.user.groups, `kubernetes.audit.annotations.authorization_k8s_io/decision`, event.original, _id, _version, _index, data_stream.namespace\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1098/006/",
+            "https://kubernetes.io/docs/reference/access-authn-authz/rbac/"
+        ],
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.80.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.original",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.annotations.authorization_k8s_io/decision",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestURI",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.user.groups",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.user.username",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c8f4a2e1-9b3d-4c7e-8f2a-1d0e5b6c7a89",
+        "severity": "high",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Domain: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "c8f4a2e1-9b3d-4c7e-8f2a-1d0e5b6c7a89_1",
+    "type": "security-rule"
+}

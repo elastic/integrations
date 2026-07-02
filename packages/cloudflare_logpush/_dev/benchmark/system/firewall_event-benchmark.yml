@@ -1,0 +1,26 @@
+---
+description: Benchmark 10000 firewall_event events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: firewall_event
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/firewall_event
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-firewall-event
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./firewall_event-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./firewall_event-benchmark/config.yml
+    fields:
+      path: ./firewall_event-benchmark/fields.yml

@@ -1,0 +1,114 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}/v1/organizations/cost_report
+resource.headers:
+  anthropic-version:
+    - "{{anthropic_version}}"
+resource.rate_limit.limit: 10
+resource.rate_limit.burst: 10
+state:
+  admin_api_key: {{admin_api_key}}
+  initial_interval: {{initial_interval}}
+  group_by: {{group_by}}
+redact:
+  fields:
+    - admin_api_key
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "starting_at": timestamp(state.?cursor.last_ending_at.orValue(
+          (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+        )).format("2006-01-02") + "T00:00:00Z",
+        "ending_at": now.format("2006-01-02") + "T00:00:00Z",
+      }).drop(["page"])
+  ).as(state,
+    // Cost API uses bucket_width=1d; skip if less than 1 day since last poll
+    (timestamp(state.ending_at) - timestamp(state.starting_at)) < duration("24h") ?
+      state.with({"events": [], "cursor": state.?cursor.orValue({})})
+    :
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "?" + {
+          "starting_at": [string(state.starting_at)],
+          "ending_at": [string(state.ending_at)],
+          "bucket_width": ["1d"],
+          ?"page": state.?page.orValue("") != "" ? optional.of([string(state.page)]) : optional.none(),
+          ?"group_by[]": state.?group_by.orValue("") != "" ? optional.of(string(state.group_by).split(",")) : optional.none(),
+        }.format_query()
+      ).with({
+        "Header": {
+          "x-api-key": [state.admin_api_key],
+        },
+      }).do_request().as(resp,
+        resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body,
+            body.?data.orValue([]).map(bucket,
+              bucket.?results.orValue([]).map(r,
+                r.with({
+                  "bucket_start_time": bucket.starting_at,
+                  "bucket_end_time": bucket.ending_at,
+                })
+              )
+            ).flatten().map(e, {"message": e.encode_json()}).as(events, {
+              "events": events,
+              "want_more": body.?has_more.orValue(false),
+              ?"page": body.?has_more.orValue(false) ?
+                optional.of(body.next_page)
+              :
+                optional.none(),
+              "cursor": body.?has_more.orValue(false) ?
+                state.?cursor.orValue({})
+              :
+                {"last_ending_at": state.ending_at},
+            })
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /v1/organizations/cost_report: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

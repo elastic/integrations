@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `haproxy.requests.queued > 0` sustained. Any ongoing queue depth signals backend saturation.",
     "name": "[HAProxy OTel] Requests queued at backend",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -14,6 +15,19 @@
     },
     "alertDelay": {
       "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "haproxy_otel-backend"
+        },
+        {
+          "id": "haproxy_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## HAProxy requests queued at backend\n\n### What fired\n`haproxy.requests.queued > 0` over the window.\n\n### Why it matters\nQueued requests wait for a free backend server slot. Sustained queueing causes cascading latency and eventual timeouts.\n\n### Triage\n1. Identify which backend is queueing and why.\n2. Inspect per-server max-conn saturation.\n3. Look at response time for the backend.\n\n### Remediation\n- Raise per-server capacity.\n- Add servers.\n\n### Tuning\n- Fires on any sustained queue.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

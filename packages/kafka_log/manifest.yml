@@ -1,9 +1,9 @@
 format_version: "3.3.2"
 name: kafka_log
-title: Custom Kafka Logs
-description: Collect data from kafka topic with Elastic Agent.
+title: Kafka Log Consumer
+description: Consume log data from Kafka topics via Elastic Agent. Use this to route existing Kafka log streams into Elasticsearch.
 type: input
-version: "2.0.0"
+version: "2.1.1"
 conditions:
   kibana:
     version: "^8.13.0 || ^9.0.0"
@@ -66,7 +66,9 @@ policy_templates:
       - name: version
         type: text
         title: Version
-        description: The version of the Kafka protocol to use (defaults to "1.0.0" in 8.x and "2.1.0" in 9.0+).
+        description: |
+          The version of the Kafka protocol to use (defaults to "1.0.0" in 8.x and "2.1.0" in 9.0+).
+          Caveat for Kafka 4.0.0: setting this field to "4.0.0" is only supported on Elastic Stack 9.2.7+ and 9.3.3+. On 9.1.x, and on 9.2.x / 9.3.x releases prior to those patches, leave this field blank — the client default ("2.1.0") is accepted by Kafka 4.0 brokers for backward compatibility. Setting "4.0.0" on an unsupported stack version will cause the integration to enter FAILED status.
         required: false
         show_user: true
       - name: expand_event_list_from_field

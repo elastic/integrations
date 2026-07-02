@@ -1,40 +1,51 @@
 {
-    "id": "nvidia_gpu_otel-gpu-utilization-saturated",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[NVIDIA GPU OTel] GPU utilization saturated",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "nvidia_gpu"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 3
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-nvidia_gpu.otel-default\n| WHERE DCGM_FI_DEV_GPU_UTIL IS NOT NULL\n| STATS\n    avg_util = AVG(DCGM_FI_DEV_GPU_UTIL),\n    max_util = MAX(DCGM_FI_DEV_GPU_UTIL)\n  BY Hostname, UUID, modelName\n// Sustained high utilization above 95% indicates compute saturation\n// Adjust threshold based on workload expectations\n| WHERE avg_util > 95\n| SORT avg_util DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "UUID",
-            "termSize": 50
+  "id": "nvidia_gpu_otel-gpu-utilization-saturated",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when GPU utilization sustains above 95% over 15 minutes. Saturation may be desired for training, but for inference workloads it caps QPS.",
+    "name": "[NVIDIA GPU OTel] GPU utilization saturated",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "nvidia_gpu"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "nvidia_gpu_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## NVIDIA GPU utilization saturated\n\n### What fired\n`AVG(DCGM_FI_DEV_GPU_UTIL) > 95%` over the 15-minute window.\n\n### Why it matters\nSustained high utilisation is fine for batch training but for inference / serving it means tail latency is rising and capacity headroom is gone \u2014 any traffic burst will queue.\n\n### Triage\n1. Determine the workload type (training vs inference).\n2. For inference: check request queue depth and latency.\n3. Inspect framebuffer usage and clock throttling for compounding issues.\n\n### Remediation\n- Scale out by adding GPUs / nodes.\n- Optimise model (quantisation, batching) to reduce GPU time per request.\n\n### Tuning\n- 95% threshold; raise for training fleets where 100% is the goal.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-nvidia_gpu.otel-default\n| WHERE DCGM_FI_DEV_GPU_UTIL IS NOT NULL\n| STATS\n    avg_util = AVG(DCGM_FI_DEV_GPU_UTIL),\n    max_util = MAX(DCGM_FI_DEV_GPU_UTIL)\n  BY Hostname, UUID, modelName\n// Sustained high utilization above 95% indicates compute saturation\n// Adjust threshold based on workload expectations\n| WHERE avg_util > 95\n| SORT avg_util DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "UUID",
+      "termSize": 50
     }
+  }
 }

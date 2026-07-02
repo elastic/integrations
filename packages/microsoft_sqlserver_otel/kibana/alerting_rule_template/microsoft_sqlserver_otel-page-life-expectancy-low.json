@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `sqlserver.page.life_expectancy < 300` seconds. PLE below 300 is the canonical memory-pressure threshold.",
     "name": "[SQL Server OTel] Page life expectancy low",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-memory-saturation"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server page life expectancy low\n\n### What fired\nPLE dropped below 300 seconds during the window.\n\n### Why it matters\nPage life expectancy is how long a page stays in the buffer pool. The well-known 300s threshold is a severe memory pressure indicator.\n\n### Triage\n1. Correlate with free-list stalls, buffer hit ratio, memory grants pending.\n\n### Remediation\n- Add memory.\n- Optimise bad queries / indexes.\n\n### Tuning\n- 300s; raise for larger memory footprints (some DBAs use 300 * GB_of_buffer_pool / 4).\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Instance-level metric: buffer pool page lifetime in seconds\n| WHERE metrics.sqlserver.page.life_expectancy IS NOT NULL\n| STATS min_ple = MIN(metrics.sqlserver.page.life_expectancy),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n// PLE below 300s indicates severe memory pressure; adjust threshold for your environment\n| WHERE min_ple < 300\n| KEEP instance_id, min_ple"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 10,

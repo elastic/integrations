@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when enqueue lock utilisation exceeds 85%. Precedes enqueue wait events and contention.",
     "name": "[Oracle OTel] Enqueue lock utilisation high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 8,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "oracle_otel-transaction-health"
+        },
+        {
+          "id": "oracle_otel-resource-capacity"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Oracle enqueue lock utilisation high\n\n### What fired\nEnqueue locks utilisation exceeded 85%.\n\n### Why it matters\nEnqueues are Oracle's shared-resource locks. Near-limit usage correlates with enqueue waits and ORA errors.\n\n### Triage\n1. Identify top enqueue waits from ASH / AWR.\n\n### Remediation\n- Raise enqueue_resources.\n- Address hot-row contention in the workload.\n\n### Tuning\n- 85% threshold.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-oracledbreceiver.otel-*\n// Enqueue locks usage and limit are in separate TSDB document groups; aggregate across time window\n| STATS usage = MAX(oracledb.enqueue_locks.usage),\n        limit_val = MAX(oracledb.enqueue_locks.limit)\n        BY oracledb.instance.name, host.name\n| WHERE limit_val > 0\n// Utilisation > 85% precedes lock contention and enqueue wait events\n// Adjust threshold to tune sensitivity\n| EVAL utilisation_pct = ROUND(usage * 100.0 / limit_val, 1)\n| WHERE utilisation_pct > 85\n| SORT utilisation_pct DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

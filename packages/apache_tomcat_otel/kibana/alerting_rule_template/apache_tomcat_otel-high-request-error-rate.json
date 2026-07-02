@@ -1,37 +1,51 @@
 {
-    "id": "apache_tomcat_otel-high-request-error-rate",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Tomcat OTel] High request error rate",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "tomcat"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "apache_tomcat_otel-high-request-error-rate",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the connector-level HTTP error rate exceeds 5% (`errorCount / requestCount > 0.05`). Sustained elevated error rate indicates application failures or misconfigurations.",
+    "name": "[Tomcat OTel] High request error rate",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "tomcat"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_tomcat_otel-request-processing"
         },
-        "alertDelay": {
-            "active": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_errorCount IS NOT NULL\n    AND Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS\n    max_errors = MAX(Catalina_GlobalRequestProcessor_errorCount),\n    min_errors = MIN(Catalina_GlobalRequestProcessor_errorCount),\n    max_requests = MAX(Catalina_GlobalRequestProcessor_requestCount),\n    min_requests = MIN(Catalina_GlobalRequestProcessor_requestCount)\n  BY host.name, attributes.name\n| EVAL\n    delta_errors = max_errors - min_errors,\n    delta_requests = max_requests - min_requests\n// Minimum request volume to avoid noisy alerts on low-traffic connectors\n// Adjust this threshold based on expected traffic volume\n| WHERE delta_requests > 10\n| EVAL error_rate_pct = ROUND(delta_errors / delta_requests * 100.0, 2)\n// Alert threshold \u2014 adjust based on acceptable error rate for your services\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 100,
-            "excludeHitsFromPreviousRun": true
+        {
+          "id": "apache_tomcat_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Tomcat high request error rate\n\n### What fired\n`(delta errorCount) / (delta requestCount) > 5%` on a connector during the evaluation window.\n\n### Why it matters\nTomcat counts HTTP 4xx and 5xx responses as errors. Sustained error rate above a few percent typically reflects an application-layer problem \u2014 a failed dependency, a recently deployed bug, or misconfigured security filters.\n\n### Triage\n1. Request Processing dashboard: identify affected connectors / web applications.\n2. Correlate with deploy timelines and dependency status.\n3. Sample application logs for the dominant error category.\n4. Check if errors are concentrated on specific servlets (`Catalina_Servlet_errorCount` per servlet).\n\n### Remediation\n- Roll back or patch the offending application.\n- Fix downstream dependency; add circuit breakers to degrade gracefully.\n\n### Tuning\n- `> 5%` with `delta_requests > 10` is a sensible default. Lower for APIs with tight SLAs; raise for noisy UIs.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_errorCount IS NOT NULL\n    AND Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS\n    max_errors = MAX(Catalina_GlobalRequestProcessor_errorCount),\n    min_errors = MIN(Catalina_GlobalRequestProcessor_errorCount),\n    max_requests = MAX(Catalina_GlobalRequestProcessor_requestCount),\n    min_requests = MIN(Catalina_GlobalRequestProcessor_requestCount)\n  BY host.name, attributes.name\n| EVAL\n    delta_errors = max_errors - min_errors,\n    delta_requests = max_requests - min_requests\n// Minimum request volume to avoid noisy alerts on low-traffic connectors\n// Adjust this threshold based on expected traffic volume\n| WHERE delta_requests > 10\n| EVAL error_rate_pct = ROUND(delta_errors / delta_requests * 100.0, 2)\n// Alert threshold \u2014 adjust based on acceptable error rate for your services\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when TempDB free space drops below 100 MB. TempDB exhaustion affects sorts, hashes, snapshots, and version store.",
     "name": "[SQL Server OTel] TempDB space low",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-database-io"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server TempDB space low\n\n### What fired\nTempDB free space dropped below 100 MB (102400 KB) during the window.\n\n### Why it matters\nTempDB is used by every connection for sorts, spills, and version store. Running out crashes many query patterns.\n\n### Triage\n1. Check version store size and long-running open transactions.\n2. Inspect large sorts / hash joins.\n\n### Remediation\n- Kill the long-running transaction holding the version store.\n- Grow TempDB files.\n\n### Tuning\n- 100 MB default; tune to TempDB total size.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-sqlserverreceiver.otel-default\n// TempDB space by state (free/used); filter for free space\n| WHERE metrics.sqlserver.database.tempdb.space IS NOT NULL\n| WHERE COALESCE(attributes.tempdb.state, tempdb.state) == \"free\"\n| STATS min_free_kb = MIN(metrics.sqlserver.database.tempdb.space),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n// Alert when free space below 100MB (102400 KB); adjust for your TempDB size\n| WHERE min_free_kb < 102400\n| KEEP instance_id, min_free_kb"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 10,

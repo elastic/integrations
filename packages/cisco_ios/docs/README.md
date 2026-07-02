@@ -1,6 +1,5 @@
 # Cisco IOS Integration for Elastic
 
-> Note: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
@@ -15,6 +14,8 @@ This integration facilitates:
 ### Compatibility
 
 This integration is compatible with Cisco IOS and Cisco IOS-XE network devices that support standard syslog output over TCP, UDP, or local file logging. It's generally applicable to all modern Cisco IOS versions that support the `logging host` command and `service timestamps` configuration. Earlier versions of IOS might not support TCP transport for syslog; UDP is the most universally compatible method.
+
+This integration also supports Cisco Small Business switches (such as the SG and SF series) that use letter-based severity codes (A, C, E, W, N, I, D) instead of numeric values and may omit the hostname and timestamp from syslog messages. When letter-based severity is used, the letter is stored in the `cisco.ios.mnemonic` field rather than being mapped to `event.severity`.
 
 ### How it works
 
@@ -232,6 +233,7 @@ You might encounter the following issues when configuring or using the Cisco IOS
 - **Relayed log headers**: If you send logs to a central syslog server (like `syslog-ng` or `rsyslog`) before they reach the Elastic Agent, that server might add its own headers. You can use a processor in your configuration to strip these extra prefixes before ingestion.
 - **Timezone mapping failures**: If your logs show an incorrect time that's offset by several hours, ensure your `Timezone Map` is configured to correctly translate Cisco's short-form timezone strings (like `AEST`) to standard IANA formats.
 - **Incomplete log parsing**: Check the `error.message` field in Kibana Discover. If it contains `pattern not found`, verify that your Cisco device isn't using a custom log format that deviates from the standard `facility-severity-mnemonic` structure.
+- **Letter-based severity codes**: Some Cisco devices, particularly Small Business switches, use single-letter severity codes (for example, `W` for Warning or `N` for Notification) instead of numeric values. These logs are parsed correctly, but the severity letter is stored in `cisco.ios.mnemonic` instead of `event.severity`. If you notice events without a `log.level` or `event.severity`, this is expected for letter-based severity logs.
 
 ## Performance and scaling
 
@@ -350,6 +352,7 @@ The `log` data stream provides events from Cisco IOS devices of the following ty
 | cisco.ios.facility | The facility to which the message refers (for example, SNMP, SYS, and so forth). A facility can be a hardware device, a protocol, or a module of the system software. It denotes the source or the cause of the system message. | keyword |
 | cisco.ios.interface.name | The name of the network interface. | keyword |
 | cisco.ios.message_count | Message count number provided by the device when the device's service message-counter global configuration is set. | long |
+| cisco.ios.mnemonic | Single-letter severity mnemonic used by some Cisco devices (for example, A for Alert, W for Warning) instead of a numeric severity level. | keyword |
 | cisco.ios.outcome | The result of the event | keyword |
 | cisco.ios.pim.group.ip | Multicast group IP | ip |
 | cisco.ios.pim.source.ip | Multicast source IP | ip |

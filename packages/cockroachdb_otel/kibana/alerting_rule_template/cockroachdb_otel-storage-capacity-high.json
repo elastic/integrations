@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when used storage exceeds 60% of the total capacity on a store (`capacity_used / capacity > 0.6`). CockroachDB recommends keeping used below 60% to leave headroom for snapshots, compactions, and rebalancing.",
     "name": "[CockroachDB OTel] Storage capacity usage high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cockroachdb_otel-storage"
+        },
+        {
+          "id": "cockroachdb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## CockroachDB storage capacity usage high\n\n### What fired\n`capacity_used / capacity` on at least one store exceeded 60% over the evaluation window.\n\n### Why it matters\nCockroachDB documents 60% as the safe headroom threshold. Above this, the cluster has less room for rebalancing, snapshots for up-replication, and compactions. Above ~90% the node will refuse writes.\n\n### Triage\n1. On the Storage dashboard, see which store(s) are highest and whether usage is trending upwards.\n2. Is the usage cluster-wide (steady data growth) or concentrated on a subset of stores (rebalancing lag)?\n3. Check `ranges` and `replicas` distribution across stores \u2014 imbalance will reveal itself here.\n\n### Remediation\n- Add nodes/capacity; let the rebalancer spread data.\n- Identify and archive or TTL large tables.\n- If the imbalance is temporary (decommission, node add), wait for rebalancing to complete; otherwise investigate `rebalancing_range_rebalances` progress.\n\n### Tuning\n- The `0.6` (60%) threshold is documented; raise to 0.7 for clusters with aggressive rebalancing SLOs, never higher than 0.8.\n- 15-minute evaluation window keeps noise low for a slow-moving metric.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND capacity IS NOT NULL\n  AND capacity > 0\n  AND capacity_used IS NOT NULL\n// Used should not exceed 60% of total; adjust ratio if needed\n| EVAL usage_ratio = capacity_used / capacity\n| WHERE usage_ratio > 0.6\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS usage_pct = ROUND(MAX(usage_ratio) * 100.0, 1), used_gb = ROUND(MAX(capacity_used) / 1073741824.0, 1), total_gb = ROUND(MAX(capacity) / 1073741824.0, 1)\n  BY attributes.node_id, attributes.store, host.name\n| SORT usage_pct DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

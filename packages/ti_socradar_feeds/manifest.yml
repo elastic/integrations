@@ -1,0 +1,109 @@
+format_version: 3.3.2
+name: ti_socradar_feeds
+title: SOCRadar Threat Feeds
+version: "0.1.0"
+description: Ingest threat intelligence indicators from SOCRadar feed collections with Elastic Agent.
+type: integration
+categories:
+  - security
+  - threat_intel
+conditions:
+  kibana:
+    version: "^8.18.0 || ^9.0.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/logo.svg
+    title: SOCRadar Threat Feeds
+    size: 216x216
+    type: image/svg+xml
+screenshots:
+  - src: /img/socradar-feeds-overview.png
+    title: "Dashboard: SOCRadar Threat Feeds Overview"
+    size: 1906x991
+    type: image/png
+  - src: /img/socradar-feeds-table.png
+    title: "Dashboard: SOCRadar Threat Feeds Indicators Table"
+    size: 1907x399
+    type: image/png
+policy_templates:
+  - name: ti_socradar_feeds
+    title: SOCRadar Threat Feeds
+    description: Collect threat intelligence indicators from SOCRadar feed collections.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
+    inputs:
+      - type: cel
+        title: Collect SOCRadar feed data via API
+        description: Collect threat intelligence indicators from SOCRadar feed collections.
+        vars:
+          - name: api_key
+            type: password
+            title: API Key
+            description: SOCRadar Platform API Key.
+            secret: true
+            multi: false
+            required: true
+            show_user: true
+          - name: collections_config
+            type: yaml
+            title: Collections Configuration
+            description: >
+              YAML array of feed collections. Each collection requires id and name.
+              Default includes 7 recommended SOCRadar collections.
+              To add custom collections, find the collection ID in the SOCRadar platform
+              under Threat Intelligence > Feed Collections, then append to the list below.
+            multi: false
+            required: true
+            show_user: true
+            default: |
+              - id: "4d7a69ce6e7c49ff8c916da5d7343916"
+                name: "SOCRadar-APT-Recommended-Block-IP"
+              - id: "0cb06558728b4dc296019c93b78360d1"
+                name: "SOCRadar-APT-Recommended-Block-Hash"
+              - id: "9079dcc2f96e4835bb807026d4cdcc86"
+                name: "SOCRadar-APT-Recommended-Block-Domain"
+              - id: "8742cab86cc4414092217f87298e94a1"
+                name: "SOCRadar-Recommended-Block-Hash"
+              - id: "e89ab3b58e174b8c82767088d8e66cae"
+                name: "SOCRadar-Attackers-Recommended-Block-IP"
+              - id: "606a83358bbe466d8c3885e37fa595b7"
+                name: "SOCRadar-Attackers-Recommended-Block-Domain"
+              - id: "03cc11380b5d4a77a0d0cc2a7c568230"
+                name: "SOCRadar-Recommended-Phishing-Global"
+          - name: url
+            type: text
+            title: URL
+            description: Base URL of the SOCRadar Platform API.
+            show_user: false
+            required: true
+            default: https://platform.socradar.com
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    ...
+              #    -----END CERTIFICATE-----
+owner:
+  github: elastic/security-service-integrations
+  type: partner

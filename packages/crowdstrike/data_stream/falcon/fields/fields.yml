@@ -5,7 +5,7 @@
     - name: eventType
       type: keyword
       description: |
-        DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent
+        DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, UserActivityAuditEvent, or AutomatedLeadSummaryEvent
     - name: offset
       type: integer
       description: |
@@ -202,6 +202,31 @@
       type: keyword
     - name: StatusMessage
       type: keyword
+    - name: ThreatgraphIndicators
+      type: group
+      fields:
+        - name: Description
+          type: keyword
+        - name: DisplayName
+          type: keyword
+        - name: HostId
+          type: keyword
+        - name: Hostname
+          type: keyword
+        - name: IndicatorId
+          type: keyword
+        - name: PatternDisposition
+          type: long
+        - name: PatternId
+          type: keyword
+        - name: ProcessId
+          type: keyword
+        - name: Severity
+          type: long
+        - name: SignalAssociationTimestamp
+          type: date
+        - name: TemplateInstanceId
+          type: keyword
     - name: Type
       type: keyword
       description: 'The endpoint detection type ("ldt": Legacy Endpoint Detection, or "ofp": Office Prevention Macro Detection).'
@@ -321,6 +346,14 @@
       type: keyword
       description: |
         Detected LDAP tool attack.
+    - name: LeadId
+      type: keyword
+      description: |
+        The ID given to the automated lead.
+    - name: LeadType
+      type: keyword
+      description: |
+        The type of automated lead.
     - name: Severity
       type: integer
       description: |
@@ -329,6 +362,22 @@
       type: keyword
       description: |
         The severity level of the detection, as a string (High/Medium/Informational).
+    - name: Score
+      type: long
+      description: |
+        The confidence score of the automated lead. Values range from 0 to 100.
+    - name: SignalEndTimestamp
+      type: date
+      description: |
+        Timestamp of when the last indicator was added to the lead.
+    - name: SignalStartTimestamp
+      type: date
+      description: |
+        Timestamp of when the first indicator was added to the lead.
+    - name: SignalUpdatedTimestamp
+      type: date
+      description: |
+        The last time the lead was updated with new information or when it was closed.
     - name: NotificationId
       type: keyword
       description: |

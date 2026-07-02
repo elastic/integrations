@@ -1,6 +1,6 @@
 dest:
-  index: ml_beaconing-1.5.4
-  pipeline: 1.5.4-ml_beaconing_ingest_pipeline
+  index: ml_beaconing-1.6.0
+  pipeline: 1.6.0-ml_beaconing_ingest_pipeline
   aliases:
     - alias: ml_beaconing.latest
       move_on_creation: true
@@ -350,6 +350,66 @@ pivot:
     'source.ip':
       terms:
         field: source.ip
+    'process.executable':
+      terms:
+        script:
+          source: "return doc.containsKey('process.executable') && !doc['process.executable'].isEmpty() ? doc['process.executable'].value : ''"
+          lang: painless
+    'process.parent.name':
+      terms:
+        script:
+          source: "return doc.containsKey('process.parent.name') && !doc['process.parent.name'].isEmpty() ? doc['process.parent.name'].value : ''"
+          lang: painless
+    'process.command_line':
+      terms:
+        script:
+          source: "return doc.containsKey('process.command_line') && !doc['process.command_line'].isEmpty() ? doc['process.command_line'].value : ''"
+          lang: painless
+    'process.parent.command_line':
+      terms:
+        script:
+          source: "return doc.containsKey('process.parent.command_line') && !doc['process.parent.command_line'].isEmpty() ? doc['process.parent.command_line'].value : ''"
+          lang: painless
+    'process_code_signature_exists':
+      terms:
+        script:
+          source: "return doc.containsKey('process.code_signature.exists') && !doc['process.code_signature.exists'].isEmpty() ? doc['process.code_signature.exists'].value.toString() : ''"
+          lang: painless
+    'process_code_signature_trusted':
+      terms:
+        script:
+          source: "return doc.containsKey('process.code_signature.trusted') && !doc['process.code_signature.trusted'].isEmpty() ? doc['process.code_signature.trusted'].value.toString() : ''"
+          lang: painless
+    'process.code_signature.subject_name':
+      terms:
+        script:
+          source: "return doc.containsKey('process.code_signature.subject_name') && !doc['process.code_signature.subject_name'].isEmpty() ? doc['process.code_signature.subject_name'].value : ''"
+          lang: painless
+    'process.hash.sha256':
+      terms:
+        script:
+          source: "return doc.containsKey('process.hash.sha256') && !doc['process.hash.sha256'].isEmpty() ? doc['process.hash.sha256'].value : ''"
+          lang: painless
+    'process.parent.hash.sha256':
+      terms:
+        script:
+          source: "return doc.containsKey('process.parent.hash.sha256') && !doc['process.parent.hash.sha256'].isEmpty() ? doc['process.parent.hash.sha256'].value : ''"
+          lang: painless
+    'process.working_directory':
+      terms:
+        script:
+          source: "return doc.containsKey('process.working_directory') && !doc['process.working_directory'].isEmpty() ? doc['process.working_directory'].value : ''"
+          lang: painless
+    'process_pid':
+      terms:
+        script:
+          source: "return doc.containsKey('process.pid') && !doc['process.pid'].isEmpty() ? doc['process.pid'].value.toString() : ''"
+          lang: painless
+    'process_parent_pid':
+      terms:
+        script:
+          source: "return doc.containsKey('process.parent.pid') && !doc['process.parent.pid'].isEmpty() ? doc['process.parent.pid'].value.toString() : ''"
+          lang: painless
 source:
   index: logs-*
   query:
@@ -394,5 +454,5 @@ sync:
     delay: 120s
     field: "@timestamp"
 _meta:
-  fleet_transform_version: 1.5.4
+  fleet_transform_version: 1.6.0
   run_as_kibana_system: false

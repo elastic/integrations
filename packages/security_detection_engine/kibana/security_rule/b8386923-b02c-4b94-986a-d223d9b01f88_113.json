@@ -1,0 +1,156 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects PowerShell script block content containing Invoke-NinjaCopy or related Stealth* functions used for direct volume file access. Attackers use NinjaCopy to read locked system files such as NTDS.dit or registry hives for credential dumping.",
+        "from": "now-9m",
+        "index": [
+            "logs-windows.powershell*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "PowerShell Invoke-NinjaCopy script",
+        "note": "## Triage and analysis\n\n### Investigating PowerShell Invoke-NinjaCopy script\n\n#### Possible investigation steps\n\n- Does the alert-preserved script content show active NinjaCopy direct-volume access rather than inert reference text?\n  - Focus: `powershell.file.script_block_text`, `powershell.file.script_block_length`, and file-backed `file.path` or `file.name`.\n  - Implication: escalate sooner when the fragment shows `Invoke-NinjaCopy`, `StealthOpenFile`, `StealthReadFile`, credential-store targets, output destinations, or cleanup logic; lower concern only for inert example or recognized validation content that later recovery does not contradict.\n\n- Does full script reconstruction reveal target, destination, or cleanup behavior that the matching fragment did not show?\n  - Why: Script Block Logging can split one script across events; later fragments often contain output paths, loops, or cleanup logic that change urgency.\n  - Focus: reconstruct on `host.id` + `powershell.file.script_block_id`, ordering by `powershell.sequence` / `powershell.total`; read `powershell.file.script_block_text` for \"-Path\", \"-ComputerName\", \"-LocalDestination\", or \"-RemoteDestination\". !{investigate{\"description\":\"\",\"label\":\"Script block fragments for the same script\",\"providers\":[[{\"excluded\":false,\"field\":\"powershell.file.script_block_id\",\"queryType\":\"phrase\",\"value\":\"{{powershell.file.script_block_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if `powershell.sequence` is missing or never reaches `powershell.total`, record the gap before treating the script as understood.\n  - Implication: escalate when reconstruction adds remote targets, credential stores (`NTDS.dit`, `SAM`, `SYSTEM`, `SECURITY`), temp/share destinations, large copy buffers, archive paths, encoding, or delete-after-copy logic; lower concern when the full script is confirmed lab, forensic, or validation content with no hostile follow-on behavior.\n\n- Does the script provenance and reconstructed target fit a recognized workflow?\n  - Focus: `file.path`, `file.name`, `user.id`, `host.id`, and reconstructed \"-Path\", \"-ComputerName\", \"-LocalDestination\", or \"-RemoteDestination\".\n  - Hint: if `file.path` is absent, treat content as inline, generated, interactive, or remote; do not close on path absence alone.\n  - Implication: escalate when source is temp, downloads, or user-writable shares, or parameters name remote servers, `NTDS.dit`, registry hives, or staging destinations; lower concern when source, targets, and destinations match one recognized forensic, IR, lab, or validation workflow.\n\n- Do surrounding script blocks from the same user and host show staging, retries, or variant logic?\n  - Focus: manually search the same execution window for `user.id`, `host.id`, `powershell.file.script_block_text`, and adjacent `powershell.file.script_block_id` values.\n  - Hint: renamed wrappers may omit `Invoke-NinjaCopy`; still check `Stealth*` helpers and reconstructed target or destination values.\n  - Implication: escalate when adjacent fragments show retries, renamed helpers, alternative raw-volume logic, output-file reuse, or follow-on compression and cleanup.\n\n- Can process telemetry recover the PowerShell process and explain how it was launched?\n  - Focus: match the PowerShell PID on `host.id`, `process.pid`, and `@timestamp`; record `process.entity_id`, then interpret `process.command_line`, `process.parent.command_line`, and `process.Ext.token.integrity_level_name`. !{investigate{\"description\":\"\",\"label\":\"Process events for the PowerShell instance\",\"providers\":[[{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: recover the matching process via `host.id + process.pid` before using `process.*` or `process.parent.*`. If no process start event appears, expand the window because PowerShell can predate the script block; if still absent, bound file review to `host.id`, `user.id`, `process.pid`, and alert time.\n  - Implication: escalate when recovery shows encoded commands, remote-admin launchers, Office/browser ancestry, or unexpected high-integrity execution; unresolved process recovery does not make direct-volume script content benign.\n\n- Do file events confirm copied credential stores or staging artifacts?\n  - Focus: endpoint file events scoped to `host.id`, `process.pid`, and alert time; review `file.path`, `file.directory`, and `file.name`. !{investigate{\"description\":\"\",\"label\":\"File events for the PowerShell process\",\"providers\":[[{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when file activity confirms copied hives, `NTDS.dit`, archives, or renamed staging files; missing file telemetry is unresolved, not benign.\n\n- If the local script, launch, or artifact answers remain suspicious or unresolved, is this script block isolated, or part of broader suspicious activity for the same user or host?\n  - Focus: related `user.id` alerts for repeated credential access, execution, or post-compromise behavior. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: compare `host.id` alerts for credential access, persistence, or staging. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope when either view shows adjacent credential-access or post-compromise behavior; keep it local only when both are quiet and the local evidence fits one recognized workflow.\n\n- Escalate when script content, reconstruction, target parameters, launch context, or artifacts show unauthorized direct-volume access or credential-store targeting; close only when source path, targets, destinations, launch context, and artifacts align with one recognized forensic, IR, lab, or validation workflow; preserve and escalate if mixed or incomplete.\n\n### False positive analysis\n\n- Recognized red-team, security-validation, forensic-acquisition, or IR workflows can legitimately include NinjaCopy-derived code. Confirm only when `powershell.file.script_block_text`, reconstructed targets/destinations, `file.path`, `user.id`, `host.id`, and recovered launch context align with the same workflow. If records are unavailable, prior recurrence can support but not replace local telemetry proof; first occurrences stay candidate exceptions.\n- Build exceptions from `user.id`, `host.id`, stable `file.path`, recovered parent-launch pattern when available, and the `powershell.file.script_block_text` pattern. Avoid exceptions on \"Invoke-NinjaCopy\", `user.name`, or host alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse containment and document the recognized workflow: `user.id`, `host.id`, `file.path`, `powershell.file.script_block_id`, recovered launch context, and reconstructed target or destination values. Create an exception only if the same pattern recurs across prior alerts.\n- If suspicious but unconfirmed, preserve reconstructed `powershell.file.script_block_text`, `powershell.file.script_block_id`, `powershell.sequence`, `process.pid`, recovered launch context, target or destination values, and `file.path` before cleanup. Apply reversible containment first; escalate to host isolation only if copied credential artifacts, staging, or broader post-compromise activity appears.\n- If confirmed malicious, preserve the reconstructed script, launch context, targets, destinations, copied stores, and related alerts first. Then use reversible endpoint response to isolate the host when needed; if unavailable, escalate with the preserved artifact set to the team that can act. Record all evidence before terminating processes or deleting files.\n- If \"NTDS.dit\", \"SAM\", \"SYSTEM\", or \"SECURITY\" targeting is confirmed with copied artifacts, follow the organization's credential-exposure playbook and prioritize privileged-account hygiene.\n- Before eradicating, review related hosts for the same script pattern, `file.path` destinations, and recovered parent-launch pattern. Then remove unauthorized scripts, copied stores, archives, and persistence mechanisms and remediate the delivery path.\n- Post-incident hardening: restrict direct-volume-copy tooling to controlled acquisition hosts, retain PowerShell Script Block Logging and endpoint file/process telemetry, and document the recognized workflow pattern for future analysts.\n",
+        "query": "event.category:process and host.os.type:windows and\n  powershell.file.script_block_text : (\n    \"StealthReadFile\" or\n    \"StealthReadFileAddr\" or\n    \"StealthCloseFileDelegate\" or\n    \"StealthOpenFile\" or\n    \"StealthCloseFile\" or\n    \"Invoke-NinjaCopy\"\n   ) and\n  not powershell.file.script_block_text : (\n    \"sentinelbreakpoints\" and \"Set-PSBreakpoint\" and \"PowerSploitIndicators\"\n  )\n",
+        "references": [
+            "https://github.com/BC-SECURITY/Empire/blob/main/empire/server/data/module_source/collection/Invoke-NinjaCopy.ps1"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "b8386923-b02c-4b94-986a-d223d9b01f88",
+        "setup": "## Setup\n\nPowerShell Script Block Logging must be enabled to generate the events used by this rule (e.g., 4104).\nSetup instructions: https://ela.st/powershell-logging-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: PowerShell Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.002",
+                                "name": "Security Account Manager",
+                                "reference": "https://attack.mitre.org/techniques/T1003/002/"
+                            },
+                            {
+                                "id": "T1003.003",
+                                "name": "NTDS",
+                                "reference": "https://attack.mitre.org/techniques/T1003/003/"
+                            },
+                            {
+                                "id": "T1003.004",
+                                "name": "LSA Secrets",
+                                "reference": "https://attack.mitre.org/techniques/T1003/004/"
+                            },
+                            {
+                                "id": "T1003.005",
+                                "name": "Cached Domain Credentials",
+                                "reference": "https://attack.mitre.org/techniques/T1003/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1006",
+                        "name": "Direct Volume Access",
+                        "reference": "https://attack.mitre.org/techniques/T1006/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 113
+    },
+    "id": "b8386923-b02c-4b94-986a-d223d9b01f88_113",
+    "type": "security-rule"
+}

@@ -65,13 +65,13 @@ processors:
       tag: append_authentication
       field: event.category
       value: authentication
-      if: ctx.cisco_ise?.log?.message?.code != null && ['5200','5231','5233','5239'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5200','5201','5206','5231','5233','5235','5237','5238','5239','5240'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - set:
       tag: set_event_outcome_success
       field: event.outcome
       value: success
-      if: ctx.cisco_ise?.log?.message?.code != null && ['5200','5231','5233','5239'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5200','5201','5206','5231','5233','5235','5237','5238','5239','5240'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - set:
       tag: set_event_outcome_failure
@@ -83,13 +83,115 @@ processors:
       tag: append_event_type
       field: event.type
       value: info
-      if: ctx.cisco_ise?.log?.message?.code != null && ['5200','5231','5233','5239'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5200','5201','5206','5231','5233','5235','5237','5238','5239','5240'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_category_authentication_tacacs_authz
+      field: event.category
+      value: authentication
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5202','5203'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_category_network_tacacs_authz
+      field: event.category
+      value: network
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5202','5203'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_type_allowed_tacacs_authz
+      field: event.type
+      value: allowed
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5202','5203'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - set:
+      tag: set_event_outcome_success_tacacs_authz
+      field: event.outcome
+      value: success
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5202','5203'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_category_iam_5204
+      field: event.category
+      value: iam
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5204'
+      ignore_failure: true
+  - append:
+      tag: append_event_type_user_5204
+      field: event.type
+      value: user
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5204'
+      ignore_failure: true
+  - append:
+      tag: append_event_type_change_5204
+      field: event.type
+      value: change
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5204'
+      ignore_failure: true
+  - set:
+      tag: set_event_outcome_success_5204
+      field: event.outcome
+      value: success
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5204'
+      ignore_failure: true
+  - append:
+      tag: append_event_category_network_5205
+      field: event.category
+      value: network
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5205'
+      ignore_failure: true
+  - append:
+      tag: append_event_type_info_5205
+      field: event.type
+      value: info
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5205'
+      ignore_failure: true
+  - set:
+      tag: set_event_outcome_success_5205
+      field: event.outcome
+      value: success
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5205'
+      ignore_failure: true
+  - append:
+      tag: append_event_category_network_infra_success
+      field: event.category
+      value: network
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5232','5234','5236'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_type_allowed_infra_success
+      field: event.type
+      value: allowed
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5232','5234','5236'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - set:
+      tag: set_event_outcome_success_infra
+      field: event.outcome
+      value: success
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5232','5234','5236'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_category_network_5241
+      field: event.category
+      value: network
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5241'
+      ignore_failure: true
+  - append:
+      tag: append_event_type_connection_5241
+      field: event.type
+      value: connection
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5241'
+      ignore_failure: true
+  - set:
+      tag: set_event_outcome_success_5241
+      field: event.outcome
+      value: success
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5241'
       ignore_failure: true
   - kv:
       tag: kv_cisco_ise_log_log_details_raw_to_cisco_ise_log_log_details_dd59a8ac
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
-      field_split: ', '
+      field_split: ', (?=[^,=]+=)'
       value_split: =
       ignore_failure: true
   - dissect:
@@ -171,14 +273,30 @@ processors:
 
         def attributes = [:];
         ctx.cisco_ise.log.log_details.get("cisco-av-pair")?.forEach((v) -> {
+          def firstEq = v.indexOf('=');
+          if (firstEq <= 0) {
+            return true;
+          }
+          def topKey = v.substring(0, firstEq).trim();
+          def rest = v.substring(firstEq + 1);
+
+          // Only mdm-tlv uses nested subkeys (device-platform=win, ...). Other pairs
+          // (e.g. FQSubjectName=...cn=...,ou=...) may contain '=' in the value and must stay scalar.
+          if (!"mdm-tlv".equals(topKey)) {
+            attributes[topKey] = rest.trim();
+            return true;
+          }
+
           def inEscape = false;
           def start = 0;
           def key = "";
-          def m = attributes;
+          if (!attributes.containsKey("mdm-tlv")) {
+            attributes["mdm-tlv"] = [:];
+          }
+          def m = attributes["mdm-tlv"];
 
-          for (def i = 0, n = v.length(); i < n; ++i) {
-            def c = v.charAt(i);
-            // Escape handling.
+          for (def i = 0, n = rest.length(); i < n; ++i) {
+            def c = rest.charAt(i);
             if (inEscape) {
               inEscape = false;
               continue;
@@ -189,9 +307,9 @@ processors:
             }
 
             if (c == (char)'=') {
-              key = v.substring(start, i).trim();
-              def nextSplit = v.indexOf("=", i + 1);
-              if (nextSplit != -1 && v.charAt(nextSplit - 1) != (char)'\\') {
+              key = rest.substring(start, i).trim();
+              def nextSplit = rest.indexOf("=", i + 1);
+              if (nextSplit != -1 && rest.charAt(nextSplit - 1) != (char)'\\') {
                 if (!m.containsKey(key)) {
                   m[key] = [:];
                 }
@@ -200,7 +318,7 @@ processors:
               start = i + 1;
             }
             if (i == n - 1) {
-              m[key] = v.substring(start, n).trim();
+              m[key] = rest.substring(start, n).trim();
             }
           }
 

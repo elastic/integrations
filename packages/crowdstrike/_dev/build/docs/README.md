@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to efficiently connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator. Elastic Security can leverage this data for security analytics including correlation, visualization, and incident response.
+The [CrowdStrike](https://www.crowdstrike.com/) integration allows you to efficiently connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator, including Identity Protection data collected over GraphQL. Elastic Security can leverage this data for security analytics including correlation, visualization, and incident response.
 
 For a demo, refer to the following video (click to view).
 
@@ -10,7 +10,7 @@ For a demo, refer to the following video (click to view).
 
 ### Compatibility
 
-This integration is compatible with CrowdStrike Falcon SIEM Connector v2.0, REST API, and CrowdStrike Event Streams API.
+This integration is compatible with CrowdStrike Falcon SIEM Connector 2.29.0, REST API, and CrowdStrike Event Streams API.
 
 ### How it works
 
@@ -24,7 +24,11 @@ The integration collects data from multiple sources within CrowdStrike Falcon an
 
     Data from either method is indexed into the `falcon` dataset in Elasticsearch.
 
-2. **CrowdStrike REST API** — The integration uses the REST API to pull alerts, host inventory, and vulnerability data (indexed into the `alert`, `host`, and `vulnerability` datasets).
+2. **CrowdStrike REST API** — Pulls alerts, host inventory, and vulnerability data (indexed into the `alert`, `host`, and `vulnerability` datasets).
+
+    **Identity Protection (GraphQL)** — Additional datasets use the CrowdStrike Identity Protection **GraphQL** API (`/identity-protection/combined/graphql/v1`).
+    - **Security assessments** (`identity_protection_assessment`) — Discovers domains, then ingests per-domain security assessment results.
+    - **Timeline** (`identity_protection_timeline`) — Collects identity protection timeline events including authentication, service access, LDAP search, account lifecycle, and privilege escalation activity.
 
     :::{note}
     GovCloud CID users must enable the GovCloud option in the integration configuration to query the `/devices/queries/devices/v1` endpoint instead of the unsupported `/devices/combined/devices/v1` endpoint.
@@ -39,6 +43,9 @@ The integration collects data from multiple sources within CrowdStrike Falcon an
 - **Alerts** (alert dataset)
 - **Hosts** (host dataset)
 - **Vulnerability** (vulnerability dataset)
+- **Identity Protection (GraphQL)**:
+    - **Security assessments** (identity_protection_assessment dataset)
+    - **Timeline** (identity_protection_timeline dataset)
 
 ## What do I need to use this integration?
 
@@ -85,6 +92,7 @@ You can use the Falcon SIEM Connector as an alternative to the Event Streams API
 
 The following event types are supported for CrowdStrike Event Streams (whether you use the Falcon SIEM Connector or the Event Streams API):
 
+- AutomatedLeadSummaryEvent
 - CustomerIOCEvent
 - DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
@@ -119,6 +127,8 @@ The following parameters from your CrowdStrike instance are required:
     | Alert         | read:alert    |
     | Host          | read:host     |
     | Vulnerability | read:vulnerability |
+    | Identity protection assessment | read:Identity Protection Assessment, write:Identity Protection GraphQL |
+    | Identity protection timeline | read:Identity Protection Timeline, write:Identity Protection GraphQL |
 
 ### Collect data using CrowdStrike Falcon Data Replicator (FDR)
 
@@ -314,33 +324,50 @@ The integration sets `event.severity` according to the mapping in the table abov
 | 60 - 79                | high          |
 | 80 - 100               | critical      |
 
+### Lookup index aliases renamed in 3.16.2
+
+In 3.16.2 the FDR lookup transform destination indices and stable aliases were moved out of the `logs-*` namespace so the empty lookup indices no longer match the default Security Solution `logs-*` index pattern (which produced "missing the timestamp field `@timestamp`" warnings on detection rules):
+
+| Before                                            | After                                       |
+|---------------------------------------------------|---------------------------------------------|
+| `logs-crowdstrike_lookup.aidmaster`               | `crowdstrike_lookup.aidmaster`              |
+| `logs-crowdstrike_lookup.userinfo`                | `crowdstrike_lookup.userinfo`               |
+| `logs-crowdstrike_lookup.dest_aidmaster-1`        | `crowdstrike_lookup.dest_aidmaster-1`       |
+| `logs-crowdstrike_lookup.dest_userinfo-1`         | `crowdstrike_lookup.dest_userinfo-1`        |
+
+If you wrote custom ES|QL queries, dashboards, or detection rules against the old alias names, update them to the new names. The bundled dashboards have been updated. After upgrading, the old `logs-crowdstrike_lookup.*` indices and aliases left behind by previous installs are unused and can be safely deleted.
+
 ### Query-time host metadata enrichment (LOOKUP JOIN)
 
 When the integration is installed, a transform maintains the latest host metadata (`aidmaster`) per host in a lookup index. You can enrich FDR event data with this metadata at query time using ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join) on `host.id`.
 
-**Lookup index:** `logs-crowdstrike_lookup.aidmaster` — stable alias for the aidmaster lookup data maintained by the integration transform. The backing destination index is managed by the package and may change when you upgrade; use this alias in queries so joins keep working across versions. The lookup retains only `host.id` and `crowdstrike.info.*`; ECS host fields from `aidmaster` are stored under `crowdstrike.info.host.*` (e.g. `crowdstrike.info.host.hostname`, `crowdstrike.info.host.cid`, `crowdstrike.info.host.os_version`).
+**Lookup index:** `crowdstrike_lookup.aidmaster` — stable alias for the aidmaster lookup data maintained by the integration transform. The backing destination index is managed by the package and may change when you upgrade; use this alias in queries so joins keep working across versions. The lookup retains only `host.id` and `crowdstrike.info.*`; ECS host fields from `aidmaster` are stored under `crowdstrike.info.host.*` (e.g. `crowdstrike.info.host.hostname`, `crowdstrike.info.host.cid`, `crowdstrike.info.host.os_version`).
 
 **Example ES|QL query:**
 
 ```sql
 FROM logs-crowdstrike.fdr-*
 | WHERE aws.s3.object.key LIKE "*/data/*"
-| LOOKUP JOIN logs-crowdstrike_lookup.aidmaster ON host.id
+| LOOKUP JOIN crowdstrike_lookup.aidmaster ON host.id
 | KEEP @timestamp, event.action, host.id, crowdstrike.info.host.hostname
 | LIMIT 20
 ```
 
-**Elasticsearch 8.19+** is required for `LOOKUP JOIN` to resolve an alias. Use `logs-crowdstrike_lookup.aidmaster` as in the example above. On **releases before 8.19**, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the CrowdStrike latest aidmaster transform, and use the **destination_index** name shown there (that name can change with the integration version).
+**Elasticsearch 8.19+** is required for `LOOKUP JOIN` to resolve an alias. Use `crowdstrike_lookup.aidmaster` as in the example above. On **releases before 8.19**, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the CrowdStrike latest aidmaster transform, and use the **destination_index** name shown there (that name can change with the integration version).
 
 **Using enriched fields:** Enrichment from the lookup is under the `crowdstrike.info.host.*` namespace (e.g. `crowdstrike.info.host.hostname` for hostname, `crowdstrike.info.host.cid` for customer ID). Use these fields in dashboards and detection rules when building on query-time enrichment.
 
 **Ingest-time versus query-time:** The FDR integration’s **Enrich Host and User Metadata** option (`enrich_metadata`, on by default) uses the Elastic Agent (Filebeat) metadata cache to attach `aidmaster` and `userinfo` to events at ingest time. If you rely on query-time host enrichment only (transform + `LOOKUP JOIN` above), set **Enrich Host and User Metadata** to **Off** so host metadata is not applied twice. Turning it off also disables ingest-time enrichment from `userinfo`; if you still need user fields from `userinfo` on every document, keep ingest-time enrichment enabled or supplement with a separate query pattern. Disabling **Enrich Host and User Metadata** automatically makes **Keep Original Host and User Metadata** option (`keep_metadata`) ineffective and the metadata events are retained.
 
+:::{warning}
+**Deprecation notice:** Ingest-time cache enrichment (`enrich_metadata` and related settings — `keep_metadata`, `metadata_ttl`, `metadata_cache_capacity`, `metadata_cache_write_interval`) is deprecated and will be removed in a future major version. Query-time enrichment via `LOOKUP JOIN` is the replacement. The default for `keep_metadata` has been changed to `true` so that metadata events are indexed and the LOOKUP JOIN transforms have source data. Existing installations that upgrade retain their previous `keep_metadata` setting; if it was `false`, set it to `true` to enable query-time enrichment.
+:::
+
 ### Query-time user metadata enrichment (LOOKUP JOIN)
 
 A second transform maintains the latest user metadata per host-user pair from `UserIdentity` and `UserLogon` sensor events in a lookup index. Unlike `userinfo` directory data (which requires [Falcon Discover](https://www.crowdstrike.com/platform/exposure-management/falcon-discover/) and covers only Windows), sensor events are available to all FDR customers on all platforms (Windows, macOS, Linux, ChromeOS). You can enrich FDR events with user metadata at query time using ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join).
 
-**Lookup index:** `logs-crowdstrike_lookup.userinfo` — stable alias for the user lookup data maintained by the integration transform. The backing destination index is managed by the package and may change when you upgrade; use this alias in queries so joins keep working across versions. The lookup retains only `host_user_key` and `crowdstrike.info.*`; user fields are stored under `crowdstrike.info.user.*` (e.g. `crowdstrike.info.user.name`, `crowdstrike.info.user.domain`, `crowdstrike.info.user.logon_type`).
+**Lookup index:** `crowdstrike_lookup.userinfo` — stable alias for the user lookup data maintained by the integration transform. The backing destination index is managed by the package and may change when you upgrade; use this alias in queries so joins keep working across versions. The lookup retains only `host_user_key` and `crowdstrike.info.*`; user fields are stored under `crowdstrike.info.user.*` (e.g. `crowdstrike.info.user.name`, `crowdstrike.info.user.domain`, `crowdstrike.info.user.logon_type`).
 
 **Composite join key:** Because Unix UIDs are local to each host (the same numeric UID can refer to different users on different machines), the user lookup uses a composite key combining both `host.id` and `user.id`. Queries must construct this key with `EVAL` before joining:
 
@@ -352,7 +379,7 @@ A second transform maintains the latest user metadata per host-user pair from `U
 FROM logs-crowdstrike.fdr-*
 | WHERE aws.s3.object.key LIKE "*/data/*" OR log.file.path LIKE "*/data/*"
 | EVAL host_user_key = CONCAT(host.id, "::", user.id)
-| LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key
+| LOOKUP JOIN crowdstrike_lookup.userinfo ON host_user_key
 | KEEP @timestamp, event.action, host.id, user.id,
        crowdstrike.info.user.name, crowdstrike.info.user.domain
 | LIMIT 20
@@ -363,19 +390,31 @@ FROM logs-crowdstrike.fdr-*
 ```sql
 FROM logs-crowdstrike.fdr-*
 | WHERE aws.s3.object.key LIKE "*/data/*" OR log.file.path LIKE "*/data/*"
-| LOOKUP JOIN logs-crowdstrike_lookup.aidmaster ON host.id
+| LOOKUP JOIN crowdstrike_lookup.aidmaster ON host.id
 | EVAL host_user_key = CONCAT(host.id, "::", user.id)
-| LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key
+| LOOKUP JOIN crowdstrike_lookup.userinfo ON host_user_key
 | KEEP @timestamp, event.action, host.id, crowdstrike.info.host.hostname,
        user.id, crowdstrike.info.user.name, crowdstrike.info.user.domain
 | LIMIT 20
 ```
 
-**Elasticsearch 8.19+** is required for `LOOKUP JOIN` to resolve an alias. Use `logs-crowdstrike_lookup.userinfo` as in the examples above. On **releases before 8.19**, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the CrowdStrike latest userinfo transform, and use the **destination_index** name shown there (that name can change with the integration version). If you use both host and user lookups on releases before 8.19, you will need two concrete destination index names — one for aidmaster and one for userinfo — both obtainable from **Stack Management** → **Transforms**.
+**Elasticsearch 8.19+** is required for `LOOKUP JOIN` to resolve an alias. Use `crowdstrike_lookup.userinfo` as in the examples above. On **releases before 8.19**, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the CrowdStrike latest userinfo transform, and use the **destination_index** name shown there (that name can change with the integration version). If you use both host and user lookups on releases before 8.19, you will need two concrete destination index names — one for aidmaster and one for userinfo — both obtainable from **Stack Management** → **Transforms**.
 
 **Using enriched fields:** Enrichment from the user lookup is under the `crowdstrike.info.user.*` namespace (e.g. `crowdstrike.info.user.name` for username, `crowdstrike.info.user.domain` for UPN domain, `crowdstrike.info.user.logon_type` for logon type). Use these fields in dashboards and ES|QL detection rules when building on query-time enrichment. Note that detection rules using EQL, threshold, or KQL operate on stored documents and cannot use `LOOKUP JOIN` — those rule types continue to rely on ingest-time cache enrichment for user metadata.
 
 **Ingest-time versus query-time:** The same **Enrich Host and User Metadata** option (`enrich_metadata`) that controls ingest-time host enrichment also controls ingest-time user enrichment from `userinfo` directory data. Query-time user enrichment via the transform is additive — it works regardless of whether ingest-time enrichment is enabled. If you rely on query-time enrichment only, set **Enrich Host and User Metadata** to **Off** so metadata is not applied twice. If both are active, user metadata may appear under `crowdstrike.info.user.*` from both the ingest-time cache and the query-time lookup; the values should be consistent but the ingest-time cache is populated from `userinfo` while the query-time lookup uses sensor events, so field availability may differ.
+
+:::{warning}
+**Deprecation notice:** Ingest-time cache enrichment is deprecated and will be removed in a future major version. Query-time enrichment via the transforms and `LOOKUP JOIN` described above is the replacement. See the deprecation notice in the host metadata section above for details on the `keep_metadata` default change.
+:::
+
+#### ES|QL dashboard panels
+
+The **FDR Overview** dashboards include ES|QL visualizations that use `LOOKUP JOIN` for query-time enrichment. **Top 10 hostnames** and **Event rate over time by hostname** join against the aidmaster lookup; **Top 10 usernames** and **Event rate over time by username** join against the userinfo lookup. They are reference examples of **query-time enrichment** that you can reuse in your own dashboards.
+
+**ES|QL result row cap:** By default, Elasticsearch returns **at most 1000 rows** for an ES|QL query. If your query does not end with an explicit `LIMIT`, results are truncated at that cap. See [ES|QL limitations](https://www.elastic.co/docs/reference/query-languages/esql/limitations) for the authoritative limits.
+
+**What you can do:** Add an explicit `| LIMIT …` at the end of your ES|QL query when you need more rows than the default. Narrow the time range, filter hosts or indices, or clone a packaged visualization and tune the query for your environment.
 
 ## Logs
 
@@ -428,3 +467,25 @@ This is the `vulnerability` dataset.
 {{event "vulnerability"}}
 
 {{fields "vulnerability"}}
+
+
+### Identity Protection Assessments
+
+This is the `identity_protection_assessment` dataset.
+
+#### Example
+
+{{event "identity_protection_assessment"}}
+
+{{fields "identity_protection_assessment"}}
+
+
+### Identity Protection Timeline
+
+This is the `identity_protection_timeline` dataset.
+
+#### Example
+
+{{event "identity_protection_timeline"}}
+
+{{fields "identity_protection_timeline"}}

@@ -1,0 +1,119 @@
+- name: doppler.actor.kind
+  type: keyword
+  description: |-
+    Principal type of the actor that performed the action: `user`, `apiToken`,
+    `serviceAccount`, or `bot`. Preserved from the vendor payload when `doppler.user`
+    is renamed to `doppler.actor`. Use it to distinguish human from non-human
+    (token/service-account/bot) activity in detections.
+- name: doppler.actor.token_type.id
+  type: keyword
+  description: Identifier of the API token type, when the actor is an API token.
+- name: doppler.actor.token_type.name
+  type: keyword
+  description: Name of the API token type, when the actor is an API token.
+- name: doppler.actor.bot_type
+  type: keyword
+  description: Bot type, when the actor is a Doppler bot.
+- name: doppler.workplace.id
+  type: keyword
+  description: |-
+    Identifier of the Doppler workplace (tenant) the event belongs to. Also copied
+    to `organization.id` for ECS-normalized, cross-source tenant correlation.
+- name: doppler.workplace.name
+  type: keyword
+  description: |-
+    Name of the Doppler workplace (tenant) the event belongs to. Also copied to
+    `organization.name`.
+- name: doppler.activity.log_id
+  type: keyword
+  description: Doppler activity log identifier.
+- name: doppler.activity.url
+  type: keyword
+  description: Link to the activity log entry in the Doppler dashboard.
+- name: doppler.activity.description
+  type: match_only_text
+  description: |-
+    Human-readable description of the activity. Doppler emits this as dashboard
+    HTML; the pipeline strips the markup to plain text for readability and search.
+    The original HTML is preserved verbatim in `event.original` when the
+    "Preserve original event" option is enabled.
+- name: doppler.activity.project.id
+  type: keyword
+  description: Identifier of the project the activity relates to.
+- name: doppler.activity.project.name
+  type: keyword
+  description: Name of the project the activity relates to.
+- name: doppler.activity.config.name
+  type: keyword
+  description: Name of the config the activity relates to.
+- name: doppler.activity.environment.id
+  type: keyword
+  description: Identifier of the environment the activity relates to.
+- name: doppler.activity.environment.name
+  type: keyword
+  description: Name of the environment the activity relates to.
+- name: doppler.activity.environment.old_id
+  type: keyword
+  description: Previous environment identifier on a rename event.
+- name: doppler.activity.environment.old_name
+  type: keyword
+  description: Previous environment name on a rename event.
+- name: doppler.activity.role.name
+  type: keyword
+  description: |-
+    Role granted or referenced by the activity. Populated for project access
+    grants (`metadata.role`) and custom role creation (`custom_roles.*`).
+- name: doppler.activity.role.new
+  type: keyword
+  description: |-
+    New role for a role-change activity. Covers both project role changes
+    (`metadata.newRole`) and workplace seat role changes (`metadata.newWorkplaceRole`),
+    so escalation detections can use one field for both.
+- name: doppler.activity.role.old
+  type: keyword
+  description: |-
+    Previous role for a role-change activity (project `metadata.oldRole` or
+    workplace `metadata.oldWorkplaceRole`).
+- name: doppler.activity.members_added
+  type: keyword
+  description: |-
+    Email addresses of members added to a group (`team.group.members.add`).
+    Multi-valued when several members are added at once; use `MV_EXPAND` in ES|QL.
+- name: doppler.activity.token.id
+  type: keyword
+  description: Identifier of the token created by a service-account token-create event.
+- name: doppler.activity.token.name
+  type: keyword
+  description: |-
+    Name of the token created by a token-lifecycle event (service-account token or
+    config service token).
+- name: doppler.activity.service_token.read_access
+  type: boolean
+  description: Whether a created config service token was granted read access.
+- name: doppler.activity.service_token.write_access
+  type: boolean
+  description: |-
+    Whether a created config service token was granted write access. Write-capable
+    tokens are higher risk and a useful detection signal.
+- name: doppler.activity.secrets_changed.added
+  type: keyword
+  description: |-
+    Names of secrets added in a config secrets change
+    (`enclave.project.config.secrets.update`). Multi-valued; use `MV_EXPAND` in ES|QL.
+- name: doppler.activity.secrets_changed.removed
+  type: keyword
+  description: |-
+    Names of secrets removed in a config secrets change. Multi-valued; use
+    `MV_EXPAND` in ES|QL.
+- name: doppler.activity.secrets_changed.updated
+  type: keyword
+  description: |-
+    Names of secrets whose values changed in a config secrets change. Multi-valued;
+    use `MV_EXPAND` in ES|QL.
+- name: doppler.activity.metadata
+  type: flattened
+  description: |-
+    Raw, per-event-type metadata as emitted by Doppler, retained after well-known
+    keys are promoted to the typed `doppler.activity.*` fields above. Useful for
+    investigating uncommon event types; as a `flattened` field it is queryable in
+    KQL/DSL but not in ES|QL, so prefer the typed fields for detections.

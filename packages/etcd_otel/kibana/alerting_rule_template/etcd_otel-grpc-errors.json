@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when any gRPC server handlers complete with a non-OK status code. Persistent non-OK codes signal client, auth, or overload issues.",
     "name": "[etcd OTel] gRPC errors",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "etcd_otel-grpc"
+        },
+        {
+          "id": "etcd_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## etcd gRPC errors\n\n### What fired\n`grpc_server_handled_total` with `grpc_code != OK` increased during the window.\n\n### Why it matters\nNon-OK gRPC codes (DeadlineExceeded, Unavailable, PermissionDenied, ResourceExhausted) indicate clients cannot complete their calls. Varies from noise (benign retries) to outage (gRPC server overload).\n\n### Triage\n1. Break down errors by gRPC code to diagnose.\n2. Correlate with `etcd_server_proposals_failed_total`, slow applies, and leader changes.\n3. Check network latency between clients and etcd.\n\n### Remediation\n- Address overload by scaling etcd peers or tuning client patterns.\n- Fix auth problems if PermissionDenied dominates.\n\n### Tuning\n- Fires on any increase. For noisy environments filter out expected Unavailable counts or raise threshold.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-etcd.otel-default*\n// Counter with attributes.grpc_code: non-OK codes indicate client/auth/overload issues\n| WHERE grpc_server_handled_total IS NOT NULL\n  AND attributes.grpc_code != \"OK\"\n| STATS errors = SUM(INCREASE(grpc_server_handled_total))\n    BY resource.attributes.service.instance.id\n| WHERE errors > 0\n| SORT errors DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

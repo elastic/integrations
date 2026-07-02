@@ -3,26 +3,32 @@ description: "Pipeline for S3 server access logs"
 
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_category_5c638872
       field: event.category
       value: ["web"]
   - append:
+      tag: append_event_type_8860cef4
       field: event.type
       value: ["access"]
   - rename:
+      tag: rename_message_to_event_original_c74b1d7e
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - grok:
+      tag: grok_event_original_7ad250cb
       field: event.original
       patterns:
         - >-
@@ -44,12 +50,14 @@ processors:
         S3ACLREQUIRED: "(-|Yes)"
         S3REGION: "[a-zA-Z][a-zA-Z0-9-]*"
   - grok:
+      tag: grok_aws_s3access_host_header_764d68d8
       field: aws.s3access.host_header
       ignore_missing: true
       ignore_failure: true
       patterns:
-        - ^%{DATA}s3\.%{DATA:cloud.region}\.%{DATA}$        
+        - ^%{DATA}s3\.%{DATA:cloud.region}\.%{DATA}$
   - script:
+      tag: script_7e38081f
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -67,17 +75,20 @@ processors:
         }
         drop(ctx);
   - grok:
+      tag: grok_aws_s3access_request_uri_0b8af0c7
       field: aws.s3access.request_uri
       ignore_failure: true
       patterns:
         - '%{NOTSPACE:http.request.method} %{NOTSPACE:_temp_.url} [hH][tT][tT][pP]/%{NOTSPACE:http.version}'
   - uri_parts:
+      tag: uri_parts__temp__url_to_url_3c83809d
       field: _temp_.url
       target_field: url
       keep_original: true
       ignore_failure: true
       if: ctx._temp_?.url != null
   - append:
+      tag: append_related_user_cf7ba215
       field: related.user
       value: '{{aws.s3access.bucket_owner}}'
       allow_duplicates: false
@@ -86,75 +97,92 @@ processors:
   # Parse the date included in s3 access logs
   #
   - date:
+      tag: date__temp__s3access_time_to_timestamp_fafd8423
       field: _temp_.s3access_time
       target_field: '@timestamp'
       ignore_failure: true
       formats:
         - dd/MMM/yyyy:H:m:s Z
   - set:
+      tag: set_client_ip_84b371bb
       field: client.ip
       value: '{{aws.s3access.remote_ip}}'
       ignore_empty_value: true
   - append:
+      tag: append_related_ip_c0021ce9
       field: related.ip
       value: '{{aws.s3access.remote_ip}}'
       allow_duplicates: false
       if: ctx?.aws?.s3access?.remote_ip != null
   - set:
+      tag: set_client_address_15254d82
       field: client.address
       value: '{{aws.s3access.remote_ip}}'
       ignore_empty_value: true
   - geoip:
+      tag: geoip_aws_s3access_remote_ip_to_client_geo_69de0b8f
       field: aws.s3access.remote_ip
       target_field: client.geo
       if: ctx?.aws?.s3access?.remote_ip != null
   - set:
+      tag: set_geo_c11a7622
       field: geo
       copy_from: client.geo
       ignore_empty_value: true
   - set:
+      tag: set_client_user_id_8d848e48
       field: client.user.id
       value: '{{aws.s3access.requester}}'
       ignore_empty_value: true
   - set:
+      tag: set_event_id_9b7edba7
       field: event.id
       value: '{{aws.s3access.request_id}}'
       ignore_empty_value: true
   - set:
+      tag: set_event_action_f3ec7326
       field: event.action
       value: '{{aws.s3access.operation}}'
       ignore_empty_value: true
   - set:
+      tag: set_http_response_status_code_bb3a1d8b
       field: http.response.status_code
       value: '{{aws.s3access.http_status}}'
       ignore_empty_value: true
   - convert:
+      tag: convert_http_response_status_code_4ce392ee
       field: http.response.status_code
       type: long
       if: ctx?.http?.response?.status_code != null
   - set:
+      tag: set_event_outcome_71325d9b
       field: event.outcome
       value: failure
       if: ctx?.aws?.s3access?.error_code != null
   - set:
+      tag: set_event_code_d7aeb7ec
       field: event.code
       value: '{{aws.s3access.error_code}}'
       ignore_empty_value: true
   - set:
+      tag: set_event_outcome_84ea7090
       field: event.outcome
       value: success
       if: ctx?.aws?.s3access?.error_code == null
   - convert:
+      tag: convert_aws_s3access_bytes_sent_to_http_response_body_bytes_eeb33760
       field: aws.s3access.bytes_sent
       target_field: http.response.body.bytes
       type: long
       ignore_failure: true
   - convert:
+      tag: convert_aws_s3access_total_time_to_event_duration_c161728e
       field: aws.s3access.total_time
       target_field: event.duration
       type: long
       ignore_failure: true
   - script:
+      tag: script_b8d80e18
       lang: painless
       if: ctx.event?.duration != null
       params:
@@ -162,17 +190,21 @@ processors:
       source: >-
         ctx.event.duration *= params.MS_TO_NS;
   - set:
+      tag: set_http_request_referrer_5a3e0b30
       field: http.request.referrer
       value: '{{aws.s3access.referrer}}'
       ignore_empty_value: true
   - user_agent:
+      tag: user_agent_aws_s3access_user_agent_af05d986
       if: ctx?.aws?.s3access?.user_agent != null
       field: aws.s3access.user_agent
   - set:
+      tag: set_tls_cipher_1c33ee6d
       field: tls.cipher
       value: '{{aws.s3access.cipher_suite}}'
       ignore_empty_value: true
   - script:
+      tag: script_3583b6c1
       lang: painless
       if: ctx.aws?.s3access?.tls_version != null
       source: >-
@@ -183,30 +215,37 @@ processors:
         ctx.tls.version = parts[1];
         ctx.tls.version_protocol = parts[0]
   - set:
+      tag: set_aws_s3access_access_point_arn_9ed8f5f2
       field: aws.s3access.access_point_arn
       value: '{{aws.s3access.access_point_arn}}'
       ignore_empty_value: true
   - set:
+      tag: set_aws_s3access_aclrequired_dc250588
       field: aws.s3access.aclrequired
       value: '{{aws.s3access.aclrequired}}'
       ignore_empty_value: true
   - set:
+      tag: set_aws_s3access_source_region_72630762
       field: aws.s3access.source_region
       value: '{{aws.s3access.source_region}}'
       ignore_empty_value: true
   - set:
+      tag: set_cloud_provider_208bdd6b
       field: cloud.provider
       value: aws
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   #
   # Remove temporary fields
   #
   - remove:
+      tag: remove__temp__fc21405e
       field: _temp_
       ignore_missing: true
   - script:
+      tag: script_fa6ab501
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -239,4 +278,4 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

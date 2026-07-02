@@ -10,6 +10,8 @@ platform_type_lowercase="${platform_type,,}"
 
 SCRIPTS_BUILDKITE_PATH="${WORKSPACE}/.buildkite/scripts"
 
+readonly LONG_RUNNING_BRANCH_PATTERN="^(backport-|feature/)"
+
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
 API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/pipelines/"
@@ -624,39 +626,52 @@ get_previous_successful_commit() {
 }
 
 get_from_changeset() {
-    local from=""
     if [ "${BUILDKITE_PULL_REQUEST}" != "false" ]; then
         echo "origin/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
         return
     fi
 
-    local previous_commit
-    previous_commit=$(get_previous_commit "${BUILDKITE_PIPELINE_SLUG}" "${BUILDKITE_BRANCH}")
-
-    if [[ "${previous_commit}" != "null" ]] ; then
-        from="${previous_commit}"
-    else
-        from="${BUILDKITE_COMMIT}^"
-    fi
-
-    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
-        local previous_successful_commit
-        previous_successful_commit=$(get_previous_successful_commit "${BUILDKITE_PIPELINE_SLUG}" "${BUILDKITE_BRANCH}")
-
-        from="${previous_successful_commit}"
-        if [[ "${previous_successful_commit}" == "null" ]]; then
-            from="origin/${BUILDKITE_BRANCH}^"
+    if [[ "${BUILDKITE_BRANCH}" != "main" && ! "${BUILDKITE_BRANCH}" =~ ${LONG_RUNNING_BRANCH_PATTERN} ]]; then
+        local previous_commit
+        previous_commit=$(get_previous_commit "${BUILDKITE_PIPELINE_SLUG}" "${BUILDKITE_BRANCH}")
+        if [[ "${previous_commit}" != "null" ]]; then
+            echo "${previous_commit}"
+        else
+            echo "${BUILDKITE_COMMIT}^"
         fi
+        return
     fi
 
-    echo "${from}"
+    local previous_successful_commit
+    previous_successful_commit=$(get_previous_successful_commit "${BUILDKITE_PIPELINE_SLUG}" "${BUILDKITE_BRANCH}")
+
+    if [[ "${previous_successful_commit}" != "null" ]]; then
+        echo "${previous_successful_commit}"
+        return
+    fi
+
+    if [[ "${BUILDKITE_BRANCH}" == "main" ]]; then
+        echo "origin/${BUILDKITE_BRANCH}^"
+        return
+    fi
+
+    # First push of a long-running branch: use merge-base with main to scope the diff to
+    # commits exclusive to this branch. Test them only if they contain package changes
+    # (e.g. a CI infra-only first commit should not trigger package testing).
+    local merge_base
+    merge_base=$(git merge-base "${BUILDKITE_COMMIT}" "origin/main")
+    if git diff --name-only "${merge_base}" "${BUILDKITE_COMMIT}" | grep -E '^packages/' > /dev/null; then
+        echo "${merge_base}"
+    else
+        echo "${BUILDKITE_COMMIT}"
+    fi
 }
 
 get_to_changeset() {
     # Changeset that triggered the build
     local to="${BUILDKITE_COMMIT}"
 
-    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
+    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ${LONG_RUNNING_BRANCH_PATTERN} ]]; then
         to="origin/${BUILDKITE_BRANCH}"
     fi
     echo "${to}"
@@ -684,6 +699,16 @@ is_logsdb_compatible() {
     fi
     echo "${reason}"
     return 0
+}
+
+# pr_has_package_related_files reads file paths from stdin (one per line) and returns 0 if
+# at least one path is not matched by any non-package pattern, meaning package tests should run.
+# Returns 1 if every path is covered by a non-package pattern (no package tests needed).
+# Patterns are loaded from non_package_patterns.txt (one ERE per line; # comments and blank lines ignored).
+# Avoid using grep -q: SIGPIPE under set -o pipefail can cause missed detections.
+# See: https://buildkite.com/elastic/integrations/builds/25606
+pr_has_package_related_files() {
+    grep -Evf <(grep -Ev '^[[:space:]]*(#|$)' "${SCRIPTS_BUILDKITE_PATH}/non_package_patterns.txt") > /dev/null
 }
 
 # is_pr_affected accepts a package path and returns true if the package is affected by the PR
@@ -758,29 +783,10 @@ is_pr_affected() {
 
     commit_merge=$(git merge-base "${from}" "${to}")
     echoerr "[${package_name}] git-diff: check non-package files (${commit_merge}..${to})"
-    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
-    # Example:
-    # https://buildkite.com/elastic/integrations/builds/25606
-    # https://github.com/elastic/integrations/pull/13810
-    local non_package_patterns=(
-        'packages/'
-        '\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)'
-        'CODE_OF_CONDUCT\.md'
-        'README\.md'
-        'docs/'
-        'catalog-info\.yaml'
-        '\.buildkite/pull-requests\.json'
-        '\.buildkite/pipeline\.schedule-daily\.yml'
-        '\.buildkite/pipeline\.schedule-weekly\.yml'
-        '\.buildkite/pipeline\.backport\.yml'
-        '\.buildkite/pipeline\.publish\.yml'
-        '\.buildkite/scripts/packages/.+\.sh'
-        '\.buildkite/scripts/backport_branch\.sh'
-        '\.buildkite/scripts/build_packages\.sh'
-    )
-    local non_package_regex
-    non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v "${non_package_regex}" > /dev/null; then
+    # .github/CODEOWNERS must not be added to "skip_ci_on_only_changed" in ".buildkite/pull-requests.json".
+    # When this file is updated, the Buildkite build must be triggered to run the "mage check" step.
+    # Same for ".buildkite/scripts/packages/.+.sh": this pattern must not be added to "skip_ci_on_only_changed" to allow triggering the tests of the given package.
+    if git diff --name-only "${commit_merge}" "${to}" | pr_has_package_related_files; then
         echo "[${package_name}] PR is affected: found non-package files"
         return 0
     fi
@@ -1156,7 +1162,8 @@ add_or_edit_gh_pr_comment() {
     if [[ "${comment_id}" == "" ]]; then
         echo "Creating new comment"
         gh pr comment \
-          "${BUILDKITE_PULL_REQUEST}" \
+          "${pr_number}" \
+          --repo "${owner}/${repo}" \
           --body "${contents}"
         return
     fi
@@ -1168,6 +1175,66 @@ add_or_edit_gh_pr_comment() {
       -H "X-GitHub-Api-Version: 2022-11-28" \
       "/repos/${owner}/${repo}/issues/comments/${comment_id}" \
       -f body="${contents}" | jq -r '.html_url'
+}
+
+delete_and_create_gh_pr_comment() {
+    local owner="$1"
+    local repo="$2"
+    local pr_number="$3"
+    local id="$4"
+    local comment_file="$5"
+    local metadata="<!--COMMENT_GENERATED_WITH_ID_${id}-->"
+
+    local comment_id
+    comment_id=$(get_comment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
+    if [[ -n "${comment_id}" ]]; then
+        echo "Deleting existing comment: ${comment_id}"
+        gh api \
+            --method DELETE \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/${owner}/${repo}/issues/comments/${comment_id}"
+    fi
+
+    local contents
+    contents="$(cat "${comment_file}")"
+    printf -v contents '%s\n%s' "${contents}" "${metadata}"
+
+    echo "Creating new comment"
+    gh pr comment \
+        "${pr_number}" \
+        --repo "${owner}/${repo}" \
+        --body "${contents}"
+}
+
+# Posts a new comment on every pipeline run/retry while staying idempotent
+# within a single attempt. Pass a unique id per attempt (e.g. build-number +
+# retry-count) — if a comment with that id already exists the call is a no-op,
+# so transient gh failures can be retried safely without double-posting.
+create_new_gh_pr_comment() {
+    local owner="$1"
+    local repo="$2"
+    local pr_number="$3"
+    local id="$4"
+    local comment_file="$5"
+    local metadata="<!--COMMENT_GENERATED_WITH_ID_${id}-->"
+
+    local comment_id
+    comment_id=$(get_comment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
+    if [[ -n "${comment_id}" ]]; then
+        echo "Comment already posted for id=${id}, skipping"
+        return
+    fi
+
+    local contents
+    contents="$(cat "${comment_file}")"
+    printf -v contents '%s\n%s' "${contents}" "${metadata}"
+
+    echo "Creating new comment"
+    gh pr comment \
+        "${pr_number}" \
+        --repo "${owner}/${repo}" \
+        --body "${contents}"
 }
 
 # FIXME: In a Pull Request that there are more than 100 comments,
