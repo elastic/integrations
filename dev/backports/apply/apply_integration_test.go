@@ -343,6 +343,113 @@ func TestApplyIntegration_ReportsGenuineManifestConflict(t *testing.T) {
 	assert.Empty(t, strings.TrimSpace(branches))
 }
 
+// setupIntegrationRepoWithDeletedManifest is like setupIntegrationRepo, but
+// the fix commit being cherry-picked removes the whole kubernetes package
+// (including manifest.yml) — modeling a package deprecation/removal on main
+// that the branch hasn't caught up with. The branch never touches
+// manifest.yml itself, so the deletion applies cleanly during cherry-pick
+// (no conflict markers at all, cherryErr == nil) — exactly the gap
+// manifestMissingConflict guards: without it, the pipeline would try to
+// version-bump a file that no longer exists and crash instead of reporting a
+// normal conflict.
+func setupIntegrationRepoWithDeletedManifest(t *testing.T) (workDir, fixSHA string) {
+	t.Helper()
+
+	run := func(dir string, args ...string) string {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = dir
+		out, err := cmd.CombinedOutput()
+		require.NoError(t, err, "git %v: %s", args, out)
+		return strings.TrimRight(string(out), "\n")
+	}
+
+	remoteDir := t.TempDir()
+	run(remoteDir, "init", "--bare", "-q")
+
+	workDir = t.TempDir()
+	run(workDir, "clone", "-q", remoteDir, ".")
+	run(workDir, "config", "user.email", "test@test.com")
+	run(workDir, "config", "user.name", "Test")
+	run(workDir, "config", "commit.gpgsign", "false")
+
+	pkgDir := filepath.Join(workDir, "packages", "kubernetes")
+	require.NoError(t, os.MkdirAll(pkgDir, 0o755))
+
+	write := func(rel, content string) {
+		t.Helper()
+		require.NoError(t, os.WriteFile(filepath.Join(workDir, rel), []byte(content), 0o644))
+	}
+
+	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.0\n")
+	write("packages/kubernetes/changelog.yml", "- version: \"1.0.0\"\n"+
+		"  changes:\n"+
+		"    - description: Initial release.\n"+
+		"      type: enhancement\n"+
+		"      link: https://github.com/elastic/integrations/pull/1\n")
+
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Initial release")
+	baseCommit := run(workDir, "rev-parse", "--short=10", "HEAD")
+
+	write(".backports.yml", "backports:\n"+
+		"  - package: kubernetes\n"+
+		"    branch: backport-kubernetes-1.x\n"+
+		"    base_version: \"1.0.0\"\n"+
+		"    base_commit: \""+baseCommit+"\"\n"+
+		"    maintained_until: null\n"+
+		"    archived: false\n"+
+		"    remove_other_packages: false\n")
+
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Add backports config")
+	run(workDir, "push", "-q", "origin", "HEAD:main")
+
+	// Backport branch never touches the package itself.
+	run(workDir, "checkout", "-q", "-b", "backport-kubernetes-1.x")
+	run(workDir, "push", "-q", "origin", "backport-kubernetes-1.x")
+	run(workDir, "checkout", "-q", "main")
+
+	// Fix commit on main removes the whole package.
+	run(workDir, "rm", "-r", "-q", "packages/kubernetes")
+	run(workDir, "commit", "-q", "-m", "Remove deprecated kubernetes package")
+	fixSHA = run(workDir, "rev-parse", "HEAD")
+
+	// resolvePackage runs against whatever is physically checked out before
+	// Apply() switches to its own working branch, so leave the checkout on the
+	// backport branch (which still has the package) rather than main
+	// (post-deletion) — matching what the other setup helpers do implicitly.
+	run(workDir, "checkout", "-q", "backport-kubernetes-1.x")
+
+	return workDir, fixSHA
+}
+
+func TestApplyIntegration_ReportsConflictWhenManifestDeleted(t *testing.T) {
+	workDir, fixSHA := setupIntegrationRepoWithDeletedManifest(t)
+
+	result, err := Apply(Options{
+		SHA:         fixSHA,
+		Package:     "kubernetes",
+		Target:      "backport-kubernetes-1.x",
+		Remote:      "origin",
+		DryRun:      true,
+		PackagesDir: "packages",
+		Repository:  "elastic/integrations",
+		WorkDir:     workDir,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	assert.Equal(t, "conflict", result.Status)
+	assert.Contains(t, result.ConflictingFiles, "packages/kubernetes/manifest.yml")
+
+	// The working branch must be cleaned up so a retry doesn't fail with
+	// "branch already exists".
+	branches, err := gitutil.Git{Dir: workDir}.Output("branch", "--list", "auto-backport/*")
+	require.NoError(t, err)
+	assert.Empty(t, strings.TrimSpace(branches))
+}
+
 func TestApplyIntegration_DryRun(t *testing.T) {
 	workDir, fixSHA := setupIntegrationRepo(t)
 

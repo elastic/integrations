@@ -6,6 +6,7 @@ package apply
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -248,9 +249,13 @@ func (a applier) prepareWorkingBranch(remote, branchName, workingBranch string) 
 // bumps its own version independently) is auto-resolved in favor of the
 // current branch — bumpPatchVersion recomputes the version afterwards. A
 // manifest.yml conflict block containing anything else is left as a genuine
-// conflict. If conflicts remain in any file after this, it resets the index
-// and returns a populated conflict Result; the caller's defer is responsible
-// for branch cleanup. On success it returns (nil, nil).
+// conflict, as is manifest.yml going missing entirely (a delete/modify
+// conflict, or the cherry-picked commit cleanly removing/renaming the
+// package) — either way there's no manifest left to version-bump, so it's
+// reported the same way as any other unresolved conflict. If conflicts
+// remain in any file after this, it resets the index and returns a populated
+// conflict Result; the caller's defer is responsible for branch cleanup. On
+// success it returns (nil, nil).
 func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath string) (*Result, error) {
 	baseVersion, err := readManifestVersion(manifestPath)
 	if err != nil {
@@ -266,6 +271,10 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 	if err := a.git.Run("checkout", "HEAD", "--", changelogPath); err != nil {
 		_ = a.git.Run("reset", "--hard", "HEAD")
 		return nil, fmt.Errorf("restoring changelog after cherry-pick: %w", err)
+	}
+
+	if conflict := a.manifestMissingConflict(sha, branchName, pkg, manifestPath); conflict != nil {
+		return conflict, nil
 	}
 
 	if cherryErr != nil {
@@ -295,16 +304,7 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 			// index dirty. Branch checkout and deletion are left to the caller's
 			// defer.
 			_ = a.git.Run("reset", "--hard", "HEAD")
-			return &Result{
-				Status:           "conflict",
-				SHA:              sha,
-				TargetBranch:     branchName,
-				ConflictingFiles: files,
-				SuggestedCommand: fmt.Sprintf(
-					"dev/scripts/backport_apply.sh --sha %s --package %s --target %s --open-pr",
-					sha, pkg, branchName,
-				),
-			}, nil
+			return buildConflictResult(sha, branchName, pkg, files), nil
 		}
 	}
 
@@ -317,6 +317,42 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 		return nil, fmt.Errorf("restoring manifest.yml version: %w", err)
 	}
 	return nil, nil
+}
+
+// manifestMissingConflict reports a conflict Result if manifestPath no
+// longer exists in the working tree after the cherry-pick — either from a
+// delete/modify conflict, or because the cherry-picked commit cleanly
+// deletes/renames the package. Either way there's no manifest.yml left to
+// version-bump, so this needs a human decision rather than a downstream
+// os.ReadFile failing with an opaque error. Returns nil if manifestPath is
+// present, or if statting it fails for some other reason (that error
+// surfaces naturally from the next operation that reads the file instead).
+func (a applier) manifestMissingConflict(sha, branchName, pkg, manifestPath string) *Result {
+	_, err := os.Stat(manifestPath)
+	if !errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	_ = a.git.Run("reset", "--hard", "HEAD")
+	relPath, relErr := filepath.Rel(a.workDir, manifestPath)
+	if relErr != nil {
+		relPath = manifestPath
+	}
+	return buildConflictResult(sha, branchName, pkg, []string{relPath})
+}
+
+// buildConflictResult constructs the conflict Result returned by
+// cherryPickOrConflict when one or more files remain conflicted.
+func buildConflictResult(sha, branchName, pkg string, files []string) *Result {
+	return &Result{
+		Status:           "conflict",
+		SHA:              sha,
+		TargetBranch:     branchName,
+		ConflictingFiles: files,
+		SuggestedCommand: fmt.Sprintf(
+			"dev/scripts/backport_apply.sh --sha %s --package %s --target %s --open-pr",
+			sha, pkg, branchName,
+		),
+	}
 }
 
 // resolveManifestVersionConflict looks for cherry-pick conflict markers in
