@@ -117,6 +117,16 @@ func TestBumpPatchVersion(t *testing.T) {
 	}
 }
 
+// TestResolveManifestVersionConflict follows the version convention of a
+// real backport: "ours" (the HEAD side of the conflict) is the backport
+// branch's own, older version — the branch was cut from an elder commit and
+// only advances through its own independent patch bumps. "theirs" is the
+// version the cherry-picked commit carries on main, which is normally ahead
+// since main keeps advancing on its own. Resolving a version-only conflict
+// keeps "theirs" content verbatim for now (including its higher version and
+// any adjacent field it added) — cherryPickOrConflict normalizes the version
+// back to the branch's own lineage immediately afterward, so the version
+// value seen here never survives into the final commit.
 func TestResolveManifestVersionConflict(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -131,6 +141,10 @@ func TestResolveManifestVersionConflict(t *testing.T) {
 			wantOK:      true,
 		},
 		{
+			// Branch is at 6.14.2 (its own lineage); main's commit shows 6.15.0,
+			// having advanced past where the branch branched off. Resolved content
+			// keeps 6.15.0 for now — bumpPatchVersion later produces 6.14.3, not
+			// 6.15.x, once cherryPickOrConflict normalizes the version back down.
 			name: "version-only conflict on our side keeps theirs",
 			content: "name: aws\n" +
 				"<<<<<<< HEAD\n" +
@@ -145,22 +159,44 @@ func TestResolveManifestVersionConflict(t *testing.T) {
 			wantOK: true,
 		},
 		{
+			// Branch is at 6.14.2; by the time this fix landed, main had advanced
+			// much further (6.18.0) and also added a "categories" field in the
+			// same commit. The resolved content preserves both the higher version
+			// and the new field — the field survives into the final commit, but
+			// the version is later normalized back to the branch's own lineage
+			// (6.14.3), same as the previous case.
 			name: "version-only conflict on our side preserves theirs' adjacent addition",
 			content: "name: aws\n" +
 				"<<<<<<< HEAD\n" +
-				"version: 1.0.2\n" +
+				"version: 6.14.2\n" +
 				"=======\n" +
-				"version: 1.0.1\n" +
+				"version: 6.18.0\n" +
 				"categories:\n" +
 				"  - kubernetes\n" +
 				">>>>>>> abc1234 (Add categories field)\n" +
 				"format_version: 3.0.0\n",
 			wantContent: "name: aws\n" +
-				"version: 1.0.1\n" +
+				"version: 6.18.0\n" +
 				"categories:\n" +
 				"  - kubernetes\n" +
 				"format_version: 3.0.0\n",
 			wantOK: true,
+		},
+		{
+			name: "version-only conflict with empty theirs is left untouched",
+			content: "name: aws\n" +
+				"<<<<<<< HEAD\n" +
+				"version: 6.14.2\n" +
+				"=======\n" +
+				">>>>>>> abc1234 (Delete version)\n" +
+				"format_version: 3.0.0\n",
+			wantContent: "name: aws\n" +
+				"<<<<<<< HEAD\n" +
+				"version: 6.14.2\n" +
+				"=======\n" +
+				">>>>>>> abc1234 (Delete version)\n" +
+				"format_version: 3.0.0\n",
+			wantOK: false,
 		},
 		{
 			name: "conflict with other content is left untouched",

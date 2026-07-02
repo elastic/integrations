@@ -20,7 +20,10 @@ import (
 // setupIntegrationRepo creates a bare remote and a local clone pre-populated
 // with a kubernetes package at version 1.0.0, a matching backport branch on
 // the remote, and a single fix commit on main that bumps to 1.0.1. It returns
-// the local clone directory and the full SHA of the fix commit.
+// the local clone directory and the full SHA of the fix commit. This models
+// the very first backport onto a freshly cut branch: the branch hasn't
+// diverged yet, so its version still matches main's parent commit and the
+// cherry-pick applies cleanly with no version-line conflict at all.
 func setupIntegrationRepo(t *testing.T) (workDir, fixSHA string) {
 	t.Helper()
 
@@ -100,11 +103,16 @@ func setupIntegrationRepo(t *testing.T) (workDir, fixSHA string) {
 }
 
 // setupIntegrationRepoWithDivergedManifest is like setupIntegrationRepo, but
-// the backport branch has already been bumped once independently to 1.0.2
-// (simulating a prior backport), so the fix commit's own version bump on main
-// (1.0.0 -> 1.0.1) collides with the branch's own version on the same line.
-// The fix commit also adds an unrelated "categories" field that does not
-// overlap with anything the branch changed, so it should merge cleanly.
+// models the typical backport shape: the branch was cut from an elder commit
+// and has only advanced through one independent bump of its own (1.0.0 ->
+// 1.0.1), while main kept moving and the fix commit being cherry-picked
+// carries a much higher version (1.0.0 -> 1.4.0) — main is normally ahead of
+// any given backport branch. That gives a genuine version-line conflict
+// (base 1.0.0, branch 1.0.1, main's commit 1.4.0, all different). The fix
+// commit also adds an unrelated "categories" field that does not overlap
+// with anything the branch changed, so it should merge cleanly regardless of
+// the version conflict. The expected final version is 1.0.2 — the branch's
+// own lineage bumped by one — never anything derived from main's 1.4.0.
 func setupIntegrationRepoWithDivergedManifest(t *testing.T) (workDir, fixSHA string) {
 	t.Helper()
 
@@ -158,20 +166,22 @@ func setupIntegrationRepoWithDivergedManifest(t *testing.T) (workDir, fixSHA str
 	run(workDir, "commit", "-q", "-m", "Add backports config")
 	run(workDir, "push", "-q", "origin", "HEAD:main")
 
-	// Create the backport branch and give it its own independent version bump,
-	// simulating a prior backport onto it.
+	// Create the backport branch, cut from the elder "Add backports config"
+	// commit, and give it one small independent bump of its own — a much
+	// smaller step than main will have taken by the time the fix below lands.
 	run(workDir, "checkout", "-q", "-b", "backport-kubernetes-1.x")
-	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.2\n")
+	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.1\n")
 	run(workDir, "add", ".")
 	run(workDir, "commit", "-q", "-m", "Previous backport bump")
 	run(workDir, "push", "-q", "origin", "backport-kubernetes-1.x")
 	run(workDir, "checkout", "-q", "main")
 
-	// Create the fix commit on main: bumps the version (which will conflict with
-	// the branch's own, already-diverged version) and also adds an unrelated
-	// field that should merge cleanly and be preserved.
-	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.1\ncategories:\n  - kubernetes\n")
-	write("packages/kubernetes/changelog.yml", "- version: \"1.0.1\"\n"+
+	// Create the fix commit on main: by now main has advanced well past the
+	// branch's own version (1.4.0 vs. the branch's 1.0.1), so the version line
+	// conflicts, while the unrelated "categories" field addition should merge
+	// cleanly and be preserved regardless.
+	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.4.0\ncategories:\n  - kubernetes\n")
+	write("packages/kubernetes/changelog.yml", "- version: \"1.4.0\"\n"+
 		"  changes:\n"+
 		"    - description: Add categories field.\n"+
 		"      type: enhancement\n"+
@@ -204,25 +214,27 @@ func TestApplyIntegration_PreservesUnrelatedManifestChanges(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 
-	// The branch's own version (1.0.2) wins the version-line conflict and is
-	// bumped from there, ignoring the source commit's own bump to 1.0.1.
+	// The branch's own version (1.0.1) wins the version-line conflict and is
+	// bumped from there (to 1.0.2), ignoring main's much further-advanced 1.4.0.
 	assert.Equal(t, "success", result.Status)
-	assert.Equal(t, "1.0.3", result.NewVersion)
+	assert.Equal(t, "1.0.2", result.NewVersion)
 
 	manifestData, err := os.ReadFile(filepath.Join(workDir, "packages", "kubernetes", "manifest.yml"))
 	require.NoError(t, err)
-	assert.Contains(t, string(manifestData), "version: 1.0.3")
+	assert.Contains(t, string(manifestData), "version: 1.0.2")
 	// The unrelated "categories" field added by the cherry-picked commit must
 	// survive, instead of being discarded along with the version conflict.
 	assert.Contains(t, string(manifestData), "categories:\n  - kubernetes\n")
 }
 
 // setupIntegrationRepoWithGenuineManifestConflict is like
-// setupIntegrationRepoWithDivergedManifest, but both the backport branch and
-// the fix commit change the "description" field (in addition to their own
-// independent version bumps), on the line right next to it. That overlap
-// falls outside the version-only auto-resolution and must still be reported
-// as a real conflict requiring manual resolution.
+// setupIntegrationRepoWithDivergedManifest (elder branch at a small bump of
+// its own, main's fix commit carrying a much higher version), but both the
+// backport branch and the fix commit also change the "description" field
+// right next to their respective version bumps. That overlap falls outside
+// the version-only auto-resolution and must still be reported as a real
+// conflict requiring manual resolution — the final version never matters
+// here since the whole cherry-pick gets reset.
 func setupIntegrationRepoWithGenuineManifestConflict(t *testing.T) (workDir, fixSHA string) {
 	t.Helper()
 
@@ -276,19 +288,19 @@ func setupIntegrationRepoWithGenuineManifestConflict(t *testing.T) (workDir, fix
 	run(workDir, "commit", "-q", "-m", "Add backports config")
 	run(workDir, "push", "-q", "origin", "HEAD:main")
 
-	// Backport branch changes both the version and, right next to it, the
-	// description field independently.
+	// Backport branch takes one small independent bump of its own, changing
+	// the description field right next to it.
 	run(workDir, "checkout", "-q", "-b", "backport-kubernetes-1.x")
-	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.2\ndescription: Branch description.\n")
+	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.1\ndescription: Branch description.\n")
 	run(workDir, "add", ".")
 	run(workDir, "commit", "-q", "-m", "Previous backport bump")
 	run(workDir, "push", "-q", "origin", "backport-kubernetes-1.x")
 	run(workDir, "checkout", "-q", "main")
 
-	// Fix commit on main also changes both the version and the description
-	// field, so the description change genuinely conflicts.
-	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.1\ndescription: Main description.\n")
-	write("packages/kubernetes/changelog.yml", "- version: \"1.0.1\"\n"+
+	// Fix commit on main has advanced much further (1.4.0) and also changes the
+	// description field, so the description change genuinely conflicts.
+	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.4.0\ndescription: Main description.\n")
+	write("packages/kubernetes/changelog.yml", "- version: \"1.4.0\"\n"+
 		"  changes:\n"+
 		"    - description: Update description.\n"+
 		"      type: enhancement\n"+

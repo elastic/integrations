@@ -334,6 +334,15 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 // It assumes the default (non-diff3) conflict marker style; cherryPickOrConflict
 // forces this via "-c merge.conflictStyle=merge" on the cherry-pick itself, so
 // this is independent of the caller's own git config.
+// version is a mandatory, singular manifest.yml field: since "ours" is a
+// valid, existing file, it has exactly one line matching "version:", so at
+// most one conflict block can ever match the auto-resolve condition above.
+// After resolving, the merged content is required to still contain exactly
+// one such line before it's accepted; otherwise the whole file is left
+// untouched and reported as a conflict instead. This isn't expected to
+// trigger from two legitimately-committed manifest.yml states — a valid
+// "theirs" can't drop or duplicate a mandatory field either — but guards
+// against writing an invalid manifest.yml if that assumption is ever wrong.
 // Returns true if the file has no remaining conflict markers (either none
 // were present, or all were resolved).
 func resolveManifestVersionConflict(manifestPath string) (bool, error) {
@@ -404,6 +413,17 @@ func resolveManifestVersionConflict(manifestPath string) (bool, error) {
 	if !fullyResolved {
 		return false, nil
 	}
+
+	versionLines := 0
+	for _, l := range out {
+		if strings.HasPrefix(l, "version:") {
+			versionLines++
+		}
+	}
+	if versionLines != 1 {
+		return false, nil
+	}
+
 	if err := os.WriteFile(manifestPath, []byte(strings.Join(out, "\n")), info.Mode()); err != nil {
 		return false, fmt.Errorf("writing resolved %s: %w", manifestPath, err)
 	}
