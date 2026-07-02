@@ -41,7 +41,7 @@ program: |
                 "Header": {
                     "Accept": ["application/taxii+json;version=2.1"],
                     "Content-Type": ["application/taxii+json;version=2.1"],
-                    "x-anyrun-connector": ["Elastic_Security:1.0.0"],
+                    "x-anyrun-connector": ["Elastic_Security:1.2.1"],
                     "Authorization": (has(state.access_key) && state.access_key != "") ?
                         ["API-Key " + string(state.access_key)]
                     :
@@ -51,11 +51,14 @@ program: |
         ).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?
             resp.Body.decode_json().as(body,
                 {
-                    "events": body.objects.map(e,
-                        {
-                            "message": e.encode_json(),
-                        }
-                    ),
+                    "events": has(body.objects) && type(body.objects) == list ?
+                        body.objects.map(e,
+                            {
+                                "message": e.encode_json(),
+                            }
+                        )
+                    :
+                        [],
                     "url": state.url,
                     "access_key": state.access_key,
                     "limit": state.limit,
@@ -63,7 +66,7 @@ program: |
                     "next": { ?"page": body.?next },
                     "cursor": {
                         "last_timestamp": max(
-                            timestamp(resp.?Header["X-TAXII-Date-Modified-Last"][0].orValue(state.?cursor.last_timestamp.orValue(state.modified_after))),
+                            timestamp(resp.?Header["X-Taxii-Date-Modified-Last"][0].orValue(state.?cursor.last_timestamp.orValue(state.modified_after))),
                             timestamp(state.?cursor.last_timestamp.orValue(state.modified_after))
                         ),
                     },

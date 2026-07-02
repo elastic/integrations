@@ -1,0 +1,165 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Austin Songer"
+        ],
+        "description": "Identifies the use of the Win32_ShadowCopy class and related cmdlets to achieve shadow copy deletion. This commonly occurs in tandem with ransomware or other destructive attacks.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.pe.original_file_name",
+                "process.command_line",
+                "process.args",
+                "process.parent.entity_id",
+                "process.parent.pid",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Volume Shadow Copy Deletion via PowerShell",
+        "note": "## Triage and analysis\n\n### Investigating Volume Shadow Copy Deletion via PowerShell\n\n#### Possible investigation steps\n\n- Does the alert-local PowerShell command show broad shadow-copy deletion, remote targeting, or obscured execution?\n  - Focus: `process.command_line`, checking whether \"Win32_ShadowCopy\" is paired with WMI or CIM enumeration and deletion.\n  - Hint: treat `Get-WmiObject`, `gwmi`, `Get-CimInstance`, `gcim`, `Remove-WmiObject`, `rwmi`, `Remove-CimInstance`, `rcim`, \"$_.Delete()\", `-ComputerName`, and `-CimSession` as high-signal command cues. This rule requires plaintext cmdlet tokens in `process.args`; fully encoded commands or script-file invocations that hide the deletion logic will not fire this rule.\n  - Implication: escalate when the command deletes all returned shadow-copy instances, targets remote systems, or hides WMI or CIM deletion behind aliases; lower suspicion only when narrowly scoped to one recognized backup-retention, image-reset, or lab-test workflow on the expected host.\n\n- Is the PowerShell host binary expected rather than renamed or tampered?\n  - Focus: `process.executable`, `process.name`, `process.pe.original_file_name`, `process.code_signature.subject_name`, and `process.code_signature.trusted`.\n  - Implication: escalate when path, signer, trust state, or original file name does not match the expected PowerShell host; lower suspicion when identity matches a trusted system PowerShell installation, but continue because legitimate PowerShell can still delete recovery points.\n\n- Does the parent process and user context explain why this host removed shadow copies?\n  - Focus: `process.parent.executable`, `process.parent.command_line`, `user.id`, `user.name`, and `user.domain`.\n  - Implication: escalate when Office, a browser, a script host, an unexpected remote-management chain, or a standard user launches deletion; lower suspicion when parent, account, and host match a recognized backup, imaging, disaster-recovery, or lab-reset workflow.\n\n- Do surrounding process events show recovery inhibition or ransomware preparation from the same host or lineage?\n  - Why: ransomware commonly pairs shadow-copy deletion with other recovery removal or encryption preparation before impact.\n  - Focus: process starts on `host.id` and, when present, the same `process.entity_id` or lineage, using `process.name`, `process.command_line`, and `process.parent.executable`. !{investigate{\"description\":\"\",\"label\":\"Process starts on the same host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Range: start with the alert window and following 15 minutes; expand only when the same lineage shows recovery tampering or encryption behavior.\n  - Implication: escalate when the same window shows `vssadmin`, `wmic`, `diskshadow`, `wbadmin`, backup service stops, recovery-setting changes, or likely encryptor launchers; lower suspicion when activity stays bounded to the same parent-launched cleanup or reset sequence and no other recovery-inhibition utilities appear.\n\n- If command or lineage remains suspicious and endpoint file telemetry is available, does file activity show encryption or destructive cleanup?\n  - Focus: recover file events with `host.id` + `process.entity_id`; if absent, use `host.id` + `process.pid` plus a tight alert window as a weaker fallback, then review `file.path`, `file.extension`, and `file.Ext.original.extension`. !{investigate{\"description\":\"\",\"label\":\"File events from the PowerShell process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when recovered file events show mass renames, unfamiliar extensions, replaced user files, or ransom-note paths after deletion; lower suspicion only when changes stay inside the recovered backup or reset target. Missing endpoint file telemetry leaves file impact unanswered; do not treat absence of file evidence as benign.\n\n- If local evidence remains suspicious or unresolved, does related alerting show the same VSS deletion or backup-tampering pattern?\n  - Focus: related impact or execution alerts for the same `user.id` involving VSS deletion, backup tampering, credential access, or the same parent tool. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: check the same `host.id` for shadow-copy deletion by other binaries, encryption, ransom-note creation, backup tampering, or service tampering. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: expand scope when the same user touches multiple hosts or the same host shows a broader ransomware chain; keep the case local only when related alerts are absent and local telemetry already fits one recognized workflow.\n\n- Escalate broad or remote shadow-copy deletion that lacks a recognized workflow, has suspicious lineage, destructive process or file evidence, or related spread; close only when narrow command scope, identity, lineage, and supported surrounding telemetry fit one workflow; preserve and escalate mixed or visibility-limited evidence.\n\n### False positive analysis\n\n- PowerShell WMI or CIM shadow-copy deletion is suspicious by default outside controlled backup-retention cleanup, disaster-recovery testing, gold-image preparation, lab reset, or ransomware simulation. Close as benign only when `process.command_line` is narrowly scoped, `process.parent.executable` matches the backup, orchestration, reset, or test tool, `user.id` or `user.name` matches the expected admin or service account, `host.id` plus `host.name` fit the target, and surrounding telemetry shows no destructive process or file impact. Use change records or lab schedules only as corroboration; generic storage maintenance is not enough.\n- Before creating an exception, validate historical stability for the same `process.executable`, `process.parent.executable`, stable `process.command_line` scope, `user.id` or `user.name`, and `host.id`. Build the exception from that minimum confirmed workflow pattern. Avoid exceptions on \"powershell.exe\", `process.name`, or \"Win32_ShadowCopy\" alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse any temporary containment and record the `process.command_line`, `process.parent.executable`, `user.id` or `user.name`, `host.id`, and maintenance evidence that proved the workflow. Create an exception only if the same command scope, lineage, account, and host recur consistently across prior alerts from this rule.\n- If suspicious but unconfirmed, preserve the alert, `process.entity_id`, full `process.command_line`, `process.args`, parent chain, `user.id`, `user.name`, `host.id`, surrounding process commands, and any recovered file-impact examples before containment. Apply reversible containment first: isolate the host only when destructive process or file evidence suggests ongoing impact and the host can tolerate isolation; otherwise restrict the implicated admin channel or account while scope is confirmed. Expand containment to related hosts or accounts only if the same-user or same-host pivots show spread.\n- If confirmed malicious, preserve the same process, command, lineage, and recovered file-impact artifacts before destructive action. Prefer endpoint isolation to stop further impact while keeping telemetry available; if direct response is unavailable, escalate with the preserved `host.id`, `user.id`, `user.name`, `process.entity_id`, `process.command_line`, and suspected ransom-note or renamed-extension indicators to the team that can isolate the host and suspend related accounts or services. If the malicious process chain is still active, record `process.entity_id` and `process.command_line` before suspending or terminating it.\n- After scope review, remove only the malicious scripts, scheduled tasks, services, payloads, or dropped notes identified during the investigation, then restore affected backup or recovery settings and validate that snapshots or backup jobs are functioning before closure.\n- Post-incident hardening: restrict VSS-management workflows and remote CIM deletion patterns to controlled administrative channels, retain the process and file telemetry that proved the case, and review whether adjacent VSS methods such as \"vssadmin\", \"wmic\", `diskshadow`, `wbadmin`, COM-based deletion, or diff-area resizing need the same controls.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.name : (\"powershell.exe\", \"pwsh.exe\", \"powershell_ise.exe\") and\n  process.args : (\"*Get-WmiObject*\", \"*gwmi*\", \"*Get-CimInstance*\", \"*gcim*\") and\n  process.args : (\"*Win32_ShadowCopy*\") and\n  process.args : (\"*.Delete()*\", \"*Remove-WmiObject*\", \"*rwmi*\", \"*Remove-CimInstance*\", \"*rcim*\")\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/previous-versions/windows/desktop/vsswmi/win32-shadowcopy",
+            "https://powershell.one/wmi/root/cimv2/win32_shadowcopy",
+            "https://www.fortinet.com/blog/threat-research/stomping-shadow-copies-a-second-look-into-deletion-methods"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "d99a037b-c8e2-47a5-97b9-170d076827c4",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1490",
+                        "name": "Inhibit System Recovery",
+                        "reference": "https://attack.mitre.org/techniques/T1490/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1047",
+                        "name": "Windows Management Instrumentation",
+                        "reference": "https://attack.mitre.org/techniques/T1047/"
+                    },
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 319
+    },
+    "id": "d99a037b-c8e2-47a5-97b9-170d076827c4_319",
+    "type": "security-rule"
+}

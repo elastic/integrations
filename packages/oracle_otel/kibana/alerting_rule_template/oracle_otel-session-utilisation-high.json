@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when session utilisation exceeds 85%. Session exhaustion prevents new connections.",
     "name": "[Oracle OTel] Session utilisation high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 8,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "oracle_otel-resource-capacity"
+        },
+        {
+          "id": "oracle_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Oracle session utilisation high\n\n### What fired\nPeak session count exceeded 85% of the session limit.\n\n### Why it matters\nOracle `sessions` bounds total concurrent user and system sessions. Exhaustion causes connection errors for applications.\n\n### Triage\n1. Check application pool sizing.\n\n### Remediation\n- Raise `sessions` init parameter.\n- Tune pooling.\n\n### Tuning\n- 85% threshold.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-oracledbreceiver.otel-*\n// Sessions usage is split by session_type/session_status; limit is separate document group\n// First aggregate per-timestamp to get total sessions at each scrape point\n| STATS sessions_at_ts = SUM(oracledb.sessions.usage),\n        limit_val = MAX(oracledb.sessions.limit)\n        BY @timestamp, oracledb.instance.name, host.name\n// Then take peak sessions across the time window\n| STATS peak_sessions = MAX(sessions_at_ts),\n        limit_val = MAX(limit_val)\n        BY oracledb.instance.name, host.name\n| WHERE limit_val > 0\n// Utilisation threshold: 85% — approaching session limit prevents new connections\n// Adjust threshold to tune sensitivity\n| EVAL utilisation_pct = ROUND(peak_sessions * 100.0 / limit_val, 1)\n| WHERE utilisation_pct > 85\n| SORT utilisation_pct DESC"
+        "esql": "FROM metrics-oracledbreceiver.otel-*\n// Sessions usage is split by session_type/session_status; limit is separate document group\n// First aggregate per-timestamp to get total sessions at each scrape point\n| STATS sessions_at_ts = SUM(oracledb.sessions.usage),\n        limit_val = MAX(oracledb.sessions.limit)\n        BY @timestamp, oracledb.instance.name, host.name\n// Then take peak sessions across the time window\n| STATS peak_sessions = MAX(sessions_at_ts),\n        limit_val = MAX(limit_val)\n        BY oracledb.instance.name, host.name\n| WHERE limit_val > 0\n// Utilisation threshold: 85% \u2014 approaching session limit prevents new connections\n// Adjust threshold to tune sensitivity\n| EVAL utilisation_pct = ROUND(peak_sessions * 100.0 / limit_val, 1)\n| WHERE utilisation_pct > 85\n| SORT utilisation_pct DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

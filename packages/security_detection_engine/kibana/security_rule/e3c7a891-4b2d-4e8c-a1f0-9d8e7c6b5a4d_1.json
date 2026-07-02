@@ -1,0 +1,134 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Flags the first time a given IAM principal invokes a narrow set of high-signal discovery APIs (credential check, account and IAM enumeration, bucket and compute inventory, logging introspection) from a source IP whose autonomous system number (ASN) matches a curated set commonly associated with consumer VPN brands, VPN-heavy hosting, and provider networks referenced in public reporting on TeamPCP activity (for example 31173 Services AB AS39351 and Oy Crea Nova Hosting Solution Ltd). Broad `List*`/`Describe*` patterns are intentionally omitted to reduce noise. Hosting ASNs are heavily dual-use; validate `source.as.number` in your data and extend `event.action` only when your baseline allows it.",
+        "false_positives": [
+            "Administrators, developers, CI runners, and SaaS egress often exit through Datacamp, M247, Vultr, Linode, or brand-name VPN ASNs. Expect more noise on hosting ASNs than on VPN-only registrations. Exclude approved principals, accounts, CIDRs, or ASNs after review. GeoIP and ASN enrichment gaps (`source.as.number` unset) will skip events entirely. Maintain the ASN list with local intelligence (for example RIPE, BGPView, or peeringdb)."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-10d",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "source.as.number",
+                "source.as.organization.name",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.provider",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Discovery API Calls from VPN ASN for the First Time by Identity",
+        "new_terms_fields": [
+            "source.as.number",
+            "user.name",
+            "cloud.account.id"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating AWS Discovery API Calls from VPN ASN for the First Time by Identity\n\nThis rule applies a [New Terms](https://www.elastic.co/guide/en/security/current/rules-ui-create.html#create-new-terms-rule) condition on **`source.as.number`** and **`aws.cloudtrail.user_identity.arn`**. It fires the first time a specific principal is observed calling discovery-like APIs from an IP geolocated to one of the ASNs in the rule query (within the 10-day history window).\n\n**High-signal `event.action` values** (explicit allowlist in the rule query): `GetCallerIdentity`; IAM `ListUsers`,\n`ListRoles`, `ListAccessKeys`, `GetAccountSummary`, `ListAccountAliases`, `ListGroups`, `ListMFADevices`; S3 `ListBuckets`;\nEC2 `DescribeInstances`, `DescribeRegions`, `DescribeVpcs`, `DescribeSecurityGroups`; Lambda `ListFunctions`; RDS\n`DescribeDBInstances`, `DescribeDBSnapshots`; DynamoDB `ListTables`; KMS `ListKeys`, `ListAliases`; CloudTrail\n`DescribeTrails`, `LookupEvents`. Clone the rule to add actions (for example ELB or Secrets Manager) if needed.\n\n**Curated VPN-oriented ASNs (verify locally)** \u2014 examples this rule matches (subject to registry and enrichment updates):\n\n| ASN | Commonly associated operator (reference only) |\n|-----|-----------------------------------------------|\n| 216025 | Mullvad VPN AB |\n| 57138 | Mullvad supporting infrastructure |\n| 207137 | Tefincom S.A. (NordVPN-related) |\n| 212238 | Nord / Nord Security class VPN egress in many datasets |\n| 199218 | ProtonVPN |\n| 209103 | Proton AG (VPN; confirm in your enrichment source) |\n| 209854 | Surfshark Ltd. |\n| 141039, 147049 | Packet-style VPN/colocation pools often tied to large VPN footprints |\n| 53314 | ExpressVPN-related registration in some registries (often small; validate) |\n| 60068 | Datacamp Limited \u2014 CDN/hosting; used by several VPN brands and many legitimate workloads (**high dual-use**) |\n| 9009 | M247 Ltd \u2014 colocation and connectivity; common VPN/proxy exit (**high dual-use**) |\n| 20473 | Choopa / Vultr (The Constant Company) \u2014 VPS; frequent VPN exit and automation (**high dual-use**) |\n| 63949 | Linode LLC (Akamai cloud) \u2014 VPS; VPN exits and dev workloads (**dual-use**) |\n| 39351 | 31173 Services AB (Sweden) \u2014 colocation/hosting; cited in TeamPCP-related reporting (**dual-use**). Not the same as **AS31173** (unrelated Ukrainian ISP). |\n| 51765 | Oy Crea Nova Hosting Solution Ltd (Finland) \u2014 hosting; cited in TeamPCP-related reporting (**dual-use**) |\n| 204187 | Oy Crea Nova Hosting Solution Ltd \u2014 related network under the same operator (**dual-use**) |\n\nOther ASNs sometimes seen for VPN or reseller egress (not in this rule by default) include **16276** (OVH), **14061**\n(DigitalOcean), **24940** (Hetzner), **51167** (Contabo), and **49453** (Global Layer). Add them only if your baseline\nshows manageable false-positive volume.\n\n#### Possible investigation steps\n\n- Confirm `aws.cloudtrail.user_identity.arn`, `aws.cloudtrail.user_identity.type`, and `aws.cloudtrail.user_identity.access_key_id`.\n- Review `event.action` and `event.provider` in the alert; several distinct allowlisted actions from the same session suggest broader enumeration.\n- Compare `source.ip`, `source.as.organization.name`, and `source.as.number` against your asset inventory and approved remote-access patterns.\n- Hunt \u00b130 minutes for privilege changes, data access (`GetObject`, snapshot sharing), or credential operations.\n\n### False positive analysis\n\n- First-time legitimate VPN or hosting egress per identity produces a single alert per ASN until the term ages out of the window.\n- **Datacamp (60068), M247 (9009), and Vultr (20473)** are especially noisy; consider dropping them locally if alerts exceed capacity.\n- **31173 Services AB (39351)** and **Crea Nova (51765, 204187)** are legitimate hosting providers; only escalation-worthy when paired with unexpected identities or follow-on impact.\n\n### Response and remediation\n\n- If unexpected, rotate keys, revoke sessions, and tighten IAM; add exceptions only after documented approval.\n\n### Additional information\n\n- [CloudTrail userIdentity](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html)\n- [BGP / ASN lookup](https://bgp.tools/) (third-party) for validating AS registrations\n",
+        "query": "event.dataset: \"aws.cloudtrail\"\n    and event.outcome: \"success\"\n    and aws.cloudtrail.user_identity.arn:(* and not *AWSServiceRoleForConfig*)\n    and not aws.cloudtrail.user_identity.type: \"AWSService\"\n    and event.provider: (\n        \"sts.amazonaws.com\" or\n        \"iam.amazonaws.com\" or\n        \"s3.amazonaws.com\" or\n        \"ec2.amazonaws.com\" or\n        \"lambda.amazonaws.com\" or\n        \"rds.amazonaws.com\" or\n        \"dynamodb.amazonaws.com\" or\n        \"kms.amazonaws.com\" or\n        \"cloudtrail.amazonaws.com\"\n    )\n    and event.action: (\n        \"GetCallerIdentity\" or\n        \"ListUsers\" or\n        \"ListRoles\" or\n        \"ListAccessKeys\" or\n        \"GetAccountSummary\" or\n        \"ListAccountAliases\" or\n        \"ListGroups\" or\n        \"ListMFADevices\" or\n        \"ListBuckets\" or\n        \"DescribeInstances\" or\n        \"DescribeRegions\" or\n        \"DescribeVpcs\" or\n        \"DescribeSecurityGroups\" or\n        \"ListFunctions\" or\n        \"DescribeDBInstances\" or\n        \"DescribeDBSnapshots\" or\n        \"ListTables\" or\n        \"ListKeys\" or\n        \"ListAliases\" or\n        \"DescribeTrails\" or\n        \"LookupEvents\"\n    )\n    and source.as.number: (\n        216025 or\n        57138 or\n        207137 or\n        212238 or\n        199218 or\n        209103 or\n        209854 or\n        141039 or\n        147049 or\n        53314 or\n        60068 or\n        9009 or\n        20473 or\n        63949 or\n        39351 or\n        51765 or\n        204187 or \n        29066 or \n        206092\n    )\n",
+        "references": [
+            "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference.html",
+            "https://attack.mitre.org/techniques/T1526/",
+            "https://github.com/bountyyfi/bad-asn-list/blob/main/all.txt"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.arn",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.number",
+                "type": "long"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e3c7a891-4b2d-4e8c-a1f0-9d8e7c6b5a4d",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS CloudTrail",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1526",
+                        "name": "Cloud Service Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1526/"
+                    },
+                    {
+                        "id": "T1580",
+                        "name": "Cloud Infrastructure Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1580/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "e3c7a891-4b2d-4e8c-a1f0-9d8e7c6b5a4d_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,119 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects creation or approval of a Kubernetes CertificateSigningRequest (CSR) by a non-system identity. Attackers who have gained cluster access can submit a CSR with a privileged Common Name such as system:kube-controller-manager or system:masters, then approve it themselves to obtain a long-lived client certificate. Unlike service account tokens which expire in hours, client certificates persist until they expire or the cluster CA is rotated, providing durable access that survives pod termination, token revocation, and RBAC changes. On non-EKS clusters, the signed certificate allows the attacker to authenticate as the privileged identity from anywhere without needing cluster network access, making it one of the most persistent backdoor mechanisms available in Kubernetes.",
+        "false_positives": [
+            "Approved certificate workflows (for example cert-manager, internal PKI rotation, or node bootstrap) may create or update CSRs from identities not in the exclusion list if they run under a custom service account. Baseline automation that legitimately approves CSRs and tune exclusions for those principals."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-kubernetes.audit_logs-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Kubernetes Client Certificate Signing Request Created or Approved",
+        "note": "## Triage and analysis\n\n### Investigating Kubernetes Client Certificate Signing Request Created or Approved\n\nIdentify the actor (`user.name`, groups), client (`user_agent.original`), and `source.ip`. Confirm whether the\nprincipal is expected to create or approve CSRs. Review `kubernetes.audit.requestURI` and, when audit level captures\nrequest bodies, the CSR `spec` (requested signer, usages, and requested identity / Common Name).\n\n### Extracting the Certificate Common Name\n\nFor create events, \"kubernetes.audit.requestObject.spec.request\" holds the base64-encoded PEM certificate signing request.\nDecode that value to PEM, then inspect the CSR subject (for example with OpenSSL\u2019s CSR subject view) to read the\nrequested Common Name (CN). \n\nKnown base64 substrings that often appear inside the encoded request for high-risk identities:\n\n- `c3lzdGVtOm1hc3Rlcn` \u2014 `system:masters`\n- `c3lzdGVtOmt1YmUtY29udHJvbGxlci1tYW5hZ2Vy` \u2014 `system:kube-controller-manager`\n- `c3lzdGVtOmFkbWlu` \u2014 `system:admin`\n\nPriority CNs that usually indicate privilege escalation intent:\n\n- `system:masters` (cluster-admin group)\n- `system:kube-controller-manager` (broad control-plane\u2013style access, including secrets and token minting)\n- `system:kube-scheduler` (scheduling across the cluster)\n- `system:kube-proxy` (node/network\u2013adjacent access)\n- Any CN that matches an existing ClusterRoleBinding subject name\n\n### Possible investigation steps\n\n- Compare the CSR name and extracted CN against approved PKI or bootstrap processes.\n- Determine whether the same identity both created and approved or patched the CSR in a short window, which matches\n  self-approval abuse.\n- Review `kubernetes.audit.objectRef` and subsequent authentication or API activity from unusual networks.\n- Correlate with RBAC changes, secret access, or TokenRequest activity that preceded CSR activity.\n\n### Response and remediation\n\n- If malicious, deny further approval, delete or deny the CSR per incident policy, revoke or rotate cluster signing\n  trust if the CA or signer was abused, and invalidate issued credentials.\n- Remove excessive RBAC that allows `certificatesigningrequests` create/update/patch or approval for untrusted\n  identities; enforce signer restrictions and approved issuers where supported.\n",
+        "query": "data_stream.dataset:\"kubernetes.audit_logs\" and \nkubernetes.audit.objectRef.resource:\"certificatesigningrequests\" and\nkubernetes.audit.verb:(\"create\" or \"update\" or \"patch\") and\nkubernetes.audit.annotations.authorization_k8s_io/decision:\"allow\" and\nnot user.name:(\n  system\\:kube-controller-manager or\n  system\\:kube-scheduler or\n  system\\:node\\:* or\n  system\\:serviceaccount\\:kube-system\\:* or\n  eks\\:* or aksService\n)\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/",
+            "https://attack.mitre.org/techniques/T1098/"
+        ],
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.80.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.annotations.authorization_k8s_io/decision",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "0f5941c6-3db9-4d2f-91df-06c7c292ba45",
+        "severity": "high",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Domain: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "0f5941c6-3db9-4d2f-91df-06c7c292ba45_1",
+    "type": "security-rule"
+}

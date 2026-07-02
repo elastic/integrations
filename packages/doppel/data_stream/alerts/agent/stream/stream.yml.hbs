@@ -1,0 +1,94 @@
+config_version: 2
+interval: {{interval}}
+resource.url: {{url}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+state:
+  api_key: {{api_key}}
+{{#if x_user_api_key}}
+  x_user_api_key: {{x_user_api_key}}
+{{/if}}
+{{#if organization_code}}
+  organization_code: {{organization_code}}
+{{/if}}
+  initial_interval: {{initial_interval}}
+  page_size: {{page_size}}
+redact:
+  fields:
+    - api_key
+    - x_user_api_key
+program: |
+  (
+    // Don't recompute time ranges while paginating.
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "last_activity_ts": (
+          state.?cursor.last_timestamp.orValue("") != "" ?
+            (timestamp(state.cursor.last_timestamp) - duration("5m")).format("2006-01-02T15:04:05")
+          :
+            (now - duration(state.initial_interval)).format("2006-01-02T15:04:05")
+        ),
+        "page": 0,
+      })
+  ).as(state,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/v1/alerts?" + {
+          "page": [string(int(state.page))],
+          "page_size": [string(int(state.page_size))],
+          "last_activity_timestamp": [state.last_activity_ts],
+        }.format_query()
+      ).with({
+        "Header": {
+          "X-Api-Key": [state.api_key],
+          ?"X-User-Api-Key": state.?x_user_api_key.optMap(v, [v]),
+          ?"X-Organization-Code": state.?organization_code.optMap(v, [v]),
+        }
+      }).do_request().as(resp, resp.StatusCode == 200 ?
+        resp.Body.decode_json().as(body, {
+          "events": body.alerts.map(e, {"message": e.encode_json()}),
+          "page": int(body.metadata.page) + 1,
+          "want_more": int(body.metadata.page) + 1 < int(body.metadata.total_pages),
+          ?"cursor": int(body.metadata.page) + 1 >= int(body.metadata.total_pages) ?
+            optional.of({"last_timestamp": now.format(time_layout.RFC3339)})
+          :
+            optional.none(),
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + state.url.trim_right("/") + "/v1/alerts: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

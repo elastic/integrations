@@ -1,0 +1,95 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_ticura
+      name: test-all-ti_ticura
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: ti_ticura.indicator
+          interval: 30m
+          processors:
+            - add_fields:
+                fields:
+                    id: "574734885120952459"
+                    name: myproject
+                target: project
+          program: |
+            state.with(
+              request("GET", state.url).with({
+                "Header": {
+                  "x-api-key": [state.api_token],
+                }
+              }).do_request().as(resp, resp.StatusCode == 200 ?
+                {
+                  "events": string(resp.Body).split("\n")
+                    .filter(l, size(l) > 0)
+                    .map(l, {"message": l.trim_space()}),
+                  "want_more": false,
+                }
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": string(resp.Status),
+                      "message": "GET " + state.url + ": " + (
+                        size(resp.Body) != 0 ?
+                          string(resp.Body)
+                        :
+                          string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                }
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            delete: true
+            fields:
+                - api_token
+          resource.proxy_url: http://proxy.tld
+          resource.retry:
+            max_attempts: 5
+            wait_max: 1m
+            wait_min: 10s
+          resource.ssl:
+            supported_protocols:
+                - TLSv1.2
+                - TLSv1.3
+            verification_mode: full
+          resource.timeout: 60s
+          resource.tracer:
+            enabled: true
+            filename: ../../logs/cel/http-request-trace--*.ndjson
+            maxbackups: 5
+          resource.url: http://host.tld
+          state:
+            api_token: ${SECRET_0}
+          tags:
+            - preserve_original_event
+            - forwarded
+            - ti_ticura-indicator
+            - test-policy
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_ticura.indicator-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

@@ -12,18 +12,14 @@ The following blogs provide additional context. For the most current installatio
 
 This package leverages event logs. Prior to using this integration, you must have Elastic Endpoint via Elastic Defend, or have equivalent tools/endpoints set up. If using Elastic Defend, Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information. The transform only supports Linux and Windows. The **Anomaly Detection Jobs** section outlines platform support for each job.
 
-If you are running version 8.18+, the Defend integration only collects a [subset of host information by default](https://www.elastic.co/docs/solutions/security/configure-elastic-defend/configure-data-volume-for-elastic-endpoint#host-fields).  To ensure the transform runs properly, the `[linux|mac|windows].advanced.set_extended_host_information` settings need to be set to `true.
+If you are running version 8.18+, the Defend integration only collects a [subset of host information by default](https://www.elastic.co/docs/solutions/security/configure-elastic-defend/configure-data-volume-for-elastic-endpoint#host-fields).  To ensure the transform runs properly, the `[linux|mac|windows].advanced.set_extended_host_information` settings need to be set to `true`.
 
 ## Installation
 
 1. **Upgrading**: If upgrading from a version below v3.0.0, see the section v3.0.0 and beyond.
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Lateral Movement Detection**. Configure the integration name and agent policy. Click **Save and Continue**. (Note that this integration does not rely on an agent, and can be assigned to a policy without an agent.)
 1. **Check the health of the transform**: The transform is scheduled to run every hour. This transform creates the index `ml-rdp-lmd_ea`. To check the health of the transform go to **Management > Stack Management > Data > Transforms** under `logs-lmd.pivot_transform_ea-default-<FLEET-TRANSFORM-VERSION>`.
-1. **Create data views for anomaly detection jobs**: The anomaly detection jobs under this package rely on two indices. One has file transfer events (`logs-*`), and the other index (`ml-rdp-lmd_ea`) collects RDP session information from a transform. Before enabling the anomaly detection jobs, create a data view with both index patterns.
-    1. Go to **Stack Management > Kibana > Data Views** and click **Create data view**.
-    1. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-*, ml-rdp-lmd_ea`, and copy the same in the **Name** field.
-    1. Select `@timestamp` under the **Timestamp** field and click on **Save data view to Kibana**.
-    1. Use the new data view (`logs-*, ml-rdp-lmd_ea`) to create anomaly detection jobs for this package.
+1. **Create a data view for anomaly detection jobs**: The anomaly detection jobs under this package rely on two indices. One has file transfer events (`logs-*`), and the other index (`ml-rdp-lmd_ea`) collects RDP session information from a transform. The RDP session jobs use the designated index (`ml-rdp-lmd_ea`) populated by the transform installed above, which is already pre-assigned to those jobs. Before enabling the anomaly detection jobs, create a data view for the file transfer index pattern.
 1. **Add preconfigured anomaly detection jobs**: In **Stack Management -> Anomaly Detection Jobs**, you will see **Supplied configurations**.
     1. Select **Lateral Movement Detection** and click **Run data recognizer**.
     1. Next to the data view name you created in the previous step, click the link to "create jobs."
@@ -145,6 +141,8 @@ Clone the anomaly detection jobs available under the Living off the Land Attack 
 ## Anomaly Detection Jobs
 
 Detects potential lateral movement activity by identifying malicious file transfers and RDP sessions in an environment.
+
+Before starting the these jobs, ensure you have ML nodes with enough free memory. The exact amount of memory needed can vary, but a minimum of 8GB of non-heap ML memory is the minimum required to start all the jobs.
 
 | Job                                                      | Description                                                                                     | Supported Platform    | Filter Field                |
 |----------------------------------------------------------|-------------------------------------------------------------------------------------------------|-----------------------|-----------------------------|

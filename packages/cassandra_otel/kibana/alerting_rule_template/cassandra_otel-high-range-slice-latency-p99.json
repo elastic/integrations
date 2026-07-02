@@ -1,39 +1,52 @@
 {
-    "id": "cassandra_otel-high-range-slice-latency-p99",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Cassandra OTel] High range slice latency (p99)",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "cassandra"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-cassandra.otel-default\n// RangeSlice (range scans, secondary index) latency; inherently higher than single-partition reads\n| WHERE `cassandra.client.request.range_slice.latency.99p` IS NOT NULL\n| STATS p99_us = MAX(MAX_OVER_TIME(`cassandra.client.request.range_slice.latency.99p`)) BY server.address\n// Threshold: 500000 us = 500 ms; range scans are more expensive\n| WHERE p99_us > 500000\n| SORT p99_us DESC"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "server.address",
-            "termSize": 20,
-            "excludeHitsFromPreviousRun": true
+  "id": "cassandra_otel-high-range-slice-latency-p99",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the p99 range-slice latency exceeds 500 ms (`cassandra.client.request.range_slice.latency.99p > 500000 us`). Range scans are inherently expensive but sustained high p99 indicates trouble.",
+    "name": "[Cassandra OTel] High range slice latency (p99)",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cassandra"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cassandra_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Cassandra high range slice latency (p99)\n\n### What fired\np99 of `cassandra.client.request.range_slice.latency.99p` exceeded 500 ms (500,000 \u00b5s) on at least one node.\n\n### Why it matters\nRange slices (used by secondary-index queries and full-table scans) are the most expensive read operation in Cassandra. Sustained high p99 indicates disk pressure, compaction backlog, or cross-DC queries; applications that depend on range scans will time out.\n\n### Triage\n1. Overview dashboard: confirm affected nodes and trend.\n2. Correlate with compaction backlog (`cassandra.compaction.tasks.pending`) and read latency.\n3. Look at disk I/O and page-cache pressure.\n4. Review query patterns \u2014 range scans on non-partition keys are an antipattern and may need data modelling changes.\n\n### Remediation\n- Resolve compaction backlog.\n- Move range-scan workloads to an analytics replica (Spark, Presto).\n- Redesign the data model to support the query with a partition-scoped read.\n\n### Tuning\n- 500 ms is a reasonable default; adjust to the latency tolerance of the dependent application.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-cassandra.otel-default\n// RangeSlice (range scans, secondary index) latency; inherently higher than single-partition reads\n| WHERE `cassandra.client.request.range_slice.latency.99p` IS NOT NULL\n| STATS p99_us = MAX(MAX_OVER_TIME(`cassandra.client.request.range_slice.latency.99p`)) BY server.address\n// Threshold: 500000 us = 500 ms; range scans are more expensive\n| WHERE p99_us > 500000\n| SORT p99_us DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "server.address",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

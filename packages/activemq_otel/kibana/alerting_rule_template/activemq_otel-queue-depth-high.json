@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when a non-advisory destination holds more than 1000 unconsumed messages. A deep queue indicates the consumer cohort cannot keep up with producer rate \u2014 the classic consumer-lag signal.",
     "name": "[ActiveMQ OTel] Queue depth high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -16,13 +17,28 @@
     "alertDelay": {
       "active": 2
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "activemq_otel-destinations"
+        },
+        {
+          "id": "activemq_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## ActiveMQ queue depth high\n\n### What fired\nThe gauge `activemq.message.current` on a user destination (DLQ and advisory destinations excluded) exceeded 1000 over the evaluation window.\n\n### Why it matters\nGrowing queue depth is the canonical signal that consumers are falling behind producers. Effects compound quickly: message wait times rise, broker memory usage climbs, and eventually producers are blocked or messages expire.\n\n### Triage\n1. Destinations dashboard: identify the affected destination(s) and trend.\n2. Check enqueue vs dequeue rates (`activemq.message.enqueued` rate / `activemq.message.dequeued` rate). A persistent gap confirms consumer lag.\n3. Check `activemq.consumer.count` on affected queues \u2014 zero or too few consumers is a common root cause.\n4. Inspect `activemq.queue.message.inflight` for slow/stuck consumers holding unacked messages.\n\n### Remediation\n- Add consumers or fix slow consumer code paths.\n- Shed load on the producer side if consumer capacity cannot grow.\n- For bursty workloads, consider topics with selectors or sharding.\n\n### Tuning\n- `> 1000` is a conservative default; tune to your expected steady state (deep queues are acceptable for batch-style workloads).\n- Lengthen the evaluation window to smooth bursty traffic.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-activemq.otel-*\n// activemq.message.current is gauge; exclude advisory/system destinations\n| WHERE activemq.message.current IS NOT NULL\n  AND activemq.destination.name IS NOT NULL\n  AND activemq.destination.name NOT IN (\"ActiveMQ.DLQ\", \"ActiveMQ.Advisory.MasterBroker\", \"ActiveMQ.Advisory.Queue\", \"ActiveMQ.Advisory.Topic\")\n| STATS queue_depth = MAX(LAST_OVER_TIME(activemq.message.current)) BY activemq.broker.name, activemq.destination.name\n// Alert when queue depth exceeds 1000; adjust for your expected throughput\n| WHERE queue_depth > 1000\n| SORT queue_depth DESC\n| LIMIT 10"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

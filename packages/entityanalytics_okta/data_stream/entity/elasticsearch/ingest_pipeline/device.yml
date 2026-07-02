@@ -48,6 +48,11 @@ processors:
       copy_from: entityanalytics_okta.device.id
       tag: set_asset_id
       ignore_empty_value: true
+  - set:
+      field: host.id
+      copy_from: entityanalytics_okta.device.id
+      tag: set_host_id
+      ignore_empty_value: true
   - rename:
       field: okta.status
       target_field: entityanalytics_okta.device.status
@@ -185,6 +190,11 @@ processors:
       tag: rename_device_profile_display_name
       ignore_missing: true
   - rename:
+      field: okta.profile.osVersion
+      target_field: host.os.version
+      tag: rename_device_profile_os_version
+      ignore_missing: true
+  - rename:
       field: okta.profile.sid
       target_field: entityanalytics_okta.device.profile.sid
       tag: rename_device_profile_sid
@@ -220,6 +230,18 @@ processors:
       on_failure:
         - remove:
             field: okta.profile.secure_hardware_present
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: okta.profile.managed
+      target_field: host.entity.attributes.managed
+      type: boolean
+      tag: convert_device_profile_managed
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: okta.profile.managed
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

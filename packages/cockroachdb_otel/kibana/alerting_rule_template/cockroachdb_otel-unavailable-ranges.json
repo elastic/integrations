@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when any ranges become unavailable (`ranges_unavailable > 0`), meaning there are insufficient live replicas to form a quorum. Unavailable ranges cannot be read or written \u2014 this is a P1 condition.",
     "name": "[CockroachDB OTel] Unavailable ranges detected",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cockroachdb_otel-replication"
+        },
+        {
+          "id": "cockroachdb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## CockroachDB unavailable ranges\n\n### What fired\n`ranges_unavailable` on at least one store exceeded 0 over the evaluation window.\n\n### Why it matters\nAn unavailable range has lost quorum. Reads and writes against keys in that range will block or fail until quorum is restored. This is the single most critical CockroachDB availability signal and should be treated as a P1 incident.\n\n### Triage\n1. Check `liveness_livenodes` against the expected cluster size \u2014 node loss is the most common cause.\n2. On the Replication & Ranges dashboard, inspect `ranges_underreplicated` and per-store replica distribution.\n3. Verify network health between nodes: `rpc_connection_unhealthy`, `rpc_connection_failures`, `clock_offset_meannanos`.\n4. Check for cascading resource issues that could be causing multiple nodes to heartbeat-fail simultaneously.\n\n### Remediation\n- Restore quorum by bringing failed nodes back online, or (if the node is lost) decommission it to trigger up-replication from surviving replicas.\n- Fix network partitions between DCs/AZs.\n- Page on-call immediately if unavailable ranges persist more than a few minutes.\n\n### Tuning\n- This rule fires on any unavailable range, intentionally. The 1-minute evaluation and 5-minute window balance responsiveness against transient rebalancing noise.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND ranges_unavailable IS NOT NULL\n  AND ranges_unavailable > 0\n// Store-level metric: both node_id and store must be present\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS unavailable = MAX(ranges_unavailable) BY attributes.node_id, attributes.store, host.name\n| SORT unavailable DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

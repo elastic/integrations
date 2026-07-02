@@ -2,41 +2,50 @@
 description: Pipeline for Okta debug data not using flattened.
 processors:
   - rename:
+      tag: rename_debugData
       field: json.debugContext.debugData
       target_field: okta.debug_context.debug_data
       ignore_failure: true
   - json:
+      tag: json_logOnlySecurityData
       field: okta.debug_context.debug_data.logOnlySecurityData
       ignore_failure: true
   - dissect:
+      tag: dissect_behaviors
       field: okta.debug_context.debug_data.behaviors
       pattern: "{%{okta.debug_context.debug_data.behaviors}}"
       ignore_missing: true
       ignore_failure: true
   - kv:
+      tag: kv_behaviors
       field: okta.debug_context.debug_data.behaviors
       field_split: ", "
       value_split: "="
       target_field: _behaviors_object
       if: ctx.okta?.debug_context?.debug_data?.behaviors != null
   - remove:
+      tag: remove_behaviors
       field: okta.debug_context.debug_data.behaviors
       if: ctx._behaviors_object != null
   - rename:
+      tag: rename_behaviors_object
       field: _behaviors_object
       target_field: okta.debug_context.debug_data.behaviors
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_risk_object
       field: okta.debug_context.debug_data.risk_object
       copy_from: okta.debug_context.debug_data.risk
       if: ctx.okta?.debug_context?.debug_data?.risk != null
   - dissect:
+      tag: dissect_risk
       field: okta.debug_context.debug_data.risk
       pattern: "{%{okta.debug_context.debug_data.risk}}"
       ignore_missing: true
       ignore_failure: true
   - kv:
+      tag: kv_risk
       field: okta.debug_context.debug_data.risk
       field_split: ", "
       value_split: "="
@@ -44,18 +53,22 @@ processors:
       if: ctx.okta?.debug_context?.debug_data?.risk != null
       on_failure:
         - remove:
+            tag: remove_risk_object
             field: _risk_object
   - remove:
+      tag: remove_risk_object_2
       field: okta.debug_context.debug_data.risk_object
       if: ctx._risk_object != null
   # Make heroic efforts to capture risk level and reason if kv could not get them.
   - grok:
+      tag: grok_risk
       field: okta.debug_context.debug_data.risk
       patterns:
         - level=%{NOTSPACE:_risk_object.level}
       if: ctx.okta?.debug_context?.debug_data?.risk_object != null && ctx.okta?.debug_context?.debug_data?.risk != null
       ignore_failure: true
   - grok:
+      tag: grok_risk_2
       field: okta.debug_context.debug_data.risk
       patterns:
         - reasons=%{DATA:_risk_object.reasons}, %{KEY}
@@ -65,31 +78,38 @@ processors:
       if: ctx.okta?.debug_context?.debug_data?.risk_object != null && ctx.okta?.debug_context?.debug_data?.risk != null
       ignore_failure: true
   - remove:
+      tag: remove_risk
       field: okta.debug_context.debug_data.risk
       if: ctx._risk_object != null
   - rename:
+      tag: rename_risk_object
       field: _risk_object
       target_field: okta.debug_context.debug_data.risk
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_risk_level
       field: okta.debug_context.debug_data.risk_level
       value: "{{{okta.debug_context.debug_data.logOnlySecurityData.risk.level}}}"
       if: 'ctx.okta?.debug_context?.debug_data?.logOnlySecurityData?.risk?.level != null && ctx.okta?.debug_context?.debug_data?.logOnlySecurityData?.risk?.level != ""'
   - split:
+      tag: split_reasons
       field: okta.debug_context.debug_data.logOnlySecurityData.risk.reasons
       target_field: okta.debug_context.debug_data.risk_reasons
       separator: ',\s*'
       if: 'ctx.okta?.debug_context?.debug_data?.logOnlySecurityData?.risk?.reasons != null && ctx.okta?.debug_context?.debug_data?.logOnlySecurityData?.risk?.reasons != ""'
   - set:
+      tag: set_risk_level_2
       field: okta.debug_context.debug_data.risk_level
       value: "{{{okta.debug_context.debug_data.risk.level}}}"
       if: 'ctx.okta?.debug_context?.debug_data?.risk_level == null && ctx.okta?.debug_context?.debug_data?.risk?.level != null && ctx.okta?.debug_context?.debug_data?.risk?.level != ""'
   - set:
+      tag: set_factor
       field: okta.debug_context.debug_data.factor
       value: "{{{okta.debug_context.debug_data.factor}}}"
       if: 'ctx.okta?.debug_context?.debug_data?.factor == null && ctx.okta?.debug_context?.debug_data?.factor != null && ctx.okta?.debug_context?.debug_data?.factor != ""'
   - split:
+      tag: split_reasons_2
       field: okta.debug_context.debug_data.risk.reasons
       target_field: okta.debug_context.debug_data.risk_reasons
       separator: ',\s*'
@@ -100,12 +120,15 @@ processors:
       if: ctx.okta?.debug_context?.debug_data?.tunnels != null
       on_failure:
         - append:
+            tag: append_message
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
+            tag: remove_tunnels
             field: okta.debug_context.debug_data.tunnels
             ignore_failure: true
   - script:
+      tag: script
       lang: painless
       source: |
         def src = ctx.okta?.debug_context?.debug_data?.behaviors;
@@ -124,54 +147,63 @@ processors:
 
   # Special cases for fields that were previously extracted from flattened.
   - rename:
+      tag: rename_deviceFingerprint
       field: okta.debug_context.debug_data.deviceFingerprint
       target_field: okta.debug_context.debug_data.device_fingerprint
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_dtHash
       field: okta.debug_context.debug_data.dtHash
       target_field: okta.debug_context.debug_data.dt_hash
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_requestId
       field: okta.debug_context.debug_data.requestId
       target_field: okta.debug_context.debug_data.request_id
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_requestUri
       field: okta.debug_context.debug_data.requestUri
       target_field: okta.debug_context.debug_data.request_uri
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_threatSuspected
       field: okta.debug_context.debug_data.threatSuspected
       target_field: okta.debug_context.debug_data.threat_suspected
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_clientSecret
       field: json.debugContext.debugData.clientSecret
       target_field: okta.debug_context.debug_data.client_secret
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_requestedScopes
       field: json.debugContext.debugData.requestedScopes
       target_field: okta.debug_context.debug_data.requested_scopes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_grantedScopes
       field: json.debugContext.debugData.grantedScopes
       target_field: okta.debug_context.debug_data.granted_scopes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_grantType
       field: json.debugContext.debugData.grantType
       target_field: okta.debug_context.debug_data.grant_type
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: painless_purge_spaces_and_dashes
       lang: painless
       description: Replace spaces and dashes in field names under okta.debug_context.debug_data.
-      tag: painless_purge_spaces_and_dashes
       if: ctx.okta?.debug_context?.debug_data != null
       source: |
         String underscore(String s) {
@@ -201,12 +233,15 @@ processors:
 
 on_failure:
   - set:
+      tag: set_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_message_2
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
 

@@ -2,14 +2,35 @@
   "id": "mongodb_otel-high-memory-usage",
   "type": "alerting_rule_template",
   "attributes": {
+    "description": "Alerts when resident memory exceeds 4 GB. Adjust threshold to match host RAM.",
     "name": "[MongoDB OTel] High memory usage",
+    "ruleTypeId": ".es-query",
     "tags": [
       "observability",
       "mongodb"
     ],
-    "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mongodb_otel-capacity"
+        },
+        {
+          "id": "mongodb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## MongoDB high memory usage\n\n### What fired\nResident memory exceeded 4 GB during the window.\n\n### Why it matters\nMongoDB's memory footprint is dominated by WiredTiger cache and connections. Crossing the host ceiling causes OOM or swap thrashing.\n\n### Triage\n1. Compare against host RAM.\n2. Inspect cache sizing and working-set size.\n\n### Remediation\n- Scale host.\n- Reduce cache size or connections.\n\n### Tuning\n- 4 GB is placeholder; set to host RAM specific threshold.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",
@@ -20,13 +41,6 @@
       },
       "groupBy": "row",
       "timeField": "@timestamp"
-    },
-    "alertDelay": {
-      "active": 2
-    },
-    "flapping": {
-      "lookBackWindow": 10,
-      "statusChangeThreshold": 4
     }
   },
   "managed": true,

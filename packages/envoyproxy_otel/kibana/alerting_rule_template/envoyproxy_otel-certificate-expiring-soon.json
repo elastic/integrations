@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `envoy.server.days_until_first_cert_expiring` falls below 7 days. Expired TLS certificates cause handshake failures on downstream and upstream connections.",
     "name": "[Envoy OTel] Certificate expiring soon",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,25 @@
       "lookBackWindow": 3,
       "statusChangeThreshold": 2
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "envoyproxy_otel-envoy-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Envoy certificate expiring soon\n\n### What fired\n`envoy.server.days_until_first_cert_expiring` dropped below 7 days in the evaluation window.\n\n### Why it matters\nEnvoy serves TLS on the downstream and may also present client certs upstream. An expired cert breaks every secured connection, causing immediate availability impact.\n\n### Triage\n1. Identify which certificate(s) are expiring on the affected Envoy instance via the admin interface `/certs` endpoint.\n2. Check the certificate issuance pipeline (cert-manager, Vault, ACME client) for stuck renewals.\n3. Verify downstream clients can still connect if renewal is already in flight.\n\n### Remediation\n- Force-renew the certificate via the issuance pipeline.\n- Push a new Envoy secret via SDS / hot-restart if not auto-refreshed.\n- Adopt automated rotation if this is a recurring event.\n\n### Tuning\n- 7 days is a late threshold. For production, pair this rule with a 30-day warning rule.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.days_until_first_cert_expiring IS NOT NULL\n// Days until first TLS cert expires — alert when below threshold\n| STATS min_days = MIN(envoy.server.days_until_first_cert_expiring)\n// Adjust threshold (7 days) based on your cert renewal lead time\n| WHERE min_days < 7"
+        "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.days_until_first_cert_expiring IS NOT NULL\n// Days until first TLS cert expires \u2014 alert when below threshold\n| STATS min_days = MIN(envoy.server.days_until_first_cert_expiring)\n// Adjust threshold (7 days) based on your cert renewal lead time\n| WHERE min_days < 7"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 1,

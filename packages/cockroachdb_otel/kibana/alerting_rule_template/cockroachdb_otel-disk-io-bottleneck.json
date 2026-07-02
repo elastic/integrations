@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when a node has more than 10 disk I/O operations queued (`sys_host_disk_iopsinprogress > 10`). Persistent double-digit queues indicate the disk cannot keep up with the workload and will cascade into write stalls and LSM back-pressure.",
     "name": "[CockroachDB OTel] Disk I/O operations queued high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cockroachdb_otel-storage"
+        },
+        {
+          "id": "cockroachdb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## CockroachDB disk I/O queue high\n\n### What fired\n`sys_host_disk_iopsinprogress` for a node exceeded 10 over the evaluation window. CockroachDB documents single-digit queues as normal; persistent double digits indicate an I/O bottleneck.\n\n### Why it matters\nA saturated disk is the most common root cause of CockroachDB performance incidents. When the disk cannot keep up, the storage engine backs up, leading to write stalls (`storage_write_stalls`), LSM growth (`storage_l0_sublevels`, `storage_l0_num_files`), elevated read amplification and, eventually, range unavailability.\n\n### Triage\n1. Use the Storage dashboard to correlate `sys_host_disk_iopsinprogress` with `storage_write_stalls`, `admission_io_overload`, and L0 metrics.\n2. Check throughput: `sys_host_disk_read_bytes` and `sys_host_disk_write_bytes` rates. Is read- or write-heavy behavior driving the queue?\n3. Compare affected node(s) with peers \u2014 is traffic imbalanced (`rebalancing_queriespersecond`, `replicas_leaseholders`)?\n4. Inspect host-level monitoring (iostat, cloud provider volume metrics) for disk utilization, await time, and provisioned IOPS headroom.\n\n### Remediation\n- Provision higher IOPS / faster storage (e.g. upgrade to NVMe or higher-tier cloud volumes).\n- Rebalance traffic if a single node is hot.\n- Reduce write amplification by tuning workload (smaller batches, fewer indexes).\n\n### Tuning\n- Threshold (`> 10`) and 10-minute window are reasonable defaults. Tighten the window for latency-sensitive tiers.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND sys_host_disk_iopsinprogress IS NOT NULL\n  AND sys_host_disk_iopsinprogress > 10\n// Persistent double digits indicate I/O bottleneck\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n| STATS iops_queued = MAX(sys_host_disk_iopsinprogress) BY attributes.node_id, host.name\n| SORT iops_queued DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 10,

@@ -1,0 +1,71 @@
+rules:
+  # ── Standard feed (10 indicators, all IOC types) ─────────────────────────
+  # Used by: test-default-config.yml, test-tracer-config.yml,
+  #          test-preserve-original-config.yml
+  - path: /v1/feeds/download/full
+    methods: ["GET"]
+    query_params:
+      targetFormat: "ECSV1"
+    request_headers:
+      x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/x-ndjson"
+        body: |
+          {{file "/files/ticura-feed.ndjson"}}
+  # ── Expired-indicator feed (10 normal + 1 already-expired) ───────────────
+  # Used by: test-expired-config.yml
+  # The 11th indicator has ages_out in the past → the transform retention_policy
+  # drops it from the latest index (it is still indexed in the raw stream).
+  - path: /v1/feeds/expired/full
+    methods: ["GET"]
+    query_params:
+      targetFormat: "ECSV1"
+    request_headers:
+      x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/x-ndjson"
+        body: |
+          {{file "/files/ticura-feed-expired.ndjson"}}
+  # ── Malformed-events feed (10 good + 2 malformed) ────────────────────────
+  # Used by: test-malformed-config.yml
+  # Two bad lines: one with no ticura block, one with ticura.indicator.uuid absent.
+  # Both must be silently dropped → hit_count still 10.
+  - path: /v1/feeds/malformed/full
+    methods: ["GET"]
+    query_params:
+      targetFormat: "ECSV1"
+    request_headers:
+      x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/x-ndjson"
+        body: |
+          {{file "/files/ticura-feed-malformed.ndjson"}}
+  # ── Update-detection feed (fingerprint-based _id) ────────────────────────
+  # Used by: test-update-config.yml
+  # 4 lines: the same uuid (upd00001) appears at TWO fingerprints (a content
+  # update with an unchanged last_seen) plus 2 other indicators. Because _id =
+  # fingerprint(uuid + ticura.indicator.fingerprint), all 4 are distinct _ids →
+  # hit_count 4. A regression to a uuid-only _id would collide the two versions
+  # of upd00001 → hit_count 3.
+  - path: /v1/feeds/update/full
+    methods: ["GET"]
+    query_params:
+      targetFormat: "ECSV1"
+    request_headers:
+      x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/x-ndjson"
+        body: |
+          {{file "/files/ticura-feed-update.ndjson"}}

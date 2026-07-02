@@ -1,0 +1,1001 @@
+---
+description: Pipeline for processing Zscaler ZIA SaaS Security NSS feed logs (Collaboration, CRM, Email, File Sharing, Gen AI, ITSM, Public Cloud Storage, and Repository).
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '8.11.0'
+
+  # parse the event JSON
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original `message` field to `event.original` to store a copy of the original message.
+        The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - remove:
+      field: json
+      tag: remove_json_if_input_type_http_endpoint
+      ignore_missing: true
+      description: >-
+        For the http_endpoint input, Filebeat auto-parses the JSON request body
+        into the `json.*` field. Drop it to avoid duplicating fields that the
+        pipeline parses again from `event.original` into `zscaler_zia.saas_security`.
+      if: ctx.input?.type == 'http_endpoint'
+  - json:
+      field: event.original
+      tag: json_parse_event_original
+      target_field: zscaler_zia.saas_security
+
+  - script:
+      tag: check_template_version
+      lang: painless
+      params:
+        pkg_version: 3.19.0
+        data_stream: saas_security
+        expect:
+          version: v1
+      if: ctx.zscaler_zia?.saas_security != null && ctx._conf?.strict_fields == true
+      source: |-
+        if (ctx.zscaler_zia.saas_security.version != params.expect.version) {
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message ?: [];
+          ctx.error.message.add('template version mismatch: ' + (ctx.zscaler_zia.saas_security.version == null ? 'null' : ctx.zscaler_zia.saas_security.version.toString()) + ' is not expected version (see ' + params.data_stream + ' https://epr.elastic.co/package/zscaler_zia/' + params.pkg_version + '/docs/README.md)');
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # convert values
+  - convert:
+      field: zscaler_zia.saas_security.record_id
+      tag: convert_record_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: zscaler_zia.saas_security.company.id
+      tag: convert_company_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: zscaler_zia.saas_security.bucket.id
+      tag: convert_bucket_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: zscaler_zia.saas_security.dlp.identifier
+      tag: convert_dlp_identifier_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: zscaler_zia.saas_security.genai.run_id
+      tag: convert_genai_run_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: zscaler_zia.saas_security.genai.scan_id
+      tag: convert_genai_scan_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: zscaler_zia.saas_security.collab_count
+      tag: convert_collab_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: zscaler_zia.saas_security.collab_count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: zscaler_zia.saas_security.email.external_recipients_count
+      tag: convert_email_external_recipients_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: zscaler_zia.saas_security.email.external_recipients_count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: zscaler_zia.saas_security.email.internal_recipients_count
+      tag: convert_email_internal_recipients_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: zscaler_zia.saas_security.email.internal_recipients_count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: zscaler_zia.saas_security.email.message_size_bytes
+      tag: convert_email_message_size_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: zscaler_zia.saas_security.email.message_size_bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: zscaler_zia.saas_security.external_collab_count
+      tag: convert_external_collab_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: zscaler_zia.saas_security.external_collab_count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: zscaler_zia.saas_security.file.download_time_ms
+      tag: convert_file_download_time_ms_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: zscaler_zia.saas_security.file.download_time_ms
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: zscaler_zia.saas_security.file.scan_time_ms
+      tag: convert_file_scan_time_ms_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: zscaler_zia.saas_security.file.scan_time_ms
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: zscaler_zia.saas_security.file.size
+      tag: convert_file_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: zscaler_zia.saas_security.file.size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: zscaler_zia.saas_security.internal_collab_count
+      tag: convert_internal_collab_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: zscaler_zia.saas_security.internal_collab_count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: zscaler_zia.saas_security.copilot_accessible
+      tag: set_copilot_accessible_to_true
+      value: true
+      if: ctx.zscaler_zia?.saas_security?.copilot_accessible instanceof String && ctx.zscaler_zia.saas_security.copilot_accessible.toLowerCase() == 'yes'
+  - set:
+      field: zscaler_zia.saas_security.copilot_accessible
+      tag: set_copilot_accessible_to_false
+      value: false
+      if: ctx.zscaler_zia?.saas_security?.copilot_accessible instanceof String && ctx.zscaler_zia.saas_security.copilot_accessible.toLowerCase() == 'no'
+  - set:
+      field: zscaler_zia.saas_security.is_incident
+      tag: set_is_incident_to_true
+      value: true
+      if: ctx.zscaler_zia?.saas_security?.is_incident instanceof String && ctx.zscaler_zia.saas_security.is_incident.toLowerCase() == 'yes'
+  - set:
+      field: zscaler_zia.saas_security.is_incident
+      tag: set_is_incident_to_false
+      value: false
+      if: ctx.zscaler_zia?.saas_security?.is_incident instanceof String && ctx.zscaler_zia.saas_security.is_incident.toLowerCase() == 'no'
+  - set:
+      field: zscaler_zia.saas_security.email.is_inbound
+      tag: set_email_is_inbound_to_true
+      value: true
+      if: ctx.zscaler_zia?.saas_security?.email?.is_inbound instanceof String && ctx.zscaler_zia.saas_security.email.is_inbound.toLowerCase() == 'yes'
+  - set:
+      field: zscaler_zia.saas_security.email.is_inbound
+      tag: set_email_is_inbound_to_false
+      value: false
+      if: ctx.zscaler_zia?.saas_security?.email?.is_inbound instanceof String && ctx.zscaler_zia.saas_security.email.is_inbound.toLowerCase() == 'no'
+  - remove:
+      field: zscaler_zia.saas_security.dlp.dict_counts
+      tag: remove_dlp_dict_counts_if_none
+      ignore_missing: true
+      if: ctx.zscaler_zia?.saas_security?.dlp?.dict_counts != null && ctx.zscaler_zia.saas_security.dlp.dict_counts == "None"
+  - script:
+      lang: painless
+      tag: script_split_pipe_delimited_multi_value_fields
+      description: Split NSS pipe-delimited strings into arrays for multi-value fields.
+      source: |-
+        void splitStr(Map m, String key) {
+          if (m == null || key == null) return;
+          def v = m.get(key);
+          if (!(v instanceof String)) return;
+          String s = (String) v;
+          if (s.length() == 0) return;
+          List out = new ArrayList();
+          int from = 0;
+          int n = s.length();
+          for (int i = 0; i < n; i++) {
+            if (s.charAt(i) == (char)'|') {
+              out.add(s.substring(from, i));
+              from = i + 1;
+            }
+          }
+          out.add(s.substring(from, n));
+          m.put(key, out);
+        }
+        def ss = ctx.zscaler_zia?.saas_security;
+        if (ss == null) return;
+        splitStr(ss, 'accessibility_flags');
+        splitStr(ss, 'collab_names');
+        splitStr(ss, 'collab_names_obfuscated');
+        splitStr(ss, 'external_collab_groups');
+        splitStr(ss, 'external_collab_groups_obfuscated');
+        splitStr(ss, 'external_collab_names');
+        splitStr(ss, 'external_collab_names_obfuscated');
+        splitStr(ss, 'internal_collab_groups');
+        splitStr(ss, 'internal_collab_groups_obfuscated');
+        splitStr(ss, 'internal_collab_names');
+        splitStr(ss, 'internal_collab_names_obfuscated');
+        if (ss.dlp instanceof Map) {
+          splitStr(ss.dlp, 'dict_counts');
+          splitStr(ss.dlp, 'dict_names');
+          splitStr(ss.dlp, 'dict_names_obfuscated');
+          splitStr(ss.dlp, 'engine_names');
+          splitStr(ss.dlp, 'engine_names_obfuscated');
+        }
+        if (ss.collaboration instanceof Map) {
+          splitStr(ss.collaboration, 'external_recipients');
+          splitStr(ss.collaboration, 'external_recipients_obfuscated');
+          splitStr(ss.collaboration, 'internal_recipients');
+          splitStr(ss.collaboration, 'internal_recipients_obfuscated');
+        }
+        if (ss.email instanceof Map) {
+          splitStr(ss.email, 'external_recipients');
+          splitStr(ss.email, 'external_recipients_obfuscated');
+          splitStr(ss.email, 'internal_recipients');
+          splitStr(ss.email, 'internal_recipients_obfuscated');
+          if (ss.email.attachments instanceof Map) {
+            splitStr(ss.email.attachments, 'file_names');
+            splitStr(ss.email.attachments, 'file_names_obfuscated');
+            splitStr(ss.email.attachments, 'file_sizes');
+            splitStr(ss.email.attachments, 'file_types');
+            splitStr(ss.email.attachments, 'md5s');
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: zscaler_zia.saas_security.dlp.dict_counts
+      tag: foreach_dlp_dict_counts_convert_to_long
+      if: ctx.zscaler_zia?.saas_security?.dlp?.dict_counts instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_dlp_dict_count_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: zscaler_zia.saas_security.email.attachments.file_sizes
+      tag: foreach_email_attachments_file_sizes_convert_to_long
+      if: ctx.zscaler_zia?.saas_security?.email?.attachments?.file_sizes instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_email_attachment_file_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: zscaler_zia.saas_security.time
+      tag: date_saas_security_time
+      target_field: zscaler_zia.saas_security.time
+      formats:
+        - UNIX
+      timezone: UTC
+      if: ctx.zscaler_zia?.saas_security?.time != null && ctx.zscaler_zia.saas_security.time != ''
+      on_failure:
+        - remove:
+            field: zscaler_zia.saas_security.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: zscaler_zia.saas_security.email.received_time
+      tag: date_email_received_time
+      target_field: zscaler_zia.saas_security.email.received_time
+      formats:
+        - UNIX
+      timezone: UTC
+      if: ctx.zscaler_zia?.saas_security?.email?.received_time != null && ctx.zscaler_zia.saas_security.email.received_time != ''
+      on_failure:
+        - remove:
+            field: zscaler_zia.saas_security.email.received_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: zscaler_zia.saas_security.file.last_modified_time
+      tag: date_file_last_modified_time
+      target_field: zscaler_zia.saas_security.file.last_modified_time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+      timezone: '{{{zscaler_zia.saas_security.tz}}}'
+      if: ctx.zscaler_zia?.saas_security?.file?.last_modified_time != null && ctx.zscaler_zia.saas_security.file.last_modified_time != ''
+      on_failure:
+        - remove:
+            field: zscaler_zia.saas_security.file.last_modified_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: zscaler_zia.saas_security.file.last_shared_on
+      tag: date_file_last_shared_on
+      target_field: zscaler_zia.saas_security.file.last_shared_on
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+      timezone: '{{{zscaler_zia.saas_security.tz}}}'
+      if: ctx.zscaler_zia?.saas_security?.file?.last_shared_on != null && ctx.zscaler_zia.saas_security.file.last_shared_on != ''
+      on_failure:
+        - remove:
+            field: zscaler_zia.saas_security.file.last_shared_on
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # populate ECS fields
+
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_saas_security_time
+      copy_from: zscaler_zia.saas_security.time
+      ignore_empty_value: true
+
+  # event.*
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - set:
+      field: event.id
+      tag: set_event_id_from_record_id
+      copy_from: zscaler_zia.saas_security.record_id
+      ignore_empty_value: true
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_tz
+      copy_from: zscaler_zia.saas_security.tz
+      ignore_empty_value: true
+  - set:
+      field: event.provider
+      tag: set_event_provider_to_zscaler
+      value: Zscaler
+  - append:
+      field: event.category
+      tag: append_email_into_event_category
+      value: email
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.sourcesubtype == 'email'
+  - append:
+      field: event.category
+      tag: append_file_into_event_category
+      value: file
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.sourcesubtype == 'file' || ctx.zscaler_zia?.saas_security?.sourcesubtype == 'public_cloud_storage' || ctx.zscaler_zia?.saas_security?.sourcesubtype == 'repository'
+  - append:
+      field: event.category
+      tag: append_network_into_event_category_collaboration
+      value: network
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.sourcesubtype == 'collaboration'
+  - append:
+      field: event.category
+      tag: append_intrusion_detection_into_event_category_when_incident
+      value: intrusion_detection
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.is_incident == true
+  - append:
+      field: event.type
+      tag: append_denied_into_event_type_when_incident
+      value: denied
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.is_incident == true
+  - append:
+      field: event.type
+      tag: append_allowed_into_event_type_when_no_incident_collaboration
+      value: allowed
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.is_incident == false && ctx.zscaler_zia?.saas_security?.sourcesubtype == 'collaboration'
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      allow_duplicates: false
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.zscaler_zia?.saas_security?.severity instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String severity = ctx.zscaler_zia.saas_security.severity;
+        if (severity.equalsIgnoreCase("information")) {
+          ctx.event.severity = 21;
+        } else if (severity.equalsIgnoreCase("low")) {
+          ctx.event.severity = 21;
+        } else if (severity.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (severity.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # destination.*
+  - foreach:
+      field: zscaler_zia.saas_security.collaboration.external_recipients
+      tag: foreach_collaboration_external_recipients_into_destination_user_email
+      if: ctx.zscaler_zia?.saas_security?.collaboration?.external_recipients instanceof List
+      processor:
+        append:
+          field: destination.user.email
+          tag: append_collaboration_external_recipient_into_destination_user_email
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: zscaler_zia.saas_security.collaboration.internal_recipients
+      tag: foreach_collaboration_internal_recipients_into_destination_user_email
+      if: ctx.zscaler_zia?.saas_security?.collaboration?.internal_recipients instanceof List
+      processor:
+        append:
+          field: destination.user.email
+          tag: append_collaboration_internal_recipient_into_destination_user_email
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: zscaler_zia.saas_security.email.external_recipients
+      tag: foreach_email_external_recipients_into_destination_user_email
+      if: ctx.zscaler_zia?.saas_security?.email?.external_recipients instanceof List
+      processor:
+        append:
+          field: destination.user.email
+          tag: append_email_external_recipient_into_destination_user_email
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: zscaler_zia.saas_security.email.internal_recipients
+      tag: foreach_email_internal_recipients_into_destination_user_email
+      if: ctx.zscaler_zia?.saas_security?.email?.internal_recipients instanceof List
+      processor:
+        append:
+          field: destination.user.email
+          tag: append_email_internal_recipient_into_destination_user_email
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+
+  # email.*
+  - set:
+      field: email.message_id
+      tag: set_email_message_id_from_message_id
+      copy_from: zscaler_zia.saas_security.message_id
+      ignore_empty_value: true
+      if: ctx.zscaler_zia?.saas_security?.sourcesubtype == 'email'
+  - set:
+      field: email.delivery_timestamp
+      tag: set_email_delivery_timestamp_from_email_received_time
+      copy_from: zscaler_zia.saas_security.email.received_time
+      ignore_empty_value: true
+  - set:
+      field: email.direction
+      tag: set_email_direction_to_inbound
+      value: inbound
+      if: ctx.zscaler_zia?.saas_security?.email?.is_inbound == true
+  - set:
+      field: email.direction
+      tag: set_email_direction_to_outbound
+      value: outbound
+      if: ctx.zscaler_zia?.saas_security?.email?.is_inbound == false
+  - append:
+      field: email.from.address
+      tag: append_user_name_into_email_from_address
+      value: '{{{zscaler_zia.saas_security.user_name}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.sourcesubtype == 'email' && ctx.zscaler_zia.saas_security.user_name != null
+  - foreach:
+      field: zscaler_zia.saas_security.email.external_recipients
+      tag: foreach_email_external_recipients_into_email_to_address
+      if: ctx.zscaler_zia?.saas_security?.email?.external_recipients instanceof List
+      processor:
+        append:
+          field: email.to.address
+          tag: append_email_external_recipient_into_email_to_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: zscaler_zia.saas_security.email.internal_recipients
+      tag: foreach_email_internal_recipients_into_email_to_address
+      if: ctx.zscaler_zia?.saas_security?.email?.internal_recipients instanceof List
+      processor:
+        append:
+          field: email.to.address
+          tag: append_email_internal_recipient_into_email_to_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - script:
+      lang: painless
+      tag: script_zip_email_attachments_into_ecs
+      description: >-
+        Combines parallel attachment arrays (file_names, file_sizes, md5s) into ECS email.attachments objects.
+      if: ctx.zscaler_zia?.saas_security?.email?.attachments instanceof Map
+      source: |-
+        def att = ctx.zscaler_zia.saas_security.email.attachments;
+        def names = att.file_names instanceof List ? att.file_names : null;
+        def sizes = att.file_sizes instanceof List ? att.file_sizes : null;
+        def md5s = att.md5s instanceof List ? att.md5s : null;
+        int n = 0;
+        if (names != null && names.size() > n) n = names.size();
+        if (sizes != null && sizes.size() > n) n = sizes.size();
+        if (md5s != null && md5s.size() > n) n = md5s.size();
+        if (n == 0) return;
+        if (ctx.email == null) ctx.email = [:];
+        if (ctx.email.attachments == null) ctx.email.attachments = new ArrayList();
+        for (int i = 0; i < n; i++) {
+          def file = new HashMap();
+          if (names != null && i < names.size()) file.put('name', names.get(i));
+          if (sizes != null && i < sizes.size()) file.put('size', sizes.get(i));
+          if (md5s != null && i < md5s.size()) {
+            def hash = new HashMap();
+            hash.put('md5', md5s.get(i));
+            file.put('hash', hash);
+          }
+          def item = new HashMap();
+          item.put('file', file);
+          ctx.email.attachments.add(item);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # file.*
+  - set:
+      field: file.name
+      tag: set_file_name_from_saas_security_file_name
+      copy_from: zscaler_zia.saas_security.file.name
+      ignore_empty_value: true
+  - set:
+      field: file.path
+      tag: set_file_path_from_saas_security_file_path
+      copy_from: zscaler_zia.saas_security.file.path
+      ignore_empty_value: true
+  - set:
+      field: file.size
+      tag: set_file_size_from_saas_security_file_size
+      copy_from: zscaler_zia.saas_security.file.size
+      ignore_empty_value: true
+  - set:
+      field: file.type
+      tag: set_file_type_from_saas_security_file_type_category
+      copy_from: zscaler_zia.saas_security.file.type_category
+      ignore_empty_value: true
+  - set:
+      field: file.extension
+      tag: set_file_extension_from_saas_security_file_extension
+      copy_from: zscaler_zia.saas_security.file.extension
+      ignore_empty_value: true
+  - set:
+      field: file.directory
+      tag: set_file_directory_from_saas_security_file_directory
+      copy_from: zscaler_zia.saas_security.file.directory
+      ignore_empty_value: true
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_saas_security_file_hash_md5
+      copy_from: zscaler_zia.saas_security.file.hash.md5
+      ignore_empty_value: true
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256_from_saas_security_file_hash_sha256
+      copy_from: zscaler_zia.saas_security.file.hash.sha256
+      ignore_empty_value: true
+  - set:
+      field: file.owner
+      tag: set_file_owner_from_saas_security_file_owner
+      copy_from: zscaler_zia.saas_security.file.owner
+      ignore_empty_value: true
+  - set:
+      field: file.mtime
+      tag: set_file_mtime_from_saas_security_file_last_modified_time
+      copy_from: zscaler_zia.saas_security.file.last_modified_time
+      ignore_empty_value: true
+
+  # observer.*
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor_to_zscaler
+      value: Zscaler
+  - set:
+      field: observer.product
+      tag: set_observer_product_to_zscaler_zia
+      value: Zscaler ZIA
+  - set:
+      field: observer.name
+      tag: set_observer_name_from_datacenter_name
+      copy_from: zscaler_zia.saas_security.datacenter.name
+      ignore_empty_value: true
+  - set:
+      field: observer.geo.name
+      tag: set_observer_geo_name_from_datacenter_name
+      copy_from: zscaler_zia.saas_security.datacenter.name
+      ignore_empty_value: true
+  - set:
+      field: observer.geo.city_name
+      tag: set_observer_geo_city_name_from_datacenter_city
+      copy_from: zscaler_zia.saas_security.datacenter.city
+      ignore_empty_value: true
+  - set:
+      field: observer.geo.country_iso_code
+      tag: set_observer_geo_country_iso_code_from_datacenter_country
+      copy_from: zscaler_zia.saas_security.datacenter.country
+      ignore_empty_value: true
+
+  # organization.*
+  - set:
+      field: organization.id
+      tag: set_organization_id_from_company_id
+      copy_from: zscaler_zia.saas_security.company.id
+      ignore_empty_value: true
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_company_name
+      copy_from: zscaler_zia.saas_security.company.name
+      ignore_empty_value: true
+
+  # rule.*
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_rule_label
+      copy_from: zscaler_zia.saas_security.rule.label
+      ignore_empty_value: true
+  - set:
+      field: rule.ruleset
+      tag: set_rule_ruleset_from_rule_type
+      copy_from: zscaler_zia.saas_security.rule.type
+      ignore_empty_value: true
+
+  # source.*
+  - set:
+      field: source.user.email
+      tag: set_source_user_email_from_collaboration_sender
+      copy_from: zscaler_zia.saas_security.collaboration.sender
+      ignore_empty_value: true
+
+  # threat.*
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_saas_security_threat_indicator_name
+      copy_from: zscaler_zia.saas_security.threat.indicator.name
+      ignore_empty_value: true
+
+  # url.*
+  - uri_parts:
+      field: zscaler_zia.saas_security.file.full_url
+      tag: uri_parts_file_full_url
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # user.*
+  - set:
+      field: user.name
+      tag: set_user_name_from_saas_security_user_name
+      copy_from: zscaler_zia.saas_security.user_name
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_user_name
+      copy_from: user.name
+      ignore_empty_value: true
+      if: ctx.user?.name != null && ctx.user.name.contains('@')
+
+  # related.*
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{zscaler_zia.saas_security.user_name}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.user_name != null
+  - append:
+      field: related.user
+      tag: append_internal_user_name_into_related_user
+      value: '{{{zscaler_zia.saas_security.internal_user_name}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.internal_user_name != null
+  - append:
+      field: related.user
+      tag: append_external_user_name_into_related_user
+      value: '{{{zscaler_zia.saas_security.external_user_name}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.external_user_name != null
+  - append:
+      field: related.user
+      tag: append_file_owner_into_related_user
+      value: '{{{zscaler_zia.saas_security.file.owner}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.file?.owner != null
+  - append:
+      field: related.user
+      tag: append_file_last_share_user_into_related_user
+      value: '{{{zscaler_zia.saas_security.file.last_share_user}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.file?.last_share_user != null
+  - append:
+      field: related.user
+      tag: append_collaboration_sender_into_related_user
+      value: '{{{zscaler_zia.saas_security.collaboration.sender}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.collaboration?.sender != null
+  - foreach:
+      field: zscaler_zia.saas_security.collab_names
+      tag: foreach_collab_names_into_related_user
+      if: ctx.zscaler_zia?.saas_security?.collab_names instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_collab_name_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: zscaler_zia.saas_security.external_collab_names
+      tag: foreach_external_collab_names_into_related_user
+      if: ctx.zscaler_zia?.saas_security?.external_collab_names instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_external_collab_name_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: zscaler_zia.saas_security.internal_collab_names
+      tag: foreach_internal_collab_names_into_related_user
+      if: ctx.zscaler_zia?.saas_security?.internal_collab_names instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_internal_collab_name_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: zscaler_zia.saas_security.collaboration.external_recipients
+      tag: foreach_collaboration_external_recipients_into_related_user
+      if: ctx.zscaler_zia?.saas_security?.collaboration?.external_recipients instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_collaboration_external_recipient_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: zscaler_zia.saas_security.collaboration.internal_recipients
+      tag: foreach_collaboration_internal_recipients_into_related_user
+      if: ctx.zscaler_zia?.saas_security?.collaboration?.internal_recipients instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_collaboration_internal_recipient_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: zscaler_zia.saas_security.email.external_recipients
+      tag: foreach_email_external_recipients_into_related_user
+      if: ctx.zscaler_zia?.saas_security?.email?.external_recipients instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_email_external_recipient_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: zscaler_zia.saas_security.email.internal_recipients
+      tag: foreach_email_internal_recipients_into_related_user
+      if: ctx.zscaler_zia?.saas_security?.email?.internal_recipients instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_email_internal_recipient_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_file_hash_md5_into_related_hash
+      value: '{{{zscaler_zia.saas_security.file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.file?.hash?.md5 != null
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha256_into_related_hash
+      value: '{{{zscaler_zia.saas_security.file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.file?.hash?.sha256 != null
+  - foreach:
+      field: zscaler_zia.saas_security.email.attachments.md5s
+      tag: foreach_email_attachments_md5s_into_related_hash
+      if: ctx.zscaler_zia?.saas_security?.email?.attachments?.md5s instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_email_attachment_md5_into_related_hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_hostname_into_related_hosts
+      value: '{{{zscaler_zia.saas_security.hostname}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.hostname != null
+  - append:
+      field: related.hosts
+      tag: append_collaboration_channel_hostname_into_related_hosts
+      value: '{{{zscaler_zia.saas_security.collaboration.channel.hostname}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.saas_security?.collaboration?.channel?.hostname != null
+
+  # cleanup
+  - remove:
+      field:
+        - zscaler_zia.saas_security.collaboration.external_recipients
+        - zscaler_zia.saas_security.collaboration.internal_recipients
+        - zscaler_zia.saas_security.collaboration.sender
+        - zscaler_zia.saas_security.company.id
+        - zscaler_zia.saas_security.company.name
+        - zscaler_zia.saas_security.datacenter.city
+        - zscaler_zia.saas_security.datacenter.country
+        - zscaler_zia.saas_security.datacenter.name
+        - zscaler_zia.saas_security.email.attachments.file_names
+        - zscaler_zia.saas_security.email.attachments.file_sizes
+        - zscaler_zia.saas_security.email.attachments.md5s
+        - zscaler_zia.saas_security.email.external_recipients
+        - zscaler_zia.saas_security.email.internal_recipients
+        - zscaler_zia.saas_security.email.received_time
+        - zscaler_zia.saas_security.file.directory
+        - zscaler_zia.saas_security.file.extension
+        - zscaler_zia.saas_security.file.full_url
+        - zscaler_zia.saas_security.file.hash.md5
+        - zscaler_zia.saas_security.file.hash.sha256
+        - zscaler_zia.saas_security.file.last_modified_time
+        - zscaler_zia.saas_security.file.name
+        - zscaler_zia.saas_security.file.owner
+        - zscaler_zia.saas_security.file.path
+        - zscaler_zia.saas_security.file.size
+        - zscaler_zia.saas_security.file.type_category
+        - zscaler_zia.saas_security.record_id
+        - zscaler_zia.saas_security.rule.label
+        - zscaler_zia.saas_security.rule.type
+        - zscaler_zia.saas_security.threat.indicator.name
+        - zscaler_zia.saas_security.time
+        - zscaler_zia.saas_security.tz
+        - zscaler_zia.saas_security.user_name
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - _conf
+      tag: remove_unused
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        boolean dropScalar(Object v) {
+          return v == null || v == '' || v == 'N/A'
+            || v == 'None' || v == 'Unknown' || v == 'Unknown Host' || v == 'Unknown URL';
+        }
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap((Map) v);
+            } else if (v instanceof List) {
+              handleList((List) v);
+            }
+            return dropScalar(v)
+              || (v instanceof Map && ((Map) v).size() == 0)
+              || (v instanceof List && ((List) v).size() == 0);
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap((Map) v);
+            } else if (v instanceof List) {
+              handleList((List) v);
+            }
+            return dropScalar(v)
+              || (v instanceof Map && ((Map) v).size() == 0)
+              || (v instanceof List && ((List) v).size() == 0);
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind_from_ctx_error
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_preserve_original_event_into_tags_when_ctx_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind_global_on_failure
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_into_tags_global_on_failure
+      value: preserve_original_event
+      allow_duplicates: false

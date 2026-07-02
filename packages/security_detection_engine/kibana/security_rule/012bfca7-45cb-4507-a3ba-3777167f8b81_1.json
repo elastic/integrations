@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a Google Workspace account completes OAuth authorization for a specific Google OAuth client from a high-risk autonomous system number (ASN), followed within 30 seconds by a device registration event with account state REGISTERED. This sequence can indicate device enrollment or join flows initiated from attacker-controlled or residential-proxy infrastructure after a user authorizes a sensitive client.",
+        "false_positives": [
+            "Users on VPNs, carrier NAT, or cloud egress that map to flagged ASNs may match. Legitimate bulk enrollment or scripted onboarding that uses the same OAuth client can also produce the sequence. Baseline `source.as.organization.name` and successful registration sources before adding exclusions."
+        ],
+        "from": "now-15m",
+        "index": [
+            "logs-google_workspace*"
+        ],
+        "interval": "5m",
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Google Workspace Device Registration After OAuth from Suspicious ASN",
+        "note": "## Triage and analysis\n\n### Investigating Google Workspace Device Registration After OAuth from Suspicious ASN\n\nReview `user.name`, `user.email`, `source.ip`, `source.as.organization.name`, `google_workspace.token.client.id`,\n`google_workspace.token.app_name`, and device fields on the second event (for example device display name or ID if\npresent in your schema).\n\nConfirm whether the user intentionally registered a device and whether the OAuth client and ASN are expected for your\nmobile device management or enrollment program.\n\n### Possible investigation steps\n\n- Correlate both events on `user.name` and timestamps to confirm the sequence is a single enrollment story.\n- Revoke or audit OAuth grants for the client if the authorization was not expected.\n- Search for additional `google_workspace.device` registrations from the same ASN in the same period.\n\n### Response and remediation\n\n- If malicious, remove the unauthorized device from the Google Admin console, reset the user password, and revoke\n  active sessions and tokens per incident policy.\n- Restrict device registration and review OAuth app access policies.\n\n\n\n### Event lag\n\nGoogle Workspace audit data can lag minutes to days behind real time. If sequences are missed, increase `from` and\nlower the integration poll interval per Google and Elastic documentation.",
+        "query": "sequence by user.name with maxspan=30s\n  [iam where data_stream.dataset == \"google_workspace.token\" and event.action == \"authorize\" and\n      google_workspace.token.client.id == \"77185425430.apps.googleusercontent.com\" and\n      source.as.number in (9009, 45102, 215540, 29802, 62240, 204957, 395092)]\n  [any where data_stream.dataset == \"google_workspace.device\" and google_workspace.device.account_state == \"REGISTERED\"]\n",
+        "references": [
+            "https://www.elastic.co/security-labs/google-workspace-attack-surface-part-one",
+            "https://support.google.com/a/answer/7061566"
+        ],
+        "related_integrations": [
+            {
+                "package": "google_workspace",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "google_workspace.device.account_state",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "google_workspace.token.client.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.number",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "012bfca7-45cb-4507-a3ba-3777167f8b81",
+        "setup": "The Google Workspace Fleet integration or Filebeat Google Workspace module must ingest `google_workspace.token` and\n`google_workspace.device` audit streams.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Google Workspace",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Initial Access",
+            "Threat: Tycoon2FA",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.005",
+                                "name": "Device Registration",
+                                "reference": "https://attack.mitre.org/techniques/T1098/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.002",
+                                "name": "Spearphishing Link",
+                                "reference": "https://attack.mitre.org/techniques/T1566/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "012bfca7-45cb-4507-a3ba-3777167f8b81_1",
+    "type": "security-rule"
+}

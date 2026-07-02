@@ -1,40 +1,54 @@
 {
-    "id": "redisenterprise_otel-database-unexpected-evictions",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Redis Enterprise OTel] Database unexpected key evictions",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "redisenterprise"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "redisenterprise_otel-database-unexpected-evictions",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when `bdb_evicted_objects > 0` on a database. For non-caching workloads, evictions are data loss.",
+    "name": "[Redis Enterprise OTel] Database unexpected key evictions",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "redisenterprise"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "redisenterprise_otel-database-performance"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_evicted_objects IS NOT NULL\n| STATS max_evictions = MAX(bdb_evicted_objects) BY bdb, cluster\n// Alert when evictions are detected (peak eviction rate > 0)\n// For non-caching workloads, evictions indicate memory pressure and data loss risk\n// For caching workloads with eviction policies, this is expected — disable this rule\n// or raise the threshold to filter out normal eviction activity\n| WHERE max_evictions > 0\n| SORT max_evictions DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "bdb",
-            "termSize": 100
+        {
+          "id": "redisenterprise_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Redis Enterprise database unexpected key evictions\n\n### What fired\nPeak `bdb_evicted_objects` exceeded 0 during the window.\n\n### Why it matters\nEvictions may be expected for caches but not for data stores. In the latter case they mean silent data loss.\n\n### Triage\n1. Determine the eviction policy applied.\n2. Check memory utilisation trend.\n\n### Remediation\n- Raise memory / change policy.\n\n### Tuning\n- Disable this rule for pure caching workloads.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_evicted_objects IS NOT NULL\n| STATS max_evictions = MAX(bdb_evicted_objects) BY bdb, cluster\n// Alert when evictions are detected (peak eviction rate > 0)\n// For non-caching workloads, evictions indicate memory pressure and data loss risk\n// For caching workloads with eviction policies, this is expected \u2014 disable this rule\n// or raise the threshold to filter out normal eviction activity\n| WHERE max_evictions > 0\n| SORT max_evictions DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "bdb",
+      "termSize": 100
     }
+  }
 }

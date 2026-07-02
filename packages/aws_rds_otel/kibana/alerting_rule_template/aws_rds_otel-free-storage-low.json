@@ -1,0 +1,48 @@
+{
+  "id": "aws_rds_otel-free-storage-low",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when free storage space on an RDS instance falls below an absolute byte floor. Storage exhaustion is an outage-class risk; total volume size is not published by CloudWatch so percentage thresholds cannot be derived from this source.",
+    "name": "[AWS RDS OTel] Free storage space low",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_rds",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Free Storage Space Low\n\n### Triage\n1. Confirm the instance and region from the alert context.\n2. Check storage autoscaling settings and current allocated storage in the AWS RDS console.\n3. Review recent growth trends — large imports, index builds, or log table bloat are common causes.\n4. Inspect `BinLogDiskUsage` if binlog/WAL volume may be consuming space.\n\n### Mitigation\n- Enable or increase storage autoscaling.\n- Archive or purge old data; shrink large tables or indexes.\n- Increase allocated storage before the volume fills completely.\n\n### Note\nAdjust the byte floor in the rule query to match your smallest instance volumes and growth rate."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"FreeStorageSpace\"\n    AND stat == \"Average\"\n| STATS min_free_storage = MIN(`metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`)\n    BY DBInstanceIdentifier, cloud.region\n// Absolute byte floor — adjust to your volume sizes (default: 10 GB)\n| WHERE min_free_storage < 10737418240\n| SORT min_free_storage ASC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "DBInstanceIdentifier",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

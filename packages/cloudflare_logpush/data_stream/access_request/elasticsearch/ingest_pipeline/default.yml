@@ -2,28 +2,42 @@
 description: Pipeline for parsing Cloudflare Access Request logs.
 processors:
   - set:
+      tag: set_ecs_version_b777da29
       field: ecs.version
-      value: 8.11.0
+      value: '9.3.0'
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
+      if: ctx.event?.original != null
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_type_24c7243c
       field: event.type
       value: [access]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -32,29 +46,31 @@ processors:
         must be removed.
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
-# ECS fields
+  # ECS fields
+  - convert:
+      tag: convert_json_CreatedAt_4a713653
+      field: json.CreatedAt
+      type: long
+      if: ctx.json?.CreatedAt != null && ctx.json.CreatedAt != ''
+      ignore_failure: true
   - script:
       lang: painless
       tag: painless_created_at_to_milli
-      if: ctx.json?.CreatedAt != null
+      if: ctx.json?.CreatedAt != null && ctx.json.CreatedAt instanceof Number
       source: |
-        try {
-          long t;
-          if (ctx.json.CreatedAt instanceof String) {
-            t = Long.parseLong(ctx.json.CreatedAt);
-          } else if (ctx.json.CreatedAt instanceof Number) {
-            t = (long)(ctx.json.CreatedAt);
-          } else {
-            return;
-          }
-          if (t > (long)(1e18)) {
-            ctx.json.CreatedAt = t/(long)(1e6)
-          } else if (t < (long)(1e10))  {
-            ctx.json.CreatedAt = t*(long)(1e3)
-          }
+        long t = (long)(ctx.json.CreatedAt);
+        if (t > (long)(1e18)) {
+          ctx.json.CreatedAt = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.CreatedAt = t*(long)(1e3)
         }
-        catch (Exception e) {}
+      on_failure:
+        - append:
+            tag: append_error_message_5fa1003d
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_CreatedAt_58cc069b
       field: json.CreatedAt
       if: ctx.json?.CreatedAt != null && ctx.json.CreatedAt != ''
       formats:
@@ -63,80 +79,115 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ssZ
       timezone: UTC
       on_failure:
-      - append:
-          field: error.message
-          value: "{{{_ingest.on_failure_message}}}"
+        - append:
+            tag: append_error_message_0f15ed2d
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_cloudflare_logpush_access_request_timestamp_7b8f00af
       field: cloudflare_logpush.access_request.timestamp
       copy_from: "@timestamp"
+      ignore_empty_value: true
   - rename:
+      tag: rename_json_Action_to_cloudflare_logpush_access_request_action_cd9b83c4
       field: json.Action
       target_field: cloudflare_logpush.access_request.action
       ignore_missing: true
   - set:
+      tag: set_event_action_3b69f4cf
       field: event.action
       copy_from: cloudflare_logpush.access_request.action
       ignore_empty_value: true
-  - rename:
+  - convert:
       field: json.Allowed
+      tag: convert_allowed_to_boolean
       target_field: cloudflare_logpush.access_request.allowed
+      type: boolean
       ignore_missing: true
-# Enrich event.type based on the allowed field
+      on_failure:
+        - append:
+            tag: append_error_message_9532bc98
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Enrich event.type based on the allowed field
   - append:
+      tag: append_event_type_88337741
       field: event.type
       value: allowed
       allow_duplicates: false
       if: ctx.cloudflare_logpush?.access_request?.allowed != null && ctx.cloudflare_logpush?.access_request?.allowed == true
   - append:
+      tag: append_event_type_078c13d5
       field: event.type
       value: denied
       allow_duplicates: false
       if: ctx.cloudflare_logpush?.access_request?.allowed != null && ctx.cloudflare_logpush?.access_request?.allowed == false
   - rename:
+      tag: rename_json_AppDomain_to_cloudflare_logpush_access_request_app_domain_1f56d686
       field: json.AppDomain
       target_field: cloudflare_logpush.access_request.app.domain
       ignore_missing: true
   - set:
+      tag: set_url_domain_7cb52535
       field: url.domain
       copy_from: cloudflare_logpush.access_request.app.domain
       ignore_empty_value: true
   - rename:
+      tag: rename_json_AppUUID_to_cloudflare_logpush_access_request_app_uuid_d39a6a6e
       field: json.AppUUID
       target_field: cloudflare_logpush.access_request.app.uuid
       ignore_missing: true
   - rename:
+      tag: rename_json_Connection_to_cloudflare_logpush_access_request_connection_c6197c9c
       field: json.Connection
       target_field: cloudflare_logpush.access_request.connection
       ignore_missing: true
   - rename:
+      tag: rename_json_Country_to_cloudflare_logpush_access_request_country_4a1942ee
       field: json.Country
       target_field: cloudflare_logpush.access_request.country
       ignore_missing: true
-  - set:
-      field: client.geo.country_name
-      copy_from: cloudflare_logpush.access_request.country
-      ignore_empty_value: true
+  - uppercase:
+      tag: uppercase_country_iso_code_from_cloudflare_logpush_access_request_country
+      field: cloudflare_logpush.access_request.country
+      target_field: client.geo.country_iso_code
+      ignore_missing: true
   - rename:
+      tag: rename_json_Email_to_cloudflare_logpush_access_request_user_email_8368fd05
       field: json.Email
       target_field: cloudflare_logpush.access_request.user.email
       ignore_missing: true
   - set:
+      tag: set_user_email_777a8c8b
       field: user.email
       copy_from: cloudflare_logpush.access_request.user.email
       ignore_empty_value: true
-  - rename:
+  - convert:
       field: json.IPAddress
+      tag: convert_ipaddress_to_ip
       target_field: cloudflare_logpush.access_request.client.ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.IPAddress != null && ctx.json.IPAddress != ''
+      on_failure:
+        - append:
+            tag: append_error_message_64a77b32
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_client_ip_fea56e55
       field: client.ip
       copy_from: cloudflare_logpush.access_request.client.ip
       ignore_empty_value: true
-# Geo enrichment
+  # Geo enrichment
   - geoip:
+      tag: geoip_client_ip_to_client_geo_92da0c99
       field: client.ip
       target_field: client.geo
+      ignore_missing: true
+      if: ctx.client?.ip != null
   - geoip:
+      tag: geoip_client_ip_to_client_as_f17fb2b3
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
       target_field: client.as
@@ -144,63 +195,84 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.client?.ip != null
   - rename:
+      tag: rename_client_as_asn_to_client_as_number_a6e30d01
       field: client.as.asn
       target_field: client.as.number
       ignore_missing: true
   - rename:
+      tag: rename_client_as_organization_name_to_client_as_organization_name_817a526f
       field: client.as.organization_name
       target_field: client.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_json_PurposeJustificationPrompt_to_cloudflare_logpush_access_request_request_prompt_4c2a8f1f
       field: json.PurposeJustificationPrompt
       target_field: cloudflare_logpush.access_request.request.prompt
       ignore_missing: true
   - rename:
+      tag: rename_json_PurposeJustificationResponse_to_cloudflare_logpush_access_request_request_response_634724ab
       field: json.PurposeJustificationResponse
       target_field: cloudflare_logpush.access_request.request.response
       ignore_missing: true
   - rename:
+      tag: rename_json_RayID_to_cloudflare_logpush_access_request_ray_id_c5de5bdc
       field: json.RayID
       target_field: cloudflare_logpush.access_request.ray.id
       ignore_missing: true
   - set:
+      tag: set_event_id_dcd710c3
       field: event.id
       copy_from: cloudflare_logpush.access_request.ray.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_TemporaryAccessApprovers_to_cloudflare_logpush_access_request_temp_access_approvers_018ad516
       field: json.TemporaryAccessApprovers
       target_field: cloudflare_logpush.access_request.temp_access.approvers
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.TemporaryAccessDuration
+      tag: convert_temporaryaccessduration_to_long
       target_field: cloudflare_logpush.access_request.temp_access.duration
+      type: long
       ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_a2b0f5ef
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_UserUID_to_cloudflare_logpush_access_request_user_id_dde20323
       field: json.UserUID
       target_field: cloudflare_logpush.access_request.user.id
       ignore_missing: true
   - set:
+      tag: set_user_id_1cba3d65
       field: user.id
       copy_from: cloudflare_logpush.access_request.user.id
       ignore_empty_value: true
-# Create related fields
+  # Create related fields
   - append:
+      tag: append_related_ip_3726c45d
       field: related.ip
-      value: "{{{client.ip}}}"
-      if: ctx.client?.ip != null
+      value: '{{{cloudflare_logpush.access_request.client.ip}}}'
+      if: ctx.cloudflare_logpush?.access_request?.client?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
-      value: "{{{user.id}}}"
-      if: ctx.user?.id != null
+      value: '{{{cloudflare_logpush.access_request.user.id}}}'
+      if: ctx.cloudflare_logpush?.access_request?.user?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_34fcf415
       field: related.user
-      value: "{{{user.email}}}"
-      if: ctx.user?.email != null
+      value: '{{{cloudflare_logpush.access_request.user.email}}}'
+      if: ctx.cloudflare_logpush?.access_request?.user?.email != null
       allow_duplicates: false
   - foreach:
+      tag: foreach_cloudflare_logpush_access_request_temp_access_approvers_eb3fbf32
       field: cloudflare_logpush.access_request.temp_access.approvers
       processor:
         append:
@@ -215,6 +287,7 @@ processors:
         - _conf
       ignore_missing: true
   - remove:
+      tag: remove_66238882
       field:
         - cloudflare_logpush.access_request.timestamp
         - cloudflare_logpush.access_request.action
@@ -226,34 +299,55 @@ processors:
         - cloudflare_logpush.access_request.user.id
         - cloudflare_logpush.access_request.user.email
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      ignore_failure: true
       ignore_missing: true
   - script:
-      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
       lang: painless
-      source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
-        dropEmptyFields(ctx);
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_tags_9fe66b2c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_pipeline_error_message
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_pipeline_error_to_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_preserve_original_event_tag
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -1,9 +1,9 @@
 
 # How Container Workload Protection Works
 
-CWP is powered by a lightweight integration (Defend for Containers *BETA*) that is bundled and configured by the Elastic Agent. The agent is installed as a daemonset on supported Kubernetes clusters and the integration uses eBPF LSM and tracepoint probes to produce system events. Events are evaluated against eBPF LSM hook points, enabling a configured policy to be evaluated before system activity is allowed to proceed.
+CWP is powered by a lightweight integration (Defend for Containers **BETA**) that is bundled and configured by the Elastic Agent. The agent is installed as a daemonset on supported Kubernetes clusters, and the integration uses eBPF LSM and tracepoint probes to produce system events. Events are evaluated against eBPF LSM hook points, enabling a configured policy to be evaluated before system activity is allowed to proceed.
 
-The policy determines which system behaviors (for example, process executions, file creations or deletions, etc) will result in an action. Actions are simple: logging the behavior to Elasticsearch, creating an alert in Elasticsearch, or blocking the behavior.
+The policy determines which system behaviors (for example, process executions, file creations or deletions and so on) will result in an action. Actions are straightforward: logging the behavior to Elasticsearch, creating an alert in Elasticsearch, or blocking the behavior.
 
 ## Threat Detection
 
@@ -19,7 +19,7 @@ This policy is configured with an alert response, meaning that when drift condit
 
 ## Policies
 
-Users that want to use the full strength of CWP will benefit to understand the system’s policy syntax, which enables fine-grained policies to be constructed. Policies can be built to precisely match expected container behaviors– disallowing any unexpected behaviors– and thereby substantially hardening the security posture of container workloads.
+Users that want to use the full strength of CWP will benefit from understanding the system’s policy syntax, which enables fine-grained policies to be constructed. Policies can be built to precisely match expected container behaviors disallowing any unexpected behaviors and thereby substantially hardening the security posture of container workloads.
 
 Policies are composed of selectors and responses. A given policy must contain at least one selector and one response. Currently, the system supports two types of selectors and responses, file and process. Selectors tell the service what system operations to match and have a number of conditions that can be grouped together (using a logical AND operation) to provide precise control. Responses instruct the system on what actions to take when system operations match selectors.
 
@@ -159,10 +159,10 @@ A selector MUST contain a name and at least one of the following conditions.
 
 | Name      | Description |
 | --------- | ----------- |
-| **operation** | The list of system operations to match on. Options include `createExecutable`, `modifyExecutable`, `createFile`, `modifyFile`, `deleteFile`.
-| **ignoreVolumeMounts** | If set, ignores file operations on ALL volume mounts.
-| **ignoreVolumeFiles** | If set, ignores operations on file mounts only. e.g. mounted files, configMaps, secrets etc...
-| **targetFilePath** | A list of file paths to include.  Paths are absolute and wildcards are supported.
+| **operation** | The list of system operations to match on. Options include `createExecutable`, `modifyExecutable`, `createFile`, `modifyFile`, `deleteFile`. |
+| **ignoreVolumeMounts** | If set, ignores file operations on ALL volume mounts. |
+| **ignoreVolumeFiles** | If set, ignores operations on file mounts only. e.g. mounted files, configMaps, secrets etc... |
+| **targetFilePath** | A list of file paths to include.  Paths are absolute and wildcards are supported. |
 
 &nbsp;
 
@@ -181,16 +181,16 @@ In this example,
 
 | Name      | Description |
 | --------- | ----------- |
-| **operation** | The list of system operations to match on. Options include `fork` and `exec`.
-| **processExecutable** | A list of executables (full path included) to match on. e.g. `/usr/bin/cat`. Wildcard support is same as targetFilePath above.
-| **processName** | A list of process names (executable basename) to match on. e.g. 'bash', 'vi', 'cat' etc...
-| **sessionLeaderInteractive** | If set to true, will only match on interactive sessions (i.e. sessions with a controlling TTY)
+| **operation** | The list of system operations to match on. Options include `fork` and `exec`. |
+| **processExecutable** | A list of executables (full path included) to match on. e.g. `/usr/bin/cat`. Wildcard support is same as targetFilePath above. |
+| **processName** | A list of process names (executable basename) to match on. e.g. 'bash', 'vi', 'cat' etc... |
+| **sessionLeaderInteractive** | If set to true, will only match on interactive sessions (i.e. sessions with a controlling TTY) |
 
 # Responses
 
 Responses instruct the system on what `actions` to take when system operations match `selectors`.
 
-A policy can contain one or more responses. Each response is comprised of the following:
+A policy can contain one or more responses. Each response consists of the following:
 ```
 responses:
   - match: [allProcesses]
@@ -203,7 +203,7 @@ responses:
 | Response Field | Description |
 | --------- | ----------- |
 | **match** | An array of one or more selectors of the same type (`file` or `process`). |
-| **exclude** | An **optional** array of one or more selectors to use as exclusions to everything in 'match'
+| **exclude** | An **optional** array of one or more selectors to use as exclusions to everything in 'match' |
 | **actions** | An array of actions to perform (if at least one `match` and none of the `exclude` selectors match). Options include `log`, `alert` and `block`. |
 
 &nbsp;
@@ -212,13 +212,13 @@ responses:
 | --------- | ----------- |
 | `log`  | Sends events to the `logs-cloud_defend.file-*` data stream for `file` responses, and the `logs-cloud_defend.process-*` data stream for `process` responses. |
 | `alert` | Writes events (file or process) to the `logs-cloud_defend.alerts-*` data stream. |
-| `block` | Prevents the system operation from proceeding. This blocking action happens *prior* to the execution of the event. It is required that the `alert` action be set if `block` is enabled.
+| `block` | Prevents the system operation from proceeding. This blocking action happens *before* the execution of the event. It is required that the `alert` action be set if `block` is enabled. |
 
 ## Example
 
-Consider the following yaml.
+Consider the following YAML.
 
-```
+```yaml
 file:
   selectors:
     - name: binDirExeMods
@@ -251,7 +251,7 @@ file:
 We have three `file` selectors. Two are used to match (logically OR'd), and one to exclude.
 
 This could be read as:
-If an executable is created or modified under /usr/bin or a file is created, modified or deleted under /etc, block and create an alert as long as it's not an nginx container.
+If an executable is created or modified under /usr/bin or a file is created, modified, or deleted under /etc, block and create an alert as long as it's not an nginx container.
 
 e.g.
 
@@ -279,7 +279,7 @@ The following fields are populated for all events where `event.category: process
 | cloud_defend.package_policy_id | '4c9cbba0-c812-11ed-a8dd-91ec403e4f03' |
 | cloud_defend.package_policy_revision | 2 |
 | cloud_defend.hook_point | ['tracepoint__sched_process_fork','tracepoint__sched_process_exec', 'kprobe__taskstats_exit'] |
-| [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1
+| [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1 |
 | [container.image.name](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-name) | nginx |
 | [container.image.tag](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-tag) | latest |
 | [data_stream.dataset](https://www.elastic.co/guide/en/ecs/current/ecs-data_stream.html#field-data-stream-dataset) | 'cloud_defend.process' |
@@ -335,7 +335,7 @@ The following fields are populated for all events where `event.category: process
 | [process.entry_leader.same_as_process](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-same-as-process) | false |
 | [process.entry_leader.start](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-start) | '2023-03-20T16:03:59.520Z' |
 | [process.entry_leader.user.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-user-id) | '0' |
-| [process.entry_leader.working_directory](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-working-directory) | '/usr/share/elastic-agent'
+| [process.entry_leader.working_directory](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-working-directory) | '/usr/share/elastic-agent' |
 | [process.executable](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-executable) | '/usr/bin/ls' |
 | [process.group_leader.args](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-args) | ['ls', '--color=auto'] |
 | [process.group_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
@@ -347,7 +347,7 @@ The following fields are populated for all events where `event.category: process
 | [process.group_leader.same_as_process](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-same-as-process) | true |
 | [process.group_leader.start](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-start) | '2023-03-20T16:03:59.520Z' |
 | [process.group_leader.user.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-user-id) | '0' |
-| [process.group_leader.working_directory](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-working-directory) | '/usr/share/elastic-agent'
+| [process.group_leader.working_directory](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-working-directory) | '/usr/share/elastic-agent' |
 | [process.interactive](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-interactive) | true |
 | [process.name](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-name) | 'ls' |
 | [process.parent.args](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-args) | ['bash'] |
@@ -360,10 +360,10 @@ The following fields are populated for all events where `event.category: process
 | [process.parent.same_as_process](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-same-as-process) | false |
 | [process.parent.start](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-start) | '2023-03-20T16:03:59.520Z' |
 | [process.parent.user.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-user-id) | '0' |
-| [process.parent.working_directory](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-working-directory) | '/usr/share/elastic-agent'
+| [process.parent.working_directory](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-working-directory) | '/usr/share/elastic-agent' |
 | [process.pid](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-pid) | 1916234 |
 | [process.previous](https://www.elastic.co/guide/en/ecs/current/ecs-process.html) | [{ args: ['bash'], executable: '/bin/bash'}] |
-| [process.previous.args](https://www.elastic.co/guide/en/ecs/current/ecs-process.html) | ['bash']
+| [process.previous.args](https://www.elastic.co/guide/en/ecs/current/ecs-process.html) | ['bash'] |
 | [process.previous.executable](https://www.elastic.co/guide/en/ecs/current/ecs-process.html) | '/bin/bash' |
 | [process.session_leader.args](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-args) | ['bash'] |
 | [process.session_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
@@ -375,7 +375,7 @@ The following fields are populated for all events where `event.category: process
 | [process.session_leader.same_as_process](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-same-as-process) | false |
 | [process.session_leader.start](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-start) | '2023-03-20T16:03:59.520Z' |
 | [process.session_leader.user.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-user-id) | '0' |
-| [process.session_leader.working_directory](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-working-directory) | '/usr/share/elastic-agent'
+| [process.session_leader.working_directory](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-working-directory) | '/usr/share/elastic-agent' |
 | [process.start](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-start) | '2023-03-20T16:03:59.520Z' |
 | [process.working_directory](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-working-directory) | '/usr/share/elastic-agent' |
 | [user.id](https://www.elastic.co/guide/en/ecs/current/ecs-user.html#field-user-id) | '0' |
@@ -401,7 +401,7 @@ The following fields are populated for all events where `event.category: file`
 | cloud_defend.package_policy_id | 4c9cbba0-c812-11ed-a8dd-91ec403e4f03 |
 | cloud_defend.package_policy_revision | 2 |
 | cloud_defend.hook_point | One of: lsm__path_chmod, lsm__path_mknod, lsm__file_open, lsm__path_truncate, lsm__path_rename, lsm__path_link, lsm__path_unlink |
-| [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1
+| [container.id](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-id) | nginx_1 |
 | [container.image.name](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-name) | nginx |
 | [container.image.tag](https://www.elastic.co/guide/en/ecs/current/ecs-container.html#field-container-image-tag) | latest |
 | [data_stream.dataset](https://www.elastic.co/guide/en/ecs/current/ecs-data_stream.html#field-data-stream-dataset) | 'cloud_defend.file' |
@@ -464,7 +464,7 @@ The following fields are populated for all events where `event.category: file`
 
 ## Linux kernel requirements
 
-Minimum kernel version: **5.10 LTS**. The following kernel options must be enabled:
+Minimum kernel version: **5.10.16**. The following kernel options must be enabled:
 
 | Kernel option | Required value | Purpose |
 | -- | -- | -- |

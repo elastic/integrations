@@ -1,39 +1,52 @@
 {
-    "id": "cassandra_otel-high-write-latency-p99",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Cassandra OTel] High write latency (p99)",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "cassandra"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-cassandra.otel-default\n// p99 write latency in microseconds\n| WHERE `cassandra.client.request.write.latency.99p` IS NOT NULL\n| STATS p99_us = MAX(MAX_OVER_TIME(`cassandra.client.request.write.latency.99p`)) BY server.address\n// Threshold: 50000 us = 50 ms; writes typically lower than reads\n| WHERE p99_us > 50000\n| SORT p99_us DESC"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "server.address",
-            "termSize": 20,
-            "excludeHitsFromPreviousRun": true
+  "id": "cassandra_otel-high-write-latency-p99",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the p99 write latency exceeds 50 ms (`cassandra.client.request.write.latency.99p > 50000 us`). Sustained high write p99 usually points to disk / commit-log pressure.",
+    "name": "[Cassandra OTel] High write latency (p99)",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cassandra"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cassandra_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Cassandra high write latency (p99)\n\n### What fired\n`cassandra.client.request.write.latency.99p` exceeded 50 ms on at least one node during the evaluation window.\n\n### Why it matters\nWrites in Cassandra go to the commit log and memtable; under healthy conditions they are very fast. High p99 writes indicate commit-log disk pressure, flush backlog, or GC pauses. Write amplification from large unbounded collections is another common culprit.\n\n### Triage\n1. Overview dashboard: confirm affected nodes and write volume.\n2. Check disk I/O on commit-log volume.\n3. Inspect memtable flush activity and pending compactions.\n4. Look at GC pauses \u2014 writes are latency-sensitive to stop-the-world events.\n\n### Remediation\n- Use dedicated commit-log disks / faster storage.\n- Throttle bulk-write workloads.\n- Review schema for unbounded collections or wide rows.\n\n### Tuning\n- 50 ms is a generic threshold. Writes are typically <10 ms on healthy clusters; tighten if that matches your baseline.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-cassandra.otel-default\n// p99 write latency in microseconds\n| WHERE `cassandra.client.request.write.latency.99p` IS NOT NULL\n| STATS p99_us = MAX(MAX_OVER_TIME(`cassandra.client.request.write.latency.99p`)) BY server.address\n// Threshold: 50000 us = 50 ms; writes typically lower than reads\n| WHERE p99_us > 50000\n| SORT p99_us DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "server.address",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

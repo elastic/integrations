@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the Envoy downstream error rate across HTTP stat_prefixes exceeds 5% over 15 minutes. Errors at the edge indicate client-visible failures.",
     "name": "[Envoy OTel] High downstream error rate",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "envoyproxy_otel-envoy-downstream"
+        },
+        {
+          "id": "envoyproxy_otel-envoy-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Envoy high downstream error rate\n\n### What fired\n`(downstream_rq_completed - downstream_rq_2xx) / downstream_rq_completed > 5%` across HTTP stat_prefixes.\n\n### Why it matters\nDownstream errors include 4xx and 5xx seen by clients. Sustained elevated rates degrade user experience and are almost always caused by upstream application issues or Envoy config problems.\n\n### Triage\n1. Split errors by stat_prefix (ingress_http vs admin) to localise the incident.\n2. On the Downstream dashboard, correlate with upstream cluster health and 5xx ratios.\n3. Inspect `envoy.cluster_manager.warming_clusters` and config state.\n\n### Remediation\n- Roll back the latest application or config change.\n- Add retries / circuit breaking on the misbehaving upstream.\n\n### Tuning\n- 5% over 15 minutes; tighten to 1% for SLA-critical tiers.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n// Aggregate across HTTP stat_prefixes (ingress_http, admin) — add more COALESCE terms as needed\n| EVAL total_rq = COALESCE(envoy.http.ingress_http.downstream_rq_completed, 0::long)\n    + COALESCE(envoy.http.admin.downstream_rq_completed, 0::long)\n| EVAL success_rq = COALESCE(envoy.http.ingress_http.downstream_rq_2xx, 0::long)\n    + COALESCE(envoy.http.admin.downstream_rq_2xx, 0::long)\n| WHERE total_rq > 50\n| EVAL error_rate = TO_DOUBLE(total_rq - success_rq) / TO_DOUBLE(total_rq) * 100.0\n| STATS max_error_rate = MAX(error_rate)\n// Healthy: < 1%; Unhealthy: > 5%. Adjust threshold for your SLO.\n| WHERE max_error_rate > 5.0"
+        "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n// Aggregate across HTTP stat_prefixes (ingress_http, admin) \u2014 add more COALESCE terms as needed\n| EVAL total_rq = COALESCE(envoy.http.ingress_http.downstream_rq_completed, 0::long)\n    + COALESCE(envoy.http.admin.downstream_rq_completed, 0::long)\n| EVAL success_rq = COALESCE(envoy.http.ingress_http.downstream_rq_2xx, 0::long)\n    + COALESCE(envoy.http.admin.downstream_rq_2xx, 0::long)\n| WHERE total_rq > 50\n| EVAL error_rate = TO_DOUBLE(total_rq - success_rq) / TO_DOUBLE(total_rq) * 100.0\n| STATS max_error_rate = MAX(error_rate)\n// Healthy: < 1%; Unhealthy: > 5%. Adjust threshold for your SLO.\n| WHERE max_error_rate > 5.0"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

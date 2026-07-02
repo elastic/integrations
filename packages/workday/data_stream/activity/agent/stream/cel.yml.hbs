@@ -1,0 +1,197 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: https://{{hostname}}/ccx/api/privacy/v1/{{tenant}}
+state:
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+  refresh_token: {{refresh_token}}
+  token_url:  https://{{hostname}}/ccx/oauth2/{{tenant}}/token
+  initial_interval: {{initial_interval}}
+  batch_size : {{batch_size}}
+  offset: 0
+redact:
+  fields:
+    - client_id
+    - client_secret
+    - refresh_token
+    - cursor.access_token
+program: |-
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with(
+        {
+          "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+          "end_time": now.format(time_layout.RFC3339),
+        }
+      )
+  ).as(state,
+    state.url.trim_right("/").as(base_url,
+      state.with(
+        (
+          (state.?cursor.access_token.orValue("") == "") ?
+            post_request(
+              state.token_url,
+              "application/x-www-form-urlencoded",
+              {
+                "grant_type": ["refresh_token"],
+                "refresh_token": [state.refresh_token],
+                "client_id": [state.client_id],
+                "client_secret": [state.client_secret],
+              }.format_query()
+            ).do_request().as(authResp,
+              (authResp.StatusCode == 200) ?
+                authResp.Body.decode_json().as(ao,
+                  {
+                    "ok": true,
+                    "access_token": ao.access_token,
+                  }
+                )
+              :
+                {
+                  "ok": false,
+                  "err_code": string(authResp.StatusCode),
+                  "err_status": authResp.Status,
+                  "err_body": (size(authResp.Body) != 0) ? string(authResp.Body) : authResp.Status,
+                }
+            )
+          :
+            {
+              "ok": true,
+              "access_token": state.cursor.access_token,
+            }
+        ).as(tok,
+          !tok.ok ?
+            {
+              "events": {
+                "error": {
+                  "code": tok.err_code,
+                  "id": tok.err_status,
+                  "message": "POST " + state.token_url + ": " + tok.err_body,
+                },
+              },
+              "want_more": false,
+              "offset": 0,
+            }
+          :
+            request(
+              "GET",
+              base_url + "/activityLogging?" + {
+                "offset": [string(state.offset)],
+                "limit": [string(state.batch_size)],
+                "from": [string(state.start_time)],
+                "to": [string(state.end_time)],
+              }.format_query()
+            ).with(
+              {
+                "Header": {
+                  "Authorization": ["Bearer " + tok.access_token],
+                  "Accept": ["application/json"],
+                },
+              }
+            ).do_request().as(resp,
+              (resp.StatusCode == 200) ?
+                resp.Body.decode_json().as(body,
+                  (int(state.offset) + body.data.size()).as(new_offset,
+                    (
+                      body.data.size() > 0 && has(body.total) && new_offset < int(body.total)
+                    ).as(has_more,
+                      {
+                        "events": body.data.map(e, {"message": e.encode_json()}),
+                        "batch_size": state.batch_size,
+                        "offset": has_more ? new_offset : 0,
+                        "want_more": has_more,
+                        "cursor": {
+                          "access_token": tok.access_token,
+                          ?"max_ingested_time": has_more ?
+                            (
+                              has(state.?cursor.max_ingested_time) ?
+                                optional.of(max(state.cursor.max_ingested_time, body.data.map(e, e.requestTime).max()))
+                              :
+                                optional.of(body.data.map(e, e.requestTime).max())
+                            )
+                          :
+                            optional.none(),
+                          ?"last_timestamp": !has_more ?
+                            (
+                              (body.data.size() > 0) ?
+                                (
+                                  has(state.?cursor.max_ingested_time) ?
+                                    optional.of(max(state.cursor.max_ingested_time, body.data.map(e, e.requestTime).max()))
+                                  :
+                                    optional.of(body.data.map(e, e.requestTime).max())
+                                )
+                              : has(state.?cursor.max_ingested_time) ?
+                                optional.of(state.cursor.max_ingested_time)
+                              :
+                                state.?cursor.last_timestamp
+                            )
+                          :
+                            state.?cursor.last_timestamp,
+                        },
+                      }
+                    )
+                  )
+                )
+              : (resp.StatusCode == 401) ?
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": resp.Status,
+                      "message": "GET " + base_url + "/activityLogging: token expired, retrying",
+                    },
+                  },
+                  "want_more": true,
+                  "offset": state.offset,
+                }
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": resp.Status,
+                      "message": "GET " + base_url + "/activityLogging: " + (
+                        (size(resp.Body) != 0) ?
+                          string(resp.Body)
+                        :
+                          resp.Status + " (" + string(resp.StatusCode) + ")"
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                  "offset": 0,
+                }
+            )
+        )
+      )
+    )
+  )
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

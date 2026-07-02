@@ -13,8 +13,9 @@
                 "1424080f-b8da-4816-94dd-904bde41c6de": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
                         "fieldName": "observer.address",
-                        "id": "1424080f-b8da-4816-94dd-904bde41c6de",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -31,8 +32,9 @@
                 "234700e7-0f96-4054-9073-64b3e2d61fa2": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
                         "fieldName": "data_stream.dataset",
-                        "id": "234700e7-0f96-4054-9073-64b3e2d61fa2",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -49,8 +51,9 @@
                 "2f027408-9e82-4fbe-8c59-f32e933b50f0": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
                         "fieldName": "host.hostname",
-                        "id": "2f027408-9e82-4fbe-8c59-f32e933b50f0",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -67,8 +70,9 @@
                 "3dc73766-aa88-46ff-a02d-b0e600136550": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
                         "fieldName": "event.action",
-                        "id": "3dc73766-aa88-46ff-a02d-b0e600136550",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -85,7 +89,7 @@
             },
             "showApplySelections": false
         },
-        "description": "",
+        "description": "Overview of all CrowdStrike data streams.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -102,7 +106,12 @@
                             "negate": false,
                             "params": [
                                 "crowdstrike.falcon",
-                                "crowdstrike.fdr"
+                                "crowdstrike.fdr",
+                                "crowdstrike.alert",
+                                "crowdstrike.host",
+                                "crowdstrike.identity_protection_assessment",
+                                "crowdstrike.identity_protection_timeline",
+                                "crowdstrike.vulnerability"
                             ],
                             "type": "phrases"
                         },
@@ -118,6 +127,31 @@
                                     {
                                         "match_phrase": {
                                             "data_stream.dataset": "crowdstrike.fdr"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "crowdstrike.alert"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "crowdstrike.host"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "crowdstrike.identity_protection_assessment"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "crowdstrike.identity_protection_timeline"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "crowdstrike.vulnerability"
                                         }
                                     }
                                 ]
@@ -141,6 +175,132 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "layout": "vertical",
+                        "links": [
+                            {
+                                "destinationRefName": "link_75a4f005-c2c5-4276-9734-2fe0ca46c31e_dashboard",
+                                "id": "75a4f005-c2c5-4276-9734-2fe0ca46c31e",
+                                "label": "Overview",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_e996a777-a2c6-48b4-9212-49ab68e477f7_dashboard",
+                                "id": "e996a777-a2c6-48b4-9212-49ab68e477f7",
+                                "label": "FDR",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 1,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_48afe530-ad15-40cc-80e7-2c17d2a86f54_dashboard",
+                                "id": "48afe530-ad15-40cc-80e7-2c17d2a86f54",
+                                "label": "Falcon",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 2,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_424f322b-7610-42cc-b58f-7a01f0841737_dashboard",
+                                "id": "424f322b-7610-42cc-b58f-7a01f0841737",
+                                "label": "Alert",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 3,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_6cec7188-5e6e-4fe5-bb11-64e73f85e007_dashboard",
+                                "id": "6cec7188-5e6e-4fe5-bb11-64e73f85e007",
+                                "label": "Host",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 4,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_2a941958-d3ed-47fb-8d7c-fd2c39b66433_dashboard",
+                                "id": "2a941958-d3ed-47fb-8d7c-fd2c39b66433",
+                                "label": "Vulnerability",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 5,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_7370ad0e-62a5-41e6-8266-bd2201ba928e_dashboard",
+                                "id": "7370ad0e-62a5-41e6-8266-bd2201ba928e",
+                                "label": "IDP Assessments",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 6,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_8cdeea71-ffce-4d10-ac65-09f42d3b654a_dashboard",
+                                "id": "8cdeea71-ffce-4d10-ac65-09f42d3b654a",
+                                "label": "IDP Overview",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 7,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_25a29d9e-74b8-465b-96f2-d3cf8ce84897_dashboard",
+                                "id": "25a29d9e-74b8-465b-96f2-d3cf8ce84897",
+                                "label": "IDP Network",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 8,
+                                "type": "dashboardLink"
+                            }
+                        ]
+                    }
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "9244257f-f646-4f6a-8f3d-370b5e09c2f0",
+                    "w": 8,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "9244257f-f646-4f6a-8f3d-370b5e09c2f0",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
                     "enhancements": {
                         "dynamicActions": {
                             "events": []
@@ -159,26 +319,25 @@
                             }
                         },
                         "description": "",
-                        "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "## **Crowdstrike**\n\n### Navigation\n\n**Overview** \n\n[FDR](/app/dashboards#/view/crowdstrike-a4972bc0-fb53-11eb-abed-07307b3f2b0f)  \n\n[Falcon](/app/dashboards#/view/crowdstrike-ad80a080-821b-11ee-bae0-937af575b750) \n\n[Alert](/app/dashboards#/view/crowdstrike-d8070b00-99b3-11ee-bf4d-afbc95e0486c)\n\n[Host](/app/dashboards#/view/crowdstrike-2921b7f0-99b5-11ee-bf4d-afbc95e0486c)\n\n[Vulnerability](/app/dashboards#/view/crowdstrike-63da2573-4e68-4e7d-a06b-6858edb60fd5)\n\n### Overview\n\nThis dashboards shows the overview of currently enabled Crowdstrike Integrations (Falcon and FDR).\n\n",
+                            "markdown": "## CrowdStrike integration overview\n\nThis dashboard is the entry point for the CrowdStrike integration. It summarizes activity across all enabled data streams: Falcon event telemetry, FDR, Alerts (API), Host inventory, Vulnerability findings, and Identity Protection timeline and assessment data.\n\nThe KPI row shows volume or risk signal per stream—FDR alerts, Falcon detections, high and critical alerts, managed hosts, open vulnerabilities, IDP timeline events, and high-risk assessed domains. The time series below compares event volume by data stream over the selected period.\n\nUse the navigation links to open detailed dashboards for each area. Filter by **Hostname**, **Datastream**, or **Event Type** where applicable. Not every stream is enabled in every deployment; empty metrics usually mean that input is not configured or no data has been ingested yet.",
                             "openLinksInNewTab": false
                         },
                         "title": "",
                         "type": "markdown",
                         "uiState": {}
-                    }
+                    },
+                    "title": ""
                 },
                 "gridData": {
-                    "h": 41,
+                    "h": 13,
                     "i": "90059f1b-88f7-4e04-b755-081233d12559",
-                    "w": 7,
-                    "x": 0,
+                    "w": 40,
+                    "x": 8,
                     "y": 0
                 },
                 "panelIndex": "90059f1b-88f7-4e04-b755-081233d12559",
-                "title": "Table of Contents",
                 "type": "visualization"
             },
             {
@@ -300,151 +459,85 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "a973e58c-53cc-411f-87e5-3cbbd3f0dcf8",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "crowdstrike.fdr"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "crowdstrike.fdr"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "event.kind",
+                                            "index": "logs-*",
+                                            "key": "event.kind",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "alert"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.kind": "alert"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "FDR"
                 },
                 "gridData": {
                     "h": 7,
                     "i": "461d0b53-5efe-44fb-8cba-73a6e1a701c0",
                     "w": 7,
-                    "x": 7,
-                    "y": 0
+                    "x": 0,
+                    "y": 13
                 },
                 "panelIndex": "461d0b53-5efe-44fb-8cba-73a6e1a701c0",
-                "title": "FDR Alerts",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-cded08fb-72d8-4fff-bd9b-ca53189f9363",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "1261050c-1c7b-426f-968d-78596586554e",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "cded08fb-72d8-4fff-bd9b-ca53189f9363": {
-                                            "columnOrder": [
-                                                "d11e6000-056a-4e47-add0-b0942e7bba2c"
-                                            ],
-                                            "columns": {
-                                                "d11e6000-056a-4e47-add0-b0942e7bba2c": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Falcon Incidents",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "1261050c-1c7b-426f-968d-78596586554e",
-                                        "negate": false,
-                                        "params": [
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "data_stream.dataset",
-                                                    "index": "logs-*",
-                                                    "key": "data_stream.dataset",
-                                                    "negate": false,
-                                                    "params": {
-                                                        "query": "crowdstrike.falcon"
-                                                    },
-                                                    "type": "phrase"
-                                                },
-                                                "query": {
-                                                    "match_phrase": {
-                                                        "data_stream.dataset": "crowdstrike.falcon"
-                                                    }
-                                                }
-                                            },
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "crowdstrike.event.Category",
-                                                    "index": "logs-*",
-                                                    "key": "crowdstrike.event.Category",
-                                                    "negate": false,
-                                                    "params": {
-                                                        "query": "Incidents"
-                                                    },
-                                                    "type": "phrase"
-                                                },
-                                                "query": {
-                                                    "match_phrase": {
-                                                        "crowdstrike.event.Category": "Incidents"
-                                                    }
-                                                }
-                                            }
-                                        ],
-                                        "relation": "AND",
-                                        "type": "combined"
-                                    },
-                                    "query": {}
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "cded08fb-72d8-4fff-bd9b-ca53189f9363",
-                                "layerType": "data",
-                                "metricAccessor": "d11e6000-056a-4e47-add0-b0942e7bba2c"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "82bafaa2-170e-4d47-a01b-84c7af225795",
-                    "w": 7,
-                    "x": 14,
-                    "y": 0
-                },
-                "panelIndex": "82bafaa2-170e-4d47-a01b-84c7af225795",
-                "title": "Falcon Incidents",
                 "type": "lens"
             },
             {
@@ -464,55 +557,18 @@
                                     "layers": {
                                         "cded08fb-72d8-4fff-bd9b-ca53189f9363": {
                                             "columnOrder": [
-                                                "b6bfb664-2c78-419f-9616-f7c4b40f580e",
-                                                "3d6bbe8c-883f-4b3d-8680-ee75b7b8bc93",
                                                 "d11e6000-056a-4e47-add0-b0942e7bba2c"
                                             ],
                                             "columns": {
-                                                "3d6bbe8c-883f-4b3d-8680-ee75b7b8bc93": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "b6bfb664-2c78-419f-9616-f7c4b40f580e": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Activity by Data Stream",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "d11e6000-056a-4e47-add0-b0942e7bba2c",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 2
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "data_stream.dataset"
-                                                },
                                                 "d11e6000-056a-4e47-add0-b0942e7bba2c": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "data_stream.dataset : \"crowdstrike.falcon\" and crowdstrike.metadata.eventType : *Detection*"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Count",
+                                                    "label": "Falcon Detections",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -537,63 +593,563 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "d11e6000-056a-4e47-add0-b0942e7bba2c"
-                                        ],
-                                        "layerId": "cded08fb-72d8-4fff-bd9b-ca53189f9363",
-                                        "layerType": "data",
-                                        "seriesType": "area",
-                                        "splitAccessor": "b6bfb664-2c78-419f-9616-f7c4b40f580e",
-                                        "xAccessor": "3d6bbe8c-883f-4b3d-8680-ee75b7b8bc93"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "area",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
+                                "color": "#6092C0",
+                                "layerId": "cded08fb-72d8-4fff-bd9b-ca53189f9363",
+                                "layerType": "data",
+                                "metricAccessor": "d11e6000-056a-4e47-add0-b0942e7bba2c",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Falcon"
                 },
                 "gridData": {
-                    "h": 21,
-                    "i": "3ae87a07-7518-4354-9eb2-2f548fcf2935",
-                    "w": 27,
-                    "x": 21,
-                    "y": 0
+                    "h": 7,
+                    "i": "82bafaa2-170e-4d47-a01b-84c7af225795",
+                    "w": 7,
+                    "x": 7,
+                    "y": 13
                 },
-                "panelIndex": "3ae87a07-7518-4354-9eb2-2f548fcf2935",
-                "title": "Events over Time by Data Stream",
+                "panelIndex": "82bafaa2-170e-4d47-a01b-84c7af225795",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7df34211-875c-432b-8951-8e4970a5c260",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "7df34211-875c-432b-8951-8e4970a5c260": {
+                                            "columnOrder": [
+                                                "56d60d69-9c51-4f91-9b26-5f7627449886"
+                                            ],
+                                            "columns": {
+                                                "56d60d69-9c51-4f91-9b26-5f7627449886": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "data_stream.dataset: \"crowdstrike.alert\" and event.severity \u003e= 73"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "High and critical alerts",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "7df34211-875c-432b-8951-8e4970a5c260",
+                                "layerType": "data",
+                                "metricAccessor": "56d60d69-9c51-4f91-9b26-5f7627449886",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Alert"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "25035172-c45e-4902-ac42-05de6105ee00",
+                    "w": 7,
+                    "x": 14,
+                    "y": 13
+                },
+                "panelIndex": "25035172-c45e-4902-ac42-05de6105ee00",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7df34211-875c-432b-8951-8e4970a5c260",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "7df34211-875c-432b-8951-8e4970a5c260": {
+                                            "columnOrder": [
+                                                "56d60d69-9c51-4f91-9b26-5f7627449886"
+                                            ],
+                                            "columns": {
+                                                "56d60d69-9c51-4f91-9b26-5f7627449886": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "data_stream.dataset: \"crowdstrike.host\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Managed hosts",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "host.id"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "7df34211-875c-432b-8951-8e4970a5c260",
+                                "layerType": "data",
+                                "metricAccessor": "56d60d69-9c51-4f91-9b26-5f7627449886",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Host"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "11529474-76b5-4a66-a3b1-c166caa23afc",
+                    "w": 7,
+                    "x": 21,
+                    "y": 13
+                },
+                "panelIndex": "11529474-76b5-4a66-a3b1-c166caa23afc",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7df34211-875c-432b-8951-8e4970a5c260",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "7df34211-875c-432b-8951-8e4970a5c260": {
+                                            "columnOrder": [
+                                                "56d60d69-9c51-4f91-9b26-5f7627449886"
+                                            ],
+                                            "columns": {
+                                                "56d60d69-9c51-4f91-9b26-5f7627449886": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "data_stream.dataset: \"crowdstrike.vulnerability\" and crowdstrike.vulnerability.status: \"open\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Open vulnerabilities",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "vulnerability.id"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "7df34211-875c-432b-8951-8e4970a5c260",
+                                "layerType": "data",
+                                "metricAccessor": "56d60d69-9c51-4f91-9b26-5f7627449886",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Vulnerability"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "42a6119b-ff82-421f-88aa-1de14f5c88d4",
+                    "w": 7,
+                    "x": 28,
+                    "y": 13
+                },
+                "panelIndex": "42a6119b-ff82-421f-88aa-1de14f5c88d4",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7df34211-875c-432b-8951-8e4970a5c260",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "7df34211-875c-432b-8951-8e4970a5c260": {
+                                            "columnOrder": [
+                                                "56d60d69-9c51-4f91-9b26-5f7627449886"
+                                            ],
+                                            "columns": {
+                                                "56d60d69-9c51-4f91-9b26-5f7627449886": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "data_stream.dataset: \"crowdstrike.identity_protection_timeline\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "IDP timeline events",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "7df34211-875c-432b-8951-8e4970a5c260",
+                                "layerType": "data",
+                                "metricAccessor": "56d60d69-9c51-4f91-9b26-5f7627449886",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "IDP timeline"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "8c7c65ab-1d30-4bb0-b24f-9d67e1251e16",
+                    "w": 7,
+                    "x": 35,
+                    "y": 13
+                },
+                "panelIndex": "8c7c65ab-1d30-4bb0-b24f-9d67e1251e16",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7df34211-875c-432b-8951-8e4970a5c260",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "7df34211-875c-432b-8951-8e4970a5c260": {
+                                            "columnOrder": [
+                                                "56d60d69-9c51-4f91-9b26-5f7627449886"
+                                            ],
+                                            "columns": {
+                                                "56d60d69-9c51-4f91-9b26-5f7627449886": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "data_stream.dataset: \"crowdstrike.identity_protection_assessment\" and crowdstrike.idp.security_assessment.overall_score_level: \"HIGH\""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "High risk domains",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "7df34211-875c-432b-8951-8e4970a5c260",
+                                "layerType": "data",
+                                "metricAccessor": "56d60d69-9c51-4f91-9b26-5f7627449886",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "IDP assessment"
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "2deaa451-4ddb-4d0a-a36c-f38bd4e590c1",
+                    "w": 6,
+                    "x": 42,
+                    "y": 13
+                },
+                "panelIndex": "2deaa451-4ddb-4d0a-a36c-f38bd4e590c1",
                 "type": "lens"
             },
             {
@@ -755,18 +1311,85 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "crowdstrike.fdr"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "crowdstrike.fdr"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "field": "event.kind",
+                                            "index": "logs-*",
+                                            "key": "event.kind",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "alert"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.kind": "alert"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "FDR Alert Types"
                 },
                 "gridData": {
                     "h": 14,
                     "i": "ddcad6b5-4e8e-4f43-8b3e-b0f11cd702da",
-                    "w": 7,
-                    "x": 7,
-                    "y": 7
+                    "w": 8,
+                    "x": 0,
+                    "y": 20
                 },
                 "panelIndex": "ddcad6b5-4e8e-4f43-8b3e-b0f11cd702da",
-                "title": "FDR Alert Types",
                 "type": "lens"
             },
             {
@@ -777,17 +1400,13 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-cded08fb-72d8-4fff-bd9b-ca53189f9363",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "24d5c96e-43cb-4b7f-bc94-8d85933c1ad6",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "cded08fb-72d8-4fff-bd9b-ca53189f9363": {
                                             "columnOrder": [
@@ -799,7 +1418,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top Falcon Incidents",
+                                                    "label": "Top Falcon Detections",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -816,14 +1435,19 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "event.action"
+                                                    "sourceField": "crowdstrike.metadata.eventType"
                                                 },
                                                 "d11e6000-056a-4e47-add0-b0942e7bba2c": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "data_stream.dataset : \"crowdstrike.falcon\"  and crowdstrike.metadata.eventType : *Detection*"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Count",
                                                     "operationType": "count",
@@ -835,70 +1459,23 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "24d5c96e-43cb-4b7f-bc94-8d85933c1ad6",
-                                        "negate": false,
-                                        "params": [
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "data_stream.dataset",
-                                                    "index": "logs-*",
-                                                    "key": "data_stream.dataset",
-                                                    "negate": false,
-                                                    "params": {
-                                                        "query": "crowdstrike.falcon"
-                                                    },
-                                                    "type": "phrase"
-                                                },
-                                                "query": {
-                                                    "match_phrase": {
-                                                        "data_stream.dataset": "crowdstrike.falcon"
-                                                    }
-                                                }
-                                            },
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "crowdstrike.event.Category",
-                                                    "index": "logs-*",
-                                                    "key": "crowdstrike.event.Category",
-                                                    "negate": false,
-                                                    "params": {
-                                                        "query": "Incidents"
-                                                    },
-                                                    "type": "phrase"
-                                                },
-                                                "query": {
-                                                    "match_phrase": {
-                                                        "crowdstrike.event.Category": "Incidents"
-                                                    }
-                                                }
-                                            }
-                                        ],
-                                        "relation": "AND",
-                                        "type": "combined"
-                                    },
-                                    "query": {}
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -928,68 +1505,304 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Falcon Detection Types"
                 },
                 "gridData": {
                     "h": 14,
                     "i": "f1412dea-44cf-41dc-88e0-6e4d70ccbe80",
-                    "w": 7,
-                    "x": 14,
-                    "y": 7
+                    "w": 8,
+                    "x": 8,
+                    "y": 20
                 },
                 "panelIndex": "f1412dea-44cf-41dc-88e0-6e4d70ccbe80",
-                "title": "Falcon Incident Types",
                 "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "description": "",
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedObjectId": "crowdstrike-9b99d190-8214-11ee-bae0-937af575b750",
+                    "title": "Newest FDR Alerts"
                 },
                 "gridData": {
                     "h": 20,
                     "i": "32d232a4-d1fd-43ac-8f5e-02e4e2aff981",
-                    "w": 21,
-                    "x": 7,
-                    "y": 21
+                    "w": 23,
+                    "x": 0,
+                    "y": 34
                 },
                 "panelIndex": "32d232a4-d1fd-43ac-8f5e-02e4e2aff981",
                 "panelRefName": "panel_32d232a4-d1fd-43ac-8f5e-02e4e2aff981",
-                "title": "[Crowdstrike] Newest FDR Alerts",
                 "type": "search"
             },
             {
                 "embeddableConfig": {
                     "description": "",
-                    "enhancements": {}
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedObjectId": "crowdstrike-0a240aaa-01af-424f-af9c-fa5619cec08e",
+                    "title": "Newest Falcon Detections"
                 },
                 "gridData": {
                     "h": 20,
-                    "i": "5faa13bd-3f89-4fa2-9f96-242cf14237a4",
-                    "w": 20,
-                    "x": 28,
-                    "y": 21
+                    "i": "d5a4ae1b-bba9-4b61-8607-8c7f767eeea3",
+                    "w": 25,
+                    "x": 23,
+                    "y": 34
                 },
-                "panelIndex": "5faa13bd-3f89-4fa2-9f96-242cf14237a4",
-                "panelRefName": "panel_5faa13bd-3f89-4fa2-9f96-242cf14237a4",
-                "title": "[Crowdstrike] Newest Falcon Incidents",
+                "panelIndex": "d5a4ae1b-bba9-4b61-8607-8c7f767eeea3",
+                "panelRefName": "panel_d5a4ae1b-bba9-4b61-8607-8c7f767eeea3",
                 "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-cded08fb-72d8-4fff-bd9b-ca53189f9363",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "cded08fb-72d8-4fff-bd9b-ca53189f9363": {
+                                            "columnOrder": [
+                                                "b6bfb664-2c78-419f-9616-f7c4b40f580e",
+                                                "3d6bbe8c-883f-4b3d-8680-ee75b7b8bc93",
+                                                "d11e6000-056a-4e47-add0-b0942e7bba2c"
+                                            ],
+                                            "columns": {
+                                                "3d6bbe8c-883f-4b3d-8680-ee75b7b8bc93": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "b6bfb664-2c78-419f-9616-f7c4b40f580e": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Activity by Data Stream",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "d11e6000-056a-4e47-add0-b0942e7bba2c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "data_stream.dataset"
+                                                },
+                                                "d11e6000-056a-4e47-add0-b0942e7bba2c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d11e6000-056a-4e47-add0-b0942e7bba2c"
+                                        ],
+                                        "layerId": "cded08fb-72d8-4fff-bd9b-ca53189f9363",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "splitAccessor": "b6bfb664-2c78-419f-9616-f7c4b40f580e",
+                                        "xAccessor": "3d6bbe8c-883f-4b3d-8680-ee75b7b8bc93"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": false,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Events over Time by Data Stream"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "3ae87a07-7518-4354-9eb2-2f548fcf2935",
+                    "w": 32,
+                    "x": 16,
+                    "y": 20
+                },
+                "panelIndex": "3ae87a07-7518-4354-9eb2-2f548fcf2935",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
-        "title": "[Crowdstrike] Overview",
-        "version": 2
+        "title": "[Logs CrowdStrike] Overview",
+        "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-03-01T12:27:18.648Z",
+    "created_at": "2026-06-02T06:36:00.330Z",
     "id": "crowdstrike-e64e8fe0-8210-11ee-bae0-937af575b750",
-    "managed": false,
     "references": [
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
+        },
+        {
+            "id": "crowdstrike-e64e8fe0-8210-11ee-bae0-937af575b750",
+            "name": "9244257f-f646-4f6a-8f3d-370b5e09c2f0:link_75a4f005-c2c5-4276-9734-2fe0ca46c31e_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-a4972bc0-fb53-11eb-abed-07307b3f2b0f",
+            "name": "9244257f-f646-4f6a-8f3d-370b5e09c2f0:link_e996a777-a2c6-48b4-9212-49ab68e477f7_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-ad80a080-821b-11ee-bae0-937af575b750",
+            "name": "9244257f-f646-4f6a-8f3d-370b5e09c2f0:link_48afe530-ad15-40cc-80e7-2c17d2a86f54_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-d8070b00-99b3-11ee-bf4d-afbc95e0486c",
+            "name": "9244257f-f646-4f6a-8f3d-370b5e09c2f0:link_424f322b-7610-42cc-b58f-7a01f0841737_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-2921b7f0-99b5-11ee-bf4d-afbc95e0486c",
+            "name": "9244257f-f646-4f6a-8f3d-370b5e09c2f0:link_6cec7188-5e6e-4fe5-bb11-64e73f85e007_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-63da2573-4e68-4e7d-a06b-6858edb60fd5",
+            "name": "9244257f-f646-4f6a-8f3d-370b5e09c2f0:link_2a941958-d3ed-47fb-8d7c-fd2c39b66433_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-e4db436d-8012-412a-8268-6d629ccd78b7",
+            "name": "9244257f-f646-4f6a-8f3d-370b5e09c2f0:link_7370ad0e-62a5-41e6-8266-bd2201ba928e_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-e8e9b385-e722-407b-b8f2-4fa6333e737e",
+            "name": "9244257f-f646-4f6a-8f3d-370b5e09c2f0:link_8cdeea71-ffce-4d10-ac65-09f42d3b654a_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "crowdstrike-3352f2ae-6cb2-4a09-9145-0e7007b6b350",
+            "name": "9244257f-f646-4f6a-8f3d-370b5e09c2f0:link_25a29d9e-74b8-465b-96f2-d3cf8ce84897_dashboard",
+            "type": "dashboard"
         },
         {
             "id": "logs-*",
@@ -1008,12 +1821,27 @@
         },
         {
             "id": "logs-*",
-            "name": "82bafaa2-170e-4d47-a01b-84c7af225795:1261050c-1c7b-426f-968d-78596586554e",
+            "name": "25035172-c45e-4902-ac42-05de6105ee00:indexpattern-datasource-layer-7df34211-875c-432b-8951-8e4970a5c260",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "3ae87a07-7518-4354-9eb2-2f548fcf2935:indexpattern-datasource-layer-cded08fb-72d8-4fff-bd9b-ca53189f9363",
+            "name": "11529474-76b5-4a66-a3b1-c166caa23afc:indexpattern-datasource-layer-7df34211-875c-432b-8951-8e4970a5c260",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "42a6119b-ff82-421f-88aa-1de14f5c88d4:indexpattern-datasource-layer-7df34211-875c-432b-8951-8e4970a5c260",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8c7c65ab-1d30-4bb0-b24f-9d67e1251e16:indexpattern-datasource-layer-7df34211-875c-432b-8951-8e4970a5c260",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2deaa451-4ddb-4d0a-a36c-f38bd4e590c1:indexpattern-datasource-layer-7df34211-875c-432b-8951-8e4970a5c260",
             "type": "index-pattern"
         },
         {
@@ -1032,19 +1860,19 @@
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
-            "name": "f1412dea-44cf-41dc-88e0-6e4d70ccbe80:24d5c96e-43cb-4b7f-bc94-8d85933c1ad6",
-            "type": "index-pattern"
-        },
-        {
             "id": "crowdstrike-9b99d190-8214-11ee-bae0-937af575b750",
             "name": "32d232a4-d1fd-43ac-8f5e-02e4e2aff981:panel_32d232a4-d1fd-43ac-8f5e-02e4e2aff981",
             "type": "search"
         },
         {
-            "id": "crowdstrike-a9e7ff80-8212-11ee-bae0-937af575b750",
-            "name": "5faa13bd-3f89-4fa2-9f96-242cf14237a4:panel_5faa13bd-3f89-4fa2-9f96-242cf14237a4",
+            "id": "crowdstrike-0a240aaa-01af-424f-af9c-fa5619cec08e",
+            "name": "d5a4ae1b-bba9-4b61-8607-8c7f767eeea3:panel_d5a4ae1b-bba9-4b61-8607-8c7f767eeea3",
             "type": "search"
+        },
+        {
+            "id": "logs-*",
+            "name": "3ae87a07-7518-4354-9eb2-2f548fcf2935:indexpattern-datasource-layer-cded08fb-72d8-4fff-bd9b-ca53189f9363",
+            "type": "index-pattern"
         },
         {
             "id": "logs-*",
@@ -1065,9 +1893,13 @@
             "id": "logs-*",
             "name": "controlGroup_3dc73766-aa88-46ff-a02d-b0e600136550:optionsListDataView",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0",
-    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    "typeMigrationVersion": "10.3.0"
 }

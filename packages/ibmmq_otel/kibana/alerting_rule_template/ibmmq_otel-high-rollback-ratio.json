@@ -1,36 +1,50 @@
 {
-    "id": "ibmmq_otel-high-rollback-ratio",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[IBM MQ OTel] High transaction rollback ratio",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "ibmmq"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "ibmmq_otel-high-rollback-ratio",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when transaction rollback-rate exceeds 5% of total transactions. Poison messages or processing failures.",
+    "name": "[IBM MQ OTel] High transaction rollback ratio",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "ibmmq"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "ibmmq_otel-error-analysis"
         },
-        "alertDelay": {
-            "active": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-ibmmq.otel-*\n| STATS\n    commit_rate = SUM(RATE(ibmmq_qmgr_commit_total)),\n    rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total))\n    BY attributes.qmgr\n// Require a minimum commit rate to avoid false positives on idle queue managers\n| WHERE commit_rate IS NOT NULL AND commit_rate > 0\n    AND rollback_rate IS NOT NULL\n| EVAL rollback_pct = ROUND(rollback_rate / (commit_rate + rollback_rate) * 100.0, 2)\n// Alert when rollback rate exceeds 5% of total transactions\n// < 1% is healthy; 1-5% is warning; > 5% is critical\n// High rollback ratios indicate poison messages, processing failures,\n// or resource contention causing transaction failures\n// Adjust threshold and minimum commit rate for your workload\n| WHERE rollback_pct > 5.0"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "attributes.qmgr",
-            "termSize": 10
+        {
+          "id": "ibmmq_otel-message-traffic"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## IBM MQ high transaction rollback ratio\n\n### What fired\n`rollback / (commit + rollback) > 5%` over the window.\n\n### Why it matters\nHigh rollback rates signal poison messages repeatedly failing processing, auth changes breaking apps, or consumer bugs.\n\n### Triage\n1. Check dead-letter / backout queues for accumulating messages.\n2. Inspect consumer application logs.\n3. Look at BOTHRESH / BOQNAME queue attributes.\n\n### Remediation\n- Route poison messages to BOQNAME.\n- Fix consumer logic.\n\n### Tuning\n- 5% threshold with minimum commit rate filter; tighten to 1% for critical apps.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-ibmmq.otel-*\n| STATS\n    commit_rate = SUM(RATE(ibmmq_qmgr_commit_total)),\n    rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total))\n    BY attributes.qmgr\n// Require a minimum commit rate to avoid false positives on idle queue managers\n| WHERE commit_rate IS NOT NULL AND commit_rate > 0\n    AND rollback_rate IS NOT NULL\n| EVAL rollback_pct = ROUND(rollback_rate / (commit_rate + rollback_rate) * 100.0, 2)\n// Alert when rollback rate exceeds 5% of total transactions\n// < 1% is healthy; 1-5% is warning; > 5% is critical\n// High rollback ratios indicate poison messages, processing failures,\n// or resource contention causing transaction failures\n// Adjust threshold and minimum commit rate for your workload\n| WHERE rollback_pct > 5.0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.qmgr",
+      "termSize": 10
     }
+  }
 }

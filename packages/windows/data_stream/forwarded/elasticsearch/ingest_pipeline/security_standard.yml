@@ -4431,43 +4431,58 @@ processors:
         }
         ctx.network.put("transport", t)
 
-  - set:
-      field: file.name
-      copy_from: winlog.event_data.RelativeTargetName
+  - script:
+      description: Adds file information for file share events.
+      # Event codes 5140 (network share object accessed) and 5145 (network share object checked to see
+      # if client can be granted desired access) contain file information in the RelativeTargetName
+      # and ShareLocalPath fields.  They need to be combined and normalized to populate file.path,
+      # file.name, and file.directory for ECS compliance.
+      lang: painless
       if: |-
         ctx.event?.code != null &&
-        ["5140", "5145"].contains(ctx.event.code) &&
-        ctx.winlog?.event_data?.RelativeTargetName != null &&
-        ctx.winlog.event_data.RelativeTargetName != ""
-  - set:
-      field: file.directory
-      copy_from: winlog.event_data.ShareLocalPath
-      if: |-
-        ctx.event?.code != null &&
-        ["5140", "5145"].contains(ctx.event.code) &&
-        ctx.winlog?.event_data?.ShareLocalPath != null &&
-        ctx.winlog.event_data.ShareLocalPath != ""
-  - set:
-      field: file.path
-      value: "{{file.directory}}\\{{file.name}}"
-      if: ctx.file?.name != null && ctx.file?.directory != null
-  - set:
-      field: file.directory
-      copy_from: winlog.event_data.ShareLocalPath
-      if: |-
-        ctx.event?.code != null &&
-        ["5140", "5145"].contains(ctx.event.code) &&
-        ctx.winlog?.event_data?.ShareLocalPath != null &&
-        ctx.winlog.event_data.ShareLocalPath != ""
-  - set:
-      field: file.target_path
-      value: "{{winlog.event_data.ShareName}}\\{{file.name}}"
-      if: |-
-        ctx.event?.code != null &&
-        ["5140", "5145"].contains(ctx.event.code) &&
-        ctx.winlog?.event_data?.ShareName != null &&
-        ctx.winlog.event_data.ShareName != "" &&
-        ctx.file?.name != null
+        ["5140", "5142", "5145"].contains(ctx.event.code)
+      source: |-
+        if (ctx.file == null) { ctx.file = new HashMap(); }
+        String rel = "";
+        if (ctx.winlog?.event_data?.RelativeTargetName != null) {
+          rel = ctx.winlog.event_data.RelativeTargetName;
+        }
+        String share = "";
+        if (ctx.winlog?.event_data?.ShareLocalPath != null) {
+          share = ctx.winlog.event_data.ShareLocalPath;
+        }
+        if (share.startsWith("\\??\\")) {
+          share = share.substring(4);
+        } else if (share.startsWith("\\?\\")) {
+          share = share.substring(3);
+        }
+        if (share.endsWith("\\")) {
+          share = share.substring(0, share.length() - 1);
+        }
+        if (rel.startsWith("\\")) {
+          rel = rel.substring(1);
+        }
+        if (rel != "") {
+          String path = share + "\\" + rel;
+          ctx.file.put("path", path);
+          int lastSep = path.lastIndexOf('\\');
+          if (lastSep >= 0) {
+            ctx.file.put("name", path.substring(lastSep + 1));
+            ctx.file.put("directory", path.substring(0, lastSep));
+          } else {
+            ctx.file.put("directory", share);
+          }
+        } else {
+          ctx.file.put("directory", share);
+        }
+        String shareName = "";
+        if (ctx.winlog?.event_data?.ShareName != null) {
+          shareName = ctx.winlog.event_data.ShareName;
+        }
+        if (shareName != "" && rel != "" && ["5140", "5145"].contains(ctx.event.code)) {
+          ctx.file.put("target_path", shareName + "\\" + rel);
+        }
+
   - script:
       description: Adds file information.
       lang: painless

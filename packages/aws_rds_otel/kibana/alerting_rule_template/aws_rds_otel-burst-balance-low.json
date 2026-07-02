@@ -1,0 +1,48 @@
+{
+  "id": "aws_rds_otel-burst-balance-low",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when gp2 burst balance falls below a percentage floor. Depleted burst credits throttle IOPS and typically precede disk queue depth and latency spikes.",
+    "name": "[AWS RDS OTel] Burst balance low",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_rds",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Burst Balance Low\n\n### Triage\n1. This metric applies to gp2 storage volumes only — confirm storage type in the RDS console.\n2. Check `ReadIOPS`/`WriteIOPS` for sustained high I/O that depleted burst credits.\n3. Watch `DiskQueueDepth` and latency metrics for downstream impact.\n\n### Mitigation\n- Reduce I/O load temporarily to allow burst credits to recover.\n- Migrate to gp3 or provisioned IOPS storage for predictable performance.\n- Increase baseline IOPS allocation on gp2."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"BurstBalance\"\n    AND stat == \"Average\"\n| STATS min_burst_balance = MIN(`metrics.amazonaws.com/AWS/RDS/BurstBalance`)\n    BY DBInstanceIdentifier, cloud.region\n// Percent of burst credits remaining — adjust floor (default: 20%)\n| WHERE min_burst_balance < 20.0\n| SORT min_burst_balance ASC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "DBInstanceIdentifier",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

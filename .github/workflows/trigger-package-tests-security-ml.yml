@@ -1,0 +1,76 @@
+name: CI Trigger Security-ML Package Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+    paths:
+      - "packages/beaconing/**"
+      - "packages/ded/**"
+      - "packages/dga/**"
+      - "packages/hta/**"
+      - "packages/lmd/**"
+      - "packages/pad/**"
+      - "packages/problemchild/**"
+      - ".github/workflows/trigger-package-tests-security-ml.yml"
+
+concurrency:
+  group: trigger-secml-itp-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  trigger:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Fetch ephemeral token for security-ml dispatch
+        id: auth
+        uses: elastic/ci-gh-actions/fetch-github-token@v1.5.3
+        with:
+          vault-instance: ci-prod
+
+      - name: Detect changed packages
+        id: packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          VALID_PACKAGES="beaconing ded dga hta lmd pad problemchild"
+          CHANGED=$(gh api repos/${REPO}/pulls/${PR_NUMBER}/files \
+            --paginate \
+            --jq '.[].filename')
+          PACKAGES=""
+          if echo "$CHANGED" | grep -q "^\.github/workflows/trigger-package-tests-security-ml\.yml$"; then
+            PACKAGES=$(echo "$VALID_PACKAGES" | tr ' ' ',')
+          else
+            for pkg in $VALID_PACKAGES; do
+              if echo "$CHANGED" | grep -q "^packages/${pkg}/"; then
+                PACKAGES="${PACKAGES:+$PACKAGES,}$pkg"
+              fi
+            done
+          fi
+          echo "packages=$PACKAGES" >> "$GITHUB_OUTPUT"
+          echo "Changed packages: $PACKAGES"
+
+      - name: Trigger security-ml integration tests
+        if: steps.packages.outputs.packages != ''
+        env:
+          GH_TOKEN: ${{ steps.auth.outputs.token }}
+          PACKAGES: ${{ steps.packages.outputs.packages }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_REPO: ${{ github.repository }}
+        run: |
+          gh workflow run itp-dispatch-integrations.yml \
+            --repo elastic/security-ml \
+            --ref main \
+            -f packages="$PACKAGES" \
+            -f branch="$PR_BRANCH" \
+            -f pr_number="$PR_NUMBER" \
+            -f pr_repo="$PR_REPO"

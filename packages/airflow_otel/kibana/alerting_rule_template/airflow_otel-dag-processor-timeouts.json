@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the DAG processor records any timeout events (`airflow.dag_processing.processor_timeouts` counter increases). Timeouts mean specific DAG files are too slow to parse.",
     "name": "[Airflow OTel] DAG processor timeouts",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-dag-processing"
+        },
+        {
+          "id": "airflow_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Airflow DAG processor timeouts\n\n### What fired\nThe counter `airflow.dag_processing.processor_timeouts` increased during the evaluation window.\n\n### Why it matters\nWhen DAG parsing exceeds `dag_file_processor_timeout`, the processor aborts and retries, delaying visibility of the affected DAGs and consuming scheduler capacity on repeated retries.\n\n### Triage\n1. DAG Processing dashboard: confirm processor load (queue size, parse time trends).\n2. Identify slow DAG files via scheduler logs (`dag_processor_manager.log`).\n3. Check for expensive top-level code: blocking API calls, large list comprehensions, heavy imports.\n\n### Remediation\n- Refactor slow DAGs to defer work into tasks rather than top-level code.\n- Increase `dag_file_processor_timeout` as a short-term mitigation.\n- Consider sharding DAG files across multiple folders and processors.\n\n### Tuning\n- Fires on any timeout. For high-churn environments you can require `timeout_count > N`.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-airflow.otel-default*\n| WHERE airflow.dag_processing.processor_timeouts IS NOT NULL\n// Counter: detect new processor timeouts in the window\n| STATS timeout_count = SUM(INCREASE(airflow.dag_processing.processor_timeouts))\n| WHERE timeout_count > 0"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

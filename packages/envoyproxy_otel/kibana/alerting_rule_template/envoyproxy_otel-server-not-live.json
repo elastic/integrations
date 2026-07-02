@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `envoy.server.live` drops below 1 \u2014 the admin `/ready` endpoint reports the proxy as not live.",
     "name": "[Envoy OTel] Server not live",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,25 @@
       "lookBackWindow": 5,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "envoyproxy_otel-envoy-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Envoy server not live\n\n### What fired\n`envoy.server.live` was below 1 during the window.\n\n### Why it matters\nAn Envoy that is not live is either in initialization, draining, or has entered the overload/failstate. Clients will get connection failures.\n\n### Triage\n1. Check the admin `/server_info` and `/ready` endpoints.\n2. Cross-reference with `envoy.server.state` to see the exact lifecycle stage.\n3. Review Envoy logs for overload manager trips or init failures.\n\n### Remediation\n- Restore control plane / config source so init can complete.\n- Cancel drains if they were unintentional.\n\n### Tuning\n- Fires on any non-live sample; consider an alertDelay if restarts are frequent in your environment.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.live IS NOT NULL\n// Server live is 1 when healthy, 0 when not\n| STATS max_live = MAX(envoy.server.live)\n| WHERE max_live < 1"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

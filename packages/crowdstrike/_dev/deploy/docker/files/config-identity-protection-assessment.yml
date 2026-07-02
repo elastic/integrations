@@ -1,0 +1,142 @@
+# Mock CrowdStrike Identity Protection GraphQL.
+# Worklist: domains → DOMAIN_A → DOMAIN_B.
+rules:
+  - path: /oauth2/token
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"access_token":"xxxx","expires_in":3600,"token_type":"Bearer","refresh_token":"yyyy"}
+  # Domains discovery: integration may send "{ domains }" or parameterized GetDomains + variables.
+  - path: /identity-protection/combined/graphql/v1
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: '/\{ domains \}/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "domains": ["DOMAIN_A", "DOMAIN_B"]
+            },
+            "extensions": {
+              "runTime": 11,
+              "remainingPoints": 500000,
+              "reset": 9999,
+              "consumedPoints": 0
+            }
+          }
+          `}}
+  - path: /identity-protection/combined/graphql/v1
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - "Bearer xxxx"
+    # CEL body is like: {"query":"query GetDomains($dataSources: [DataSource!]) { domains(dataSources: $dataSources) }","variables":{"dataSources":["ACTIVE_DIRECTORY","ADFS","AZURE"]}}
+    request_body: '/GetDomains\(\$dataSources.*"dataSources":\["ACTIVE_DIRECTORY","ADFS","AZURE"\]/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "domains": ["DOMAIN_A", "DOMAIN_B"]
+            },
+            "extensions": {
+              "runTime": 11,
+              "remainingPoints": 500000,
+              "reset": 9999,
+              "consumedPoints": 0
+            }
+          }
+          `}}
+  - path: /identity-protection/combined/graphql/v1
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: '/DOMAIN_A/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "securityAssessment": {
+                "overallScore": 0.25,
+                "overallScoreLevel": "LOW",
+                "assessmentFactors": [
+                  {
+                    "riskFactorType": "STALE_ACCOUNT",
+                    "likelihood": "LOW",
+                    "severity": "LOW"
+                  }
+                ]
+              }
+            },
+            "extensions": {
+              "runTime": 7,
+              "remainingPoints": 499998,
+              "reset": 9997,
+              "consumedPoints": 2
+            }
+          }
+          `}}
+  - path: /identity-protection/combined/graphql/v1
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: '/DOMAIN_B/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "securityAssessment": {
+                "overallScore": 0.75,
+                "overallScoreLevel": "HIGH",
+                "assessmentFactors": [
+                  {
+                    "riskFactorType": "WEAK_PASSWORD_POLICY",
+                    "likelihood": "HIGH",
+                    "severity": "LOW"
+                  }
+                ]
+              }
+            },
+            "extensions": {
+              "runTime": 8,
+              "remainingPoints": 499996,
+              "reset": 9995,
+              "consumedPoints": 2
+            }
+          }
+          `}}
