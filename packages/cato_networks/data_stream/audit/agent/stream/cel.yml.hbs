@@ -68,7 +68,7 @@ program: |
               "variables": {
                 "timeFrame": "utc.{" + window_from + "--" + window_to + "}",
                 "accountIDs": state.account_ids,
-                ?"marker": state.?cursor.?marker,
+                ?"marker": state.?cursor.marker,
               },
             }.encode_json(),
           }
@@ -78,14 +78,12 @@ program: |
             (body.?data.auditFeed.orValue(null) != null) ?
               {
                 "events": (body.data.auditFeed.?accounts.orValue(null) != null) ?
-                  body.data.auditFeed.accounts.map(account, (account.?records.orValue(null) != null) ?
+                  body.data.auditFeed.accounts.map(account, account.?records.orValue(null) != null,
                     account.records.map(record,
                       {
                         "message": record.fieldsMap.encode_json(),
                       }
                     )
-                  :
-                    []
                   ).flatten()
                 :
                   [],
@@ -107,7 +105,7 @@ program: |
               {
                 "events": {
                   "error": {
-                    "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + body.?errors[0].?message.orValue("unknown error"),
+                    "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + body.?errors[0].message.orValue("unknown error"),
                   },
                 },
                 "want_more": false,
