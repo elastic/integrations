@@ -257,7 +257,11 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 		return nil, fmt.Errorf("reading current version from %s: %w", manifestPath, err)
 	}
 
-	cherryErr := a.git.Run("cherry-pick", "-n", sha)
+	// Force the default 2-way conflict marker style regardless of the caller's
+	// git config: resolveManifestVersionConflict below parses "<<<<<<<"/"======="/
+	// ">>>>>>>" text directly, and a diff3/zdiff3 style would make every block
+	// look unresolvable.
+	cherryErr := a.git.Run("-c", "merge.conflictStyle=merge", "cherry-pick", "-n", sha)
 
 	if err := a.git.Run("checkout", "HEAD", "--", changelogPath); err != nil {
 		_ = a.git.Run("reset", "--hard", "HEAD")
@@ -327,10 +331,9 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 // afterwards regardless of which side's value ends up on disk. A block where
 // "ours" contains anything other than a single version line is left
 // untouched so it still surfaces as a real conflict.
-// It assumes the default (non-diff3) conflict marker style; under diff3 or
-// zdiff3 styles the extra base section makes every block look unresolvable,
-// which conservatively falls back to reporting a conflict instead of
-// misparsing it.
+// It assumes the default (non-diff3) conflict marker style; cherryPickOrConflict
+// forces this via "-c merge.conflictStyle=merge" on the cherry-pick itself, so
+// this is independent of the caller's own git config.
 // Returns true if the file has no remaining conflict markers (either none
 // were present, or all were resolved).
 func resolveManifestVersionConflict(manifestPath string) (bool, error) {
