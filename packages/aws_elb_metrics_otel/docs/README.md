@@ -20,7 +20,7 @@ This package includes one pre-built Kibana dashboard:
 
 | Name | Description |
 |---|---|
-| [AWS OTel] ELB Metrics | AWS ELB metrics dashboard for CloudWatch metrics collected by the OpenTelemetry Collector. |
+| [AWS ELB OTel] Metrics | AWS ELB metrics dashboard for CloudWatch metrics collected by the OpenTelemetry Collector. |
 
 ## Alerting Rule Templates
 Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
