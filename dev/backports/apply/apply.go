@@ -22,6 +22,7 @@ import (
 	"github.com/elastic/integrations/dev/backports"
 	"github.com/elastic/integrations/dev/backports/changelog"
 	"github.com/elastic/integrations/dev/backports/gitutil"
+	"github.com/elastic/integrations/dev/citools"
 )
 
 // Options controls the behaviour of Apply.
@@ -646,11 +647,6 @@ func resolveBranchName(target, packageName string) (string, error) {
 	return branch, nil
 }
 
-// manifestYAML is used to extract the version field from manifest.yml.
-type manifestYAML struct {
-	Version string `yaml:"version"`
-}
-
 // bumpPatchVersion reads manifestPath, increments the patch version by one,
 // writes the file back preserving existing formatting, and returns the new version.
 func bumpPatchVersion(manifestPath string) (string, error) {
@@ -669,12 +665,11 @@ func bumpPatchVersion(manifestPath string) (string, error) {
 	return newVersion, nil
 }
 
-// parseManifestVersion extracts the "version" field from already-read
-// manifest.yml content.
-func parseManifestVersion(data []byte, manifestPath string) (string, error) {
-	var m manifestYAML
-	if err := yaml.Unmarshal(data, &m); err != nil {
-		return "", fmt.Errorf("parsing %s: %w", manifestPath, err)
+// readManifestVersion returns the value of the "version" field in manifestPath.
+func readManifestVersion(manifestPath string) (string, error) {
+	m, err := citools.ReadPackageManifest(manifestPath)
+	if err != nil {
+		return "", fmt.Errorf("reading %s: %w", manifestPath, err)
 	}
 	if m.Version == "" {
 		return "", fmt.Errorf("version field not found in %s", manifestPath)
@@ -682,23 +677,10 @@ func parseManifestVersion(data []byte, manifestPath string) (string, error) {
 	return m.Version, nil
 }
 
-// readManifestVersion returns the value of the "version" field in manifestPath.
-func readManifestVersion(manifestPath string) (string, error) {
-	data, err := os.ReadFile(manifestPath)
-	if err != nil {
-		return "", fmt.Errorf("reading %s: %w", manifestPath, err)
-	}
-	return parseManifestVersion(data, manifestPath)
-}
-
 // setManifestVersion rewrites the line starting with "version:" in manifestPath
 // to version, preserving quoting and the rest of the file's formatting.
 func setManifestVersion(manifestPath, version string) error {
-	data, err := os.ReadFile(manifestPath)
-	if err != nil {
-		return fmt.Errorf("reading %s: %w", manifestPath, err)
-	}
-	current, err := parseManifestVersion(data, manifestPath)
+	current, err := readManifestVersion(manifestPath)
 	if err != nil {
 		return err
 	}
@@ -706,6 +688,10 @@ func setManifestVersion(manifestPath, version string) error {
 		return nil
 	}
 
+	data, err := os.ReadFile(manifestPath)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", manifestPath, err)
+	}
 	info, err := os.Stat(manifestPath)
 	if err != nil {
 		return err
