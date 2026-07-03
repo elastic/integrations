@@ -1,0 +1,85 @@
+---
+description: >-
+  Webhook field extraction for Kolide issue events (issues.new, issues.resolved).
+  Invoked from default.yml when `json.event` is set. Envelope handling, ECS
+  categorization, related.* enrichment, extended-mappings, deduplication, and
+  cleanup remain in default.yml. See https://www.kolide.com/docs/.
+processors:
+  # event.kind / event.category / event.type are assigned centrally by
+  # categorization.yml based on the resolved event.action and lifecycle fields.
+
+  # event.action: webhook event name (issues.new / issues.resolved).
+  - rename:
+      field: json.event
+      target_field: event.action
+      tag: rename_event_action_webhook
+      ignore_missing: true
+
+  # Host (device).
+  - rename:
+      field: json.data.device.name
+      target_field: host.name
+      tag: rename_host_name_webhook
+      ignore_missing: true
+  - convert:
+      field: json.data.device.id
+      target_field: host.id
+      type: string
+      tag: convert_host_id_webhook
+      ignore_missing: true
+
+  # Rule (check).
+  - rename:
+      field: json.data.check.name
+      target_field: rule.name
+      tag: rename_rule_name_webhook
+      ignore_missing: true
+  - convert:
+      field: json.data.check.id
+      target_field: rule.id
+      type: string
+      tag: convert_rule_id_webhook
+      ignore_missing: true
+
+  # Issue title.
+  - rename:
+      field: json.data.title
+      target_field: kolide.issues.title
+      tag: rename_title_webhook
+      ignore_missing: true
+      if: ctx.json?.data?.title instanceof String
+
+  # Kolide issue and check fields.
+  - convert:
+      field: json.data.issue_id
+      target_field: kolide.issues.id
+      type: string
+      tag: convert_issue_id_webhook
+      ignore_missing: true
+  - convert:
+      field: json.data.check_id
+      target_field: kolide.issues.check.id
+      type: string
+      tag: convert_check_id_webhook
+      ignore_missing: true
+  - rename:
+      field: json.data.check.tags
+      target_field: kolide.issues.check.tags
+      tag: rename_check_tags_webhook
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

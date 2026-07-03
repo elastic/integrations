@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source .buildkite/scripts/common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/backport_branch_lib.sh"
 
 set -euo pipefail
 
@@ -10,18 +11,40 @@ cleanup_gh() {
     popd > /dev/null
 }
 
-trap cleanup_gh EXIT
+cleanup() {
+  local exit_code=$?
+  cleanup_gh
+  exit "${exit_code}"
+}
 
+trap cleanup EXIT
+
+# annotate_and_echo posts a Buildkite annotation and echoes the same message
+# to the build log so it is visible in both the annotation panel and the raw output.
+# Usage: annotate_and_echo <style> <message>
+#   style: error | warning | success | info
+annotate_and_echo() {
+    local style="${1}"
+    local message="${2}"
+    echo "${message}"
+    buildkite-agent annotate "${message}" --style "${style}"
+}
 
 DRY_RUN="$(buildkite-agent meta-data get DRY_RUN --default "${DRY_RUN:-"true"}")"
 BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT --default "${BASE_COMMIT:-""}")"
 PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default "${PACKAGE_NAME:-""}")"
 PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION --default "${PACKAGE_VERSION:-""}")"
-REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES --default "${REMOVE_OTHER_PACKAGES:-"false"}")"
+REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES --default "${REMOVE_OTHER_PACKAGES:-"true"}")"
 BACKPORT_BRANCH_NAME="$(buildkite-agent meta-data get BACKPORT_BRANCH_NAME --default "${BACKPORT_BRANCH_NAME:-""}")"
+PR_NUMBER="$(buildkite-agent meta-data get PR_NUMBER --default "${PR_NUMBER:-""}")"
 
 if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
-  buildkite-agent annotate "The variables **PACKAGE_NAME** or **PACKAGE_VERSION** aren't defined, please try again" --style "warning"
+  annotate_and_echo "warning" "The variables **PACKAGE_NAME** or **PACKAGE_VERSION** aren't defined, please try again"
+  exit 1
+fi
+
+if [[ -n "${PR_NUMBER}" ]] && ! [[ "${PR_NUMBER}" =~ ^[0-9]+$ ]]; then
+  annotate_and_echo "error" "Invalid PR_NUMBER **${PR_NUMBER}**: must be a positive integer"
   exit 1
 fi
 
@@ -32,6 +55,8 @@ PARAMETERS=(
     "**PACKAGE_NAME**=$PACKAGE_NAME"
     "**PACKAGE_VERSION**=$PACKAGE_VERSION"
     "**REMOVE_OTHER_PACKAGES**=$REMOVE_OTHER_PACKAGES"
+    "**BACKPORT_BRANCH_NAME**=$BACKPORT_BRANCH_NAME"
+    "**PR_NUMBER**=$PR_NUMBER"
 )
 
 # Show each parameter in a different line
@@ -94,50 +119,15 @@ branchExist() {
   fi
 }
 
-# get_package_path returns the path of the package with the given name as
-# defined in the manifest.yml `name` field. Returns 1 if not found.
-get_package_path() {
-  local package_name="${1}"
-  local package_path=""
-
-  while IFS= read -r package_path; do
-    local name
-    name=$(yq -r '.name' "${package_path}/manifest.yml")
-    if [[ "${name}" == "${package_name}" ]]; then
-      echo "${package_path}"
-      return 0
-    fi
-  done < <(list_all_directories)
-
-  return 1
-}
-
 createLocalBackportBranch() {
   local branch_name=$1
   local source_commit=$2
   if git checkout -b "$branch_name" "$source_commit"; then
     echo "The branch $branch_name has been created."
   else
-    buildkite-agent annotate "The backport branch **$BACKPORT_BRANCH_NAME** could not be created." --style "warning"
+    annotate_and_echo "warning" "The backport branch **$BACKPORT_BRANCH_NAME** could not be created."
     exit 1
   fi
-}
-
-removeOtherPackages() {
-  local package_path_to_keep="${1}"
-  local package_path
-  local package_paths=""
-  package_paths=$(list_all_directories)
-  for package_path in ${package_paths}; do
-    if [[ -d "$package_path" ]] && [[ "${package_path}" != "${package_path_to_keep}" ]]; then
-      echo "Removing directory: ${package_path}"
-      rm -rf "$package_path"
-
-      echo "Removing ${package_path} from .github/CODEOWNERS"
-      sed -i "\|^/${package_path}/|d" .github/CODEOWNERS
-      sed -i "\|^/${package_path} |d" .github/CODEOWNERS
-    fi
-  done
 }
 
 update_git_config() {
@@ -178,7 +168,6 @@ updateBackportBranchContents() {
   local PACKAGENAMES_SCRIPTS_FOLDER="dev/packagenames"
   local BACKPORTS_SCRIPTS_FOLDER="dev/backports"
   local DEV_SCRIPTS_FOLDER="dev/scripts"
-  local BACKPORTS_FOLDER="dev/backports"
 
   if git ls-tree -d --name-only main:${MAGEFILE_SCRIPTS_FOLDER} > /dev/null 2>&1 ; then
     echo "--- Copying magefile scripts from $SOURCE_BRANCH..."
@@ -209,10 +198,6 @@ updateBackportBranchContents() {
     echo "Copying $DEV_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${DEV_SCRIPTS_FOLDER}"
     git add "${DEV_SCRIPTS_FOLDER}"
-
-    echo "Copying $BACKPORTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${BACKPORTS_FOLDER}"
-    git add "${BACKPORTS_FOLDER}"
 
     echo "Copying magefile.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "magefile.go"
@@ -246,7 +231,23 @@ updateBackportBranchContents() {
 
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
     echo "--- Removing all packages from $PACKAGES_FOLDER_PATH folder"
-    removeOtherPackages "${PACKAGE_PATH}"
+
+    # Build the list of packages to keep: the target package plus any packages
+    # it requires (composable packages declare dependencies under requires.input
+    # and requires.content in their manifest.yml).
+    local -a packages_to_keep=("${PACKAGE_PATH}")
+    while IFS= read -r req_name; do
+      local req_path
+      req_path=$(get_package_path "${req_name}" || true)
+      if [[ -n "${req_path}" ]]; then
+        echo "Keeping required package: ${req_path} (required by ${PACKAGE_NAME})"
+        packages_to_keep+=("${req_path}")
+      else
+        echo "Warning: required package '${req_name}' not found in packages folder"
+      fi
+    done < <(get_required_package_names "${PACKAGE_PATH}")
+
+    remove_other_packages "${packages_to_keep[@]}"
     ls -la "${PACKAGES_FOLDER_PATH}"
 
     git add "${PACKAGES_FOLDER_PATH}/"
@@ -280,7 +281,7 @@ updateBackportBranchContents() {
 }
 
 if ! [[ "${PACKAGE_VERSION}" =~ ^[0-9]+(\.[0-9]+){2}(\-.*)?$ ]]; then
-  buildkite-agent annotate "The entered package version ${PACKAGE_VERSION} doesn't match the pattern" --style "error"
+  annotate_and_echo "error" "The entered package version ${PACKAGE_VERSION} doesn't match the pattern"
   exit 1
 fi
 
@@ -289,54 +290,56 @@ add_bin_path
 with_yq
 with_mage
 
+echo "--- Validating custom backport branch name"
+if ! mage ValidateBackportBranchName "${PACKAGE_NAME}" "${BACKPORT_BRANCH_NAME}"; then
+  annotate_and_echo "error" "Invalid backport branch name **${BACKPORT_BRANCH_NAME}**: must match \`backport-${PACKAGE_NAME}-<suffix>\`"
+  exit 1
+fi
+
 echo "--- Resolve package path from PACKAGE_NAME"
 PACKAGE_PATH="$(get_package_path "${PACKAGE_NAME}" || true)"
 if [[ -z "${PACKAGE_PATH}" ]]; then
-  buildkite-agent annotate "Package **${PACKAGE_NAME}** not found" --style "error"
+  annotate_and_echo "error" "Package **${PACKAGE_NAME}** not found"
   exit 1
 fi
 echo "Package path: ${PACKAGE_PATH}"
 
 echo "--- Check if the package is published"
 if ! isPackagePublished "$FULL_ZIP_PACKAGE_NAME"; then
-  buildkite-agent annotate "The package version: **${PACKAGE_NAME}-${PACKAGE_VERSION}** hasn't been published yet." --style "error"
+  annotate_and_echo "error" "The package version: **${PACKAGE_NAME}-${PACKAGE_VERSION}** hasn't been published yet."
   exit 1
 fi
 
 echo "--- Check if the base commit exists."
 if [ ! -z "$BASE_COMMIT" ]; then
   if ! commitExists "$BASE_COMMIT" "$SOURCE_BRANCH"; then
-    buildkite-agent annotate "The entered commit was not found in the **${SOURCE_BRANCH}** branch" --style "error"
+    annotate_and_echo "error" "The entered commit was not found in the **${SOURCE_BRANCH}** branch"
     exit 1
   fi
 fi
 
 
-echo "---Check if the backport-branch exists"
+echo "--- Check if the backport-branch exists"
 if branchExist "$BACKPORT_BRANCH_NAME"; then
   MSG="The backport branch: **$BACKPORT_BRANCH_NAME** is already created. Not updating contents of the branch."
-  buildkite-agent annotate "$MSG" --style "warning"
+  annotate_and_echo "warning" "$MSG"
+  # Set meta-data so the notify step can distinguish this success case
+  # (branch pre-existed) from a branch that was freshly created.
+  buildkite-agent meta-data set BRANCH_ALREADY_EXISTED true
   exit 0
-fi
-
-# Currently, backport branches must follow the expected format.
-if [[ "${BACKPORT_BRANCH_NAME}" != "${EXPECTED_BACKPORT_BRANCH_NAME}" ]]; then
-  MSG="The backport branch name **${BACKPORT_BRANCH_NAME}** does not match the expected name **${EXPECTED_BACKPORT_BRANCH_NAME}**"
-  buildkite-agent annotate "$MSG" --style "error"
-  exit 1
 fi
 
 # backport branch does not exist, running checks and create branch
 version="$(git show "${BASE_COMMIT}":"${PACKAGE_PATH}/manifest.yml" | yq -r .version)"
 echo "--- Check if version from ${BASE_COMMIT} (${version}) matches with version from input step ${PACKAGE_VERSION}"
 if [[ "${version}" != "${PACKAGE_VERSION}" ]]; then
-  buildkite-agent annotate "Unexpected version found in ${PACKAGE_PATH}/manifest.yml" --style "error"
+  annotate_and_echo "error" "Unexpected version found in ${PACKAGE_PATH}/manifest.yml"
   exit 1
 fi
 
 echo "---Check that this changeset is the one creating the version $PACKAGE_NAME"
 if ! git show -p "${BASE_COMMIT}" "${PACKAGE_PATH}/manifest.yml" | grep -E "^\+version: \"{0,1}${PACKAGE_VERSION}" ; then
-  buildkite-agent annotate "This changeset does not create the version ${PACKAGE_VERSION}" --style "error"
+  annotate_and_echo "error" "This changeset does not create the version ${PACKAGE_VERSION}"
   exit 1
 fi
 
@@ -350,4 +353,4 @@ updateBackportBranchContents
 if [ "${DRY_RUN}" == "true" ]; then
   MSG="[DRY_RUN] ${MSG}."
 fi
-buildkite-agent annotate "$MSG" --style "success"
+annotate_and_echo "success" "$MSG"

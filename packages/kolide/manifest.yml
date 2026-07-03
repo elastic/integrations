@@ -1,0 +1,127 @@
+format_version: "3.4.2"
+name: kolide
+title: "Kolide"
+version: "0.1.1"
+source:
+  license: "Elastic-2.0"
+description: "Collect logs from Kolide (by 1Password) Device Trust with Elastic Agent."
+type: integration
+categories:
+  - security
+  - iam
+conditions:
+  kibana:
+    version: "^8.19.0 || ^9.1.0"
+icons:
+  - src: /img/kolide-logo.svg
+    title: Kolide logo
+    size: 32x32
+    type: image/svg+xml
+screenshots:
+  - src: /img/kolide-overview.png
+    title: Kolide Overview
+    size: 600x600
+    type: image/png
+policy_templates:
+  - name: kolide
+    title: Kolide logs
+    description: Collect logs from Kolide via webhooks (HTTP endpoint) and the REST API.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: security
+        division: engineering
+        team: integration-experience
+    inputs:
+      - type: http_endpoint
+        title: Collect Kolide logs via webhooks
+        description: Collect Kolide events pushed to an HTTP endpoint (webhooks).
+      - type: cel
+        title: Collect Kolide logs via the REST API
+        description: Collect Kolide events by polling the Kolide REST API.
+        vars:
+          - name: url
+            type: text
+            title: URL
+            description: The base URL of the Kolide REST API.
+            required: true
+            show_user: true
+            default: https://api.kolide.com
+          - name: api_key
+            type: password
+            title: API Key
+            description: >-
+              Kolide API key used as a Bearer token. Create one in the Kolide console under Settings → Developers → API Keys. The value has the form `k2sk_v1_`.
+            required: true
+            secret: true
+            show_user: true
+      - type: aws-s3
+        title: Collect Kolide Log Pipeline data from AWS S3
+        description: >-
+          Collect Kolide Log Pipeline data (authentication logs, audit logs, and device check-run results) that Kolide writes to a customer-owned S3 bucket, via direct bucket polling or SQS notifications.
+        vars:
+          - name: shared_credential_file
+            type: text
+            title: Shared Credential File
+            description: Directory of the shared credentials file used to read AWS credentials.
+            required: false
+            show_user: false
+          - name: credential_profile_name
+            type: text
+            title: Credential Profile Name
+            description: The profile name in the shared credentials file used to read AWS credentials.
+            required: false
+            show_user: false
+          - name: access_key_id
+            type: password
+            title: Access Key ID
+            description: The AWS access key ID the Elastic Agent uses to read from the bucket/queue.
+            secret: true
+            required: false
+            show_user: true
+          - name: secret_access_key
+            type: password
+            title: Secret Access Key
+            description: The AWS secret access key the Elastic Agent uses to read from the bucket/queue.
+            secret: true
+            required: false
+            show_user: true
+          - name: session_token
+            type: password
+            title: Session Token
+            description: The AWS session token for temporary (STS) credentials.
+            secret: true
+            required: false
+            show_user: true
+          - name: role_arn
+            type: text
+            title: Role ARN
+            description: The IAM role ARN the Elastic Agent assumes to read the bucket/queue (for example, for cross-account access).
+            required: false
+            show_user: false
+          - name: endpoint
+            type: text
+            title: Endpoint
+            description: URL of the entry point for an AWS web service. Leave empty to use the default AWS endpoints.
+            required: false
+            show_user: false
+            default: ""
+          - name: default_region
+            type: text
+            title: Default AWS Region
+            description: Default region to use before connecting to region-specific services if no region is set from the environment, credentials, or instance profile.
+            required: false
+            show_user: false
+            default: ""
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy AWS API connections, in the form of `http[s]://<user>:<password>@<server name/ip>:<port>`.
+            required: false
+            show_user: false
+owner:
+  github: elastic/integration-experience
+  type: elastic

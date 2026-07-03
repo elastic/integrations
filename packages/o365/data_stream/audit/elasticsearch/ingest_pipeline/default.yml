@@ -1589,26 +1589,43 @@ processors:
   - script:
       tag: script_item_attachments
       if: ctx.o365audit?.Item?.Attachments != null && ctx.o365audit.Item.Attachments != ''
-      description: Parse attachments from Item.Attachments.
+      description: >-
+        Parse attachments from Item.Attachments. Uses string operations instead of
+        a regex to avoid hitting the Painless regex character limit on long filenames
+        that contain parentheses (e.g. versioned document names).
       source: |-
         ctx.email = ctx.email ?: [:];
         ctx.email.attachments = [];
-        
-        // Split semicolon-delimited attachment string into individual attachment entries
+
         def attachmentList = ctx.o365audit.Item.Attachments.splitOnToken(';');
-        
+
         for (def attachment : attachmentList) {
+          def att = attachment.trim();
+          if (att.isEmpty() || !att.endsWith(')')) continue;
+
+          // Find the size marker at the end: " (<digits>b)"
+          int lastSep = att.lastIndexOf(' (');
+          if (lastSep < 0) continue;
+
+          def maybeSize = att.substring(lastSep + 2, att.length() - 1);
+          if (!maybeSize.endsWith('b')) continue;
+
+          def sizeStr = maybeSize.substring(0, maybeSize.length() - 1);
+          long sizeVal;
+          try { sizeVal = Long.parseLong(sizeStr); } catch (Exception e) { continue; }
+
+          def filename = att.substring(0, lastSep).trim();
+          if (filename.isEmpty()) continue;
+
+          int dotIdx = filename.lastIndexOf('.');
+          if (dotIdx < 0) continue;
+
           def attachmentObj = [:];
-          
-          // Parse pattern: "filename.extension (sizeb)"
-          def matcher = /^(.+?)\.([^.]+)\s*\((\d+)b\)$/.matcher(attachment);
-          if (matcher.matches()) {
-            attachmentObj.file = [:];
-            attachmentObj.file.extension = matcher.group(2);
-            attachmentObj.file.name = matcher.group(1) + '.' + matcher.group(2);
-            attachmentObj.file.size = Long.parseLong(matcher.group(3));
-            ctx.email.attachments.add(attachmentObj);
-          } 
+          attachmentObj.file = [:];
+          attachmentObj.file.extension = filename.substring(dotIdx + 1);
+          attachmentObj.file.name = filename;
+          attachmentObj.file.size = sizeVal;
+          ctx.email.attachments.add(attachmentObj);
         }
       on_failure:
         - append:

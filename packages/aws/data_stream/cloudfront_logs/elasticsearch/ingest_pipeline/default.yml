@@ -3,78 +3,88 @@ description: "Pipeline for CloudFront standard access logs"
 
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_5c638872
       field: event.category
       value: ["web"]
   - append:
+      tag: append_event_type_8860cef4
       field: event.type
       value: ["access"]
   - set:
+      tag: set_cloud_provider_208bdd6b
       field: cloud.provider
       value: aws
   - rename:
+      tag: rename_message_to_event_original_c74b1d7e
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - drop:
+      tag: drop_0dd3bc87
       if: ctx.event?.original?.startsWith('#')
       description: "Drop if logline contains header(s), which startswith `#`"
   - csv:
+      tag: csv_event_original_f330f590
       description: Parse cloudfront csv row
       field: event.original
       separator: "\t"
       target_fields:
-      - _tmp.date                                   # date
-      - _tmp.time                                   # time
-      - _tmp.x_edge_location                        # x-edge-location
-      - _tmp.sc_bytes                               # sc-bytes
-      - _tmp.c_ip                                   # c-ip
-      - _tmp.cs_method                              # cs-method
-      - _tmp.cs_host                                # cs(Host)
-      - _tmp.cs_uri_stem                            # cs-uri-stem
-      - _tmp.cs_status                              # cs-status
-      - _tmp.cs_referer                             # cs(Referer)
-      - _tmp.cs_user_agent                          # cs(User-Agent)
-      - _tmp.cs_uri_query                           # cs-uri-query
-      - _tmp.cs_cookie                              # cs(Cookie)
-      - _tmp.x_edge_result_type                     # x-edge-result-type
-      - _tmp.x_edge_request_id                      # x-edge-request-id
-      - _tmp.x_host_header                          # x-host-header
-      - _tmp.cs_protocol                            # cs-protocol
-      - _tmp.cs_bytes                               # cs-bytes
-      - _tmp.time_taken                             # time-taken
-      - _tmp.x_forwarded_for                        # x-forwarded-for
-      - _tmp.ssl_protocol                           # ssl-protocol
-      - _tmp.ssl_cipher                             # ssl-cipher
-      - _tmp.x_edge_response_result_type            # x-edge-response-result-type
-      - _tmp.cs_protocol_version                    # cs-protocol-version
-      - _tmp.fle_status                             # fle-status
-      - _tmp.fle_encrypted_fields                   # fle-encrypted-fields
-      - _tmp.c_port                                 # c-port
-      - _tmp.time_to_first_byte                     # time-to-first-byte
-      - _tmp.x_edge_detailed_result_type            # x-edge-detailed-result-type
-      - _tmp.sc_content_type                        # sc-content-type
-      - _tmp.sc_content_len                         # sc-content-len
-      - _tmp.sc_range_start                         # sc-range-start
-      - _tmp.sc_range_end                           # sc-range-end
+      - _tmp.date # date
+      - _tmp.time # time
+      - _tmp.x_edge_location # x-edge-location
+      - _tmp.sc_bytes # sc-bytes
+      - _tmp.c_ip # c-ip
+      - _tmp.cs_method # cs-method
+      - _tmp.cs_host # cs(Host)
+      - _tmp.cs_uri_stem # cs-uri-stem
+      - _tmp.cs_status # cs-status
+      - _tmp.cs_referer # cs(Referer)
+      - _tmp.cs_user_agent # cs(User-Agent)
+      - _tmp.cs_uri_query # cs-uri-query
+      - _tmp.cs_cookie # cs(Cookie)
+      - _tmp.x_edge_result_type # x-edge-result-type
+      - _tmp.x_edge_request_id # x-edge-request-id
+      - _tmp.x_host_header # x-host-header
+      - _tmp.cs_protocol # cs-protocol
+      - _tmp.cs_bytes # cs-bytes
+      - _tmp.time_taken # time-taken
+      - _tmp.x_forwarded_for # x-forwarded-for
+      - _tmp.ssl_protocol # ssl-protocol
+      - _tmp.ssl_cipher # ssl-cipher
+      - _tmp.x_edge_response_result_type # x-edge-response-result-type
+      - _tmp.cs_protocol_version # cs-protocol-version
+      - _tmp.fle_status # fle-status
+      - _tmp.fle_encrypted_fields # fle-encrypted-fields
+      - _tmp.c_port # c-port
+      - _tmp.time_to_first_byte # time-to-first-byte
+      - _tmp.x_edge_detailed_result_type # x-edge-detailed-result-type
+      - _tmp.sc_content_type # sc-content-type
+      - _tmp.sc_content_len # sc-content-len
+      - _tmp.sc_range_start # sc-range-start
+      - _tmp.sc_range_end # sc-range-end
 
   ### CSV fields ###################################################################################
 
   # date
   # time
   - script:
+      tag: script_f139af51
       description: timestamp composed of date and time. Script processor performs better than equivalent set processor.
       lang: painless
       source: >-
@@ -82,6 +92,7 @@ processors:
       if: ctx._tmp?.date != null && ctx._tmp?.time != null
 
   - date:
+      tag: date__tmp_timestamp_to_timestamp_8b2cfb0e
       field: _tmp.timestamp
       target_field: '@timestamp'
       ignore_failure: true
@@ -91,117 +102,140 @@ processors:
       if: ctx._tmp?.timestamp != null
   # x-edge-location
   - rename:
+      tag: rename__tmp_x_edge_location_to_aws_cloudfront_edge_location_1f77194c
       field: _tmp.x_edge_location
       target_field: aws.cloudfront.edge_location
       ignore_missing: true
   # sc-bytes
   - convert:
+      tag: convert__tmp_sc_bytes_to_http_response_bytes_42e8e3b3
       field: _tmp.sc_bytes
       target_field: http.response.bytes
       type: long
       ignore_missing: true
   # c-ip
   - rename:
+      tag: rename__tmp_c_ip_to_source_address_6a7d61c6
       field: _tmp.c_ip
       target_field: source.address
       ignore_missing: true
   - convert:
+      tag: convert_source_address_to_source_ip_f5632a20
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_related_ip_a6980940
       field: related.ip
       value: "{{{ source.ip }}}"
       if: ctx.source?.ip != null
   # cs-method
   - rename:
+      tag: rename__tmp_cs_method_to_http_request_method_527978d4
       field: _tmp.cs_method
       target_field: http.request.method
       ignore_missing: true
   # cs-host
   - rename:
+      tag: rename__tmp_cs_host_to_aws_cloudfront_domain_86134746
       field: _tmp.cs_host
       target_field: aws.cloudfront.domain
       ignore_missing: true
   - append:
+      tag: append_related_hosts_fb3a071a
       field: related.hosts
       value: "{{{ aws.cloudfront.domain }}}"
       allow_duplicates: false
       if: ctx.aws?.cloudfront?.domain != null
   # cs-uri-stem
   - rename:
+      tag: rename__tmp_cs_uri_stem_to_url_path_ece26d29
       field: _tmp.cs_uri_stem
       target_field: url.path
       ignore_missing: true
   # cs-status
   - convert:
+      tag: convert__tmp_cs_status_to_http_response_status_code_e24d2c27
       field: _tmp.cs_status
       target_field: http.response.status_code
       type: long
       ignore_missing: true
   # cs-referer
   - rename:
+      tag: rename__tmp_cs_referer_to_http_request_referrer_2c2fbcde
       field: _tmp.cs_referer
       target_field: http.request.referrer
       ignore_missing: true
       if: ctx._tmp?.cs_referer != null && ctx._tmp.cs_referer != '-'
   # cs(User-Agent)
   - urldecode:
+      tag: urldecode__tmp_cs_user_agent_9d900b49
       field: _tmp.cs_user_agent
       ignore_missing: true
   - user_agent:
+      tag: user_agent__tmp_cs_user_agent_to_user_agent_e7a89250
       field: _tmp.cs_user_agent
       target_field: user_agent
       ignore_missing: true
   # cs-uri-query
   - rename:
+      tag: rename__tmp_cs_uri_query_to_url_query_da8b8986
       field: _tmp.cs_uri_query
       target_field: url.query
       if: ctx._tmp?.cs_uri_query != null && ctx._tmp.cs_uri_query != '-'
   # cs(Cookie)
   - rename:
+      tag: rename__tmp_cs_cookie_to_aws_cloudfront_cookies_acec7028
       field: _tmp.cs_cookie
       target_field: aws.cloudfront.cookies
       if: ctx._tmp?.cs_cookie != null && ctx._tmp.cs_cookie != '-'
   # x-edge-result-type
   - rename:
+      tag: rename__tmp_x_edge_result_type_to_aws_cloudfront_edge_result_type_638df050
       field: _tmp.x_edge_result_type
       target_field: aws.cloudfront.edge_result_type
       ignore_missing: true
   # x-edge-request-id
   - rename:
+      tag: rename__tmp_x_edge_request_id_to_http_request_id_32bab328
       field: _tmp.x_edge_request_id
       target_field: http.request.id
       ignore_missing: true
   # x-host-header
   - rename:
+      tag: rename__tmp_x_host_header_to_destination_address_fd283543
       field: _tmp.x_host_header
       target_field: destination.address
       ignore_missing: true
   - set:
+      tag: set_destination_domain_f8666391
       field: destination.domain
       copy_from: destination.address
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_c7da3247
       field: related.hosts
       value: "{{{ destination.domain }}}"
       allow_duplicates: false
       if: ctx.destination?.domain != null
   # cs-protocol
   - rename:
+      tag: rename__tmp_cs_protocol_to_network_protocol_ff9f9715
       field: _tmp.cs_protocol
       target_field: network.protocol
       ignore_missing: true
   # cs-bytes
   - convert:
+      tag: convert__tmp_cs_bytes_to_http_request_bytes_f11e63d7
       field: _tmp.cs_bytes
       target_field: http.request.bytes
       type: long
       ignore_missing: true
   # time-taken
   - script:
+      tag: script_23aaa173
       lang: painless
       if: ctx._tmp?.time_taken != null
       params:
@@ -210,19 +244,22 @@ processors:
         ctx.event.duration = (Long)(Float.parseFloat(ctx._tmp.time_taken) * params.S_TO_NS);
   # x-forwarded-for
   - split:
+      tag: split__tmp_x_forwarded_for_to__tmp_split_x_forwarded_for_1e5bcf9f
       field: _tmp.x_forwarded_for
       separator: ","
       target_field: _tmp.split_x_forwarded_for
       if: ctx._tmp?.x_forwarded_for != null && ctx._tmp.x_forwarded_for != '-'
   - script:
+      tag: script_b5f7a689
       lang: painless
-      description: trim leading and trailing whitespace from the split IPs 
+      description: trim leading and trailing whitespace from the split IPs
       if: ctx._tmp?.split_x_forwarded_for != null
       source: |
         for (int i = 0; i < ctx._tmp.split_x_forwarded_for.length; i++) {
           ctx._tmp.split_x_forwarded_for[i] = ctx._tmp.split_x_forwarded_for[i].trim();
         }
   - foreach:
+      tag: foreach__tmp_split_x_forwarded_for_da3a40fc
       field: _tmp.split_x_forwarded_for
       if: ctx._tmp.split_x_forwarded_for instanceof List
       processor:
@@ -231,10 +268,12 @@ processors:
           tag: pipeline_process_ip
           ignore_missing_pipeline: true
   - append:
+      tag: append_error_message_ef8b6636
       field: error.message
       value: "Invalid IP addresses: {{_tmp.invalid_ips}}"
       if: ctx._tmp.invalid_ips != null
   - script:
+      tag: script_608e808f
       lang: painless
       description: Handle 'localhost' edge case, currently not handled via grok
       if: ctx._tmp?.split_x_forwarded_for != null && ctx._tmp.split_x_forwarded_for != '-'
@@ -252,6 +291,7 @@ processors:
             }
           }
   - foreach:
+      tag: foreach_network_forwarded_ip_1b3ce008
       field: network.forwarded_ip
       processor:
         append:
@@ -260,6 +300,7 @@ processors:
       ignore_missing: true
   # ssl-protocol
   - grok:
+      tag: grok__tmp_ssl_protocol_6d96558a
       field: _tmp.ssl_protocol
       patterns:
         - '(-|%{TLS:tls.version_protocol}v%{NUMBER:tls.version})'
@@ -267,64 +308,70 @@ processors:
         TLS: '(TLS|SSL)'
       ignore_missing: true
   - lowercase:
+      tag: lowercase_tls_version_protocol_b840a1f9
       field: tls.version_protocol
       ignore_missing: true
   # ssl-cipher
   - rename:
+      tag: rename__tmp_ssl_cipher_to_tls_cipher_8b9f4aff
       field: _tmp.ssl_cipher
       target_field: tls.cipher
       ignore_missing: true
       if: ctx._tmp?.ssl_cipher != null && ctx._tmp?.ssl_cipher != '-'
   # x-edge-response-result-type
   - rename:
-      field: _tmp.x_edge_response_result_type
-      target_field: aws.cloudfront.edge_response_result_type
-      ignore_missing: true
-  # x-edge-response-result-type
-  - rename:
+      tag: rename__tmp_x_edge_response_result_type_to_aws_cloudfront_edge_response_result_type_76796664
       field: _tmp.x_edge_response_result_type
       target_field: aws.cloudfront.edge_response_result_type
       ignore_missing: true
   # cs-protocol-version
   - dissect:
+      tag: dissect__tmp_cs_protocol_version_2633f435
       field: _tmp.cs_protocol_version
       pattern: "%{}/%{http.version}"
       ignore_missing: true
       ignore_failure: true
   # fle-status
   - rename:
+      tag: rename__tmp_fle_status_to_aws_cloudfront_fle_status_7cb39258
       field: _tmp.fle_status
       target_field: aws.cloudfront.fle_status
       if: ctx._tmp?.fle_status != null && ctx._tmp.fle_status != '-'
   # fle-encrypted-fields
   - rename:
+      tag: rename__tmp_fle_encrypted_fields_to_aws_cloudfront_fle_encrypted_fields_25e8676c
       field: _tmp.fle_encrypted_fields
       target_field: aws.cloudfront.fle_encrypted_fields
       if: ctx._tmp?.encrypted_fields != null && ctx._tmp.encrypted_fields != '-'
   # c-port
   - convert:
+      tag: convert__tmp_c_port_to_source_port_0b224af5
       field: _tmp.c_port
       target_field: source.port
       type: long
       if: ctx._tmp?.c_port != null && ctx._tmp.c_port != '-'
   # time-to-first-byte
   - convert:
+      tag: convert__tmp_time_to_first_byte_to_aws_cloudfront_time_to_first_byte_1a90d30d
       field: _tmp.time_to_first_byte
       target_field: aws.cloudfront.time_to_first_byte
       type: float
       if: ctx._tmp?.time_to_first_byte != null && ctx._tmp.time_to_first_byte != '-'
   # x-edge-detailed-result-type
   - rename:
+      tag: rename__tmp_x_edge_detailed_result_type_to_aws_cloudfront_edge_detailed_result_type_04ed32f3
       field: _tmp.x_edge_detailed_result_type
       target_field: aws.cloudfront.edge_detailed_result_type
       if: ctx._tmp?.x_edge_detailed_result_type != null && ctx._tmp.x_edge_detailed_result_type != '-'
   # sc-content-type
   - rename:
+      tag: rename__tmp_sc_content_type_to_http_response_mime_type_e53420cb
       field: _tmp.sc_content_type
       target_field: http.response.mime_type
       ignore_missing: true
   # sc-content-len
   - convert:
+      tag: convert__tmp_sc_content_len_to_http_response_body_bytes_3ab14d13
       field: _tmp.sc_content_len
       target_field: http.response.body.bytes
       type: long
@@ -332,6 +379,7 @@ processors:
       if: ctx._tmp?.sc_content_len != null && ctx._tmp.sc_content_len != '-'
   # sc-range-start
   - convert:
+      tag: convert__tmp_sc_range_start_to_aws_cloudfront_range_start_6c8b753b
       field: _tmp.sc_range_start
       target_field: aws.cloudfront.range_start
       type: long
@@ -339,16 +387,17 @@ processors:
       if: ctx._tmp?.sc_range_start != null && ctx._tmp.sc_range_start != '-'
   # sc-range-end
   - convert:
+      tag: convert__tmp_sc_range_end_to_aws_cloudfront_range_end_0b335fad
       field: _tmp.sc_range_end
       target_field: aws.cloudfront.range_end
       type: long
       ignore_missing: true
       if: ctx._tmp?.sc_range_end != null && ctx._tmp.sc_range_end != '-'
 
-
-### Additional fields ##############################################################################
+  ### Additional fields ##############################################################################
   # url
   - script:
+      tag: script_4558c244
       lang: painless
       description: This script builds the `url.full` field out of the available `url.*` parts.
       source: |
@@ -369,34 +418,41 @@ processors:
             ctx._tmp.url_full = full
         }
   - uri_parts:
+      tag: uri_parts__tmp_url_full_to_url_42a2ff23
       field: _tmp.url_full
       target_field: url
       keep_original: false
       ignore_missing: true
   - rename:
+      tag: rename__tmp_url_full_to_url_full_19094d63
       field: _tmp.url_full
       target_field: url.full
       ignore_missing: true
   - registered_domain:
+      tag: registered_domain_url_domain_to_url_ca99c8cd
       field: url.domain
       target_field: url
       ignore_missing: true
   # Network type
   - set:
+      tag: set_network_type_70901334
       field: network.type
       value: ipv4
       if: ctx.source?.ip != null && ctx.source.ip.contains('.')
   - set:
+      tag: set_network_type_9631521e
       field: network.type
       value: ipv6
       if: ctx.source?.ip != null && ctx.source.ip.contains(':')
   # IP Geolocation Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -405,33 +461,40 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   # event.id
   - set:
+      tag: set_event_id_958971ee
       field: event.id
       copy_from: http.request.id
       ignore_empty_value: true
   # event.outcome
   - set:
+      tag: set_event_outcome_98d2c715
       field: event.outcome
       value: failure
       if: ctx.http?.response?.status_code >= 400
   - set:
+      tag: set_event_outcome_f1ee170a
       field: event.outcome
       value: success
       if: ctx.http?.response?.status_code < 400 && ctx.http?.response?.status_code > 000
   - set:
+      tag: set_event_outcome_d22bf5c9
       field: event.outcome
       value: failure
       if: ctx.http?.response?.status_code == 000
   # cleanup
   - remove:
+      tag: remove__tmp_cc7d8d90
       field: _tmp
       ignore_missing: true
 on_failure:
@@ -441,6 +504,6 @@ on_failure:
   - append:
       field: error.message
       value: >-
-        Processor '{{ _ingest.on_failure_processor_type }}'
-        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
-        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

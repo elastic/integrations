@@ -1,10 +1,10 @@
 format_version: 3.5.0
 name: aws_cloudwatch_input_otel
-title: "AWS CloudWatch OpenTelemetry Input Package"
-version: 0.3.0
+title: "AWS CloudWatch (OpenTelemetry)"
+version: 0.4.0
 source:
   license: "Elastic-2.0"
-description: "Collect AWS CloudWatch metrics for selected AWS services (EC2, RDS, SQS, ELB, Lambda, Fargate) using the OpenTelemetry Collector awscloudwatchmetrics receiver."
+description: "Collect AWS CloudWatch metrics for selected AWS services (EC2, RDS, SQS, ELB, Lambda, Fargate) using the OpenTelemetry Collector awscloudwatch receiver."
 type: input
 categories:
   - aws
@@ -75,6 +75,11 @@ policy_templates:
     description: Collect AWS/EC2 CloudWatch metrics.
     input: otelcol
     template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_ec2.svg
+        title: AWS EC2 logo
+        size: 32x32
+        type: image/svg+xml
     deployment_modes: &deployment_modes
       default:
         enabled: true
@@ -118,7 +123,7 @@ policy_templates:
         type: duration
         title: Delay
         description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
-        default: 15m
+        default: 5m
         required: false
         show_user: false
       # required: true to fetch metrics appropriately as the metrics only needed is fetched.
@@ -130,6 +135,7 @@ policy_templates:
         default:
           - Average
           - Sum
+          - Maximum
         required: true
         show_user: false
 
@@ -139,6 +145,11 @@ policy_templates:
     description: Collect AWS/Lambda CloudWatch metrics.
     input: otelcol
     template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_lambda.svg
+        title: AWS Lambda logo
+        size: 32x32
+        type: image/svg+xml
     deployment_modes: *deployment_modes
     vars:
       - name: namespace
@@ -159,21 +170,21 @@ policy_templates:
         type: duration
         title: Collection Interval
         description: How often the receiver polls CloudWatch.
-        default: 5m
+        default: 1m
         required: false
         show_user: false
       - name: period
         type: duration
         title: Period
         description: CloudWatch aggregation window. Must match the metric resolution.
-        default: 5m
+        default: 1m
         required: false
         show_user: true
       - name: delay
         type: duration
         title: Delay
         description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
-        default: 10m
+        default: 5m
         required: false
         show_user: false
       - name: autodiscover_aggregation
@@ -194,6 +205,11 @@ policy_templates:
     description: Collect AWS/RDS CloudWatch metrics.
     input: otelcol
     template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_rds.svg
+        title: AWS RDS logo
+        size: 32x32
+        type: image/svg+xml
     deployment_modes: *deployment_modes
     vars:
       - name: namespace
@@ -228,7 +244,7 @@ policy_templates:
         type: duration
         title: Delay
         description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
-        default: 10m
+        default: 5m
         required: false
         show_user: false
       - name: autodiscover_aggregation
@@ -238,6 +254,7 @@ policy_templates:
         description: CloudWatch statistics applied to every discovered metric for this namespace.
         default:
           - Average
+          - Maximum
         required: true
         show_user: false
 
@@ -247,6 +264,11 @@ policy_templates:
     description: Collect AWS/SQS CloudWatch metrics.
     input: otelcol
     template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_sqs.svg
+        title: AWS SQS logo
+        size: 32x32
+        type: image/svg+xml
     deployment_modes: *deployment_modes
     vars:
       - name: namespace
@@ -267,21 +289,21 @@ policy_templates:
         type: duration
         title: Collection Interval
         description: How often the receiver polls CloudWatch.
-        default: 5m
+        default: 1m
         required: false
         show_user: false
       - name: period
         type: duration
         title: Period
         description: CloudWatch aggregation window. Must match the metric resolution.
-        default: 5m
+        default: 1m
         required: false
         show_user: true
       - name: delay
         type: duration
         title: Delay
         description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
-        default: 10m
+        default: 5m
         required: false
         show_user: false
       - name: autodiscover_aggregation
@@ -291,7 +313,6 @@ policy_templates:
         description: CloudWatch statistics applied to every discovered metric for this namespace.
         default:
           - Maximum
-          - Average
           - Sum
         required: true
         show_user: false
@@ -302,6 +323,11 @@ policy_templates:
     description: Collect AWS/ApplicationELB CloudWatch metrics.
     input: otelcol
     template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_elb.svg
+        title: AWS ELB logo
+        size: 32x32
+        type: image/svg+xml
     deployment_modes: *deployment_modes
     vars:
       - name: namespace
@@ -357,6 +383,11 @@ policy_templates:
     description: Collect AWS/ECS CloudWatch metrics.
     input: otelcol
     template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_ecs.svg
+        title: AWS ECS logo
+        size: 32x32
+        type: image/svg+xml
     deployment_modes: *deployment_modes
     vars:
       - name: namespace
@@ -377,21 +408,21 @@ policy_templates:
         type: duration
         title: Collection Interval
         description: How often the receiver polls CloudWatch.
-        default: 5m
+        default: 1m
         required: false
         show_user: false
       - name: period
         type: duration
         title: Period
         description: CloudWatch aggregation window. Must match the metric resolution.
-        default: 5m
+        default: 1m
         required: false
         show_user: true
       - name: delay
         type: duration
         title: Delay
         description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
-        default: 10m
+        default: 5m
         required: false
         show_user: false
       - name: autodiscover_aggregation
@@ -401,6 +432,8 @@ policy_templates:
         description: CloudWatch statistics applied to every discovered metric for this namespace.
         default:
           - Average
+          - Maximum
+          - Sum
         required: true
         show_user: false
 

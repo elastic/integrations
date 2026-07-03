@@ -1,0 +1,600 @@
+dashboards:
+  - id: azure_gateway_otel-overview
+    name: '[Azure Application Gateway OTel] Overview'
+    description: >-
+      Traffic, status, latency and top entities (hosts, URLs, clients) for an Azure Application
+      Gateway, based on ApplicationGatewayAccessLog records emitted by the Azure encoding
+      extension.
+
+    time_range:
+      from: now-24h
+      to: now
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: data_stream.dataset
+        equals: azure.application_gateway.otel
+      - field: attributes.azure.category
+        equals: ApplicationGatewayAccessLog
+
+    controls:
+      - type: options
+        label: Gateway
+        data_view: logs-*
+        field: resource.attributes.cloud.resource_id
+      - type: options
+        label: Instance
+        data_view: logs-*
+        field: resource.attributes.service.instance.id
+      - type: options
+        label: Listener
+        data_view: logs-*
+        field: attributes.azure.agw.listener.name
+      - type: options
+        label: Backend Pool
+        data_view: logs-*
+        field: attributes.azure.agw.backend.pool.name
+
+    panels:
+      # ─── Navigation ─────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: azure_gateway_otel-overview
+              with_filters: false
+            - label: WAF
+              dashboard: azure_gateway_otel-waf
+              with_filters: false
+            - label: Backend Health
+              dashboard: azure_gateway_otel-backend-health
+              with_filters: false
+
+      # ─── Dashboard Overview Panel + KPIs ────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Azure Application Gateway OTel] Overview
+
+            This dashboard summarises Application Gateway traffic from
+            `ApplicationGatewayAccessLog` records:
+            - Request volume and per-instance load balance
+            - HTTP status mix (2xx / 4xx / 5xx) over time
+            - Request and backend latency percentiles (p50/p95/p99)
+            - Top hosts, URL paths and clients
+            - Gateway-side error categorisation (`error.type`)
+            - Per-listener / per-rule / per-pool request and error breakdowns
+
+      - title: Total Requests
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS total = COUNT(*)
+          primary:
+            field: total
+            label: Total Requests
+            format:
+              type: number
+              compact: true
+
+      - title: Error Rate
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS total = COUNT(*), errors = COUNT(*) WHERE attributes.http.response.status_code >= 400
+            - EVAL error_rate = TO_DOUBLE(errors) / TO_DOUBLE(total)
+          primary:
+            field: error_rate
+            label: Error Rate
+            format:
+              type: percent
+              decimals: 2
+
+      - title: 5xx Rate
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS total = COUNT(*), srv_errors = COUNT(*) WHERE attributes.http.response.status_code >= 500
+            - EVAL srv_error_rate = TO_DOUBLE(srv_errors) / TO_DOUBLE(total)
+          primary:
+            field: srv_error_rate
+            label: 5xx Rate
+            format:
+              type: percent
+              decimals: 2
+
+      - title: p95 Request Duration
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS p95_s = PERCENTILE(attributes.azure.request.duration, 95.0)
+            - EVAL p95_ms = p95_s * 1000
+          primary:
+            field: p95_ms
+            label: p95 Duration
+            format:
+              type: number
+              decimals: 1
+              suffix: " ms"
+
+      - title: p99 Request Duration
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS p99_s = PERCENTILE(attributes.azure.request.duration, 99.0)
+            - EVAL p99_ms = p99_s * 1000
+          primary:
+            field: p99_ms
+            label: p99 Duration
+            format:
+              type: number
+              decimals: 1
+              suffix: " ms"
+
+      - title: Bytes Out
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS bytes_out = SUM(attributes.http.response.size)
+          primary:
+            field: bytes_out
+            label: Response Bytes
+            format:
+              type: bytes
+              compact: true
+
+      - title: Unique Clients
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS unique_clients = COUNT_DISTINCT(attributes.client.address)
+          primary:
+            field: unique_clients
+            label: Unique Clients
+            format:
+              type: number
+              compact: true
+
+      - title: Hosts Served
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS hosts = COUNT_DISTINCT(attributes.host.name)
+          primary:
+            field: hosts
+            label: Hosts Served
+            format:
+              type: number
+
+      # ─── Section: Traffic & Status ──────────────────────────────────
+      - title: Traffic & Status
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Traffic and Status'
+
+      - title: Requests by Status Class
+        description: Request volume bucketed over time, stacked by HTTP status class.
+        size: {w: 32, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - EVAL status_class = CASE(attributes.http.response.status_code >= 500, "5xx", attributes.http.response.status_code >= 400, "4xx", attributes.http.response.status_code >= 300, "3xx", attributes.http.response.status_code >= 200, "2xx", "1xx")
+            - STATS requests = COUNT(*) BY time_bucket = BUCKET(@timestamp, 30, ?_tstart, ?_tend), status_class
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: requests
+              label: Requests
+          breakdown:
+            field: status_class
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "2xx"
+                color: '#54B399'
+              - value: "3xx"
+                color: '#6092C0'
+              - value: "4xx"
+                color: '#D6BF57'
+              - value: "5xx"
+                color: '#CC5642'
+          legend:
+            visible: show
+            position: right
+
+      - title: Status Code Mix
+        description: Distribution of HTTP response codes returned to clients.
+        size: {w: 16, h: 12}
+        esql:
+          type: pie
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS count = COUNT(*) BY status = attributes.http.response.status_code
+            - SORT count DESC
+            - LIMIT 10
+          metrics:
+            - field: count
+          breakdowns:
+            - field: status
+              label: Status Code
+          appearance:
+            donut: medium
+          legend:
+            visible: show
+
+      # ─── Section: Latency ───────────────────────────────────────────
+      - title: Latency
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Latency'
+
+      - title: Request Duration Percentiles (ms)
+        description: p50, p95 and p99 of total request duration over time, in milliseconds.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.azure.request.duration IS NOT NULL
+            - STATS p50_s = PERCENTILE(attributes.azure.request.duration, 50.0), p95_s = PERCENTILE(attributes.azure.request.duration, 95.0), p99_s = PERCENTILE(attributes.azure.request.duration, 99.0) BY time_bucket = BUCKET(@timestamp, 30, ?_tstart, ?_tend)
+            - EVAL p50 = p50_s * 1000, p95 = p95_s * 1000, p99 = p99_s * 1000
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: p50
+              label: p50 (ms)
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: p95
+              label: p95 (ms)
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: p99
+              label: p99 (ms)
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+          legend:
+            visible: show
+            position: right
+
+      - title: Backend Latency Percentiles (ms)
+        description: p50, p95 and p99 of backend response latency over time, in milliseconds.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.azure.agw.backend.latency IS NOT NULL
+            - STATS p50_s = PERCENTILE(attributes.azure.agw.backend.latency, 50.0), p95_s = PERCENTILE(attributes.azure.agw.backend.latency, 95.0), p99_s = PERCENTILE(attributes.azure.agw.backend.latency, 99.0) BY time_bucket = BUCKET(@timestamp, 30, ?_tstart, ?_tend)
+            - EVAL p50 = p50_s * 1000, p95 = p95_s * 1000, p99 = p99_s * 1000
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: p50
+              label: p50 (ms)
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: p95
+              label: p95 (ms)
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: p99
+              label: p99 (ms)
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Top Entities ──────────────────────────────────────
+      - title: Top Entities
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Top Hosts, URLs and Clients'
+
+      - title: Top Hosts
+        size: {w: 16, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.host.name IS NOT NULL
+            - STATS `Requests` = COUNT(*), `Errors` = COUNT(*) WHERE attributes.http.response.status_code >= 400 BY `Host` = attributes.host.name
+            - SORT `Requests` DESC
+            - LIMIT 50
+          breakdowns:
+            - field: Host
+              label: Host
+          metrics:
+            - field: Requests
+              label: Requests
+            - field: Errors
+              label: Errors (4xx+5xx)
+
+      - title: Top URL Paths
+        size: {w: 16, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.url.path IS NOT NULL
+            - STATS `Requests` = COUNT(*), `p95 (ms)` = PERCENTILE(attributes.azure.request.duration, 95.0) * 1000, `Errors` = COUNT(*) WHERE attributes.http.response.status_code >= 400 BY `URL Path` = attributes.url.path
+            - SORT `Requests` DESC
+            - LIMIT 50
+          breakdowns:
+            - field: URL Path
+              label: URL Path
+          metrics:
+            - field: Requests
+              label: Requests
+            - field: p95 (ms)
+              label: p95 Duration
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: Errors
+              label: Errors
+
+      - title: Top Clients
+        size: {w: 16, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.client.address IS NOT NULL
+            - STATS `Requests` = COUNT(*), `Errors` = COUNT(*) WHERE attributes.http.response.status_code >= 400, `Bytes Out` = SUM(attributes.http.response.size) BY `Client` = attributes.client.address
+            - SORT `Requests` DESC
+            - LIMIT 50
+          breakdowns:
+            - field: Client
+              label: Client IP
+          metrics:
+            - field: Requests
+              label: Requests
+            - field: Errors
+              label: Errors
+            - field: Bytes Out
+              label: Bytes Out
+              format:
+                type: bytes
+                compact: true
+
+      # ─── Section: Routing Breakdowns ────────────────────────────────
+      - title: Routing
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Routing: Listener, Rule and Backend Pool'
+
+      - title: Requests by Listener
+        size: {w: 16, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.azure.agw.listener.name IS NOT NULL
+            - EVAL status_class = CASE(attributes.http.response.status_code >= 500, "5xx", attributes.http.response.status_code >= 400, "4xx", attributes.http.response.status_code >= 300, "3xx", attributes.http.response.status_code >= 200, "2xx", "1xx")
+            - STATS requests = COUNT(*) BY listener = attributes.azure.agw.listener.name, status_class
+            - SORT requests DESC
+            - LIMIT 50
+          dimension:
+            field: listener
+          metrics:
+            - field: requests
+              label: Requests
+          breakdown:
+            field: status_class
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "2xx"
+                color: '#54B399'
+              - value: "3xx"
+                color: '#6092C0'
+              - value: "4xx"
+                color: '#D6BF57'
+              - value: "5xx"
+                color: '#CC5642'
+          legend:
+            visible: show
+            position: bottom
+
+      - title: Requests by Rule
+        size: {w: 16, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.azure.agw.rule.name IS NOT NULL
+            - EVAL status_class = CASE(attributes.http.response.status_code >= 500, "5xx", attributes.http.response.status_code >= 400, "4xx", attributes.http.response.status_code >= 300, "3xx", attributes.http.response.status_code >= 200, "2xx", "1xx")
+            - STATS requests = COUNT(*) BY rule = attributes.azure.agw.rule.name, status_class
+            - SORT requests DESC
+            - LIMIT 50
+          dimension:
+            field: rule
+          metrics:
+            - field: requests
+              label: Requests
+          breakdown:
+            field: status_class
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "2xx"
+                color: '#54B399'
+              - value: "3xx"
+                color: '#6092C0'
+              - value: "4xx"
+                color: '#D6BF57'
+              - value: "5xx"
+                color: '#CC5642'
+          legend:
+            visible: show
+            position: bottom
+
+      - title: Requests by Backend Pool
+        size: {w: 16, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.azure.agw.backend.pool.name IS NOT NULL
+            - EVAL status_class = CASE(attributes.http.response.status_code >= 500, "5xx", attributes.http.response.status_code >= 400, "4xx", attributes.http.response.status_code >= 300, "3xx", attributes.http.response.status_code >= 200, "2xx", "1xx")
+            - STATS requests = COUNT(*) BY pool = attributes.azure.agw.backend.pool.name, status_class
+            - SORT requests DESC
+            - LIMIT 50
+          dimension:
+            field: pool
+          metrics:
+            - field: requests
+              label: Requests
+          breakdown:
+            field: status_class
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "2xx"
+                color: '#54B399'
+              - value: "3xx"
+                color: '#6092C0'
+              - value: "4xx"
+                color: '#D6BF57'
+              - value: "5xx"
+                color: '#CC5642'
+          legend:
+            visible: show
+            position: bottom
+
+      # ─── Section: Errors ────────────────────────────────────────────
+      - title: Errors
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Error Decomposition'
+
+      - title: Errors by Status Code Over Time
+        description: 4xx and 5xx response counts over time, broken down by status code.
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.http.response.status_code >= 400
+            - STATS errors = COUNT(*) BY time_bucket = BUCKET(@timestamp, 30, ?_tstart, ?_tend), status = attributes.http.response.status_code
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: errors
+              label: Errors
+          breakdown:
+            field: status
+          legend:
+            visible: show
+            position: right
+
+      - title: Gateway-Side Error Types
+        description: >-
+          Distribution of `error.type` codes reported by the gateway (Azure ERRORINFO_* values).
+          Excludes `ERRORINFO_NO_ERROR` to focus on actual failures.
+        size: {w: 24, h: 12}
+        esql:
+          type: pie
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.error.type IS NOT NULL
+            - WHERE attributes.error.type != "ERRORINFO_NO_ERROR"
+            - STATS count = COUNT(*) BY error_type = attributes.error.type
+            - SORT count DESC
+            - LIMIT 15
+          metrics:
+            - field: count
+          breakdowns:
+            - field: error_type
+              label: Error Type
+          appearance:
+            donut: medium
+          legend:
+            visible: show

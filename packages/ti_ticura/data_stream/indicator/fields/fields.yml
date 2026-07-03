@@ -1,0 +1,192 @@
+- name: ticura.indicator
+  type: group
+  description: Ticura-specific metadata enriching each indicator of compromise.
+  fields:
+    - name: uuid
+      type: keyword
+      description: Stable Ticura-assigned UUID for the indicator. Combined with `ticura.indicator.fingerprint` it forms the document `_id`, so an unchanged indicator re-exported is deduplicated (data stream `op_type=create` rejects the identical `_id`) while a content change ingests as a new version; the latest_indicator transform keeps the newest version per UUID.
+    - name: fingerprint
+      type: keyword
+      description: Content fingerprint (hash) of the indicator, supplied by Ticura. It changes whenever the indicator's content changes (and is stable across re-exports otherwise). Combined with `ticura.indicator.uuid` it forms the document `_id`, so content updates are ingested as new versions while unchanged re-exports are rejected as duplicates.
+    - name: main_type
+      type: keyword
+      description: High-level indicator type (IPV4, IPV6, DOMAIN, URL, HASH).
+    - name: sub_type
+      type: keyword
+      description: Specific indicator subtype (e.g., IPV4PORT, HASHSHA256, HASHMD5, DOMAIN, URL).
+    - name: confidence
+      type: long
+      description: Numeric Ticura confidence score (0-100).
+    - name: confidence_category
+      type: keyword
+      description: Categorical confidence label (e.g., low, medium, high).
+    - name: risk
+      type: long
+      description: Numeric Ticura risk score (0-100). Higher values indicate greater threat.
+    - name: risk_category
+      type: keyword
+      description: Categorical risk label (e.g., low, medium, high, critical).
+    - name: is_inbound
+      type: boolean
+      description: Whether this indicator represents an inbound-only threat direction.
+    - name: ages_out
+      type: date
+      description: Timestamp at which the indicator is scheduled to expire from active feeds.
+    - name: feed_ingest_timestamp
+      type: date
+      description: Ingest-time timestamp added when the document is processed by the pipeline.
+    - name: countries
+      type: keyword
+      description: List of country codes associated with the indicator (as provided by Ticura).
+    - name: industries
+      type: keyword
+      description: List of industries associated with the indicator (as provided by Ticura).
+    - name: actors
+      type: keyword
+      description: List of threat-actor identifiers associated with the indicator (as provided by Ticura).
+    - name: cve
+      type: keyword
+      description: List of CVE identifiers associated with the indicator.
+    - name: filter_cats
+      type: nested
+      description: Filter categorization metadata for the indicator.
+      fields:
+        - name: category
+          type: keyword
+          description: Filter category name.
+    - name: normalizations
+      type: group
+      description: Normalization metadata for the indicator score.
+      fields:
+        - name: feed
+          type: keyword
+          description: Feed identifier used in score normalization.
+        - name: measures
+          type: keyword
+          description: Normalization measures applied.
+    - name: technique
+      type: group
+      description: MITRE ATT&CK technique enrichment (Ticura-provided).
+      fields:
+        - name: id
+          type: keyword
+          description: MITRE technique ID (e.g., T1588).
+        - name: name
+          type: keyword
+          description: MITRE technique name.
+        - name: reference
+          type: keyword
+          description: MITRE technique reference URL.
+        - name: subtechnique
+          type: group
+          description: MITRE sub-technique.
+          fields:
+            - name: id
+              type: keyword
+              description: MITRE sub-technique ID (e.g., T1588.001).
+            - name: name
+              type: keyword
+              description: MITRE sub-technique name.
+            - name: reference
+              type: keyword
+              description: MITRE sub-technique reference URL.
+    - name: software
+      type: group
+      description: MITRE ATT&CK software/malware enrichment (Ticura-provided).
+      fields:
+        - name: id
+          type: keyword
+          description: MITRE software ID.
+        - name: name
+          type: keyword
+          description: MITRE software name.
+        - name: alias
+          type: keyword
+          description: Known software aliases.
+        - name: type
+          type: keyword
+          description: Software type classification.
+        - name: platforms
+          type: keyword
+          description: Platforms targeted by the software.
+        - name: reference
+          type: keyword
+          description: MITRE software reference URL.
+    - name: group
+      type: group
+      description: MITRE ATT&CK threat group enrichment (Ticura-provided).
+      fields:
+        - name: id
+          type: keyword
+          description: MITRE group ID.
+        - name: name
+          type: keyword
+          description: MITRE group name.
+        - name: reference
+          type: keyword
+          description: MITRE group reference URL.
+- name: ticura.indicator.merged
+  type: group
+  description: Merged enrichment metadata aggregated from both ticura.indicator.* and ticura.indicator.additional_info.*.
+  fields:
+    - name: countries
+      type: keyword
+      description: Deduplicated, sorted union of ticura.indicator.countries and ticura.indicator.additional_info.countries.
+    - name: industries
+      type: keyword
+      description: Deduplicated, sorted union of ticura.indicator.industries and ticura.indicator.additional_info.industries.
+    - name: actors
+      type: keyword
+      description: Deduplicated, sorted union of ticura.indicator.actors and ticura.indicator.additional_info.actors.
+- name: ticura.indicator.additional_info
+  type: group
+  description: Supplemental enrichment metadata provided by Ticura alongside the indicator.
+  fields:
+    - name: valid_from
+      type: date
+      description: Timestamp from which the indicator is considered valid.
+    - name: countries
+      type: keyword
+      description: List of country codes derived from supplemental enrichment.
+    - name: industries
+      type: keyword
+      description: List of industries derived from supplemental enrichment.
+    - name: actors
+      type: keyword
+      description: List of threat-actor identifiers derived from supplemental enrichment.
+    - name: cve
+      type: keyword
+      description: List of CVE identifiers derived from supplemental enrichment.
+    - name: threat_types
+      type: keyword
+      description: List of threat-type labels (e.g., "Command and Control Server", "Phishing").
+    - name: dns_first_seen
+      type: date
+      description: Earliest known DNS resolution timestamp for the indicator.
+    - name: dns_last_seen
+      type: date
+      description: Most recent known DNS resolution timestamp for the indicator.
+    - name: malware
+      type: group
+      description: Malware-family enrichment.
+      fields:
+        - name: name
+          type: keyword
+          description: Malware family name.
+    - name: online
+      type: group
+      description: Online-status enrichment.
+      fields:
+        - name: is_online
+          type: boolean
+          description: Whether the indicator was online at the last check.
+        - name: last_online
+          type: date
+          description: Most recent timestamp when the indicator was confirmed online.
+    - name: sinkhole
+      type: group
+      description: Sinkhole metadata for indicators routed to a sinkhole.
+      fields:
+        - name: owner
+          type: keyword
+          description: Owner of the sinkhole.

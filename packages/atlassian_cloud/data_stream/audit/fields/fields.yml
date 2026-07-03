@@ -1,0 +1,84 @@
+- name: atlassian_cloud.audit
+  type: group
+  description: Fields for Atlassian Cloud organization audit log events.
+  fields:
+    - name: actor
+      type: group
+      fields:
+        - name: auth
+          type: group
+          fields:
+            - name: auth_type
+              type: keyword
+              description: Authentication type for the actor (for example, session, container-token).
+            - name: token_id
+              type: keyword
+              description: Token identifier when authentication is token-based.
+            - name: token_label
+              type: keyword
+              description: Human-readable label for the token.
+        - name: on_behalf_of
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Delegated or impersonated user ID.
+            - name: name
+              type: keyword
+              description: Delegated or impersonated user display name.
+            - name: email
+              type: keyword
+              description: Delegated or impersonated user email.
+        - name: app
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: App or Connect app ID, or system actor identifier (for example, confluence).
+            - name: name
+              type: keyword
+              description: Display name for app or system actors when actor is not a human user.
+            - name: type
+              type: keyword
+              description: App type.
+            - name: attributes
+              type: flattened
+              description: App-specific attributes.
+    - name: context
+      type: nested
+      description: Context objects associated with the event.
+      fields:
+        - name: id
+          type: keyword
+          description: Context resource ID.
+        - name: type
+          type: keyword
+          description: Context resource type.
+        - name: attributes
+          type: flattened
+          description: Type-specific context attributes.
+    - name: container
+      type: nested
+      description: Container objects associated with the event.
+      fields:
+        - name: id
+          type: keyword
+          description: Container resource ID.
+        - name: type
+          type: keyword
+          description: Container resource type.
+        - name: attributes
+          type: flattened
+          description: Type-specific container attributes.
+    - name: location
+      type: group
+      fields:
+        - name: geo
+          type: keyword
+          description: Coarse geo label from Atlassian (for example, EU, NA).
+    - name: message
+      type: group
+      fields:
+        - name: format
+          type: keyword
+          description: Message format (for example, `simple`).
