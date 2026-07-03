@@ -1,6 +1,13 @@
 {
     "attributes": {
-        "description": "Query performance profiles collected by Elastic Agent osquery (scheduled query metrics from osquery_schedule and live query snapshots).",
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"fbc49a32-aff5-47bc-b47c-01532a0239bd\": {\"type\": \"optionsListControl\", \"order\": 0, \"grow\": true, \"width\": \"medium\", \"explicitInput\": {\"id\": \"fbc49a32-aff5-47bc-b47c-01532a0239bd\", \"fieldName\": \"osquery_profile.source\", \"title\": \"Source\", \"enhancements\": {}, \"selectedOptions\": [], \"exclude\": false, \"existsSelected\": false}}, \"c1a2476c-a99e-429e-b67c-6e778abc7110\": {\"type\": \"optionsListControl\", \"order\": 1, \"grow\": true, \"width\": \"medium\", \"explicitInput\": {\"id\": \"c1a2476c-a99e-429e-b67c-6e778abc7110\", \"fieldName\": \"query.name\", \"title\": \"Query\", \"enhancements\": {}, \"selectedOptions\": [], \"exclude\": false, \"existsSelected\": false}}, \"308976c7-5ca7-4d89-ab69-a593d4b85230\": {\"type\": \"optionsListControl\", \"order\": 2, \"grow\": true, \"width\": \"medium\", \"explicitInput\": {\"id\": \"308976c7-5ca7-4d89-ab69-a593d4b85230\", \"fieldName\": \"host.name\", \"title\": \"Host\", \"enhancements\": {}, \"selectedOptions\": [], \"exclude\": false, \"existsSelected\": false}}, \"15b3727b-0ace-499f-a1e3-1144fc2a4b21\": {\"type\": \"optionsListControl\", \"order\": 3, \"grow\": true, \"width\": \"medium\", \"explicitInput\": {\"id\": \"15b3727b-0ace-499f-a1e3-1144fc2a4b21\", \"fieldName\": \"action_data.query\", \"title\": \"Live query SQL\", \"enhancements\": {}, \"selectedOptions\": [], \"exclude\": false, \"existsSelected\": false}}}",
+            "showApplySelections": false
+        },
+        "description": "Query performance profiles collected by Elastic Agent osquery (scheduled, RRULE, and live). Break down by query, host, and profile source, and drill down to specific executions.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -58,7 +65,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Query profiles** show how expensive each osquery query is on the host. `scheduled` rows come from osquery's `osquery_schedule` performance table; `live` rows are process-level deltas captured around ad-hoc queries. Profiling is enabled by default; individual queries can opt out with `profiling: false`.",
+                            "markdown": "**Query profiles** show how expensive each osquery query is per host. `osquery_profile.source` distinguishes **scheduled** (native `osquery_schedule` metrics), **rrule** (RRULE-scheduled runs), and **live** (process deltas around ad-hoc queries). Each document is one profile sample. `duration`/`cpu_time` are in ms, `memory` in bytes, `utilization` in %. Use the tables to find the top queries and hosts, then click a value (or use the controls above) to drill down to a specific host, scheduled query, or live query. Profiling is on by default; queries can opt out with `profiling: false`.",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -68,12 +75,12 @@
                 },
                 "gridData": {
                     "h": 4,
-                    "i": "1c78d684-0395-4932-8095-a266df5413cb",
+                    "i": "cf6debc6-5db9-4e41-8287-69bf07ac6757",
                     "w": 48,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "1c78d684-0395-4932-8095-a266df5413cb",
+                "panelIndex": "cf6debc6-5db9-4e41-8287-69bf07ac6757",
                 "title": "About [Osquery Manager] Query Profiles",
                 "type": "visualization",
                 "version": "8.7.1"
@@ -84,7 +91,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-66323c56-af6c-4f46-9e3f-8871e90da036",
+                                "name": "indexpattern-datasource-layer-dc3bed63-566e-4b87-85dd-5ade5b35d950",
                                 "type": "index-pattern"
                             }
                         ],
@@ -93,16 +100,16 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "66323c56-af6c-4f46-9e3f-8871e90da036": {
+                                        "dc3bed63-566e-4b87-85dd-5ade5b35d950": {
                                             "columnOrder": [
-                                                "7eedda08-2d24-46c5-9f09-fc5612307ca0"
+                                                "0bf9416b-d138-4896-b201-5d0edd2b88bf"
                                             ],
                                             "columns": {
-                                                "7eedda08-2d24-46c5-9f09-fc5612307ca0": {
+                                                "0bf9416b-d138-4896-b201-5d0edd2b88bf": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Profiled events",
+                                                    "label": "Profiles",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -126,12 +133,12 @@
                             },
                             "visualization": {
                                 "color": "#6092C0",
-                                "layerId": "66323c56-af6c-4f46-9e3f-8871e90da036",
+                                "layerId": "dc3bed63-566e-4b87-85dd-5ade5b35d950",
                                 "layerType": "data",
-                                "metricAccessor": "7eedda08-2d24-46c5-9f09-fc5612307ca0"
+                                "metricAccessor": "0bf9416b-d138-4896-b201-5d0edd2b88bf"
                             }
                         },
-                        "title": "Profiled events",
+                        "title": "Profiles",
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
@@ -140,13 +147,13 @@
                 },
                 "gridData": {
                     "h": 6,
-                    "i": "7c9f52d8-2e79-4639-aa61-46490b122c8b",
+                    "i": "effac39f-4305-4198-979a-f661c3bbfada",
                     "w": 12,
                     "x": 0,
                     "y": 4
                 },
-                "panelIndex": "7c9f52d8-2e79-4639-aa61-46490b122c8b",
-                "title": "Profiled events",
+                "panelIndex": "effac39f-4305-4198-979a-f661c3bbfada",
+                "title": "Profiles",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -156,7 +163,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-a0fef13c-af6d-4ccf-9b2c-5e6606a051bb",
+                                "name": "indexpattern-datasource-layer-0c1093d1-07e4-46fc-83e3-894ed6756f44",
                                 "type": "index-pattern"
                             }
                         ],
@@ -165,12 +172,12 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "a0fef13c-af6d-4ccf-9b2c-5e6606a051bb": {
+                                        "0c1093d1-07e4-46fc-83e3-894ed6756f44": {
                                             "columnOrder": [
-                                                "5bbd42c5-4909-4284-8a8c-1429048ab670"
+                                                "60b26454-9bc3-4deb-a3d1-44fe0575fe95"
                                             ],
                                             "columns": {
-                                                "5bbd42c5-4909-4284-8a8c-1429048ab670": {
+                                                "60b26454-9bc3-4deb-a3d1-44fe0575fe95": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -180,7 +187,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "osquery_profile.query_name"
+                                                    "sourceField": "query.name"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -199,9 +206,9 @@
                             },
                             "visualization": {
                                 "color": "#6092C0",
-                                "layerId": "a0fef13c-af6d-4ccf-9b2c-5e6606a051bb",
+                                "layerId": "0c1093d1-07e4-46fc-83e3-894ed6756f44",
                                 "layerType": "data",
-                                "metricAccessor": "5bbd42c5-4909-4284-8a8c-1429048ab670"
+                                "metricAccessor": "60b26454-9bc3-4deb-a3d1-44fe0575fe95"
                             }
                         },
                         "title": "Queries profiled",
@@ -213,12 +220,12 @@
                 },
                 "gridData": {
                     "h": 6,
-                    "i": "71765b75-4e4a-4c37-aa1f-d4afde32963d",
+                    "i": "f9b283be-6c00-4fb8-a079-b20647ebeb84",
                     "w": 12,
                     "x": 12,
                     "y": 4
                 },
-                "panelIndex": "71765b75-4e4a-4c37-aa1f-d4afde32963d",
+                "panelIndex": "f9b283be-6c00-4fb8-a079-b20647ebeb84",
                 "title": "Queries profiled",
                 "type": "lens",
                 "version": "8.7.1"
@@ -229,7 +236,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-e1597571-e9c7-48eb-b979-8a9130ac1ec7",
+                                "name": "indexpattern-datasource-layer-eaebd949-91d0-40bc-a592-394898fdc744",
                                 "type": "index-pattern"
                             }
                         ],
@@ -238,12 +245,85 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "e1597571-e9c7-48eb-b979-8a9130ac1ec7": {
+                                        "eaebd949-91d0-40bc-a592-394898fdc744": {
                                             "columnOrder": [
-                                                "8ce4d828-5ff3-4bd9-a057-024e708c08cd"
+                                                "50b8cdb0-8218-4ccb-96bf-7ee18e932cef"
                                             ],
                                             "columns": {
-                                                "8ce4d828-5ff3-4bd9-a057-024e708c08cd": {
+                                                "50b8cdb0-8218-4ccb-96bf-7ee18e932cef": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Hosts reporting",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "host.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "eaebd949-91d0-40bc-a592-394898fdc744",
+                                "layerType": "data",
+                                "metricAccessor": "50b8cdb0-8218-4ccb-96bf-7ee18e932cef"
+                            }
+                        },
+                        "title": "Hosts reporting",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "6fbec561-667b-4a43-906b-4295d5ec49c5",
+                    "w": 12,
+                    "x": 24,
+                    "y": 4
+                },
+                "panelIndex": "6fbec561-667b-4a43-906b-4295d5ec49c5",
+                "title": "Hosts reporting",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-02bbf000-860d-46a3-8687-34ee08252f91",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "02bbf000-860d-46a3-8687-34ee08252f91": {
+                                            "columnOrder": [
+                                                "cc170b7d-9566-4448-bc96-5ad3473c6932"
+                                            ],
+                                            "columns": {
+                                                "cc170b7d-9566-4448-bc96-5ad3473c6932": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -272,9 +352,9 @@
                             },
                             "visualization": {
                                 "color": "#6092C0",
-                                "layerId": "e1597571-e9c7-48eb-b979-8a9130ac1ec7",
+                                "layerId": "02bbf000-860d-46a3-8687-34ee08252f91",
                                 "layerType": "data",
-                                "metricAccessor": "8ce4d828-5ff3-4bd9-a057-024e708c08cd"
+                                "metricAccessor": "cc170b7d-9566-4448-bc96-5ad3473c6932"
                             }
                         },
                         "title": "Average duration (ms)",
@@ -286,12 +366,12 @@
                 },
                 "gridData": {
                     "h": 6,
-                    "i": "83f49b1c-331b-4d78-8b7d-b22647e2033e",
+                    "i": "2691c6d2-d8c7-4926-a3f4-49af586baa94",
                     "w": 12,
-                    "x": 24,
+                    "x": 36,
                     "y": 4
                 },
-                "panelIndex": "83f49b1c-331b-4d78-8b7d-b22647e2033e",
+                "panelIndex": "2691c6d2-d8c7-4926-a3f4-49af586baa94",
                 "title": "Average duration (ms)",
                 "type": "lens",
                 "version": "8.7.1"
@@ -302,7 +382,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-970ead72-6362-41ca-af07-dc9b5c117dc1",
+                                "name": "indexpattern-datasource-layer-21e3e728-0526-476e-a411-21be0b5f193b",
                                 "type": "index-pattern"
                             }
                         ],
@@ -311,87 +391,26 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "970ead72-6362-41ca-af07-dc9b5c117dc1": {
+                                        "21e3e728-0526-476e-a411-21be0b5f193b": {
                                             "columnOrder": [
-                                                "26e472d7-99f3-45c7-b169-68324b6cbfe3"
+                                                "c6b05ca4-d368-4cad-a8dd-1995e23ce404",
+                                                "9920beff-8031-490c-92e0-38a6cb5297ed",
+                                                "42c42c61-a942-4436-a4c8-a069907ed8c1"
                                             ],
                                             "columns": {
-                                                "26e472d7-99f3-45c7-b169-68324b6cbfe3": {
+                                                "42c42c61-a942-4436-a4c8-a069907ed8c1": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Avg CPU utilization (%)",
+                                                    "label": "Avg duration (ms)",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "osquery_profile.utilization"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "970ead72-6362-41ca-af07-dc9b5c117dc1",
-                                "layerType": "data",
-                                "metricAccessor": "26e472d7-99f3-45c7-b169-68324b6cbfe3"
-                            }
-                        },
-                        "title": "Average CPU utilization (%)",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 6,
-                    "i": "2aa9cad8-3e78-4c82-b31a-3a7d5987ed3f",
-                    "w": 12,
-                    "x": 36,
-                    "y": 4
-                },
-                "panelIndex": "2aa9cad8-3e78-4c82-b31a-3a7d5987ed3f",
-                "title": "Average CPU utilization (%)",
-                "type": "lens",
-                "version": "8.7.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-d974d740-82bb-4201-a561-3647bf9fa6eb",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "d974d740-82bb-4201-a561-3647bf9fa6eb": {
-                                            "columnOrder": [
-                                                "893db48a-ac6b-45c3-8aed-f8131d5c5726",
-                                                "99bf2309-ac31-4a89-9e1a-c926833b4e78",
-                                                "f2fa3a8c-db55-433a-8ea2-be91549d1983"
-                                            ],
-                                            "columns": {
-                                                "99bf2309-ac31-4a89-9e1a-c926833b4e78": {
+                                                    "sourceField": "osquery_profile.duration"
+                                                },
+                                                "9920beff-8031-490c-92e0-38a6cb5297ed": {
                                                     "dataType": "date",
                                                     "isBucketed": true,
                                                     "label": "@timestamp",
@@ -404,7 +423,7 @@
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 },
-                                                "893db48a-ac6b-45c3-8aed-f8131d5c5726": {
+                                                "c6b05ca4-d368-4cad-a8dd-1995e23ce404": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
@@ -413,7 +432,7 @@
                                                     "params": {
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "f2fa3a8c-db55-433a-8ea2-be91549d1983",
+                                                            "columnId": "42c42c61-a942-4436-a4c8-a069907ed8c1",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -425,18 +444,6 @@
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "osquery_profile.source"
-                                                },
-                                                "f2fa3a8c-db55-433a-8ea2-be91549d1983": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Avg duration (ms)",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "osquery_profile.duration"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -473,13 +480,13 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "f2fa3a8c-db55-433a-8ea2-be91549d1983"
+                                            "42c42c61-a942-4436-a4c8-a069907ed8c1"
                                         ],
-                                        "layerId": "d974d740-82bb-4201-a561-3647bf9fa6eb",
+                                        "layerId": "21e3e728-0526-476e-a411-21be0b5f193b",
                                         "layerType": "data",
                                         "seriesType": "line",
-                                        "splitAccessor": "893db48a-ac6b-45c3-8aed-f8131d5c5726",
-                                        "xAccessor": "99bf2309-ac31-4a89-9e1a-c926833b4e78"
+                                        "splitAccessor": "c6b05ca4-d368-4cad-a8dd-1995e23ce404",
+                                        "xAccessor": "9920beff-8031-490c-92e0-38a6cb5297ed"
                                     }
                                 ],
                                 "legend": {
@@ -495,7 +502,7 @@
                                 "valueLabels": "hide"
                             }
                         },
-                        "title": "Query duration over time",
+                        "title": "Avg query duration over time (ms)",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
@@ -503,14 +510,14 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 12,
-                    "i": "c550aef5-dc64-43e3-9260-3c851503b5a0",
+                    "h": 11,
+                    "i": "7c2bcb3d-2a57-42ce-b9da-4fca832ff646",
                     "w": 24,
                     "x": 0,
                     "y": 10
                 },
-                "panelIndex": "c550aef5-dc64-43e3-9260-3c851503b5a0",
-                "title": "Query duration over time",
+                "panelIndex": "7c2bcb3d-2a57-42ce-b9da-4fca832ff646",
+                "title": "Avg query duration over time (ms)",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -520,7 +527,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-f61fbb29-b1c0-4f66-8cc3-3f9802de5f8c",
+                                "name": "indexpattern-datasource-layer-9b276214-d7a6-4a6b-904f-8cfcbf0b4441",
                                 "type": "index-pattern"
                             }
                         ],
@@ -529,27 +536,14 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "f61fbb29-b1c0-4f66-8cc3-3f9802de5f8c": {
+                                        "9b276214-d7a6-4a6b-904f-8cfcbf0b4441": {
                                             "columnOrder": [
-                                                "a0605d22-6fd1-4e5d-9a1c-27ca0a73fdb1",
-                                                "8b58a89d-9ef7-42fc-9e3e-56c4a3911c93",
-                                                "b53e3875-812d-463b-b423-2c72e2138a23"
+                                                "125f38b8-0178-4438-a1be-7684d41f7ff2",
+                                                "8ed46dfc-5f3e-48cd-9e66-054ec909a9d0",
+                                                "c80b6b66-5889-4c39-ab14-596e3e81fa23"
                                             ],
                                             "columns": {
-                                                "8b58a89d-9ef7-42fc-9e3e-56c4a3911c93": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "a0605d22-6fd1-4e5d-9a1c-27ca0a73fdb1": {
+                                                "125f38b8-0178-4438-a1be-7684d41f7ff2": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
@@ -558,7 +552,7 @@
                                                     "params": {
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "b53e3875-812d-463b-b423-2c72e2138a23",
+                                                            "columnId": "c80b6b66-5889-4c39-ab14-596e3e81fa23",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -571,14 +565,33 @@
                                                     "scale": "ordinal",
                                                     "sourceField": "osquery_profile.source"
                                                 },
-                                                "b53e3875-812d-463b-b423-2c72e2138a23": {
+                                                "8ed46dfc-5f3e-48cd-9e66-054ec909a9d0": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "c80b6b66-5889-4c39-ab14-596e3e81fa23": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Avg memory (bytes)",
+                                                    "label": "Avg memory",
                                                     "operationType": "average",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "osquery_profile.memory"
@@ -618,13 +631,13 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "b53e3875-812d-463b-b423-2c72e2138a23"
+                                            "c80b6b66-5889-4c39-ab14-596e3e81fa23"
                                         ],
-                                        "layerId": "f61fbb29-b1c0-4f66-8cc3-3f9802de5f8c",
+                                        "layerId": "9b276214-d7a6-4a6b-904f-8cfcbf0b4441",
                                         "layerType": "data",
                                         "seriesType": "line",
-                                        "splitAccessor": "a0605d22-6fd1-4e5d-9a1c-27ca0a73fdb1",
-                                        "xAccessor": "8b58a89d-9ef7-42fc-9e3e-56c4a3911c93"
+                                        "splitAccessor": "125f38b8-0178-4438-a1be-7684d41f7ff2",
+                                        "xAccessor": "8ed46dfc-5f3e-48cd-9e66-054ec909a9d0"
                                     }
                                 ],
                                 "legend": {
@@ -640,7 +653,7 @@
                                 "valueLabels": "hide"
                             }
                         },
-                        "title": "Average memory over time",
+                        "title": "Avg memory over time",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
@@ -648,14 +661,14 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 12,
-                    "i": "f467e07d-6cb5-431f-ba7e-6541e9be0942",
+                    "h": 11,
+                    "i": "2ca955a0-e164-4631-901a-58aa738ee28b",
                     "w": 24,
                     "x": 24,
                     "y": 10
                 },
-                "panelIndex": "f467e07d-6cb5-431f-ba7e-6541e9be0942",
-                "title": "Average memory over time",
+                "panelIndex": "2ca955a0-e164-4631-901a-58aa738ee28b",
+                "title": "Avg memory over time",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -665,7 +678,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-39b3bc9c-c6b1-4740-b879-5b7d9db2a86b",
+                                "name": "indexpattern-datasource-layer-5f96e7ab-95c0-402c-882b-cf0b0bf8d527",
                                 "type": "index-pattern"
                             }
                         ],
@@ -674,17 +687,196 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "39b3bc9c-c6b1-4740-b879-5b7d9db2a86b": {
+                                        "5f96e7ab-95c0-402c-882b-cf0b0bf8d527": {
                                             "columnOrder": [
-                                                "f456c7a1-7aaf-4c5f-b186-99d5ea74eafb",
-                                                "6daf9a1c-fed8-4378-a12a-2458681362f2",
-                                                "08057180-5511-4161-bf65-7d3271163862",
-                                                "0ce0a664-6ce7-492d-8b91-eb1902b4b9d2",
-                                                "a5c9753d-df1e-4fd3-9519-9ba918a01b58",
-                                                "41c5ed05-e1f0-4191-b490-315e047265bc"
+                                                "20e09392-ae83-4b2e-bc38-e0e4729af54e",
+                                                "2943ef8d-7557-4553-9dc1-f5ead26232fd",
+                                                "c5d8747d-8c3c-4894-9b2a-e79749a34f55",
+                                                "30b5ef13-de91-43d0-b9c5-6bba57612561",
+                                                "7129a3dc-1201-490c-807f-b91dffa427e9"
                                             ],
                                             "columns": {
-                                                "f456c7a1-7aaf-4c5f-b186-99d5ea74eafb": {
+                                                "20e09392-ae83-4b2e-bc38-e0e4729af54e": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Source",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "osquery_profile.source"
+                                                },
+                                                "2943ef8d-7557-4553-9dc1-f5ead26232fd": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Profiles",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "___records___"
+                                                },
+                                                "30b5ef13-de91-43d0-b9c5-6bba57612561": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Avg CPU util (%)",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.utilization"
+                                                },
+                                                "7129a3dc-1201-490c-807f-b91dffa427e9": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Avg memory",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.memory"
+                                                },
+                                                "c5d8747d-8c3c-4894-9b2a-e79749a34f55": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Avg duration (ms)",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.duration"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "20e09392-ae83-4b2e-bc38-e0e4729af54e",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "2943ef8d-7557-4553-9dc1-f5ead26232fd",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "c5d8747d-8c3c-4894-9b2a-e79749a34f55",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "30b5ef13-de91-43d0-b9c5-6bba57612561",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "7129a3dc-1201-490c-807f-b91dffa427e9",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "5f96e7ab-95c0-402c-882b-cf0b0bf8d527",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Profiles by source",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "197694e4-46cd-4877-ac52-501f569a8a65",
+                    "w": 16,
+                    "x": 0,
+                    "y": 21
+                },
+                "panelIndex": "197694e4-46cd-4877-ac52-501f569a8a65",
+                "title": "Profiles by source",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-46f61be9-54c9-4f79-a009-ae967cdcf63a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "46f61be9-54c9-4f79-a009-ae967cdcf63a": {
+                                            "columnOrder": [
+                                                "43dc2a5e-359c-4e69-8af0-7995efd06790",
+                                                "6c53868a-ff61-432a-8356-dd333b048986",
+                                                "87402384-66e9-4be4-aaa1-ac8334ca644a",
+                                                "666bee1f-f7bb-4246-aa48-5a5bcdb30fd5",
+                                                "b493bf6a-e843-4e5f-b079-c95d8b1be121",
+                                                "04ccc8c2-a513-4dfc-9723-f94c9884d5ad",
+                                                "f0b74462-1d25-4922-bb12-c00c106de061"
+                                            ],
+                                            "columns": {
+                                                "04ccc8c2-a513-4dfc-9723-f94c9884d5ad": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Avg memory",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.memory"
+                                                },
+                                                "43dc2a5e-359c-4e69-8af0-7995efd06790": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
@@ -693,7 +885,7 @@
                                                     "params": {
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "6daf9a1c-fed8-4378-a12a-2458681362f2",
+                                                            "columnId": "87402384-66e9-4be4-aaa1-ac8334ca644a",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -704,20 +896,9 @@
                                                         "size": 25
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "osquery_profile.query_name"
+                                                    "sourceField": "query.name"
                                                 },
-                                                "6daf9a1c-fed8-4378-a12a-2458681362f2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Executions (events)",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "sourceField": "___records___"
-                                                },
-                                                "08057180-5511-4161-bf65-7d3271163862": {
+                                                "666bee1f-f7bb-4246-aa48-5a5bcdb30fd5": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -729,7 +910,40 @@
                                                     "scale": "ratio",
                                                     "sourceField": "osquery_profile.duration"
                                                 },
-                                                "0ce0a664-6ce7-492d-8b91-eb1902b4b9d2": {
+                                                "6c53868a-ff61-432a-8356-dd333b048986": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Source",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "osquery_profile.source"
+                                                },
+                                                "87402384-66e9-4be4-aaa1-ac8334ca644a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Profiles",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "___records___"
+                                                },
+                                                "b493bf6a-e843-4e5f-b079-c95d8b1be121": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -741,26 +955,20 @@
                                                     "scale": "ratio",
                                                     "sourceField": "osquery_profile.cpu_time"
                                                 },
-                                                "a5c9753d-df1e-4fd3-9519-9ba918a01b58": {
+                                                "f0b74462-1d25-4922-bb12-c00c106de061": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Avg memory (bytes)",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "osquery_profile.memory"
-                                                },
-                                                "41c5ed05-e1f0-4191-b490-315e047265bc": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Max memory (bytes)",
+                                                    "label": "Max memory",
                                                     "operationType": "max",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "osquery_profile.memory"
@@ -783,35 +991,39 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "f456c7a1-7aaf-4c5f-b186-99d5ea74eafb",
+                                        "columnId": "43dc2a5e-359c-4e69-8af0-7995efd06790",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "6daf9a1c-fed8-4378-a12a-2458681362f2",
+                                        "columnId": "6c53868a-ff61-432a-8356-dd333b048986",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "08057180-5511-4161-bf65-7d3271163862",
+                                        "columnId": "87402384-66e9-4be4-aaa1-ac8334ca644a",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "0ce0a664-6ce7-492d-8b91-eb1902b4b9d2",
+                                        "columnId": "666bee1f-f7bb-4246-aa48-5a5bcdb30fd5",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "a5c9753d-df1e-4fd3-9519-9ba918a01b58",
+                                        "columnId": "b493bf6a-e843-4e5f-b079-c95d8b1be121",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "41c5ed05-e1f0-4191-b490-315e047265bc",
+                                        "columnId": "04ccc8c2-a513-4dfc-9723-f94c9884d5ad",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "f0b74462-1d25-4922-bb12-c00c106de061",
                                         "isTransposed": false
                                     }
                                 ],
-                                "layerId": "39b3bc9c-c6b1-4740-b879-5b7d9db2a86b",
+                                "layerId": "46f61be9-54c9-4f79-a009-ae967cdcf63a",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Query profile summary",
+                        "title": "Top queries (by name / SQL)",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -819,14 +1031,611 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 14,
-                    "i": "71610087-001c-4309-bfc9-99233bd09266",
+                    "h": 11,
+                    "i": "b9f079c0-4c49-4813-91b3-e985621bc51e",
+                    "w": 32,
+                    "x": 16,
+                    "y": 21
+                },
+                "panelIndex": "b9f079c0-4c49-4813-91b3-e985621bc51e",
+                "title": "Top queries (by name / SQL)",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8bd2a9b7-91ad-4596-bb5f-49c9245e0594",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "8bd2a9b7-91ad-4596-bb5f-49c9245e0594": {
+                                            "columnOrder": [
+                                                "96a34206-9d2c-4ee9-8058-8e87719a7149",
+                                                "4ddb44fa-f141-4731-be16-ffcdb3c3d5d6",
+                                                "b10f78e4-6956-4702-8eb7-39246c1a6266",
+                                                "1e10d384-493c-42b3-9aa2-4b0873f572a2",
+                                                "0790b32f-8ffe-4f78-8880-c710d077c36f",
+                                                "a2f0f4a1-ee11-4c0c-8126-7f5d5ffe98f6"
+                                            ],
+                                            "columns": {
+                                                "0790b32f-8ffe-4f78-8880-c710d077c36f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Avg memory",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.memory"
+                                                },
+                                                "1e10d384-493c-42b3-9aa2-4b0873f572a2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Avg CPU time (ms)",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.cpu_time"
+                                                },
+                                                "4ddb44fa-f141-4731-be16-ffcdb3c3d5d6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Profiles",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "___records___"
+                                                },
+                                                "96a34206-9d2c-4ee9-8058-8e87719a7149": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Host",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "4ddb44fa-f141-4731-be16-ffcdb3c3d5d6",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 25
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "host.name"
+                                                },
+                                                "a2f0f4a1-ee11-4c0c-8126-7f5d5ffe98f6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Max memory",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.memory"
+                                                },
+                                                "b10f78e4-6956-4702-8eb7-39246c1a6266": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Avg duration (ms)",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.duration"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "96a34206-9d2c-4ee9-8058-8e87719a7149",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "4ddb44fa-f141-4731-be16-ffcdb3c3d5d6",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "b10f78e4-6956-4702-8eb7-39246c1a6266",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "1e10d384-493c-42b3-9aa2-4b0873f572a2",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "0790b32f-8ffe-4f78-8880-c710d077c36f",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "a2f0f4a1-ee11-4c0c-8126-7f5d5ffe98f6",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "8bd2a9b7-91ad-4596-bb5f-49c9245e0594",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Top hosts",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "245cd919-2690-470d-b737-df1782627a61",
+                    "w": 24,
+                    "x": 0,
+                    "y": 32
+                },
+                "panelIndex": "245cd919-2690-470d-b737-df1782627a61",
+                "title": "Top hosts",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-19c5fd84-82db-4320-91eb-02569d6d9539",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "19c5fd84-82db-4320-91eb-02569d6d9539": {
+                                            "columnOrder": [
+                                                "ce3ef188-21a4-4626-afb8-6b1b0d93178e",
+                                                "f6b602b0-a32c-4901-9dea-658100a24c49",
+                                                "1f8cd4b0-943f-4ed2-97dc-ae3431c6afb3",
+                                                "c56b5a91-537e-472a-879a-3eece312e763",
+                                                "329383e2-a835-40dd-947a-b68623a73fcc"
+                                            ],
+                                            "columns": {
+                                                "1f8cd4b0-943f-4ed2-97dc-ae3431c6afb3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "osquery_profile.exit > 0"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Errors",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "___records___"
+                                                },
+                                                "329383e2-a835-40dd-947a-b68623a73fcc": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Avg memory",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.memory"
+                                                },
+                                                "c56b5a91-537e-472a-879a-3eece312e763": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Avg duration (ms)",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.duration"
+                                                },
+                                                "ce3ef188-21a4-4626-afb8-6b1b0d93178e": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Live query SQL",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "f6b602b0-a32c-4901-9dea-658100a24c49",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 25
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "action_data.query"
+                                                },
+                                                "f6b602b0-a32c-4901-9dea-658100a24c49": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Profiles",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "ce3ef188-21a4-4626-afb8-6b1b0d93178e",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "f6b602b0-a32c-4901-9dea-658100a24c49",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "1f8cd4b0-943f-4ed2-97dc-ae3431c6afb3",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "c56b5a91-537e-472a-879a-3eece312e763",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "329383e2-a835-40dd-947a-b68623a73fcc",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "19c5fd84-82db-4320-91eb-02569d6d9539",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Top live queries (SQL)",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "06d9fc77-d785-4daa-86e1-8d45032b6a1d",
+                    "w": 24,
+                    "x": 24,
+                    "y": 32
+                },
+                "panelIndex": "06d9fc77-d785-4daa-86e1-8d45032b6a1d",
+                "title": "Top live queries (SQL)",
+                "type": "lens",
+                "version": "8.7.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-4567d498-52c1-481d-8397-4bbdf50ccc75",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "4567d498-52c1-481d-8397-4bbdf50ccc75": {
+                                            "columnOrder": [
+                                                "80889085-446f-44c9-884b-c9c841e3e0ba",
+                                                "4e7a2b47-c5c8-4d3d-a2ca-b9378797b655",
+                                                "f438f85c-1826-4daf-902d-5a31c91f4e75",
+                                                "700cc51d-9a71-4e46-a406-9dd6169f0a82",
+                                                "f4ac98f2-5284-4cf1-a0af-4c857d0ad384",
+                                                "f62b14e9-3666-4062-a44c-6a8c1d51e92b",
+                                                "ca52b242-7526-4e28-90e7-1fdce732bc5b",
+                                                "4c968e1f-2084-4ffc-b5aa-6a6fc9407ad3",
+                                                "7479d3ea-3125-48a4-b495-5fcc2089a131",
+                                                "dc3d3888-8c1c-4158-b87b-c66b6795b0f3"
+                                            ],
+                                            "columns": {
+                                                "4c968e1f-2084-4ffc-b5aa-6a6fc9407ad3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "CPU util (%)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.utilization"
+                                                },
+                                                "4e7a2b47-c5c8-4d3d-a2ca-b9378797b655": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": false,
+                                                    "label": "Query",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": false,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "query.name"
+                                                },
+                                                "700cc51d-9a71-4e46-a406-9dd6169f0a82": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": false,
+                                                    "label": "Host",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": false,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "host.name"
+                                                },
+                                                "7479d3ea-3125-48a4-b495-5fcc2089a131": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Memory",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.memory"
+                                                },
+                                                "80889085-446f-44c9-884b-c9c841e3e0ba": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Response ID",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "f62b14e9-3666-4062-a44c-6a8c1d51e92b",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "response_id"
+                                                },
+                                                "ca52b242-7526-4e28-90e7-1fdce732bc5b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "CPU time (ms)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.cpu_time"
+                                                },
+                                                "dc3d3888-8c1c-4158-b87b-c66b6795b0f3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Exit",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": false,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.exit"
+                                                },
+                                                "f438f85c-1826-4daf-902d-5a31c91f4e75": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": false,
+                                                    "label": "Source",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": false,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.source"
+                                                },
+                                                "f4ac98f2-5284-4cf1-a0af-4c857d0ad384": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": false,
+                                                    "label": "Action ID",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": false,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "action_id"
+                                                },
+                                                "f62b14e9-3666-4062-a44c-6a8c1d51e92b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Duration (ms)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "osquery_profile.duration"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "80889085-446f-44c9-884b-c9c841e3e0ba",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "4e7a2b47-c5c8-4d3d-a2ca-b9378797b655",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "f438f85c-1826-4daf-902d-5a31c91f4e75",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "700cc51d-9a71-4e46-a406-9dd6169f0a82",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "f4ac98f2-5284-4cf1-a0af-4c857d0ad384",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "f62b14e9-3666-4062-a44c-6a8c1d51e92b",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "ca52b242-7526-4e28-90e7-1fdce732bc5b",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "4c968e1f-2084-4ffc-b5aa-6a6fc9407ad3",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "7479d3ea-3125-48a4-b495-5fcc2089a131",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "dc3d3888-8c1c-4158-b87b-c66b6795b0f3",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "4567d498-52c1-481d-8397-4bbdf50ccc75",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Executions (drill-down)",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "f11dc48a-6801-4c98-8410-d2013a9b4f23",
                     "w": 48,
                     "x": 0,
-                    "y": 22
+                    "y": 44
                 },
-                "panelIndex": "71610087-001c-4309-bfc9-99233bd09266",
-                "title": "Query profile summary",
+                "panelIndex": "f11dc48a-6801-4c98-8410-d2013a9b4f23",
+                "title": "Executions (drill-down)",
                 "type": "lens",
                 "version": "8.7.1"
             }
@@ -849,37 +1658,77 @@
         },
         {
             "id": "logs-*",
-            "name": "7c9f52d8-2e79-4639-aa61-46490b122c8b:indexpattern-datasource-layer-66323c56-af6c-4f46-9e3f-8871e90da036",
+            "name": "effac39f-4305-4198-979a-f661c3bbfada:indexpattern-datasource-layer-dc3bed63-566e-4b87-85dd-5ade5b35d950",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "71765b75-4e4a-4c37-aa1f-d4afde32963d:indexpattern-datasource-layer-a0fef13c-af6d-4ccf-9b2c-5e6606a051bb",
+            "name": "f9b283be-6c00-4fb8-a079-b20647ebeb84:indexpattern-datasource-layer-0c1093d1-07e4-46fc-83e3-894ed6756f44",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "83f49b1c-331b-4d78-8b7d-b22647e2033e:indexpattern-datasource-layer-e1597571-e9c7-48eb-b979-8a9130ac1ec7",
+            "name": "6fbec561-667b-4a43-906b-4295d5ec49c5:indexpattern-datasource-layer-eaebd949-91d0-40bc-a592-394898fdc744",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "2aa9cad8-3e78-4c82-b31a-3a7d5987ed3f:indexpattern-datasource-layer-970ead72-6362-41ca-af07-dc9b5c117dc1",
+            "name": "2691c6d2-d8c7-4926-a3f4-49af586baa94:indexpattern-datasource-layer-02bbf000-860d-46a3-8687-34ee08252f91",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "c550aef5-dc64-43e3-9260-3c851503b5a0:indexpattern-datasource-layer-d974d740-82bb-4201-a561-3647bf9fa6eb",
+            "name": "7c2bcb3d-2a57-42ce-b9da-4fca832ff646:indexpattern-datasource-layer-21e3e728-0526-476e-a411-21be0b5f193b",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "f467e07d-6cb5-431f-ba7e-6541e9be0942:indexpattern-datasource-layer-f61fbb29-b1c0-4f66-8cc3-3f9802de5f8c",
+            "name": "2ca955a0-e164-4631-901a-58aa738ee28b:indexpattern-datasource-layer-9b276214-d7a6-4a6b-904f-8cfcbf0b4441",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "71610087-001c-4309-bfc9-99233bd09266:indexpattern-datasource-layer-39b3bc9c-c6b1-4740-b879-5b7d9db2a86b",
+            "name": "197694e4-46cd-4877-ac52-501f569a8a65:indexpattern-datasource-layer-5f96e7ab-95c0-402c-882b-cf0b0bf8d527",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "b9f079c0-4c49-4813-91b3-e985621bc51e:indexpattern-datasource-layer-46f61be9-54c9-4f79-a009-ae967cdcf63a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "245cd919-2690-470d-b737-df1782627a61:indexpattern-datasource-layer-8bd2a9b7-91ad-4596-bb5f-49c9245e0594",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "06d9fc77-d785-4daa-86e1-8d45032b6a1d:indexpattern-datasource-layer-19c5fd84-82db-4320-91eb-02569d6d9539",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f11dc48a-6801-4c98-8410-d2013a9b4f23:indexpattern-datasource-layer-4567d498-52c1-481d-8397-4bbdf50ccc75",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_fbc49a32-aff5-47bc-b47c-01532a0239bd:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_c1a2476c-a99e-429e-b67c-6e778abc7110:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_308976c7-5ca7-4d89-ab69-a593d4b85230:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_15b3727b-0ace-499f-a1e3-1144fc2a4b21:optionsListDataView",
             "type": "index-pattern"
         }
     ],

@@ -1,7 +1,3 @@
-- name: type
-  type: keyword
-  ignore_above: 1024
-  description: Event discriminator; osquerybeat sets this to osquery_profile for profile documents.
 - name: query
   title: Query reference
   type: group
@@ -9,7 +5,14 @@
     - name: name
       type: keyword
       ignore_above: 1024
-      description: Scheduled query name when profiling scheduled queries.
+      description: |
+        Consolidated query identifier used to group profiles across sources. Set by the ingest
+        pipeline to the scheduled/RRULE query name, the saved query id, or the raw SQL for ad-hoc
+        live queries (in that order of preference).
+- name: agent_id
+  type: keyword
+  ignore_above: 1024
+  description: Identifier of the agent that produced the profile, copied from agent.id for correlation with other osquery_manager data streams.
 - name: action_id
   type: keyword
   ignore_above: 1024
@@ -49,11 +52,7 @@
     - name: source
       type: keyword
       ignore_above: 1024
-      description: Profile origin; scheduled (osquery_schedule) or live (process deltas around execution).
-    - name: query_name
-      type: keyword
-      ignore_above: 1024
-      description: Name of the scheduled query in osquery_schedule.
+      description: 'Profile origin: scheduled (osquery_schedule metrics), rrule (RRULE-scheduled run), or live (process deltas around a live query).'
     - name: query
       type: text
       description: SQL text of the query when provided by the agent.
