@@ -187,7 +187,13 @@ func TestResolveManifestVersionConflict(t *testing.T) {
 			wantResolved:    true,
 		},
 		{
-			name: "version-only conflict with empty theirs is left untouched",
+			// Not a realistic git shape: theirs dropping the version field
+			// without re-adding it anywhere else in the file would require an
+			// already-invalid, schema-violating main commit. This exists to
+			// exercise the versionLines-count safety net in
+			// resolveManifestVersionConflict as defense-in-depth, per its doc
+			// comment, not to simulate a plausible cherry-pick conflict.
+			name: "version-only conflict that would drop the version field entirely is left untouched",
 			content: "name: aws\n" +
 				"<<<<<<< HEAD\n" +
 				"version: 6.14.2\n" +
