@@ -73,11 +73,11 @@ An example event for `inspector` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-03T08:01:42.000Z",
+    "@timestamp": "2026-06-03T09:09:10.000Z",
     "agent": {
-        "ephemeral_id": "5f19341d-09ce-467d-b80d-4692c5dbedf1",
-        "id": "ca9280df-a879-4425-ab9b-8df27e4545b4",
-        "name": "elastic-agent-58650",
+        "ephemeral_id": "5c286f08-b0ad-4f2b-9d8b-88a8ae8d1332",
+        "id": "cf4610ce-0e27-4914-9f62-db80866b7437",
+        "name": "elastic-agent-56574",
         "type": "filebeat",
         "version": "9.4.1"
     },
@@ -100,7 +100,7 @@ An example event for `inspector` looks as following:
                     "scoring_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L"
                 }
             },
-            "last_observed_at": "2026-06-03T08:01:42.000Z",
+            "last_observed_at": "2026-06-03T09:09:10.000Z",
             "package_nested": [
                 {
                     "epoch": [
@@ -390,14 +390,14 @@ An example event for `inspector` looks as following:
     },
     "data_stream": {
         "dataset": "aws.inspector",
-        "namespace": "81912",
+        "namespace": "62586",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ca9280df-a879-4425-ab9b-8df27e4545b4",
+        "id": "cf4610ce-0e27-4914-9f62-db80866b7437",
         "snapshot": false,
         "version": "9.4.1"
     },
@@ -406,13 +406,13 @@ An example event for `inspector` looks as following:
         "category": [
             "vulnerability"
         ],
-        "created": "2026-07-03T08:01:42.137Z",
+        "created": "2026-07-03T09:09:10.375Z",
         "dataset": "aws.inspector",
-        "id": "CVE-2025-22872|i-0fabcdefabcdef50b|{0=golang.org/x/net, 1=nerdctl}|{0=v0.1.0, 1=v0.30.0, 2=2.0.4}|2026-06-03T08:01:42.000Z",
-        "ingested": "2026-07-03T08:01:45Z",
+        "id": "CVE-2025-22872|i-0fabcdefabcdef50b|{0=golang.org/x/net, 1=nerdctl}|{0=v0.1.0, 1=v0.30.0, 2=2.0.4}|2026-06-03T09:09:10.000Z",
+        "ingested": "2026-07-03T09:09:13Z",
         "kind": "event",
         "module": "aws",
-        "original": "{\"awsAccountId\":\"123456789012\",\"description\":\"The tokenizer incorrectly interprets tags with unquoted attribute values that end with a solidus character (/) as self-closing. When directly using Tokenizer, this can result in such tags incorrectly being marked as self-closing, and when using the Parse functions, this can result in content following such tags as being placed in the wrong scope during DOM construction, but only when tags are in foreign content (e.g. \\u003cmath\\u003e, \\u003csvg\\u003e, etc contexts).\",\"epss\":{\"score\":0.00024},\"exploitAvailable\":\"NO\",\"findingArn\":\"arn:aws:inspector2:us-east-2:123456789012:finding/fb6294abcdef0123456789abcdef8123\",\"firstObservedAt\":1773422887.919,\"fixAvailable\":\"YES\",\"inspectorScore\":6.5,\"inspectorScoreDetails\":{\"adjustedCvss\":{\"adjustments\":[],\"cvssSource\":\"NVD\",\"score\":6.5,\"scoreSource\":\"NVD\",\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"version\":\"3.1\"}},\"lastObservedAt\":1780473702,\"packageVulnerabilityDetails\":{\"cvss\":[{\"baseScore\":6.5,\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"source\":\"NVD\",\"version\":\"3.1\"},{\"baseScore\":6.5,\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"source\":\"NVD\",\"version\":\"3.1\"}],\"referenceUrls\":[\"https://groups.google.com/g/golang-announce/c/ezSKR9vqbqA\",\"https://nvd.nist.gov/vuln/detail/CVE-2025-22872\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-981.html\",\"https://alas.aws.amazon.com/AL2/ALASDOCKER-2025-064.html\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-980.html\",\"https://alas.aws.amazon.com/AL2/ALASDOCKER-2025-063.html\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-979.html\",\"https://alas.aws.amazon.com/cve/json/v1/CVE-2025-22872.json\",\"https://alas.aws.amazon.com/AL2/ALAS-2025-2863.html\",\"https://alas.aws.amazon.com/cve/json/v1/CVE-2025-22872.json\"],\"relatedVulnerabilities\":[],\"source\":\"NVD\",\"sourceUrl\":\"https://nvd.nist.gov/vuln/detail/CVE-2025-22872\",\"vendorCreatedAt\":1769710564,\"vendorSeverity\":\"MEDIUM\",\"vendorUpdatedAt\":1772320519,\"vulnerabilityId\":\"CVE-2025-22872\",\"vulnerablePackages\":[{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:opt/cni/bin/aws-cni\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.1.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:etc/eks/image-credential-provider/ecr-credential-provider\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:opt/cni/bin/dhcp\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:usr/bin/aws-iam-authenticator\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:usr/bin/kubelet\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"arch\":\"X86_64\",\"epoch\":0,\"fixedInVersion\":\"0:2.0.5-1.amzn2.0.1\",\"name\":\"nerdctl\",\"packageManager\":\"OS\",\"release\":\"1.amzn2.0.1\",\"remediation\":\"yum update nerdctl\",\"version\":\"2.0.4\"}]},\"remediation\":{\"recommendation\":{\"text\":\"None Provided\"}},\"resources\":[{\"details\":{\"awsEc2Instance\":{\"iamInstanceProfileArn\":\"arn:aws:iam::123456789012:instance-profile/eks-0012345a-1234-5678-1234-6c1abcdef012\",\"imageId\":\"ami-0e0f0123456789abd\",\"ipV4Addresses\":[\"10.90.1.245\",\"10.90.1.45\",\"10.90.1.168\",\"10.90.1.157\",\"1.128.0.1\",\"10.90.1.103\",\"10.90.1.197\",\"10.90.1.220\",\"10.90.1.86\",\"10.90.1.29\",\"10.90.1.18\",\"10.90.1.181\",\"10.90.1.161\",\"10.90.1.229\",\"10.90.1.108\",\"10.90.1.219\",\"10.90.1.9\",\"10.90.1.106\",\"10.90.1.206\"],\"ipV6Addresses\":[],\"launchedAt\":1773417968,\"platform\":\"AMAZON_LINUX_2\",\"subnetId\":\"subnet-0ababcdefabcdef8b\",\"type\":\"t3.medium\",\"vpcId\":\"vpc-04ab0123456789123\"}},\"id\":\"i-0fabcdefabcdef50b\",\"partition\":\"aws\",\"region\":\"us-east-2\",\"tags\":{\"aws:autoscaling:groupName\":\"eks-sei_demo_prod_linux-00c12345-abcd-1234-5678-601234567896\",\"aws:ec2launchtemplate:version\":\"6\",\"aws:eks:cluster-name\":\"sei_demo_prod\",\"eks:cluster-name\":\"sei_demo_prod\",\"eks:nodegroup-name\":\"sei_demo_prod_linux\",\"k8s.io/cluster-autoscaler/enabled\":\"true\",\"k8s.io/cluster-autoscaler/sei_demo_prod\":\"owned\",\"kubernetes.io/cluster/sei_demo_prod\":\"owned\"},\"type\":\"AWS_EC2_INSTANCE\"}],\"severity\":\"MEDIUM\",\"status\":\"ACTIVE\",\"title\":\"CVE-2025-22872 - golang.org/x/net, golang.org/x/net and 4 more\",\"type\":\"PACKAGE_VULNERABILITY\",\"updatedAt\":1780473702}",
+        "original": "{\"awsAccountId\":\"123456789012\",\"description\":\"The tokenizer incorrectly interprets tags with unquoted attribute values that end with a solidus character (/) as self-closing. When directly using Tokenizer, this can result in such tags incorrectly being marked as self-closing, and when using the Parse functions, this can result in content following such tags as being placed in the wrong scope during DOM construction, but only when tags are in foreign content (e.g. \\u003cmath\\u003e, \\u003csvg\\u003e, etc contexts).\",\"epss\":{\"score\":0.00024},\"exploitAvailable\":\"NO\",\"findingArn\":\"arn:aws:inspector2:us-east-2:123456789012:finding/fb6294abcdef0123456789abcdef8123\",\"firstObservedAt\":1773422887.919,\"fixAvailable\":\"YES\",\"inspectorScore\":6.5,\"inspectorScoreDetails\":{\"adjustedCvss\":{\"adjustments\":[],\"cvssSource\":\"NVD\",\"score\":6.5,\"scoreSource\":\"NVD\",\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"version\":\"3.1\"}},\"lastObservedAt\":1780477750,\"packageVulnerabilityDetails\":{\"cvss\":[{\"baseScore\":6.5,\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"source\":\"NVD\",\"version\":\"3.1\"},{\"baseScore\":6.5,\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"source\":\"NVD\",\"version\":\"3.1\"}],\"referenceUrls\":[\"https://groups.google.com/g/golang-announce/c/ezSKR9vqbqA\",\"https://nvd.nist.gov/vuln/detail/CVE-2025-22872\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-981.html\",\"https://alas.aws.amazon.com/AL2/ALASDOCKER-2025-064.html\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-980.html\",\"https://alas.aws.amazon.com/AL2/ALASDOCKER-2025-063.html\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-979.html\",\"https://alas.aws.amazon.com/cve/json/v1/CVE-2025-22872.json\",\"https://alas.aws.amazon.com/AL2/ALAS-2025-2863.html\",\"https://alas.aws.amazon.com/cve/json/v1/CVE-2025-22872.json\"],\"relatedVulnerabilities\":[],\"source\":\"NVD\",\"sourceUrl\":\"https://nvd.nist.gov/vuln/detail/CVE-2025-22872\",\"vendorCreatedAt\":1769710564,\"vendorSeverity\":\"MEDIUM\",\"vendorUpdatedAt\":1772320519,\"vulnerabilityId\":\"CVE-2025-22872\",\"vulnerablePackages\":[{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:opt/cni/bin/aws-cni\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.1.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:etc/eks/image-credential-provider/ecr-credential-provider\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:opt/cni/bin/dhcp\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:usr/bin/aws-iam-authenticator\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:usr/bin/kubelet\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"arch\":\"X86_64\",\"epoch\":0,\"fixedInVersion\":\"0:2.0.5-1.amzn2.0.1\",\"name\":\"nerdctl\",\"packageManager\":\"OS\",\"release\":\"1.amzn2.0.1\",\"remediation\":\"yum update nerdctl\",\"version\":\"2.0.4\"}]},\"remediation\":{\"recommendation\":{\"text\":\"None Provided\"}},\"resources\":[{\"details\":{\"awsEc2Instance\":{\"iamInstanceProfileArn\":\"arn:aws:iam::123456789012:instance-profile/eks-0012345a-1234-5678-1234-6c1abcdef012\",\"imageId\":\"ami-0e0f0123456789abd\",\"ipV4Addresses\":[\"10.90.1.245\",\"10.90.1.45\",\"10.90.1.168\",\"10.90.1.157\",\"1.128.0.1\",\"10.90.1.103\",\"10.90.1.197\",\"10.90.1.220\",\"10.90.1.86\",\"10.90.1.29\",\"10.90.1.18\",\"10.90.1.181\",\"10.90.1.161\",\"10.90.1.229\",\"10.90.1.108\",\"10.90.1.219\",\"10.90.1.9\",\"10.90.1.106\",\"10.90.1.206\"],\"ipV6Addresses\":[],\"launchedAt\":1773417968,\"platform\":\"AMAZON_LINUX_2\",\"subnetId\":\"subnet-0ababcdefabcdef8b\",\"type\":\"t3.medium\",\"vpcId\":\"vpc-04ab0123456789123\"}},\"id\":\"i-0fabcdefabcdef50b\",\"partition\":\"aws\",\"region\":\"us-east-2\",\"tags\":{\"aws:autoscaling:groupName\":\"eks-sei_demo_prod_linux-00c12345-abcd-1234-5678-601234567896\",\"aws:ec2launchtemplate:version\":\"6\",\"aws:eks:cluster-name\":\"sei_demo_prod\",\"eks:cluster-name\":\"sei_demo_prod\",\"eks:nodegroup-name\":\"sei_demo_prod_linux\",\"k8s.io/cluster-autoscaler/enabled\":\"true\",\"k8s.io/cluster-autoscaler/sei_demo_prod\":\"owned\",\"kubernetes.io/cluster/sei_demo_prod\":\"owned\"},\"type\":\"AWS_EC2_INSTANCE\"}],\"severity\":\"MEDIUM\",\"status\":\"ACTIVE\",\"title\":\"CVE-2025-22872 - golang.org/x/net, golang.org/x/net and 4 more\",\"type\":\"PACKAGE_VULNERABILITY\",\"updatedAt\":1780477750}",
         "type": [
             "info"
         ]
@@ -695,6 +695,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vulnerability.cve | The CVE id of the vulnerability. | keyword |
 | vulnerability.published_date | When the vulnerability was published. | date |
 | vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
-| vulnerability.status | Lifecycle state of the vulnerability finding on the asset. Expected values: open, fixed, reopened, unknown. | keyword |
+| vulnerability.status | Lifecycle state of the vulnerability finding on the asset. Expected values: open, fixed, reopened, unknown. Package-defined field that aligns with the ECS `vulnerability.status` field added in ECS 9.5. | keyword |
 | vulnerability.title | The human readeable title of the vulnerability. | keyword |
 
