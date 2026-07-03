@@ -275,7 +275,7 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 	cherryErr := a.git.Run("-c", "merge.conflictStyle=merge", "cherry-pick", "-n", sha)
 
 	if err := a.git.Run("checkout", "HEAD", "--", changelogPath); err != nil {
-		_ = a.git.Run("reset", "--hard", "HEAD")
+		a.abortCherryPick()
 		return nil, fmt.Errorf("restoring changelog after cherry-pick: %w", err)
 	}
 
@@ -286,12 +286,12 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 	if cherryErr != nil {
 		manifestHadConflict, manifestResolved, err := resolveManifestVersionConflict(manifestPath)
 		if err != nil {
-			_ = a.git.Run("reset", "--hard", "HEAD")
+			a.abortCherryPick()
 			return nil, fmt.Errorf("resolving manifest.yml conflict: %w", err)
 		}
 		if manifestResolved {
 			if err := a.git.Run("add", manifestPath); err != nil {
-				_ = a.git.Run("reset", "--hard", "HEAD")
+				a.abortCherryPick()
 				return nil, fmt.Errorf("staging resolved manifest.yml: %w", err)
 			}
 			if manifestHadConflict {
@@ -304,15 +304,12 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 		// cherry-pick failed; check whether conflicts remain.
 		files, err := a.conflictingFiles()
 		if err != nil {
-			_ = a.git.Run("reset", "--hard", "HEAD")
+			a.abortCherryPick()
 			return nil, fmt.Errorf("checking conflict state after cherry-pick: %w", err)
 		}
 		if len(files) > 0 {
-			// reset --hard instead of cherry-pick --abort: with -n, git does not
-			// always write CHERRY_PICK_HEAD, so --abort may fail and leave the
-			// index dirty. Branch checkout and deletion are left to the caller's
-			// defer.
-			_ = a.git.Run("reset", "--hard", "HEAD")
+			// Branch checkout and deletion are left to the caller's defer.
+			a.abortCherryPick()
 			return buildConflictResult(sha, branchName, pkg, files), nil
 		}
 	}
@@ -322,10 +319,18 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 	// cherry-pick, so bumpPatchVersion below increments the target branch's own
 	// version rather than whatever the cherry-picked commit set it to.
 	if err := setManifestVersion(manifestPath, baseVersion); err != nil {
-		_ = a.git.Run("reset", "--hard", "HEAD")
+		a.abortCherryPick()
 		return nil, fmt.Errorf("restoring manifest.yml version: %w", err)
 	}
 	return nil, nil
+}
+
+// abortCherryPick resets the working tree and index back to HEAD, discarding
+// any in-progress cherry-pick state. Used instead of "cherry-pick --abort":
+// with -n, git does not always write CHERRY_PICK_HEAD, so --abort may fail
+// and leave the index dirty.
+func (a applier) abortCherryPick() {
+	_ = a.git.Run("reset", "--hard", "HEAD")
 }
 
 // manifestMissingConflict reports a conflict Result if manifestPath does not
@@ -342,7 +347,7 @@ func (a applier) manifestMissingConflict(sha, branchName, pkg, manifestPath stri
 	if !errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
-	_ = a.git.Run("reset", "--hard", "HEAD")
+	a.abortCherryPick()
 	relPath, relErr := filepath.Rel(a.workDir, manifestPath)
 	if relErr != nil {
 		relPath = manifestPath
