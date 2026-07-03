@@ -185,13 +185,9 @@ program: |-
           )
         :
           {
-            "events": [],
+            "events": [{"retry": true}],
             "offset": state.more_pages ? (int(state.offset) + int(state.batch_size)) : 0,
             "want_more": state.more_pages,
-            "cursor": {
-              ?"latest_scan_ts": state.?cursor.latest_scan_ts,
-              ?"latest_scan_id": state.?cursor.latest_scan_id,
-            },
           }
       )
   )
@@ -205,8 +201,9 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
 {{processors}}
 {{/if}}
 redact:
