@@ -391,7 +391,7 @@ func CheckBackportBranchActive(branch string, asJSON *bool) error {
 // DetectBackportPackages lists the packages touched by commits between before and after.
 // Runs git diff --name-only before..after and maps the changed files to package names
 // using the packages/ directory as the root.
-// Plain output: one package name per line. Pass -json for a JSON array.
+// Plain output: one package name per line. Pass -asJSON for a JSON array.
 func DetectBackportPackages(before, after string, asJSON *bool) error {
 	out, err := sh.Output("git", "diff", "--name-only", before+".."+after)
 	if err != nil {

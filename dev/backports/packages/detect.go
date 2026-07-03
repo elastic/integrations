@@ -36,7 +36,7 @@ func DetectPackages(files []string, packagesDir string) ([]string, error) {
 	}
 
 	seen := make(map[string]struct{})
-	result := make([]string, 0)
+	result := make([]string, 0) // non-nil so json.Marshal produces [] not null
 	for _, f := range files {
 		for _, p := range pkgs {
 			if strings.HasPrefix(f, p.Path) {

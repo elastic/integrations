@@ -185,6 +185,11 @@ func TestParseCheckedBranches(t *testing.T) {
 			body:  marker + "\n- [x] `backport-aws-6.14` (maintained until 2027-01-15)\n",
 			want:  map[string]bool{"backport-aws-6.14": true},
 		},
+		{
+			title: "uppercase [X] checkbox is treated as checked",
+			body:  marker + "\n- [X] `backport-aws-6.14`\n",
+			want:  map[string]bool{"backport-aws-6.14": true},
+		},
 	}
 
 	for _, tc := range cases {

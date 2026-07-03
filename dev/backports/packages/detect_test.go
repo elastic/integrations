@@ -119,6 +119,7 @@ func TestDetectPackages(t *testing.T) {
 		result, err := DetectPackages([]string{}, pkgs)
 		require.NoError(t, err)
 		assert.Empty(t, result)
+		assert.NotNil(t, result) // must be [] not null when JSON-marshalled
 	})
 
 	t.Run("mix of package and non-package files", func(t *testing.T) {

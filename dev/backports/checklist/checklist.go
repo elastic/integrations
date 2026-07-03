@@ -29,7 +29,7 @@ type PackageBranches struct {
 }
 
 // checkedLineRe matches a checked checkbox line: "- [x] `branch-name`..."
-var checkedLineRe = regexp.MustCompile("^- \\[x\\] `([^`]+)`")
+var checkedLineRe = regexp.MustCompile("^- \\[[xX]\\] `([^`]+)`")
 
 // ParseCheckedBranches scans body for "- [x] `<branch>`" lines and returns the
 // set of branch names that are currently ticked. An empty or marker-free body

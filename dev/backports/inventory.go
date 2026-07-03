@@ -66,6 +66,7 @@ type ActiveResult struct {
 	MaintainedUntil *string `json:"maintained_until"`
 }
 
+// loadInventory reads and unmarshals the YAML inventory file at path.
 func loadInventory(path string) (inventory, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
