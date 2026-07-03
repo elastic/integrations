@@ -142,12 +142,28 @@ processors:
       if: ctx.cato_networks?.audit?.change?.After?.socketInterfacesDouble != null
       ignore_missing: true
 
+  - set:
+      field: user.name
+      tag: set_user_name_from_admin
+      copy_from: cato_networks.audit.admin
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_admin_id
+      copy_from: cato_networks.audit.admin_id
+      ignore_empty_value: true
   - append:
       field: related.user
       tag: append_audit_admin_id_into_related_user
       value: '{{{cato_networks.audit.admin_id}}}'
       allow_duplicates: false
       if: ctx.cato_networks?.audit?.admin_id != null
+  - append:
+      field: related.user
+      tag: append_audit_admin_into_related_user
+      value: '{{{cato_networks.audit.admin}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.audit?.admin != null
   - convert:
       field: cato_networks.audit.change.After.backhaulingEnabled
       tag: convert_change_After_backhaulingEnabled_to_boolean
@@ -1558,6 +1574,11 @@ processors:
             field: cato_networks.audit.insertion_date
             ignore_missing: true
   - set:
+      field: event.created
+      tag: set_event_created_from_audit_insertion_date
+      copy_from: cato_networks.audit.insertion_date
+      ignore_empty_value: true
+  - set:
       field: '@timestamp'
       tag: set_@timestamp_from_audit_insertion_date
       copy_from: cato_networks.audit.insertion_date
@@ -2829,7 +2850,11 @@ processors:
         }
   - remove:
       field:
+        - cato_networks.audit.admin
+        - cato_networks.audit.admin_id
+        - cato_networks.audit.change_type
         - cato_networks.audit.creation_date
+        - cato_networks.audit.insertion_date
       tag: remove_custom_duplicate_fields
       ignore_missing: true
   - script:

@@ -97,7 +97,15 @@ program: |
                   }
                 :
                   {
-                    "last_timestamp": body.data.auditFeed.?to.optMap(v, timestamp(v).format("2006-01-02/15:04:05")).orValue(window_to),
+                    // auditFeed.to may echo back the non-RFC3339 request layout, so guard the
+                    // parse and fall back to window_to instead of aborting the final page.
+                    "last_timestamp": body.data.auditFeed.?to.optMap(v,
+                      try(timestamp(v), "error").as(t, !has(t.error) ?
+                        t.format("2006-01-02/15:04:05")
+                      :
+                        window_to
+                      )
+                    ).orValue(window_to),
                   },
                 "want_more": body.data.auditFeed.?hasMore.orValue(false),
               }

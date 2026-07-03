@@ -75,7 +75,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
     * To **Collect Cato Networks logs via API**, you'll need to:
 
-        - Configure **URL**.
+        - Configure **URL** (the base URL of the Cato Networks API, for example, `https://api.catonetworks.com`).
         - Configure **Account IDs**.
         - Configure **API Key**.
         - Adjust the integration configuration parameters if required, including the **Interval**, **Preserve original event** etc. to enable data collection.

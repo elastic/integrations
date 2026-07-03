@@ -41,6 +41,11 @@ processors:
         - json.time
       tag: fingerprint_event_id_time
       target_field: _id
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       tag: set_event_kind
@@ -60,6 +65,16 @@ processors:
       tag: rename_account_name
       target_field: cato_networks.event.account_name
       ignore_missing: true
+  - set:
+      field: organization.id
+      tag: set_organization_id_from_account_id
+      copy_from: cato_networks.event.account_id
+      ignore_empty_value: true
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_account_name
+      copy_from: cato_networks.event.account_name
+      ignore_empty_value: true
   - rename:
       field: json.action
       tag: rename_action
@@ -328,6 +343,11 @@ processors:
       tag: rename_device_id
       target_field: cato_networks.event.device_id
       ignore_missing: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_device_id
+      copy_from: cato_networks.event.device_id
+      ignore_empty_value: true
   - rename:
       field: json.device_os_type
       tag: rename_device_os_type
@@ -358,6 +378,12 @@ processors:
       tag: set_dns_question_name_from_event_dns_query
       copy_from: cato_networks.event.dns_query
       ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_dns_question_name_into_related_hosts
+      value: '{{{dns.question.name}}}'
+      allow_duplicates: false
+      if: ctx.dns?.question?.name != null
   - rename:
       field: json.dns_record_type
       tag: rename_dns_record_type
@@ -378,6 +404,12 @@ processors:
       tag: set_url_domain_from_event_domain_name
       copy_from: cato_networks.event.domain_name
       ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_url_domain_into_related_hosts
+      value: '{{{url.domain}}}'
+      allow_duplicates: false
+      if: ctx.url?.domain != null
   - rename:
       field: json.egress_pop_name
       tag: rename_egress_pop_name
@@ -672,6 +704,11 @@ processors:
       tag: rename_pop_name
       target_field: cato_networks.event.pop_name
       ignore_missing: true
+  - set:
+      field: observer.name
+      tag: set_observer_name_from_pop_name
+      copy_from: cato_networks.event.pop_name
+      ignore_empty_value: true
   - rename:
       field: json.prompt_action
       tag: rename_prompt_action
@@ -714,6 +751,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.request.bytes
+      tag: set_http_request_bytes_from_request_size
+      copy_from: cato_networks.event.request_size
+      ignore_empty_value: true
   - convert:
       field: json.response_size
       tag: convert_response_size_to_long
@@ -724,16 +766,35 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.bytes
+      tag: set_http_response_bytes_from_response_size
+      copy_from: cato_networks.event.response_size
+      ignore_empty_value: true
   - rename:
       field: json.risk_level
       tag: rename_risk_level
       target_field: cato_networks.event.risk_level
       ignore_missing: true
-  - set:
-      field: host.risk.static_level
-      tag: set_host_risk_static_level_from_event_risk_level
-      copy_from: cato_networks.event.risk_level
-      ignore_empty_value: true
+  - script:
+      lang: painless
+      tag: script_event_severity_from_risk_level
+      description: Map the Cato risk level label to a numeric ECS event.severity; the label is retained in cato_networks.event.risk_level.
+      if: ctx.cato_networks?.event?.risk_level != null
+      params:
+        levels:
+          Low: 21
+          Medium: 47
+          High: 73
+          Critical: 99
+      source: |-
+        def sev = params.levels.get(ctx.cato_networks.event.risk_level);
+        if (sev != null) {
+          if (ctx.event == null) {
+            ctx.event = new HashMap();
+          }
+          ctx.event.severity = sev;
+        }
   - rename:
       field: json.rule_id
       tag: rename_rule_id
@@ -880,6 +941,12 @@ processors:
       tag: rename_src_site_name
       target_field: cato_networks.event.src_site_name
       ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_src_site_name_into_related_user
+      value: '{{{cato_networks.event.src_site_name}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.event?.src_is_site_or_vpn == 'SDP User' && ctx.cato_networks?.event?.src_site_name != null
   - convert:
       field: json.static_host
       tag: convert_static_host_to_boolean
@@ -910,11 +977,29 @@ processors:
       tag: rename_threat_name
       target_field: cato_networks.event.threat_name
       ignore_missing: true
+  - append:
+      field: event.category
+      tag: append_event_category_intrusion_detection
+      value: intrusion_detection
+      allow_duplicates: false
+      if: >-
+        ctx.cato_networks?.event?.threat_name != null ||
+        ['IPS', 'DNS Protection'].contains(ctx.cato_networks?.event?.event_sub_type)
+  - set:
+      field: event.kind
+      tag: set_event_kind_alert
+      value: alert
+      if: ctx.cato_networks?.event?.threat_name != null
   - rename:
       field: json.threat_reference
       tag: rename_threat_reference
       target_field: cato_networks.event.threat_reference
       ignore_missing: true
+  - set:
+      field: event.reference
+      tag: set_event_reference_from_threat_reference
+      copy_from: cato_networks.event.threat_reference
+      ignore_empty_value: true
   - rename:
       field: json.threat_type
       tag: rename_threat_type
@@ -1064,6 +1149,8 @@ processors:
       if: ctx.cato_networks?.event?.vpn_user_email != null
   - remove:
       field:
+        - cato_networks.event.account_id
+        - cato_networks.event.account_name
         - cato_networks.event.action
         - cato_networks.event.application_name
         - cato_networks.event.client_ip
@@ -1072,6 +1159,7 @@ processors:
         - cato_networks.event.dest_country_code
         - cato_networks.event.dest_ip
         - cato_networks.event.dest_port
+        - cato_networks.event.device_id
         - cato_networks.event.dns_query
         - cato_networks.event.dns_record_type
         - cato_networks.event.domain_name
@@ -1087,7 +1175,9 @@ processors:
         - cato_networks.event.mitre_attack_tactics
         - cato_networks.event.mitre_attack_techniques
         - cato_networks.event.os_version
-        - cato_networks.event.risk_level
+        - cato_networks.event.pop_name
+        - cato_networks.event.request_size
+        - cato_networks.event.response_size
         - cato_networks.event.rule_id
         - cato_networks.event.rule_name
         - cato_networks.event.server_ip
@@ -1095,6 +1185,7 @@ processors:
         - cato_networks.event.src_country_code
         - cato_networks.event.src_ip
         - cato_networks.event.src_port
+        - cato_networks.event.threat_reference
         - cato_networks.event.time_str
         - cato_networks.event.user_agent
         - cato_networks.event.user_id
