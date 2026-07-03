@@ -608,6 +608,7 @@ func buildPRBody(sha, branchName, repository string) string {
 
 	b.WriteString("\n## Author's checklist\n\n")
 	b.WriteString("- [ ] Review the version set in `manifest.yml` and `changelog.yml`\n")
+	b.WriteString("- [ ] Compare the `manifest.yml` changes here against the original PR (linked above under Origin) and confirm they match — a conflict limited to the version line is auto-resolved by keeping the incoming change as-is, with no compatibility check against this branch\n")
 	b.WriteString("- [ ] Review the links set in `changelog.yml`\n")
 
 	return b.String()
