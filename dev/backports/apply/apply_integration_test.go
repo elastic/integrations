@@ -450,6 +450,124 @@ func TestApplyIntegration_ReportsConflictWhenManifestDeleted(t *testing.T) {
 	assert.Empty(t, strings.TrimSpace(branches))
 }
 
+// setupIntegrationRepoWithMissingManifestBeforeCherryPick is like
+// setupIntegrationRepo, but the backport branch is cut before the kubernetes
+// package is ever added to the repo — it never has packages/kubernetes at
+// all, let alone a manifest.yml. The package only exists on main, where
+// resolvePackage (which runs against whatever is checked out before
+// prepareWorkingBranch switches to the backport branch) can find it and
+// resolve manifestPath — but that path doesn't exist once cherryPickOrConflict
+// actually looks for it on the checked-out backport branch, before any
+// cherry-pick has even run. This is the gap the pre-cherry-pick
+// manifestMissingConflict call guards: without it, readManifestVersion would
+// crash with an opaque os.ReadFile error instead of reporting a normal
+// conflict.
+func setupIntegrationRepoWithMissingManifestBeforeCherryPick(t *testing.T) (workDir, fixSHA string) {
+	t.Helper()
+
+	run := func(dir string, args ...string) string {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = dir
+		out, err := cmd.CombinedOutput()
+		require.NoError(t, err, "git %v: %s", args, out)
+		return strings.TrimRight(string(out), "\n")
+	}
+
+	remoteDir := t.TempDir()
+	run(remoteDir, "init", "--bare", "-q")
+
+	workDir = t.TempDir()
+	run(workDir, "clone", "-q", remoteDir, ".")
+	run(workDir, "config", "user.email", "test@test.com")
+	run(workDir, "config", "user.name", "Test")
+	run(workDir, "config", "commit.gpgsign", "false")
+
+	write := func(rel, content string) {
+		t.Helper()
+		require.NoError(t, os.WriteFile(filepath.Join(workDir, rel), []byte(content), 0o644))
+	}
+
+	// The package doesn't exist yet at all — only .backports.yml does, as if
+	// the branch was pre-provisioned ahead of the package's addition.
+	write(".backports.yml", "backports:\n"+
+		"  - package: kubernetes\n"+
+		"    branch: backport-kubernetes-1.x\n"+
+		"    base_version: \"1.0.0\"\n"+
+		"    base_commit: \"0000000000\"\n"+
+		"    maintained_until: null\n"+
+		"    archived: false\n"+
+		"    remove_other_packages: false\n")
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Add backports config ahead of the package")
+	run(workDir, "push", "-q", "origin", "HEAD:main")
+
+	// Cut the backport branch here: it never has packages/kubernetes.
+	run(workDir, "checkout", "-q", "-b", "backport-kubernetes-1.x")
+	run(workDir, "push", "-q", "origin", "backport-kubernetes-1.x")
+	run(workDir, "checkout", "-q", "main")
+
+	// The package is only added afterwards, on main.
+	pkgDir := filepath.Join(workDir, "packages", "kubernetes")
+	require.NoError(t, os.MkdirAll(pkgDir, 0o755))
+	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.0\n")
+	write("packages/kubernetes/changelog.yml", "- version: \"1.0.0\"\n"+
+		"  changes:\n"+
+		"    - description: Initial release.\n"+
+		"      type: enhancement\n"+
+		"      link: https://github.com/elastic/integrations/pull/1\n")
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Add kubernetes package")
+
+	// A later fix commit on main — this is the SHA to cherry-pick onto the
+	// backport branch, which still has never seen the package.
+	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.1\n")
+	write("packages/kubernetes/changelog.yml", "- version: \"1.0.1\"\n"+
+		"  changes:\n"+
+		"    - description: Fix timeout in metrics collection.\n"+
+		"      type: bugfix\n"+
+		"      link: https://github.com/elastic/integrations/pull/999\n"+
+		"- version: \"1.0.0\"\n"+
+		"  changes:\n"+
+		"    - description: Initial release.\n"+
+		"      type: enhancement\n"+
+		"      link: https://github.com/elastic/integrations/pull/1\n")
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Fix timeout in metrics collection")
+	fixSHA = run(workDir, "rev-parse", "HEAD")
+
+	// Leave the checkout on main: resolvePackage needs the package to be
+	// present in whatever is physically checked out before Apply() switches to
+	// the backport branch, and main is the only ref that has it.
+	return workDir, fixSHA
+}
+
+func TestApplyIntegration_ReportsConflictWhenManifestMissingBeforeCherryPick(t *testing.T) {
+	workDir, fixSHA := setupIntegrationRepoWithMissingManifestBeforeCherryPick(t)
+
+	result, err := Apply(Options{
+		SHA:         fixSHA,
+		Package:     "kubernetes",
+		Target:      "backport-kubernetes-1.x",
+		Remote:      "origin",
+		DryRun:      true,
+		PackagesDir: "packages",
+		Repository:  "elastic/integrations",
+		WorkDir:     workDir,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	assert.Equal(t, "conflict", result.Status)
+	assert.Contains(t, result.ConflictingFiles, "packages/kubernetes/manifest.yml")
+
+	// The working branch must be cleaned up so a retry doesn't fail with
+	// "branch already exists".
+	branches, err := gitutil.Git{Dir: workDir}.Output("branch", "--list", "auto-backport/*")
+	require.NoError(t, err)
+	assert.Empty(t, strings.TrimSpace(branches))
+}
+
 func TestApplyIntegration_DryRun(t *testing.T) {
 	workDir, fixSHA := setupIntegrationRepo(t)
 

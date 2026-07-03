@@ -249,14 +249,19 @@ func (a applier) prepareWorkingBranch(remote, branchName, workingBranch string) 
 // bumps its own version independently) is auto-resolved in favor of the
 // current branch — bumpPatchVersion recomputes the version afterwards. A
 // manifest.yml conflict block containing anything else is left as a genuine
-// conflict, as is manifest.yml going missing entirely (a delete/modify
+// conflict, as is manifest.yml going missing entirely — whether it was
+// already missing before the cherry-pick started, or a delete/modify
 // conflict, or the cherry-picked commit cleanly removing/renaming the
-// package) — either way there's no manifest left to version-bump, so it's
+// package — either way there's no manifest left to version-bump, so it's
 // reported the same way as any other unresolved conflict. If conflicts
 // remain in any file after this, it resets the index and returns a populated
 // conflict Result; the caller's defer is responsible for branch cleanup. On
 // success it returns (nil, nil).
 func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath string) (*Result, error) {
+	if conflict := a.manifestMissingConflict(sha, branchName, pkg, manifestPath); conflict != nil {
+		return conflict, nil
+	}
+
 	baseVersion, err := readManifestVersion(manifestPath)
 	if err != nil {
 		return nil, fmt.Errorf("reading current version from %s: %w", manifestPath, err)
@@ -322,10 +327,11 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 	return nil, nil
 }
 
-// manifestMissingConflict reports a conflict Result if manifestPath no
-// longer exists in the working tree after the cherry-pick — either from a
-// delete/modify conflict, or because the cherry-picked commit cleanly
-// deletes/renames the package. Either way there's no manifest.yml left to
+// manifestMissingConflict reports a conflict Result if manifestPath does not
+// exist in the working tree. Called both before the cherry-pick (the
+// package doesn't exist on the target backport branch at all yet) and after
+// (a delete/modify conflict, or the cherry-picked commit cleanly
+// deletes/renames the package). Either way there's no manifest.yml left to
 // version-bump, so this needs a human decision rather than a downstream
 // os.ReadFile failing with an opaque error. Returns nil if manifestPath is
 // present, or if statting it fails for some other reason (that error
