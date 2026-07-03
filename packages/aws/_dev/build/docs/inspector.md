@@ -51,7 +51,7 @@ For existing users of the AWS integration, before upgrading to `4.0.0` please en
 
 ## Vulnerability status
 
-The integration maps the Amazon Inspector finding status (`aws.inspector.status`) to the ECS `vulnerability.status` field so the [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) can distinguish active from remediated findings:
+The integration maps the Amazon Inspector finding status (`aws.inspector.status`) to the `vulnerability.status` field so the [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) can distinguish active from remediated findings. `vulnerability.status` is a package-defined field that aligns with the ECS `vulnerability.status` field (added in ECS 9.5):
 
 | `aws.inspector.status` | `vulnerability.status` |
 |------------------------|------------------------|
