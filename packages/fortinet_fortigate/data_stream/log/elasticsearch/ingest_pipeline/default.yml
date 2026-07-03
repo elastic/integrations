@@ -406,22 +406,20 @@ processors:
       target_field: network.direction
       ignore_missing: true
       if: ctx.network?.direction == null
-  - grok:
-      tag: grok_source_ip_d1d4ef25
+  - convert:
+      tag: convert_source_ip_d1d4ef25
       field: source.ip
-      patterns:
-        - '^%{IP}$'
+      type: ip
       ignore_missing: true
       on_failure:
         - remove:
             tag: remove_source_ip_a34d8ade
             field: source.ip
             ignore_missing: true
-  - grok:
-      tag: grok_destination_ip_3561ff45
+  - convert:
+      tag: convert_destination_ip_3561ff45
       field: destination.ip
-      patterns:
-        - '^%{IP}$'
+      type: ip
       ignore_missing: true
       on_failure:
         - remove:
