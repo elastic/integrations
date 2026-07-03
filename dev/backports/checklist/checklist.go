@@ -65,7 +65,7 @@ func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
 	fmt.Fprintln(&b)
 	fmt.Fprintln(&b, "Only branches for packages touched by this PR's current diff are shown.")
 	fmt.Fprintln(&b)
-	fmt.Fprintln(&b, "Check the branches to backport this change to. PRs will be created automatically on merge, or when you update this checklist after merge.")
+	fmt.Fprintln(&b, "Check the branches to backport this change to.")
 
 	for _, p := range pkgs {
 		if len(p.Branches) == 0 {
