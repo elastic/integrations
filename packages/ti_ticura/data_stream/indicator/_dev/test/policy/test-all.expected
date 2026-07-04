@@ -22,7 +22,11 @@ inputs:
               // (a short-lived direct blob URL) instead of a 307 redirect. Auto-following
               // a 307 to the large feed body fails with "read on closed response body",
               // so we resolve the URL here and download it directly in step 2.
-              request("GET", state.url).with({
+              // Append mode=url if it is missing: Fleet keeps a package policy's stored
+              // url across upgrades, so a policy created before mode=url existed would
+              // otherwise send the legacy endpoint (307) that this program cannot process.
+              // This makes such policies self-heal without needing the (hidden) var edited.
+              request("GET", state.url.contains("mode=url") ? state.url : state.url + "&mode=url").with({
                 "Header": {
                   "x-api-key": [state.api_token],
                 }
