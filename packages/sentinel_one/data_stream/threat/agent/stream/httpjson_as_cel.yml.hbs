@@ -11,7 +11,7 @@ request.proxy_url: {{proxy_url}}
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
-request.url: {{url}}
+request.url: {{url}}/web/api/v2.1/threats
 cel.state:
   api_token: {{api_token}}
   page_size: {{page_size}}
@@ -32,7 +32,7 @@ cel.program: |-
     state.with(
       request(
         "GET",
-        state.url.trim_right("/") + "/web/api/v2.1/threats?" + {
+        state.url + "?" + {
           "limit": [string(state.page_size)],
           "sortBy": ["updatedAt"],
           "sortOrder": ["asc"],
@@ -82,7 +82,7 @@ cel.program: |-
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/threats: " + (
+              "message": "GET " + state.url + ": " + (
                 (size(resp.Body) != 0) ?
                   string(resp.Body)
                 :
