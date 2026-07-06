@@ -819,18 +819,31 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.cmdline |  | keyword |
 | crowdstrike.alert.command_line |  | keyword |
 | crowdstrike.alert.comment |  | keyword |
+| crowdstrike.alert.comments.falcon_user_id |  | keyword |
+| crowdstrike.alert.comments.timestamp |  | date |
+| crowdstrike.alert.comments.value |  | keyword |
 | crowdstrike.alert.composite_id |  | keyword |
 | crowdstrike.alert.confidence |  | long |
 | crowdstrike.alert.context_timestamp |  | date |
 | crowdstrike.alert.control_graph_id |  | keyword |
+| crowdstrike.alert.correlation_rule_case_template_id |  | keyword |
+| crowdstrike.alert.correlation_rule_create_case |  | boolean |
+| crowdstrike.alert.correlation_rule_execution_id |  | keyword |
+| crowdstrike.alert.correlation_rule_id |  | keyword |
+| crowdstrike.alert.correlation_rule_user_id |  | keyword |
+| crowdstrike.alert.correlation_rule_user_uuid |  | keyword |
+| crowdstrike.alert.correlation_rule_version_id |  | keyword |
 | crowdstrike.alert.crawl_edge_ids.Sensor |  | keyword |
 | crowdstrike.alert.crawl_vertex_ids.Sensor |  | keyword |
 | crowdstrike.alert.crawled_timestamp |  | date |
 | crowdstrike.alert.created_timestamp |  | date |
 | crowdstrike.alert.data_domains |  | keyword |
 | crowdstrike.alert.description |  | keyword |
+| crowdstrike.alert.destination_hosts |  | keyword |
+| crowdstrike.alert.destination_ips |  | ip |
 | crowdstrike.alert.detect_type |  | keyword |
 | crowdstrike.alert.detection_context |  | flattened |
+| crowdstrike.alert.detection_id |  | keyword |
 | crowdstrike.alert.device.agent_load_flags |  | long |
 | crowdstrike.alert.device.agent_local_time |  | date |
 | crowdstrike.alert.device.agent_version |  | keyword |
@@ -875,6 +888,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.end_time |  | date |
 | crowdstrike.alert.event_correlation_id |  | keyword |
 | crowdstrike.alert.event_id |  | keyword |
+| crowdstrike.alert.event_ids |  | keyword |
 | crowdstrike.alert.executables_written.filename |  | keyword |
 | crowdstrike.alert.executables_written.filepath |  | keyword |
 | crowdstrike.alert.executables_written.timestamp |  | date |
@@ -903,7 +917,9 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.grandparent_details.user_id |  | keyword |
 | crowdstrike.alert.grandparent_details.user_name |  | keyword |
 | crowdstrike.alert.has_script_or_module_ioc |  | boolean |
+| crowdstrike.alert.has_truncated_entities |  | boolean |
 | crowdstrike.alert.host_name |  | keyword |
+| crowdstrike.alert.host_names |  | keyword |
 | crowdstrike.alert.host_type |  | keyword |
 | crowdstrike.alert.id |  | keyword |
 | crowdstrike.alert.idp_policy.enforced_externally |  | long |
@@ -938,6 +954,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.ldap_search_query_attack |  | long |
 | crowdstrike.alert.lead_id |  | keyword |
 | crowdstrike.alert.lead_type |  | keyword |
+| crowdstrike.alert.linked_case_ids |  | keyword |
 | crowdstrike.alert.local_prevalence |  | keyword |
 | crowdstrike.alert.local_process_id |  | keyword |
 | crowdstrike.alert.location_country_code |  | keyword |
@@ -963,6 +980,8 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.network_accesses.remote_port |  | long |
 | crowdstrike.alert.objective |  | keyword |
 | crowdstrike.alert.operating_system |  | keyword |
+| crowdstrike.alert.original_correlation_rules_entities_count |  | long |
+| crowdstrike.alert.original_indicator_entities_count |  | long |
 | crowdstrike.alert.os_name |  | keyword |
 | crowdstrike.alert.overwatch_note |  | keyword |
 | crowdstrike.alert.overwatch_note_timestamp |  | date |
@@ -1103,6 +1122,15 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.user_name |  | keyword |
 | crowdstrike.alert.user_names |  | keyword |
 | crowdstrike.alert.user_principal |  | keyword |
+| crowdstrike.alert.usernames |  | keyword |
+| crowdstrike.alert.users.aid |  | keyword |
+| crowdstrike.alert.users.full_name |  | keyword |
+| crowdstrike.alert.users.full_name_is_enriched |  | boolean |
+| crowdstrike.alert.users.idp_id |  | keyword |
+| crowdstrike.alert.users.idp_id_is_enriched |  | boolean |
+| crowdstrike.alert.users.sid |  | keyword |
+| crowdstrike.alert.users.user_name |  | keyword |
+| crowdstrike.alert.vendor_pattern_id |  | keyword |
 | crowdstrike.alert.worker_node_name |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -1640,15 +1668,15 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-10-01T09:58:32.519Z",
     "agent": {
-        "id": "71e71f16-ae08-46e3-a58e-a7d14e974950",
-        "name": "elastic-agent-30302",
+        "id": "b278a83d-df3e-4db6-a909-51a258889bbe",
+        "name": "elastic-agent-62647",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.4.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "name": "elastic-package-crowdstrike-fdr-30445"
+                "name": "elastic-package-crowdstrike-fdr-78107"
             },
             "object": {
                 "key": "data"
@@ -1656,199 +1684,102 @@ An example event for `fdr` looks as following:
         }
     },
     "crowdstrike": {
-        "AuthenticationId": "3783389",
-        "ConfigStateHash": "3998263252",
-        "EffectiveTransmissionClass": "3",
-        "Entitlements": "15",
-        "ImageSubsystem": "2",
-        "IntegrityLevel": "4096",
-        "MD5HashData": "50d5fd1290d94d46acca0585311e74d5",
-        "ParentAuthenticationId": "3783389",
-        "ProcessCreateFlags": "525332",
-        "ProcessParameterFlags": "16385",
-        "ProcessSxsFlags": "1600",
-        "RpcClientProcessId": "2439558094566",
-        "SHA256HashData": "b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37",
-        "SessionId": "1",
-        "SourceProcessId": "2439558094566",
-        "SourceThreadId": "77538684027214",
-        "Tags": [
-            "41",
-            "12094627905582",
-            "12094627906234"
-        ],
-        "TokenType": "2",
-        "WindowFlags": "128",
-        "cid": "ffffffff30a3407dae27d0503611022d",
-        "id": "ffffffff-1111-11eb-8462-02ade3b2f949",
-        "info": {
-            "host": {
-                "AgentLoadFlags": "1",
-                "AgentLocalTime": "1697775225",
-                "AgentTimeOffset": "15889.017",
-                "AgentVersion": "7.01.13922.0",
-                "BiosManufacturer": "Iris",
-                "BiosVersion": "vG17V.21040423/z64",
-                "ChassisType": "Other",
-                "City": "Chicago",
-                "ConfigBuild": "1007.3.0017312.1",
-                "ConfigIDBuild": "13922",
-                "Continent": "North America",
-                "Country": "United States of America",
-                "FalconGroupingTags": "'FalconGroupingTags/AMERICA'",
-                "FirstSeen": "1628678052.0",
-                "HostHiddenStatus": "Visible",
-                "MachineDomain": "groot.org",
-                "OU": "Servers;America;Offices",
-                "PointerSize": "8",
-                "ProductType": "3.0",
-                "ServicePackMajor": "0",
-                "SiteName": "BCL",
-                "SystemManufacturer": "Iris",
-                "SystemProductName": "IrOS",
-                "Time": "1697992719.22",
-                "Timezone": "America/Chicago",
-                "Version": "Windows Server 2021",
-                "cid": "ffffffff30a3407dae27d0503611022d",
-                "event_platform": "Win"
-            },
-            "user": {
-                "AccountType": "Domain User",
-                "LastLoggedOnHost": "COMPUTER1",
-                "LocalAdminAccess": "No",
-                "LogonInfo": "Domain User Logon",
-                "LogonTime": "1702546155.197",
-                "LogonType": "Interactive",
-                "PasswordLastSet": "1699971198.062",
-                "User": "DOMAIN\\BRADLEYA",
-                "UserIsAdmin": "0",
-                "UserLogonFlags_decimal": "0",
-                "_time": "1702546168.576",
-                "cid": "ffffffff15754bcfb5f9152ec7ac90ac",
-                "event_platform": "Win",
-                "monthsincereset": "1.0"
-            }
+        "EventType": "ZeroTrustHostAssessment",
+        "HostHiddenStatus": "VISIBLE",
+        "assessments": {
+            "analytics_and_improvements_mac": "yes",
+            "application_firewall_mac": "yes",
+            "crendential_dumping_hash_mac": "yes",
+            "crendential_dumping_kcpassword_mac": "yes",
+            "crowdstrike_full_disk_access": "yes",
+            "execution_blocking_custom_blocking_enabled_mac": "yes",
+            "execution_blocking_intel_threats_enabled_mac": "yes",
+            "execution_blocking_suspicious_processes_enabled_mac": "yes",
+            "file_vault_enabled_mac": "yes",
+            "gatekeeper_mac": "yes",
+            "internet_sharing_mac": "yes",
+            "mac_os_version": "yes",
+            "ml_adware_detection_mac": "yes",
+            "ml_adware_prevention_mac": "yes",
+            "ml_cloud_antimalware_detection_mac": "yes",
+            "ml_cloud_antimalware_prevention_mac": "yes",
+            "ml_sensor_adware_and_pup_detection_mac": "yes",
+            "ml_sensor_adware_and_pup_prevention_mac": "yes",
+            "ml_sensor_antimalware_detection_mac": "yes",
+            "ml_sensor_antimalware_prevention_mac": "yes",
+            "quarantine_mac": "yes",
+            "real_time_response_enabled_mac": "yes",
+            "remote_login_mac": "yes",
+            "script_based_execution_monitoring_mac": "yes",
+            "sip_enabled_mac": "yes",
+            "stealth_mode_mac": "no",
+            "system_full_disk_access_mac": "no",
+            "unauthorized_remote_access_chopper_mac": "yes",
+            "unauthorized_remote_access_empyre_mac": "yes",
+            "unauthorized_remote_access_xpcom_mac": "yes"
         },
-        "name": "ProcessRollup2V18"
+        "cid": "22222222222222222222222222222222",
+        "os_version": "Sonoma (14)",
+        "product_type_desc": "Workstation",
+        "scores": {
+            "modified_time": "2024-02-13T22:33:34.077Z",
+            "os": 89,
+            "overall": 97,
+            "sensor": 100,
+            "version": "3.8.1"
+        }
     },
     "data_stream": {
         "dataset": "crowdstrike.fdr",
-        "namespace": "77613",
+        "namespace": "87700",
         "type": "logs"
     },
     "device": {
-        "id": "ffffffff655344736aca58d17fb570f0"
+        "id": "11111111111111111111111111111111"
+    },
+    "ecs": {
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "71e71f16-ae08-46e3-a58e-a7d14e974950",
+        "id": "b278a83d-df3e-4db6-a909-51a258889bbe",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.4.0"
     },
     "event": {
-        "action": "ProcessRollup2",
         "agent_id_status": "verified",
-        "category": [
-            "process"
-        ],
         "created": "2020-10-01T09:58:32.519Z",
         "dataset": "crowdstrike.fdr",
-        "id": "ffffffff-1111-11eb-8462-02ade3b2f949|ffffffff655344736aca58d17fb570f0|ffffffff30a3407dae27d0503611022d",
-        "ingested": "2025-08-27T05:55:29Z",
-        "kind": "event",
-        "original": "{\"AuthenticationId\":\"3783389\",\"CommandLine\":\"\\\"C:\\\\WINDOWS\\\\system32\\\\backgroundTaskHost.exe\\\" -ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca\",\"ConfigBuild\":\"1007.3.0012309.1\",\"ConfigStateHash\":\"3998263252\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"ImageFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\backgroundTaskHost.exe\",\"ImageSubsystem\":\"2\",\"IntegrityLevel\":\"4096\",\"MD5HashData\":\"50d5fd1290d94d46acca0585311e74d5\",\"ParentAuthenticationId\":\"3783389\",\"ParentBaseFileName\":\"svchost.exe\",\"ParentProcessId\":\"2439558094566\",\"ProcessCreateFlags\":\"525332\",\"ProcessEndTime\":\"\",\"ProcessParameterFlags\":\"16385\",\"ProcessStartTime\":\"1604855181.648\",\"ProcessSxsFlags\":\"1600\",\"RawProcessId\":\"22272\",\"RpcClientProcessId\":\"2439558094566\",\"SHA1HashData\":\"0000000000000000000000000000000000000000\",\"SHA256HashData\":\"b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37\",\"SessionId\":\"1\",\"SourceProcessId\":\"2439558094566\",\"SourceThreadId\":\"77538684027214\",\"Tags\":\"41, 12094627905582, 12094627906234\",\"TargetProcessId\":\"2450046082233\",\"TokenType\":\"2\",\"UserSid\":\"S-1-12-1-3697283754-1083485977-2164330645-2516515886\",\"WindowFlags\":\"128\",\"aid\":\"ffffffff655344736aca58d17fb570f0\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"ProcessRollup2\",\"id\":\"ffffffff-1111-11eb-8462-02ade3b2f949\",\"name\":\"ProcessRollup2V18\",\"timestamp\":\"1601546312519\"}",
-        "outcome": "success",
-        "type": [
-            "start"
-        ]
+        "id": "|11111111111111111111111111111111|22222222222222222222222222222222",
+        "ingested": "2026-07-02T05:28:19Z",
+        "module": "crowdstrike",
+        "original": "{\"aid\":\"11111111111111111111111111111111\",\"cid\":\"22222222222222222222222222222222\",\"hostname\":\"example-XXXXXXXXX\",\"os_version\":\"Sonoma (14)\",\"product_name\":\"\",\"product_type_desc\":\"Workstation\",\"host_hidden_status\":\"VISIBLE\",\"event_platform\":\"Mac\",\"scores\":{\"os\":89,\"sensor\":100,\"overall\":97,\"version\":\"3.8.1\",\"modified_time\":\"2024-02-13T22:33:34.077075097Z\"},\"assessments\":{\"analytics_and_improvements_mac\":\"yes\",\"application_firewall_mac\":\"yes\",\"crendential_dumping_hash_mac\":\"yes\",\"crendential_dumping_kcpassword_mac\":\"yes\",\"crowdstrike_full_disk_access\":\"yes\",\"execution_blocking_custom_blocking_enabled_mac\":\"yes\",\"execution_blocking_intel_threats_enabled_mac\":\"yes\",\"execution_blocking_suspicious_processes_enabled_mac\":\"yes\",\"file_vault_enabled_mac\":\"yes\",\"gatekeeper_mac\":\"yes\",\"internet_sharing_mac\":\"yes\",\"mac_os_version\":\"yes\",\"ml_adware_detection_mac\":\"yes\",\"ml_adware_prevention_mac\":\"yes\",\"ml_cloud_antimalware_detection_mac\":\"yes\",\"ml_cloud_antimalware_prevention_mac\":\"yes\",\"ml_sensor_adware_and_pup_detection_mac\":\"yes\",\"ml_sensor_adware_and_pup_prevention_mac\":\"yes\",\"ml_sensor_antimalware_detection_mac\":\"yes\",\"ml_sensor_antimalware_prevention_mac\":\"yes\",\"quarantine_mac\":\"yes\",\"real_time_response_enabled_mac\":\"yes\",\"remote_login_mac\":\"yes\",\"script_based_execution_monitoring_mac\":\"yes\",\"sip_enabled_mac\":\"yes\",\"stealth_mode_mac\":\"no\",\"system_full_disk_access_mac\":\"no\",\"unauthorized_remote_access_chopper_mac\":\"yes\",\"unauthorized_remote_access_empyre_mac\":\"yes\",\"unauthorized_remote_access_xpcom_mac\":\"yes\"},\"event_type\":\"ZeroTrustHostAssessment\",\"timestamp\":\"1601546312519\"}"
     },
     "host": {
-        "ip": [
-            "16.15.12.10"
-        ],
-        "name": "FEVWSN1-234",
+        "hostname": "example-XXXXXXXXX",
+        "id": "11111111111111111111111111111111",
+        "name": "example-XXXXXXXXX",
         "os": {
-            "type": "windows"
+            "type": "macos"
         }
     },
     "input": {
         "type": "aws-s3"
     },
-    "message": "ProcessRollup2",
     "observer": {
-        "address": [
-            "67.43.156.14"
-        ],
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": [
-            "67.43.156.14"
-        ],
-        "serial_number": "ffffffff655344736aca58d17fb570f0",
-        "version": "1007.3.0012309.1"
-    },
-    "process": {
-        "Ext": {
-            "token": {
-                "integrity_level_name": "LOW"
-            }
-        },
-        "args": [
-            "C:\\WINDOWS\\system32\\backgroundTaskHost.exe",
-            "-ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca"
-        ],
-        "args_count": 2,
-        "command_line": "\"C:\\WINDOWS\\system32\\backgroundTaskHost.exe\" -ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca",
-        "entity_id": "2450046082233",
-        "executable": "\\Device\\HarddiskVolume3\\Windows\\System32\\backgroundTaskHost.exe",
-        "hash": {
-            "md5": "50d5fd1290d94d46acca0585311e74d5",
-            "sha256": "b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37"
-        },
-        "name": "backgroundTaskHost.exe",
-        "parent": {
-            "entity_id": "2439558094566",
-            "name": "svchost.exe"
-        },
-        "pid": 22272,
-        "start": "2020-11-08T17:06:21.648Z"
+        "serial_number": "11111111111111111111111111111111",
+        "type": "agent",
+        "vendor": "crowdstrike"
     },
     "related": {
-        "hash": [
-            "50d5fd1290d94d46acca0585311e74d5",
-            "b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37",
-            "3998263252"
-        ],
         "hosts": [
-            "FEVWSN1-234",
-            "COMPUTER1"
-        ],
-        "ip": [
-            "67.43.156.14",
-            "16.15.12.10"
-        ],
-        "user": [
-            "Alan-One",
-            "DOMAIN\\BRADLEYA",
-            "S-1-12-1-3697283754-1083485977-2164330645-2516515886"
+            "example-XXXXXXXXX"
         ]
     },
     "tags": [
         "preserve_original_event",
         "forwarded",
         "crowdstrike-fdr"
-    ],
-    "user": {
-        "domain": "DOMAIN",
-        "id": "S-1-12-1-3697283754-1083485977-2164330645-2516515886",
-        "name": "Alan-One"
-    }
+    ]
 }
 ```
 

@@ -1,0 +1,126 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "m",
+                "value": 130
+            },
+            "group_by": [
+                "user.email",
+                "google_workspace.admin.role.name",
+                "source.ip"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a custom admin role or its privileges are modified in Google Workspace. Adversaries may add or expand privileges on an existing role to elevate access for assigned users or groups without creating a new role or directly assigning a well-known admin role. Because privilege changes take effect for all principals assigned the role, modifying role permissions can silently expand access across multiple accounts.",
+        "false_positives": [
+            "Google Workspace admin roles may be modified by system administrators. Verify that the configuration change was expected. Exceptions can be added to this rule to filter expected behavior."
+        ],
+        "from": "now-130m",
+        "index": [
+            "filebeat-*",
+            "logs-google_workspace*"
+        ],
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "source.ip",
+                "user.name",
+                "user.email",
+                "event.action",
+                "google_workspace.admin.role.name",
+                "google_workspace.admin.privilege.name"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Google Workspace Role Modified",
+        "note": "## Triage and analysis\n\n### Investigating Google Workspace Role Modified\n\nGoogle Workspace allows administrators to modify custom admin roles by adding, removing, or updating privileges across\nservices such as Users, Groups, Gmail, Drive, and Security. Threat actors may expand privileges on an existing role to\nestablish persistence or escalate access for accounts already assigned that role, without triggering role assignment\nalerts. Selecting a privilege category in the Admin console (for example, Organization Units) can add multiple related\nprivilege groups in a single action, each logged as a separate `ADD_PRIVILEGE` event.\n\nThis rule identifies when a Google Workspace role is modified via `ADD_PRIVILEGE` or `UPDATE_ROLE` events. Alert\nsuppression groups alerts by `user.email`, `google_workspace.admin.role.name`, and `source.ip` within a 130-minute window\n(matching the rule lookback) so analysts receive one alert per role modification session instead of one alert per privilege.\n\n### Possible investigation steps\n\n- Identify the initiating (actor) account that modified the role by reviewing `user.email` or `user.name`, and note the `source.ip` and `event.ingested` timestamps.\n- Identify the role modified by reviewing `google_workspace.admin.role.name`.\n- Identify the privilege changed by reviewing `google_workspace.admin.privilege.name`. Because suppression may group multiple events, search for all related changes in the same session (see Kibana steps below).\n- Determine whether the modification is expected and authorized:\n  - Validate there is an approved change request/ticket and that the actor account is authorized to modify admin roles.\n  - If the actor account or source IP is unusual, treat the alert as higher priority until proven benign.\n- Review role permissions in the Google Admin console:\n  - Navigate to Account > Admin roles.\n  - Locate the role name from `google_workspace.admin.role.name` and select it to open the role details.\n  - Review the Privileges tab to confirm which permissions were added or removed and whether they align with the organization's delegation model.\n  - Review the Admins tab to identify which users or groups currently hold the role and will inherit the modified privileges.\n- Search Kibana for all privileges changed in the session:\n  - In Discover (or the alert investigation workflow), search Google Workspace admin logs with a time range centered on the alert timestamp (\u00b15 minutes).\n  - Use the following KQL example, replacing `<ROLE_NAME>` with the value from `google_workspace.admin.role.name`:\n    ```\n    data_stream.dataset: \"google_workspace.admin\" and event.action: (\"ADD_PRIVILEGE\" or \"UPDATE_ROLE\") and google_workspace.admin.role.name: \"<ROLE_NAME>\"\n    ```\n  - Optionally filter on the actor with `user.email` to isolate changes from the same administrator.\n  - Review all `google_workspace.admin.privilege.name` values returned to understand the full scope of the modification.\n- Search Kibana for principals recently assigned the role to determine blast radius:\n  - Use the following KQL example:\n    ```\n    data_stream.dataset: \"google_workspace.admin\" and event.action: \"ASSIGN_ROLE\" and google_workspace.admin.role.name: \"<ROLE_NAME>\"\n    ```\n  - Review `user.target.email` and `user.target.name` for user/group assignments.\n- Scope for related activity by searching for the same `user.email` (actor) performing other IAM or security actions such as `ASSIGN_ROLE`, `CREATE_ROLE`, `CREATE_USER`, or security policy changes within the last 48 hours.\n- Evaluate whether principals assigned the modified role performed suspicious activity after the change:\n  - Review admin/audit events for security control changes, user or group changes, and Gmail configuration changes.\n\n### False positive analysis\n\n- Verify the role modification aligns with approved administrative duties, an authorized change window, and the organization's access governance process.\n- Confirm the initiating admin account is legitimate and not modifying roles from unusual IPs, devices, or locations.\n- Selecting a privilege category in the Admin console can add multiple related privileges in one action; alert suppression should consolidate these into a single alert.\n- Compare the modified role's privileges against the stated business need; overly broad privileges warrant closer review even if the change was authorized.\n\n### Response and remediation\n\n- Initiate the incident response process based on triage findings.\n- If the modification is not clearly authorized, revert the role privileges to their prior state and/or remove the role assignment from affected users or groups while the investigation proceeds.\n- For suspected compromise of the initiating admin account:\n  - Reset credentials, revoke active sessions, enforce MFA re-enrollment, and review delegation/OAuth grants for persistence.\n  - Validate recovery email/phone settings and account security posture.\n- Review whether principals assigned the modified role require the new privileges, and replace broad custom roles with narrower delegated roles where feasible.\n- Implement security best practices [outlined](https://support.google.com/a/answer/7587183) by Google.\n- Determine the initial vector abused by the attacker and take action to prevent reinfection via the same vector.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).\n\n\n\n### Important Information Regarding Google Workspace Event Lag Times\n- As per Google's documentation, Google Workspace administrators may observe lag times ranging from minutes up to 3 days between the time of an event's occurrence and the event being visible in the Google Workspace admin/audit logs.\n- This rule is configured to run every 10 minutes with a lookback time of 130 minutes.\n- To reduce the risk of false negatives, consider reducing the interval that the Google Workspace (formerly G Suite) Filebeat module polls Google's reporting API for new events.\n- By default, `var.interval` is set to 2 hours (2h). Consider changing this interval to a lower value, such as 10 minutes (10m).\n- See the following references for further information:\n  - https://support.google.com/a/answer/7061566\n  - https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-module-google_workspace.html",
+        "query": "data_stream.dataset:google_workspace.admin and event.provider:admin and event.category:iam and event.action:(ADD_PRIVILEGE or UPDATE_ROLE)\n",
+        "references": [
+            "https://support.google.com/a/answer/2406043?hl=en",
+            "https://www.elastic.co/security-labs/google-workspace-attack-surface-part-one",
+            "https://www.elastic.co/security-labs/google-workspace-attack-surface-part-two"
+        ],
+        "related_integrations": [
+            {
+                "package": "google_workspace",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "6f435062-b7fc-4af9-acea-5b1ead65c5a5",
+        "setup": "The Google Workspace Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Google Workspace",
+            "Use Case: Identity and Access Audit",
+            "Resources: Investigation Guide",
+            "Tactic: Persistence",
+            "Tactic: Privilege Escalation"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 211
+    },
+    "id": "6f435062-b7fc-4af9-acea-5b1ead65c5a5_211",
+    "type": "security-rule"
+}

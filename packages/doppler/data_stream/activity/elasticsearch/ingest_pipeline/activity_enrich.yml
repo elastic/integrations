@@ -1,0 +1,319 @@
+---
+description: |
+  Activity-only enrichment for Doppler activity events. Called from the activity
+  default pipeline ONLY for non-security.secret_read events (secret_read events
+  are rerouted to doppler.secret_read and shaped there), so none of the
+  doppler.activity.* fields below ever run against the high-volume read stream.
+  Maps Doppler's per-type metadata into typed, huntable fields (project, config,
+  environment, secret diff, roles, token scope, target identity, group).
+processors:
+  - rename:
+      field: doppler.slug
+      tag: rename_slug_to_log_id
+      target_field: doppler.activity.log_id
+      ignore_missing: true
+  - rename:
+      field: doppler.link
+      tag: rename_link
+      target_field: doppler.activity.url
+      ignore_missing: true
+  - rename:
+      field: doppler.text
+      tag: rename_text
+      target_field: doppler.activity.description
+      ignore_missing: true
+  # Doppler's `text` is dashboard prose with embedded HTML (e.g. <strong>, <a href>);
+  # strip the markup to a clean, human-readable description for display and hunting.
+  # The original HTML is still preserved verbatim in event.original. ignore_failure
+  # keeps a malformed-markup event flowing rather than failing it.
+  - html_strip:
+      field: doppler.activity.description
+      tag: html_strip_description
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: doppler.activity.project.id
+      tag: set_project_id
+      copy_from: doppler.metadata.projectId
+      ignore_empty_value: true
+  - set:
+      field: doppler.activity.project.name
+      tag: set_project_name
+      copy_from: doppler.metadata.projectName
+      ignore_empty_value: true
+  - set:
+      field: doppler.activity.config.name
+      tag: set_config_name
+      copy_from: doppler.metadata.configName
+      ignore_empty_value: true
+  - set:
+      field: doppler.activity.environment.id
+      tag: set_environment_id
+      copy_from: doppler.metadata.environmentId
+      ignore_empty_value: true
+  - set:
+      field: doppler.activity.environment.name
+      tag: set_environment_name
+      copy_from: doppler.metadata.environmentName
+      ignore_empty_value: true
+  - set:
+      field: doppler.activity.secrets_changed.added
+      tag: set_secrets_added
+      copy_from: doppler.metadata.diff.added
+      ignore_empty_value: true
+  - set:
+      field: doppler.activity.secrets_changed.removed
+      tag: set_secrets_removed
+      copy_from: doppler.metadata.diff.removed
+      ignore_empty_value: true
+  - set:
+      field: doppler.activity.secrets_changed.updated
+      tag: set_secrets_updated
+      copy_from: doppler.metadata.diff.updated
+      ignore_empty_value: true
+  - set:
+      field: doppler.activity.role.name
+      tag: set_role_name
+      copy_from: doppler.metadata.role
+      ignore_empty_value: true
+  - set:
+      field: doppler.activity.role.new
+      tag: set_role_new
+      copy_from: doppler.metadata.newRole
+      ignore_empty_value: true
+  - set:
+      field: doppler.activity.role.old
+      tag: set_role_old
+      copy_from: doppler.metadata.oldRole
+      ignore_empty_value: true
+  # Workplace seat role changes (team.seat.update) carry the transition under
+  # *WorkplaceRole keys; reuse doppler.activity.role.new/old so escalation
+  # detections work the same for project and workplace roles.
+  - set:
+      field: doppler.activity.role.new
+      tag: set_role_new_workplace
+      copy_from: doppler.metadata.newWorkplaceRole
+      ignore_empty_value: true
+      if: ctx.doppler?.activity?.role?.new == null
+  - set:
+      field: doppler.activity.role.old
+      tag: set_role_old_workplace
+      copy_from: doppler.metadata.oldWorkplaceRole
+      ignore_empty_value: true
+      if: ctx.doppler?.activity?.role?.old == null
+  # custom_roles.* events name the created role in metadata.name (no email is
+  # present, so it is not mistaken for a target identity below).
+  - set:
+      field: doppler.activity.role.name
+      tag: set_role_name_custom
+      copy_from: doppler.metadata.name
+      ignore_empty_value: true
+      if: ctx.event?.action != null && ctx.event.action.startsWith('custom_roles')
+  ##
+  # The acted-upon identity (object of an access/membership change) maps to the
+  # ECS user.target.* and group.* reuse fields, powering "who was granted/revoked
+  # access" pivots.
+  ##
+  - set:
+      field: user.target.email
+      tag: set_user_target_email
+      copy_from: doppler.metadata.userEmail
+      ignore_empty_value: true
+  - set:
+      field: user.target.name
+      tag: set_user_target_name
+      copy_from: doppler.metadata.userName
+      ignore_empty_value: true
+  # team.seat.* and personal-token events carry the affected identity under
+  # metadata.email / metadata.name. metadata.name is also used by custom_roles
+  # for the role name, so only treat it as a target identity when an email is
+  # present (i.e. a real user context).
+  - set:
+      field: user.target.email
+      tag: set_user_target_email_seat
+      copy_from: doppler.metadata.email
+      ignore_empty_value: true
+  - set:
+      field: user.target.full_name
+      tag: set_user_target_full_name_seat
+      copy_from: doppler.metadata.name
+      ignore_empty_value: true
+      if: ctx.doppler?.metadata?.email != null
+  - set:
+      field: user.target.id
+      tag: set_user_target_id_sa
+      copy_from: doppler.metadata.serviceAccountId
+      ignore_empty_value: true
+  - set:
+      field: user.target.name
+      tag: set_user_target_name_sa
+      copy_from: doppler.metadata.serviceAccountName
+      ignore_empty_value: true
+  - set:
+      field: group.id
+      tag: set_group_id
+      copy_from: doppler.metadata.groupId
+      ignore_empty_value: true
+  - set:
+      field: group.name
+      tag: set_group_name
+      copy_from: doppler.metadata.groupName
+      ignore_empty_value: true
+  # team.group.members.add carries the added identity under metadata.addedMembers
+  # (an object, or a list when several are added together). Promote the first
+  # member to user.target.* and all member emails to doppler.activity.members_added
+  # so group-membership ("user added to sensitive group") detections work without
+  # parsing the flattened metadata blob.
+  - script:
+      lang: painless
+      tag: promote_added_members
+      description: Promote team.group.members.add members to user.target and members_added.
+      if: ctx.doppler?.metadata?.addedMembers != null
+      source: |-
+        def am = ctx.doppler.metadata.addedMembers;
+        ArrayList members = new ArrayList();
+        if (am instanceof List) {
+          members.addAll(am);
+        } else if (am instanceof Map) {
+          members.add(am);
+        }
+        ArrayList emails = new ArrayList();
+        for (def m : members) {
+          if (m instanceof Map && m.email != null && !emails.contains(m.email)) {
+            emails.add(m.email);
+          }
+        }
+        if (members.size() > 0 && members.get(0) instanceof Map) {
+          def first = members.get(0);
+          if (ctx.user == null) { ctx.user = new HashMap(); }
+          if (ctx.user.target == null) { ctx.user.target = new HashMap(); }
+          if (first.email != null && ctx.user.target.email == null) {
+            ctx.user.target.email = first.email;
+          }
+          if (first.name != null && ctx.user.target.name == null) {
+            ctx.user.target.name = first.name;
+          }
+        }
+        if (emails.size() > 0) {
+          if (ctx.doppler.activity == null) { ctx.doppler.activity = new HashMap(); }
+          ctx.doppler.activity.members_added = emails;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_promote_added_members_error
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  # Token lifecycle events (service-account and config service tokens) name the
+  # created token; promote it for token-creation and token-then-read hunts.
+  - set:
+      field: doppler.activity.token.id
+      tag: set_token_id
+      copy_from: doppler.metadata.serviceAccountTokenId
+      ignore_empty_value: true
+  - set:
+      field: doppler.activity.token.name
+      tag: set_token_name_sa
+      copy_from: doppler.metadata.serviceAccountTokenName
+      ignore_empty_value: true
+  - set:
+      field: doppler.activity.token.name
+      tag: set_token_name_service
+      copy_from: doppler.metadata.serviceTokenName
+      ignore_empty_value: true
+      if: ctx.doppler?.activity?.token?.name == null
+  # Config service tokens expose read/write scope (sent as strings); surface as
+  # booleans so detections can flag the creation of write-capable tokens.
+  - set:
+      field: doppler.activity.service_token.read_access
+      tag: set_service_token_read
+      copy_from: doppler.metadata.readAccess
+      ignore_empty_value: true
+  - convert:
+      field: doppler.activity.service_token.read_access
+      tag: convert_service_token_read
+      type: boolean
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: doppler.activity.service_token.write_access
+      tag: set_service_token_write
+      copy_from: doppler.metadata.writeAccess
+      ignore_empty_value: true
+  - convert:
+      field: doppler.activity.service_token.write_access
+      tag: convert_service_token_write
+      type: boolean
+      ignore_missing: true
+      ignore_failure: true
+  # environment.* normally come from metadata.environment{Id,Name}; rename events
+  # use the new* keys instead. Fall back so the field is populated there too.
+  - set:
+      field: doppler.activity.environment.id
+      tag: set_environment_id_new
+      copy_from: doppler.metadata.newEnvironmentId
+      ignore_empty_value: true
+      if: ctx.doppler?.activity?.environment?.id == null
+  - set:
+      field: doppler.activity.environment.name
+      tag: set_environment_name_new
+      copy_from: doppler.metadata.newEnvironmentName
+      ignore_empty_value: true
+      if: ctx.doppler?.activity?.environment?.name == null
+  # Environment rename events also carry the previous identifiers; surface them so
+  # "renamed from <env>" pivots (e.g. a config moved out of prod) are queryable.
+  - set:
+      field: doppler.activity.environment.old_id
+      tag: set_environment_old_id
+      copy_from: doppler.metadata.oldEnvironmentId
+      ignore_empty_value: true
+  - set:
+      field: doppler.activity.environment.old_name
+      tag: set_environment_old_name
+      copy_from: doppler.metadata.oldEnvironmentName
+      ignore_empty_value: true
+  # Service-account token creation events embed a partial API key preview. Drop it
+  # from the retained metadata so a credential fragment is not indexed in a
+  # searchable field (it remains only in event.original when preservation is on).
+  - remove:
+      field: doppler.metadata.serviceAccountTokenApiKeyPreview
+      tag: remove_token_api_key_preview
+      ignore_missing: true
+  # Retain the full, per-type metadata object as a flattened blob for completeness.
+  - rename:
+      field: doppler.metadata
+      tag: rename_metadata
+      target_field: doppler.activity.metadata
+      ignore_missing: true
+  - uri_parts:
+      field: doppler.activity.url
+      tag: uri_parts_link
+      target_field: url
+      keep_original: false
+      ignore_failure: true
+      if: ctx.doppler?.activity?.url != null
+  - set:
+      field: url.full
+      tag: set_url_full
+      copy_from: doppler.activity.url
+      ignore_empty_value: true
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: error.type
+      tag: set_error_type
+      value: pipeline_error
+  - set:
+      field: event.kind
+      tag: set_event_kind_pipeline_error
+      value: pipeline_error

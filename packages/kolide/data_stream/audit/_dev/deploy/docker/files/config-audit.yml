@@ -1,0 +1,127 @@
+rules:
+  # Round 2+ (convergence): the cursor is the exact max record timestamp from
+  # round 1 (2024-03-13T11:42:09Z), so the initial query carries that timestamp.
+  # Return an empty page so polling converges and hit_count stays stable. (Against
+  # the real inclusive API the boundary record is re-returned and collapses via the
+  # _id fingerprint; the mock returns empty for simplicity.) Must precede the
+  # page-1 catch-all so it wins for the advanced-cursor query.
+  - path: /audit_logs
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      query: 'timestamp>2024-03-13T11:42:09Z'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data": [], "pagination": {"next": "", "next_cursor": "", "current_cursor": "", "count": 0}}
+  # Round 1 — Page 1: initial request (per_page + query time filter, no cursor).
+  # Returns one audit log and a next-page link with a cursor token.
+  - path: /audit_logs
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      query: '{q:.*}'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "01JA67B1DYJCKJ1J73T0F5EWGR",
+                "timestamp": "2024-03-11T21:28:17Z",
+                "actor_name": "Alice Johnson",
+                "description": "Enabled check 'iTerm2 - Require Secure Keyboard Entry to Be Enabled'",
+                "actor_info": {"actor_name": "Alice Johnson", "actor_email": "alice@example.com", "actor_type": "User"}
+              }
+            ],
+            "pagination": {
+              "next": "http://{{ hostname }}:{{ env "PORT" }}/audit_logs?per_page={{ .request.vars.per_page }}&cursor=CURSORPAGE2",
+              "current_cursor": "",
+              "next_cursor": "CURSORPAGE2",
+              "count": 1
+            }
+          }
+  # Round 1 — Page 2: follows pagination.next (cursor=CURSORPAGE2).
+  - path: /audit_logs
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      cursor: 'CURSORPAGE2'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "01JA67C2EZKDLK2K84U1G6FXHS",
+                "timestamp": "2024-03-12T08:15:42Z",
+                "actor_name": "Bob Smith",
+                "description": "Disabled check 'Firewall must be enabled'",
+                "actor_info": {"actor_name": "Bob Smith", "actor_email": "bob@example.com", "actor_type": "User"}
+              }
+            ],
+            "pagination": {
+              "next": "http://{{ hostname }}:{{ env "PORT" }}/audit_logs?per_page={{ .request.vars.per_page }}&cursor=CURSORPAGE3",
+              "current_cursor": "CURSORPAGE2",
+              "next_cursor": "CURSORPAGE3",
+              "count": 1
+            }
+          }
+  # Round 1 — Page 3 (terminal): cursor=CURSORPAGE3, empty next/next_cursor stops pagination.
+  - path: /audit_logs
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      cursor: 'CURSORPAGE3'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "01JA67D3F0LEMM3L95V2H7GYJT",
+                "timestamp": "2024-03-13T11:42:09Z",
+                "actor_name": "API Integration",
+                "description": "Created API key 'Elastic integration'",
+                "actor_info": {"actor_name": "API Integration", "actor_type": "ApiKey"}
+              }
+            ],
+            "pagination": {
+              "next": "",
+              "current_cursor": "CURSORPAGE3",
+              "next_cursor": "",
+              "count": 1
+            }
+          }

@@ -1,0 +1,330 @@
+---
+description: Pipeline for processing SOCRadar threat feed indicators.
+processors:
+  # Fail if error during CEL program
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: "8.17.0"
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_parse_event_original
+      target_field: json
+  - rename:
+      field: _collection_id
+      tag: rename_collection_id
+      target_field: ti_socradar_feeds.feed.collection_id
+      ignore_missing: true
+  - rename:
+      field: _collection_name
+      tag: rename_collection_name
+      target_field: ti_socradar_feeds.feed.collection_name
+      ignore_missing: true
+  # Fallback: extract from parsed JSON (for pipeline tests where CEL metadata fields are not available)
+  - rename:
+      field: json._collection_metadata.collection_id
+      tag: rename_collection_id_fallback
+      target_field: ti_socradar_feeds.feed.collection_id
+      ignore_missing: true
+      if: ctx.ti_socradar_feeds?.feed?.collection_id == null
+  - rename:
+      field: json._collection_metadata.collection_name
+      tag: rename_collection_name_fallback
+      target_field: ti_socradar_feeds.feed.collection_name
+      ignore_missing: true
+      if: ctx.ti_socradar_feeds?.feed?.collection_name == null
+  - remove:
+      field: json._collection_metadata
+      tag: remove_collection_metadata
+      ignore_missing: true
+  - set:
+      field: ti_socradar_feeds.feed.value
+      tag: set_feed_value
+      copy_from: json.feed
+      ignore_empty_value: true
+  - set:
+      field: ti_socradar_feeds.feed.type
+      tag: set_feed_type
+      copy_from: json.feed_type
+      ignore_empty_value: true
+  - set:
+      field: ti_socradar_feeds.feed.maintainer_name
+      tag: set_feed_maintainer
+      copy_from: json.maintainer_name
+      ignore_empty_value: true
+  - set:
+      field: ti_socradar_feeds.feed.extra_info
+      tag: set_feed_extra_info
+      copy_from: json.extra_info
+      if: ctx.json?.extra_info != null
+  - date:
+      field: json.first_seen_date
+      tag: date_parse_first_seen
+      target_field: ti_socradar_feeds.feed.first_seen_date
+      formats:
+        - ISO8601
+        - "yyyy-MM-dd'T'HH:mm:ss"
+        - "yyyy-MM-dd HH:mm:ss"
+      ignore_failure: true
+  - date:
+      field: json.latest_seen_date
+      tag: date_parse_latest_seen
+      target_field: ti_socradar_feeds.feed.latest_seen_date
+      formats:
+        - ISO8601
+        - "yyyy-MM-dd'T'HH:mm:ss"
+        - "yyyy-MM-dd HH:mm:ss"
+      ignore_failure: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: enrichment
+  - append:
+      field: event.category
+      tag: append_threat_into_event_category
+      value: threat
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type
+      value: indicator
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.provider
+      tag: set_threat_indicator_provider
+      value: SOCRadar
+  - set:
+      field: threat.feed.name
+      tag: set_threat_feed_name
+      value: SOCRadar Threat Feeds
+  - set:
+      field: threat.feed.reference
+      tag: set_threat_feed_reference
+      value: https://platform.socradar.com
+  - script:
+      lang: painless
+      tag: script_set_confidence_from_score
+      description: Map SOCRadar score to ECS threat.indicator.confidence.
+      source: |
+        double score = -1;
+        if (ctx.ti_socradar_feeds?.feed?.extra_info?.score != null) {
+          score = ((Number) ctx.ti_socradar_feeds.feed.extra_info.score).doubleValue();
+        }
+        if (score < 0) {
+          ctx.threat.indicator.confidence = 'Low';
+        } else if (score == 0) {
+          ctx.threat.indicator.confidence = 'None';
+        } else if (score <= 25) {
+          ctx.threat.indicator.confidence = 'Low';
+        } else if (score <= 50) {
+          ctx.threat.indicator.confidence = 'Medium';
+        } else {
+          ctx.threat.indicator.confidence = 'High';
+        }
+  - date:
+      field: json.latest_seen_date
+      tag: date_set_timestamp
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+        - "yyyy-MM-dd'T'HH:mm:ss"
+        - "yyyy-MM-dd HH:mm:ss"
+      ignore_failure: true
+  - date:
+      field: json.first_seen_date
+      tag: date_set_first_seen
+      target_field: threat.indicator.first_seen
+      formats:
+        - ISO8601
+        - "yyyy-MM-dd'T'HH:mm:ss"
+        - "yyyy-MM-dd HH:mm:ss"
+      ignore_failure: true
+  - set:
+      field: threat.indicator.last_seen
+      tag: set_indicator_last_seen
+      copy_from: "@timestamp"
+      override: false
+  - set:
+      field: threat.indicator.modified_at
+      tag: set_indicator_modified_at
+      copy_from: "@timestamp"
+      override: false
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: "@timestamp"
+      override: false
+  - script:
+      lang: painless
+      tag: script_resolve_indicator_type
+      description: Resolve feed_type to threat.indicator type and extract indicator value.
+      if: ctx.ti_socradar_feeds?.feed?.value != null && ctx.ti_socradar_feeds?.feed?.type != null
+      source: |
+        def feedType = ctx.ti_socradar_feeds.feed.type.toLowerCase();
+        def value = ctx.ti_socradar_feeds.feed.value;
+
+        if (ctx.threat == null) ctx.threat = new HashMap();
+        if (ctx.threat.indicator == null) ctx.threat.indicator = new HashMap();
+
+        if (feedType == 'ipv6') {
+          ctx.threat.indicator.type = 'ipv6-addr';
+          ctx.threat.indicator.ip = value;
+          if (ctx.related == null) ctx.related = new HashMap();
+          if (ctx.related.ip == null) ctx.related.ip = new ArrayList();
+          if (!ctx.related.ip.contains(value)) ctx.related.ip.add(value);
+        } else if (feedType == 'ip' || feedType == 'ipv4-addr' || feedType == 'ipv4') {
+          ctx.threat.indicator.type = 'ipv4-addr';
+          ctx.threat.indicator.ip = value;
+          if (ctx.related == null) ctx.related = new HashMap();
+          if (ctx.related.ip == null) ctx.related.ip = new ArrayList();
+          if (!ctx.related.ip.contains(value)) ctx.related.ip.add(value);
+        } else if (feedType == 'domain' || feedType == 'hostname' || feedType == 'domain-name') {
+          ctx.threat.indicator.type = 'domain-name';
+          if (ctx.threat.indicator.url == null) ctx.threat.indicator.url = new HashMap();
+          ctx.threat.indicator.url.domain = value;
+          if (ctx.related == null) ctx.related = new HashMap();
+          if (ctx.related.hosts == null) ctx.related.hosts = new ArrayList();
+          if (!ctx.related.hosts.contains(value)) ctx.related.hosts.add(value);
+        } else if (feedType == 'hash' || feedType == 'file') {
+          ctx.threat.indicator.type = 'file';
+          if (ctx.threat.indicator.file == null) ctx.threat.indicator.file = new HashMap();
+          if (ctx.threat.indicator.file.hash == null) ctx.threat.indicator.file.hash = new HashMap();
+          if (value.length() == 32) {
+            ctx.threat.indicator.file.hash.md5 = value;
+          } else if (value.length() == 40) {
+            ctx.threat.indicator.file.hash.sha1 = value;
+          } else if (value.length() == 64) {
+            ctx.threat.indicator.file.hash.sha256 = value;
+          } else if (value.length() == 128) {
+            ctx.threat.indicator.file.hash.sha512 = value;
+          }
+          if (ctx.related == null) ctx.related = new HashMap();
+          if (ctx.related.hash == null) ctx.related.hash = new ArrayList();
+          if (!ctx.related.hash.contains(value)) ctx.related.hash.add(value);
+        } else if (feedType == 'url') {
+          ctx.threat.indicator.type = 'url';
+          if (ctx.threat.indicator.url == null) ctx.threat.indicator.url = new HashMap();
+          ctx.threat.indicator.url.full = value;
+          ctx.threat.indicator.url.original = value;
+        } else if (feedType == 'email' || feedType == 'email-addr') {
+          ctx.threat.indicator.type = 'email-addr';
+          if (ctx.threat.indicator.email == null) ctx.threat.indicator.email = new HashMap();
+          ctx.threat.indicator.email.address = value;
+        } else {
+          ctx.threat.indicator.type = 'domain-name';
+          if (ctx.threat.indicator.url == null) ctx.threat.indicator.url = new HashMap();
+          ctx.threat.indicator.url.domain = value;
+          if (ctx.related == null) ctx.related = new HashMap();
+          if (ctx.related.hosts == null) ctx.related.hosts = new ArrayList();
+          if (!ctx.related.hosts.contains(value)) ctx.related.hosts.add(value);
+        }
+  - set:
+      field: threat.indicator.description
+      tag: set_indicator_description
+      value: "SOCRadar feed: {{ti_socradar_feeds.feed.collection_name}}"
+      if: ctx.ti_socradar_feeds?.feed?.collection_name != null
+  - script:
+      lang: painless
+      tag: script_ioc_expiration
+      description: Set IOC expiration based on configured duration.
+      if: "ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''"
+      source: |
+        ZonedDateTime _now = ZonedDateTime.ofInstant(Instant.ofEpochMilli(new Date().getTime()), ZoneId.of('Z'));
+        String dur = ctx._conf.ioc_expiration_duration.trim();
+        long amount = Long.parseLong(dur.substring(0, dur.length() - 1));
+        String unit = dur.substring(dur.length() - 1);
+        ZonedDateTime expiry;
+        if (unit == 'd') {
+          expiry = _now.plusDays(amount);
+        } else if (unit == 'h') {
+          expiry = _now.plusHours(amount);
+        } else if (unit == 'm') {
+          expiry = _now.plusMinutes(amount);
+        } else {
+          expiry = _now.plusDays(90);
+        }
+        if (ctx.ti_socradar_feeds == null) ctx.ti_socradar_feeds = new HashMap();
+        if (ctx.ti_socradar_feeds.feed == null) ctx.ti_socradar_feeds.feed = new HashMap();
+        ctx.ti_socradar_feeds.feed.ioc_expiration_date = expiry;
+        ctx.ti_socradar_feeds.feed.ioc_expiration_duration = ctx._conf.ioc_expiration_duration;
+        ctx.ti_socradar_feeds.feed.ioc_expiration_reason = 'Expiration set by configuration';
+  - fingerprint:
+      fields:
+        - ti_socradar_feeds.feed.collection_id
+        - ti_socradar_feeds.feed.value
+        - ti_socradar_feeds.feed.type
+      target_field: _id
+      tag: fingerprint_feed_indicator
+      method: SHA-256
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+        - _conf
+      tag: remove_temp_fields
+      ignore_missing: true
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_drop_empty_fields
+      description: Drop null/empty values recursively.
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null) {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> dropEmptyFields(v));
+            return ((Map) object).isEmpty();
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> dropEmptyFields(v));
+            return ((List) object).isEmpty();
+          } else if (object instanceof String) {
+            return ((String) object).isEmpty();
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

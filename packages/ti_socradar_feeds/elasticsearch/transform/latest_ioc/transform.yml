@@ -1,0 +1,29 @@
+source:
+  index:
+    - logs-ti_socradar_feeds.feed-*
+dest:
+  index: logs-ti_socradar_feeds_latest.feed-1
+  aliases:
+    - alias: logs-ti_socradar_feeds_latest.feed
+      move_on_creation: true
+latest:
+  unique_key:
+    - event.dataset
+    - ti_socradar_feeds.feed.value
+    - ti_socradar_feeds.feed.type
+  sort: '@timestamp'
+description: Latest SOCRadar Threat Feed indicators.
+frequency: 60s
+sync:
+  time:
+    field: event.ingested
+    delay: 120s
+retention_policy:
+  time:
+    field: ti_socradar_feeds.feed.ioc_expiration_date
+    max_age: 1m
+_meta:
+  managed: true
+  fleet_transform_version: 0.1.0
+settings:
+  unattended: true

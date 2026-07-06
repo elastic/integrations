@@ -1,0 +1,13 @@
+# Ingest-only data stream: it has no Agent input. Documents arrive here only by
+# reroute from doppler.activity when event.action == security.secret_read
+# (see ../activity/routing_rules.yml). dynamic_dataset/dynamic_namespace are
+# required so the reroute target dataset/namespace are accepted.
+title: "Doppler Secret Read Logs"
+type: logs
+dataset: doppler.secret_read
+elasticsearch:
+  dynamic_dataset: true
+  dynamic_namespace: true
+  index_template:
+    mappings:
+      subobjects: false

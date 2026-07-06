@@ -1,0 +1,203 @@
+rules:
+  # Round 2+ (convergence): the cursor is the exact max detected_at from round 1
+  # (2026-06-15T12:00:00.000Z), so the initial query carries that timestamp.
+  # Return an empty page so polling converges and hit_count stays stable. (Against
+  # the real inclusive API the boundary record is re-returned and collapses via the
+  # _id fingerprint; the mock returns empty for simplicity.) Must precede the
+  # page-1 catch-all so it wins for the advanced-cursor query.
+  - path: /issues
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      query: 'detected_at>2026-06-15T12:00:00.000Z'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data": [], "pagination": {"next": "", "next_cursor": "", "current_cursor": "", "count": 0}}
+  # Round 1 — Page 1: initial request (per_page + query time filter, no cursor).
+  # Returns one issue and a next-page link with a cursor token.
+  - path: /issues
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      query: '{q:.*}'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "9999",
+                "issue_key": "bundle_id",
+                "issue_value": "com.example.app",
+                "title": "macOS Firewall is Disabled",
+                "value": {"firewall_enabled": false},
+                "exempted": false,
+                "resolved_at": null,
+                "detected_at": "2023-10-28T20:50:15Z",
+                "blocks_device_at": "2023-11-04T20:50:15Z",
+                "last_rechecked_at": "2023-10-28T21:00:58Z",
+                "device_information": {"identifier": "1", "link": "https://api.example.com/devices/1"},
+                "check_information": {"identifier": "71", "link": "https://api.example.com/checks/71"}
+              }
+            ],
+            "pagination": {
+              "next": "http://{{ hostname }}:{{ env "PORT" }}/issues?per_page={{ .request.vars.per_page }}&cursor=CURSORPAGE2",
+              "current_cursor": "",
+              "next_cursor": "CURSORPAGE2",
+              "count": 1
+            }
+          }
+  # Round 1 — Page 2: follows pagination.next (cursor=CURSORPAGE2).
+  - path: /issues
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      cursor: 'CURSORPAGE2'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "10000",
+                "issue_key": "os_version",
+                "issue_value": "13.4.1",
+                "title": "macOS is Out of Date",
+                "value": {"installed_version": "13.4.1", "required_version": "14.0"},
+                "exempted": false,
+                "resolved_at": null,
+                "detected_at": "2023-10-29T08:15:42Z",
+                "blocks_device_at": "2023-11-05T08:15:42Z",
+                "last_rechecked_at": "2023-10-29T08:30:11Z",
+                "device_information": {"identifier": "2", "link": "https://api.example.com/devices/2"},
+                "check_information": {"identifier": "42", "link": "https://api.example.com/checks/42"}
+              }
+            ],
+            "pagination": {
+              "next": "http://{{ hostname }}:{{ env "PORT" }}/issues?per_page={{ .request.vars.per_page }}&cursor=CURSORPAGE3",
+              "current_cursor": "CURSORPAGE2",
+              "next_cursor": "CURSORPAGE3",
+              "count": 1
+            }
+          }
+  # Round 1 — Page 3: cursor=CURSORPAGE3.
+  - path: /issues
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      cursor: 'CURSORPAGE3'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "10001",
+                "issue_key": "disk_encryption",
+                "issue_value": "filevault",
+                "title": "Disk Encryption is Disabled",
+                "value": {"filevault_enabled": false},
+                "exempted": false,
+                "resolved_at": null,
+                "detected_at": "2023-10-30T11:42:09Z",
+                "blocks_device_at": "2023-11-06T11:42:09Z",
+                "last_rechecked_at": "2023-10-30T11:55:00Z",
+                "device_information": {"identifier": "3", "link": "https://api.example.com/devices/3"},
+                "check_information": {"identifier": "88", "link": "https://api.example.com/checks/88"}
+              }
+            ],
+            "pagination": {
+              "next": "http://{{ hostname }}:{{ env "PORT" }}/issues?per_page={{ .request.vars.per_page }}&cursor=CURSORPAGE4",
+              "current_cursor": "CURSORPAGE3",
+              "next_cursor": "CURSORPAGE4",
+              "count": 1
+            }
+          }
+  # Round 1 — Page 4 (terminal): cursor=CURSORPAGE4. Adds exempted and resolved issues.
+  - path: /issues
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      cursor: 'CURSORPAGE4'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "500000010",
+                "issue_key": "check_target",
+                "issue_value": "/",
+                "title": "Disk Is Not Encrypted",
+                "value": {"path": "/", "type": "ext4", "device": "/dev/sda1", "de_encrypted": "No", "KOLIDE_CHECK_STATUS": "FAIL"},
+                "exempted": true,
+                "resolved_at": null,
+                "detected_at": "2026-06-14T20:31:58.869Z",
+                "blocks_device_at": null,
+                "last_rechecked_at": "2026-06-14T20:31:58.000Z",
+                "device_information": {"identifier": "1000001", "link": "https://api.kolide.com/devices/1000001"},
+                "check_information": {"identifier": "32", "link": "https://api.kolide.com/checks/32"}
+              },
+              {
+                "id": "500000012",
+                "issue_key": "pk",
+                "issue_value": "google-chrome-stable",
+                "title": "Chrome Browser Is Not Up to Date",
+                "value": {"pk": "google-chrome-stable", "channel": "stable", "version": "125.0.0.0", "username": "jsmith", "KOLIDE_CHECK_STATUS": "FAIL"},
+                "exempted": false,
+                "resolved_at": "2026-06-15T13:59:00.000Z",
+                "detected_at": "2026-06-15T12:00:00.000Z",
+                "blocks_device_at": null,
+                "last_rechecked_at": "2026-06-15T13:59:00.000Z",
+                "device_information": {"identifier": "1000001", "link": "https://api.kolide.com/devices/1000001"},
+                "check_information": {"identifier": "100", "link": "https://api.kolide.com/checks/100"}
+              }
+            ],
+            "pagination": {
+              "next": "",
+              "current_cursor": "CURSORPAGE4",
+              "next_cursor": "",
+              "count": 2
+            }
+          }
