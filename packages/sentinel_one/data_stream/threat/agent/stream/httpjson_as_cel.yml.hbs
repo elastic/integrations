@@ -12,10 +12,12 @@ request.proxy_url: {{proxy_url}}
 request.ssl: {{ssl}}
 {{/if}}
 request.url: {{url}}/web/api/v2.1/threats
+cel.max_executions: {{max_executions}}
 cel.state:
   api_token: {{api_token}}
   page_size: {{page_size}}
   initial_interval: {{initial_interval}}
+  enable_star_rule_enrichment: {{enable_star_rule_enrichment}}
 {{#if site_ids }}
   site_ids: !!str {{site_ids}}
 {{/if}}
@@ -24,76 +26,191 @@ cel.redact:
     - api_token
 cel.program: |-
   (
-    state.?want_more.orValue(false) ?
-      state.list_updated_at_gte
+    (size(state.?worklist.?data.orValue([])) > 0) ?
+      state
     :
-      state.?cursor.last_update_at.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339))
-  ).as(list_updated_at_gte,
-    state.with(
-      request(
-        "GET",
-        state.url + "?" + {
-          "limit": [string(state.page_size)],
-          "sortBy": ["updatedAt"],
-          "sortOrder": ["asc"],
-          "updatedAt__gte": [list_updated_at_gte],
-          ?"siteIds": state.?site_ids.optMap(v, [v]),
-          ?"cursor": state.?next_page.token.optMap(v, [v]),
-        }.format_query()
-      ).with(
-        {
-          "Header": {
-            "Authorization": ["ApiToken " + state.api_token],
-          },
-        }
-      ).do_request().as(resp, (resp.StatusCode == 200) ?
-        resp.Body.decode_json().as(body,
-          {
-            "events": (size(body.?data.orValue([])) > 0) ?
-              body.data.map(e, {"message": e.encode_json()})
-            :
-              [],
-            "cursor": (size(body.?data.orValue([])) > 0) ?
-              body.data.map(e, e.?threatInfo.updatedAt.orValue(null)).filter(v, v != null).as(updates,
-                updates.size() > 0 ?
-                  {
-                    "last_update_at": (
-                      [?state.?cursor.last_update_at] + updates
-                    ).map(t, timestamp(t)).max().format(time_layout.RFC3339),
-                  }
-                :
-                  state.?cursor.orValue({})
-              )
-            :
-              state.?cursor.orValue({}),
-            "next_page": {
-              ?"token": body.?pagination.nextCursor.orValue(null) != null ?
-                optional.of(body.pagination.nextCursor)
+      (
+        state.?want_more.orValue(false) ?
+          state
+        :
+          state.with(
+            {
+              "list_updated_at_gte": (state.?cursor.?last_update_at.orValue("") != "") ?
+                string(state.cursor.last_update_at)
               :
-                optional.none(),
-            },
-            "list_updated_at_gte": list_updated_at_gte,
-            "want_more": body.?pagination.nextCursor.orValue(null) != null,
-          }
+                (now - duration(state.initial_interval)).format(time_layout.RFC3339),
+            }
+          )
+      ).as(state,
+        state.with(
+          request(
+            "GET",
+            state.url.trim_right("/") + "?" + {
+              "limit": [string(state.page_size)],
+              "sortBy": ["updatedAt"],
+              "sortOrder": ["asc"],
+              "updatedAt__gte": [state.list_updated_at_gte],
+              ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
+              ?"cursor": state.?next_page.token.optMap(v, [v]),
+            }.format_query()
+          ).with(
+            {
+              "Header": {
+                "Authorization": ["ApiToken " + state.api_token],
+              },
+            }
+          ).do_request().as(resp, (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              (body.?pagination.nextCursor.orValue(null) != null).as(has_more_list,
+                {
+                  "worklist": body,
+                  "next_page": {
+                    ?"token": has_more_list ? optional.of(body.pagination.nextCursor) : optional.none(),
+                  },
+                  "has_more_timeline": false,
+                  "list_updated_at_gte": has_more_list ? state.list_updated_at_gte : "",
+                }
+              )
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + state.url.trim_right("/") + ": " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+          )
+        )
+      )
+  ).as(state,
+    state.with(
+      !has(state.worklist) ? // Exit early due to GET failure.
+        state
+      : (size(state.?worklist.?data.orValue([])) > 0) ?
+        state.worklist.data[0].as(threat,
+          (state.enable_star_rule_enrichment && has(threat.id)) ?
+            request(
+              "GET",
+              state.url.trim_right("/") + "/" + string(threat.id) + "/timeline?" + {
+                "limit": [string(state.page_size)],
+                "sortBy": ["createdAt"],
+                "sortOrder": ["desc"],
+                ?"cursor": state.?next_chain.token.optMap(v, [v]),
+              }.format_query()
+            ).with(
+              {
+                "Header": {
+                  "Authorization": ["ApiToken " + state.api_token],
+                },
+              }
+            ).do_request().as(resp, (resp.StatusCode == 200) ?
+              resp.Body.decode_json().as(body,
+                (body.?pagination.?nextCursor.orValue(null) != null).as(has_more_timeline,
+                  {
+                    "events": (size(body.?data.orValue([])) > 0) ?
+                      body.data.map(e,
+                        {
+                          "message": threat.with(
+                            {
+                              "timeline": e.with(
+                                {
+                                  "threatId": e.?threatId.orValue(threat.id),
+                                }
+                              ),
+                            }
+                          ).encode_json(),
+                        }
+                      )
+                    :
+                      [{"message": threat.encode_json()}],
+                    "has_more_timeline": has_more_timeline,
+                    "worklist": has_more_timeline ?
+                      state.worklist
+                    :
+                      {"data": tail(state.worklist.data)},
+                    "next_chain": {
+                      ?"token": has_more_timeline ? optional.of(body.pagination.nextCursor) : optional.none(),
+                    },
+                    "cursor": has_more_timeline ?
+                      state.?cursor.orValue({})
+                    :
+                      {
+                        "last_update_at": threat.?threatInfo.updatedAt.orValue(state.?cursor.last_update_at.orValue("")),
+                      },
+                    "want_more": has_more_timeline || size(state.worklist.data) > 1 ||
+                    state.?next_page.token.orValue(null) != null,
+                  }
+                )
+              )
+            : (resp.StatusCode == 404) ?
+              {
+                "events": [{"message": threat.encode_json()}],
+                "worklist": {"data": tail(state.worklist.data)},
+                "next_chain": {},
+                "has_more_timeline": false,
+                "cursor": {
+                  "last_update_at": threat.?threatInfo.updatedAt.orValue(state.?cursor.last_update_at.orValue("")),
+                },
+                "want_more": size(state.worklist.data) > 1 || state.?next_page.token.orValue(null) != null,
+              }
+            :
+              {
+                "events": [
+                  {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": string(resp.Status),
+                      "message": "GET " + state.url.trim_right("/") + "/" + string(threat.id) + "/timeline: " + (
+                        (size(resp.Body) != 0) ?
+                          string(resp.Body)
+                        :
+                          string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                      ),
+                    },
+                  },
+                ],
+                "worklist": {"data": tail(state.worklist.data)},
+                "next_chain": {},
+                "has_more_timeline": false,
+                "cursor": {
+                  "last_update_at": threat.?threatInfo.updatedAt.orValue(state.?cursor.last_update_at.orValue("")),
+                },
+                "want_more": size(state.worklist.data) > 1 || state.?next_page.token.orValue(null) != null,
+              }
+            )
+          :
+            {
+              "events": [{"message": threat.encode_json()}],
+              "worklist": {"data": tail(state.worklist.data)},
+              "next_chain": {},
+              "has_more_timeline": false,
+              "cursor": {
+                "last_update_at": threat.?threatInfo.updatedAt.orValue(state.?cursor.last_update_at.orValue("")),
+              },
+              "want_more": size(state.worklist.data) > 1 || state.?next_page.token.orValue(null) != null,
+            }
         )
       :
-        {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "GET " + state.url + ": " + (
-                (size(resp.Body) != 0) ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-              ),
-            },
-          },
-          "list_updated_at_gte": list_updated_at_gte,
-          "want_more": false,
-        }
-      )
+        (state.?next_page.token.orValue(null) != null) ?
+          {
+            "events": [],
+            "want_more": true,
+          }
+        :
+          {
+            "events": [],
+            "want_more": false,
+            "list_updated_at_gte": "",
+          }
     )
   )
 tags:
