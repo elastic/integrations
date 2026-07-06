@@ -1,0 +1,111 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+resource.headers:
+  Accept:
+    - application/json
+  X-Kolide-Api-Version: "2026-04-07"
+state:
+  api_key: {{api_key}}
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields:
+    - api_key
+program: |-
+  // Poll GET /issues; each record is emitted as a JSON string in `message`.
+  // Cursor uses detected_at with an inclusive boundary — see default.yml fingerprint.
+  state.?cursor.next.orValue("").as(next_token,
+    state.?cursor.last_timestamp.orValue(
+      string(now - duration(state.initial_interval))
+    ).as(since,
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/issues?" + (
+            (next_token != "") ?
+              {
+                "per_page": [string(int(state.batch_size))],
+                "cursor": [next_token],
+              }
+            :
+              {
+                "per_page": [string(int(state.batch_size))],
+                "query": ["detected_at>" + since],
+              }
+          ).format_query()
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["Bearer " + state.api_key],
+            },
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              body.?data.orValue([]).as(records,
+                {
+                  "events": records.map(e, {"message": e.encode_json()}),
+                  "cursor": {
+                    "last_timestamp": (size(records) > 0) ?
+                      string(
+                        (records.map(e, timestamp(e.?detected_at.orValue(since)))
+                          + [timestamp(since)]).max()
+                      )
+                    :
+                      since,
+                    ?"next": (body.?pagination.next_cursor.orValue("") != "") ?
+                      optional.of(string(body.pagination.next_cursor))
+                    :
+                      optional.none(),
+                  },
+                  "want_more": body.?pagination.next_cursor.orValue("") != "",
+                }
+              )
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET /issues: " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

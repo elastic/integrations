@@ -1,0 +1,401 @@
+---
+description: >-
+  Parse Kolide auth_log events from GET /auth_logs (CEL) and webhook deliveries
+  (auth_logs.success / auth_logs.failure). Reference:
+  https://www.kolide.com/docs/admins/auth-logs
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.4.0'
+
+  # --- CEL input only (Agentless metadata + collector error placeholders) ---
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  # --- end CEL-only ---
+
+  # Webhook envelope at document root: `event` is a string (auth_logs.*), not ECS.
+  # Move envelope fields into `json` so API and webhook inputs share one path.
+  - rename:
+      field: event
+      tag: rename_webhook_event_envelope
+      target_field: json.event
+      ignore_missing: true
+      if: ctx.event instanceof String
+      description: Move the webhook envelope `event` (a string) out of the way of the ECS `event` object.
+  - script:
+      lang: painless
+      tag: move_webhook_envelope_to_json
+      if: ctx.json?.event != null && ctx.data != null
+      description: Move webhook envelope id, timestamp, and data into json.
+      source: |-
+        if (ctx.containsKey('id')) { ctx.json.id = ctx.remove('id'); }
+        if (ctx.containsKey('timestamp')) { ctx.json.timestamp = ctx.remove('timestamp'); }
+        if (ctx.containsKey('data')) { ctx.json.data = ctx.remove('data'); }
+
+  # CEL path: message is JSON for one auth_log session or CEL-expanded sub-event.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json_cel
+      if: ctx.json == null && ctx.event?.original != null
+      description: Decode the CEL message JSON into json.
+
+  # --- S3 (Log Pipeline) input only ---
+  # aws-s3 deliveries carry the envelope {type, timestamp, data}. Lift `data` up
+  # to json.* so the shared API field extraction below applies (the S3 data field
+  # names match the API names).
+  - pipeline:
+      name: '{{ IngestPipeline "s3" }}'
+      tag: dispatch_s3
+      if: ctx.json?.type == 'auth_log'
+  # --- end S3-only ---
+
+  # json.timestamp is the sub-event time (or session time); session_timestamp is session start.
+  - date:
+      field: json.timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_timestamp
+      if: ctx.json?.timestamp != null
+
+  - date:
+      field: json.session_timestamp
+      target_field: event.start
+      formats:
+        - ISO8601
+      tag: date_session_start
+      if: ctx.json?.session_timestamp != null && ctx.json.session_timestamp != ''
+
+  # event.id: `{id}:{sub_event_type}:{timestamp}` for CEL sub-events; json.id otherwise.
+  - set:
+      field: event.id
+      tag: set_event_id_sub_event
+      value: '{{{json.id}}}:{{{json.sub_event_type}}}:{{{json.timestamp}}}'
+      if: ctx.json?.sub_event_type != null && ctx.json?.sub_event_type != ''
+  # Session id (json.id) — API path. Captured before rename_event_id consumes
+  # json.id into event.id, so it is set on both sub-event and single-event API
+  # records. For webhook deliveries, session_id is extracted from 'auth_log_url'.
+  - set:
+      field: kolide.auth.session_id
+      tag: set_session_id
+      copy_from: json.id
+      ignore_empty_value: true
+      if: ctx.json?.event == null && ctx.kolide?.auth?.session_id == null && ctx.json?.id != null && ctx.json?.id != ''
+  - rename:
+      field: json.id
+      target_field: event.id
+      tag: rename_event_id
+      ignore_missing: true
+      if: ctx.event?.id == null
+
+  # Webhook-only field extraction (json.event is auth_logs.success|failure).
+  - pipeline:
+      name: '{{ IngestPipeline "webhook" }}'
+      tag: dispatch_webhook
+      if: ctx.json?.event != null
+
+  # API-only field extraction (skipped when json.event is set).
+  # event.action: sub_event_type, or auth_log when the session has no sub-events.
+  - set:
+      field: event.action
+      tag: set_event_action_sub_event
+      copy_from: json.sub_event_type
+      ignore_empty_value: true
+      if: ctx.json?.event == null && ctx.json?.sub_event_type != null && ctx.json?.sub_event_type != ''
+  - set:
+      field: event.action
+      tag: set_event_action_api
+      value: auth_log
+      if: ctx.json?.event == null && ctx.event?.action == null
+
+  # Human-readable sub-event description (API sub-events only).
+  - set:
+      field: message
+      tag: set_message_sub_event
+      copy_from: json.sub_event_description
+      ignore_empty_value: true
+      if: ctx.json?.event == null && ctx.json?.sub_event_description != null && ctx.json?.sub_event_description != ''
+
+  # event.outcome from API result (Success / Fail).
+  - set:
+      field: event.outcome
+      tag: set_outcome_success_api
+      value: success
+      if: ctx.json?.event == null && ctx.json?.result == 'Success'
+  - set:
+      field: event.outcome
+      tag: set_outcome_failure_api
+      value: failure
+      if: ctx.json?.event == null && ctx.json?.result == 'Fail'
+
+  # User (person_* fields).
+  - rename:
+      field: json.person_name
+      target_field: user.name
+      tag: rename_user_name
+      ignore_missing: true
+      if: ctx.user?.name == null
+  - rename:
+      field: json.person_email
+      target_field: user.email
+      tag: rename_user_email
+      ignore_missing: true
+      if: ctx.user?.email == null
+  - rename:
+      field: json.person_info.identifier
+      target_field: user.id
+      tag: rename_user_id_api
+      ignore_missing: true
+      if: ctx.user?.id == null
+
+  # Host (device_info.identifier).
+  - rename:
+      field: json.device_info.identifier
+      target_field: host.id
+      tag: rename_host_id_api
+      ignore_missing: true
+      if: ctx.host?.id == null
+
+  # Source IP, GeoIP/ASN enrichment, and vendor country/city fallback.
+  - rename:
+      field: json.ip_address
+      target_field: source.ip
+      tag: rename_source_ip
+      ignore_missing: true
+      if: ctx.source?.ip == null
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      if: ctx.source?.ip != null
+      tag: enrich_source_geo
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.source?.ip != null
+      tag: enrich_source_asn
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+      tag: rename_source_asn
+      if: ctx.source?.as?.number == null
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+      tag: rename_source_as_org
+      if: ctx.source?.as?.organization?.name == null
+  # Vendor country/city when GeoIP does not resolve source.ip.
+  - rename:
+      field: json.country
+      target_field: source.geo.country_name
+      tag: rename_geo_country_fallback
+      ignore_missing: true
+      if: ctx.source?.geo?.country_name == null
+  - remove:
+      field: json.country
+      tag: remove_redundant_country
+      ignore_missing: true
+  - rename:
+      field: json.city
+      target_field: source.geo.city_name
+      tag: rename_geo_city_fallback
+      ignore_missing: true
+      if: ctx.source?.geo?.city_name == null
+  - remove:
+      field: json.city
+      tag: remove_redundant_city
+      ignore_missing: true
+
+  # User agent (browser_* fields).
+  - rename:
+      field: json.browser_name
+      target_field: user_agent.name
+      tag: rename_ua_name_api
+      ignore_missing: true
+      if: ctx.user_agent?.name == null
+  - rename:
+      field: json.browser_user_agent
+      target_field: user_agent.original
+      tag: rename_ua_original_api
+      ignore_missing: true
+      if: ctx.user_agent?.original == null
+  - user_agent:
+      field: user_agent.original
+      ignore_missing: true
+      if: ctx.user_agent?.original != null
+      tag: enrich_user_agent
+
+  # Kolide auth_log fields (agent_version, result, okta_*, issues_displayed).
+  - rename:
+      field: json.agent_version
+      target_field: kolide.auth.agent_version
+      tag: rename_agent_version_api
+      ignore_missing: true
+      if: ctx.json?.agent_version != null && ctx.kolide?.auth?.agent_version == null
+  - rename:
+      field: json.result
+      target_field: kolide.auth.result
+      tag: rename_result
+      ignore_missing: true
+      if: ctx.kolide?.auth?.result == null
+  - rename:
+      field: json.initial_status
+      target_field: kolide.auth.initial_status
+      tag: rename_initial_status
+      ignore_missing: true
+      if: ctx.kolide?.auth?.initial_status == null
+  - rename:
+      field: json.okta_app_name
+      target_field: kolide.auth.okta.app_name
+      tag: rename_okta_app_name
+      ignore_missing: true
+      if: ctx.json?.okta_app_name != null && ctx.kolide?.auth?.okta?.app_name == null
+  - rename:
+      field: json.okta_app_instance_id
+      target_field: kolide.auth.okta.app_instance_id
+      tag: rename_okta_app_instance_id
+      ignore_missing: true
+      if: ctx.json?.okta_app_instance_id != null && ctx.kolide?.auth?.okta?.app_instance_id == null
+  - rename:
+      field: json.issues_displayed
+      target_field: kolide.auth.issues_displayed
+      tag: rename_issues_displayed
+      ignore_missing: true
+      if: ctx.kolide?.auth?.issues_displayed == null
+
+  # host.hostname mirrors host.name (webhook sets host.name).
+  - set:
+      field: host.hostname
+      tag: set_host_hostname
+      copy_from: host.name
+      if: ctx.host?.name != null
+
+  # related.* enrichment.
+  - append:
+      field: related.ip
+      tag: append_related_source_ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.user
+      tag: append_related_user_name
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_related_user_email
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      field: related.hosts
+      tag: append_related_hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+
+  # Extended extraction (e.g. downloaded_packages from session events).
+  - pipeline:
+      name: '{{ IngestPipeline "extended-mappings" }}'
+      tag: extended_mappings
+      ignore_missing_pipeline: true
+
+  # ECS categorization from the resolved event.action.
+  - pipeline:
+      name: '{{ IngestPipeline "categorize" }}'
+      tag: categorize
+      ignore_missing_pipeline: true
+
+  # Dedup: CEL re-collects boundary records; fingerprint event.id as _id.
+  - fingerprint:
+      fields:
+        - event.id
+      target_field: _id
+      method: SHA-256
+      tag: fingerprint_event_id
+      if: ctx.event?.id != null && ctx.event.id != ''
+
+  # Cleanup.
+  - remove:
+      field:
+        - json
+        - data
+      tag: remove_temp_fields
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
