@@ -1489,9 +1489,11 @@ processors:
       field: user.name
       tag: rename_user_email
       if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
-  - dissect:
+  - grok:
       field: user.email
-      pattern: '%{user.name}@%{user.domain}'
+      patterns:
+        - '%{DATA:user.full_name} \(%{DATA:user.name}@%{DATA:user.domain}\)'
+        - '%{user.name}@%{user.domain}'
       tag: dissect_user_email
       if: ctx.user?.name == null
       ignore_missing: true
@@ -1513,9 +1515,11 @@ processors:
       field: source.user.name
       tag: rename_source_user_email
       if: ctx.source?.user?.email == null && ctx.source?.user?.name != null && ctx.source.user.name.indexOf("@") > 0
-  - dissect:
+  - grok:
       field: source.user.email
-      pattern: '%{source.user.name}@%{source.user.domain}'
+      patterns:
+        - '%{DATA:source.user.full_name} \(%{DATA:aource.user.name}@%{DATA:source.user.domain}\)'
+        - '%{source.user.name}@%{source.user.domain}'
       tag: dissect_source_user_email
       if: ctx.source?.user?.name == null
       ignore_missing: true
@@ -1537,9 +1541,11 @@ processors:
       field: destination.user.name
       tag: rename_destination_user_email
       if: ctx.destination?.user?.email == null && ctx.destination?.user?.name != null && ctx.destination.user.name.indexOf("@") > 0
-  - dissect:
+  - grok:
       field: destination.user.email
-      pattern: '%{destination.user.name}@%{destination.user.domain}'
+      patterns:
+        - '%{DATA:destination.user.full_name} \(%{DATA:destination.user.name}@%{DATA:destination.user.domain}\)'
+        - '%{destination.user.name}@%{destination.user.domain}'
       tag: dissect_destination_user_email_7d6ace5b
       if: ctx.destination?.user?.name == null
       ignore_missing: true
@@ -1556,7 +1562,6 @@ processors:
       value: "{{{destination.user.email}}}"
       allow_duplicates: false
       if: ctx.destination?.user?.email != null
-
   - script:
       tag: script_422800ed
       lang: painless
