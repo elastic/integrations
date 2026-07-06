@@ -20,7 +20,7 @@ This package includes one pre-built Kibana dashboard:
 
 | Name | Description |
 |---|---|
-| [AWS OTel] ECS | AWS ECS dashboard for CloudWatch metrics collected by the OpenTelemetry Collector. |
+| [AWS ECS OTel] Metrics | AWS ECS dashboard for CloudWatch metrics collected by the OpenTelemetry Collector. |
 
 ## Alerting Rule Templates
 {{alertRuleTemplates}}

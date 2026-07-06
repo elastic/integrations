@@ -16,6 +16,10 @@ processors:
       tag: set_ecs_version_b777da29
       field: ecs.version
       value: '9.3.0'
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - set:
       tag: set_event_kind_39295792
       field: event.kind
