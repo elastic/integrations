@@ -426,18 +426,13 @@ func DetectBackportPackages(before, after string, asJSON *bool) error {
 }
 
 // RenderBackportChecklist prints the backport-checklist comment body for a PR.
-// It reads the list of packages from the file at ARTIFACT (a JSON file with shape
+// It reads the list of packages from artifactPath (a JSON file with shape
 // {"pr_number": N, "packages": [...]}) and the existing comment body (if any) from
 // stdin. Active branches for each package are looked up in .backports.yml using the
 // current UTC time. Previously checked boxes are preserved: any branch that appeared
 // as "- [x] `branch`" in the existing body is rendered ticked in the new body.
 // Prints nothing when no package has any active branch; callers should skip posting.
-func RenderBackportChecklist() error {
-	artifactPath := os.Getenv("ARTIFACT")
-	if artifactPath == "" {
-		return fmt.Errorf("ARTIFACT env var must be set to the path of the pr-packages JSON file")
-	}
-
+func RenderBackportChecklist(artifactPath string) error {
 	data, err := os.ReadFile(artifactPath)
 	if err != nil {
 		return fmt.Errorf("reading artifact: %w", err)
