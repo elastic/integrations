@@ -19,6 +19,7 @@ max_executions: {{max_executions}}
 {{/if}}
 state:
   initial_interval: {{initial_interval}}
+  # offset is the starting index into the /v1/scan/search result set held by the API.
   offset: 0
   api_key: {{api_key}}
   batch_size: {{batch_size}}
@@ -85,6 +86,8 @@ program: |-
                   )
                 :
                   [],
+                // Prefer body.total to detect the last page without an extra empty search call.
+                // Fall back to page size when total is absent from the API response.
                 "more_pages": has(body.total) ?
                   (int(state.offset) + int(state.batch_size) < int(body.total))
                 :
@@ -147,7 +150,7 @@ program: |-
               state.with(
                 {
                   "events": events,
-                  "worklist": tail(state.worklist, 1),
+                  "worklist": tail(state.worklist),
                   // offset is a variable used to control paging on the scan search API that fills 'worklist'
                   // increment when the worklist is empty
                   "offset": (size(state.worklist) == 1) ?
@@ -185,7 +188,9 @@ program: |-
           )
         :
           {
+            // Placeholder event lets pagination continue when a search page has no eligible scans.
             "events": [{"retry": true}],
+            // Advance offset into the scan search result set, or reset to 0 on the last page.
             "offset": state.more_pages ? (int(state.offset) + int(state.batch_size)) : 0,
             "want_more": state.more_pages,
           }
