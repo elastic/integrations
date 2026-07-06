@@ -3,104 +3,126 @@ description: Pipeline for AWS VPC Flow Logs
 
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - dot_expander:
+      tag: dot_expander_*_0a223fd2
       field: "*"
   - rename:
+      tag: rename_message_to_event_original_c74b1d7e
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - set:
+      tag: set_event_type_8fd37e4e
       field: event.type
       value: [connection]
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - drop:
+      tag: drop_820c8200
       if: 'ctx.event?.original.startsWith("version") || ctx.event?.original.startsWith("instance-id")'
   - dissect:
+      tag: dissect_event_original_33687689
       field: event.original
       pattern: '{"message":"%{event.original}"}'
       ignore_failure: true
   - script:
+      tag: script_31bfbb6b
       lang: painless
       if: ctx.event?.original != null
       source: >-
         ctx._temp_ = new HashMap();
         ctx._temp_.message_token_count = ctx.event?.original.splitOnToken(" ").length;
   - dissect:
+      tag: dissect_event_original_fac58ae9
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.account_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.packets} %{aws.vpcflow.bytes} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.log_status}'
       if: ctx?._temp_?.message_token_count == 14
   - dissect:
+      tag: dissect_event_original_d9e06c20
       field: event.original
       pattern: '%{aws.vpcflow.instance_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr}'
       if: ctx?._temp_?.message_token_count == 6
   - dissect:
+      tag: dissect_event_original_f642e8e3
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.interface_id} %{aws.vpcflow.account_id} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.type} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{aws.vpcflow.action} %{aws.vpcflow.log_status}'
       if: ctx?._temp_?.message_token_count == 17
   - dissect:
+      tag: dissect_event_original_33072e15
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.account_id} %{aws.vpcflow.type} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{aws.vpcflow.protocol} %{aws.vpcflow.bytes} %{aws.vpcflow.packets} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.log_status}'
       if: ctx?._temp_?.message_token_count == 21
   - dissect:
+      tag: dissect_event_original_62589421
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.account_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.packets} %{aws.vpcflow.bytes} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.log_status} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.type} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{cloud.region} %{cloud.availability_zone} %{aws.vpcflow.sublocation.type} %{aws.vpcflow.sublocation.id} %{aws.vpcflow.pkt_src_service} %{aws.vpcflow.pkt_dst_service} %{network.direction} %{aws.vpcflow.traffic_path}'
       if: ctx?._temp_?.message_token_count == 29
   - dissect:
+      tag: dissect_event_original_46beaf82
       field: event.original
       description: default format for transit gateway vpc flow logs, covering versions v2 through v6.
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.resource_type} %{aws.vpcflow.account_id} %{aws.vpcflow.tgw_id} %{aws.vpcflow.tgw_attachment_id} %{aws.vpcflow.tgw_src_vpc_account_id} %{aws.vpcflow.tgw_dst_vpc_account_id} %{aws.vpcflow.tgw_src_vpc_id} %{aws.vpcflow.tgw_dst_vpc_id} %{aws.vpcflow.tgw_src_subnet_id} %{aws.vpcflow.tgw_dst_subnet_id} %{aws.vpcflow.tgw_src_eni} %{aws.vpcflow.tgw_dst_eni} %{aws.vpcflow.tgw_src_az_id} %{aws.vpcflow.tgw_dst_az_id} %{aws.vpcflow.tgw_pair_attachment_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.packets} %{aws.vpcflow.bytes} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.log_status} %{aws.vpcflow.type} %{aws.vpcflow.packets_lost_no_route} %{aws.vpcflow.packets_lost_blackhole} %{aws.vpcflow.packets_lost_mtu_exceeded} %{aws.vpcflow.packets_lost_ttl_expired} %{aws.vpcflow.tcp_flags} %{cloud.region} %{network.direction} %{aws.vpcflow.pkt_src_service} %{aws.vpcflow.pkt_dst_service}'
       if: ctx?._temp_?.message_token_count == 36
   - dissect:
+      tag: dissect_event_original_ba6c5411
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.account_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.packets} %{aws.vpcflow.bytes} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.log_status} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.type} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{cloud.region} %{cloud.availability_zone} %{aws.vpcflow.sublocation.type} %{aws.vpcflow.sublocation.id} %{aws.vpcflow.pkt_src_service} %{aws.vpcflow.pkt_dst_service} %{network.direction} %{aws.vpcflow.traffic_path} %{aws.vpcflow.ecs_cluster_arn} %{aws.vpcflow.ecs_cluster_name} %{aws.vpcflow.ecs_container_instance_arn} %{aws.vpcflow.ecs_container_instance_id} %{aws.vpcflow.ecs_container_id} %{aws.vpcflow.ecs_second_container_id} %{aws.vpcflow.ecs_service_name} %{aws.vpcflow.ecs_task_definition_arn} %{aws.vpcflow.ecs_task_arn} %{aws.vpcflow.ecs_task_id}'
       if: ctx?._temp_?.message_token_count == 39
   - dissect:
+      tag: dissect_event_original_95c3b068
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.account_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.packets} %{aws.vpcflow.bytes} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.log_status} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.type} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{cloud.region} %{cloud.availability_zone} %{aws.vpcflow.sublocation.type} %{aws.vpcflow.sublocation.id} %{aws.vpcflow.pkt_src_service} %{aws.vpcflow.pkt_dst_service} %{network.direction} %{aws.vpcflow.traffic_path} %{aws.vpcflow.ecs_cluster_arn} %{aws.vpcflow.ecs_cluster_name} %{aws.vpcflow.ecs_container_instance_arn} %{aws.vpcflow.ecs_container_instance_id} %{aws.vpcflow.ecs_container_id} %{aws.vpcflow.ecs_second_container_id} %{aws.vpcflow.ecs_service_name} %{aws.vpcflow.ecs_task_definition_arn} %{aws.vpcflow.ecs_task_arn} %{aws.vpcflow.ecs_task_id} %{aws.vpcflow.reject_reason}'
       if: ctx?._temp_?.message_token_count == 40
   - fail:
+      tag: fail_c4acd9b4
       if: ctx?._temp_?.message_token_count != null && ctx?.aws?.vpcflow?.srcaddr == null
       message: >-
         Unsupported VPC Flow Log format: record has {{{_temp_.message_token_count}}} fields,
         which does not match any integration supported VPC flow log format.
         Use a custom ingest pipeline to parse this format.
-
   # Convert Unix epoch to timestamp
   - date:
+      tag: date_aws_vpcflow_end_to_timestamp_a04826cb
       field: aws.vpcflow.end
       target_field: '@timestamp'
       ignore_failure: true
       formats:
         - UNIX
   - date:
+      tag: date_aws_vpcflow_start_to_event_start_68b50594
       field: aws.vpcflow.start
       target_field: event.start
       ignore_failure: true
       formats:
         - UNIX
   - date:
+      tag: date_aws_vpcflow_end_to_event_end_b34fe330
       field: aws.vpcflow.end
       target_field: event.end
       ignore_failure: true
       formats:
         - UNIX
   - remove:
+      tag: remove_c95882b3
       field:
         - aws.vpcflow.start
         - aws.vpcflow.end
       ignore_missing: true
   - script:
+      tag: script_899f529c
       lang: painless
       ignore_failure: true
       if: ctx.aws != null
@@ -126,86 +148,106 @@ processors:
         }
         handleMap(ctx.aws);
   - set:
+      tag: set_event_outcome_ac92d4f9
       field: event.outcome
       value: success
       if: ctx.aws?.vpcflow?.action == "ACCEPT"
   - set:
+      tag: set_event_outcome_91c3214b
       field: event.outcome
       value: failure
       if: ctx.aws?.vpcflow?.action == "REJECT"
   - append:
+      tag: append_event_type_e95f735a
       field: event.type
       value: allowed
       if: ctx.aws?.vpcflow?.action == "ACCEPT"
   - append:
+      tag: append_event_type_bceb2fd0
       field: event.type
       value: denied
       if: ctx.aws?.vpcflow?.action == "REJECT"
   - set:
+      tag: set_event_action_3d174f4b
       field: event.action
       copy_from: aws.vpcflow.action
       ignore_empty_value: true
   - set:
+      tag: set_event_reason_7642d565
       field: event.reason
       copy_from: aws.vpcflow.reject_reason
       ignore_empty_value: true
   - rename:
+      tag: rename_aws_vpcflow_srcaddr_to_source_address_0ae0377a
       field: aws.vpcflow.srcaddr
       target_field: source.address
       ignore_missing: true
   - set:
+      tag: set_source_ip_e17d09df
       field: source.ip
       copy_from: source.address
       if: ctx.source?.address != null
   - convert:
+      tag: convert_aws_vpcflow_srcport_to_source_port_6449afbc
       field: aws.vpcflow.srcport
       target_field: source.port
       type: integer
       ignore_missing: true
   - rename:
+      tag: rename_aws_vpcflow_dstaddr_to_destination_address_562251ae
       field: aws.vpcflow.dstaddr
       target_field: destination.address
       ignore_missing: true
   - set:
+      tag: set_destination_ip_3d6f6004
       field: destination.ip
       copy_from: destination.address
       if: ctx.destination?.address != null
   - convert:
+      tag: convert_aws_vpcflow_dstport_to_destination_port_65df486e
       field: aws.vpcflow.dstport
       target_field: destination.port
       type: integer
       ignore_missing: true
   - rename:
+      tag: rename_aws_vpcflow_protocol_to_network_iana_number_4b33bb5d
       field: aws.vpcflow.protocol
       target_field: network.iana_number
       ignore_missing: true
   - convert:
+      tag: convert_aws_vpcflow_packets_to_source_packets_dcea5b6c
       field: aws.vpcflow.packets
       target_field: source.packets
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_aws_vpcflow_bytes_to_source_bytes_12aa9fa8
       field: aws.vpcflow.bytes
       target_field: source.bytes
       type: long
       ignore_missing: true
   - set:
+      tag: set_network_bytes_d417039e
       field: network.bytes
       copy_from: source.bytes
       if: ctx.source?.bytes != null
   - set:
+      tag: set_network_packets_4ee14814
       field: network.packets
       copy_from: source.packets
       if: ctx.source?.packets != null
   - set:
+      tag: set_network_type_b7f5a7f1
       field: network.type
       value: ipv4
       if: 'ctx.source?.ip != null && ctx.source?.ip.contains(".")'
   - set:
+      tag: set_network_type_9ad17ef3
       field: network.type
       value: ipv6
       if: 'ctx.source?.ip != null && ctx.source?.ip.contains(":")'
   - script:
+      tag: script_aaef8fa9
       lang: painless
       ignore_failure: true
       if: ctx?.network?.iana_number != null
@@ -235,19 +277,23 @@ processors:
             ctx.network.transport = 'sctp';
         }
   - community_id:
+      tag: community_id_d2308e7a
       target_field: network.community_id
       ignore_failure: true
   # IP Geolocation Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -256,6 +302,7 @@ processors:
         - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -264,94 +311,117 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   # Generate related.ip field
   - append:
+      tag: append_related_ip_8c90798b
       if: 'ctx.source?.ip != null && ctx.destination?.ip != null'
       field: related.ip
       value: ["{{source.ip}}", "{{destination.ip}}"]
   - set:
+      tag: set_cloud_provider_208bdd6b
       field: cloud.provider
       value: aws
   - set:
+      tag: set_cloud_account_id_6f6cbfdb
       if: ctx.aws?.vpcflow?.account_id != null
       field: cloud.account.id
       copy_from: aws.vpcflow.account_id
   - set:
+      tag: set_cloud_instance_id_772217de
       if: 'ctx.aws?.vpcflow?.instance_id != null && ctx.aws.vpcflow.instance_id != "-"'
       field: cloud.instance.id
       copy_from: aws.vpcflow.instance_id
   - convert:
+     tag: convert_aws_vpcflow_packets_lost_no_route_061d1753
      field: aws.vpcflow.packets_lost_no_route
      type: long
      ignore_missing: true
      on_failure:
        - remove:
+           tag: remove_aws_vpcflow_packets_lost_no_route_81bf75db
            field: aws.vpcflow.packets_lost_no_route
   - convert:
+     tag: convert_aws_vpcflow_packets_lost_blackhole_990ff7b7
      field: aws.vpcflow.packets_lost_blackhole
      type: long
      ignore_missing: true
      on_failure:
        - remove:
+           tag: remove_aws_vpcflow_packets_lost_blackhole_e20c47a7
            field: aws.vpcflow.packets_lost_blackhole
   - convert:
+     tag: convert_aws_vpcflow_packets_lost_mtu_exceeded_431186f9
      field: aws.vpcflow.packets_lost_mtu_exceeded
      type: long
      ignore_missing: true
      on_failure:
        - remove:
+           tag: remove_aws_vpcflow_packets_lost_mtu_exceeded_ad3e2a80
            field: aws.vpcflow.packets_lost_mtu_exceeded
   - convert:
+     tag: convert_aws_vpcflow_packets_lost_ttl_expired_2acccd3b
      field: aws.vpcflow.packets_lost_ttl_expired
      type: long
      ignore_missing: true
      on_failure:
        - remove:
+           tag: remove_aws_vpcflow_packets_lost_ttl_expired_07fb73e4
            field: aws.vpcflow.packets_lost_ttl_expired
   - set:
+      tag: set_orchestrator_cluster_id_0537ed3d
       field: orchestrator.cluster.id
       copy_from: aws.vpcflow.ecs_cluster_arn
       if: ctx.aws?.vpcflow?.ecs_cluster_arn != '-'
       ignore_empty_value: true
   - set:
+      tag: set_orchestrator_cluster_name_1f38825d
       field: orchestrator.cluster.name
       copy_from: aws.vpcflow.ecs_cluster_name
       if: ctx.aws?.vpcflow?.ecs_cluster_name != '-'
       ignore_empty_value: true
   - set:
+      tag: set_orchestrator_resource_name_9fe69dab
       field: orchestrator.resource.name
       copy_from: aws.vpcflow.ecs_container_instance_arn
       if: ctx.aws?.vpcflow?.ecs_container_instance_arn != '-'
       ignore_empty_value: true
   - set:
+      tag: set_orchestrator_resource_id_1c8e301d
       field: orchestrator.resource.id
       copy_from: aws.vpcflow.ecs_container_instance_id
       if: ctx.aws?.vpcflow?.ecs_container_instance_id != '-'
       ignore_empty_value: true
   - set:
+      tag: set_service_name_13435814
       field: service.name
       copy_from: aws.vpcflow.ecs_service_name
       if: ctx.aws?.vpcflow?.ecs_service_name != '-'
       ignore_empty_value: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - script:
+      tag: script_6e3f8fd4
       lang: painless
       ignore_failure: true
       if: "ctx.aws?.vpcflow?.tcp_flags != null"
@@ -382,6 +452,7 @@ processors:
           ctx.aws.vpcflow.tcp_flags_array.add('urg');
         }
   - remove:
+      tag: remove_b2d17f23
       field:
         - _temp_
         - aws.vpcflow.srcaddr
@@ -407,4 +478,4 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
