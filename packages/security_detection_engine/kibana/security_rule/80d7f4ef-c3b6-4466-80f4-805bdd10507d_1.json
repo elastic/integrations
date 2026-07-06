@@ -1,0 +1,157 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a recently dropped or modified javaw.exe process started from a user-writable path to run a JAR or Java classpath application, followed by a DNS lookup. Adversaries may drop Java payloads into user directories and execute them immediately to establish command and control while evading application control focused on native Windows binaries.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "logs-endpoint.events.network-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.executable",
+                "process.parent.executable"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Java Dropped and Executed With DNS Lookup",
+        "note": "## Triage and analysis\n\n### Investigating Java Dropped and Executed With DNS Lookup\n\nThis rule correlates a recently created or modified `javaw.exe` launch from `Users`, `ProgramData`, or `Windows\\Temp` with an immediate\nDNS lookup from the same process. Attackers often drop JAR-based payloads to user-writable locations and invoke them\nwith `-jar` or `-cp`/`-classpath` to blend in with legitimate Java usage while reaching out to command and control\ninfrastructure.\n\n#### Possible investigation steps\n\n- Review `process.executable`, `process.command_line`, and `process.args` to identify the JAR or classpath target and\n  whether the path is user-writable or unexpected for the host role.\n- Inspect `process.Ext.relative_file_creation_time` and `process.Ext.relative_file_name_modify_time` to confirm the\n  binary or payload was staged immediately before execution.\n- Examine the parent process tree for download, archive extraction, or script activity that may have dropped the JAR\n  or `javaw.exe`.\n- Pivot on the DNS event for `dns.question.name`, `dns.resolved_ip`, and any follow-on connection attempts from the\n  same `process.entity_id`.\n- Check code signature details for `javaw.exe` and any referenced JAR files when file telemetry is available.\n- Hunt for the same JAR hash, command line, or queried domain on other hosts.\n\n### False positive analysis\n\n- Developer workflows, local Java applications, and enterprise tools may run freshly updated JARs from user profiles or\n  `ProgramData`. Validate the JAR path, signer, parent process, and queried domain against known software before\n  closing as benign.\n- Some installers or updaters drop a private JRE under `ProgramData` and launch JAR utilities during setup. Confirm the\n  activity aligns with a known deployment or update window.\n\n### Response and remediation\n\n- Isolate the host if the JAR, domain, or parent activity appears malicious.\n- Quarantine the dropped JAR, related Java runtime files, and any staging artifacts identified in the process tree.\n- Block malicious domains or IPs at DNS and network enforcement points.\n- Reset credentials for accounts active on the host during the suspicious session if follow-on activity is observed.",
+        "query": "sequence by process.entity_id with maxspan=1m\n [process where host.os.type == \"windows\" and event.action == \"start\" and\n  (process.Ext.relative_file_creation_time <= 500 or process.Ext.relative_file_name_modify_time <= 500) and\n  (process.name : \"javaw.exe\" or process.pe.original_file_name == \"javaw.exe\") and process.executable : (\"?:\\\\Users\\\\*\", \"?:\\\\ProgramData\\\\*\", \"?:\\\\Windows\\\\Temp\\\\*\") and user.id != \"S-1-5-18\" and\n  (\n   (process.args_count == 3 and process.args : \"-jar\") or\n   (process.args_count == 4 and process.args : (\"-cp\", \"-classpath\") and process.command_line : \" *.* \")\n  )]\n [network where host.os.type == \"windows\" and event.action: \"lookup_requested\"]\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.relative_file_creation_time",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.relative_file_name_modify_time",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "80d7f4ef-c3b6-4466-80f4-805bdd10507d",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1204",
+                        "name": "User Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1204/",
+                        "subtechnique": [
+                            {
+                                "id": "T1204.002",
+                                "name": "Malicious File",
+                                "reference": "https://attack.mitre.org/techniques/T1204/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    },
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "80d7f4ef-c3b6-4466-80f4-805bdd10507d_1",
+    "type": "security-rule"
+}
