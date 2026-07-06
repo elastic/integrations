@@ -28,17 +28,60 @@ processors:
       description: Parses the JSON-encoded `event.original` into the temporary `json` object for field extraction.
       if: ctx.event?.original != null
   - drop:
-      if: ctx.json.isAuditEvent == null
+      if: ctx.json?.isAuditEvent == null
       tag: drop_if_not_audit_event
       description: >-
         Drops messages that do not contain the isAuditEvent key
-  # TODO: review event.category value against ECS conventions and a broader sample of production logs
   - set:
-      tag: set_event_category_a981526b
+      tag: set_event_kind
+      field: event.kind
+      value: event
+      description: Sets `event.kind` to `event` for Backstage audit events.
+  - append:
+      tag: append_event_category_api
       field: event.category
-      value: "api"
-      description: Sets `event.category` to `api` for catalog entity events.
-      if: ctx.json.message == "catalog.entity"
+      value: api
+      allow_duplicates: false
+      description: Sets `event.category` to `api` for Backstage audit events.
+  - append:
+      tag: append_event_type_access
+      field: event.type
+      value: access
+      allow_duplicates: false
+      description: Sets `event.type` to `access` when the audit event includes request details.
+      if: ctx.json?.request != null
+  - append:
+      tag: append_event_type_start
+      field: event.type
+      value: start
+      allow_duplicates: false
+      description: Sets `event.type` to `start` for initiated Backstage audit operations.
+      if: 'ctx.json?.status == "initiated"'
+  - append:
+      tag: append_event_type_end
+      field: event.type
+      value: end
+      allow_duplicates: false
+      description: Sets `event.type` to `end` for completed Backstage audit operations.
+      if: 'ctx.json?.status == "succeeded" || ctx.json?.status == "failed"'
+  - set:
+      tag: set_event_outcome_unknown
+      field: event.outcome
+      value: unknown
+      description: Sets `event.outcome` to `unknown` while a Backstage audit operation is initiated.
+      if: 'ctx.json?.status == "initiated"'
+  - set:
+      tag: set_event_outcome_success
+      field: event.outcome
+      value: success
+      description: Sets `event.outcome` to `success` for succeeded Backstage audit operations.
+      if: 'ctx.json?.status == "succeeded"'
+  - set:
+      tag: set_event_outcome_failure
+      field: event.outcome
+      value: failure
+      description: Sets `event.outcome` to `failure` for failed Backstage audit operations.
+      if: 'ctx.json?.status == "failed"'
   - date:
       field: json.timestamp
       target_field: "@timestamp"
@@ -50,11 +93,13 @@ processors:
   - rename:
       field: json.message
       target_field: message
+      ignore_missing: true
       tag: rename_json_message
       description: Promotes the audit `json.message` to the top-level `message` field.
   - rename:
       field: json.severityLevel
       target_field: backstage.severity_level
+      ignore_missing: true
       tag: rename_audit_severity_level
       description: Sets the custom vendor field `backstage.severity_level` that defines the audit log's severity level.
   - set:
@@ -75,23 +120,18 @@ processors:
       value: 7
       description: Sets `event.severity` to 7 when the audit log's severity level is `high`.
       if: 'ctx.backstage?.severity_level == "high"'
-  # TODO: expand event.type mapping based on all documented values of event message and status
   - set:
-      tag: set_event_type_b24b0c9e
-      field: event.type
-      value: "access"
-      description: Sets `event.type` to `access` when a catalog entity fetch is initiated.
-      if: 'ctx.json.status == "initiated" && ctx.json.message == "catalog.entity-fetch"'
-  - set:
-      tag: set_event_action_8e4cef53
+      tag: set_event_action
       field: event.action
-      value: "{{{message}}}:{{{json.status}}}"
-      description: Builds `event.action` by combining the audit message and status as `message:status`.
+      value: "{{{json.eventId}}}:{{{json.status}}}"
+      description: Builds `event.action` from the stable Backstage event ID and status.
+      if: ctx.json?.eventId != null && ctx.json?.status != null
   - rename:
       field: json.plugin
-      target_field: event.module
-      tag: rename_json_plugin_to_event_module
-      description: Maps the Backstage plugin where the event originated from to the ECS `event.module` field.
+      target_field: event.provider
+      ignore_missing: true
+      tag: rename_json_plugin_to_event_provider
+      description: Maps the Backstage plugin where the event originated from to the ECS `event.provider` field.
   - rename:
       field: json.eventId
       target_field: event.code
@@ -122,6 +162,12 @@ processors:
       tag: decode_request_uri
       description: Decode the path for the requested URL against backstage
       if: ctx._tmp?.request_url != null
+  - set:
+      field: url.original
+      copy_from: json.request.url
+      tag: set_url_original_from_source
+      description: Restores `url.original` to the unmodified path-only URL observed in the Backstage audit event.
+      if: ctx.json?.request?.url != null
   - remove:
       field: [_tmp.request_url, url.scheme, url.domain]
       ignore_missing: true
@@ -163,11 +209,17 @@ processors:
       ignore_empty_values: true
       description: Append the hostname of the actor who initiated the request to backstage to the related hostnames array
       tag: append_request_hostname_ecs_related
+  - rename:
+      field: json.actor.ip
+      target_field: source.ip
+      ignore_missing: true
+      tag: rename_actor_ip_to_source_ip
+      description: Maps the IP address of the actor that made the audited API call to the ECS `source.ip` field.
   - append:
       field: related.ip
-      copy_from: json.actor.ip
+      copy_from: source.ip
       ignore_empty_values: true
-      description: Appends the IP address of the actor who initiated the request to the `related.ip` array.
+      description: Appends the actor's IP address to the `related.ip` array for cross-field correlation.
       tag: append_related_ip_8c67e2b0
   - foreach:
       field: json.meta.query.filter
@@ -211,11 +263,6 @@ processors:
       tag: remove_json_timestamp
       description: Removes `json.timestamp` after it has been parsed into `@timestamp`.
   - remove:
-      field: json.user_agent
-      ignore_missing: true
-      tag: remove_json_useragent
-      description: Removes `json.user_agent` after it has been mapped to `user_agent.original`.
-  - remove:
       field: json.isAuditEvent
       ignore_missing: true
       tag: remove_json_isauditevent
@@ -236,21 +283,11 @@ processors:
       tag: remove_json_actor_hostname
       description: Removes `json.actor.hostname` after it has been appended to `related.hosts`.
   - remove:
-      field: json.actor.ip
-      ignore_missing: true
-      tag: remove_json_actor_ip_46c2e907
-      description: Removes `json.actor.ip` after it has been appended to `related.ip`.
-  - remove:
       field: json.actor
       ignore_missing: true
       tag: remove_json_empty_actor
       description: Removes the `json.actor` container once all actor fields have been extracted and it is empty.
       if: ctx.json?.actor?.size() == 0
-  - remove:
-      field: json.message
-      ignore_missing: true
-      tag: remove_json_message
-      description: Removes `json.message` after it has been promoted to the top-level `message` field.
   - remove:
       field: json.service
       ignore_missing: true
@@ -282,20 +319,31 @@ processors:
       tag: remove_empty_json_meta
       description: Removes the now-empty `json.meta` container after all its fields have been moved to `backstage.meta`.
   - remove:
-      field: event.original
+      field: _tmp
       ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      tag: remove_json_original_event_ss87a8429d
-      description: Removes the raw JSON string stored in `event.original` to reduce document size. Skipped when the `preserve_original_event` tag is set.
+      tag: remove_empty_tmp
+      description: Removes the empty temporary pipeline container.
+      if: ctx._tmp != null && ctx._tmp.isEmpty()
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_empty_json
+      description: Removes the empty parsed JSON container.
+      if: ctx.json != null && ctx.json.isEmpty()
 on_failure:
-  - set:
+  - append:
+      tag: append_pipeline_error_message
       field: error.message
       value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        in pipeline '{{{ _ingest.pipeline }}}'
-        failed with message '{{{ _ingest.on_failure_message }}}'
+        Pipeline '{{{ _ingest.pipeline }}}' failed at processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
