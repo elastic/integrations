@@ -10,12 +10,14 @@ source:
         - match_phrase:
             kibana.alert.rule.category: Indicator Match Rule
 dest:
-  index: "logs-ti_greynoise.enriched_ioc-1"
+  index: "logs-ti_greynoise.enriched_ioc-2"
   aliases:
     - alias: "logs-ti_greynoise.enriched_ioc"
       move_on_creation: true
 latest:
   unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
     - kibana.alert.uuid
   sort: "@timestamp"
 description: >-
@@ -39,5 +41,5 @@ _meta:
   managed: false
   # Bump this version to delete, reinstall, and restart the transform during
   # package installation.
-  fleet_transform_version: 0.8.0
+  fleet_transform_version: 0.9.0
   run_as_kibana_system: false

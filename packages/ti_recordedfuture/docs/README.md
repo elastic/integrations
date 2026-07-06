@@ -33,7 +33,7 @@ The ingested IOCs expire after a certain duration. An
 [Elastic Transform][elasticsearch_transforms]
 is created to facilitate making only active IOCs available to end users. This
 transform creates a destination index named
-`logs-ti_recordedfuture_latest.threat-3` which only contains active and
+`logs-ti_recordedfuture_latest.threat-4` which only contains active and
 unexpired IOCs. The destination index also has an alias
 `logs-ti_recordedfuture_latest.threat`. When setting up indicator match rules,
 use this latest destination index to avoid false positives from expired IOCs.
