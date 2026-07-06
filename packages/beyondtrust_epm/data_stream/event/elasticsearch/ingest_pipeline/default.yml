@@ -57,83 +57,91 @@ processors:
       name: '{{ IngestPipeline "pipeline-network-transport" }}'
       tag: route_network_transport
       if: >-
-        ctx.beyondtrust_epm?.event?.client != null
-        || ctx.beyondtrust_epm?.event?.destination != null
-        || ctx.beyondtrust_epm?.event?.dns != null
-        || ctx.beyondtrust_epm?.event?.http != null
-        || ctx.beyondtrust_epm?.event?.network != null
-        || ctx.beyondtrust_epm?.event?.server != null
-        || ctx.beyondtrust_epm?.event?.source != null
-        || ctx.beyondtrust_epm?.event?.tls != null
-        || ctx.beyondtrust_epm?.event?.url != null
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.client != null
+        || ctx.beyondtrust_epm.event.destination != null
+        || ctx.beyondtrust_epm.event.dns != null
+        || ctx.beyondtrust_epm.event.http != null
+        || ctx.beyondtrust_epm.event.network != null
+        || ctx.beyondtrust_epm.event.server != null
+        || ctx.beyondtrust_epm.event.source != null
+        || ctx.beyondtrust_epm.event.tls != null
+        || ctx.beyondtrust_epm.event.url != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-threat-security" }}'
       tag: route_threat_security
       if: >-
-        ctx.beyondtrust_epm?.event?.threat != null
-        || ctx.beyondtrust_epm?.event?.EPMWinMac != null
-        || ctx.beyondtrust_epm?.event?.rule != null
-        || ctx.beyondtrust_epm?.event?.vulnerability != null
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.threat != null
+        || ctx.beyondtrust_epm.event.EPMWinMac != null
+        || ctx.beyondtrust_epm.event.rule != null
+        || ctx.beyondtrust_epm.event.vulnerability != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-file-endpoint" }}'
       tag: route_file_endpoint
       if: >-
-        ctx.beyondtrust_epm?.event?.file != null
-        || ctx.beyondtrust_epm?.event?.EPMWinMac != null
-        || ctx.beyondtrust_epm?.event?.dll != null
-        || ctx.beyondtrust_epm?.event?.package != null
-        || ctx.beyondtrust_epm?.event?.registry != null
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.file != null
+        || ctx.beyondtrust_epm.event.EPMWinMac != null
+        || ctx.beyondtrust_epm.event.dll != null
+        || ctx.beyondtrust_epm.event.package != null
+        || ctx.beyondtrust_epm.event.registry != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-process" }}'
       tag: route_process
       if: >-
-        ctx.beyondtrust_epm?.event?.process != null
-        || ctx.beyondtrust_epm?.event?.EPMWinMac != null
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.process != null
+        || ctx.beyondtrust_epm.event.EPMWinMac != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-host-infrastructure" }}'
       tag: route_host_infrastructure
       if: >-
-        ctx.beyondtrust_epm?.event?.EPMWinMac != null
-        || ctx.beyondtrust_epm?.event?.cloud != null
-        || ctx.beyondtrust_epm?.event?.container != null
-        || ctx.beyondtrust_epm?.event?.faas != null
-        || ctx.beyondtrust_epm?.event?.host != null
-        || ctx.beyondtrust_epm?.event?.observer != null
-        || ctx.beyondtrust_epm?.event?.orchestrator != null
-        || ctx.beyondtrust_epm?.event?.client != null
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.EPMWinMac != null
+        || ctx.beyondtrust_epm.event.cloud != null
+        || ctx.beyondtrust_epm.event.container != null
+        || ctx.beyondtrust_epm.event.faas != null
+        || ctx.beyondtrust_epm.event.host != null
+        || ctx.beyondtrust_epm.event.observer != null
+        || ctx.beyondtrust_epm.event.orchestrator != null
+        || ctx.beyondtrust_epm.event.client != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-identity-user" }}'
       tag: route_identity_user
       if: >-
-        ctx.beyondtrust_epm?.event?.EPMWinMac != null
-        || ctx.beyondtrust_epm?.event?.email != null
-        || ctx.beyondtrust_epm?.event?.group != null
-        || ctx.beyondtrust_epm?.event?.user != null
-        || ctx.beyondtrust_epm?.event?.user_agent != null
-        || ctx.beyondtrust_epm?.event?.client != null
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.EPMWinMac != null
+        || ctx.beyondtrust_epm.event.email != null
+        || ctx.beyondtrust_epm.event.group != null
+        || ctx.beyondtrust_epm.event.user != null
+        || ctx.beyondtrust_epm.event.user_agent != null
+        || ctx.beyondtrust_epm.event.client != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-service-application" }}'
       tag: route_service_application
       if: >-
-        ctx.beyondtrust_epm?.event?.EPMWinMac != null
-        || ctx.beyondtrust_epm?.event?.error != null
-        || ctx.beyondtrust_epm?.event?.event != null
-        || ctx.beyondtrust_epm?.event?.log != null
-        || ctx.beyondtrust_epm?.event?.service != null
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.EPMWinMac != null
+        || ctx.beyondtrust_epm.event.error != null
+        || ctx.beyondtrust_epm.event.event != null
+        || ctx.beyondtrust_epm.event.log != null
+        || ctx.beyondtrust_epm.event.service != null)
   - pipeline:
       name: '{{ IngestPipeline "pipeline-metadata-observability" }}'
       tag: route_metadata_observability
       if: >-
-        (ctx.beyondtrust_epm?.event != null && ctx.beyondtrust_epm.event['@timestamp'] != null)
-        || ctx.beyondtrust_epm?.event?.timestamp != null
-        || ctx.beyondtrust_epm?.event?.EPMWinMac != null
-        || ctx.beyondtrust_epm?.event?.message != null
-        || ctx.beyondtrust_epm?.event?.organization != null
-        || ctx.beyondtrust_epm?.event?.related != null
-        || ctx.beyondtrust_epm?.event?.span != null
-        || ctx.beyondtrust_epm?.event?.tags != null
-        || ctx.beyondtrust_epm?.event?.trace != null
-        || ctx.beyondtrust_epm?.event?.transaction != null
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event['@timestamp'] != null
+        || ctx.beyondtrust_epm.event.timestamp != null
+        || ctx.beyondtrust_epm.event.EPMWinMac != null
+        || ctx.beyondtrust_epm.event.message != null
+        || ctx.beyondtrust_epm.event.organization != null
+        || ctx.beyondtrust_epm.event.related != null
+        || ctx.beyondtrust_epm.event.span != null
+        || ctx.beyondtrust_epm.event.tags != null
+        || ctx.beyondtrust_epm.event.trace != null
+        || ctx.beyondtrust_epm.event.transaction != null)
   # rename all fields name to snake case
   - script:
       tag: script_convert_camelcase_to_snake_case
