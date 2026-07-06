@@ -14,8 +14,18 @@ streams:
         required: true
         show_user: true
         default:
-          - /var/logs/*.log
+          - /var/log/*.log
         description: Backstage logs
+      - name: exclude_files
+        type: text
+        title: Exclude files
+        description: >-
+          Regex patterns for file paths to exclude from collection. Example: `\.gz$` excludes compressed rotated logs.
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - '\.gz$'
       - name: preserve_original_event
         required: true
         show_user: true
@@ -39,6 +49,17 @@ streams:
         required: false
         show_user: false
         description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+      - name: parsers
+        type: yaml
+        title: Parsers
+        description: |
+          Optional filestream parser configuration. Leave empty for standard Backstage JSONL audit logs;
+          the ingest pipeline parses each raw line from message/event.original.
+          Use multiline only when JSON objects are pretty-printed across multiple lines. See
+          https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#_parsers
+        required: false
+        show_user: true
+        multi: false
       - name: harvester_limit
         type: integer
         title: Harvester Limit
@@ -54,6 +75,13 @@ streams:
         required: false
         show_user: false
         default: 5m
+      - name: follow.symlinked_files
+        type: bool
+        description: Set to false so the agent silently skips symlinked files. Defaults to true.
+        multi: false
+        required: false
+        show_user: true
+        default: true
       - name: custom
         type: yaml
         title: Additional Filestream Configuration Options
@@ -73,7 +101,6 @@ streams:
           #prospector.scanner.fingerprint.length: 1024
           #ignore_older: 0
           #ignore_inactive: ''
-          #close.on_state_change.inactive: 5m
           #close.on_state_change.renamed: false
           #close.on_state_change.removed: false
           #close.reader.on_eof: false
@@ -92,7 +119,6 @@ streams:
           #exclude_lines: ['^DBG']
           #buffer_size: 16384
           #message_max_bytes: 1048576
-        # TODO Check if we have more filestream specific variables to add in, double check with filestream docs
 elasticsearch:
   index_template:
     mappings:
