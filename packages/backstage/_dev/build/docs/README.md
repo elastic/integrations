@@ -1,116 +1,106 @@
-{{- generatedHeader }}
-{{/*
-This template can be used as a starting point for writing documentation for your new integration. For each section, fill in the details
-described in the comments.
-
-Find more detailed documentation guidelines in https://www.elastic.co/docs/extend/integrations/documentation-guidelines
-*/}}
 # Backstage Integration for Elastic
 
 ## Overview
-{{/* Complete this section with a short summary of what data this integration collects and what use cases it enables */}}
-The Backstage integration for Elastic enables collection of ...
-This integration facilitates ...
+
+The Backstage integration for Elastic collects audit log events emitted by [Backstage](https://backstage.io)'s built-in `auditor` service, giving you visibility into user actions, plugin activity, and catalog operations across your Backstage instance. Events are parsed and normalized into the Elastic Common Schema (ECS) so you can search, alert on, and visualize user and plugin activity across your developer platform.
 
 ### Compatibility
-{{/* Complete this section with information on what 3rd party software or hardware versions this integration is compatible with */}}
-This integration is compatible with ...
+
+This integration is compatible with Backstage backends built on `@backstage/backend-plugin-api` version `1.2.0` or later, the release that introduced the built-in `auditor` core service (implemented by default via `@backstage/backend-defaults`). No additional Backstage plugin is required — every Backstage backend created with `createBackend()` emits audit events through this service automatically.
 
 ### How it works
-{{/* Add a high level overview on how this integration works. For example, does it collect data from API calls or recieving data from a network or file.*/}}
+
+Backstage's `auditor` service formats each audit event as a single JSON log line (message format `<plugin>.<eventId>`) through the root Winston logger, along with fields such as the acting user, HTTP request details, the originating plugin, event status, and severity level. This integration's filestream input reads those JSON lines from a log file — for example, captured container or pod output, or a file the Backstage backend writes to directly — and the ingest pipeline parses and maps them to ECS.
 
 ## What data does this integration collect?
-{{/* Complete this section with information on what types of data the integration collects, and link to reference documentation if available */}}
-The Backstage integration collects log messages of the following types:
-* ...
+
+The Backstage integration collects audit log events of the following types, depending on which plugins emit `auditor` events in your Backstage instance:
+* Catalog operations: entity fetch and catalog query events, including the requested fields and applied filters.
+* User and plugin activity: the acting user or service, the plugin and event name, HTTP method and URL, and whether the operation succeeded, failed, or is still in progress.
+* Severity-classified events: each event carries a Backstage-assigned severity level (`low`, `medium`, or `high`), mapped to `event.severity`.
 
 ### Supported use cases
-{{/* Add details on the use cases that can be enabled by using this integration. Explain why a user would want to install and use this integration. */}}
+
+Integrating Backstage audit logs with the Elastic Stack lets you:
+* Monitor user activity: track who accessed or modified catalog entities, and from where.
+* Investigate plugin behavior: correlate events by `event.provider` (the Backstage plugin) and `event.code` (the audit event ID) to debug or audit plugin-specific actions.
+* Support compliance and security monitoring: maintain a searchable, ECS-normalized record of administrative and catalog actions performed through Backstage.
 
 ## What do I need to use this integration?
-{{/* List any vendor-specific prerequisites needed before starting to install the integration. */}}
+
+To use this integration, you'll need the following vendor prerequisites:
+- A Backstage backend built with `createBackend()` from `@backstage/backend-defaults` (version `1.2.0` or later), so the `auditor` service is available and emitting events automatically.
+- The audit log output written to a location the Elastic Agent can read as a file — for example, captured container/pod logs mounted into the Elastic Agent's filesystem, or a file the Backstage backend logs to directly.
+
+You'll also need the following Elastic prerequisites:
+- Elastic Stack (Elasticsearch and Kibana) version `8.19.0` or later.
+- An active Elastic Agent installed and enrolled in Fleet, with filesystem access to the Backstage audit log file(s).
 
 ## How do I deploy this integration?
 
 ### Agent-based deployment
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+Elastic Agent must be installed on a host or container that has access to the Backstage audit log file(s). For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-{{/* If agentless is available for this integration, we'll want to include that here as well.
-### Agentless deployment
-
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
-
-For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html) 
-*/}}
+Elastic Agent is required to collect the log file(s) and ship the data to Elastic, where the events are then processed by this integration's ingest pipeline.
 
 ### Onboard / configure
-{{/* List the steps that will need to be followed in order to completely set up a working integration.
-For integrations that support multiple input types, be sure to add steps for all inputs.
-*/}}
+
+1. In Kibana, navigate to **Management → Integrations**.
+2. Search for **Backstage** and select the integration.
+3. Click **Add Backstage**.
+4. Configure **Paths** to point to the location of the Backstage audit log file(s) — for example, a mounted volume or captured container log path. The default is `/var/log/*.log`.
+5. (Optional) Configure **Exclude files** to skip rotated or compressed log files. The default already excludes `.gz` files.
+6. (Optional) Configure **Parsers** if your Backstage audit log lines are pretty-printed across multiple lines rather than one JSON object per line. See the field's description for `ndjson` and `multiline` examples.
+7. Assign the integration to an Elastic Agent policy and click **Save and continue**.
 
 ### Validation
-{{/* How can the user test whether the integration is working? Including example commands or test files if applicable */}}
+
+After the configuration is complete, follow these steps to verify data is flowing correctly from Backstage to the Elastic Stack:
+
+1. Trigger an audit event in Backstage — for example, browse the Software Catalog to trigger a `catalog.entity-fetch` event.
+2. In Kibana, navigate to **Analytics → Discover**.
+3. Select the `logs-*` data view.
+4. In the search bar, enter the filter: `data_stream.dataset: "backstage.audit_logs"`.
+5. Verify that events appear with a non-null `event.action` field, and that `event.provider` reflects the Backstage plugin that generated the event (for example, `catalog`).
 
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
-{{/*
-Add any vendor specific troubleshooting here.
 
-Are there common issues or “gotchas” for deploying this integration? If so, how can they be resolved?
-If applicable, links to the third-party software’s troubleshooting documentation.
-*/}}
+### Common configuration issues
+
+- **No events collected**: Confirm the Backstage backend is emitting audit events (not every plugin calls the `auditor` service for every operation) and that the configured **Paths** match the actual log file location.
+- **Multi-line JSON not parsed**: If your Backstage deployment pretty-prints JSON log lines across multiple lines, enable the `multiline` parser under **Parsers**. Otherwise, partial lines are dropped by the pipeline's `isAuditEvent` check.
+- **Events silently dropped**: The ingest pipeline drops any line that doesn't contain an `isAuditEvent` key, so non-audit application logs mixed into the same file are expected to be filtered out.
 
 ## Scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
-{{/* Add any vendor specific scaling information here */}}
 
 ## Reference
-{{/* Repeat for each data stream of the current type
-### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}.
-
-For each data_stream_name, include an optional summary of the datastream, the exported fields reference table and the sample event.
-
-The fields template function will be replaced by a generated list of all fields from the `fields/` directory of the data stream when building the integration.
-
-#### {data stream name} fields
-
-To include a generated list of fields from the `fields/` directory, uncomment and use:
-{{ fields "data_stream_name" }}
-
-The event template function will be replace by a sample event, taken from `sample_event.json`, when building this integration.
-
-To include a sample event from `sample_event.json`, uncomment and use:
-{{ event "data_stream_name" }}
-
-*/}}
-
-{{/* Export ILM Policies
-     This accepts a list of data stream names as arguments, and will export the ILM Policies
-     for each given data stream name. If no arguments are provided, all ILM Policies will be
-     exported. 
-     
-     If there are no ILM Policies defined, this will be an empty string.
-*/}}
-{{ ilm }}
-
-{{/* Export Transforms
-     This will export the transforms used by this integration.
-     If there are no transforms defined, this will be an empty string.
-*/}}
-{{ transform }}
 
 ### Inputs used
-{{/* All inputs used by this package will be automatically listed here. */}}
+
+The following inputs are used by this integration:
+
 {{ inputDocs }}
 
-### API usage
-{{/* For integrations that use APIs to collect data, document all the APIs that are used, and link to relevent information */}}
-These APIs are used with this integration:
-* ...
+### Data streams
+
+#### audit_logs
+
+The `audit_logs` data stream provides audit events from Backstage's `auditor` service, including catalog operations, user activity, and other plugin-specific audit events.
+
+##### audit_logs fields
+
+{{ fields "audit_logs" }}
+
+##### audit_logs sample event
+
+{{ event "audit_logs" }}
+
+### Vendor documentation links
+
+For more information about Backstage's auditor service, refer to:
+* [Backstage Auditor Service documentation](https://backstage.io/docs/backend-system/core-services/auditor)
