@@ -127,48 +127,48 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-26T09:32:19.681Z",
+    "@timestamp": "2026-07-06T14:02:17.668Z",
     "agent": {
-        "ephemeral_id": "92c36ef2-fe52-4957-ad8c-c85497ac7311",
-        "id": "31bcabae-7cc6-42d7-b79b-8c741fe5b322",
-        "name": "elastic-agent-55981",
+        "ephemeral_id": "261b5c3b-7cd3-4137-baef-8fec95e7e63f",
+        "id": "82cf0fcb-aa71-46de-a2eb-f13e8bbe4e4a",
+        "name": "elastic-agent-68369",
         "type": "metricbeat",
-        "version": "9.4.2"
+        "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "elastic_package_registry.metrics",
-        "namespace": "40944",
+        "namespace": "39993",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.3.1"
     },
     "elastic_agent": {
-        "id": "31bcabae-7cc6-42d7-b79b-8c741fe5b322",
-        "snapshot": false,
-        "version": "9.4.2"
+        "id": "82cf0fcb-aa71-46de-a2eb-f13e8bbe4e4a",
+        "snapshot": true,
+        "version": "9.4.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "elastic_package_registry.metrics",
-        "duration": 3904250,
-        "ingested": "2026-06-26T09:32:20Z",
+        "duration": 2605958,
+        "ingested": "2026-07-06T14:02:21Z",
         "kind": "metric",
         "module": "prometheus"
     },
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "elastic-agent-55981",
+        "hostname": "elastic-agent-68369",
         "ip": [
             "172.29.0.2",
             "172.18.0.4"
         ],
         "mac": [
-            "D6-17-3C-83-A7-C3",
-            "EE-D7-64-03-07-F1"
+            "46-11-78-DA-36-4B",
+            "9E-15-D2-34-1D-99"
         ],
-        "name": "elastic-agent-55981",
+        "name": "elastic-agent-68369",
         "os": {
             "family": "",
             "kernel": "6.12.76-linuxkit",
@@ -183,16 +183,8 @@ An example event for `metrics` looks as following:
         "period": 30000
     },
     "package_registry": {
-        "in_flight_requests": 0,
-        "labels": {
-            "instance": "svc-elastic_package_registry:9110",
-            "job": "prometheus"
-        },
-        "number_indexed_packages": 1,
-        "start_time": "2026-06-26T09:32:01.640Z",
-        "start_time_seconds": 1782466321.64,
-        "storage_indexer": {
-            "update_index_duration_seconds": {
+        "indexer": {
+            "get_duration_seconds": {
                 "histogram": {
                     "counts": [
                         0,
@@ -223,15 +215,13 @@ An example event for `metrics` looks as following:
                         10
                     ]
                 }
-            },
-            "update_index_error_total": {
-                "counter": 0
-            },
-            "update_index_success_total": {
-                "counter": 0
             }
         },
-        "uptime": 18
+        "labels": {
+            "indexer": "ZipFileSystemIndexer",
+            "instance": "svc-elastic_package_registry:9110",
+            "job": "prometheus"
+        }
     },
     "service": {
         "address": "http://svc-elastic_package_registry:9110/metrics",
