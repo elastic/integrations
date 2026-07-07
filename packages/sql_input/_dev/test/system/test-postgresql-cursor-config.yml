@@ -1,5 +1,12 @@
 # Cursor-based incremental fetching requires the SQL module cursor backend,
-# available in the Elastic Agent bundled with Elastic Stack 9.4+.
+# available in the Elastic Agent bundled with Elastic Stack 9.4+. CI tests this
+# package against its oldest declared Kibana version (manifest.yml kibana.version
+# is ^9.1.0), so this test cannot run there; it has been verified manually
+# against a 9.4.3 stack. Re-enable once the package's minimum supported version
+# is raised to 9.4+, or elastic-package supports a version-gated skip.
+skip:
+  reason: "Cursor mode requires Elastic Stack 9.4+ (elastic/beats#48722); CI tests this package at its oldest declared Kibana version (9.1.0)"
+  link: https://github.com/elastic/beats/pull/48722
 service: sql_input_postgresql
 vars:
   hosts:
