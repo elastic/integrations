@@ -1,0 +1,56 @@
+{
+  "id": "postgresql_otel-exclusive-lock-contention",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when `ExclusiveLock` or `AccessExclusiveLock` counts exceed 5. Exclusive locks block all other access.",
+    "name": "[PostgreSQL OTel] Exclusive lock contention",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-locks"
+        },
+        {
+          "id": "postgresql_otel-workload"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL exclusive lock contention\n\n### What fired\nCount of exclusive locks exceeded 5 during the window.\n\n### Why it matters\nExclusiveLock blocks most other lock modes; AccessExclusiveLock blocks everything. Accumulating exclusive locks usually means a DDL-like statement is running or stuck.\n\n### Triage\n1. Check for long-running DDL / maintenance.\n\n### Remediation\n- Finish or kill the long-running statement.\n\n### Tuning\n- 5 locks; tighten per environment.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-postgresqlreceiver.otel-*\n// Locks by mode; ExclusiveLock and AccessExclusiveLock indicate contention\n| WHERE postgresql.database.locks IS NOT NULL\n| WHERE attributes.mode IN (\"ExclusiveLock\", \"AccessExclusiveLock\")\n| STATS lock_count = SUM(postgresql.database.locks) BY service.instance.id, attributes.mode\n// Threshold: > 5 exclusive locks; adjust for your workload\n| WHERE lock_count > 5"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

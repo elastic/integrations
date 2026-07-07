@@ -1,0 +1,66 @@
+connectors:
+    forward: {}
+exporters:
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    transform/componentid-0:
+        log_statements:
+            - context: log
+              statements:
+                - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.dataset"], "filelogreceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    filelog/componentid-0:
+        encoding: utf-8
+        fingerprint_size: 1kb
+        force_flush_period: 500ms
+        include:
+            - /var/logs/myapp/*.log
+        include_file_name: true
+        include_file_name_resolved: true
+        include_file_owner_group_name: false
+        include_file_owner_name: false
+        include_file_path: false
+        include_file_path_resolved: true
+        include_file_record_number: true
+        include_file_record_offset: true
+        initial_buffer_size: 16KiB
+        max_concurrent_files: 1024
+        max_log_size: 1MiB
+        poll_interval: 200ms
+        preserve_leading_whitespaces: false
+        preserve_trailing_whitespaces: false
+        start_at: end
+secret_references: []
+service:
+    pipelines:
+        logs:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        logs/componentid-0:
+            exporters:
+                - forward
+            processors:
+                - transform/componentid-0
+            receivers:
+                - filelog/componentid-0

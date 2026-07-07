@@ -1,0 +1,481 @@
+---
+dashboards:
+  - name: "[IIS OTel] Overview"
+    id: iis_otel-overview
+    description: >-
+      Comprehensive operational visibility for IIS web servers instrumented via OpenTelemetry iisreceiver.
+      Tracks application pool health, request handling capacity, traffic patterns, and resource utilization.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    filters:
+      - field: "data_stream.dataset"
+        equals: "iisreceiver.otel"
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: resource.attributes.host.name
+        width: medium
+      - type: options
+        label: Site
+        data_view: metrics-*
+        field: iis.site
+        width: medium
+      - type: options
+        label: Application Pool
+        data_view: metrics-*
+        field: iis.application_pool
+        width: medium
+    panels:
+      # Navigation Links
+      - links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: iis_otel-overview
+            - label: Sites & Pools
+              dashboard: iis_otel-sites
+        size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+
+      # Dashboard Overview Markdown
+      - markdown:
+          content: |
+            ## [IIS OTel] Overview
+
+            This dashboard provides operational visibility for **IIS** instrumented via the OpenTelemetry **iisreceiver** (collector-contrib):
+
+            - **Pool health** — State and uptime; any pool not Running = outage
+            - **Request handling** — Queue depth, age, rejections (primary saturation/error signals)
+            - **Traffic** — Request rate by method, connections, network throughput
+            - **Resources** — Active threads, bandwidth throttling
+        size: {w: 16, h: 12}
+        position: {x: 0, y: 2}
+
+      # Unhealthy Pools Metric
+      - title: Unhealthy Pools
+        size: {w: 8, h: 4}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE `iis.application_pool.state` IS NOT NULL
+            | STATS unhealthy = COUNT_DISTINCT(iis.application_pool) WHERE `iis.application_pool.state` != 3
+          primary:
+            field: unhealthy
+
+      # Pools Running Metric
+      - title: Pools Running
+        size: {w: 8, h: 4}
+        position: {x: 24, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE `iis.application_pool.state` IS NOT NULL
+            | STATS pools_running = COUNT_DISTINCT(iis.application_pool) WHERE `iis.application_pool.state` == 3
+          primary:
+            field: pools_running
+
+      # Request Rate Metric
+      - title: Request Rate
+        size: {w: 8, h: 4}
+        position: {x: 32, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.count` IS NOT NULL
+            | STATS req_rate = SUM(RATE(`iis.request.count`))
+          primary:
+            field: req_rate
+
+      # Rejected Requests Metric
+      - title: Rejected Requests
+        size: {w: 8, h: 4}
+        position: {x: 40, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.rejected` IS NOT NULL
+            | STATS rej_rate = SUM(RATE(`iis.request.rejected`))
+          primary:
+            field: rej_rate
+
+      # Max Queue Depth Metric
+      - title: Max Queue Depth
+        size: {w: 8, h: 4}
+        position: {x: 16, y: 6}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.queue.count` IS NOT NULL
+            | STATS max_queue = MAX(`iis.request.queue.count`)
+          primary:
+            field: max_queue
+
+      # Max Queue Age Metric
+      - title: Max Queue Age
+        size: {w: 8, h: 4}
+        position: {x: 24, y: 6}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.queue.age.max` IS NOT NULL
+            | STATS max_age = MAX(`iis.request.queue.age.max`)
+          primary:
+            field: max_age
+
+      # Active Connections Metric
+      - title: Active Connections
+        size: {w: 8, h: 4}
+        position: {x: 32, y: 6}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.connection.active` IS NOT NULL
+            | STATS connections = SUM(`iis.connection.active`)
+          primary:
+            field: connections
+
+      # Active Threads Metric
+      - title: Active Threads
+        size: {w: 8, h: 4}
+        position: {x: 40, y: 6}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.thread.active` IS NOT NULL
+            | STATS threads = SUM(`iis.thread.active`)
+          primary:
+            field: threads
+
+      # Application Pool Health Section Header
+      - markdown:
+          content: |
+            ## Application Pool Health & State
+        size: {w: 48, h: 3}
+        position: {x: 0, y: 14}
+
+      # Application Pool Health Table
+      - title: Application Pool Health — State & Uptime Table
+        size: {w: 24, h: 12}
+        position: {x: 0, y: 17}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-iisreceiver.otel-*
+            - WHERE data_stream.dataset == "iisreceiver.otel" AND (`iis.application_pool.state` IS NOT NULL OR `iis.application_pool.uptime` IS NOT NULL)
+            - STATS state = MAX(`iis.application_pool.state`), uptime = MAX(`iis.application_pool.uptime`) BY pool = iis.application_pool, host = resource.attributes.host.name
+            - EVAL state_label = CASE( state == 1, "Uninitialized", state == 2, "Initialized", state == 3, "Running", state == 4, "Disabling", state == 5, "Disabled", state == 6, "Shutdown Pending", state == 7, "Delete Pending", "Unknown" )
+            - SORT pool ASC
+          dimensions:
+            - field: pool
+              label: Application Pool
+            - field: host
+              label: Host
+            - field: state_label
+              label: State
+          metrics:
+            - field: uptime
+              label: Uptime (ms)
+              format:
+                type: number
+                decimals: 0
+
+      # Pool Uptime Over Time Chart
+      - title: Pool Uptime Over Time
+        size: {w: 24, h: 12}
+        position: {x: 24, y: 17}
+        esql:
+          type: line
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.application_pool.uptime` IS NOT NULL AND iis.application_pool IS NOT NULL
+            | STATS uptime = MAX(`iis.application_pool.uptime`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), pool = iis.application_pool
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: uptime
+          breakdown:
+            field: pool
+
+      # Request Rate & Queue Metrics Section Header
+      - markdown:
+          content: |
+            ## Request Rate & Queue Metrics
+        size: {w: 48, h: 3}
+        position: {x: 0, y: 29}
+
+      # Request Rate by HTTP Method Over Time
+      - title: Request Rate by HTTP Method Over Time
+        size: {w: 24, h: 12}
+        position: {x: 0, y: 32}
+        esql:
+          type: area
+          query: |
+            TS metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.count` IS NOT NULL
+            | STATS req_rate = SUM(RATE(`iis.request.count`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.request
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: req_rate
+          breakdown:
+            field: attributes.request
+
+      # Queue Depth and Rejections Over Time
+      - title: Queue Depth and Rejections Over Time
+        size: {w: 24, h: 12}
+        position: {x: 24, y: 32}
+        esql:
+          type: line
+          query: |
+            TS metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel"
+            | STATS queue_depth = SUM(COALESCE(`iis.request.queue.count`, 0)), rej_rate = SUM(RATE(`iis.request.rejected`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: queue_depth
+            - field: rej_rate
+
+      # Queue Depth Over Time
+      - title: Queue Depth Over Time
+        size: {w: 12, h: 10}
+        position: {x: 0, y: 44}
+        esql:
+          type: line
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.queue.count` IS NOT NULL
+            | STATS queue_depth = SUM(`iis.request.queue.count`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: queue_depth
+          legend:
+            position: bottom
+
+      # Rejections Over Time
+      - title: Rejections Over Time
+        size: {w: 12, h: 10}
+        position: {x: 12, y: 44}
+        esql:
+          type: line
+          query: |
+            TS metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.rejected` IS NOT NULL
+            | STATS rej_rate = SUM(RATE(`iis.request.rejected`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: rej_rate
+          legend:
+            position: bottom
+
+      # Queue Age Over Time
+      - title: Queue Age Over Time
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 44}
+        esql:
+          type: line
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.queue.age.max` IS NOT NULL
+            | STATS max_age = MAX(`iis.request.queue.age.max`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: max_age
+
+      # Traffic & Distribution Section Header
+      - markdown:
+          content: |
+            ## Traffic, Method Distribution & Network
+        size: {w: 48, h: 3}
+        position: {x: 0, y: 54}
+
+      # Request Method Distribution Pie Chart
+      - title: Request Method Distribution
+        size: {w: 12, h: 10}
+        position: {x: 0, y: 57}
+        esql:
+          type: pie
+          query: |
+            TS metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.count` IS NOT NULL
+            | STATS total = SUM(INCREASE(`iis.request.count`)) BY attributes.request
+            | SORT total DESC
+            | LIMIT 10
+          metrics:
+            - field: total
+          dimensions:
+            - field: attributes.request
+
+      # Network Throughput by Direction
+      - title: Network Throughput by Direction
+        size: {w: 24, h: 10}
+        position: {x: 12, y: 57}
+        esql:
+          type: area
+          query: |
+            TS metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.network.io` IS NOT NULL
+            | STATS throughput = SUM(RATE(`iis.network.io`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.direction
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: throughput
+          breakdown:
+            field: attributes.direction
+
+      # Connection Attempts Rate
+      - title: Connection Attempts Rate
+        size: {w: 12, h: 10}
+        position: {x: 36, y: 57}
+        esql:
+          type: line
+          query: |
+            TS metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.connection.attempt.count` IS NOT NULL
+            | STATS conn_rate = SUM(RATE(`iis.connection.attempt.count`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: conn_rate
+          legend:
+            position: bottom
+
+      # Active Connections Over Time
+      - title: Active Connections and Connection Attempts Over Time
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 67}
+        esql:
+          type: line
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND (`iis.connection.active` IS NOT NULL OR `iis.connection.attempt.count` IS NOT NULL)
+            | EVAL conn = COALESCE(`iis.connection.active`, 0)
+            | STATS connections = SUM(conn) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: connections
+
+      # Active Threads Over Time
+      - title: Active Threads Over Time
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 67}
+        esql:
+          type: line
+          query: |
+            FROM metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.thread.active` IS NOT NULL
+            | STATS threads = SUM(`iis.thread.active`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: threads
+
+      # Bandwidth Throttling Over Time
+      - title: Bandwidth Throttling Over Time
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 77}
+        esql:
+          type: line
+          query: |
+            TS metrics-iisreceiver.otel-*
+            | WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.network.blocked` IS NOT NULL
+            | STATS blocked = SUM(RATE(`iis.network.blocked`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: blocked
+
+      # Detail Tables Section Header
+      - markdown:
+          content: |
+            ## Top Sites & Application Pools
+        size: {w: 48, h: 3}
+        position: {x: 0, y: 87}
+
+      # Top Sites by Request Rate Table
+      - title: Top Sites by Request Rate
+        size: {w: 24, h: 15}
+        position: {x: 0, y: 90}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-iisreceiver.otel-*
+            - WHERE data_stream.dataset == "iisreceiver.otel" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL
+            - STATS req_rate = SUM(RATE(`iis.request.count`)) BY iis.site
+            - SORT req_rate DESC
+            - LIMIT 20
+          dimensions:
+            - field: iis.site
+              label: Site
+          metrics:
+            - field: req_rate
+              label: Requests/sec
+              format:
+                type: number
+                decimals: 1
+
+      # Application Pools State Summary Table
+      - title: Application Pools — State Summary
+        size: {w: 24, h: 15}
+        position: {x: 24, y: 90}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-iisreceiver.otel-*
+            - WHERE data_stream.dataset == "iisreceiver.otel" AND iis.application_pool IS NOT NULL
+            - STATS state = MAX(`iis.application_pool.state`), queue = MAX(`iis.request.queue.count`), uptime = MAX(`iis.application_pool.uptime`) BY pool = iis.application_pool
+            - EVAL state_label = CASE( state == 1, "Uninitialized", state == 2, "Initialized", state == 3, "Running", state == 4, "Disabling", state == 5, "Disabled", state == 6, "Shutdown Pending", state == 7, "Delete Pending", "Unknown" )
+            - SORT pool ASC
+          dimensions:
+            - field: pool
+              label: Application Pool
+            - field: state_label
+              label: State
+          metrics:
+            - field: queue
+              label: Queue Depth
+              format:
+                type: number
+                decimals: 0
+            - field: uptime
+              label: Uptime (ms)
+              format:
+                type: number
+                decimals: 0

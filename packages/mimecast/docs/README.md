@@ -141,50 +141,57 @@ An example event for `audit_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-16T12:01:37.000Z",
+    "@timestamp": "2024-10-17T02:06:50.000Z",
     "agent": {
-        "ephemeral_id": "36061bf9-f838-404c-b724-28267b5bcd86",
-        "id": "d6fa0f89-1fb9-474b-b2f3-0c52080145f6",
-        "name": "elastic-agent-75872",
+        "ephemeral_id": "ee552a9c-e676-4cef-9a3a-f97a235f7c65",
+        "id": "1933b9c1-c985-4d21-9296-179670233826",
+        "name": "elastic-agent-38243",
         "type": "filebeat",
         "version": "8.19.4"
     },
+    "client": {
+        "ip": "203.59.201.168"
+    },
     "data_stream": {
         "dataset": "mimecast.audit_events",
-        "namespace": "46653",
+        "namespace": "23909",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d6fa0f89-1fb9-474b-b2f3-0c52080145f6",
+        "id": "1933b9c1-c985-4d21-9296-179670233826",
         "snapshot": false,
         "version": "8.19.4"
     },
     "event": {
-        "action": "search-action",
+        "action": "api-application-updated",
         "agent_id_status": "verified",
         "category": [
             "email"
         ],
-        "created": "2025-12-16T10:34:04.141Z",
+        "created": "2024-10-17T02:06:50.000Z",
         "dataset": "mimecast.audit_events",
-        "id": "eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK2o",
-        "ingested": "2025-12-16T10:34:05Z",
-        "original": "{\"auditType\":\"Search Action\",\"category\":\"case_review_logs\",\"eventInfo\":\"Inspected Review Set Messages - Source: Review Set - Supervision - hot words, Case - GDPR/CCPA, Message Status: Pending, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review\",\"eventTime\":\"2021-11-16T12:01:37+0000\",\"id\":\"eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK2o\",\"user\":\"johndoe@example.com\"}"
+        "id": "eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f",
+        "ingested": "2026-05-03T12:56:55Z",
+        "original": "{\"auditType\":\"API Application Updated\",\"category\":\"account_logs\",\"eventInfo\":\"API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 203.59.201.168, Application: Administration Console\",\"eventTime\":\"2024-10-17T02:06:50+0000\",\"id\":\"eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f\",\"user\":\"user.name@company.mime-api.com\"}"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "mimecast": {
-        "category": "case_review_logs",
-        "eventInfo": "Inspected Review Set Messages - Source: Review Set - Supervision - hot words, Case - GDPR/CCPA, Message Status: Pending, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review"
+        "application": "Administration Console",
+        "category": "account_logs",
+        "eventInfo": "API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 203.59.201.168, Application: Administration Console"
     },
     "related": {
+        "ip": [
+            "203.59.201.168"
+        ],
         "user": [
-            "johndoe",
-            "johndoe@example.com"
+            "user.name",
+            "user.name@company.mime-api.com"
         ]
     },
     "tags": [
@@ -193,9 +200,9 @@ An example event for `audit_events` looks as following:
         "mimecast-audit-events"
     ],
     "user": {
-        "domain": "example.com",
-        "email": "johndoe@example.com",
-        "name": "johndoe"
+        "domain": "company.mime-api.com",
+        "email": "user.name@company.mime-api.com",
+        "name": "user.name"
     }
 }
 ```
@@ -316,6 +323,8 @@ An example event for `cloud_integrated` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -683,22 +692,22 @@ An example event for `siem` looks as following:
 {
     "@timestamp": "2021-11-12T12:15:46.000Z",
     "agent": {
-        "ephemeral_id": "209054e3-c38a-4e5a-bb6c-e771a044eb63",
-        "id": "561734f3-9650-4135-bc74-cf4d379801c5",
-        "name": "elastic-agent-56189",
+        "ephemeral_id": "b9b503e9-092b-4ff9-82d7-5fe035b87cab",
+        "id": "949dd69d-1c58-45d5-8401-dd1500236b54",
+        "name": "elastic-agent-24961",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.siem_logs",
-        "namespace": "85570",
+        "namespace": "59193",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "561734f3-9650-4135-bc74-cf4d379801c5",
+        "id": "949dd69d-1c58-45d5-8401-dd1500236b54",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -723,7 +732,7 @@ An example event for `siem` looks as following:
         ],
         "created": "2021-11-12T12:15:46+0000",
         "dataset": "mimecast.siem_logs",
-        "ingested": "2025-12-16T05:32:04Z",
+        "ingested": "2026-06-08T14:14:21Z",
         "original": "{\"Content-Disposition\":\"attachment; filename=\\\"jrnl_20211018093329655.json\\\"\",\"Dir\":\"Internal\",\"Rcpt\":\"o365_service_account@example.com\",\"RcptActType\":\"Jnl\",\"RcptHdrType\":\"Unknown\",\"Sender\":\"johndoe@example.com\",\"aCode\":\"fjihpfEgM_iRwemxhe3t_w\",\"acc\":\"ABC123\",\"datetime\":\"2021-11-12T12:15:46+0000\"}",
         "outcome": "unknown"
     },
@@ -753,6 +762,14 @@ An example event for `siem` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.hash.md5 | MD5 hash. | keyword |
+| email.attachments.file.hash.sha1 | SHA1 hash. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
+| email.attachments.file.size | Attachment file size in bytes. | long |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -848,7 +865,7 @@ An example event for `siem` looks as following:
 | mimecast.route | The route of the message. (Inbound; Outbound; Internal; External) | keyword |
 | mimecast.scanResults | The reason that the click was blocked. | keyword |
 | mimecast.senderDomain | The sender domain. | keyword |
-| mimecast.senderDomainInternal | The sender domain is a registered internal domain. | keyword |
+| mimecast.senderDomainInternal | Whether the sender domain is a registered internal domain. | keyword |
 | mimecast.senderEnvelope | The sender of the email. | keyword |
 | mimecast.senderHeader | Sender address found in the from header of the email. | keyword |
 | mimecast.senderIp | The source IP of the original message or sending mail server. | keyword |
@@ -971,6 +988,9 @@ An example event for `threat_intel_malware_customer` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1088,6 +1108,9 @@ An example event for `threat_intel_malware_grid` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1211,6 +1234,11 @@ An example event for `ttp_ap` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |

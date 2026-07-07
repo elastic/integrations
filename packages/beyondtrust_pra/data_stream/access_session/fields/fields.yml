@@ -36,22 +36,28 @@
               description: Unique ID assigned to the user.
             - name: invited
               type: boolean
-              description: Integer value (1) present only if the user is an invited user.
+              description: True when the user is an invited user.
             - name: os
               type: keyword
               description: The operating system of the user's computer.
             - name: private_ip
               type: ip
               description: The user's private IP address.
+            - name: private_port
+              type: long
+              description: The user's private port.
             - name: public_ip
               type: ip
               description: The user's public IP address.
+            - name: public_port
+              type: long
+              description: The user's public port.
             - name: seconds_involved
               type: long
               description: Integer value indicating the number of seconds the user was involved in this session.
             - name: session_owner
-              type: keyword
-              description: Integer value (1 or 0) indicating whether the user was the owner of the session or was merely a conference member.
+              type: boolean
+              description: Boolean value indicating whether the user was the owner of the session or was merely a conference member.
             - name: type
               type: keyword
               description: Indicating whether this action was directed to the system, a customer, or a user.
@@ -99,22 +105,28 @@
               description: Unique ID assigned to the user.
             - name: invited
               type: boolean
-              description: Integer value (1) present only if the user is an invited user.
+              description: True when the user is an invited user.
             - name: os
               type: keyword
               description: The operating system of the user's computer.
             - name: private_ip
               type: ip
               description: The user's private IP address.
+            - name: private_port
+              type: long
+              description: The user's private port.
             - name: public_ip
               type: ip
               description: The user's public IP address.
+            - name: public_port
+              type: long
+              description: The user's public port.
             - name: seconds_involved
               type: long
               description: Integer value indicating the number of seconds the user was involved in this session.
             - name: session_owner
-              type: keyword
-              description: Integer value (1 or 0) indicating whether the user was the owner of the session or was merely a conference member.
+              type: boolean
+              description: Boolean value indicating whether the user was the owner of the session or was merely a conference member.
             - name: type
               type: keyword
               description: Indicates whether this action was performed by the system, a endpoint, or a representative.
@@ -171,6 +183,9 @@
             - name: file_transfer_count
               type: long
               description: The number of file transfers which occurred during the session.
+            - name: file_delete_count
+              type: long
+              description: The number of files deleted via the File Transfer interface during the session.
             - name: jump_group
               type: group
               fields:
@@ -214,9 +229,10 @@
                   type: keyword
                 - name: gsnumber
                   type: keyword
-                  description: The name of the user who owned the session.
+                  description: Uniquely identifies the user in regards to their current connection to the BeyondTrust Appliance B Series.
                 - name: id
                   type: keyword
+                  description: Unique ID assigned to the user.
             - name: session_chat_download_url
               type: keyword
               description: The URL at which this session's chat transcript can be downloaded. This element is displayed only for sessions that have successfully ended.
@@ -243,12 +259,20 @@
                   description: Displays the start time as a UNIX timestamp (UTC).
         - name: system_information
           type: group
+          description: |
+            This element contains multiple category child elements as described below.
+            System information is logged only when pulled automatically at the beginning of the session and not when specifically requested by the user.
           fields:
             - name: category
               type: group
               fields:
                 - name: data
                   type: group
+                  description: |
+                    Contains multiple row elements, each of which contains multiple field elements that correspond to the field elements above.
+                    For example, the Drives category would have a separate row for each drive on the endpoint computer.
+                    An example row might contain field elements C:\, Local Disk, 60%, etc.
+                    These row elements can be compared to table rows, with each field element a table cell.
                   fields:
                     - name: row
                       type: group
@@ -262,6 +286,10 @@
                               type: keyword
                 - name: description
                   type: group
+                  description: |
+                    Contains multiple field elements, each of which contains a descriptor for the specific data field.
+                    For example, the Drives category would have field elements Drive, Type, Percent Used, etc.
+                    These field elements can be compared to table header cells.
                   fields:
                     - name: field
                       type: group

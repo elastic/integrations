@@ -1,0 +1,117 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the execution of suspicious shell commands via the Python interpreter. Attackers may use Python to execute shell commands to gain access to the system or to perform other malicious activities, such as credential access, data exfiltration, or lateral movement.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Python Shell Command Execution",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Python Shell Command Execution\n\nThis rule flags Linux or macOS activity where Python rapidly launches multiple shell commands through sh/bash-style interpreters, a strong sign that a script is driving hands-on execution rather than normal application behavior. An attacker might use a Python backdoor to run `sh -c` commands such as `whoami`, `uname`, `env`, `find`, and `curl` in quick succession to profile the host, locate data, and pull down follow-on tools.\n\n### Possible investigation steps\n\n- Reconstruct the full process tree around the Python parent to identify the originating script or module, execution path, user context, and whether it was launched by an interactive session, scheduled task, service, container runtime, or approved automation.\n- Review the Python code or script content that spawned the shells, along with recent file creation or modification and package installation activity, to determine whether it is legitimate application logic or an unexpected payload introduced in temporary, user, or application directories.\n- Compare the clustered shell commands with any immediate follow-on behavior such as outbound network connections, tool downloads, archive creation, credential store access, or additional interpreter launches to assess whether the activity moved from discovery into payload delivery or exfiltration.\n- Pivot on the same host and Python execution lineage for prior and subsequent events to uncover persistence or lateral movement indicators, including cron or systemd changes, launchd modifications, SSH activity, or repeated execution patterns across other endpoints.\n- Validate with the asset or application owner whether the behavior matches known deployment, build, or administrative workflows, and if it does not, isolate the host and collect memory, script artifacts, and shell history for deeper analysis.\n\n### False positive analysis\n\n- A legitimate Python administration or deployment script may call `sh -c` to run discovery and download commands such as `whoami`, `uname`, `env`, `find`, or `curl` during host setup; verify the parent Python script path, user, and working directory match an approved maintenance job and that the command set is expected for that script.\n- A Python application on Linux or macOS may spawn shell wrappers during startup, diagnostics, or update checks and generate several distinct commands within a minute; confirm the Python executable and child shell activity originate from the expected application directory and correlate with a recent authorized install, upgrade, or troubleshooting session.\n\n### Response and remediation\n\n- Isolate the affected Linux or macOS host from the network, terminate the malicious Python process and any spawned `sh -c` or `bash -c` children, and block any external IPs, domains, or download URLs the script contacted.\n- Preserve and quarantine the Python script, shell history, downloaded payloads, and files created in temporary, user, or application directories, then remove attacker persistence such as cron jobs, systemd service or timer units, launchd plists, login scripts, and unauthorized `authorized_keys` entries.\n- Restore the system to a known-good state by removing attacker-created files only after collection, reinstalling or repairing modified packages and startup items, and reimaging the host if system binaries, security tools, or core configuration files were altered.\n- Rotate credentials and secrets exposed on the host, including local accounts, SSH keys, API tokens, and application or cloud credentials, especially if the shell activity included `env`, keychain access, history review, or reads from credential files.\n- Escalate to incident response immediately if the Python-launched shells used `curl` or `wget` to fetch payloads, established outbound sessions to untrusted infrastructure, touched multiple endpoints, or showed evidence of credential theft, persistence, or data collection.\n- Harden the environment by restricting Python and shell execution from temporary or user-writable paths, limiting which users and services can invoke shell interpreters, tightening egress controls, and adding detections for Python spawning shell commands, new cron or launchd items, and unauthorized SSH key changes.\n",
+        "query": "FROM logs-endpoint.events.process-* METADATA _id, _version, _index\n\n| WHERE host.os.type in (\"linux\", \"macos\") and event.type == \"start\" and TO_LOWER(process.parent.name) like \"python*\" and\n  process.name in (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\", \"busybox\") and\n  KQL(\"\"\"event.action:\"exec\" and process.args:(\"-c\" or \"-cl\" or \"-lc\")\"\"\")\n\n// truncate timestamp to 1-minute window\n| EVAL Esql.time_window_date_trunc = DATE_TRUNC(1 minutes, @timestamp)\n\n| EVAL Esql.process_command_line_patterns = CASE(\n  process.command_line like \"*grep*\", \"grep\",\n  process.command_line like \"*find*\", \"find\",\n  process.command_line like \"*curl*\", \"curl\",\n  process.command_line like \"*env *\", \"environment_enumeration\",\n  process.command_line like \"*wget*\", \"wget\",\n  process.command_line like \"*whoami*\" or process.command_line like \"*uname*\" or process.command_line like \"*hostname*\", \"discovery\", \"other\"\n)\n\n| KEEP\n    @timestamp,\n    _id,\n    _index,\n    _version,\n    Esql.process_command_line_patterns,\n    Esql.time_window_date_trunc,\n    host.os.type,\n    event.type,\n    event.action,\n    process.parent.name,\n    process.working_directory,\n    process.parent.working_directory,\n    process.name,\n    process.executable,\n    process.command_line,\n    process.parent.executable,\n    process.parent.entity_id,\n    agent.id,\n    host.name,\n    event.dataset,\n    data_stream.namespace\n\n| STATS\n  Esql.process_command_line_count_distinct = COUNT_DISTINCT(process.command_line),\n  Esql.patterns_count_distinct = COUNT_DISTINCT(Esql.process_command_line_patterns),\n  Esql.process_command_line_values = VALUES(process.command_line),\n  Esql.host_name_values = values(host.name),\n  Esql.agent_id_values = values(agent.id),\n  Esql.event_dataset_values = values(event.dataset),\n  Esql.data_stream_namespace_values = values(data_stream.namespace)\n  BY process.parent.entity_id, agent.id, host.name, Esql.time_window_date_trunc\n\n| SORT Esql.process_command_line_count_distinct DESC\n| WHERE Esql.process_command_line_count_distinct >= 5 AND Esql.patterns_count_distinct >= 4\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.agent_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.data_stream_namespace_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_dataset_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.host_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.patterns_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_command_line_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_command_line_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.time_window_date_trunc",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "agent.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "b42e4b88-fc4a-417b-a45e-4d4a3db9fd41",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.006",
+                                "name": "Python",
+                                "reference": "https://attack.mitre.org/techniques/T1059/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "esql",
+        "version": 2
+    },
+    "id": "b42e4b88-fc4a-417b-a45e-4d4a3db9fd41_2",
+    "type": "security-rule"
+}

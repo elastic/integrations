@@ -1,0 +1,1113 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"ctrl-event-action\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"event.action\",\"title\":\"Event Type\",\"id\":\"ctrl-event-action\",\"enhancements\":{}}},\"ctrl-user-email\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"user.email\",\"title\":\"User Email\",\"id\":\"ctrl-user-email\",\"enhancements\":{}}}}"
+        },
+        "description": "Greenhouse ATS audit events with request ID grouping - shows all event types and how requests connect to audit records.",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "destinationRefName": "link_detail_to_overview_dashboard",
+                                "id": "nav-to-overview",
+                                "label": "[Greenhouse] Audit Logs Overview",
+                                "order": 0,
+                                "type": "dashboardLink"
+                            }
+                        ]
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "nav-links-detail",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "nav-links-detail",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-event-types",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "event-types-filter-index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "event-types": {
+                                            "columnOrder": [
+                                                "event-type-bucket",
+                                                "event-type-count"
+                                            ],
+                                            "columns": {
+                                                "event-type-bucket": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Event Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "event-type-count",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 10,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.action"
+                                                },
+                                                "event-type-count": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "event-types-filter-index",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "greenhouse.audit"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "greenhouse.audit"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "event-types",
+                                        "layerType": "data",
+                                        "metrics": [
+                                            "event-type-count"
+                                        ],
+                                        "numberDisplay": "value",
+                                        "categoryDisplay": "default",
+                                        "legendDisplay": "show",
+                                        "nestedLegend": false,
+                                        "primaryGroups": [
+                                            "event-type-bucket"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "type": "lens"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "panel-event-types",
+                    "w": 16,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "panel-event-types",
+                "title": "All Event Types",
+                "type": "lens",
+                "version": "8.11.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-target-types",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "target-types-filter-index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "target-types": {
+                                            "columnOrder": [
+                                                "target-type-bucket",
+                                                "target-type-count"
+                                            ],
+                                            "columns": {
+                                                "target-type-bucket": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Target Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "target-type-count",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 15,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "greenhouse.audit.event.target_type"
+                                                },
+                                                "target-type-count": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "target-types-filter-index",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "greenhouse.audit"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "greenhouse.audit"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "target-types",
+                                        "layerType": "data",
+                                        "metrics": [
+                                            "target-type-count"
+                                        ],
+                                        "numberDisplay": "value",
+                                        "categoryDisplay": "default",
+                                        "legendDisplay": "show",
+                                        "nestedLegend": false,
+                                        "primaryGroups": [
+                                            "target-type-bucket"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "type": "lens"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "panel-target-types",
+                    "w": 16,
+                    "x": 16,
+                    "y": 2
+                },
+                "panelIndex": "panel-target-types",
+                "title": "Target Types",
+                "type": "lens",
+                "version": "8.11.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-timeline-detail",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "timeline-detail-filter-index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "timeline-detail": {
+                                            "columnOrder": [
+                                                "timeline-detail-date",
+                                                "timeline-detail-action",
+                                                "timeline-detail-count"
+                                            ],
+                                            "columns": {
+                                                "timeline-detail-date": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "timeline-detail-action": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Event Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "size": 10,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.action"
+                                                },
+                                                "timeline-detail-count": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "timeline-detail-filter-index",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "greenhouse.audit"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "greenhouse.audit"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "timeline-detail-count"
+                                        ],
+                                        "layerId": "timeline-detail",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "timeline-detail-action",
+                                        "xAccessor": "timeline-detail-date"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "type": "lens"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "panel-timeline-detail",
+                    "w": 16,
+                    "x": 32,
+                    "y": 2
+                },
+                "panelIndex": "panel-timeline-detail",
+                "title": "Events Over Time by Type",
+                "type": "lens",
+                "version": "8.11.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-reqid",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "reqid-filter-index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "reqid": {
+                                            "columnOrder": [
+                                                "reqid-bucket",
+                                                "reqtype-bucket",
+                                                "requser-bucket",
+                                                "reqid-count"
+                                            ],
+                                            "columns": {
+                                                "reqid-bucket": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Request ID",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "reqid-count",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 100,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "greenhouse.audit.request.id"
+                                                },
+                                                "reqtype-bucket": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Request Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "size": 5,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "greenhouse.audit.request.type"
+                                                },
+                                                "requser-bucket": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Performed By",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": true,
+                                                        "orderBy": {
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "size": 3,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.email"
+                                                },
+                                                "reqid-count": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Events Triggered",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "reqid-filter-index",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "greenhouse.audit"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "greenhouse.audit"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "reqid-bucket",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "reqtype-bucket",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "requser-bucket",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "reqid-count",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "reqid",
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "type": "lens"
+                },
+                "gridData": {
+                    "h": 20,
+                    "i": "panel-reqid",
+                    "w": 48,
+                    "x": 0,
+                    "y": 17
+                },
+                "panelIndex": "panel-reqid",
+                "title": "Requests and Their Associated Audit Events",
+                "type": "lens",
+                "version": "8.11.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-userchanges",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "userchanges-filter-index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "userchanges": {
+                                            "columnOrder": [
+                                                "userchanges-user",
+                                                "userchanges-creates",
+                                                "userchanges-updates",
+                                                "userchanges-deletes",
+                                                "userchanges-total"
+                                            ],
+                                            "columns": {
+                                                "userchanges-user": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "User",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "userchanges-total",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 20,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.email"
+                                                },
+                                                "userchanges-creates": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "event.action: data_change_create"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Creates",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "userchanges-updates": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "event.action: data_change_update"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Updates",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "userchanges-deletes": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "event.action: data_change_destroy"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Deletes",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "userchanges-total": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Events",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "userchanges-filter-index",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "greenhouse.audit"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "greenhouse.audit"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "userchanges-user",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "userchanges-creates",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "userchanges-updates",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "userchanges-deletes",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "userchanges-total",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "userchanges",
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "type": "lens"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "panel-userchanges",
+                    "w": 24,
+                    "x": 0,
+                    "y": 37
+                },
+                "panelIndex": "panel-userchanges",
+                "title": "User Activity Breakdown",
+                "type": "lens",
+                "version": "8.11.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-reqcount",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "reqcount-filter-index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "reqcount": {
+                                            "columnOrder": [
+                                                "reqcount-type",
+                                                "reqcount-action",
+                                                "reqcount-count"
+                                            ],
+                                            "columns": {
+                                                "reqcount-type": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Request Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "reqcount-count",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 20,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "greenhouse.audit.request.type"
+                                                },
+                                                "reqcount-action": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Event Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "size": 10,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.action"
+                                                },
+                                                "reqcount-count": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "reqcount-filter-index",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "greenhouse.audit"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "greenhouse.audit"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "reqcount-count"
+                                        ],
+                                        "layerId": "reqcount",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "reqcount-action",
+                                        "xAccessor": "reqcount-type"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "type": "lens"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "panel-reqcount",
+                    "w": 24,
+                    "x": 24,
+                    "y": 37
+                },
+                "panelIndex": "panel-reqcount",
+                "title": "Request Types and Triggered Event Types",
+                "type": "lens",
+                "version": "8.11.0"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Greenhouse] Audit Detail",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "id": "greenhouse-b2c3d4e5-f678-9012-bcde-f23456789012",
+    "managed": false,
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "panel-event-types:indexpattern-datasource-layer-event-types",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-event-types:event-types-filter-index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-target-types:indexpattern-datasource-layer-target-types",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-target-types:target-types-filter-index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-timeline-detail:indexpattern-datasource-layer-timeline-detail",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-timeline-detail:timeline-detail-filter-index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-reqid:indexpattern-datasource-layer-reqid",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-reqid:reqid-filter-index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-userchanges:indexpattern-datasource-layer-userchanges",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-userchanges:userchanges-filter-index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-reqcount:indexpattern-datasource-layer-reqcount",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-reqcount:reqcount-filter-index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_ctrl-event-action:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_ctrl-user-email:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "greenhouse-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "name": "nav-links-detail:link_detail_to_overview_dashboard",
+            "type": "dashboard"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
+}

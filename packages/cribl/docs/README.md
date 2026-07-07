@@ -1,47 +1,116 @@
 # Cribl
 
-The Cribl integration offers users a way to ingest logs from either of Cribl's Elastic outputs into Elastic's Fleet integration data streams. This enables Cribl users to leverage the power of the Elastic Common Schema to unlock predefined dashboards, alerts and more.
+## Overview
 
-## Instructions
+The Cribl integration routes data from Cribl Stream into Elastic data streams by mapping Cribl source identifiers to Fleet datasets. This lets you keep Cribl as your data pipeline layer while using , dashboards, and detections for analytics and operations.
 
-1. Install the relevant integration assets in Kibana
+### Compatibility
 
-    In order to make the most of your data, install Fleet integration assets to load index templates, ingest pipelines, and dashboards into Kibana. In Kibana, navigate to **Management** > **Integrations** in the sidebar.
+This integration supports:
 
-    Find the relevant integration(s) by searching or browsing the catalog. For example, the Cisco ASA integration.
+- Elastic Stack and Serverless projects with integration package support.
+- Cribl Stream deployments that can use the **Elastic Cloud** or **Elasticsearch** destination.
+- `logs` and `metrics` data stream types, with dynamic dataset and namespace routing.
 
-    ![Cisco ASA Integration](../img/catalog-cisco-asa.png)
+### How it works
 
-    Navigate to the **Settings** tab and click **Install Cisco ASA assets**. Confirm by clicking **Install Cisco ASA** in the popup.
-    
-    ![Install Cisco ASA assets](../img/install-assets.png)
+In Cribl Stream, you set a `_dataId` value on each event. In Fleet, you configure route mappings that map `_dataId` values to target datasets and optional namespaces. Cribl then sends events directly to Elastic using one of its Elastic destinations. The Cribl integration package provides routing configuration and data stream handling, while destination integrations provide parsing pipelines, dashboards, and assets.
 
-2. Configuring the Cribl integration
+## What data does this integration collect?
 
-    1. Add informational field to Cribl Source
+The Cribl integration collects and routes:
 
-        Configure the Cribl Source to specify the source of the data in the `_dataId` field.
+- `logs`: Log events forwarded from Cribl to Elastic data streams.
+- `metrics`: Metric events forwarded from Cribl to Elastic data streams.
 
-        ![Configure Cribl Source fields](../img/cribl-source-fields.png)
+Use this integration when you want centralized routing and processing in Cribl, while keeping Elastic integration assets for downstream analysis.
 
-        See [Cribl Data Onboarding](https://docs.cribl.io/stream/data-onboarding/) for more information on configuring sources.
+## What do I need to use this integration?
 
-    2. Configure the Cribl integration in Kibana
+To use this integration, you need:
 
-        Map each `_dataId` configured in the step above to the pre-installed Fleet integration's datastream. 
+- An Elastic deployment and access to Fleet in Kibana.
+- Cribl Stream with permission to configure sources and destinations.
+- An Elastic API key for the Cribl destination.
+- Index privileges that include at least `auto_configure` and `write` for target `logs-*` and `metrics-*` patterns.
 
-        ![Configure Elastic Cribl Integration](../img/elastic-cribl-config.png)
+## How do I deploy this integration?
 
-        Note: The Cribl integration does not require Elastic Agent, but a policy must be configured when setting up the Cribl integration.
+For step-by-step instructions about installing integrations, refer to [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html).
 
-4. Configure an Elastic destination in Cribl
+### Onboard and configure
 
-    Cribl offers two options for sending data to Elastic, the Elastic Cloud output for cloud environments, and the Elasticsearch output for self-managed. Consult [Cribl Elastic Cloud documentation](https://docs.cribl.io/stream/destinations-elastic-cloud/) or [Cribl Elasticsearch documentation](https://docs.cribl.io/stream/destinations-elastic/) for more details on how to configure.
+1. Install destination integration assets in Fleet.
+   - In Kibana, go to the **Integrations** page.
+   - Install the integration assets for the datasets you plan to route (for example, Cisco ASA).
 
-    **Destination settings**
+2. Configure `_dataId` in Cribl sources.
+   - In Cribl Stream, add a `_dataId` field that identifies the target dataset mapping.
+   - For more information, see [Cribl data onboarding](https://docs.cribl.io/stream/data-onboarding/).
 
-    1. Set **Cloud Id** for the Cloud destination or **Bulk API URLs** for the Elasticsearch destination to point to your Elastic cluster.
+3. Configure route mappings in the Cribl integration policy in Fleet.
+   - Map each `_dataId` value to a target data stream dataset.
+   - Optionally set a namespace. If omitted, `default` is used.
+   - The Cribl integration does not require Elastic Agent, but Fleet policy configuration is still required.
 
-    2. Set **Index or Data Stream** to `logs-cribl-default` for log-type events or to `metrics-cribl-default` for metric-type events.
+4. Configure the Elastic destination in Cribl.
+   - Use either [Elastic Cloud destination](https://docs.cribl.io/stream/destinations-elastic-cloud/) or [Elasticsearch destination](https://docs.cribl.io/stream/destinations-elastic/).
+   - Set **Cloud ID** (Elastic Cloud) or **Bulk API URLs** (self-managed Elasticsearch).
+   - Set **Index or Data Stream** based on event type:
+     - `logs-cribl-default` for logs
+     - `metrics-cribl-default` for metrics
+   - Set **API key** to a Base64-encoded Elastic API key value.
 
-    3. **API key** should be a Base64 encoded Elastic API key, which you can create in Kibana by following the instructions under **Management** > **Stack Management** > **Security** > **API Keys**. If you are using an API key with “Restrict privileges”, be sure to review the Indices privileges to provide at least "auto_configure" and "write" permissions for the logs-* index, which you will be using for these Fleet integration data streams.
+### Validation
+
+After deployment:
+
+1. Send test events from Cribl.
+2. In Kibana, open **Discover** and confirm documents in the expected `logs-*` or `metrics-*` data streams.
+3. Verify dataset and namespace values match the `_dataId` route mappings.
+
+## Troubleshooting
+
+- No data in Elastic:
+  - Verify destination connectivity (**Cloud ID** or **Bulk API URLs**).
+  - Confirm API key privileges include `auto_configure` and `write`.
+- Data lands in unexpected data streams:
+  - Check `_dataId` values in Cribl events.
+  - Check route mappings in the Cribl integration policy.
+- Destination integration dashboards are empty:
+  - Confirm corresponding destination integration assets are installed in Fleet.
+  - Confirm routed dataset names match what those integration assets expect.
+
+## Performance and scaling
+
+- Use Cribl worker groups and horizontal scaling to handle higher event throughput.
+- Tune batching, queueing, and backpressure settings in Cribl before increasing destination concurrency.
+- Separate high-volume logs and metrics routes so you can scale and troubleshoot independently.
+- Monitor ingestion rate and bulk response errors in both Cribl and Elastic to identify bottlenecks early.
+
+## Reference
+
+### Logs
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+
+
+### Metrics
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |

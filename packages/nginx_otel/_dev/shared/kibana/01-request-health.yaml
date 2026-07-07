@@ -1,0 +1,316 @@
+---
+dashboards:
+  - name: "[Nginx OTel] Request Health"
+    id: nginx_otel-a1b2c3d4-e5f6-7890-abcd-ef1234567890
+    description: "Golden signals overview: errors, throughput, and saturation for Nginx."
+    settings:
+      sync:
+        colors: true
+    controls:
+      - type: options
+        label: Nginx instance
+        data_view: metrics-*
+        field: host.name
+        fill_width: true
+        multiple: false
+    filters:
+      - field: data_stream.dataset
+        in:
+          - nginx.access.otel
+          - nginx.error.otel
+          - nginxreceiver.otel
+    panels:
+      # Navigation bar
+      - markdown:
+          content: |
+            **[Request Health](/app/dashboards#/view/nginx_otel-a1b2c3d4-e5f6-7890-abcd-ef1234567890)** | **[Server Internals](/app/dashboards#/view/nginx_otel-b2c3d4e5-f6a7-8901-bcde-f12345678901)** | **[Traffic & Capacity](/app/dashboards#/view/nginx_otel-c3d4e5f6-a7b8-9012-cdef-123456789012)**
+        hide_title: true
+        size: {w: whole, h: 3}
+
+      # Description
+      - markdown:
+          content: |
+            ## Request Health
+
+            Monitor NGINX golden signals — errors, throughput, and saturation — at a glance.
+
+            - **Errors**: 4xx client and 5xx server error rates from access logs
+            - **Error logs**: Severity breakdown from NGINX error log
+            - **Throughput**: Request rate derived from stub_status metrics
+            - **Saturation**: Connection states and dropped connections
+            - **Accepts & Handled**: Connection processing rates
+        hide_title: true
+        size: {w: third, h: 12}
+
+      # Metric cards — top row
+      - title: 5xx Errors
+        hide_title: true
+        size: {w: quarter, h: 6}
+        lens:
+          type: metric
+          data_view: logs-*
+          primary:
+            formula: "count(kql='attributes.http.response.status_code >= 500')"
+            label: 5xx Errors
+
+      - title: 4xx Errors
+        hide_title: true
+        size: {w: quarter, h: 6}
+        lens:
+          type: metric
+          data_view: logs-*
+          primary:
+            formula: "count(kql='attributes.http.response.status_code >= 400 AND attributes.http.response.status_code < 500')"
+            label: 4xx Errors
+
+      - title: Total Requests
+        hide_title: true
+        size: {w: sixth, h: 6}
+        lens:
+          type: metric
+          data_view: logs-*
+          primary:
+            aggregation: count
+            label: Requests
+
+      # Metric cards — bottom row
+      - title: Active Connections
+        hide_title: true
+        size: {w: third, h: 6}
+        lens:
+          type: metric
+          data_view: metrics-*
+          query:
+            kql: "data_stream.dataset: nginxreceiver.otel"
+          primary:
+            formula: "average(nginx.connections_current, kql='state: active')"
+            label: Active
+            format:
+              type: number
+              decimals: 0
+
+      - title: Hosts Up
+        hide_title: true
+        size: {w: third, h: 6}
+        lens:
+          type: metric
+          data_view: metrics-*
+          query:
+            kql: "data_stream.dataset: nginxreceiver.otel"
+          primary:
+            aggregation: unique_count
+            field: host.name
+            label: Hosts
+
+      # Requests by Status Code Over Time
+      - title: Requests by Status Code Over Time
+        size: {w: 30, h: 14}
+        lens:
+          type: bar
+          mode: stacked
+          data_view: logs-*
+          query:
+            kql: "data_stream.dataset: nginx.access.otel"
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - formula: "count(kql='attributes.http.response.status_code >= 200 AND attributes.http.response.status_code < 300')"
+              label: 2xx
+              color: "#54B399"
+            - formula: "count(kql='attributes.http.response.status_code >= 300 AND attributes.http.response.status_code < 400')"
+              label: 3xx
+              color: "#6092C0"
+            - formula: "count(kql='attributes.http.response.status_code >= 400 AND attributes.http.response.status_code < 500')"
+              label: 4xx
+              color: "#F1D86F"
+            - formula: "count(kql='attributes.http.response.status_code >= 500')"
+              label: 5xx
+              color: "#E7664C"
+          legend:
+            visible: show
+            position: right
+            show_single_series: true
+          appearance:
+            y_left_axis:
+              title: Requests
+
+      # Status Code Distribution
+      - title: Status Code Distribution
+        size: {w: 18, h: 14}
+        lens:
+          type: pie
+          data_view: logs-*
+          query:
+            kql: "data_stream.dataset: nginx.access.otel"
+          dimensions:
+            - field: attributes.http.response.status_code
+              type: values
+              size: 10
+              label: Status Code
+          metrics:
+            - aggregation: count
+              label: Requests
+          appearance:
+            donut: medium
+
+      # Error Logs by Severity Over Time
+      - title: Error Logs by Severity Over Time
+        size: {w: half, h: 12}
+        lens:
+          type: bar
+          mode: stacked
+          data_view: logs-*
+          query:
+            kql: "data_stream.dataset: nginx.error.otel"
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - formula: "count(kql='attributes.log.level: crit')"
+              label: crit
+              color: "#E7664C"
+            - formula: "count(kql='attributes.log.level: error')"
+              label: error
+              color: "#F1D86F"
+            - formula: "count(kql='attributes.log.level: warn')"
+              label: warn
+              color: "#D6BF57"
+            - formula: "count(kql='NOT attributes.log.level: error AND NOT attributes.log.level: crit AND NOT attributes.log.level: warn')"
+              label: other
+              color: "#B9A888"
+          legend:
+            visible: show
+            position: right
+            show_single_series: true
+          appearance:
+            y_left_axis:
+              title: Error log events
+
+      # Error Counts by Severity
+      - title: Error Counts by Severity
+        size: {w: half, h: 12}
+        lens:
+          type: datatable
+          data_view: logs-*
+          query:
+            kql: "data_stream.dataset: nginx.error.otel"
+          dimensions:
+            - field: attributes.log.level
+              type: values
+              size: 5
+              label: Severity
+            - field: attributes.process.pid
+              type: values
+              size: 10
+              label: Process ID
+          metrics:
+            - aggregation: count
+              label: Count
+          paging:
+            enabled: true
+            page_size: 10
+
+      # Request Rate (from metrics)
+      - title: Request Rate (from metrics)
+        size: {w: half, h: 12}
+        lens:
+          type: area
+          data_view: metrics-*
+          query:
+            kql: "data_stream.dataset: nginxreceiver.otel"
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - formula: "differences(max(nginx.requests))"
+              label: Request rate
+              color: "#54B399"
+          legend:
+            visible: show
+            position: bottom
+            show_single_series: true
+          appearance:
+            y_left_axis:
+              title: Requests / interval
+
+      # Accepts & Handled Rate
+      - title: Accepts & Handled Rate
+        size: {w: half, h: 12}
+        lens:
+          type: line
+          data_view: metrics-*
+          query:
+            kql: "data_stream.dataset: nginxreceiver.otel"
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - formula: "differences(max(nginx.connections_accepted))"
+              label: Accepts rate
+              color: "#68bc00"
+            - formula: "differences(max(nginx.connections_handled))"
+              label: Handled rate
+              color: "#009ce0"
+          legend:
+            visible: show
+            position: bottom
+            show_single_series: true
+          appearance:
+            y_left_axis:
+              title: Rate
+
+      # Connection States Over Time
+      - title: Connection States Over Time
+        size: {w: half, h: 12}
+        lens:
+          type: line
+          data_view: metrics-*
+          query:
+            kql: "data_stream.dataset: nginxreceiver.otel"
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - formula: "average(nginx.connections_current, kql='state: active')"
+              label: Active
+              color: "#E7664C"
+            - formula: "average(nginx.connections_current, kql='state: reading')"
+              label: Reading
+              color: "#68bc00"
+            - formula: "average(nginx.connections_current, kql='state: writing')"
+              label: Writing
+              color: "#009ce0"
+            - formula: "average(nginx.connections_current, kql='state: waiting')"
+              label: Waiting
+              color: "#F1D86F"
+          legend:
+            visible: show
+            position: bottom
+            show_single_series: true
+          appearance:
+            y_left_axis:
+              title: Connections
+
+      # Dropped Connections
+      - title: Dropped Connections
+        size: {w: half, h: 12}
+        lens:
+          type: area
+          data_view: metrics-*
+          query:
+            kql: "data_stream.dataset: nginxreceiver.otel"
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - formula: "max(nginx.connections_accepted)-max(nginx.connections_handled)"
+              label: Drops
+              color: "#E7664C"
+          legend:
+            visible: show
+            position: bottom
+            show_single_series: true
+          appearance:
+            y_left_axis:
+              title: Dropped connections

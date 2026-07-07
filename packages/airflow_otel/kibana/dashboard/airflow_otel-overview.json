@@ -1,0 +1,1507 @@
+{
+    "attributes": {
+        "title": "[Airflow OTel] Overview",
+        "description": "Scheduler health, task outcomes, executor capacity, and DAG processing at a glance.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "27e84172-2f86-7c3b-9e21-5dd7e0067e4e",
+                                "order": 1,
+                                "label": "Tasks & Errors",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_27e84172-2f86-7c3b-9e21-5dd7e0067e4e_dashboard"
+                            },
+                            {
+                                "id": "c11c2f13-711f-1cb1-ea2d-0ae0d0f00307",
+                                "order": 2,
+                                "label": "Scheduler & Capacity",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_c11c2f13-711f-1cb1-ea2d-0ae0d0f00307_dashboard"
+                            },
+                            {
+                                "id": "06c9ebdf-64a9-840a-d685-45f966f3067e",
+                                "order": 3,
+                                "label": "DAG Processing",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_06c9ebdf-64a9-840a-d685-45f966f3067e_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "fc69666b-014e-4167-d063-22478c958b29",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 8,
+                    "i": "fc69666b-014e-4167-d063-22478c958b29"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [Airflow OTel] Overview\n\nThis dashboard provides a health summary for Apache Airflow:\n- Scheduler heartbeats (liveness)\n- Task success vs failure rate\n- Executor slot availability\n- DAG import errors and parse health\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "827ed1fd-28e2-ba25-eb9a-bcdd7d9e34cd",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "827ed1fd-28e2-ba25-eb9a-bcdd7d9e34cd"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Scheduler Heartbeats",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "a1a8be02-c3a9-7761-96cf-577c1b582cda",
+                                "layerType": "data",
+                                "metricAccessor": "03afea5b-25e2-eed5-efbf-2d3d167de8d5",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.scheduler_heartbeat IS NOT NULL\n| STATS total = SUM(airflow.scheduler_heartbeat)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "a1a8be02-c3a9-7761-96cf-577c1b582cda": {
+                                            "query": {
+                                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.scheduler_heartbeat IS NOT NULL\n| STATS total = SUM(airflow.scheduler_heartbeat)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "03afea5b-25e2-eed5-efbf-2d3d167de8d5",
+                                                    "label": "Heartbeats",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "03afea5b-25e2-eed5-efbf-2d3d167de8d5",
+                                                    "label": "Heartbeats",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c711f7e8-7f92-2879-1982-7482751b252a",
+                "gridData": {
+                    "x": 24,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "c711f7e8-7f92-2879-1982-7482751b252a"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Task Successes",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "7e305878-3442-90f0-1c59-e9e56163c7e1",
+                                "layerType": "data",
+                                "metricAccessor": "afee9f49-2057-2a33-bfa0-f677bd89bd41",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.ti_successes IS NOT NULL\n| STATS total = SUM(airflow.ti_successes)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "7e305878-3442-90f0-1c59-e9e56163c7e1": {
+                                            "query": {
+                                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.ti_successes IS NOT NULL\n| STATS total = SUM(airflow.ti_successes)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "afee9f49-2057-2a33-bfa0-f677bd89bd41",
+                                                    "label": "Task successes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "afee9f49-2057-2a33-bfa0-f677bd89bd41",
+                                                    "label": "Task successes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "df4f7ad4-6ccb-5fe9-4081-8f45d7520b9e",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "df4f7ad4-6ccb-5fe9-4081-8f45d7520b9e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Task Failures",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "08b787cf-3ac3-0f1f-dff0-efb14b9b3d4a",
+                                "layerType": "data",
+                                "metricAccessor": "4d495abb-a7d6-c25d-9bef-7bb90bd1046b",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.ti_failures IS NOT NULL\n| STATS total = SUM(airflow.ti_failures)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "08b787cf-3ac3-0f1f-dff0-efb14b9b3d4a": {
+                                            "query": {
+                                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.ti_failures IS NOT NULL\n| STATS total = SUM(airflow.ti_failures)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "4d495abb-a7d6-c25d-9bef-7bb90bd1046b",
+                                                    "label": "Task failures",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "4d495abb-a7d6-c25d-9bef-7bb90bd1046b",
+                                                    "label": "Task failures",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "5c940127-5bef-2e9e-98f0-4496fb772eb6",
+                "gridData": {
+                    "x": 40,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "5c940127-5bef-2e9e-98f0-4496fb772eb6"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Executor Open Slots",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "ce4422c2-e535-3a9d-0cd8-0c66f49fe0db",
+                                "layerType": "data",
+                                "metricAccessor": "b729005e-a335-cdc4-fcbe-02b454d6d066",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.executor.open_slots IS NOT NULL\n| STATS slots = MAX(LAST_OVER_TIME(airflow.executor.open_slots))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ce4422c2-e535-3a9d-0cd8-0c66f49fe0db": {
+                                            "query": {
+                                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.executor.open_slots IS NOT NULL\n| STATS slots = MAX(LAST_OVER_TIME(airflow.executor.open_slots))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "slots",
+                                                    "columnId": "b729005e-a335-cdc4-fcbe-02b454d6d066",
+                                                    "label": "Open slots",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "slots",
+                                                    "columnId": "b729005e-a335-cdc4-fcbe-02b454d6d066",
+                                                    "label": "Open slots",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c89c7746-7167-bf20-3c11-637d47caeed7",
+                "gridData": {
+                    "x": 16,
+                    "y": 6,
+                    "w": 16,
+                    "h": 4,
+                    "i": "c89c7746-7167-bf20-3c11-637d47caeed7"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "DAG Import Errors",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "c35ac9fc-4d64-4d11-3ed6-deb21b81542f",
+                                "layerType": "data",
+                                "metricAccessor": "7860784b-43b5-edb5-1927-510b711f59ea",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.dag_processing.import_errors IS NOT NULL\n| STATS errs = MAX(LAST_OVER_TIME(airflow.dag_processing.import_errors))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "c35ac9fc-4d64-4d11-3ed6-deb21b81542f": {
+                                            "query": {
+                                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.dag_processing.import_errors IS NOT NULL\n| STATS errs = MAX(LAST_OVER_TIME(airflow.dag_processing.import_errors))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "errs",
+                                                    "columnId": "7860784b-43b5-edb5-1927-510b711f59ea",
+                                                    "label": "Import errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "errs",
+                                                    "columnId": "7860784b-43b5-edb5-1927-510b711f59ea",
+                                                    "label": "Import errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e5de944b-a607-af01-b7f3-f07527d71f65",
+                "gridData": {
+                    "x": 32,
+                    "y": 6,
+                    "w": 16,
+                    "h": 4,
+                    "i": "e5de944b-a607-af01-b7f3-f07527d71f65"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Starving Tasks",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "6f2190fa-dd77-122b-cf2f-1ac9b2ce3ceb",
+                                "layerType": "data",
+                                "metricAccessor": "a4dd53ef-7de9-c97f-44c2-542c1b68cd6e",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.scheduler.tasks.starving IS NOT NULL\n| STATS starving = MAX(LAST_OVER_TIME(airflow.scheduler.tasks.starving))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "6f2190fa-dd77-122b-cf2f-1ac9b2ce3ceb": {
+                                            "query": {
+                                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.scheduler.tasks.starving IS NOT NULL\n| STATS starving = MAX(LAST_OVER_TIME(airflow.scheduler.tasks.starving))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "starving",
+                                                    "columnId": "a4dd53ef-7de9-c97f-44c2-542c1b68cd6e",
+                                                    "label": "Starving tasks",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "starving",
+                                                    "columnId": "a4dd53ef-7de9-c97f-44c2-542c1b68cd6e",
+                                                    "label": "Starving tasks",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "533cd7e3-64cc-b266-031d-675999808634",
+                "gridData": {
+                    "x": 0,
+                    "y": 10,
+                    "w": 48,
+                    "h": 10,
+                    "i": "533cd7e3-64cc-b266-031d-675999808634"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Scheduler Heartbeats Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "bde03bfd-7017-a3b8-0065-cef2493a4741",
+                                        "accessors": [
+                                            "bc6743ec-eb15-1d2f-1d4d-86e8bf2c1eb6"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.scheduler_heartbeat IS NOT NULL\n| STATS total = SUM(airflow.scheduler_heartbeat) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bde03bfd-7017-a3b8-0065-cef2493a4741": {
+                                            "query": {
+                                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.scheduler_heartbeat IS NOT NULL\n| STATS total = SUM(airflow.scheduler_heartbeat) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "bc6743ec-eb15-1d2f-1d4d-86e8bf2c1eb6",
+                                                    "label": "Heartbeats",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "bc6743ec-eb15-1d2f-1d4d-86e8bf2c1eb6",
+                                                    "label": "Heartbeats",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "b11120e3-8197-248e-5012-85f4f94d3a40",
+                "gridData": {
+                    "x": 0,
+                    "y": 20,
+                    "w": 48,
+                    "h": 10,
+                    "i": "b11120e3-8197-248e-5012-85f4f94d3a40"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Task Success vs Failures Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "260c5c6e-72df-b5d0-3885-1e7a27ed07a9",
+                                        "accessors": [
+                                            "242b5994-461f-c61e-cb99-7f53b4dcf39a",
+                                            "102852c1-990e-076a-0ede-61e8281d728e"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "successes"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#54B399"
+                                                    },
+                                                    "touched": false
+                                                },
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "failures"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#E7664C"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| STATS successes = SUM(airflow.ti_successes) WHERE airflow.ti_successes IS NOT NULL, failures = SUM(airflow.ti_failures) WHERE airflow.ti_failures IS NOT NULL BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "260c5c6e-72df-b5d0-3885-1e7a27ed07a9": {
+                                            "query": {
+                                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| STATS successes = SUM(airflow.ti_successes) WHERE airflow.ti_successes IS NOT NULL, failures = SUM(airflow.ti_failures) WHERE airflow.ti_failures IS NOT NULL BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "successes",
+                                                    "columnId": "242b5994-461f-c61e-cb99-7f53b4dcf39a",
+                                                    "label": "Successes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failures",
+                                                    "columnId": "102852c1-990e-076a-0ede-61e8281d728e",
+                                                    "label": "Failures",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "successes",
+                                                    "columnId": "242b5994-461f-c61e-cb99-7f53b4dcf39a",
+                                                    "label": "Successes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failures",
+                                                    "columnId": "102852c1-990e-076a-0ede-61e8281d728e",
+                                                    "label": "Failures",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "5fa47c12-e983-936e-cdec-76bbf61f93be",
+                "gridData": {
+                    "x": 0,
+                    "y": 30,
+                    "w": 48,
+                    "h": 10,
+                    "i": "5fa47c12-e983-936e-cdec-76bbf61f93be"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Executor Capacity",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "4d2921bc-b09b-3b7f-c2ee-50591b1e91ef",
+                                        "accessors": [
+                                            "6fe0d8c7-b83d-b36c-b67f-3cb7545cf04f",
+                                            "a9f060a8-0bc9-8e6c-c5fa-940166450a23",
+                                            "d20399bd-2767-48ca-b57b-808af1fd62ef"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.executor.open_slots IS NOT NULL OR airflow.executor.queued_tasks IS NOT NULL OR airflow.executor.running_tasks IS NOT NULL\n| STATS open = MAX(LAST_OVER_TIME(airflow.executor.open_slots)), queued = MAX(LAST_OVER_TIME(airflow.executor.queued_tasks)), running = MAX(LAST_OVER_TIME(airflow.executor.running_tasks)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "4d2921bc-b09b-3b7f-c2ee-50591b1e91ef": {
+                                            "query": {
+                                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.executor.open_slots IS NOT NULL OR airflow.executor.queued_tasks IS NOT NULL OR airflow.executor.running_tasks IS NOT NULL\n| STATS open = MAX(LAST_OVER_TIME(airflow.executor.open_slots)), queued = MAX(LAST_OVER_TIME(airflow.executor.queued_tasks)), running = MAX(LAST_OVER_TIME(airflow.executor.running_tasks)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "open",
+                                                    "columnId": "6fe0d8c7-b83d-b36c-b67f-3cb7545cf04f",
+                                                    "label": "Open slots",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "queued",
+                                                    "columnId": "a9f060a8-0bc9-8e6c-c5fa-940166450a23",
+                                                    "label": "Queued",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "running",
+                                                    "columnId": "d20399bd-2767-48ca-b57b-808af1fd62ef",
+                                                    "label": "Running",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "open",
+                                                    "columnId": "6fe0d8c7-b83d-b36c-b67f-3cb7545cf04f",
+                                                    "label": "Open slots",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "queued",
+                                                    "columnId": "a9f060a8-0bc9-8e6c-c5fa-940166450a23",
+                                                    "label": "Queued",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "running",
+                                                    "columnId": "d20399bd-2767-48ca-b57b-808af1fd62ef",
+                                                    "label": "Running",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6dc828dc-4041-87b5-6fd6-39ac42fcd2d9",
+                "gridData": {
+                    "x": 0,
+                    "y": 40,
+                    "w": 48,
+                    "h": 10,
+                    "i": "6dc828dc-4041-87b5-6fd6-39ac42fcd2d9"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "DAG Import Errors and Queue Size",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "c48258ff-7814-d2cf-4a6a-780941e1f9a2",
+                                        "accessors": [
+                                            "1098cbce-02d5-5c45-bb60-08be5f26f9ea",
+                                            "12f757ff-d9a9-fceb-44c8-cacfbaba0593"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.dag_processing.import_errors IS NOT NULL OR airflow.dag_processing.file_path_queue_size IS NOT NULL\n| STATS import_errors = MAX(LAST_OVER_TIME(airflow.dag_processing.import_errors)), queue_size = MAX(LAST_OVER_TIME(airflow.dag_processing.file_path_queue_size)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "c48258ff-7814-d2cf-4a6a-780941e1f9a2": {
+                                            "query": {
+                                                "esql": "TS metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.dag_processing.import_errors IS NOT NULL OR airflow.dag_processing.file_path_queue_size IS NOT NULL\n| STATS import_errors = MAX(LAST_OVER_TIME(airflow.dag_processing.import_errors)), queue_size = MAX(LAST_OVER_TIME(airflow.dag_processing.file_path_queue_size)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "import_errors",
+                                                    "columnId": "1098cbce-02d5-5c45-bb60-08be5f26f9ea",
+                                                    "label": "Import errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "queue_size",
+                                                    "columnId": "12f757ff-d9a9-fceb-44c8-cacfbaba0593",
+                                                    "label": "Queue size",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "import_errors",
+                                                    "columnId": "1098cbce-02d5-5c45-bb60-08be5f26f9ea",
+                                                    "label": "Import errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "queue_size",
+                                                    "columnId": "12f757ff-d9a9-fceb-44c8-cacfbaba0593",
+                                                    "label": "Queue size",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "airflow.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "airflow.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": true,
+        "timeFrom": "now-1h",
+        "timeTo": "now",
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "a18657f3-9386-7419-0c1e-db380f1b3b06": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "a18657f3-9386-7419-0c1e-db380f1b3b06",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "resource.attributes.host.name",
+                        "title": "Host",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "airflow_otel-overview",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "airflow_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "airflow_otel-tasks",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_27e84172-2f86-7c3b-9e21-5dd7e0067e4e_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "airflow_otel-scheduler-capacity",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_c11c2f13-711f-1cb1-ea2d-0ae0d0f00307_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "airflow_otel-dag-processing",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_06c9ebdf-64a9-840a-d685-45f966f3067e_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_a18657f3-9386-7419-0c1e-db380f1b3b06:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

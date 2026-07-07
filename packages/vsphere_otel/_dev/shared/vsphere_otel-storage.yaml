@@ -1,0 +1,325 @@
+dashboards:
+- id: vsphere_otel-storage
+  name: '[vSphere OTel] Storage'
+  description: >-
+    Datastore and VM disk capacity: utilization gauges, space breakdown,
+    and per-datastore trends from the OTel vcenterreceiver.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+
+  controls:
+  - type: options
+    label: Datacenter
+    data_view: metrics-*
+    field: vcenter.datacenter.name
+
+  panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: vsphere_otel-overview
+      - label: Hosts
+        dashboard: vsphere_otel-hosts
+      - label: Virtual Machines
+        dashboard: vsphere_otel-vms
+      - label: Storage
+        dashboard: vsphere_otel-storage
+
+      # ─── Dashboard Overview ─────────────────────────────────────────
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [vSphere OTel] Storage
+
+        This dashboard monitors storage capacity and health:
+        - Datastore utilization gauges per datastore
+        - Disk space breakdown (available vs used)
+        - Datastore utilization trends over time
+        - VM disk utilization and throughput
+        - Datacenter-level disk space overview
+
+      # ─── KPI Row 1 (beside overview: 4 × w:8 = 32) ────────────────
+  - title: Datastore Count
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datastore.disk.utilization IS NOT NULL
+      - STATS datastores = COUNT_DISTINCT(vcenter.datastore.name)
+      primary:
+        field: datastores
+        label: Datastores
+        format:
+          type: number
+          decimals: 0
+
+  - title: Avg Datastore Utilization
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datastore.disk.utilization IS NOT NULL
+      - STATS util = AVG(LAST_OVER_TIME(vcenter.datastore.disk.utilization))
+      primary:
+        field: util
+        label: Avg Utilization
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+
+  - title: Max Datastore Utilization
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datastore.disk.utilization IS NOT NULL
+      - STATS util = MAX(LAST_OVER_TIME(vcenter.datastore.disk.utilization))
+      primary:
+        field: util
+        label: Max Utilization
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+
+  - title: Avg VM Disk Utilization
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.disk.utilization IS NOT NULL
+      - STATS util = AVG(LAST_OVER_TIME(vcenter.vm.disk.utilization))
+      primary:
+        field: util
+        label: Avg VM Disk %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+
+      # ─── KPI Row 2 (beside overview: 4 × w:8 = 32) ────────────────
+  - title: Total Disk Space
+    hide_title: true
+    size: {w: 16, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datacenter.disk.space IS NOT NULL
+      - STATS total = SUM(LAST_OVER_TIME(vcenter.datacenter.disk.space))
+      primary:
+        field: total
+        label: Total Disk Space
+        format:
+          type: bytes
+
+  - title: Disk Space Used
+    hide_title: true
+    size: {w: 16, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datacenter.disk.space IS NOT NULL
+      - WHERE attributes.disk_state == "used"
+      - STATS used = SUM(LAST_OVER_TIME(vcenter.datacenter.disk.space))
+      primary:
+        field: used
+        label: Disk Space Used
+        format:
+          type: bytes
+
+      # ─── Datastores Overview Table ─────────────────────────────────
+  - title: Datastores
+    size: {w: 48, h: 10}
+    esql:
+      type: datatable
+      query:
+      - FROM metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datastore.disk.utilization IS NOT NULL
+      - STATS util = AVG(vcenter.datastore.disk.utilization) BY vcenter.datastore.name, vcenter.datacenter.name
+      - SORT util DESC
+      - LIMIT 100
+      metrics:
+      - field: util
+        label: Utilization
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+
+      # ─── Datastore Gauges ──────────────────────────────────────────
+  - title: Datastore Utilization by Name
+    size: {w: 48, h: 12}
+    esql:
+      type: bar
+      mode: unstacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datastore.disk.utilization IS NOT NULL
+      - STATS util = MAX(LAST_OVER_TIME(vcenter.datastore.disk.utilization)) BY vcenter.datastore.name
+      - SORT util DESC
+      dimension:
+        field: vcenter.datastore.name
+      metrics:
+      - field: util
+        label: Utilization %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+
+      # ─── Disk Space Breakdown ──────────────────────────────────────
+  - title: Datastore Disk Space Breakdown
+    size: {w: 24, h: 12}
+    esql:
+      type: bar
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datastore.disk.usage IS NOT NULL
+      - STATS space = SUM(LAST_OVER_TIME(vcenter.datastore.disk.usage)) BY vcenter.datastore.name, attributes.disk_state
+      dimension:
+        field: vcenter.datastore.name
+      metrics:
+      - field: space
+        label: Disk Space
+        format:
+          type: bytes
+      breakdown:
+        field: attributes.disk_state
+      color:
+        assignments:
+        - value: "available"
+          color: '#54B399'
+        - value: "used"
+          color: '#CC5642'
+      legend:
+        visible: show
+        position: right
+
+  - title: Datacenter Disk Space by State
+    size: {w: 24, h: 12}
+    esql:
+      type: pie
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datacenter.disk.space IS NOT NULL
+      - STATS space = SUM(LAST_OVER_TIME(vcenter.datacenter.disk.space)) BY attributes.disk_state
+      metrics:
+      - field: space
+        format:
+          type: bytes
+      breakdowns:
+      - field: attributes.disk_state
+        label: State
+      appearance:
+        donut: medium
+      color:
+        assignments:
+        - value: "available"
+          color: '#54B399'
+        - value: "used"
+          color: '#CC5642'
+      legend:
+        visible: show
+
+      # ─── Trends ────────────────────────────────────────────────────
+  - title: Datastore Utilization Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datastore.disk.utilization IS NOT NULL
+      - STATS util = MAX(AVG_OVER_TIME(vcenter.datastore.disk.utilization)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        vcenter.datastore.name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: util
+        label: Utilization %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+      breakdown:
+        field: vcenter.datastore.name
+      legend:
+        visible: show
+        position: right
+
+  - title: VM Disk Throughput Over Time (Aggregate)
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.disk.throughput IS NOT NULL
+      - WHERE attributes.object == "*"
+      - STATS throughput = AVG(AVG_OVER_TIME(vcenter.vm.disk.throughput)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        attributes.direction
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: throughput
+        label: Throughput
+        format:
+          type: number
+          suffix: " KiBy/s"
+      breakdown:
+        field: attributes.direction
+      color:
+        assignments:
+        - value: "read"
+          color: '#6092C0'
+        - value: "write"
+          color: '#D36086'
+      legend:
+        visible: show
+        position: right
+
+      # ─── Detail Tables ─────────────────────────────────────────────
+  - title: Datastores by Utilization
+    size: {w: 48, h: 15}
+    esql:
+      type: datatable
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datastore.disk.utilization IS NOT NULL
+      - STATS util = MAX(LAST_OVER_TIME(vcenter.datastore.disk.utilization)) BY vcenter.datastore.name, vcenter.datacenter.name
+      - SORT util DESC
+      - LIMIT 20
+      metrics:
+      - field: util
+        label: Utilization %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"

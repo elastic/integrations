@@ -1,0 +1,12 @@
+ARG MSSQL_VERSION=${MSSQL_VERSION:-2019-latest}
+FROM mcr.microsoft.com/mssql/server:${MSSQL_VERSION}
+
+ENV ACCEPT_EULA='Y'
+ENV SA_PASSWORD='1234_asdf'
+
+COPY init.sh /init/init.sh
+COPY workload.sh /init/workload.sh
+
+HEALTHCHECK --interval=10s --timeout=3s --start-period=30s --retries=5 CMD test -f /tmp/init_done && (/opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P ${SA_PASSWORD} -No -Q "SELECT 1" 2>/dev/null || /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${SA_PASSWORD} -Q "SELECT 1" 2>/dev/null) || exit 1
+
+CMD /bin/bash -c "/opt/mssql/bin/sqlservr & /init/init.sh && sleep infinity"

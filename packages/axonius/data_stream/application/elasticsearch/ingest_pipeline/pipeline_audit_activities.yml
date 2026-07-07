@@ -1,0 +1,129 @@
+---
+description: Pipeline for processing audit activities logs.
+processors:
+  - append:
+      field: event.category
+      value: authentication
+      tag: category_authentication
+  # audit_activities carry action.name instead of event.action_if_exists; override the default pipeline mapping.
+  - set:
+      field: event.action
+      tag: set_event_action_from_application_action_name
+      copy_from: axonius.application.action.name
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: axonius.application.action.timestamp
+      tag: date_action_timestamp
+      target_field: axonius.application.action.timestamp
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.application?.action?.timestamp != null && ctx.axonius.application.action.timestamp != ''
+      on_failure:
+        - remove:
+            field: axonius.application.action.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.name
+      tag: set_user_name_from_application_actor_username
+      copy_from: axonius.application.actor.username
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_application_actor_username_into_related_user
+      value: '{{{axonius.application.actor.username}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.actor?.username != null
+  - set:
+      field: host.geo.country_name
+      tag: set_host_geo_country_name_from_application_actor_state_location_country
+      copy_from: axonius.application.actor_state.location.country
+      ignore_empty_value: true
+  - convert:
+      field: axonius.application.actor_state.location.remote_ip
+      tag: convert_actor_state_location_remote_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.axonius?.application?.actor_state?.location?.remote_ip != ''
+      on_failure:
+        - remove:
+            field: axonius.application.actor_state.location.remote_ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_application_actor_state_location_remote_ip_into_related_ip
+      value: '{{{axonius.application.actor_state.location.remote_ip}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.actor_state?.location?.remote_ip != null
+  - convert:
+      field: axonius.application.actor_state.remote_ip
+      tag: convert_actor_state_remote_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.axonius?.application?.actor_state?.remote_ip != ''
+      on_failure:
+        - remove:
+            field: axonius.application.actor_state.remote_ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_application_actor_state_remote_ip_into_related_ip
+      value: '{{{axonius.application.actor_state.remote_ip}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.actor_state?.remote_ip != null
+  - convert:
+      field: axonius.application.custom_properties.is_identity
+      tag: convert_custom_properties_is_identity_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.application.custom_properties.is_identity
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

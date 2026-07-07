@@ -1,0 +1,228 @@
+dashboards:
+  - name: "[Kafka OTel] Cluster Overview"
+    id: kafka_otel-overview
+    description: "High-level Kafka cluster health: broker count, topic/partition totals, consumer group status, under-replicated partitions, and total consumer lag."
+    filters:
+      - field: data_stream.dataset
+        equals: kafkametricsreceiver.otel
+    panels:
+      # Navigation
+      - title: Navigation
+        size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: kafka_otel-overview
+            - label: Consumer Groups
+              dashboard: kafka_otel-consumer-groups
+            - label: Topics & Partitions
+              dashboard: kafka_otel-topics-partitions
+            - label: Replication Health
+              dashboard: kafka_otel-replication
+
+      # Intro markdown
+      - title: Intro
+        size: {w: 16, h: 12}
+        position: {x: 0, y: 2}
+        markdown:
+          content: |
+            ## [Kafka OTel] Overview
+
+            Cluster health at a glance:
+
+            - Broker count stability
+            - Total consumer lag across all groups
+            - Under-replicated partition count
+            - Consumer groups with zero members
+            - Topic and partition topology
+
+      # Under-Replicated Partitions (metric)
+      - title: Under-Replicated Partitions
+        hide_title: true
+        size: {w: 12, h: 4}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
+            | STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition
+            | EVAL under = replicas - in_sync
+            | WHERE under > 0
+            | STATS count = COUNT(*)
+          primary:
+            field: count
+            label: Under-Replicated
+            format:
+              type: number
+              decimals: 0
+
+      # Fully Replicated Partitions (metric)
+      - title: Fully Replicated Partitions
+        hide_title: true
+        size: {w: 12, h: 4}
+        position: {x: 28, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
+            | STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition
+            | WHERE replicas == in_sync
+            | STATS count = COUNT(*)
+          primary:
+            field: count
+            label: Fully Replicated
+            format:
+              type: number
+              decimals: 2
+              compact: true
+
+      # Replication Factor Distribution (metric)
+      - title: Replication Factor Distribution
+        hide_title: true
+        size: {w: 12, h: 4}
+        position: {x: 16, y: 6}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.partition.replicas IS NOT NULL
+            | STATS unique_rf = COUNT_DISTINCT(kafka.partition.replicas)
+          primary:
+            field: unique_rf
+            label: Distinct Replication Factor
+            format:
+              type: number
+              decimals: 0
+
+      # Replicas vs In-Sync Over Time (line)
+      - title: Replicas vs In-Sync Over Time
+        size: {w: 48, h: 12}
+        position: {x: 0, y: 14}
+        esql:
+          type: line
+          query: |
+            FROM metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
+            | STATS total_replicas = SUM(kafka.partition.replicas), total_in_sync = SUM(kafka.partition.replicas_in_sync) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: total_replicas
+              label: Total Replicas
+              format:
+                type: number
+                decimals: 0
+            - field: total_in_sync
+              label: In-Sync Replicas
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      # Under-Replicated Partitions Over Time (area, unstacked)
+      - title: Under-Replicated Partitions Over Time
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 26}
+        esql:
+          type: area
+          mode: unstacked
+          query: |
+            FROM metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
+            | STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition, time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | EVAL under = replicas - in_sync
+            | WHERE under > 0
+            | STATS count = COUNT(*) BY time_bucket
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: count
+              label: Under-Replicated
+              format:
+                type: number
+                decimals: 0
+          legend:
+            position: right
+
+      # Under-Replicated by Topic (bar, unstacked)
+      - title: Under-Replicated by Topic
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 26}
+        esql:
+          type: bar
+          mode: unstacked
+          query: |
+            FROM metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
+            | STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition
+            | EVAL under = replicas - in_sync
+            | WHERE under > 0
+            | STATS count = COUNT(*) BY attributes.topic
+            | SORT count DESC
+            | LIMIT 15
+          dimension:
+            field: attributes.topic
+          metrics:
+            - field: count
+              label: Under-Replicated
+              format:
+                type: number
+                decimals: 0
+          legend:
+            position: right
+
+      # Under-Replicated Partitions (Detail) - datatable
+      - title: Under-Replicated Partitions (Detail)
+        size: {w: 48, h: 16}
+        position: {x: 0, y: 36}
+        esql:
+          type: datatable
+          query: |
+            FROM metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL
+            | STATS replicas = MAX(kafka.partition.replicas), replicas_in_sync = MAX(kafka.partition.replicas_in_sync) BY attributes.topic, attributes.partition
+            | EVAL under = replicas - replicas_in_sync
+            | WHERE under > 0
+            | SORT under DESC
+            | LIMIT 100
+          dimensions:
+            - field: attributes.topic
+              label: Topic
+            - field: attributes.partition
+              label: Partition
+          metrics:
+            - field: replicas
+              label: Replicas
+              format:
+                type: number
+                decimals: 0
+            - field: replicas_in_sync
+              label: In Sync
+              format:
+                type: number
+                decimals: 0
+            - field: under
+              label: Lag
+              format:
+                type: number
+                decimals: 0
+          paging:
+            enabled: true
+            page_size: 15

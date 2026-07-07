@@ -33,7 +33,7 @@ The ingested IOCs expire after a certain duration. An
 [Elastic Transform][elasticsearch_transforms]
 is created to facilitate making only active IOCs available to end users. This
 transform creates a destination index named
-`logs-ti_recordedfuture_latest.threat-3` which only contains active and
+`logs-ti_recordedfuture_latest.threat-4` which only contains active and
 unexpired IOCs. The destination index also has an alias
 `logs-ti_recordedfuture_latest.threat`. When setting up indicator match rules,
 use this latest destination index to avoid false positives from expired IOCs.
@@ -435,7 +435,9 @@ An example event for `triggered_alert` looks as following:
 | recordedfuture.triggered_alert.owner_organisation_details.enterprise_name |  | keyword |
 | recordedfuture.triggered_alert.owner_organisation_details.organisations.organisation_id |  | keyword |
 | recordedfuture.triggered_alert.owner_organisation_details.organisations.organisation_name |  | keyword |
-| recordedfuture.triggered_alert.primary_entity |  | keyword |
+| recordedfuture.triggered_alert.primary_entity.id |  | keyword |
+| recordedfuture.triggered_alert.primary_entity.name |  | keyword |
+| recordedfuture.triggered_alert.primary_entity.type |  | keyword |
 | recordedfuture.triggered_alert.review.assignee |  | keyword |
 | recordedfuture.triggered_alert.review.note |  | keyword |
 | recordedfuture.triggered_alert.review.status |  | keyword |
@@ -443,7 +445,7 @@ An example event for `triggered_alert` looks as following:
 | recordedfuture.triggered_alert.rule.id |  | keyword |
 | recordedfuture.triggered_alert.rule.name |  | keyword |
 | recordedfuture.triggered_alert.rule.url.portal |  | keyword |
-| recordedfuture.triggered_alert.rule.use_case_deprecation |  | keyword |
+| recordedfuture.triggered_alert.rule.use_case_deprecation.description |  | keyword |
 | recordedfuture.triggered_alert.title |  | keyword |
 | recordedfuture.triggered_alert.type |  | keyword |
 | recordedfuture.triggered_alert.url.api |  | keyword |

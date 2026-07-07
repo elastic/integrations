@@ -1,0 +1,53 @@
+- name: apple_event
+  type: group
+  description: >
+    Fields extracted from Apple Event debug messages in the
+    com.apple.appleevents subsystem. These fields are conditionally
+    populated by the ingest pipeline only when the log entry contains
+    Apple Event send or reply data. Requires debug-level logging to be
+    enabled for the com.apple.appleevents subsystem.
+  fields:
+    - name: type_code
+      type: keyword
+      description: >
+        The four-character Apple Event class and ID pair (e.g. syso,dlog
+        for display dialog, aevt,stvl for set volume, Jons,gClp for get
+        clipboard). Extracted from the event={X,Y} or reply={X,Y} pattern
+        in the log message.
+    - name: direction
+      type: keyword
+      description: >
+        The direction of the Apple Event. One of self (sendToSelf),
+        remote (sendToModernProcess), or reply (Reply of SendToSelf or
+        reply={}).
+    - name: target_process
+      type: keyword
+      description: >
+        The target process of the Apple Event, extracted from the
+        target='psn' block in the log message. May contain process name,
+        PID, or PSN identifiers.
+    - name: return_id
+      type: keyword
+      description: >
+        The return ID of the Apple Event, used to correlate requests with
+        their replies. Extracted from returnID=N in the log message.
+    - name: parameters
+      type: keyword
+      description: >
+        List of four-character parameter codes present in the Apple Event
+        payload (e.g. htxt for hidden text, dtxt for display text, prmp
+        for prompt). These codes identify the types of data carried in the
+        event.
+    - name: decoded_payloads
+      type: keyword
+      description: >
+        Decoded ASCII text extracted from utxt (Unicode text) hex payloads
+        in the Apple Event. Values are truncated to 16 characters by the
+        Unified Log system. Useful for identifying short indicators like
+        parameter values and script fragments.
+    - name: mute
+      type: boolean
+      description: >
+        Set to true when an Apple Event set volume command includes
+        mute=true in its payload. Indicates a volume mute operation, which
+        is a known pre-indicator of macOS stealer malware.

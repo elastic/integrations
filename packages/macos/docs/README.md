@@ -1,14 +1,14 @@
-# macOS Integration for Elastic
+# macOS Security Events Integration for Elastic
 
 ## Overview
 
-The macOS integration for Elastic allows you to collect and analyze unified logs from macOS systems. This integration leverages macOS's unified logging system to provide comprehensive visibility into system activities, security events, and application behaviors on macOS endpoints.
+The macOS Security Events integration for Elastic allows you to collect and analyze unified logs from macOS systems. This integration leverages macOS's unified logging system to provide comprehensive visibility into system activities, security events, and application behaviors on macOS endpoints.
 
 macOS unified logging is Apple's centralized logging system that captures log messages from the kernel, system processes, and applications. This integration enables security teams to monitor macOS endpoints for suspicious activities, troubleshoot system issues, and maintain compliance with security policies.
 
 ### Compatibility
 
-The macOS integration is compatible with macOS systems that support unified logging (macOS 10.12 Sierra and later).
+The macOS Security Events integration is compatible with macOS systems that support unified logging (macOS 10.12 Sierra and later).
 
 ### How it works
 
@@ -61,7 +61,7 @@ This integration collects unified log messages from macOS systems using configur
   ```
 
 ### Supported use cases
-The macOS integration in Elastic enables comprehensive monitoring and analysis of system activities, network traffic, and application behavior across macOS devices. It supports use cases such as detecting security incidents, tracking network usage, auditing system events, and analyzing performance trends. By collecting and visualizing unified logs, it helps security and IT teams gain real-time visibility, identify anomalies, ensure compliance, and enhance overall endpoint security within macOS environments.
+The macOS Security Events integration in Elastic enables comprehensive monitoring and analysis of system activities, network traffic, and application behavior across macOS devices. It supports use cases such as detecting security incidents, tracking network usage, auditing system events, and analyzing performance trends. By collecting and visualizing unified logs, it helps security and IT teams gain real-time visibility, identify anomalies, ensure compliance, and enhance overall endpoint security within macOS environments.
 
 This integration also provides visibility into third-party enterprise applications that use unified logging as their logging backend, including privilege management tools, MDM agents, security software, and custom macOS applications, enabling centralized monitoring of the entire macOS application ecosystem.
 
@@ -90,7 +90,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Should I use this integration if I already have Elastic Defend?
 
-For comprehensive visibility, yes. Elastic Defend isn't designed to provide a complete capture of all system events and it's recommended to supplement it with the macOS unified logging integration.
+For comprehensive visibility, yes. Elastic Defend isn't designed to provide a complete capture of all system events and it's recommended to supplement it with the macOS Security Events integration.
 Specifically, Elastic Defend on macOS does not capture:
 
 - All user login/logout events
@@ -103,9 +103,9 @@ This integration fills those gaps, similar to how Windows users supplement Elast
 ## Setup
 
 1. In the top search bar in Kibana, search for **Integrations**.
-2. In the search bar, type **macOS**.
-3. Select the **macOS** integration from the search results.
-4. Select **Add macOS** to add the integration.
+2. In the search bar, type **macOS Security Events**.
+3. Select the **macOS Security Events** integration from the search results.
+4. Select **Add macOS Security Events** to add the integration.
 5. Enable and configure only the collection methods which you will use.
 
     **Basic Configuration:**
@@ -132,7 +132,7 @@ This integration fills those gaps, similar to how Windows users supplement Elast
 #### Dashboards populated
 
 1. In the top search bar in Kibana, search for **Dashboards**.
-2. In the search bar, type **macOS**.
+2. In the search bar, type **macOS Security Events**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
 ## Performance and scaling

@@ -1,0 +1,133 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the use of the \"kubectl get secrets --all-namespaces\" command, which enumerates secret resources across the entire Kubernetes cluster. Attackers may use this command to identify accessible secrets in multiple namespaces, aiding credential discovery, privilege escalation, or lateral movement.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "endgame-*",
+            "logs-auditd_manager.auditd-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-cloud_defend.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Kubectl Secrets Enumeration Across All Namespaces",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Kubectl Secrets Enumeration Across All Namespaces\n\nKubectl allows users to query Kubernetes resources from the command line. Adversaries may use \"kubectl get secrets --all-namespaces\" or \"kubectl get secrets -A\" to enumerate secret objects across the cluster and identify valuable targets for credential access or privilege escalation. The detection rule identifies this broad secret discovery activity by monitoring kubectl executions that request secrets from all namespaces.\n\n### Possible investigation steps\n\n- Review the full process command line to confirm whether the command used \"get secrets --all-namespaces\" or the short form \"-A\", and determine whether additional output modifiers such as \"-o yaml\" or \"-o json\" were used.\n- Identify the user account and host that launched the kubectl command and determine whether this activity aligns with approved administrative or automation workflows.\n- Correlate the event with Kubernetes audit logs to determine what secret resources were listed and whether subsequent access, read, or modification activity followed.\n- Examine related kubectl activity from the same user or host, especially commands involving \"auth can-i\", \"--as\", \"--token\", or kubeconfig changes, which may indicate privilege probing or impersonation.\n- Investigate whether the same session later accessed sensitive resources, exported command output, or connected to external destinations that could indicate staging or exfiltration of discovered information.\n\n### False positive analysis\n\n- Cluster administrators or platform engineers may legitimately enumerate secrets across namespaces during troubleshooting, audits, or migration work. Create exceptions for known users, hosts, or automation contexts where appropriate.\n- CI/CD or compliance tooling may run kubectl commands with \"-A\" to inventory cluster resources. Review these tools and exclude their specific execution patterns if they are expected.\n- Security assessment or validation activity may intentionally enumerate secrets to verify access controls. Coordinate with security teams to document those activities and reduce unnecessary alerts.\n- Development or lab environments may generate this behavior during testing. Consider environment-specific tuning if this activity is expected outside production.\n\n### Response and remediation\n\n- Validate whether the user or service account that executed the command should have cluster-wide visibility into secrets, and revoke or reduce permissions if the access is not justified.\n- Review Kubernetes audit logs and API activity to determine whether any listed secrets were subsequently read, exported, or abused.\n- Rotate any credentials, tokens, or certificates associated with sensitive secrets that may have been exposed to an unauthorized actor.\n- Investigate adjacent activity from the same host or identity, including kubeconfig access, impersonation flags, direct API usage, or suspicious network connections.\n- Escalate to incident response if the activity is unauthorized, originated from an unusual workstation, or was followed by secret reads, pod creation, or changes to RBAC bindings.\n",
+        "query": "process where host.os.type in (\"linux\", \"macos\") and event.type == \"start\" and\nevent.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\", \"executed\", \"process_started\") and\nprocess.name == \"kubectl\" and process.args in (\"get\", \"describe\") and process.args in (\"secret\", \"secrets\") and\nprocess.args in (\"--all-namespaces\", \"-A\")\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#get"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "cloud_defend",
+                "version": "^1.4.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a87d49f0-24ae-4d6e-a0b4-5fd2f6188d6a",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux or macOS system:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Container",
+            "Domain: Kubernetes",
+            "OS: Linux",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Data Source: Elastic Endgame",
+            "Data Source: Auditd Manager",
+            "Data Source: Crowdstrike",
+            "Data Source: SentinelOne",
+            "Data Source: Elastic Defend for Containers",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "a87d49f0-24ae-4d6e-a0b4-5fd2f6188d6a_1",
+    "type": "security-rule"
+}

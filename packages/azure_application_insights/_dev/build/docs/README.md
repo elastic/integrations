@@ -4,11 +4,35 @@
 
 The Application Insights Integration allows users to retrieve application insights metrics from specified applications.  
 
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to collect data from Azure and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Agentless deployment
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html)
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ### Integration level configuration options
 
 `Application ID`:: (_[]string_) ID of the application. This is Application ID from the API Access settings blade in the Azure portal.
 
-`Api Key`:: (_[]string_) The API key which will be generated. See [Azure Monitor Log Analytics API Overview](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/api/overview) for more information.
+`Authentication Type`:: (_string_) Optional. The authentication method to use. Accepted values: `api_key` or `client_secret`. Defaults to `client_secret` if not set.
+
+NOTE: API Key authentication is deprecated. Users currently authenticating via API Key are encouraged to migrate to Client Secret authentication. Client Secret authentication uses Microsoft Entra ID and provides more robust security through short-lived tokens.
+
+`Api Key`:: (_string_) Optional. The API key used for authentication when `auth_type` is set to `api_key`. See [Azure Monitor Log Analytics API Overview](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/api/overview) for more information.
+
+`Client ID`:: (_string_) Optional. The client (application) ID of the Entra ID application. Required when `auth_type` is `client_secret`.
+
+`Client Secret`:: (_string_) Optional. The client secret of the Entra ID application. Required when `auth_type` is `client_secret`.
+
+`Tenant ID`:: (_string_) Optional. The tenant (directory) ID of the Entra ID tenant. Required when `auth_type` is `client_secret`.
 
 
 The integration contains the following data streams:

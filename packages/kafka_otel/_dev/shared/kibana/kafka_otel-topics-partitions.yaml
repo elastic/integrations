@@ -1,0 +1,207 @@
+dashboards:
+  - name: "[Kafka OTel] Topics & Partitions"
+    id: kafka_otel-topics-partitions
+    description: "Topic and partition topology: partition counts, current/oldest offsets, retained message volume. Capacity and throughput-inference views."
+    filters:
+      - field: data_stream.dataset
+        equals: kafkametricsreceiver.otel
+    controls:
+      - type: options
+        label: Topic
+        data_view: metrics-*
+        field: attributes.topic
+        match_technique: prefix
+        width: medium
+    settings:
+      margins: true
+      titles: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+    panels:
+      # Links navigation
+      - title: Navigation
+        hide_title: true
+        size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: kafka_otel-overview
+            - label: Consumer Groups
+              dashboard: kafka_otel-consumer-groups
+            - label: Topics & Partitions
+              dashboard: kafka_otel-topics-partitions
+            - label: Replication Health
+              dashboard: kafka_otel-replication
+
+      # Markdown intro
+      - title: "[Kafka OTel] Topics & Partitions"
+        hide_title: true
+        size: {w: 16, h: 8}
+        position: {x: 0, y: 2}
+        markdown:
+          content: |
+            ## [Kafka OTel] Topics & Partitions
+
+            Topic and partition metrics:
+            - Partition count per topic
+            - Current and oldest offsets
+            - Retained message volume (current − oldest)
+            - Replication factor and in-sync replicas
+
+      # Total Partitions (metric)
+      - title: Total Partitions
+        hide_title: true
+        size: {w: 8, h: 8}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.topic.partitions IS NOT NULL
+            | STATS partitions_per_topic = MAX(kafka.topic.partitions) BY attributes.topic
+            | STATS total_partitions = SUM(partitions_per_topic)
+          primary:
+            field: total_partitions
+            label: Partitions
+            format:
+              type: number
+              compact: true
+              decimals: 2
+
+      # Topics (metric)
+      - title: Topics
+        hide_title: true
+        size: {w: 7, h: 8}
+        position: {x: 24, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.topic.partitions IS NOT NULL
+            | STATS count = COUNT_DISTINCT(attributes.topic)
+          primary:
+            field: count
+            label: Topics
+            format:
+              type: number
+              decimals: 0
+
+      # Current Offset (Sum) (metric)
+      - title: Current Offset (Sum)
+        hide_title: true
+        size: {w: 7, h: 8}
+        position: {x: 31, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.partition.current_offset IS NOT NULL
+            | STATS offset = MAX(kafka.partition.current_offset) BY attributes.topic, attributes.partition
+            | STATS total = SUM(offset)
+          primary:
+            field: total
+            label: Current Offset Sum
+            format:
+              type: number
+              compact: true
+              decimals: 2
+
+      # Current Offset Over Time by Topic (line)
+      - title: Current Offset Over Time by Topic (Top 5)
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 10}
+        esql:
+          type: line
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.partition.current_offset IS NOT NULL AND attributes.topic IS NOT NULL
+            | STATS offset = MAX(kafka.partition.current_offset)
+                BY attributes.topic, attributes.partition, time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | STATS current_offset = SUM(offset) BY time_bucket, attributes.topic
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: current_offset
+              label: Current Offset
+              format:
+                type: number
+                compact: true
+                decimals: 2
+          breakdown:
+            field: attributes.topic
+          legend:
+            visible: true
+            position: right
+
+      # Partitions by Topic (bar)
+      - title: Partitions by Topic
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 10}
+        esql:
+          type: bar
+          mode: unstacked
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.topic.partitions IS NOT NULL
+            | STATS partitions = MAX(kafka.topic.partitions) BY attributes.topic
+            | SORT partitions DESC
+            | LIMIT 15
+          dimension:
+            field: attributes.topic
+          metrics:
+            - field: partitions
+              label: Partitions
+              format:
+                type: number
+                decimals: 0
+          legend:
+            position: right
+
+      # Partition offset details (datatable)
+      - title: Partition Offset Details
+        size: {w: 48, h: 16}
+        position: {x: 0, y: 20}
+        esql:
+          type: datatable
+          query: |
+            TS metrics-kafkametricsreceiver.otel-*
+            | WHERE data_stream.dataset == "kafkametricsreceiver.otel"
+            | WHERE kafka.partition.current_offset IS NOT NULL AND kafka.partition.oldest_offset IS NOT NULL
+            | STATS current_offset = MAX(kafka.partition.current_offset),
+                    oldest_offset = MAX(kafka.partition.oldest_offset)
+                BY attributes.topic, attributes.partition
+            | EVAL retained = current_offset - oldest_offset
+            | SORT attributes.topic ASC, attributes.partition ASC
+            | LIMIT 100
+          dimensions:
+            - field: attributes.topic
+              label: Topic
+            - field: attributes.partition
+              label: Partition
+          metrics:
+            - field: current_offset
+              label: Current Offset
+              format:
+                type: number
+                decimals: 0
+            - field: oldest_offset
+              label: Oldest Offset
+              format:
+                type: number
+                decimals: 0
+            - field: retained
+              label: Retained
+              format:
+                type: number
+                decimals: 0

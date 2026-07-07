@@ -4,6 +4,11 @@
 
 The [Rapid7 Threat Command](https://www.rapid7.com/) integration allows users to retrieve IOCs (Indicator of Compromises), organization-specific Threat Command alerts, and CVEs (Common Vulnerabilities and Exposures). Furthermore, the correlation between data collected from the Rapid7 Threat Command platform (IOCs and CVEs) and the user's environment helps to identify threats. Rapid7 Threat Command platform gives protectors the tools and clarity they need to assess their attack surface, detect suspicious behavior, and respond and remediate quickly with intelligent automation.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data streams
 
 The Rapid7 Threat Command integration collects three types of data: ioc, alert, and vulnerability.
@@ -17,7 +22,7 @@ The Rapid7 Threat Command integration collects three types of data: ioc, alert, 
 ## Compatibility
 
 - This integration has been tested against Rapid7 Threat Command `IOC API v2`, `Alert API v1`, and `Vulnerability API v1`.
-- Rapid7 Threat Command integration is compatible with Elastic stack `v8.12.0` and newer.
+- Rapid7 Threat Command integration is compatible with Elastic stack `v8.19.4` and newer.
 
 ## Requirements
 
@@ -346,6 +351,7 @@ An example event for `ioc` looks as following:
 | rapid7.tc.ioc.type | IOC type. | keyword |
 | rapid7.tc.ioc.value | IOC value. | keyword |
 | rapid7.tc.ioc.whitelisted | An indicator which states if the IOC was checked and found as whitelisted or not. | keyword |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
@@ -666,4 +672,5 @@ An example event for `vulnerability` looks as following:
 | rapid7.tc.vulnerability.related.threat_actors | List of related threat actors. | keyword |
 | rapid7.tc.vulnerability.severity | CVE severity. Allowed values: 'Critical', 'High', 'Medium', 'Low'. | keyword |
 | rapid7.tc.vulnerability.update_date | CVE's update date in ISO 8601 format. | date |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 

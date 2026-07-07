@@ -9,6 +9,7 @@ The MySQL OpenTelemetry assets provide a visual representation of MySQL metrics 
 The MySQL OpenTelemetry assets have been tested with [OpenTelemetry MySQL receiver v0.145.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.145.0/receiver/mysqlreceiver/README.md).
 
 Databases tested against:
+
 - MySQL 8.0, 9.4
 - MariaDB 10.11, 11.8
 
@@ -140,14 +141,45 @@ service:
       exporters: [elasticsearch/otel]
 ```
 
-> **Note:** If you don't have a replica instance, remove the `mysql/replica` receiver and its reference from the metrics pipeline.
+> **Note:** If you do not have a replica instance, remove the `mysql/replica` receiver and its reference from the metrics pipeline.
 
 ## Reference
 
 ### Metrics
 
-Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.145.0/receiver/mysqlreceiver/metadata.yaml) of the OpenTelemetry MySQL receiver for details on available metrics.
+Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/mysqlreceiver/metadata.yaml) of the OpenTelemetry MySQL receiver for details on available metrics.
 
 ### Logs
 
-Refer to the [documentation.md](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.145.0/receiver/mysqlreceiver/documentation.md) of the OpenTelemetry MySQL receiver for details on log collection.
+Refer to the [documentation.md](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/mysqlreceiver/documentation.md) of the OpenTelemetry MySQL receiver for details on log events (`db.server.query_sample` and `db.server.top_query`) and their attributes.
+
+## Dashboards
+
+| Dashboard | Description |
+|-----------|-------------|
+| **[MySQL OTel] Overview** | High-level view of threads, buffer pool utilization, row operations, connection errors, and query throughput. |
+| **[MySQL OTel] Performance** | Throughput, buffer pool, locks, I/O operations, and storage metrics for performance analysis. |
+| **[MySQL OTel] Queries** | Active queries, top queries by time and call count, and query samples from logs. |
+| **[MySQL OTel] Availability** | Thread states, replication lag, and connection errors for availability monitoring. |
+
+## Alert rules
+
+| Alert | Trigger | Severity |
+|-------|---------|----------|
+| **[MySQL OTel] High connection error rate** | More than 5 connection errors by type in a 15-minute window | High |
+| **[MySQL OTel] High slow query rate** | More than 10 slow queries in a 15-minute window | High |
+| **[MySQL OTel] Thread saturation** | Running-to-connected thread ratio exceeds 0.9 with at least 5 connected threads | Medium |
+| **[MySQL OTel] Replication lag** | Replica lag exceeds 60 seconds | High |
+| **[MySQL OTel] High buffer pool dirty page ratio** | Dirty page ratio exceeds 75% of buffer pool usage | Medium |
+| **[MySQL OTel] High row lock contention** | More than 100 row lock waits in a 15-minute window | Medium |
+
+## SLO templates
+
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
+
+| SLO | Target | Window | Description |
+|-----|--------|--------|-------------|
+| **[MySQL OTel] Replication lag 99.5% rolling 30 days** | 99.5% | 30-day rolling | Ensures replica lag stays below 5 seconds in 99.5% of 1-minute intervals. |
+| **[MySQL OTel] Connection exhaustion errors 99.0% rolling 30 days** | 99.0% | 30-day rolling | Ensures max_connections errors stay below 5 per minute in 99.0% of 1-minute intervals. |
+| **[MySQL OTel] Slow queries 99.0% rolling 30 days** | 99.0% | 30-day rolling | Ensures slow query count stays below 10 per minute in 99.0% of 1-minute intervals. |
+| **[MySQL OTel] Connected threads 99.0% rolling 30 days** | 99.0% | 30-day rolling | Ensures connected threads stay below 800 in 99.0% of 1-minute intervals. |

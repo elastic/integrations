@@ -3,7 +3,7 @@ name: unifiedlogs
 title: Custom macOS Unified Logs
 description: Collect and parse logs from macOS unified logs with Elastic Agent.
 type: input
-version: "0.4.0"
+version: "0.5.1"
 conditions:
   kibana:
     version: '^8.18.0 || ^9.0.0'
@@ -24,6 +24,16 @@ policy_templates:
     input: unifiedlogs
     template_path: unifiedlogs.yml.hbs
     vars:
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset sends data to a different backing index.
+          You can't use `-` in the name of a dataset; use only characters valid for
+          [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html).
+        default: unifiedlogs.generic
+        required: true
+        show_user: true
       - name: predicate
         type: text
         title: Predicate
@@ -127,6 +137,9 @@ policy_templates:
         title: Ingest Pipeline
         description: |
           The Ingest Node pipeline ID to be used by the integration.
+          The default pipeline parses the raw ndjson output from the
+          macOS log CLI into ECS and unified_log.* structured fields.
+        default: logs-unifiedlogs.log-default
       - name: tags
         type: text
         title: Tags

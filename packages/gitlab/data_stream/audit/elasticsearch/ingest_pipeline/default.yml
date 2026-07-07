@@ -39,6 +39,7 @@ processors:
       if: ctx.gitlab?.audit?.time != null
   - remove:
       field: gitlab.audit.time
+      ignore_missing: true
   - set:
       field: event.severity
       value: 0
@@ -138,9 +139,11 @@ processors:
   - rename:
       field: gitlab.audit.author_id
       target_field: user.id
+      ignore_missing: true
   - rename:
       field: gitlab.audit.author_name
       target_field: user.name
+      ignore_missing: true
   - date:
       field: gitlab.audit.created_at
       formats:
@@ -176,7 +179,7 @@ processors:
   - append:
       field: related.user
       value: '{{{gitlab.audit.entity_id}}}'
-      if: ctx.gitlab?.auadit?.entity_id != null && ctx.gitlab.audit.entity_type == "User"
+      if: ctx.gitlab?.audit?.entity_id != null && ctx.gitlab.audit.entity_type == "User"
       allow_duplicates: false
   - append:
       field: event.category

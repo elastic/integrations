@@ -92,10 +92,10 @@ program: |
                 "interval_start": state.interval.start,
                 "interval_id": state.interval.id,
               }),
-              "want_more": body.hasMore != 0,
+              "want_more": body.hasMore != 0 && size(body.assetListData.asset) != 0,
               "access_token": token.access_token,
               "expiry": token.expiry,
-              "asset_id": body.hasMore != 0 ? body.assetListData.asset.map(e, e.assetId).max() : 0,
+              "asset_id": (body.hasMore != 0 && size(body.assetListData.asset) != 0) ? body.assetListData.asset.map(e, e.assetId).max() : 0,
             })
           :
             (resp.StatusCode == 204) ?

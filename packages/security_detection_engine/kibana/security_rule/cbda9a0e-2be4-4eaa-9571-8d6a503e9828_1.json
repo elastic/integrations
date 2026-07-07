@@ -1,0 +1,88 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects when secrets are accessed via an unusual user agent, user name and source IP. Attackers may attempt to access secrets in a Kubernetes cluster to gain access to sensitive information after gaining access to the cluster.",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-kubernetes.audit_logs-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Kubernetes Secret Access via Unusual User Agent",
+        "new_terms_fields": [
+            "source.ip",
+            "user.name",
+            "user_agent.original"
+        ],
+        "query": "event.dataset:\"kubernetes.audit_logs\" and kubernetes.audit.objectRef.resource:\"secrets\" and\nkubernetes.audit.verb:(\"get\" or \"list\") and user_agent.original:(* and not (*kubernetes/$Format))\n",
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.80.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "cbda9a0e-2be4-4eaa-9571-8d6a503e9828",
+        "severity": "low",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Domain: Kubernetes",
+            "Domain: Cloud",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "cbda9a0e-2be4-4eaa-9571-8d6a503e9828_1",
+    "type": "security-rule"
+}

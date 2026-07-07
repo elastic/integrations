@@ -1,0 +1,39 @@
+{
+  "attributes": {
+    "name": "[IIS OTel] Request queue age 99.5% rolling 30 days",
+    "description": "This SLO tracks the maximum request queue age of IIS via OTel metrics, ensuring that 99.5% of 1-minute time intervals show the oldest queued request age below 1000 milliseconds over a rolling period of 30 days. Queue age is IIS's primary latency proxy — a rising value indicates users are waiting longer before processing begins.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"iisreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "max", "field": "iis.request.queue.age.max"}
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 1000
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {"duration": "30d", "type": "rolling"},
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": ["iis", "otel"],
+    "groupBy": ["resource.attributes.iis.application_pool"],
+    "artifacts": {
+      "dashboards": [
+        {"id": "iis_otel-overview"},
+        {"id": "iis_otel-sites"}
+      ]
+    }
+  },
+  "id": "iis_otel-request-queue-age-99.5-Rolling30Days",
+  "type": "slo_template"
+}

@@ -1,0 +1,113 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects list operations on Kubernetes Secrets from a non-loopback client when the request URI targets cluster-wide secrets or list operations under kube-system or default. Useful for spotting broad secret enumeration from remote clients.",
+        "from": "now-6m",
+        "index": [
+            "logs-kubernetes.audit_logs-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Kubernetes Secrets List Across Cluster or Sensitive Namespaces",
+        "note": "## Triage and analysis\n\n### Investigating Kubernetes Secrets List Across Cluster or Sensitive Namespaces\n\nAudit events for `list` on the `secrets` resource against `/api/v1/secrets`, paginated cluster lists, or namespace-scoped\nlists under `kube-system` or `default`, from a source IP that is not localhost.\n\n### Investigation steps\n\n- Confirm the actor (`user.name`, groups) and whether the client is expected (CI, admin bastion, controller).\n- Review `kubernetes.audit.requestURI`, `user_agent.original`, and follow-on API activity from the same source.\n- Assess exposure: cluster-wide secret listing can surface many credentials.\n\n### False positives\n\n- Legitimate controllers or operators listing secrets in `kube-system` / `default` from cluster nodes may match; tune by\n  source IP, user agent, or service account as needed.\n",
+        "query": "event.dataset:\"kubernetes.audit_logs\" and event.action:list and \nkubernetes.audit.objectRef.resource:secrets and \nkubernetes.audit.requestURI :(/api/v1/secrets or /api/v1/secrets?limit* or /api/v1/namespaces/kube-system/secrets or /api/v1/namespaces/kube-system/secrets?limit* or /api/v1/namespaces/default/secrets or /api/v1/namespaces/default/secrets?limit*) and \nsource.ip:(* and not (\"::1\" or \"127.0.0.1\")) and \nnot user.name: (system\\:kube-controller-manager or eks\\:cloud-controller-manager or eks\\:kms-storage-migrator)\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1552/007/"
+        ],
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.80.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestURI",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "7e3f9a2b-1c4d-5e6f-8a0b-9c8d7e6f5a4b",
+        "severity": "high",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Domain: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "7e3f9a2b-1c4d-5e6f-8a0b-9c8d7e6f5a4b_1",
+    "type": "security-rule"
+}

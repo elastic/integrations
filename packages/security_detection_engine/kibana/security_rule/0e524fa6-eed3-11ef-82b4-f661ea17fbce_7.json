@@ -1,0 +1,192 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when an excessive number of files are downloaded from OneDrive or SharePoint by an authorized user or application in a short period of time. This may indicate a potential data exfiltration event, especially if the downloads are performed using OAuth authentication which could suggest an OAuth phishing attack such as Device Code Authentication phishing.",
+        "false_positives": [
+            "Legitimate users may download files from OneDrive using OAuth authentication. Ensure that the downloads are authorized and the user is known before taking action."
+        ],
+        "from": "now-9m",
+        "interval": "8m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "M365 OneDrive/SharePoint Excessive File Downloads",
+        "note": "## Triage and Analysis\n\n### Investigating M365 OneDrive/SharePoint Excessive File Downloads\n\nThis rule detects an excessive number of files downloaded from OneDrive using OAuth authentication. Threat actors may use OAuth phishing attacks, such as **Device Code Authentication phishing**, to obtain valid access tokens and perform unauthorized data exfiltration. This method allows adversaries to bypass traditional authentication mechanisms, making it a stealthy and effective technique.\n\nThis rule leverages ESQL aggregations which limit the field values available in the alert document. To investigate further, it is recommended to identify the original documents ingested.\n\n#### Possible Investigation Steps\n\n- Review the user ID field to identify the user who performed the downloads. Check if this user typically downloads large amounts of data from OneDrive.\n- Correlate user ID with Entra Sign-In logs to verify the authentication method used and determine if it was expected for this user.\n- Review the authentication method used. If OAuth authentication was used, investigate whether it was expected for this user.\n- Identify the client application used for authentication. Determine if it is a legitimate enterprise-approved app or an unauthorized third-party application.\n- Check the number of unique files downloaded. If a user downloads a high volume of unique files in a short period, it may indicate data exfiltration.\n- Analyze the file types and directories accessed to determine if sensitive or confidential data was involved.\n- Investigate the source IP address and geolocation of the download activity. If it originates from an unusual or anonymized location, further scrutiny is needed.\n- Review other recent activities from the same user, such as file access, sharing, or permission changes, that may indicate further compromise.\n- Check for signs of session persistence using OAuth. If Azure sign-in logs are correlated where `authentication_protocol` or `originalTransferMethod` field shows `deviceCode`, the session was established through device code authentication.\n- Look for multiple authentication attempts from different devices or locations within a short timeframe, which could indicate unauthorized access.\n- Investigate if other OAuth-related anomalies exist, such as consent grants for unfamiliar applications or unexpected refresh token activity.\n- Review the `file.directory` value from the original documents to identify the specific folders or paths where the files were downloaded.\n- Examine if the downloaded files are from Sharepoint or OneDrive by checking the `event.code` field.\n- Review the incoming token type to determine how authentication occurred. If the `token.id` field is populated, it indicates that OAuth authentication was used, which may suggest an OAuth phishing attack.\n\n### False Positive Analysis\n\n- Verify if the user regularly downloads large batches of files as part of their job function.\n- Determine if the downloads were triggered by an authorized automated process, such as a data backup or synchronization tool.\n- Confirm if the detected OAuth application is approved for enterprise use and aligns with expected usage patterns.\n\n### Response and Remediation\n\n- If unauthorized activity is confirmed, revoke the OAuth token used and terminate active OneDrive sessions.\n- Reset the affected user's password and require reauthentication to prevent continued unauthorized access.\n- Restrict OAuth app permissions and enforce conditional access policies to limit authentication to trusted devices and applications.\n- Monitor for additional signs of compromise, such as unusual email forwarding rules, external sharing of OneDrive files, or privilege escalation attempts.\n- Educate users on OAuth phishing risks and encourage the use of **Microsoft Defender for Office 365 Safe Links** to mitigate credential-based attacks.\n- Enable continuous monitoring for OAuth authentication anomalies using **Microsoft Entra ID sign-in logs** and security tools.\n",
+        "query": "from logs-o365.audit-* metadata _id, _version, _index\n| where\n    event.dataset == \"o365.audit\" and\n    event.provider == \"OneDrive\" and\n    event.action == \"FileDownloaded\" and\n    event.outcome == \"success\"\n    and (user.id is not null and o365.audit.ApplicationId is not null)\n    and o365.audit.ApplicationId not in (\n        \"08e18876-6177-487e-b8b5-cf950c1e598c\", // SharePoint Online Web Client Extensibility\n        \"fb8d773d-7ef8-4ec0-a117-179f88add510\", // Enterprise Copilot Platform\n        \"d3590ed6-52b3-4102-aeff-aad2292ab01c\", // Microsoft Office\n        \"7ab7862c-4c57-491e-8a45-d52a7e023983\" // App Service\n    )\n| eval session.id = coalesce(o365.audit.AppAccessContext.AADSessionId, session.id, null)\n| where session.id is not null\n| eval Esql.time_window_date_trunc = date_trunc(3 minutes, @timestamp)\n| stats\n    Esql.file_directory_values = values(file.directory),\n    Esql.file_extension_values = values(file.extension),\n    Esql.application_name_values = values(application.name),\n    Esql.file_name_count_distinct = count_distinct(file.name),\n    Esql.total_file_size_mb = round((mv_sum(values(file.size))) / 1048576.0, 2),\n    Esql.o365_audit_Site_values = values(o365.audit.Site),\n    Esql.o365_audit_SiteUrl_values = values(o365.audit.SiteUrl),\n    Esql.user_domain_values = values(user.domain),\n    Esql.token_id_values = values(token.id),\n    Esql.event_code_values = values(event.code),\n    Esql.event_provider_values = values(event.provider),\n    Esql.auth_type_values = values(o365.audit.AuthenticationType),\n    Esql.is_managed_device_values = values(o365.audit.IsManagedDevice),\n    Esql.platform_values = values(o365.audit.Platform),\n    Esql.user_agent_values = values(user_agent.name),\n    Esql.source_asn_org_values = values(source.as.organization.name),\n    Esql.geo_country_values = values(source.geo.country_name),\n    Esql.event_count = count(*)\n    by\n    Esql.time_window_date_trunc,\n    user.id,\n    session.id,\n    source.ip,\n    o365.audit.ApplicationId\n| where Esql.file_name_count_distinct >= 25\n| keep\n    Esql.*,\n    user.id,\n    source.ip,\n    o365.audit.ApplicationId,\n    session.id\n",
+        "references": [
+            "https://www.volexity.com/blog/2025/02/13/multiple-russian-threat-actors-targeting-microsoft-device-code-authentication/",
+            "https://cloud.google.com/blog/topics/threat-intelligence/expansion-shinyhunters-saas-data-theft"
+        ],
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.application_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.auth_type_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_code_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_provider_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.file_directory_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.file_extension_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.file_name_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.geo_country_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.is_managed_device_values",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.o365_audit_SiteUrl_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.o365_audit_Site_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.platform_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_asn_org_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.time_window_date_trunc",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.token_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.total_file_size_mb",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_agent_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_domain_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.ApplicationId",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "session.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "0e524fa6-eed3-11ef-82b4-f661ea17fbce",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Domain: Storage",
+            "Data Source: Microsoft 365",
+            "Data Source: Microsoft 365 Audit Logs",
+            "Data Source: SharePoint",
+            "Data Source: OneDrive",
+            "Use Case: Threat Detection",
+            "Tactic: Collection",
+            "Tactic: Exfiltration",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1530",
+                        "name": "Data from Cloud Storage",
+                        "reference": "https://attack.mitre.org/techniques/T1530/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": []
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 7
+    },
+    "id": "0e524fa6-eed3-11ef-82b4-f661ea17fbce_7",
+    "type": "security-rule"
+}

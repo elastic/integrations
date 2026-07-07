@@ -1,0 +1,493 @@
+dashboards:
+  - id: ibmmq_otel-message-traffic
+    name: '[IBM MQ OTel] Message Traffic'
+    minimum_kibana_version: '8.18.0'
+    description: >-
+      Detailed message throughput analysis for IBM MQ queue managers including
+      put/get rates, byte throughput, persistence breakdown, pub/sub activity,
+      and connection metrics.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+    filters:
+      - field: data_stream.dataset
+        equals: ibmmq.otel
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: ibmmq_otel-overview
+            - label: Message Traffic
+              dashboard: ibmmq_otel-message-traffic
+            - label: Error Analysis
+              dashboard: ibmmq_otel-error-analysis
+            - label: Resources & Performance
+              dashboard: ibmmq_otel-resources
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [IBM MQ OTel] Message Traffic
+
+            This dashboard provides detailed insight into IBM MQ message flow:
+            - Per-queue-manager put and get message rates
+            - Byte throughput for puts and gets
+            - Persistent vs non-persistent message breakdown
+            - Pub/sub topic and subscriber delivery rates
+            - Connection and disconnection activity
+
+      # ─── KPI Row 1 ────────────────────────────────────────────────────
+      - title: Put Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_mqput_mqput1_total IS NOT NULL
+            - STATS put_rate = SUM(RATE(ibmmq_qmgr_mqput_mqput1_total))
+          primary:
+            field: put_rate
+            label: Put Rate
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: Get Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_destructive_get_total IS NOT NULL
+            - STATS get_rate = SUM(RATE(ibmmq_qmgr_destructive_get_total))
+          primary:
+            field: get_rate
+            label: Get Rate
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: Put Bytes Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_mqput_mqput1_bytes_total IS NOT NULL
+            - STATS put_bytes = SUM(RATE(ibmmq_qmgr_mqput_mqput1_bytes_total))
+          primary:
+            field: put_bytes
+            label: Put Bytes
+            format:
+              type: bytes
+              suffix: "/s"
+
+      - title: Get Bytes Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_destructive_get_bytes_total IS NOT NULL
+            - STATS get_bytes = SUM(RATE(ibmmq_qmgr_destructive_get_bytes_total))
+          primary:
+            field: get_bytes
+            label: Get Bytes
+            format:
+              type: bytes
+              suffix: "/s"
+
+      # ─── KPI Row 2 ────────────────────────────────────────────────────
+      - title: Topic Put Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_topic_mqput_mqput1_total IS NOT NULL
+            - STATS topic_rate = SUM(RATE(ibmmq_qmgr_topic_mqput_mqput1_total))
+          primary:
+            field: topic_rate
+            label: Topic Puts
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: Subscriber Delivery Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_published_to_subscribers_message_total IS NOT NULL
+            - STATS sub_rate = SUM(RATE(ibmmq_qmgr_published_to_subscribers_message_total))
+          primary:
+            field: sub_rate
+            label: Sub Delivery
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: Connection Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_mqconn_mqconnx_total IS NOT NULL
+            - STATS conn_rate = SUM(RATE(ibmmq_qmgr_mqconn_mqconnx_total))
+          primary:
+            field: conn_rate
+            label: Connections
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: Disconnect Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_mqdisc_total IS NOT NULL
+            - STATS disc_rate = SUM(RATE(ibmmq_qmgr_mqdisc_total))
+          primary:
+            field: disc_rate
+            label: Disconnections
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      # ─── Message Rate by Queue Manager ─────────────────────────────────
+      - title: Put Rate by Queue Manager
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_mqput_mqput1_total IS NOT NULL
+            - >-
+              STATS put_rate = SUM(RATE(ibmmq_qmgr_mqput_mqput1_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.qmgr
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: put_rate
+              label: Put Rate
+              format:
+                type: number
+                suffix: " /s"
+          breakdown:
+            field: attributes.qmgr
+          legend:
+            visible: show
+            position: right
+
+      - title: Get Rate by Queue Manager
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_destructive_get_total IS NOT NULL
+            - >-
+              STATS get_rate = SUM(RATE(ibmmq_qmgr_destructive_get_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.qmgr
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: get_rate
+              label: Get Rate
+              format:
+                type: number
+                suffix: " /s"
+          breakdown:
+            field: attributes.qmgr
+          legend:
+            visible: show
+            position: right
+
+      # ─── Byte Throughput ────────────────────────────────────────────────
+      - title: Byte Throughput Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              put_bytes = SUM(RATE(ibmmq_qmgr_mqput_mqput1_bytes_total)),
+              get_bytes = SUM(RATE(ibmmq_qmgr_destructive_get_bytes_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: put_bytes
+              label: Put Bytes
+              format:
+                type: bytes
+                suffix: "/s"
+            - field: get_bytes
+              label: Get Bytes
+              format:
+                type: bytes
+                suffix: "/s"
+          legend:
+            visible: show
+            position: right
+
+      # ─── Connection Activity ────────────────────────────────────────────
+      - title: Connection Activity Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              connects = SUM(RATE(ibmmq_qmgr_mqconn_mqconnx_total)),
+              disconnects = SUM(RATE(ibmmq_qmgr_mqdisc_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: connects
+              label: Connects
+              format:
+                type: number
+                suffix: " /s"
+            - field: disconnects
+              label: Disconnects
+              format:
+                type: number
+                suffix: " /s"
+          legend:
+            visible: show
+            position: right
+
+      # ─── Persistence Breakdown ──────────────────────────────────────────
+      - title: Persistent vs Non-Persistent Puts
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              persistent_put = SUM(RATE(ibmmq_qmgr_persistent_message_mqput_total)),
+              non_persistent_put = SUM(RATE(ibmmq_qmgr_non_persistent_message_mqput_total)),
+              persistent_put1 = SUM(RATE(ibmmq_qmgr_persistent_message_mqput1_total)),
+              non_persistent_put1 = SUM(RATE(ibmmq_qmgr_non_persistent_message_mqput1_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - >-
+              EVAL persistent = COALESCE(persistent_put, 0) + COALESCE(persistent_put1, 0),
+              non_persistent = COALESCE(non_persistent_put, 0) + COALESCE(non_persistent_put1, 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: persistent
+              label: Persistent
+              format:
+                type: number
+                suffix: " /s"
+            - field: non_persistent
+              label: Non-Persistent
+              format:
+                type: number
+                suffix: " /s"
+          legend:
+            visible: show
+            position: right
+
+      - title: Persistent vs Non-Persistent Gets
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              persistent = SUM(RATE(ibmmq_qmgr_persistent_message_destructive_get_total)),
+              non_persistent = SUM(RATE(ibmmq_qmgr_non_persistent_message_destructive_get_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: persistent
+              label: Persistent
+              format:
+                type: number
+                suffix: " /s"
+            - field: non_persistent
+              label: Non-Persistent
+              format:
+                type: number
+                suffix: " /s"
+          legend:
+            visible: show
+            position: right
+
+      # ─── Pub/Sub ────────────────────────────────────────────────────────
+      - title: Pub/Sub
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Publish / Subscribe'
+
+      - title: Topic Put vs Subscriber Delivery Rate
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              topic_puts = SUM(RATE(ibmmq_qmgr_topic_mqput_mqput1_total)),
+              sub_delivery = SUM(RATE(ibmmq_qmgr_published_to_subscribers_message_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: topic_puts
+              label: Topic Puts
+              format:
+                type: number
+                suffix: " /s"
+            - field: sub_delivery
+              label: Subscriber Delivery
+              format:
+                type: number
+                suffix: " /s"
+          legend:
+            visible: show
+            position: right
+
+      - title: Subscription Activity Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              durable_create = SUM(RATE(ibmmq_qmgr_durable_subscription_create_total)),
+              durable_delete = SUM(RATE(ibmmq_qmgr_durable_subscription_delete_total)),
+              non_durable_create = SUM(RATE(ibmmq_qmgr_non_durable_subscription_create_total)),
+              non_durable_delete = SUM(RATE(ibmmq_qmgr_non_durable_subscription_delete_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: durable_create
+              label: Durable Create
+            - field: durable_delete
+              label: Durable Delete
+            - field: non_durable_create
+              label: Non-Durable Create
+            - field: non_durable_delete
+              label: Non-Durable Delete
+          legend:
+            visible: show
+            position: right
+
+      # ─── Traffic Summary ────────────────────────────────────────────────
+      - title: Message Traffic Summary by Queue Manager
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              put_rate = SUM(RATE(ibmmq_qmgr_mqput_mqput1_total)),
+              get_rate = SUM(RATE(ibmmq_qmgr_destructive_get_total)),
+              put_bytes = SUM(RATE(ibmmq_qmgr_mqput_mqput1_bytes_total)),
+              get_bytes = SUM(RATE(ibmmq_qmgr_destructive_get_bytes_total)),
+              conn_rate = SUM(RATE(ibmmq_qmgr_mqconn_mqconnx_total)),
+              topic_rate = SUM(RATE(ibmmq_qmgr_topic_mqput_mqput1_total)),
+              sub_delivery = SUM(RATE(ibmmq_qmgr_published_to_subscribers_message_total))
+              BY attributes.qmgr
+            - SORT put_rate DESC
+            - LIMIT 50
+          metrics:
+            - field: attributes.qmgr
+              label: Queue Manager
+            - field: put_rate
+              label: Put Rate (/s)
+              format:
+                type: number
+                decimals: 1
+            - field: get_rate
+              label: Get Rate (/s)
+              format:
+                type: number
+                decimals: 1
+            - field: put_bytes
+              label: Put Bytes (/s)
+              format:
+                type: bytes
+            - field: get_bytes
+              label: Get Bytes (/s)
+              format:
+                type: bytes
+            - field: conn_rate
+              label: Connects (/s)
+              format:
+                type: number
+                decimals: 2
+            - field: topic_rate
+              label: Topic Puts (/s)
+              format:
+                type: number
+                decimals: 2
+            - field: sub_delivery
+              label: Sub Delivery (/s)
+              format:
+                type: number
+                decimals: 2

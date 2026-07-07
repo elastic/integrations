@@ -127,29 +127,54 @@ processors:
       field: json.httpMessage.responseHeaders
       ignore_missing: true
   - remove:
-      tag: remove_http_message_response_headers_empty_placeholder
+      tag: remove_http_message_response_headers_non_kv
       field: json.httpMessage.responseHeaders
-      if: ctx.json.httpMessage?.responseHeaders == "{p}"
+      if: ctx.json?.httpMessage?.responseHeaders instanceof String && ctx.json.httpMessage.responseHeaders.contains(":") == false
+  - gsub:
+      tag: gsub_http_message_response_headers_obs_fold
+      description: >
+        Replace RFC 7230 obs-fold (CRLF + space/tab) with a single SP so each line is a valid
+        Name: value for KV. The json subtree is removed later in the pipeline.
+      field: json.httpMessage.responseHeaders
+      pattern: '\r\n[\t ]+'
+      replacement: ' '
+      ignore_missing: true
   - kv:
-      if: ctx.json.httpMessage?.responseHeaders != ""
       tag: kv_httpMessage_responseHeaders
       field: json.httpMessage.responseHeaders
       target_field: akamai.siem.response.headers
       field_split: '\r\n'
       value_split: ':\s*'
       ignore_missing: true
+      if: ctx.json?.httpMessage?.responseHeaders != null && ctx.json.httpMessage.responseHeaders != ""
+      trim_key: ' '
+      trim_value: ' '
   - urldecode:
       tag: urldecode_httpMessage_requestHeaders
       field: json.httpMessage.requestHeaders
       ignore_missing: true
+  - remove:
+      tag: remove_http_message_request_headers_non_kv
+      field: json.httpMessage.requestHeaders
+      if: ctx.json?.httpMessage?.requestHeaders instanceof String && ctx.json.httpMessage.requestHeaders.contains(":") == false
+  - gsub:
+      tag: gsub_http_message_request_headers_obs_fold
+      description: >
+        Obs-fold to SP before KV (see gsub_http_message_response_headers_obs_fold).
+      field: json.httpMessage.requestHeaders
+      pattern: '\r\n[\t ]+'
+      replacement: ' '
+      ignore_missing: true
   - kv:
-      if: ctx.json.httpMessage?.requestHeaders != ""
       tag: kv_httpMessage_requestHeaders
       field: json.httpMessage.requestHeaders
       target_field: akamai.siem.request.headers
       field_split: '\r\n'
       value_split: ':\s*'
       ignore_missing: true
+      if: ctx.json?.httpMessage?.requestHeaders != null && ctx.json.httpMessage.requestHeaders != ""
+      trim_key: ' '
+      trim_value: ' '
   - script:
       lang: painless
       description: This script builds the `url.full` field out of the available `url.*` parts.

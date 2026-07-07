@@ -1,0 +1,152 @@
+---
+# PostgreSQL OpenTelemetry Active Queries Dashboard
+# Real-time snapshots of active queries from pg_stat_activity
+# Data source: logs-postgresqlreceiver.otel-*
+dashboards:
+  - id: postgresql_otel-active-queries
+    name: '[PostgreSQL OTel] Active Queries'
+    description: Real-time snapshots of active queries from pg_stat_activity. Shows wait events, execution time, and state.
+    controls:
+      - type: options
+        label: Instance
+        data_view: logs-*
+        field: resource.attributes.service.instance.id
+      - type: options
+        label: Database
+        data_view: logs-*
+        field: attributes.db.namespace
+    panels:
+      # Navigation links bar
+      - size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: postgresql_otel-overview
+            - label: Connections
+              dashboard: postgresql_otel-connections
+            - label: Workload
+              dashboard: postgresql_otel-workload
+            - label: Query Performance
+              dashboard: postgresql_otel-query-performance
+            - label: I/O Health
+              dashboard: postgresql_otel-io-health
+            - label: Locks
+              dashboard: postgresql_otel-locks
+            - label: Active Queries
+              dashboard: postgresql_otel-active-queries
+
+      # Markdown description
+      - size: {w: 16, h: 14}
+        position: {x: 0, y: 2}
+        hide_title: true
+        markdown:
+          content: |
+            ## [PostgreSQL OTel] Active Queries
+
+            Real-time snapshots of active queries from pg_stat_activity:
+            - Query text and execution time
+            - Backend state (active, idle, etc.)
+            - Wait events (Lock, IO, LWLock)
+            - Client IP and application name
+
+      # Active Query Count (lnsMetric)
+      - title: Active Query Count
+        hide_title: true
+        size: {w: 32, h: 4}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM logs-postgresqlreceiver.otel-*
+            | WHERE event_name == "db.server.query_sample"
+            | STATS active_count = COUNT(*)
+          primary:
+            field: active_count
+            label: Active Queries
+            format:
+              type: number
+              decimals: 0
+
+      # Queries by State (lnsPie donut)
+      - title: Queries by State
+        size: {w: 16, h: 10}
+        position: {x: 16, y: 6}
+        esql:
+          type: pie
+          query: |
+            FROM logs-postgresqlreceiver.otel-*
+            | WHERE event_name == "db.server.query_sample"
+            | WHERE attributes.postgresql.state IS NOT NULL
+            | STATS count = COUNT(*) BY attributes.postgresql.state
+            | SORT count DESC
+            | LIMIT 10
+          metrics:
+            - field: count
+              label: count
+              format:
+                type: number
+                decimals: 0
+          breakdowns:
+            - field: attributes.postgresql.state
+              label: State
+          appearance:
+            donut: medium
+
+      # Queries by Wait Event Type (lnsPie donut)
+      - title: Queries by Wait Event Type
+        size: {w: 16, h: 10}
+        position: {x: 32, y: 6}
+        esql:
+          type: pie
+          query: |
+            FROM logs-postgresqlreceiver.otel-*
+            | WHERE event_name == "db.server.query_sample"
+            | WHERE attributes.postgresql.wait_event_type IS NOT NULL AND attributes.postgresql.wait_event_type != ""
+            | STATS count = COUNT(*) BY attributes.postgresql.wait_event_type
+            | SORT count DESC
+            | LIMIT 10
+          metrics:
+            - field: count
+              label: count
+              format:
+                type: number
+                decimals: 0
+          breakdowns:
+            - field: attributes.postgresql.wait_event_type
+              label: Wait Event Type
+          appearance:
+            donut: medium
+
+      # Active Queries Table (lnsDatatable)
+      - title: Active Queries Table
+        size: {w: 48, h: 18}
+        position: {x: 0, y: 16}
+        esql:
+          type: datatable
+          query: |
+            FROM logs-postgresqlreceiver.otel-*
+            | WHERE event_name == "db.server.query_sample"
+            | KEEP @timestamp, attributes.db.namespace, attributes.db.query.text, attributes.postgresql.state, attributes.postgresql.total_exec_time, attributes.postgresql.wait_event_type, attributes.postgresql.wait_event, attributes.user.name, attributes.network.peer.address, attributes.postgresql.application_name
+            | SORT @timestamp DESC
+            | LIMIT 100
+          breakdowns:
+            - field: "@timestamp"
+              label: Time
+            - field: attributes.db.namespace
+              label: Database
+            - field: attributes.db.query.text
+              label: Query
+            - field: attributes.postgresql.state
+              label: State
+            - field: attributes.postgresql.wait_event_type
+              label: Wait Type
+            - field: attributes.postgresql.wait_event
+              label: Wait Event
+          metrics:
+            - field: attributes.postgresql.total_exec_time
+              label: Exec Time (ms)
+              format:
+                type: number
+                decimals: 2

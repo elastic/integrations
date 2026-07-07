@@ -64,6 +64,60 @@ rules:
     query_params:
       version: "2024-04-29"
       sort_order: ASC
+      events: "org.project.issue.create"
+      cursor: null
+    responses:
+      - status_code: 200
+        headers:
+          X-Ratelimit-Limit: ["100, 100;w=1;name=\"per_second\", 6000;w=60;name=\"per_minute\""]
+          X-Ratelimit-Remaining: ["99"]
+          X-Ratelimit-Reset: ["60"]
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "items": [
+                {
+                  "content": {
+                    "action": "Returned from analysis"
+                  },
+                  "created": "2024-05-15T16:34:14.144Z",
+                  "event": "org.project.issue.create",
+                  "org_id": "0de7b2d6-c1da-46aa-887e-1886f96770d4",
+                  "project_id": "d2bf0629-84a7-4b0b-b435-f49a87f0720c"
+                },
+                {
+                  "content": {
+                    "action": "Saved to DB",
+                    "issueCounts": {
+                      "sast": {
+                        "high": 3,
+                        "low": 101,
+                        "medium": 45
+                      }
+                    }
+                  },
+                  "created": "2024-05-15T16:34:15.251Z",
+                  "event": "org.project.issue.create",
+                  "org_id": "0de7b2d6-c1da-46aa-887e-1886f96770d4",
+                  "project_id": "d2bf0629-84a7-4b0b-b435-f49a87f0720c"
+                }
+              ],
+              "type": "audit_log_search"
+            },
+            "jsonapi": {
+              "version": "1.0"
+            },
+            "links": {}
+          }
+          `}}
+  - path: /rest/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4/audit_logs/search
+    methods: ["GET"]
+    request_headers:
+      authorization: xxxxxx
+    query_params:
+      version: "2024-04-29"
+      sort_order: ASC
       cursor: null
     responses:
       - status_code: 200

@@ -1,0 +1,58 @@
+{
+  "attributes": {
+    "name": "[MySQL OTel] Slow queries 99.0% rolling 30 days",
+    "description": "This SLO tracks slow query count via mysql.query.slow.count, ensuring that 99.0% of 1-minute time intervals show fewer than 10 slow queries per minute over a rolling period of 30 days. Slow queries indicate query performance degradation; keeping the rate low maintains responsive database serving.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"mysqlreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "mysql.query.slow.count",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "mysql.query.slow.count",
+              "filter": ""
+            }
+          ],
+          "equation": "A - B",
+          "comparator": "LT",
+          "threshold": 10
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "mysql",
+      "otel"
+    ],
+    "groupBy": "resource.attributes.mysql.instance.endpoint",
+    "artifacts": {
+      "dashboards": [
+        { "id": "mysql_otel-233fa1a2-7c05-46b9-8ae6-112d42610e12" },
+        { "id": "mysql_otel-71977e60-f126-4c18-8769-639e686585a3" },
+        { "id": "mysql_otel-14f9bee0-b03e-4e6d-b386-c89d5e7589c8" },
+        { "id": "mysql_otel-49452773-8358-4394-827e-d15d1e3f8467" }
+      ]
+    }
+  },
+  "id": "mysql_otel-slow-queries-99.0-Rolling30Days",
+  "type": "slo_template"
+}

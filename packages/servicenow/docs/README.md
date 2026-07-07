@@ -11,6 +11,11 @@ The ServiceNow integration can be used in three different modes to collect logs:
 - **AWS S3 SQS mode**: ServiceNow writes data to S3; S3 sends a notification of a new object to SQS; the Elastic Agent receives the notification from SQS and then reads the S3 object. Multiple agents can be used in this mode.
 - **REST API mode**: ServiceNow offers table APIs to retrieve data from its tables; the Elastic Agent polls these APIs to list their contents and read any new data. Visit this [page](https://developer.servicenow.com/dev.do#!/reference/api/washingtondc/rest/c_TableAPI#table-GET) for additional information about REST APIs.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Compatibility
 
 This module has been tested with the latest(updated as of August 1, 2024) version of Xanadu on ServiceNow.
@@ -145,40 +150,26 @@ An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-10-24T11:55:59.348Z",
+    "@timestamp": "2024-09-23T22:39:40.000-07:00",
     "agent": {
-        "ephemeral_id": "a04ce8bc-c0ad-47b7-83f2-4620529cd218",
-        "id": "fd7cedc6-351f-41d3-9ae4-f2326152c6bc",
-        "name": "elastic-agent-32192",
+        "ephemeral_id": "8f6f1c70-5461-4b15-bdec-93d6fbba17ae",
+        "id": "fcd730ff-e4b0-43f9-8dc8-3b27ad8c5357",
+        "name": "elastic-agent-66378",
         "type": "filebeat",
-        "version": "8.16.5"
-    },
-    "aws": {
-        "s3": {
-            "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-servicenow-event-bucket-94298",
-                "name": "elastic-package-servicenow-event-bucket-94298"
-            },
-            "object": {
-                "key": "test-event.log"
-            }
-        }
-    },
-    "cloud": {
-        "region": "us-east-1"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "servicenow.event",
-        "namespace": "32388",
+        "namespace": "69923",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "fd7cedc6-351f-41d3-9ae4-f2326152c6bc",
+        "id": "fcd730ff-e4b0-43f9-8dc8-3b27ad8c5357",
         "snapshot": false,
-        "version": "8.16.5"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -186,45 +177,98 @@ An example event for `event` looks as following:
             "configuration",
             "threat"
         ],
+        "created": "2016-12-12T15:19:57.000Z",
         "dataset": "servicenow.event",
-        "ingested": "2025-10-24T11:56:00Z",
+        "id": "1c741bd70b2322007518478d83673af3",
+        "ingested": "2026-03-12T20:18:57Z",
         "kind": "event",
-        "original": "{\"table_name\":\"incident\",\"expected_start\":{\"display_value\":\"2015-08-11 02:07:57 PM\",\"value\":\"2015-08-11 14:07:57\"},\"reopened_time\":{\"display_value\":\"2015-08-11 09:07:57 PM\",\"value\":\"2015-08-11 21:07:57\"}}",
+        "severity": 3,
         "timezone": "America/Los_Angeles",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "aws-s3"
+        "type": "cel"
     },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-servicenow-event-bucket-94298.s3.us-east-1.amazonaws.com/test-event.log"
-        },
-        "offset": 1
+    "related": {
+        "user": [
+            "David Loo",
+            "Joe Employee",
+            "employee",
+            "admin"
+        ]
     },
     "servicenow": {
         "event": {
-            "expected_start": {
-                "display_value": "2015-08-11T14:07:57.000-07:00",
-                "value": "2015-08-11T14:07:57.000Z"
+            "activity_due": {
+                "display_value": "2016-12-12T17:26:36.000-08:00",
+                "value": "2016-12-13T01:26:36.000Z"
             },
-            "reopened_time": {
-                "display_value": "2015-08-11T21:07:57.000-07:00",
-                "value": "2015-08-11T21:07:57.000Z"
+            "assigned_to": {
+                "display_value": "David Loo",
+                "value": "5137153cc611227c000bbd1bd8cd2007"
+            },
+            "closed_at": {
+                "display_value": "2016-12-13T18:46:44.000-08:00",
+                "value": "2016-12-14T02:46:44.000Z"
+            },
+            "opened_at": {
+                "display_value": "2016-12-12T07:19:57.000-08:00",
+                "value": "2016-12-12T15:19:57.000Z"
+            },
+            "opened_by": {
+                "value": "681ccaf9c0a8016400b98a06818d57c7"
+            },
+            "priority": {
+                "display_value": "3 - Moderate",
+                "value": 3
+            },
+            "severity": {
+                "display_value": "3 - Low"
+            },
+            "state": {
+                "display_value": "Closed",
+                "value": "7"
+            },
+            "sys_created_by": {
+                "display_value": "employee",
+                "value": "employee"
+            },
+            "sys_created_on": {
+                "display_value": "2016-12-12T07:19:57.000-08:00"
+            },
+            "sys_domain": {
+                "display_value": "global",
+                "value": "global"
+            },
+            "sys_domain_path": {
+                "display_value": "/",
+                "value": "/"
+            },
+            "sys_id": {
+                "value": "1c741bd70b2322007518478d83673af3"
+            },
+            "sys_updated_by": {
+                "display_value": "admin",
+                "value": "admin"
+            },
+            "sys_updated_on": {
+                "display_value": "2024-09-23T22:39:40.000-07:00",
+                "value": "2024-09-24T05:39:40.000Z"
             },
             "table_name": "incident"
         }
     },
     "tags": [
-        "collect_sqs_logs",
-        "hide_sensitive",
-        "preserve_original_event",
         "incident",
+        "hide_sensitive",
         "forwarded",
         "servicenow-event"
-    ]
+    ],
+    "user": {
+        "name": "Joe Employee"
+    }
 }
 ```
 

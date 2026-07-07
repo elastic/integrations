@@ -1,0 +1,489 @@
+dashboards:
+  - id: ibmmq_otel-overview
+    name: '[IBM MQ OTel] Overview'
+    minimum_kibana_version: '8.18.0'
+    description: >-
+      High-level health overview of IBM MQ queue managers showing golden signals:
+      message throughput, transaction health, API error rates, log performance,
+      and resource utilization.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+    filters:
+      - field: data_stream.dataset
+        equals: ibmmq.otel
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: ibmmq_otel-overview
+            - label: Message Traffic
+              dashboard: ibmmq_otel-message-traffic
+            - label: Error Analysis
+              dashboard: ibmmq_otel-error-analysis
+            - label: Resources & Performance
+              dashboard: ibmmq_otel-resources
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [IBM MQ OTel] Overview
+
+            This dashboard provides a high-level health view of IBM MQ queue managers:
+            - Message put and get throughput rates
+            - Transaction commit and rollback activity
+            - Failed API operation rates
+            - Log write latency and filesystem capacity
+            - CPU load and resource utilization
+            - FDC file generation (internal errors)
+
+      # ─── KPI Row 1 ────────────────────────────────────────────────────
+      - title: Message Put Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_mqput_mqput1_total IS NOT NULL
+            - STATS put_rate = SUM(RATE(ibmmq_qmgr_mqput_mqput1_total))
+          primary:
+            field: put_rate
+            label: Put Rate
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: Message Get Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_destructive_get_total IS NOT NULL
+            - STATS get_rate = SUM(RATE(ibmmq_qmgr_destructive_get_total))
+          primary:
+            field: get_rate
+            label: Get Rate
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: Connection Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_mqconn_mqconnx_total IS NOT NULL
+            - STATS conn_rate = SUM(RATE(ibmmq_qmgr_mqconn_mqconnx_total))
+          primary:
+            field: conn_rate
+            label: Connections
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: Commit Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_commit_total IS NOT NULL
+            - STATS commit_rate = SUM(RATE(ibmmq_qmgr_commit_total))
+          primary:
+            field: commit_rate
+            label: Commits
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      # ─── KPI Row 2 ────────────────────────────────────────────────────
+      - title: Failed Operations Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              f_put = SUM(RATE(ibmmq_qmgr_failed_mqput_total)),
+              f_put1 = SUM(RATE(ibmmq_qmgr_failed_mqput1_total)),
+              f_get = SUM(RATE(ibmmq_qmgr_failed_mqget_total)),
+              f_conn = SUM(RATE(ibmmq_qmgr_failed_mqconn_mqconnx_total)),
+              f_open = SUM(RATE(ibmmq_qmgr_failed_mqopen_total))
+            - >-
+              EVAL failed_rate = COALESCE(f_put, 0) + COALESCE(f_put1, 0)
+              + COALESCE(f_get, 0) + COALESCE(f_conn, 0) + COALESCE(f_open, 0)
+          primary:
+            field: failed_rate
+            label: Failed Ops
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: Log Write Latency
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_log_write_latency_seconds IS NOT NULL
+            - STATS latency_s = MAX(LAST_OVER_TIME(ibmmq_qmgr_log_write_latency_seconds))
+            - EVAL latency_ms = ROUND(latency_s * 1000, 3)
+          primary:
+            field: latency_ms
+            label: Log Latency
+            format:
+              type: number
+              decimals: 3
+              suffix: " ms"
+
+      - title: Log FS Free
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_log_file_system_free_space_percentage IS NOT NULL
+            - STATS free_pct = MIN(LAST_OVER_TIME(ibmmq_qmgr_log_file_system_free_space_percentage))
+          primary:
+            field: free_pct
+            label: Log FS Free
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+
+      - title: FDC Files
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_fdc_files IS NOT NULL
+            - STATS fdc_count = SUM(LAST_OVER_TIME(ibmmq_qmgr_fdc_files))
+          primary:
+            field: fdc_count
+            label: FDC Files
+            format:
+              type: number
+              decimals: 0
+
+      # ─── Message Throughput ────────────────────────────────────────────
+      - title: Message Throughput Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              put_rate = SUM(RATE(ibmmq_qmgr_mqput_mqput1_total)),
+              get_rate = SUM(RATE(ibmmq_qmgr_destructive_get_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: put_rate
+              label: Put Rate
+              format:
+                type: number
+                suffix: " /s"
+            - field: get_rate
+              label: Get Rate
+              format:
+                type: number
+                suffix: " /s"
+          legend:
+            visible: show
+            position: right
+
+      # ─── Transaction Health ────────────────────────────────────────────
+      - title: Transaction Health Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              commit_rate = SUM(RATE(ibmmq_qmgr_commit_total)),
+              rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: commit_rate
+              label: Commits
+              format:
+                type: number
+                suffix: " /s"
+            - field: rollback_rate
+              label: Rollbacks
+              format:
+                type: number
+                suffix: " /s"
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: Commits
+                color: '#54b399'
+              - value: Rollbacks
+                color: '#cc5642'
+          legend:
+            visible: show
+            position: right
+
+      # ─── Failed Operations ─────────────────────────────────────────────
+      - title: Failed Operations Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              failed_put = SUM(RATE(ibmmq_qmgr_failed_mqput_total)),
+              failed_get = SUM(RATE(ibmmq_qmgr_failed_mqget_total)),
+              failed_conn = SUM(RATE(ibmmq_qmgr_failed_mqconn_mqconnx_total)),
+              failed_open = SUM(RATE(ibmmq_qmgr_failed_mqopen_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: failed_put
+              label: Failed Put
+            - field: failed_get
+              label: Failed Get
+            - field: failed_conn
+              label: Failed Connect
+            - field: failed_open
+              label: Failed Open
+          legend:
+            visible: show
+            position: right
+
+      # ─── Log Write Latency ─────────────────────────────────────────────
+      - title: Log Write Latency Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_log_write_latency_seconds IS NOT NULL
+            - >-
+              STATS
+              latency_s = MAX(LAST_OVER_TIME(ibmmq_qmgr_log_write_latency_seconds))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.qmgr
+            - EVAL latency_ms = ROUND(latency_s * 1000, 3)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: latency_ms
+              label: Log Write Latency
+              format:
+                type: number
+                decimals: 3
+                suffix: " ms"
+          breakdown:
+            field: attributes.qmgr
+          legend:
+            visible: show
+            position: right
+
+      # ─── Filesystem Free Space ─────────────────────────────────────────
+      - title: Filesystem Free Space Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              log_fs = AVG(LAST_OVER_TIME(ibmmq_qmgr_log_file_system_free_space_percentage)),
+              qmgr_fs = AVG(LAST_OVER_TIME(ibmmq_qmgr_queue_manager_file_system_free_space_percentage)),
+              errors_fs = AVG(LAST_OVER_TIME(ibmmq_qmgr_errors_file_system_free_space_percentage)),
+              trace_fs = AVG(LAST_OVER_TIME(ibmmq_qmgr_trace_file_system_free_space_percentage))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: log_fs
+              label: Log FS
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: qmgr_fs
+              label: QMgr FS
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: errors_fs
+              label: Errors FS
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: trace_fs
+              label: Trace FS
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          legend:
+            visible: show
+            position: right
+
+      # ─── CPU Load ──────────────────────────────────────────────────────
+      - title: CPU Load Average Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              load_1m = AVG(AVG_OVER_TIME(ibmmq_qmgr_cpu_load_one_minute_average_percentage)),
+              load_5m = AVG(AVG_OVER_TIME(ibmmq_qmgr_cpu_load_five_minute_average_percentage)),
+              load_15m = AVG(AVG_OVER_TIME(ibmmq_qmgr_cpu_load_fifteen_minute_average_percentage))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: load_1m
+              label: 1 min
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: load_5m
+              label: 5 min
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: load_15m
+              label: 15 min
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          legend:
+            visible: show
+            position: right
+
+      # ─── Queue Manager Health Summary ──────────────────────────────────
+      - title: Queue Manager Health Summary
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              put_rate = SUM(RATE(ibmmq_qmgr_mqput_mqput1_total)),
+              get_rate = SUM(RATE(ibmmq_qmgr_destructive_get_total)),
+              failed_put = SUM(RATE(ibmmq_qmgr_failed_mqput_total)),
+              commit_rate = SUM(RATE(ibmmq_qmgr_commit_total)),
+              rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total)),
+              log_latency_s = MAX(LAST_OVER_TIME(ibmmq_qmgr_log_write_latency_seconds)),
+              log_fs_free = MAX(LAST_OVER_TIME(ibmmq_qmgr_log_file_system_free_space_percentage)),
+              fdc = MAX(LAST_OVER_TIME(ibmmq_qmgr_fdc_files)),
+              cpu_1m = MAX(LAST_OVER_TIME(ibmmq_qmgr_cpu_load_one_minute_average_percentage))
+              BY attributes.qmgr
+            - EVAL log_latency_ms = ROUND(log_latency_s * 1000, 3)
+            - >-
+              EVAL rollback_pct = ROUND(CASE(
+              commit_rate + rollback_rate > 0,
+              rollback_rate / (commit_rate + rollback_rate) * 100, 0), 2)
+            - KEEP attributes.qmgr, put_rate, get_rate, failed_put, rollback_pct, log_latency_ms, log_fs_free, fdc, cpu_1m
+            - SORT put_rate DESC
+            - LIMIT 50
+          metrics:
+            - field: attributes.qmgr
+              label: Queue Manager
+            - field: put_rate
+              label: Put Rate (/s)
+              format:
+                type: number
+                decimals: 1
+            - field: get_rate
+              label: Get Rate (/s)
+              format:
+                type: number
+                decimals: 1
+            - field: failed_put
+              label: Failed Put (/s)
+              format:
+                type: number
+                decimals: 2
+            - field: rollback_pct
+              label: Rollback %
+              format:
+                type: number
+                decimals: 2
+                suffix: "%"
+            - field: log_latency_ms
+              label: Log Latency (ms)
+              format:
+                type: number
+                decimals: 3
+            - field: log_fs_free
+              label: Log FS Free %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: fdc
+              label: FDC Files
+              format:
+                type: number
+                decimals: 0
+            - field: cpu_1m
+              label: CPU 1m %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"

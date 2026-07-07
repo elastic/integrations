@@ -1,6 +1,9 @@
 {{- generatedHeader }}
 # Kubelet Stats OpenTelemetry Input Package
 
+> [!WARNING]
+> This package is currently not published to Elastic Package Registry. Any future changes should include a version bump and this package should be republished to be made available.
+
 ## Overview
 
 The Kubelet Stats OpenTelemetry Input Package for Elastic enables collection of Kubernetes node, pod, container, and volume metrics from the Kubelet API using the [kubeletstatsreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/kubeletstatsreceiver).

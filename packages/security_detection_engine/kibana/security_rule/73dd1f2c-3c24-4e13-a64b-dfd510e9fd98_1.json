@@ -1,0 +1,117 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects HTTP GET requests to the link-local instance metadata service (169.254.169.254) for cloud credential or token paths on AWS, GCP, or Azure. Adversaries and vulnerable workloads use scripts, shells, or application runtimes to read IAM role credentials or OAuth tokens from the metadata API. Requires the Network Packet Capture integration with HTTP decoding on ports 80 and 443 and process enrichment enabled so \"process.*\" fields are present.",
+        "false_positives": [
+            "Cloud agents (SSM, waagent, cloud-init, instance connect) and authorized scanners may reach the same paths during provisioning or health checks. Exclude known agent user agents, source hosts, or parent processes after baselining."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-network_traffic.http*",
+            "packetbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Cloud Instance Metadata Credential Path HTTP Request",
+        "note": "## Triage and analysis\n\n### Investigating Cloud Instance Metadata Credential Path HTTP Request\n\nThis rule matches outbound HTTP GETs to `169.254.169.254` where the URL path requests IAM credentials or cloud OAuth\ntokens, filtered to common scripting runtimes, suspicious executable paths, or tool-like user agents.\n\n### Investigation steps\n\n- Confirm `url.path` (AWS `security-credentials`, GCP `oauth2/access_token`, Azure `metadata/identity/oauth2/token`).\n- Review `process.name`, `process.executable`, and `user_agent.original` \u2014 scripted tools and temp-path binaries are higher risk.\n- Check `host.name` or `host.hostname` and whether the workload should run on a cloud VM with an instance profile or managed identity.\n- Correlate with cloud audit or sign-in logs for role assumption or token use shortly after the request.\n- If credentials may have been exposed, rotate the instance role or managed identity and review API activity from that principal.\n\n### False positives\n\n- Platform agents and bootstrap scripts on new instances; allowlist by user agent or host group where validated.\n\n### Response\n\n- Restrict IMDS access (IMDSv2 hop limit, network policy) and remove unnecessary instance permissions.\n- Investigate the host for follow-on credential use or lateral movement.\n\nDeploy the [Network Packet Capture](https://www.elastic.co/docs/reference/integrations/network_traffic) integration via Fleet on cloud workloads.\n\n- Enable **Capture HTTP Traffic** and include ports **80** and **443**.\n- Enable **Monitor Processes** so network events include the process that initiated the connection.\n- Prefer ECS field remapping (`map_to_ecs`) on integration data streams.",
+        "query": "network where event.module == \"network_traffic\" and destination.ip == \"169.254.169.254\" and destination.port == 80 and\nhttp.request.method == \"GET\" and url.path : (\n  \"/latest/meta-data/iam/security-credentials/*\",\n  \"*computeMetadata/v1/instance/service-accounts/*/oauth2/access_token*\",\n  \"*metadata/identity/oauth2/token*\"\n) and (\n  ?process.name : (\n    \"curl\", \"wget\", \"python*\", \"node\", \"bun\", \"php*\", \"ruby\", \"perl\", \"bash\", \"dash\", \"sh\", \"tcsh\", \"tclsh\", \"wish\",\n    \"csh\", \"zsh\", \"ksh\", \"fish\", \"mksh\", \"busybox\",\n    \"bun.exe\", \"node.exe\", \"powershell.exe\", \"cmd.exe\", \"curl.exe\", \"wget.exe\", \"rundll32.exe\", \"w3wp.exe\", \"java*\", \n    \"go\", \"nc\", \"netcat\", \"nginx\", \"apache*\", \"httpd\", \"tomcat*\", \"catalina\", \"spring*\", \"dotnet\", \"gunicorn\", \"uwsgi\", \n    \".*\", \"osascript\"\n  ) or ?process.executable : (\n    \"/tmp/*\", \"/var/tmp/*\", \"/dev/shm/*\", \"/home/*/*\", \"/var/run/*\", \"/run/*\", \"/boot/*\", \"/.*\", \"C:\\\\Users\\\\*\", \"?:\\\\ProgramData\\\\*\"\n  ) or user_agent.original : (\n    \"curl*\", \"wget*\", \"python*\", \"ruby*\", \"Go-http-client*\", \"node*\", \"axios*\", \"undici*\", \"java*\", \"php*\", \"Bun*\",\n    \"Apache-HttpClient*\", \"okhttp*\", \"RestTemplate*\", \"*WindowsPowerShell*\", \"*roadtools*\", \"*fasthttp*\", \"*azurehound*\", \"*bloodhound*\", \"*aiohttp*\"\n  )\n)\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/network_traffic",
+            "https://hackingthe.cloud/aws/general-knowledge/intro_metadata_service/"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "http.request.method",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "url.path",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "73dd1f2c-3c24-4e13-a64b-dfd510e9fd98",
+        "setup": "Deploy the Network Packet Capture integration via Fleet on cloud workloads.\n\nEnable Capture HTTP Traffic and include ports 80 and 443.Enable Monitor Processes so network events include the process that initiated the connection.Prefer ECS field remapping (`map_to_ecs`) on integration data streams.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Network",
+            "OS: Linux",
+            "OS: Windows",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Network Packet Capture",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.005",
+                                "name": "Cloud Instance Metadata API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "73dd1f2c-3c24-4e13-a64b-dfd510e9fd98_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,2221 @@
+{
+    "accessControl": {
+        "accessMode": "default",
+        "owner": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    },
+    "attributes": {
+        "description": "Production monitoring dashboard for Anthropic API token consumption and rate limit visibility across all workspaces and models. Covers token usage (input, cache, output) and rate limit headroom (RPM, ITPM, OTPM) per model. For cost reporting see the dedicated Cost \u0026 Billing dashboard.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "autoApplyFilters": true,
+            "hidePanelBorders": false,
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "layout": "horizontal",
+                    "links": [
+                        {
+                            "destinationRefName": "link_2713ef6a-16f3-431d-9e31-70400fc507a7_dashboard",
+                            "label": "Cost \u0026 Billing",
+                            "options": {
+                                "open_in_new_tab": false,
+                                "use_filters": true,
+                                "use_time_range": true
+                            },
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_9bc1a738-bda0-4378-b40a-50990ef023e5_dashboard",
+                            "label": "Usage \u0026 Rate Limit Monitor",
+                            "options": {
+                                "open_in_new_tab": false,
+                                "use_filters": true,
+                                "use_time_range": true
+                            },
+                            "type": "dashboardLink"
+                        }
+                    ],
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "15025142-deb2-42ac-a47e-df1084ca0c55",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "15025142-deb2-42ac-a47e-df1084ca0c55",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "## Anthropic — Usage \u0026 Rate Limit Monitor\nReal-time and historical visibility into **token consumption** and **rate limit headroom** across all Claude models, workspaces, and service tiers (`standard` · `batch` · `priority`)."
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "db13fbcc-eb0d-4491-9503-6bc104a7c7dd",
+                    "w": 48,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "db13fbcc-eb0d-4491-9503-6bc104a7c7dd",
+                "type": "markdown"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.usage-*-14255dfe7fd4292822e07982bddb8919a950b252c4419d13ec4c3b26d663f284": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.usage-*-14255dfe7fd4292822e07982bddb8919a950b252c4419d13ec4c3b26d663f284",
+                                    "name": "metrics-anthropic_metrics.usage-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.usage-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_input_tokens",
+                                                    "label": "Total Input Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.usage-*-14255dfe7fd4292822e07982bddb8919a950b252c4419d13ec4c3b26d663f284",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.usage-* | STATS total_input_tokens = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.cache_creation_input_tokens)"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.usage-*-14255dfe7fd4292822e07982bddb8919a950b252c4419d13ec4c3b26d663f284",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.usage-* | STATS total_input_tokens = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.cache_creation_input_tokens)"
+                            },
+                            "visualization": {
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "subtitle": "",
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "1a0a20d6-8207-4128-921c-b1a7df1b5318",
+                    "sectionId": "f9a36453-b86b-4bd4-9894-05d4b9f0402c",
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "1a0a20d6-8207-4128-921c-b1a7df1b5318",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.usage-*-@timestamp": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.usage-*-@timestamp",
+                                    "name": "metrics-anthropic_metrics.usage-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-anthropic_metrics.usage-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Output Tokens",
+                                                    "label": "Total Output Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.usage-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.usage-*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| STATS `Total Output Tokens` = SUM(anthropic.usage.output_tokens)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.usage-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.usage-*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| STATS `Total Output Tokens` = SUM(anthropic.usage.output_tokens)"
+                            },
+                            "visualization": {
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "subtitle": "",
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "edff3136-7063-4493-9de0-f05e6f57ef53",
+                    "sectionId": "f9a36453-b86b-4bd4-9894-05d4b9f0402c",
+                    "w": 12,
+                    "x": 12,
+                    "y": 0
+                },
+                "panelIndex": "edff3136-7063-4493-9de0-f05e6f57ef53",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.usage-*-4cf838578d801b25859104a59de46482407b3769d39daa3445a0d19d0142c5f2": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.usage-*-4cf838578d801b25859104a59de46482407b3769d39daa3445a0d19d0142c5f2",
+                                    "name": "metrics-anthropic_metrics.usage-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.usage-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_stacked_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_stacked_x",
+                                                    "fieldName": "@timestamp",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_tokens",
+                                                    "label": "Total Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_breakdown",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.usage.model",
+                                                    "label": "Model",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.usage-*-4cf838578d801b25859104a59de46482407b3769d39daa3445a0d19d0142c5f2",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL AND anthropic.usage.model IS NOT NULL | STATS total_tokens = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.cache_creation_input_tokens) + SUM(anthropic.usage.output_tokens) BY @timestamp = BUCKET(@timestamp, 1 hour), anthropic.usage.model | SORT @timestamp ASC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.usage-*-4cf838578d801b25859104a59de46482407b3769d39daa3445a0d19d0142c5f2",
+                                    "name": "indexpattern-datasource-layer-bar_stacked_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL AND anthropic.usage.model IS NOT NULL | STATS total_tokens = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.cache_creation_input_tokens) + SUM(anthropic.usage.output_tokens) BY @timestamp = BUCKET(@timestamp, 1 hour), anthropic.usage.model | SORT @timestamp ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_stacked_y_0"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "elastic_line_optimized",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "bar_stacked_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessors": [
+                                            "bar_stacked_breakdown"
+                                        ],
+                                        "xAccessor": "bar_stacked_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_stacked_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "minBarHeight": 0,
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Total Tokens Over Time by Model",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "",
+                    "title": "Total Tokens Over Time by Model"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "a1a76cd9-9e35-41e7-a628-f020c37e22a3",
+                    "sectionId": "f9a36453-b86b-4bd4-9894-05d4b9f0402c",
+                    "w": 24,
+                    "x": 0,
+                    "y": 5
+                },
+                "panelIndex": "a1a76cd9-9e35-41e7-a628-f020c37e22a3",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.usage-*-e4521b5e24a547e07344b3e955c23e58ba37bffd897a2373d5d5095d5a170d97": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.usage-*-e4521b5e24a547e07344b3e955c23e58ba37bffd897a2373d5d5095d5a170d97",
+                                    "name": "metrics-anthropic_metrics.usage-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.usage-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_horizontal_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_horizontal_x",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.usage.model",
+                                                    "label": "Model",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_tokens",
+                                                    "label": "Total Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.usage-*-e4521b5e24a547e07344b3e955c23e58ba37bffd897a2373d5d5095d5a170d97",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL AND anthropic.usage.model IS NOT NULL | STATS total_tokens = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.cache_creation_input_tokens) + SUM(anthropic.usage.output_tokens) BY anthropic.usage.model | SORT total_tokens DESC | LIMIT 10"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.usage-*-e4521b5e24a547e07344b3e955c23e58ba37bffd897a2373d5d5095d5a170d97",
+                                    "name": "indexpattern-datasource-layer-bar_horizontal_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL AND anthropic.usage.model IS NOT NULL | STATS total_tokens = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.cache_creation_input_tokens) + SUM(anthropic.usage.output_tokens) BY anthropic.usage.model | SORT total_tokens DESC | LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_horizontal_y_0"
+                                        ],
+                                        "layerId": "bar_horizontal_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "bar_horizontal_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_horizontal_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar_horizontal",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Most Used Models by Total Tokens (Top 10)",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Most Used Models by Total Tokens (Top 10)"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "e9961106-306a-4383-abf3-c48b6a933a71",
+                    "sectionId": "f9a36453-b86b-4bd4-9894-05d4b9f0402c",
+                    "w": 24,
+                    "x": 24,
+                    "y": 5
+                },
+                "panelIndex": "e9961106-306a-4383-abf3-c48b6a933a71",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.usage-*-a1a235fabb106bf758ae705020cc12dd4b8979fa943b7833b401caca8fdbe89e": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.usage-*-a1a235fabb106bf758ae705020cc12dd4b8979fa943b7833b401caca8fdbe89e",
+                                    "name": "metrics-anthropic_metrics.usage-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.usage-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Cache Hit Rate",
+                                                    "label": "Input Token Cache Hit Rate",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.usage-*-a1a235fabb106bf758ae705020cc12dd4b8979fa943b7833b401caca8fdbe89e",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL | STATS uncached = SUM(anthropic.usage.uncached_input_tokens), cached = SUM(anthropic.usage.cached_input_tokens), cache_creation = SUM(anthropic.usage.cache_creation_input_tokens) | EVAL total = uncached + cached + cache_creation, `Cache Hit Rate` = cached * 1.0 / total"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.usage-*-a1a235fabb106bf758ae705020cc12dd4b8979fa943b7833b401caca8fdbe89e",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL | STATS uncached = SUM(anthropic.usage.uncached_input_tokens), cached = SUM(anthropic.usage.cached_input_tokens), cache_creation = SUM(anthropic.usage.cache_creation_input_tokens) | EVAL total = uncached + cached + cache_creation, `Cache Hit Rate` = cached * 1.0 / total"
+                            },
+                            "visualization": {
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "subtitle": "",
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "08fc4cd1-cd85-4dd0-be65-901ed5d94e27",
+                    "sectionId": "f9a36453-b86b-4bd4-9894-05d4b9f0402c",
+                    "w": 12,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "08fc4cd1-cd85-4dd0-be65-901ed5d94e27",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.usage-*-54c0c9a96fe4e69c9edc47161c369ba0157195407c4543a078576d954b9fc7a4": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.usage-*-54c0c9a96fe4e69c9edc47161c369ba0157195407c4543a078576d954b9fc7a4",
+                                    "name": "metrics-anthropic_metrics.usage-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.usage-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Active Workspaces",
+                                                    "label": "Active Workspaces",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.usage-*-54c0c9a96fe4e69c9edc47161c369ba0157195407c4543a078576d954b9fc7a4",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL | STATS `Active Workspaces` = COUNT_DISTINCT(anthropic.usage.workspace_id)"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.usage-*-54c0c9a96fe4e69c9edc47161c369ba0157195407c4543a078576d954b9fc7a4",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL | STATS `Active Workspaces` = COUNT_DISTINCT(anthropic.usage.workspace_id)"
+                            },
+                            "visualization": {
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "subtitle": "",
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "dae94450-823b-4310-9bef-8528ddca2e1c",
+                    "sectionId": "f9a36453-b86b-4bd4-9894-05d4b9f0402c",
+                    "w": 12,
+                    "x": 36,
+                    "y": 0
+                },
+                "panelIndex": "dae94450-823b-4310-9bef-8528ddca2e1c",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.usage-*-92e0cdb6e8833fcec08b4695c1bfa78810a9f11e59298ca6e1e90ac79a7394a7": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.usage-*-92e0cdb6e8833fcec08b4695c1bfa78810a9f11e59298ca6e1e90ac79a7394a7",
+                                    "name": "metrics-anthropic_metrics.usage-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.usage-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_stacked_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_stacked_x",
+                                                    "fieldName": "@timestamp",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "uncached_input",
+                                                    "label": "Uncached Input Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_y_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "cached_input",
+                                                    "label": "Cached Input Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_y_2",
+                                                    "customLabel": true,
+                                                    "fieldName": "cache_creation",
+                                                    "label": "Cache Creation Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_y_3",
+                                                    "customLabel": true,
+                                                    "fieldName": "output",
+                                                    "label": "Output Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.usage-*-92e0cdb6e8833fcec08b4695c1bfa78810a9f11e59298ca6e1e90ac79a7394a7",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.usage-* | STATS uncached_input = SUM(anthropic.usage.uncached_input_tokens), cached_input = SUM(anthropic.usage.cached_input_tokens), cache_creation = SUM(anthropic.usage.cache_creation_input_tokens), output = SUM(anthropic.usage.output_tokens) BY @timestamp = BUCKET(@timestamp, 1 hour) | SORT @timestamp ASC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.usage-*-92e0cdb6e8833fcec08b4695c1bfa78810a9f11e59298ca6e1e90ac79a7394a7",
+                                    "name": "indexpattern-datasource-layer-bar_stacked_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.usage-* | STATS uncached_input = SUM(anthropic.usage.uncached_input_tokens), cached_input = SUM(anthropic.usage.cached_input_tokens), cache_creation = SUM(anthropic.usage.cache_creation_input_tokens), output = SUM(anthropic.usage.output_tokens) BY @timestamp = BUCKET(@timestamp, 1 hour) | SORT @timestamp ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_stacked_y_0",
+                                            "bar_stacked_y_1",
+                                            "bar_stacked_y_2",
+                                            "bar_stacked_y_3"
+                                        ],
+                                        "layerId": "bar_stacked_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "bar_stacked_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_stacked_y_0"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#fcd883",
+                                                "forAccessor": "bar_stacked_y_1"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_stacked_y_2"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#ffc9c2",
+                                                "forAccessor": "bar_stacked_y_3"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "bottom"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Token Usage Over Time (Hourly) — Uncached Input, Cached Input, Cache Creation, Output",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Token Usage Over Time (Hourly) — Uncached Input, Cached Input, Cache Creation, Output"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "4411c826-9473-4567-a052-848ee1d49b30",
+                    "sectionId": "3fc313b7-626c-4251-871b-36b54a13adc3",
+                    "w": 48,
+                    "x": 0,
+                    "y": 10
+                },
+                "panelIndex": "4411c826-9473-4567-a052-848ee1d49b30",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.usage-*-163b0032c0386083dfc166f052b7952fb571429a8297ed9b7f8ff22afdf91cc1": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.usage-*-163b0032c0386083dfc166f052b7952fb571429a8297ed9b7f8ff22afdf91cc1",
+                                    "name": "metrics-anthropic_metrics.usage-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.usage-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_stacked_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_stacked_x",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.usage.service_tier",
+                                                    "label": "Service Tier",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_input",
+                                                    "label": "Input Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_y_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_output",
+                                                    "label": "Output Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.usage-*-163b0032c0386083dfc166f052b7952fb571429a8297ed9b7f8ff22afdf91cc1",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL AND anthropic.usage.service_tier IS NOT NULL | STATS total_input = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens), total_output = SUM(anthropic.usage.output_tokens) BY anthropic.usage.service_tier | SORT total_input DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.usage-*-163b0032c0386083dfc166f052b7952fb571429a8297ed9b7f8ff22afdf91cc1",
+                                    "name": "indexpattern-datasource-layer-bar_stacked_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL AND anthropic.usage.service_tier IS NOT NULL | STATS total_input = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens), total_output = SUM(anthropic.usage.output_tokens) BY anthropic.usage.service_tier | SORT total_input DESC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_stacked_y_0",
+                                            "bar_stacked_y_1"
+                                        ],
+                                        "layerId": "bar_stacked_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "bar_stacked_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_stacked_y_0"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#ffc9c2",
+                                                "forAccessor": "bar_stacked_y_1"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "bottom"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Token Usage by Service Tier — Input vs Output (Stacked)",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Token Usage by Service Tier — Input vs Output (Stacked)"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "55b720be-849b-45bd-8bc3-609b63f8c925",
+                    "sectionId": "3fc313b7-626c-4251-871b-36b54a13adc3",
+                    "w": 24,
+                    "x": 24,
+                    "y": 24
+                },
+                "panelIndex": "55b720be-849b-45bd-8bc3-609b63f8c925",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.usage-*-58e3c293175ce9d51d4d4d2ce3fd21224c100f97b51b3bb1490b428ce36e55e9": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.usage-*-58e3c293175ce9d51d4d4d2ce3fd21224c100f97b51b3bb1490b428ce36e55e9",
+                                    "name": "metrics-anthropic_metrics.usage-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.usage-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_horizontal_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_horizontal_x",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.usage.workspace_id",
+                                                    "label": "Workspace ID",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_tokens",
+                                                    "label": "Total Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.usage-*-58e3c293175ce9d51d4d4d2ce3fd21224c100f97b51b3bb1490b428ce36e55e9",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.usage-* | STATS total_tokens = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.cache_creation_input_tokens) + SUM(anthropic.usage.output_tokens) BY anthropic.usage.workspace_id | SORT total_tokens DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.usage-*-58e3c293175ce9d51d4d4d2ce3fd21224c100f97b51b3bb1490b428ce36e55e9",
+                                    "name": "indexpattern-datasource-layer-bar_horizontal_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.usage-* | STATS total_tokens = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.cache_creation_input_tokens) + SUM(anthropic.usage.output_tokens) BY anthropic.usage.workspace_id | SORT total_tokens DESC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_horizontal_y_0"
+                                        ],
+                                        "layerId": "bar_horizontal_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "bar_horizontal_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_horizontal_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "maxLines": 1,
+                                    "position": "bottom"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar_horizontal",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Total Token Usage by Workspace",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Total Token Usage by Workspace"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "685e1854-21e5-40ff-ba08-e5232b82933d",
+                    "sectionId": "3fc313b7-626c-4251-871b-36b54a13adc3",
+                    "w": 24,
+                    "x": 0,
+                    "y": 36
+                },
+                "panelIndex": "685e1854-21e5-40ff-ba08-e5232b82933d",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.usage-*-fd19e6df4e5166744a54eebff0f9978d66b0be93e81ed9ef831ed22d76dd55f3": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.usage-*-fd19e6df4e5166744a54eebff0f9978d66b0be93e81ed9ef831ed22d76dd55f3",
+                                    "name": "metrics-anthropic_metrics.usage-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.usage-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_stacked_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_stacked_x",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.usage.model",
+                                                    "label": "Model",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "uncached_input",
+                                                    "label": "Uncached Input Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_y_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "cached_input",
+                                                    "label": "Cached Input Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_y_2",
+                                                    "customLabel": true,
+                                                    "fieldName": "cache_creation",
+                                                    "label": "Cache Creation Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_y_3",
+                                                    "customLabel": true,
+                                                    "fieldName": "output",
+                                                    "label": "Output Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.usage-*-fd19e6df4e5166744a54eebff0f9978d66b0be93e81ed9ef831ed22d76dd55f3",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL AND anthropic.usage.model IS NOT NULL | STATS uncached_input = SUM(anthropic.usage.uncached_input_tokens), cached_input = SUM(anthropic.usage.cached_input_tokens), cache_creation = SUM(anthropic.usage.cache_creation_input_tokens), output = SUM(anthropic.usage.output_tokens) BY anthropic.usage.model | SORT uncached_input DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.usage-*-fd19e6df4e5166744a54eebff0f9978d66b0be93e81ed9ef831ed22d76dd55f3",
+                                    "name": "indexpattern-datasource-layer-bar_stacked_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL AND anthropic.usage.model IS NOT NULL | STATS uncached_input = SUM(anthropic.usage.uncached_input_tokens), cached_input = SUM(anthropic.usage.cached_input_tokens), cache_creation = SUM(anthropic.usage.cache_creation_input_tokens), output = SUM(anthropic.usage.output_tokens) BY anthropic.usage.model | SORT uncached_input DESC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_stacked_y_0",
+                                            "bar_stacked_y_1",
+                                            "bar_stacked_y_2",
+                                            "bar_stacked_y_3"
+                                        ],
+                                        "layerId": "bar_stacked_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "bar_stacked_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_stacked_y_0"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#fcd883",
+                                                "forAccessor": "bar_stacked_y_1"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_stacked_y_2"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#ffc9c2",
+                                                "forAccessor": "bar_stacked_y_3"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "bottom"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Total Tokens by Model — Uncached Input, Cached Input, Cache Creation \u0026 Output",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Total Tokens by Model — Uncached Input, Cached Input, Cache Creation \u0026 Output"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "cc10f938-ce28-4e33-aee2-b2f1ef8016ba",
+                    "sectionId": "3fc313b7-626c-4251-871b-36b54a13adc3",
+                    "w": 24,
+                    "x": 0,
+                    "y": 24
+                },
+                "panelIndex": "cc10f938-ce28-4e33-aee2-b2f1ef8016ba",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.usage-*-c7225efedc0fe52d4dac5b07dc97bb29dfeb3870525ed682b1803f491ce42f6e": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.usage-*-c7225efedc0fe52d4dac5b07dc97bb29dfeb3870525ed682b1803f491ce42f6e",
+                                    "name": "metrics-anthropic_metrics.usage-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.usage-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_horizontal_percentage_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_horizontal_percentage_x",
+                                                    "fieldName": "Token Type",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_percentage_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Uncached Input",
+                                                    "label": "Uncached Input",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_percentage_y_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "Cached Input",
+                                                    "label": "Cached Input",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_percentage_y_2",
+                                                    "customLabel": true,
+                                                    "fieldName": "Cache Creation",
+                                                    "label": "Cache Creation",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.usage-*-c7225efedc0fe52d4dac5b07dc97bb29dfeb3870525ed682b1803f491ce42f6e",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL | STATS `Uncached Input` = SUM(anthropic.usage.uncached_input_tokens), `Cached Input` = SUM(anthropic.usage.cached_input_tokens), `Cache Creation` = SUM(anthropic.usage.cache_creation_input_tokens) | EVAL `Token Type` = \"Input Tokens\""
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.usage-*-c7225efedc0fe52d4dac5b07dc97bb29dfeb3870525ed682b1803f491ce42f6e",
+                                    "name": "indexpattern-datasource-layer-bar_horizontal_percentage_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL | STATS `Uncached Input` = SUM(anthropic.usage.uncached_input_tokens), `Cached Input` = SUM(anthropic.usage.cached_input_tokens), `Cache Creation` = SUM(anthropic.usage.cache_creation_input_tokens) | EVAL `Token Type` = \"Input Tokens\""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_horizontal_percentage_y_0",
+                                            "bar_horizontal_percentage_y_1",
+                                            "bar_horizontal_percentage_y_2"
+                                        ],
+                                        "layerId": "bar_horizontal_percentage_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal_percentage_stacked",
+                                        "xAccessor": "bar_horizontal_percentage_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_horizontal_percentage_y_0"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#fcd883",
+                                                "forAccessor": "bar_horizontal_percentage_y_1"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_horizontal_percentage_y_2"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "bottom"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar_horizontal_percentage_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": false
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Cache Efficiency Ratio",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Cache Efficiency Ratio"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "edd5c237-092b-4ea3-bbed-abb9811324d6",
+                    "sectionId": "3fc313b7-626c-4251-871b-36b54a13adc3",
+                    "w": 24,
+                    "x": 24,
+                    "y": 36
+                },
+                "panelIndex": "edd5c237-092b-4ea3-bbed-abb9811324d6",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.usage-*-7bc0a6b8449b51d2bf6e7df239e433a2f4df896cf2920a557e69b67c754302aa": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.usage-*-7bc0a6b8449b51d2bf6e7df239e433a2f4df896cf2920a557e69b67c754302aa",
+                                    "name": "metrics-anthropic_metrics.usage-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.usage-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "datatable_accessor_row_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.usage.model",
+                                                    "label": "Model",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.usage.workspace_id",
+                                                    "label": "Workspace ID",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_2",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.usage.service_tier",
+                                                    "label": "Service Tier",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "uncached_input",
+                                                    "inMetricDimension": true,
+                                                    "label": "Uncached Input Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "cached_input",
+                                                    "inMetricDimension": true,
+                                                    "label": "Cached Input Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_2",
+                                                    "customLabel": true,
+                                                    "fieldName": "cache_creation",
+                                                    "inMetricDimension": true,
+                                                    "label": "Cache Creation Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_3",
+                                                    "customLabel": true,
+                                                    "fieldName": "output_tokens",
+                                                    "inMetricDimension": true,
+                                                    "label": "Output Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.usage-*-7bc0a6b8449b51d2bf6e7df239e433a2f4df896cf2920a557e69b67c754302aa",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.usage-* | STATS uncached_input = SUM(anthropic.usage.uncached_input_tokens), cached_input = SUM(anthropic.usage.cached_input_tokens), cache_creation = SUM(anthropic.usage.cache_creation_input_tokens), output_tokens = SUM(anthropic.usage.output_tokens) BY anthropic.usage.model, anthropic.usage.workspace_id, anthropic.usage.service_tier | SORT uncached_input DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.usage-*-7bc0a6b8449b51d2bf6e7df239e433a2f4df896cf2920a557e69b67c754302aa",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.usage-* | STATS uncached_input = SUM(anthropic.usage.uncached_input_tokens), cached_input = SUM(anthropic.usage.cached_input_tokens), cache_creation = SUM(anthropic.usage.cache_creation_input_tokens), output_tokens = SUM(anthropic.usage.output_tokens) BY anthropic.usage.model, anthropic.usage.workspace_id, anthropic.usage.service_tier | SORT uncached_input DESC"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "datatable_accessor_row_0",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_row_1",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_row_2",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_0",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "summaryLabel": "Total",
+                                        "summaryRow": "sum"
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_1",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "summaryLabel": "Total",
+                                        "summaryRow": "sum"
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_2",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "summaryLabel": "Total",
+                                        "summaryRow": "sum"
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_3",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "summaryLabel": "Total",
+                                        "summaryRow": "sum"
+                                    }
+                                ],
+                                "density": "compact",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "showRowNumbers": true,
+                                "sorting": {
+                                    "columnId": "datatable_accessor_metric_1",
+                                    "direction": "desc"
+                                }
+                            }
+                        },
+                        "title": "Token Usage by Model, Workspace, and Service Tier",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "title": "Token Usage by Model, Workspace, and Service Tier"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "75134cba-9a53-483e-98d1-35c011412d4c",
+                    "sectionId": "3fc313b7-626c-4251-871b-36b54a13adc3",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "75134cba-9a53-483e-98d1-35c011412d4c",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.rate_limit-*-cfee86ef793a8617e6420eda7b68268026331373c67701111356977c3332a523": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.rate_limit-*-cfee86ef793a8617e6420eda7b68268026331373c67701111356977c3332a523",
+                                    "name": "metrics-anthropic_metrics.rate_limit-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.rate_limit-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "datatable_accessor_row_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Model",
+                                                    "label": "Model",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "ITPM — cached + uncached",
+                                                    "inMetricDimension": true,
+                                                    "label": "ITPM — Cache Aware Limit",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "OTPM",
+                                                    "inMetricDimension": true,
+                                                    "label": "OTPM Limit",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_2",
+                                                    "customLabel": true,
+                                                    "fieldName": "RPM",
+                                                    "inMetricDimension": true,
+                                                    "label": "RPM Limit",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.rate_limit-*-cfee86ef793a8617e6420eda7b68268026331373c67701111356977c3332a523",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.rate_limit-* | WHERE anthropic.rate_limit.group_type == \"model_group\" | MV_EXPAND anthropic.rate_limit.models | WHERE anthropic.rate_limit.models IS NOT NULL | STATS itpm_cache = MAX(anthropic.rate_limit.input_tokens_per_minute_cache_aware), otpm = MAX(anthropic.rate_limit.output_tokens_per_minute), rpm = MAX(anthropic.rate_limit.requests_per_minute) BY model = anthropic.rate_limit.models | RENAME itpm_cache AS `ITPM — cached + uncached`, otpm AS `OTPM`, rpm AS `RPM`, model AS `Model` | SORT `Model` ASC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.rate_limit-*-cfee86ef793a8617e6420eda7b68268026331373c67701111356977c3332a523",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.rate_limit-* | WHERE anthropic.rate_limit.group_type == \"model_group\" | MV_EXPAND anthropic.rate_limit.models | WHERE anthropic.rate_limit.models IS NOT NULL | STATS itpm_cache = MAX(anthropic.rate_limit.input_tokens_per_minute_cache_aware), otpm = MAX(anthropic.rate_limit.output_tokens_per_minute), rpm = MAX(anthropic.rate_limit.requests_per_minute) BY model = anthropic.rate_limit.models | RENAME itpm_cache AS `ITPM — cached + uncached`, otpm AS `OTPM`, rpm AS `RPM`, model AS `Model` | SORT `Model` ASC"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_0",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_0",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_1",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_2",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "density": "compact",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "showRowNumbers": false,
+                                "sorting": {
+                                    "columnId": "datatable_accessor_row_0",
+                                    "direction": "asc"
+                                }
+                            }
+                        },
+                        "title": "Rate Limit Ceilings — per Minute",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "title": "Rate Limit Ceilings — per Minute"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "5836661d-57c7-4813-b73e-4e620a22d866",
+                    "sectionId": "2d39c42b-d591-4f02-8801-25f4f4ecd370",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "5836661d-57c7-4813-b73e-4e620a22d866",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.usage-*-2172dd8c9f8160d26874691eba7939b875066244f8f90196d17cb39e6fec5a14": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.usage-*-2172dd8c9f8160d26874691eba7939b875066244f8f90196d17cb39e6fec5a14",
+                                    "name": "metrics-anthropic_metrics.usage-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.usage-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "datatable_accessor_row_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.usage.model",
+                                                    "label": "Model",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "actual_itpm",
+                                                    "inMetricDimension": true,
+                                                    "label": "Actual ITPM",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "actual_otpm",
+                                                    "inMetricDimension": true,
+                                                    "label": "Actual OTPM",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.usage-*-2172dd8c9f8160d26874691eba7939b875066244f8f90196d17cb39e6fec5a14",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL AND anthropic.usage.model IS NOT NULL | STATS actual_itpm = ROUND((SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.cache_creation_input_tokens)) / 60, 0), actual_otpm = ROUND(SUM(anthropic.usage.output_tokens) / 60, 0) BY anthropic.usage.model | SORT anthropic.usage.model ASC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.usage-*-2172dd8c9f8160d26874691eba7939b875066244f8f90196d17cb39e6fec5a14",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL AND anthropic.usage.model IS NOT NULL | STATS actual_itpm = ROUND((SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.cache_creation_input_tokens)) / 60, 0), actual_otpm = ROUND(SUM(anthropic.usage.output_tokens) / 60, 0) BY anthropic.usage.model | SORT anthropic.usage.model ASC"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "datatable_accessor_row_0",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_metric_0",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_metric_1",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "sorting": {
+                                    "columnId": "datatable_accessor_row_0",
+                                    "direction": "asc"
+                                }
+                            }
+                        },
+                        "title": "Actual Consumption — per Minute (avg)",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "title": "Actual Consumption — per Minute (avg)"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "46e36076-616a-4e5c-adf8-99729beaf903",
+                    "sectionId": "2d39c42b-d591-4f02-8801-25f4f4ecd370",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "46e36076-616a-4e5c-adf8-99729beaf903",
+                "type": "vis"
+            }
+        ],
+        "pinned_panels": {
+            "panels": {
+                "4f50f5b7-2614-40e4-a72c-4858139ac6cd": {
+                    "config": {
+                        "dataViewRefName": "4f50f5b7-2614-40e4-a72c-4858139ac6cd:optionsListDataView",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "field_name": "anthropic.usage.workspace_id",
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Workspace",
+                        "use_global_filters": true
+                    },
+                    "grow": false,
+                    "order": 0,
+                    "type": "options_list_control",
+                    "width": "medium"
+                },
+                "e82df82c-849c-4349-ac75-edc58ab35d70": {
+                    "config": {
+                        "dataViewRefName": "e82df82c-849c-4349-ac75-edc58ab35d70:optionsListDataView",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "field_name": "anthropic.usage.model",
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Model",
+                        "use_global_filters": true
+                    },
+                    "grow": false,
+                    "order": 1,
+                    "type": "options_list_control",
+                    "width": "medium"
+                }
+            }
+        },
+        "refreshInterval": {
+            "pause": true,
+            "value": 0
+        },
+        "sections": [
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "f9a36453-b86b-4bd4-9894-05d4b9f0402c",
+                    "y": 5
+                },
+                "title": "📊 Executive Overview"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "3fc313b7-626c-4251-871b-36b54a13adc3",
+                    "y": 6
+                },
+                "title": "🔢 Token Usage"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "2d39c42b-d591-4f02-8801-25f4f4ecd370",
+                    "y": 7
+                },
+                "title": "🔴 Capacity Headroom — Actual Consumption vs Limit"
+            }
+        ],
+        "timeFrom": "now-3d",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[Anthropic] Usage \u0026 Rate Limit Monitor"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-05-28T15:36:37.857Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "anthropic_metrics-602de168-1b42-4dd6-a463-9c4878e5db94",
+    "references": [
+        {
+            "id": "anthropic_metrics-2bd61c2c-4418-458f-a79e-12a74c34b2f0",
+            "name": "15025142-deb2-42ac-a47e-df1084ca0c55:link_2713ef6a-16f3-431d-9e31-70400fc507a7_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "anthropic_metrics-602de168-1b42-4dd6-a463-9c4878e5db94",
+            "name": "15025142-deb2-42ac-a47e-df1084ca0c55:link_9bc1a738-bda0-4378-b40a-50990ef023e5_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "metrics-*",
+            "name": "4f50f5b7-2614-40e4-a72c-4858139ac6cd:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "e82df82c-849c-4349-ac75-edc58ab35d70:optionsListDataView",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}

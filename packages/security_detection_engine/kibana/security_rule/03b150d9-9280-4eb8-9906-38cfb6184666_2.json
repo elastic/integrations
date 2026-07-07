@@ -1,0 +1,124 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the first time a Python process accesses sensitive credential files on a given host. This behavior may indicate post-exploitation credential theft via a malicious Python script, compromised dependency, or malicious model file deserialization. Legitimate Python processes do not typically access credential files such as SSH keys, AWS credentials, browser cookies, Kerberos tickets, or keychain databases, so a first occurrence is a strong indicator of compromise.",
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-endpoint.events.file-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "First Time Python Accessed Sensitive Credential Files",
+        "new_terms_fields": [
+            "host.id",
+            "file.path"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating First Time Python Accessed Sensitive Credential Files\n\nAttackers who achieve Python code execution \u2014 whether through malicious scripts, compromised dependencies, or model file deserialization (e.g., pickle/PyTorch `__reduce__`) \u2014 often target sensitive credential files such as SSH keys, cloud provider credentials, browser session cookies, and macOS keychain data. Since legitimate Python processes do not typically access these files, a first occurrence from a Python process is highly suspicious.\n\nThis rule leverages the Elastic Defend sensitive file `open` event, which is only collected for known sensitive file paths, combined with the New Terms rule type to alert on the first time a specific credential file is accessed by Python on a given host within a 7-day window.\n\n### Possible investigation steps\n\n- Examine the Python process command line and arguments to identify the script or command that triggered the file access.\n- Determine if the Python process was loading a model file (look for `torch.load`, `pickle.load`), running a standalone script, or executing via a compromised dependency.\n- Review the specific credential file that was accessed and assess the potential impact (SSH keys enable lateral movement, AWS credentials enable cloud access, browser cookies enable session hijacking).\n- Check for outbound network connections from the same process tree that may indicate credential exfiltration.\n- Investigate the origin of any recently downloaded scripts, packages, or model files on the host.\n- Look for file creation events in `/tmp/` or other staging directories that may contain copies of the stolen credentials.\n\n### False positive analysis\n\n- Python-based secret management tools (e.g., `aws-cli`, `gcloud`) legitimately access credential files. Consider excluding known trusted executables by process path.\n- SSH automation scripts using `paramiko` or `fabric` may read SSH keys. Evaluate whether the access pattern matches known automation workflows.\n- Security scanning tools running Python may enumerate credential files as part of their assessment.\n\n### Response and remediation\n\n- Immediately rotate any credentials that were potentially accessed (SSH keys, AWS access keys, cloud tokens).\n- Quarantine the Python process and investigate the source script, package, or model file that triggered the access.\n- If a malicious file is confirmed, identify all hosts where it may have been distributed.\n- Review outbound network connections from the host around the time of the credential access to check for exfiltration.\n- Consider implementing `weights_only=True` enforcement for PyTorch model loading across the environment.\n",
+        "query": "event.category:file and host.os.type:macos and event.action:open and\nprocess.name:python*\n",
+        "references": [
+            "https://blog.trailofbits.com/2024/06/11/exploiting-ml-models-with-pickle-file-attacks-part-1/",
+            "https://github.com/trailofbits/fickling"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "03b150d9-9280-4eb8-9906-38cfb6184666",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Domain: LLM"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1539",
+                        "name": "Steal Web Session Cookie",
+                        "reference": "https://attack.mitre.org/techniques/T1539/"
+                    },
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.001",
+                                "name": "Credentials In Files",
+                                "reference": "https://attack.mitre.org/techniques/T1552/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1555",
+                        "name": "Credentials from Password Stores",
+                        "reference": "https://attack.mitre.org/techniques/T1555/",
+                        "subtechnique": [
+                            {
+                                "id": "T1555.001",
+                                "name": "Keychain",
+                                "reference": "https://attack.mitre.org/techniques/T1555/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1558",
+                        "name": "Steal or Forge Kerberos Tickets",
+                        "reference": "https://attack.mitre.org/techniques/T1558/",
+                        "subtechnique": [
+                            {
+                                "id": "T1558.005",
+                                "name": "Ccache Files",
+                                "reference": "https://attack.mitre.org/techniques/T1558/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 2
+    },
+    "id": "03b150d9-9280-4eb8-9906-38cfb6184666_2",
+    "type": "security-rule"
+}

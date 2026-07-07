@@ -1,0 +1,184 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: dataminr_pulse
+      name: test-custom-config-dataminr_pulse
+      streams:
+        - config_version: 2
+          data_stream:
+            dataset: dataminr_pulse.alerts
+          interval: 15m
+          max_executions: 1000
+          processors:
+            - add_fields:
+                fields:
+                    custom_field: custom_value
+                target: ""
+          program: |
+            // Authenticate with Dataminr's non-standard OAuth endpoint
+            // (dmaToken response) when the token is missing or about to
+            // expire, then fetch alerts. Entity extraction and ECS mapping
+            // are handled entirely by the ingest pipeline.
+            state.with(
+              (
+                state.access_token == "" || int(state.expires_at) > 0 && now >= timestamp(0) + duration(string(int(state.expires_at)) + "ms") - duration(state.token_expiry_buffer)
+              ).as(need_auth,
+                (
+                  need_auth ?
+                    post(
+                      state.auth_url.trim_right("/"),
+                      "application/x-www-form-urlencoded",
+                      {
+                        "grant_type": ["api_key"],
+                        "client_id": [state.client_id],
+                        "client_secret": [state.client_secret],
+                      }.format_query()
+                    ).as(resp,
+                      (resp.StatusCode == 200) ?
+                        bytes(resp.Body).decode_json().as(body,
+                          (has(body.dmaToken) && body.dmaToken != "") ?
+                            {
+                              "token": string(body.dmaToken),
+                              "expires": int(body.?expire.orValue(0)),
+                            }
+                          :
+                            {
+                              "error": "POST " + state.auth_url.trim_right("/") + ": no token in response",
+                            }
+                        )
+                      :
+                        {
+                          "error": "POST " + state.auth_url.trim_right("/") + ": " + (
+                            (size(resp.Body) != 0) ?
+                              string(resp.Body)
+                            :
+                              string(resp.StatusCode)
+                          ),
+                        }
+                    )
+                  :
+                    {
+                      "token": state.access_token,
+                      "expires": state.expires_at,
+                    }
+                ).as(auth,
+                  has(auth.error) ?
+                    {"events": [{"error": {"message": auth.error}}]}
+                  :
+                    (
+                      (state.next_cursor != "") ?
+                        (state.base_url.trim_right("/") + state.next_cursor)
+                      :
+                        state.url.trim_right("/") + "?" + {"pageSize": [string(state.page_size)]}.format_query()
+                    ).as(req_url,
+                      request("GET", req_url).with(
+                        {
+                          "Header": {
+                            "Authorization": ["Bearer " + auth.token],
+                          },
+                        }
+                      ).do_request().as(resp,
+                        (resp.StatusCode == 401) ?
+                          {
+                            "events": [
+                              {
+                                "error": {
+                                  "message": "GET " + req_url + ": 401 Unauthorized",
+                                },
+                              },
+                            ],
+                            "access_token": "",
+                            "expires_at": 0,
+                            "want_more": true,
+                          }
+                        : (resp.StatusCode != 200) ?
+                          {
+                            "access_token": auth.token,
+                            "expires_at": auth.expires,
+                            "events": [
+                              {
+                                  "error": {
+                                    "message": "GET " + req_url + ": " + (
+                                      (size(resp.Body) != 0) ?
+                                        string(resp.Body)
+                                      :
+                                        string(resp.StatusCode)
+                                    ),
+                                  },
+                              },
+                            ],
+                          }
+                        :
+                          bytes(resp.Body).decode_json().as(body,
+                            {
+                              "access_token": auth.token,
+                              "expires_at": auth.expires,
+                              "events": (has(body.alerts) && size(body.alerts) > 0) ?
+                                body.alerts.map(a,
+                                  {"message": a.encode_json()}
+                                )
+                              :
+                                [{"message": "retry"}],
+                              "next_cursor": body.?nextPage.orValue(""),
+                              "want_more": body.?nextPage.orValue("") != "",
+                            }
+                          )
+                      )
+                    )
+                )
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - client_secret
+                - access_token
+          resource.headers:
+            Accept:
+                - application/json
+            x-application-name:
+                - connector_elastic_siem
+          resource.retry.max_attempts: 3
+          resource.retry.wait_max: 30s
+          resource.retry.wait_min: 10s
+          resource.tracer:
+            enabled: true
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://custom.dataminr.com/pulse/v1/alerts
+          state:
+            access_token: ""
+            auth_url: https://custom.dataminr.com/auth/2/token
+            base_url: https://custom.dataminr.com/pulse
+            client_id: custom-client-id
+            client_secret: ${SECRET_0}
+            expires_at: 0
+            next_cursor: ""
+            page_size: 40
+            token_expiry_buffer: 1m
+            url: https://custom.dataminr.com/pulse/v1/alerts
+          tags:
+            - preserve_original_event
+            - forwarded
+            - dataminr-pulse-alerts
+            - custom-tag
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-dataminr_pulse.alerts-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

@@ -1,0 +1,60 @@
+receivers:
+  verifier:
+    identity_federation_id: "{{identity_federation_id}}"
+{{#if identity_federation_name}}
+    identity_federation_name: "{{identity_federation_name}}"
+{{/if}}
+    verification_id: "{{verification_id}}"
+{{#if verification_type}}
+    verification_type: "{{verification_type}}"
+{{else}}
+    verification_type: "on_demand"
+{{/if}}
+{{#if account_type}}
+    account_type: "{{account_type}}"
+{{/if}}
+    providers:
+      {{provider}}:
+        credentials:
+{{#if credentials_role_arn}}
+          role_arn: "{{credentials_role_arn}}"
+{{/if}}
+{{#if credentials_external_id}}
+          external_id: "{{credentials_external_id}}"
+{{/if}}
+{{#if credentials_tenant_id}}
+          tenant_id: "{{credentials_tenant_id}}"
+{{/if}}
+{{#if credentials_client_id}}
+          client_id: "{{credentials_client_id}}"
+{{/if}}
+{{#if credentials_audience}}
+          audience: "{{credentials_audience}}"
+{{/if}}
+{{#if credentials_service_account_email}}
+          service_account_email: "{{credentials_service_account_email}}"
+{{/if}}
+    policies:
+      - policy_id: "{{policy_id}}"
+{{#if policy_name}}
+        policy_name: "{{policy_name}}"
+{{/if}}
+        integrations:
+{{#each policy_templates}}
+          - policy_template: "{{this}}"
+            package_name: "{{../package_name}}"
+{{#if ../package_policy_id}}
+            package_policy_id: "{{../package_policy_id}}"
+{{/if}}
+{{#if ../package_title}}
+            package_title: "{{../package_title}}"
+{{/if}}
+{{#if ../package_version}}
+            package_version: "{{../package_version}}"
+{{/if}}
+{{/each}}
+
+service:
+  pipelines:
+    logs:
+      receivers: [verifier]

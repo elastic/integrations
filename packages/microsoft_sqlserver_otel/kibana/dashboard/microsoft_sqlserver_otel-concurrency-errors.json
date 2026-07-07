@@ -1,0 +1,2410 @@
+{
+    "attributes": {
+        "title": "[SQL Server OTel] Concurrency & errors",
+        "description": "Deadlocks, lock waits, timeouts, blocked processes, and execution errors.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "1a228797-5800-1bc8-f10b-fbef18d7359c",
+                                "order": 1,
+                                "label": "Memory & saturation",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_1a228797-5800-1bc8-f10b-fbef18d7359c_dashboard"
+                            },
+                            {
+                                "id": "52529824-e986-8cf7-c16a-69660cfcebf9",
+                                "order": 2,
+                                "label": "Concurrency & errors",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_52529824-e986-8cf7-c16a-69660cfcebf9_dashboard"
+                            },
+                            {
+                                "id": "62009570-8e83-3914-6ea1-d1fdae0a592a",
+                                "order": 3,
+                                "label": "Database I/O",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_62009570-8e83-3914-6ea1-d1fdae0a592a_dashboard"
+                            },
+                            {
+                                "id": "c067561f-af5d-373d-447a-c32c762cf751",
+                                "order": 4,
+                                "label": "Query performance",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_c067561f-af5d-373d-447a-c32c762cf751_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [SQL Server OTel] Concurrency & errors\n\nThis dashboard tracks concurrency and error metrics:\n- Deadlock rate (any sustained non-zero is critical)\n- Lock wait rate and lock timeouts\n- Blocked processes (active blocking chains)\n- Execution errors from the engine\n- OS wait durations by wait type\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "2559b08c-d6ac-e5e5-536e-3fbc987ae91a",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 6,
+                    "h": 4,
+                    "i": "2559b08c-d6ac-e5e5-536e-3fbc987ae91a"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Deadlocks/s",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "b71804f8-cd84-c728-71ac-e573a09cb117",
+                                "layerType": "data",
+                                "metricAccessor": "3e11afcc-5f5f-3446-d032-6beb7be2b960",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.deadlock.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.deadlock.rate)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "b71804f8-cd84-c728-71ac-e573a09cb117": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.deadlock.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.deadlock.rate)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "3e11afcc-5f5f-3446-d032-6beb7be2b960",
+                                                    "label": "Deadlocks/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "3e11afcc-5f5f-3446-d032-6beb7be2b960",
+                                                    "label": "Deadlocks/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "467c8bed-6abc-7fc2-cff8-0f92bc1663ea",
+                "gridData": {
+                    "x": 22,
+                    "y": 2,
+                    "w": 5,
+                    "h": 4,
+                    "i": "467c8bed-6abc-7fc2-cff8-0f92bc1663ea"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Lock wait rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "3ec830b9-61a2-c086-818b-033fe6bed20e",
+                                "layerType": "data",
+                                "metricAccessor": "51bcaffa-781f-bdfe-b5c0-89bae7992706",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.lock.wait.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.lock.wait.rate)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "3ec830b9-61a2-c086-818b-033fe6bed20e": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.lock.wait.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.lock.wait.rate)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "51bcaffa-781f-bdfe-b5c0-89bae7992706",
+                                                    "label": "Lock wait/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "51bcaffa-781f-bdfe-b5c0-89bae7992706",
+                                                    "label": "Lock wait/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "96957593-7fa6-714c-efdf-5b74361d2595",
+                "gridData": {
+                    "x": 27,
+                    "y": 2,
+                    "w": 5,
+                    "h": 4,
+                    "i": "96957593-7fa6-714c-efdf-5b74361d2595"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Lock timeouts/s",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "716f27b4-6dd6-cba1-5db2-60e12a775ba0",
+                                "layerType": "data",
+                                "metricAccessor": "8b42b179-a8f2-a48b-c644-9589a549bb6e",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.lock.timeout.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.lock.timeout.rate)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "716f27b4-6dd6-cba1-5db2-60e12a775ba0": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.lock.timeout.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.lock.timeout.rate)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "8b42b179-a8f2-a48b-c644-9589a549bb6e",
+                                                    "label": "Lock timeout/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "8b42b179-a8f2-a48b-c644-9589a549bb6e",
+                                                    "label": "Lock timeout/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "eeff18d4-2e7b-5fc8-3994-a5e9d83798c4",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 6,
+                    "h": 4,
+                    "i": "eeff18d4-2e7b-5fc8-3994-a5e9d83798c4"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Blocked processes",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "18d50410-1bbf-8431-3b00-4cf441c55f82",
+                                "layerType": "data",
+                                "metricAccessor": "a61820c2-475d-645a-97fe-c73b8f881330",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.processes.blocked IS NOT NULL\n| STATS blocked = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.processes.blocked)))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "18d50410-1bbf-8431-3b00-4cf441c55f82": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.processes.blocked IS NOT NULL\n| STATS blocked = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.processes.blocked)))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "blocked",
+                                                    "columnId": "a61820c2-475d-645a-97fe-c73b8f881330",
+                                                    "label": "Blocked processes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "blocked",
+                                                    "columnId": "a61820c2-475d-645a-97fe-c73b8f881330",
+                                                    "label": "Blocked processes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "954ef937-7e67-8249-c2fb-7602b8c6286b",
+                "gridData": {
+                    "x": 38,
+                    "y": 2,
+                    "w": 5,
+                    "h": 4,
+                    "i": "954ef937-7e67-8249-c2fb-7602b8c6286b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Execution errors",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "3a19f9a8-59c9-c83e-e8b0-370c2fb9733b",
+                                "layerType": "data",
+                                "metricAccessor": "9f44d2bb-fef8-a18b-59ef-87bdab6a0867",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.execution.errors IS NOT NULL\n| STATS errors = SUM(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.database.execution.errors)))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "3a19f9a8-59c9-c83e-e8b0-370c2fb9733b": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.execution.errors IS NOT NULL\n| STATS errors = SUM(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.database.execution.errors)))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "errors",
+                                                    "columnId": "9f44d2bb-fef8-a18b-59ef-87bdab6a0867",
+                                                    "label": "Execution errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "errors",
+                                                    "columnId": "9f44d2bb-fef8-a18b-59ef-87bdab6a0867",
+                                                    "label": "Execution errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "681aa29b-eebd-f6fd-00c9-f28664f69493",
+                "gridData": {
+                    "x": 43,
+                    "y": 2,
+                    "w": 5,
+                    "h": 4,
+                    "i": "681aa29b-eebd-f6fd-00c9-f28664f69493"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Lock waits",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "bf676fe8-28de-b210-2ccf-b59b119ce542",
+                                "layerType": "data",
+                                "metricAccessor": "5237103a-deed-b4db-97dd-03629c2e0369",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.lock.wait.count IS NOT NULL\n| STATS wait_delta = SUM(INCREASE(metrics.sqlserver.lock.wait.count))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bf676fe8-28de-b210-2ccf-b59b119ce542": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.lock.wait.count IS NOT NULL\n| STATS wait_delta = SUM(INCREASE(metrics.sqlserver.lock.wait.count))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "wait_delta",
+                                                    "columnId": "5237103a-deed-b4db-97dd-03629c2e0369",
+                                                    "label": "Lock waits",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "wait_delta",
+                                                    "columnId": "5237103a-deed-b4db-97dd-03629c2e0369",
+                                                    "label": "Lock waits",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "451627ca-6d08-5eef-b8fe-2a1ed817b82e",
+                "gridData": {
+                    "x": 16,
+                    "y": 6,
+                    "w": 32,
+                    "h": 8,
+                    "i": "451627ca-6d08-5eef-b8fe-2a1ed817b82e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Deadlock rate over time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "a0eaf797-4637-7ceb-873e-3d8fc879b228",
+                                        "accessors": [
+                                            "520bee5c-30a7-0446-c186-bc90737ad870"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.deadlock.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.deadlock.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "a0eaf797-4637-7ceb-873e-3d8fc879b228": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.deadlock.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.deadlock.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "520bee5c-30a7-0446-c186-bc90737ad870",
+                                                    "label": "Deadlocks/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                                    "label": "instance",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "520bee5c-30a7-0446-c186-bc90737ad870",
+                                                    "label": "Deadlocks/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                                    "label": "instance",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "1745c58c-0efe-9fa5-2545-b6302aacf01d",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 24,
+                    "h": 12,
+                    "i": "1745c58c-0efe-9fa5-2545-b6302aacf01d"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Lock wait rate over time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "b2fcac03-e485-a30a-4b81-b7127e5a18f3",
+                                        "accessors": [
+                                            "4157c03a-1a0a-4508-0190-14320aa8e3d6"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.lock.wait.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.lock.wait.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "b2fcac03-e485-a30a-4b81-b7127e5a18f3": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.lock.wait.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.lock.wait.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "4157c03a-1a0a-4508-0190-14320aa8e3d6",
+                                                    "label": "Lock wait/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                                    "label": "instance",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "4157c03a-1a0a-4508-0190-14320aa8e3d6",
+                                                    "label": "Lock wait/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                                    "label": "instance",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "de8765d7-326b-3ef8-b5d1-3cc1d21a143c",
+                "gridData": {
+                    "x": 24,
+                    "y": 14,
+                    "w": 24,
+                    "h": 12,
+                    "i": "de8765d7-326b-3ef8-b5d1-3cc1d21a143c"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Blocked processes over time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "5f4c1847-b5a3-16f7-7225-70cbc353bb39",
+                                        "accessors": [
+                                            "2c7f1404-e528-8e63-9936-d53a60984f2f"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.processes.blocked IS NOT NULL\n| STATS blocked = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.processes.blocked))) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "5f4c1847-b5a3-16f7-7225-70cbc353bb39": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.processes.blocked IS NOT NULL\n| STATS blocked = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.processes.blocked))) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "blocked",
+                                                    "columnId": "2c7f1404-e528-8e63-9936-d53a60984f2f",
+                                                    "label": "Blocked",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                                    "label": "instance",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "blocked",
+                                                    "columnId": "2c7f1404-e528-8e63-9936-d53a60984f2f",
+                                                    "label": "Blocked",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                                    "label": "instance",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "76dfbb16-99ca-da71-d448-12e7cf4cd428",
+                "gridData": {
+                    "x": 0,
+                    "y": 26,
+                    "w": 24,
+                    "h": 12,
+                    "i": "76dfbb16-99ca-da71-d448-12e7cf4cd428"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Lock timeouts over time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "0e1d7fcb-7ce0-a460-7f7c-2ed1eb7ed5c5",
+                                        "accessors": [
+                                            "1777a60e-74cd-caaa-c91c-b7225fa1a899"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.lock.timeout.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.lock.timeout.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "0e1d7fcb-7ce0-a460-7f7c-2ed1eb7ed5c5": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.lock.timeout.rate IS NOT NULL\n| STATS rate = AVG(metrics.sqlserver.lock.timeout.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "1777a60e-74cd-caaa-c91c-b7225fa1a899",
+                                                    "label": "Lock timeout/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                                    "label": "instance",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rate",
+                                                    "columnId": "1777a60e-74cd-caaa-c91c-b7225fa1a899",
+                                                    "label": "Lock timeout/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                                    "label": "instance",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "b8176198-340d-f54b-d8ad-d4a54c320cdb",
+                "gridData": {
+                    "x": 24,
+                    "y": 26,
+                    "w": 24,
+                    "h": 12,
+                    "i": "b8176198-340d-f54b-d8ad-d4a54c320cdb"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "OS wait duration by wait type",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "8db10f7b-70c4-fe4f-3e05-b4ca5e5cd12f",
+                                        "accessors": [
+                                            "3a0a9b26-7a3f-bbb4-ec27-8a90ec9cb5a0"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "94c8289e-474c-be55-a78c-4825772feac6",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_ms = SUM(INCREASE(metrics.sqlserver.os.wait.duration)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), wait_type = COALESCE(attributes.wait.type, wait.type, \"unknown\")\n| EVAL wait_ms = wait_ms * 1000\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8db10f7b-70c4-fe4f-3e05-b4ca5e5cd12f": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_ms = SUM(INCREASE(metrics.sqlserver.os.wait.duration)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), wait_type = COALESCE(attributes.wait.type, wait.type, \"unknown\")\n| EVAL wait_ms = wait_ms * 1000\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "wait_ms",
+                                                    "columnId": "3a0a9b26-7a3f-bbb4-ec27-8a90ec9cb5a0",
+                                                    "label": "Wait time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "wait_type",
+                                                    "columnId": "94c8289e-474c-be55-a78c-4825772feac6",
+                                                    "label": "wait_type",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "wait_ms",
+                                                    "columnId": "3a0a9b26-7a3f-bbb4-ec27-8a90ec9cb5a0",
+                                                    "label": "Wait time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "wait_type",
+                                                    "columnId": "94c8289e-474c-be55-a78c-4825772feac6",
+                                                    "label": "wait_type",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "24337ca6-6661-586e-55f5-5f936967424d",
+                "gridData": {
+                    "x": 0,
+                    "y": 38,
+                    "w": 24,
+                    "h": 12,
+                    "i": "24337ca6-6661-586e-55f5-5f936967424d"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Top wait types by total duration",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "f7ceb1d6-d067-cce5-2cff-cdfffbb7d080",
+                                        "accessors": [
+                                            "3a0a9b26-7a3f-bbb4-ec27-8a90ec9cb5a0"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "bar_unstacked",
+                                        "xAccessor": "d7d54399-3bac-a2e0-a029-7d5b538e14d2",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "bar_unstacked",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_ms = SUM(INCREASE(metrics.sqlserver.os.wait.duration)) BY wait_type = COALESCE(attributes.wait.type, wait.type, \"unknown\")\n| EVAL wait_ms = wait_ms * 1000\n| SORT wait_ms DESC\n| LIMIT 10"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f7ceb1d6-d067-cce5-2cff-cdfffbb7d080": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_ms = SUM(INCREASE(metrics.sqlserver.os.wait.duration)) BY wait_type = COALESCE(attributes.wait.type, wait.type, \"unknown\")\n| EVAL wait_ms = wait_ms * 1000\n| SORT wait_ms DESC\n| LIMIT 10"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "wait_ms",
+                                                    "columnId": "3a0a9b26-7a3f-bbb4-ec27-8a90ec9cb5a0",
+                                                    "label": "Wait time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "wait_type",
+                                                    "columnId": "d7d54399-3bac-a2e0-a029-7d5b538e14d2",
+                                                    "label": "wait_type",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "wait_ms",
+                                                    "columnId": "3a0a9b26-7a3f-bbb4-ec27-8a90ec9cb5a0",
+                                                    "label": "Wait time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "wait_type",
+                                                    "columnId": "d7d54399-3bac-a2e0-a029-7d5b538e14d2",
+                                                    "label": "wait_type",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "5fded66e-e5b2-e320-0b55-8eed8513d0b6",
+                "gridData": {
+                    "x": 24,
+                    "y": 38,
+                    "w": 24,
+                    "h": 12,
+                    "i": "5fded66e-e5b2-e320-0b55-8eed8513d0b6"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Compilation vs recompilation rate over time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "74929b26-b7e6-f0d5-52ef-645997ff3e01",
+                                        "accessors": [
+                                            "4c48896c-f542-5a42-881d-f5134745ff66",
+                                            "9930b4ab-f0f8-cbbe-0d87-4ef23639930a"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Rate (/s)",
+                                "yLeftTitle": "Rate (/s)",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.batch.sql_compilation.rate IS NOT NULL OR metrics.sqlserver.batch.sql_recompilation.rate IS NOT NULL\n| STATS compile_rate = AVG(metrics.sqlserver.batch.sql_compilation.rate), recompile_rate = AVG(metrics.sqlserver.batch.sql_recompilation.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| EVAL compile_rate = COALESCE(compile_rate, 0.0), recompile_rate = COALESCE(recompile_rate, 0.0)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "74929b26-b7e6-f0d5-52ef-645997ff3e01": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.batch.sql_compilation.rate IS NOT NULL OR metrics.sqlserver.batch.sql_recompilation.rate IS NOT NULL\n| STATS compile_rate = AVG(metrics.sqlserver.batch.sql_compilation.rate), recompile_rate = AVG(metrics.sqlserver.batch.sql_recompilation.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| EVAL compile_rate = COALESCE(compile_rate, 0.0), recompile_rate = COALESCE(recompile_rate, 0.0)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "compile_rate",
+                                                    "columnId": "4c48896c-f542-5a42-881d-f5134745ff66",
+                                                    "label": "Compilation/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "recompile_rate",
+                                                    "columnId": "9930b4ab-f0f8-cbbe-0d87-4ef23639930a",
+                                                    "label": "Recompilation/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                                    "label": "instance",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "compile_rate",
+                                                    "columnId": "4c48896c-f542-5a42-881d-f5134745ff66",
+                                                    "label": "Compilation/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "recompile_rate",
+                                                    "columnId": "9930b4ab-f0f8-cbbe-0d87-4ef23639930a",
+                                                    "label": "Recompilation/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                                    "label": "instance",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "4339a9e6-73a1-8f01-0f39-e800407d5c73",
+                "gridData": {
+                    "x": 0,
+                    "y": 50,
+                    "w": 48,
+                    "h": 12,
+                    "i": "4339a9e6-73a1-8f01-0f39-e800407d5c73"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Full scan rate over time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "3393de9b-3ef2-a328-a67d-766865ab5738",
+                                        "accessors": [
+                                            "fdbf898a-22c1-1067-0aa1-7535d9570be5"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.full_scan.rate IS NOT NULL\n| STATS scan_rate = AVG(metrics.sqlserver.database.full_scan.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "3393de9b-3ef2-a328-a67d-766865ab5738": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.database.full_scan.rate IS NOT NULL\n| STATS scan_rate = AVG(metrics.sqlserver.database.full_scan.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "scan_rate",
+                                                    "columnId": "fdbf898a-22c1-1067-0aa1-7535d9570be5",
+                                                    "label": "Full scans/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                                    "label": "instance",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "scan_rate",
+                                                    "columnId": "fdbf898a-22c1-1067-0aa1-7535d9570be5",
+                                                    "label": "Full scans/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c5737c60-e8fa-6967-ba6e-8a8bffe32150",
+                                                    "label": "instance",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "f71a4ae0-e443-1ed1-2407-d200dbedfe4e",
+                "gridData": {
+                    "x": 0,
+                    "y": 62,
+                    "w": 48,
+                    "h": 15,
+                    "i": "f71a4ae0-e443-1ed1-2407-d200dbedfe4e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Instances with concurrency issues",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "c04fe1f7-8374-d45d-4c24-d4e5469d67f7",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "88d90b4f-362c-39bf-9f8f-8a8eed657e9d",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "13fd51dc-7171-12ad-4ae9-d0ad301e4206",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "d9860801-d2e6-94d2-4741-c17f1ed5ca30",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "fa2f1bf8-ee6a-c2a8-0dac-5fd0b9ccb4c3",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "5af11a3e-a275-354a-6785-f2b2db33c4c6",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.deadlock.rate IS NOT NULL OR metrics.sqlserver.lock.wait.rate IS NOT NULL OR metrics.sqlserver.processes.blocked IS NOT NULL OR metrics.sqlserver.database.execution.errors IS NOT NULL\n| STATS deadlock_rate = AVG(metrics.sqlserver.deadlock.rate), lock_wait_rate = AVG(metrics.sqlserver.lock.wait.rate), blocked = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.processes.blocked))), exec_errors = SUM(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.database.execution.errors))) BY instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| EVAL deadlock_rate = COALESCE(deadlock_rate, 0.0), lock_wait_rate = COALESCE(lock_wait_rate, 0.0), blocked = COALESCE(blocked, 0), exec_errors = COALESCE(exec_errors, 0)\n| SORT deadlock_rate DESC, blocked DESC\n| LIMIT 20"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "5af11a3e-a275-354a-6785-f2b2db33c4c6": {
+                                            "query": {
+                                                "esql": "TS metrics-sqlserverreceiver.otel-*\n| WHERE data_stream.dataset == \"sqlserverreceiver.otel\"\n| WHERE metrics.sqlserver.deadlock.rate IS NOT NULL OR metrics.sqlserver.lock.wait.rate IS NOT NULL OR metrics.sqlserver.processes.blocked IS NOT NULL OR metrics.sqlserver.database.execution.errors IS NOT NULL\n| STATS deadlock_rate = AVG(metrics.sqlserver.deadlock.rate), lock_wait_rate = AVG(metrics.sqlserver.lock.wait.rate), blocked = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.processes.blocked))), exec_errors = SUM(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.database.execution.errors))) BY instance = COALESCE(resource.attributes.service.instance.id, \"unknown\")\n| EVAL deadlock_rate = COALESCE(deadlock_rate, 0.0), lock_wait_rate = COALESCE(lock_wait_rate, 0.0), blocked = COALESCE(blocked, 0), exec_errors = COALESCE(exec_errors, 0)\n| SORT deadlock_rate DESC, blocked DESC\n| LIMIT 20"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c04fe1f7-8374-d45d-4c24-d4e5469d67f7",
+                                                    "label": "Instance",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "deadlock_rate",
+                                                    "columnId": "88d90b4f-362c-39bf-9f8f-8a8eed657e9d",
+                                                    "label": "Deadlocks/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "lock_wait_rate",
+                                                    "columnId": "13fd51dc-7171-12ad-4ae9-d0ad301e4206",
+                                                    "label": "Lock wait/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "blocked",
+                                                    "columnId": "d9860801-d2e6-94d2-4741-c17f1ed5ca30",
+                                                    "label": "Blocked processes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "exec_errors",
+                                                    "columnId": "fa2f1bf8-ee6a-c2a8-0dac-5fd0b9ccb4c3",
+                                                    "label": "Execution errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "instance",
+                                                    "columnId": "c04fe1f7-8374-d45d-4c24-d4e5469d67f7",
+                                                    "label": "Instance",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "deadlock_rate",
+                                                    "columnId": "88d90b4f-362c-39bf-9f8f-8a8eed657e9d",
+                                                    "label": "Deadlocks/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "lock_wait_rate",
+                                                    "columnId": "13fd51dc-7171-12ad-4ae9-d0ad301e4206",
+                                                    "label": "Lock wait/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "blocked",
+                                                    "columnId": "d9860801-d2e6-94d2-4741-c17f1ed5ca30",
+                                                    "label": "Blocked processes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "exec_errors",
+                                                    "columnId": "fa2f1bf8-ee6a-c2a8-0dac-5fd0b9ccb4c3",
+                                                    "label": "Execution errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": false,
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "af5489f9-0f85-2495-d87b-f9e071725d1b": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "af5489f9-0f85-2495-d87b-f9e071725d1b",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "resource.attributes.service.instance.id",
+                        "title": "Instance",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "microsoft_sqlserver_otel-concurrency-errors",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "microsoft_sqlserver_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "microsoft_sqlserver_otel-memory-saturation",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_1a228797-5800-1bc8-f10b-fbef18d7359c_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "microsoft_sqlserver_otel-concurrency-errors",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_52529824-e986-8cf7-c16a-69660cfcebf9_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "microsoft_sqlserver_otel-database-io",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_62009570-8e83-3914-6ea1-d1fdae0a592a_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "microsoft_sqlserver_otel-query-performance",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_c067561f-af5d-373d-447a-c32c762cf751_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_af5489f9-0f85-2495-d87b-f9e071725d1b:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

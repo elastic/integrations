@@ -78,6 +78,25 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "event-categories" }}'
       ignore_failure: true
+  # Rename label fields early so they reach their flattened mapping even
+  # if event-groups fails. Dotted keys inside labels (e.g.
+  # "cluster.coreweave.cloud/type") cause mapping conflicts under dynamic
+  # mapping, but are safe inside flattened fields.
+  - rename:
+      field: teleport.audit.kubernetes_labels
+      target_field: teleport.audit.kubernetes.labels
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: teleport.audit.kube_labels
+      target_field: teleport.audit.kubernetes.labels
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: teleport.audit.server_labels
+      target_field: teleport.audit.server.labels
+      ignore_missing: true
+      ignore_failure: true
   # Process most of the field groups.
   - pipeline:
       name: '{{ IngestPipeline "event-groups" }}'

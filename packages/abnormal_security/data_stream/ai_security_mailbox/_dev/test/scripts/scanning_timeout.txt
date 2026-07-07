@@ -1,0 +1,128 @@
+# Test that a scanning item is published as-is once it exceeds the
+# scanning_timeout. The mock returns a single campaign with judgementStatus
+# "Scanning". With scanning_timeout set to 1s and a 10s collection
+# interval, the item should be deferred in the first cycle, then
+# published during the re-check in the second cycle.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} timeout-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# The scanning item should appear once the timeout expires and the
+# re-check publishes it. Subsequent cycles re-defer and re-publish
+# the same item, but the _id fingerprint deduplicates it.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# Verify the document is the scanning campaign, published as-is.
+exec jq -r '.hits.hits[]._source.abnormal_security.ai_security_mailbox.campaign_id' got_docs.json
+stdout '^scanning-1$'
+
+exec jq -r '.hits.hits[]._source.abnormal_security.ai_security_mailbox.judgement_status' got_docs.json
+stdout '^Scanning$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down timeout-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://timeout-mock:8080
+  access_token: xxxx
+data_stream:
+  vars:
+    interval: 10s
+    initial_interval: 1h
+    page_size: 10
+    scanning_timeout: 1s
+    preserve_original_event: true
+
+-- timeout-mock/docker-compose.yml --
+version: '2.3'
+services:
+  timeout-mock:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: timeout-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+
+-- timeout-mock/config.yml --
+rules:
+  # Listing page 1: one scanning campaign.
+  - path: /v1/abusecampaigns
+    methods: ['GET']
+    query_params:
+      filter: "{filter:.*}"
+      pageNumber: 1
+      pageSize: 10
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"campaigns":[{"campaignId":"scanning-1"}],"pageNumber":1,"nextPageNumber":2}
+
+  # Listing page 2: empty.
+  - path: /v1/abusecampaigns
+    methods: ['GET']
+    query_params:
+      filter: "{filter:.*}"
+      pageNumber: 2
+      pageSize: 10
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"campaigns":[],"pageNumber":2}
+
+  # Detail: scanning-1 always returns "Scanning".
+  - path: /v1/abusecampaigns/scanning-1
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "campaignId": "scanning-1",
+            "firstReported": "2024-07-26T11:00:00Z",
+            "lastReported": "2024-07-26T11:00:00Z",
+            "messageId": "8888888888888888888",
+            "subject": "Scanning Email",
+            "fromName": "unknown@example.com",
+            "fromAddress": "unknown@example.com",
+            "recipientName": "recipient",
+            "recipientAddress": "recipient@example.com",
+            "judgementStatus": "Scanning",
+            "overallStatus": "",
+            "attackType": ""
+          }
+          `}}

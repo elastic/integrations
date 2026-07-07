@@ -1,0 +1,130 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the first time a human GKE caller lists secrets cluster-wide or in default or kube-system from a source autonomous system that is not attributed to common cloud provider organizations. This can indicate remote secret enumeration using stolen credentials from an unusual network.",
+        "false_positives": [
+            "Engineers listing secrets from home ISP or corporate VPN AS names may match until baselined. GeoIP organization labels vary by vendor; tune exclusions after validation."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Secrets List from Unusual Source AS Organization",
+        "new_terms_fields": [
+            "user.email",
+            "source.as.number"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating GKE Secrets List from Unusual Source AS Organization\n\nNew-terms rule on `user.email` and `source.as.number` for cluster-wide or sensitive namespace secret list operations.\n\n### Investigation steps\n\n- Confirm `gcp.audit.resource_name` and whether listing was authorized.\n- Review `source.ip`, `source.as.organization.name`, and follow-on secret get or exec activity.\n\n### False positives\n\n- First-time legitimate admin access from a new office or VPN provider.",
+        "query": "data_stream.dataset:gcp.audit and service.name:\"k8s.io\" and event.action:io.k8s.core.v1.secrets.list and gcp.audit.resource_name:(core/v1/namespaces/default/secrets or core/v1/namespaces/kube-system/secrets or core/v1/secrets) and user.email:*@* and source.as.organization.name:(* and not (\"Google LLC\" or \"Microsoft Corporation\")) and source.as.number:*\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1552/007/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.resource_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.number",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.organization.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "4df2e3ae-3553-4194-b22e-3e5a6f71466e",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "4df2e3ae-3553-4194-b22e-3e5a6f71466e_1",
+    "type": "security-rule"
+}

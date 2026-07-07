@@ -11,6 +11,9 @@ inputs:
           fields:
             _conf:
                 enable_deduplication: false
+                enable_geoip_destination_ip: true
+                enable_geoip_observer_ip: true
+                enable_geoip_source_ip: true
                 long_fields: index_long_fields
                 long_fields_max_length: 1024
                 prune_fields: true
@@ -55,10 +58,6 @@ inputs:
                             key_field: crowdstrike.UserSid_readable
                             ttl: 168h
                             value_field: crowdstrike
-                    - drop_event:
-                        when:
-                            contains:
-                                log.file.path: userinfo
               if:
                 contains:
                     log.file.path: aidmaster
@@ -74,10 +73,6 @@ inputs:
                         key_field: crowdstrike.aid
                         ttl: 168h
                         value_field: crowdstrike
-                - drop_event:
-                    when:
-                        contains:
-                            log.file.path: aidmaster
             - drop_fields:
                 fields:
                     - crowdstrike

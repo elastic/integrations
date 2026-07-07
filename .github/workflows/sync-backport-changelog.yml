@@ -1,0 +1,71 @@
+---
+name: Sync backport changelog to main
+
+on:
+  push:
+    branches:
+      - 'backport-*'
+    paths:
+      - '**/changelog.yml'
+
+jobs:
+  sync-changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # push the changelog sync branch
+      pull-requests: write # create sync PR and comment on backport PR
+    steps:
+      - name: Guard — zero-SHA check
+        id: guard
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          # Branch-creation pushes carry a zero before-SHA — there is no previous commit to diff against.
+          if [[ "$BEFORE" == "0000000000000000000000000000000000000000" ]]; then
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping: branch-creation push"
+            exit 0
+          fi
+          echo "proceed=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v7
+        if: steps.guard.outputs.proceed == 'true'
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        if: steps.guard.outputs.proceed == 'true'
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: .go-version
+
+      - name: Install mage
+        if: steps.guard.outputs.proceed == 'true'
+        run: go install github.com/magefile/mage
+
+      - name: Sync backport changelog
+        id: sync
+        if: steps.guard.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+          REPOSITORY: ${{ github.repository }}
+          BACKPORT_BRANCH: ${{ github.ref_name }}
+          PACKAGES_DIR: ${{ github.workspace }}/packages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mage -d "$GITHUB_WORKSPACE" syncBackportChangelog
+
+      - name: Comment on backport PR
+        if: always() && steps.guard.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BACKPORT_PR_NUMBER: ${{ steps.sync.outputs.backport_pr_number }}
+          WORKING_BRANCH: ${{ steps.sync.outputs.working_branch }}
+          NOT_FOUND_PACKAGES: ${{ steps.sync.outputs.not_found_packages }}
+          CREATE_OUTCOME: ${{ steps.sync.outputs.create_outcome }}
+          RUN_ID: ${{ github.run_id }}
+          REPOSITORY: ${{ github.repository }}
+        run: mage -d "$GITHUB_WORKSPACE" postBackportComment

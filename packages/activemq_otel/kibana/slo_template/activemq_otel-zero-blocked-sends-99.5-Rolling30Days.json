@@ -1,0 +1,57 @@
+{
+  "attributes": {
+    "name": "[ActiveMQ OTel] Zero blocked sends 99.5% rolling 30 days",
+    "description": "This SLO tracks producer blocked sends per queue via OTel metrics, ensuring that 99.5% of 1-minute time intervals show zero new blocked sends over a rolling period of 30 days. Any blocked sends indicate memory pressure; producers cannot publish until memory frees.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"activemq.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "activemq.queue.blocked.sends"
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "activemq.queue.blocked.sends"
+            }
+          ],
+          "equation": "A - B",
+          "comparator": "LT",
+          "threshold": 1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "activemq",
+      "otel"
+    ],
+    "groupBy": [
+      "activemq.destination.name",
+      "resource.attributes.activemq.broker.name"
+    ]
+  },
+  "id": "activemq_otel-zero-blocked-sends-99.5-Rolling30Days",
+  "type": "slo_template",
+  "artifacts": {
+    "dashboards": [
+      { "id": "activemq_otel-destinations" },
+      { "id": "activemq_otel-broker-health" }
+    ]
+  }
+}

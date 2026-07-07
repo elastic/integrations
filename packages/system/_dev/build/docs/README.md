@@ -12,6 +12,14 @@ Then, you could view real-time updates to disk space used on your system in Kiba
 You could also set up a new rule in the Elastic Observability Metrics app to alert you when the percent free is
 less than 10% of the total disk space.
 
+## Choosing the right integration for Windows event logs
+
+If you're collecting Windows event logs, note that there are three related integrations:
+
+- **System integration** (this integration): Collects logs from the Windows `Application`, `System`, and `Security` channels with specialized ingest pipelines optimized for observability use cases.
+- **[Windows integration](https://www.elastic.co/docs/reference/integrations/windows)**: Collects logs from Windows-specific channels like PowerShell, Sysmon, Windows Defender, and AppLocker with specialized security-focused ingest pipelines. Use this for security monitoring and advanced Windows telemetry.
+- **[Custom Windows event log package](https://www.elastic.co/docs/reference/integrations/winlog)**: Collects logs from any user-defined Windows event log channel. Use this when you need to collect from channels not covered by the System or Windows integrations. Note that this integration does not include specialized ingest pipelines—you'll need to create custom pipelines if additional processing is required.
+  
 ## Data streams
 
 The System integration collects two types of data: logs and metrics.

@@ -1,0 +1,116 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Flags Linux process executions whose arguments reference high-value Kubernetes service-account material, kubeconfig or node PKI paths, or common cloud files, when invoked via typical file-reading utilities or from ephemeral directories. Useful for spotting in-cluster and hybrid credential theft early.",
+        "false_positives": [
+            "Legitimate backup, compliance scanners, or admin scripts that enumerate paths under /home or /var/run/secrets may match. Tune by parent process, image, or automation identity."
+        ],
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*",
+            "logs-endpoint.events.process*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Kubernetes and Cloud Credential Path Access via Process Arguments",
+        "note": "## Triage and analysis\n\n### Investigating Kubernetes and Cloud Credential Path Access via Process Arguments\n\nConfirm whether the process user and parent chain are expected to read the matched path (for example a CI job,\nbootstrap script, or kubelet). Reconstruct the full command line and check for piping, encoding, or exfiltration\npatterns immediately after the read.\n\n### Possible investigation steps\n\n- Map the workload or login session to an identity; prioritize events from nodes, jump hosts, or pods with mounted\n  service account tokens.\n- Correlate with file, network, and Kubernetes audit telemetry for secret reads, token minting, or API calls using\n  harvested material.\n\n### Response and remediation\n\n- Rotate affected service account tokens, kubeconfigs, and cloud keys when access was unauthorized; review RBAC and\n  secret mount policy for the workload.\n",
+        "query": "host.os.type:linux and event.category:process and event.action:(exec or executed) and \n(\n  process.name:(\n    busybox or cat or head or tail or more or less or sed or awk or \n    find or grep or ls or whereis or cp or mv or ln or\n    curl or wget or scp or rsync or tar or zip or gzip or\n    base64 or xxd or od or dd or tee or strings or xargs or jq or yq or\n    openssl or ssh or sftp or nc or ncat or netcat or socat or\n    python* or perl* or ruby* or node or php* or lua* or .*\n  ) or\n  process.args:(\n    cat or head or tail or more or less or sed or awk or \n    find or grep or cp or mv or curl or wget or base64 or \n    tar or scp or dd or strings or xargs\n  ) or\n  process.executable:(/tmp/* or /var/tmp/* or /dev/shm/* or /home/* or /run/user/*)\n) and process.args:(\n  \"/var/run/secrets/kubernetes.io/serviceaccount/token\" or\n  \"/var/run/secrets/kubernetes.io/serviceaccount/ca.crt\" or\n  \"/var/run/secrets/eks.amazonaws.com/serviceaccount/token\" or\n  \"/var/run/secrets/azure/tokens/azure-identity-token\" or\n  \"/var/run/secrets/tokens/azure-identity-token\" or\n  \"/var/lib/kubelet/kubeconfig\" or\n  \"/etc/kubernetes/admin.conf\" or\n  \"/etc/kubernetes/pki/ca.key\" or\n  \"/etc/kubernetes/pki/apiserver-kubelet-client.key\" or\n  \"/var/lib/kubelet/pki/kubelet-client-current.pem\" or\n  \"/etc/rancher/k3s/k3s.yaml\" or\n  */.aws/credentials or\n  */.aws/cli/cache/*.json or\n  */.aws/sso/cache/*.json or\n  */.azure/accessTokens.json or\n  */.azure/azureProfile.json or\n  */.azure/msal_token_cache.json or\n  */confluence/confluence.cfg.xml or \n  *confluence/conf/server.xml\n  */.config/gcloud/application_default_credentials.json or\n  */.config/gcloud/credentials.db or\n  */.config/gcloud/access_tokens.db or\n  */.config/gcloud/legacy_credentials or\n  */.kube/config or\n  */.docker/config.json\n) \n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1552/",
+            "https://kubernetes.io/docs/concepts/security/service-accounts/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "5f0fff18-f340-444b-9a98-c49ade766ff4",
+        "setup": "## Setup\n\nRequires **Elastic Defend** and/or **Auditd Manager** process telemetry (`logs-endpoint.events.process*`,\n`logs-auditd_manager.auditd-*`, `auditbeat-*`) with command-line argument capture for exec events.\n\n### Elastic Defend\nInstall the Elastic Defend integration via Fleet on Linux hosts and use a policy that collects process events with\narguments.\n\n### Auditd Manager\nDeploy Auditd Manager and ensure execve (or equivalent process) auditing is enabled so `process.args` and\n`process.executable` populate for monitored binaries.\n\nSee https://docs.elastic.co/integrations/auditd_manager\n",
+        "severity": "high",
+        "tags": [
+            "Data Source: Auditd Manager",
+            "Data Source: Elastic Defend",
+            "Domain: Endpoint",
+            "Domain: Kubernetes",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.001",
+                                "name": "Credentials In Files",
+                                "reference": "https://attack.mitre.org/techniques/T1552/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1528",
+                        "name": "Steal Application Access Token",
+                        "reference": "https://attack.mitre.org/techniques/T1528/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 2
+    },
+    "id": "5f0fff18-f340-444b-9a98-c49ade766ff4_2",
+    "type": "security-rule"
+}

@@ -1,0 +1,58 @@
+{
+    "attributes": {
+        "created_at": "2026-03-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Amcache Driver Packages: Enumerates driver package metadata from the Windows Amcache.hve registry hive (Root\\InventoryDriverPackage). Records package class, version, provider, directory, and associated hardware IDs. Links to both DeviceContainers and DevicePnPs for cross-referencing driver provenance.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["driver"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.amcache_driver_package"
+                }
+            },
+            {
+                "key": "package.version",
+                "value": {
+                    "field": "version"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "inf"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "amcache", "forensics", "driver_analysis", "windows"]
+                }
+            }
+        ],
+        "id": "amcache_driver_package_windows_elastic",
+        "interval": "7200",
+        "platform": "windows",
+        "timeout": 180,
+        "query": "-- Amcache Driver Packages: Driver package metadata from Amcache\n-- Source: elastic_amcache_driver_package (Root\\InventoryDriverPackage)\n-- Forensic value: Driver provenance, package class, provider, associated hardware IDs\n\nSELECT\n  *,\n  datetime(timestamp, 'unixepoch') AS record_time\nFROM elastic_amcache_driver_package\nORDER BY timestamp DESC;",
+        "updated_at": "2026-03-27T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.4.0",
+    "id": "osquery_manager-bcef7e6e-31df-4d72-a296-2e7657f49d64",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-03-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

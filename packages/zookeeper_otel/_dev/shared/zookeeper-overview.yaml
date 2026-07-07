@@ -1,0 +1,440 @@
+dashboards:
+  - id: zookeeper_otel-overview
+    name: '[ZooKeeper OTel] Overview'
+    description: >-
+      Overview of Apache ZooKeeper ensemble health, performance, and resource
+      utilization. Covers latency, traffic, connections, saturation, and
+      replication health across the ensemble.
+
+    minimum_kibana_version: '8.14.0'
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: data_stream.dataset
+        equals: generic.otel
+
+    controls:
+      - type: options
+        label: Server State
+        data_view: metrics-*
+        field: resource.attributes.server.state
+
+    panels:
+      # ─── Navigation ──────────────────────────────────────────────
+      - title: Navigation
+        description: Cross-dashboard navigation links.
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: zookeeper_otel-overview
+
+      # ─── Dashboard Overview ──────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [ZooKeeper OTel] Overview
+
+            This dashboard monitors Apache ZooKeeper ensemble health and performance:
+            - Node availability and ensemble quorum status
+            - Request latency and packet throughput
+            - Active client connections and outstanding requests
+            - File descriptor and data tree saturation
+            - Follower synchronization and replication health
+
+      # ─── KPI Row 1 (beside overview) ─────────────────────────────
+      - title: Healthy Nodes
+        description: Ensemble nodes passing the ruok health check (1 = healthy).
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.ruok IS NOT NULL
+            - STATS healthy_nodes = SUM(LAST_OVER_TIME(metrics.zookeeper.ruok))
+          primary:
+            field: healthy_nodes
+            label: Healthy Nodes
+            format:
+              type: number
+              decimals: 0
+
+      - title: Peak Latency
+        description: Highest request processing latency observed across all ensemble nodes since server start.
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.latency.max IS NOT NULL
+            - STATS peak_ms = MAX(LAST_OVER_TIME(metrics.zookeeper.latency.max))
+            - EVAL peak_latency = peak_ms / 1000.0
+          primary:
+            field: peak_latency
+            label: Peak Latency
+            format:
+              type: number
+              decimals: 2
+              suffix: " s"
+
+      - title: Active Connections
+        description: Total active client connections across the ensemble.
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.connection.active IS NOT NULL
+            - STATS connections = SUM(LAST_OVER_TIME(metrics.zookeeper.connection.active))
+          primary:
+            field: connections
+            label: Active Connections
+            format:
+              type: number
+              decimals: 0
+
+      - title: Outstanding Requests
+        description: Queued requests waiting to be processed. Sustained non-zero indicates saturation.
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.request.active IS NOT NULL
+            - STATS outstanding = SUM(LAST_OVER_TIME(metrics.zookeeper.request.active))
+          primary:
+            field: outstanding
+            label: Outstanding Requests
+            format:
+              type: number
+              decimals: 0
+
+      # ─── KPI Row 2 (beside overview) ─────────────────────────────
+      - title: Synced Followers
+        description: Followers fully synchronized with the leader. Should equal N-1 in a healthy ensemble.
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.follower.count IS NOT NULL AND resource.attributes.server.state == "leader" AND attributes.state == "synced"
+            - STATS synced_followers = MAX(LAST_OVER_TIME(metrics.zookeeper.follower.count))
+          primary:
+            field: synced_followers
+            label: Synced Followers
+            format:
+              type: number
+              decimals: 0
+
+      - title: Znode Count
+        description: Total znodes in the data tree. Alert if exceeding 1,000,000.
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.znode.count IS NOT NULL
+            - STATS znodes = MAX(LAST_OVER_TIME(metrics.zookeeper.znode.count))
+          primary:
+            field: znodes
+            label: Znode Count
+            format:
+              type: number
+              decimals: 0
+
+      - title: Watch Count
+        description: Active watches registered on znodes. High counts risk notification storms.
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.watch.count IS NOT NULL
+            - STATS watches = SUM(LAST_OVER_TIME(metrics.zookeeper.watch.count))
+          primary:
+            field: watches
+            label: Watch Count
+            format:
+              type: number
+              decimals: 0
+
+      - title: Open File Descriptors
+        description: Total open file descriptors across all ensemble nodes. Approaching the OS limit causes connection refusals.
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.file_descriptor.open IS NOT NULL
+            - STATS open_fds = SUM(LAST_OVER_TIME(metrics.zookeeper.file_descriptor.open))
+          primary:
+            field: open_fds
+            label: Open File Descriptors
+            format:
+              type: number
+              decimals: 0
+
+      # ─── Section: Latency & Traffic ──────────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Latency & Traffic'
+
+      - title: Peak Request Latency by Node
+        description: Cumulative peak request latency per ensemble node. A step up indicates a new latency high watermark since server start.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.latency.max IS NOT NULL
+            - STATS peak_ms = MAX(LAST_OVER_TIME(metrics.zookeeper.latency.max)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.server.state
+            - EVAL peak_latency = peak_ms / 1000.0
+            - KEEP time_bucket, peak_latency, resource.attributes.server.state
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: peak_latency
+              label: Peak Latency
+              format:
+                type: number
+                decimals: 2
+                suffix: " s"
+          breakdown:
+            field: resource.attributes.server.state
+          legend:
+            visible: show
+            position: right
+
+      - title: Packet Rate Over Time
+        description: Packets sent and received per second across the ensemble.
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.packet.count IS NOT NULL
+            - STATS packet_rate = SUM(RATE(metrics.zookeeper.packet.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.direction
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: packet_rate
+              label: Packets/sec
+              format:
+                type: number
+                decimals: 1
+                suffix: "/s"
+          breakdown:
+            field: attributes.direction
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Connections & Requests ─────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Connections & Requests'
+
+      - title: Active Connections Over Time
+        description: Client connections to the ensemble broken down by node role.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.connection.active IS NOT NULL
+            - STATS connections = SUM(LAST_OVER_TIME(metrics.zookeeper.connection.active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.server.state
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: connections
+              label: Connections
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: resource.attributes.server.state
+          legend:
+            visible: show
+            position: right
+
+      - title: Outstanding Requests Over Time
+        description: Queued requests awaiting processing. A rising trend signals server saturation.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.request.active IS NOT NULL
+            - STATS outstanding = SUM(LAST_OVER_TIME(metrics.zookeeper.request.active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: outstanding
+              label: Outstanding Requests
+              format:
+                type: number
+                decimals: 0
+
+      # ─── Section: Resources & Ensemble Health ────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Resources & Ensemble Health'
+
+      - title: Open File Descriptors Over Time
+        description: Total open file descriptors across all ensemble nodes.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.file_descriptor.open IS NOT NULL
+            - STATS open_fds = SUM(LAST_OVER_TIME(metrics.zookeeper.file_descriptor.open)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: open_fds
+              label: Open FDs
+              format:
+                type: number
+                decimals: 0
+
+      - title: Data Tree Size Over Time
+        description: In-memory data tree footprint. Unbounded growth causes memory pressure.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.data_tree.size IS NOT NULL
+            - STATS tree_size = MAX(LAST_OVER_TIME(metrics.zookeeper.data_tree.size)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: tree_size
+              label: Data Tree Size
+              format:
+                type: bytes
+
+      - title: Follower Sync Status Over Time
+        description: Follower count by sync state, reported by the leader node.
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.follower.count IS NOT NULL AND resource.attributes.server.state == "leader"
+            - STATS followers = MAX(LAST_OVER_TIME(metrics.zookeeper.follower.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.state
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: followers
+              label: Followers
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.state
+          color:
+            assignments:
+              - value: synced
+                color: '#54B399'
+              - value: unsynced
+                color: '#E7664C'
+          legend:
+            visible: show
+            position: right
+
+      - title: Znode Count Over Time
+        description: Total znode count across the ensemble data tree.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.znode.count IS NOT NULL
+            - STATS znodes = MAX(LAST_OVER_TIME(metrics.zookeeper.znode.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: znodes
+              label: Znode Count
+              format:
+                type: number
+                decimals: 0
+
+      - title: Ephemeral Node Count Over Time
+        description: Ephemeral znodes tied to client sessions. In a Kafka context, growth without corresponding client growth indicates session leaks.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-generic.otel-default
+            - WHERE metrics.zookeeper.data_tree.ephemeral_node.count IS NOT NULL
+            - STATS ephemerals = MAX(LAST_OVER_TIME(metrics.zookeeper.data_tree.ephemeral_node.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: ephemerals
+              label: Ephemeral Nodes
+              format:
+                type: number
+                decimals: 0
+
+      - title: Pending Syncs Over Time (Leader)
+        description: Pending replication syncs from leader to followers. A growing count means ZAB is struggling to replicate.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-generic.otel-default
+            - 'WHERE metrics.zookeeper.sync.pending IS NOT NULL AND resource.attributes.server.state == "leader"'
+            - STATS pending = MAX(LAST_OVER_TIME(metrics.zookeeper.sync.pending)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: pending
+              label: Pending Syncs
+              format:
+                type: number
+                decimals: 0

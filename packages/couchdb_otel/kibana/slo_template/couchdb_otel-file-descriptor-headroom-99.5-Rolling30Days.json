@@ -1,0 +1,53 @@
+{
+  "attributes": {
+    "name": "[CouchDB OTel] File descriptor headroom 99.5% rolling 30 days",
+    "description": "This SLO tracks open file descriptors in CouchDB via OTel metrics, ensuring that 99.5% of 1-minute time intervals show open FDs below 1000 over a rolling period of 30 days. Exceeding FD limits causes new connections and database opens to fail, so maintaining headroom is critical for availability.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"couchdbreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "last_value",
+              "field": "couchdb.file_descriptor.open",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 1000
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "couchdb",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.couchdb.node.name"
+    ]
+  },
+  "artifacts": {
+    "dashboards": [
+      {
+        "id": "couchdb_otel-overview"
+      }
+    ]
+  },
+  "id": "couchdb_otel-file-descriptor-headroom-99.5-Rolling30Days",
+  "type": "slo_template"
+}

@@ -1,0 +1,48 @@
+{
+    "id": "ti_ticura-search-phishing-urls",
+    "type": "search",
+    "namespaces": [
+        "default"
+    ],
+    "migrationVersion": {
+        "search": "8.0.0"
+    },
+    "attributes": {
+        "title": "[Ticura] Active phishing URLs",
+        "description": "All Ticura URL indicators tagged as phishing that have not aged out.",
+        "columns": [
+            "threat.indicator.url.full",
+            "threat.indicator.url.domain",
+            "event.severity",
+            "ticura.indicator.confidence_category",
+            "threat.indicator.first_seen"
+        ],
+        "sort": [
+            [
+                "event.severity",
+                "desc"
+            ]
+        ],
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"filter\": [{\"$state\": {\"store\": \"appState\"}, \"meta\": {\"alias\": null, \"disabled\": false, \"field\": \"event.module\", \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index\", \"key\": \"event.module\", \"negate\": false, \"params\": {\"query\": \"ti_ticura\"}, \"type\": \"phrase\"}, \"query\": {\"match_phrase\": {\"event.module\": \"ti_ticura\"}}}, {\"$state\": {\"store\": \"appState\"}, \"meta\": {\"alias\": null, \"disabled\": false, \"field\": \"labels.is_ioc_transform_source\", \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index\", \"key\": \"labels.is_ioc_transform_source\", \"negate\": false, \"params\": {\"query\": \"false\"}, \"type\": \"phrase\"}, \"query\": {\"match_phrase\": {\"labels.is_ioc_transform_source\": \"false\"}}}], \"query\": {\"language\": \"kuery\", \"query\": \"threat.indicator.type:\\\"url\\\" and ticura.indicator.additional_info.threat_types:\\\"Phishing\\\"\"}, \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+        }
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "coreMigrationVersion": "8.8.0"
+}

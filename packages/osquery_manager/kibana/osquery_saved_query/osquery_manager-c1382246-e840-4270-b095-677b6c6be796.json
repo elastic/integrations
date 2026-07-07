@@ -1,0 +1,52 @@
+{
+    "attributes": {
+        "created_at": "2026-03-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Amcache Application Shortcuts: Enumerates LNK files recorded in the Windows Amcache.hve registry hive (Root\\InventoryApplicationShortcut). Tracks Start Menu shortcuts with their target paths and program associations. Useful for forensic investigation of application execution evidence and persistence mechanisms via Start Menu manipulation.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["file"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.amcache_shortcut"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "shortcut_path"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "amcache", "forensics", "shortcuts", "execution_artifacts", "windows"]
+                }
+            }
+        ],
+        "id": "amcache_shortcut_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "timeout": 180,
+        "query": "-- Amcache Application Shortcuts: Start Menu shortcut inventory\n-- Source: elastic_amcache_application_shortcut (Root\\InventoryApplicationShortcut)\n-- Forensic value: Tracks LNK files for execution evidence and persistence analysis\n\nSELECT\n  *,\n  datetime(timestamp, 'unixepoch') AS record_time\nFROM elastic_amcache_application_shortcut\nWHERE shortcut_path IS NOT NULL AND shortcut_path != ''\nORDER BY timestamp DESC;",
+        "updated_at": "2026-03-27T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.4.0",
+    "id": "osquery_manager-c1382246-e840-4270-b095-677b6c6be796",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-03-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

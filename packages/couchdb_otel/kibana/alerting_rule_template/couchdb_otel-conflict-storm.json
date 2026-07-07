@@ -1,0 +1,48 @@
+{
+    "id": "couchdb_otel-conflict-storm",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when CouchDB returns an elevated rate of 409 (Conflict) responses, indicating heavy write contention on the same documents. Sustained conflict storms suggest application-level retry loops or concurrent writers competing for the same document IDs.",
+        "name": "[CouchDB OTel] Conflict storm (elevated 409 responses)",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "couchdb"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Conflict Storm (Elevated 409 Responses)\n\n### Triage Steps\n1. Identify which CouchDB node is producing the 409s — open the CouchDB overview dashboard and filter by the alerting node.\n2. Correlate with HTTP request rate (PUT/POST in particular) — conflicts grow with concurrent write volume on the same documents.\n3. Check application logs for the documents being updated — are multiple clients writing to the same `_id`?\n4. Look for retry storms: clients that retry on 409 without backoff can amplify the problem.\n\n### Remediation\n- Implement exponential backoff and jitter in client retry logic.\n- Use CouchDB's bulk update endpoint with `all_or_nothing: false` to handle conflicts gracefully.\n- Redesign the data model to avoid hot documents — split frequently-updated state across multiple documents.\n- For counter-style updates, consider using a separate document per increment and aggregating on read.\n\n### Threshold Tuning\nThe default of 10 conflicts/sec is a moderate threshold. Some workloads (e.g. CRDT-style replication) may legitimately produce more conflicts; raise the threshold accordingly. For low-write workloads, lower the threshold to detect smaller anomalies."
+            },
+            "dashboards": [
+                {"id": "couchdb_otel-overview"}
+            ]
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-couchdbreceiver.otel-default\n// 409 = update conflicts — spikes indicate write contention on same documents\n| WHERE attributes.http.status_code == \"409\"\n| STATS conflict_rate = SUM(RATE(couchdb.httpd.responses))\n  BY couchdb.node.name\n// Tune threshold: 409/s may be normal under load; >10/s often signals contention\n| WHERE conflict_rate > 10.0\n| SORT conflict_rate DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "couchdb.node.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

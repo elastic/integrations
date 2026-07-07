@@ -1,0 +1,92 @@
+- name: unified_log
+  type: group
+  description: >
+    Fields specific to the macOS Unified Logging system. These fields are
+    extracted from the raw ndjson output of the `log` CLI tool when an
+    ingest pipeline is configured to parse the message field.
+  fields:
+    - name: subsystem
+      type: keyword
+      description: >
+        The subsystem that emitted the log entry (e.g. com.apple.appleevents,
+        com.apple.TCC). Corresponds to the ndjson `subsystem` field.
+    - name: category
+      type: keyword
+      description: >
+        The category within the subsystem (e.g. access, connection).
+        Corresponds to the ndjson `category` field.
+    - name: event_type
+      type: keyword
+      description: >
+        The Unified Log event type (e.g. logEvent, activityCreateEvent,
+        traceEvent). Corresponds to the ndjson `eventType` field.
+    - name: message_type
+      type: keyword
+      description: >
+        The original message severity before normalization to log.level.
+        One of Default, Info, Debug, Error, or Fault. Corresponds to the
+        ndjson `messageType` field.
+    - name: format_string
+      type: keyword
+      description: >
+        The os_log format string used to compose the message. Useful for
+        grouping events by log template. Corresponds to the ndjson
+        `formatString` field.
+    - name: activity_id
+      type: long
+      description: >
+        The activity identifier for correlating related log entries.
+        Corresponds to the ndjson `activityIdentifier` field.
+    - name: parent_activity_id
+      type: long
+      description: >
+        The parent activity identifier. Corresponds to the ndjson
+        `parentActivityIdentifier` field.
+    - name: trace_id
+      type: keyword
+      description: >
+        The trace identifier for correlating log entries across processes.
+        Stored as keyword because the value can exceed the long integer
+        range. Corresponds to the ndjson `traceID` field.
+    - name: mach_timestamp
+      type: long
+      description: >
+        The Mach absolute time timestamp. Corresponds to the ndjson
+        `machTimestamp` field.
+    - name: boot_uuid
+      type: keyword
+      description: >
+        The boot UUID identifying the system boot session. Corresponds to
+        the ndjson `bootUUID` field.
+    - name: timezone
+      type: keyword
+      description: >
+        The timezone name where the log was recorded. Corresponds to the
+        ndjson `timezoneName` field.
+    - name: process
+      type: group
+      description: >
+        Fields related to the process image that emitted the log entry.
+      fields:
+        - name: uuid
+          type: keyword
+          description: >
+            The UUID of the process image (Mach-O binary). Corresponds to
+            the ndjson `processImageUUID` field.
+    - name: sender
+      type: group
+      description: >
+        Fields related to the sender library or framework that emitted the
+        log entry on behalf of the process.
+      fields:
+        - name: uuid
+          type: keyword
+          description: >
+            The UUID of the sender image (shared library or framework).
+            Corresponds to the ndjson `senderImageUUID` field.
+        - name: program_counter
+          type: long
+          description: >
+            The program counter value of the sender at the time the log
+            entry was emitted. Corresponds to the ndjson
+            `senderProgramCounter` field.

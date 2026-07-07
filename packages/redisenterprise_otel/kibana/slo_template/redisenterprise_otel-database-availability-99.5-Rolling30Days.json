@@ -1,0 +1,49 @@
+{
+  "attributes": {
+    "name": "[Redis Enterprise OTel] Database availability 99.5% rolling 30 days",
+    "description": "Tracks Redis Enterprise database availability via the bdb_up health metric, ensuring 99.5% of 1-minute windows report the database as healthy (bdb_up >= 1) over a rolling 30-day period. A database reporting down state means all client operations against it fail, representing complete service unavailability for applications depending on this database.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"redisenterprise.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "min",
+              "field": "bdb_up"
+            }
+          ],
+          "equation": "A",
+          "comparator": "GTE",
+          "threshold": 1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "redisenterprise",
+      "otel"
+    ],
+    "groupBy": "bdb",
+    "artifacts": {
+      "dashboards": [
+        {"id": "redisenterprise_otel-overview"},
+        {"id": "redisenterprise_otel-database-performance"}
+      ]
+    }
+  },
+  "id": "redisenterprise_otel-database-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}

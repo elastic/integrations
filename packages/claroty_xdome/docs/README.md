@@ -1427,7 +1427,6 @@ An example event for `vulnerability` looks as following:
 | claroty_xdome.vulnerability.note | The notes added to the vulnerability. | keyword |
 | claroty_xdome.vulnerability.priority_group | The Vulnerability Priority Group can be used to prioritize vulnerabilities based on the suggested order of hierarchical groups, determined by each vulnerabilities impact, exploitability characteristics, relevance state and remediation information. Device filters dynamically change the groups. | keyword |
 | claroty_xdome.vulnerability.published_date | The date the vulnerability was published. | date |
-| claroty_xdome.vulnerability.recommendations | Actionable recommendations retrieved from the vendor, CERT advisory and the platform.Such as security updates, upgrades and additional Workarounds to minimize the risk. | keyword |
 | claroty_xdome.vulnerability.sources.name |  | keyword |
 | claroty_xdome.vulnerability.sources.url |  | keyword |
 | claroty_xdome.vulnerability.type | Type such as "Application", "Clinical", "IoT" or "Platform". | keyword |

@@ -1,0 +1,56 @@
+{
+  "id": "postgresql_otel-long-running-queries",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when active queries run longer than 5 minutes (`db.server.query_sample`). Long queries may block others.",
+    "name": "[PostgreSQL OTel] Long-running queries",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 4,
+      "statusChangeThreshold": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-active-queries"
+        },
+        {
+          "id": "postgresql_otel-query-performance"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL long-running queries\n\n### What fired\nActive query sample with `total_exec_time > 300000 ms` (5 min).\n\n### Why it matters\nLong-running queries hold locks, consume memory, and block VACUUM. Occasional long queries are expected (reports, maintenance); unexpected ones need intervention.\n\n### Triage\n1. Inspect the query and its plan.\n2. Check wait events for the session.\n\n### Remediation\n- Kill rogue queries.\n- Add timeouts (`statement_timeout`).\n\n### Tuning\n- 5 min threshold; tune to SLA.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM logs-postgresqlreceiver.otel-*\n// Active query samples from pg_stat_activity; total_exec_time is real-time execution ms\n| WHERE event_name == \"db.server.query_sample\"\n| WHERE attributes.postgresql.total_exec_time IS NOT NULL\n// Threshold: queries running > 5 minutes (300000 ms); adjust for your SLA\n| WHERE attributes.postgresql.total_exec_time > 300000\n| KEEP service.instance.id, attributes.db.namespace, attributes.db.query.text, attributes.postgresql.total_exec_time, attributes.postgresql.pid\n| SORT attributes.postgresql.total_exec_time DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

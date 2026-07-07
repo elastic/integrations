@@ -3,7 +3,7 @@ name: winlog
 title: Custom Windows Event Logs
 description: Collect and parse logs from any Windows event log channel with Elastic Agent.
 type: input
-version: "2.4.0"
+version: "2.6.0"
 conditions:
   kibana:
     version: '^8.10.1 || ^9.0.0'
@@ -26,8 +26,7 @@ policy_templates:
         type: text
         title: Channel Name
         description: >-
-          Name of Windows event log channel (eg. Microsoft-Windows-PowerShell/Operational).
-          It expects a single channel name. To collect multiple channels, add multiple integrations.
+          Name of Windows event log channel (eg. Microsoft-Windows-PowerShell/Operational). It expects a single channel name. To collect multiple channels, add multiple integrations.
         required: true
         show_user: true
       - name: data_stream.dataset
@@ -50,6 +49,18 @@ policy_templates:
         title: Preserve original event
         description: >-
           Preserves a raw copy of the original XML event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: forwarded
+        required: true
+        show_user: true
+        title: Forwarded events
+        description: >-
+          Indicates if this will be consuming forwarded events. If `true` the integration will assume the events 
+          were not generated in the host. This MUST be set to `true` if the integration is consuming forwarded events
+          like in WEF setups, otherwise the integration could run in a degraded state due to inconsistencies in the events
+          correlation. If the channel being consumed is `ForwardedEvents` this is going to be set to `true` regardless of the value set here.
         type: bool
         multi: false
         default: false
@@ -87,8 +98,7 @@ policy_templates:
         type: text
         title: Level
         description: >-
-          A list of event levels to include. The value is a comma-separated list of levels.
-          Accepted levels are: `critical`, `error`, `warning`, `information`, and `verbose`.
+          A list of event levels to include. The value is a comma-separated list of levels. Accepted levels are: `critical`, `error`, `warning`, `information`, and `verbose`.
         required: false
         show_user: false
       - name: xml_query

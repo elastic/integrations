@@ -104,11 +104,11 @@ program: |
           ).do_request().as(resp, resp.StatusCode == 200 ?
             bytes(resp.Body).decode_json().as(body, {
               //Collect call record IDs into the worklist
-              "worklist" : state.worklist + body.value.map(mp, {
+              "worklist" : state.worklist + ( has(body.value) && body.value != null ? body.value.map(mp, {
                 "id": mp.id,
                 "start_date_time": mp.startDateTime,
                 "end_date_time": mp.endDateTime,
-              }),
+              }): []),
               "want_more": "@odata.nextLink" in body,
               "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",
             })

@@ -1,0 +1,51 @@
+{
+  "attributes": {
+    "name": "[ActiveMQ OTel] Broker memory utilization 99.5% rolling 30 days",
+    "description": "This SLO tracks broker memory utilization via OTel metrics, ensuring that 99.5% of 1-minute time intervals show memory utilization below 85% over a rolling period of 30 days. Memory exhaustion causes producer blocking and message rejection; keeping utilization under 85% maintains headroom for traffic spikes.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"activemq.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "last_value",
+              "field": "activemq.memory.utilization"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 0.85
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "activemq",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.activemq.broker.name"
+    ]
+  },
+  "id": "activemq_otel-broker-memory-utilization-99.5-Rolling30Days",
+  "type": "slo_template",
+  "artifacts": {
+    "dashboards": [
+      { "id": "activemq_otel-broker-health" },
+      { "id": "activemq_otel-overview" }
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "attributes": {
+    "name": "[Redis OTel] P99 command latency 99.5% rolling 30 days",
+    "description": "This SLO tracks the p99 latency of Redis commands via OTel metrics. At least 99.5% of 1-minute time intervals must show the worst-case p99 command latency below 10 milliseconds over a rolling 30-day period, ensuring responsive command execution for clients.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"redisreceiver.otel\" and attributes.percentile: \"p99\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "max", "field": "redis.cmd.latency"}
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 0.01
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": ["redis", "otel"],
+    "groupBy": ["resource.attributes.server.address", "resource.attributes.server.port"]
+  },
+  "artifacts": {
+    "dashboards": [
+      {"id": "redis_otel-overview"}
+    ]
+  },
+  "id": "redis_otel-p99-command-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}

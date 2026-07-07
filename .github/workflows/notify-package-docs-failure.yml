@@ -1,0 +1,54 @@
+name: Notify on Package Docs Validation Failure
+
+on:
+  workflow_run:
+    workflows: ["Validate Package Docs"]
+    types: [completed]
+
+jobs:
+  notify:
+    name: Comment on PR
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Download failure signal
+        id: artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: docs-validation-failed
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          path: validate-result
+        continue-on-error: true
+
+      - name: Comment on PR
+        if: steps.artifact.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          PR_NUMBER=$(cat validate-result/pr_number 2>/dev/null || true)
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
+            echo "Could not read PR number from artifact"
+            exit 0
+          fi
+          # Verify the PR number matches the head SHA to prevent
+          # a forked PR from targeting a different PR's comments
+          ACTUAL_PR=$(gh api "repos/${REPO}/commits/${HEAD_SHA}/pulls" \
+            --jq '.[0].number' 2>/dev/null || true)
+          if [ "$PR_NUMBER" != "$ACTUAL_PR" ]; then
+            echo "PR number mismatch: artifact=$PR_NUMBER actual=$ACTUAL_PR"
+            exit 0
+          fi
+          # Avoid duplicate comments
+          EXISTING=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" \
+            --jq '[.[] | select(.body | contains("Package docs validation failed"))] | length')
+          if [ "$EXISTING" = "0" ]; then
+            printf '⚠️ **Package docs validation failed.** Please check the [workflow run](%s) for details.\n\nFor support, reach out in the #docs Slack channel.\n\ncc @elastic/integration-docs\n' "$RUN_URL" > comment-body.md
+            gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file comment-body.md
+          fi

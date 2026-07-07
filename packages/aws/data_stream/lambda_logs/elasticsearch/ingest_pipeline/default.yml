@@ -2,37 +2,46 @@
 description: Pipeline for AWS Lambda logs.
 processors:
     - rename:
+        tag: rename_message_to_event_original_b273fe21
         field: message
         target_field: event.original
         if: 'ctx.event?.original == null'
         description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
     - remove:
+        tag: remove_message_2ee3a7d4
         field: message
         ignore_missing: true
         if: ctx.event?.original != null
         description: 'The `message` field is no longer required if the document has an `event.original` field.'
     - set:
+        tag: set_ecs_version_0f7334bb
         field: ecs.version
         value: 8.11.0
     - set:
+        tag: set_cloud_service_name_cb418706
         field: cloud.service.name
         value: aws_lambda
     - set:
+        tag: set_cloud_provider_208bdd6b
         field: cloud.provider
         value: aws
     - grok:
+        tag: grok_event_original_fc1a0163
         field: event.original
         patterns:
         - '^%{CHAR:first_char}'
         pattern_definitions:
             CHAR: .
     - pipeline:
+        tag: pipeline_35b524a9
         if: ctx.first_char != '{'
         name: '{{ IngestPipeline "aws-lambda-plaintext" }}'
     - pipeline:
+        tag: pipeline_d8833c14
         if: ctx.first_char == '{'
         name: '{{ IngestPipeline "aws-lambda-json" }}'
     - remove:
+        tag: remove_first_char_c4836df3
         field: first_char
         ignore_missing: true
         description: 'Removes the `first_char` field used to determine the log format.'
@@ -45,4 +54,4 @@ on_failure:
     value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

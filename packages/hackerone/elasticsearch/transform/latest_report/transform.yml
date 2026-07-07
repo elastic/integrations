@@ -1,0 +1,40 @@
+source:
+  index:
+    - "logs-hackerone.report-*"
+  query:
+    bool:
+      must_not:
+        - exists:
+            field: error.message
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
+dest:
+  index: "logs-hackerone_latest.dest_report-v1"
+  aliases:
+    - alias: "logs-hackerone_latest.report"
+      move_on_creation: true
+latest:
+  unique_key:
+    - data_stream.namespace
+    - event.dataset
+    - event.id
+  #  HackerOne reports have a meaningful event time (@timestamp, derived from last_activity_at). The transform-guide table recommends @timestamp for sources that have one, reserving event.ingested for inventory snapshots without a meaningful event time. With sort: event.ingested, late-arriving older revisions of a report (e.g., a re-poll after a re-collection window) will overwrite the actual newest version of the report in the latest index.
+  sort: "@timestamp"
+sync:
+  time:
+    field: event.ingested
+    delay: 120s
+description: >-
+  Latest Reports from HackerOne. As reports get updated, this transform stores only the latest state of each report inside the destination index. The transform's destination index contains only the latest state of the report.
+frequency: 5m
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: false
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false

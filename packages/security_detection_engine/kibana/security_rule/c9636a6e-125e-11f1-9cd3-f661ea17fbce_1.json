@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when an MFA enrollment, registration, or security notification email is deleted or moved to deleted items in Microsoft 365 Exchange. Adversaries who compromise accounts and register their own MFA device often delete the notification emails to cover their tracks and prevent the legitimate user from noticing the unauthorized change. This technique is commonly observed in business email compromise (BEC) and account takeover attacks.",
+        "false_positives": [
+            "Users legitimately deleting MFA notification emails after reviewing them.",
+            "Automated mailbox rules that move security notifications to specific folders.",
+            "Email retention policies that automatically delete old notification emails."
+        ],
+        "from": "now-9m",
+        "index": [
+            "filebeat-*",
+            "logs-o365.audit-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "M365 Exchange MFA Notification Email Deleted or Moved",
+        "note": "## Triage and Analysis\n\n### Investigating M365 Exchange MFA Notification Email Deleted or Moved\n\nThis rule detects when emails containing MFA enrollment or security notification keywords are deleted or moved to deleted items. Attackers who gain access to an account and register their own MFA device will often immediately delete the notification email to prevent the legitimate user from detecting the compromise.\n\n#### Possible Investigation Steps\n\n- Identify the user whose mailbox had the email deleted and determine if they recently enrolled a new MFA device.\n- Review Azure AD sign-in logs for the user around the time of the deletion for authentication anomalies.\n- Check Azure AD audit logs for recent MFA method registrations or changes for this user.\n- Review the source IP address and determine if it matches the user's typical access patterns.\n- Look for other suspicious mailbox activities from the same session (inbox rules, email forwarding).\n- Determine if the user was aware of and initiated the MFA enrollment that generated the notification.\n\n### False Positive Analysis\n\n- Users may legitimately delete MFA notification emails after reviewing and confirming the enrollment.\n- Some organizations have mailbox rules that automatically organize or delete notification emails.\n- Consider creating exceptions for users who frequently manage MFA enrollments (IT help desk).\n\n### Response and Remediation\n\n- If unauthorized MFA enrollment is confirmed, immediately remove the attacker's MFA method from the account.\n- Revoke all active sessions and refresh tokens for the affected user.\n- Reset the user's credentials and require reauthentication.\n- Review inbox rules for any malicious forwarding or deletion rules.\n- Check for data exfiltration or other malicious activities during the compromise window.\n- Implement conditional access policies to restrict MFA registration to trusted locations/devices.\n",
+        "query": "web where event.dataset == \"o365.audit\" and\n    event.provider == \"Exchange\" and\n    event.action in (\"SoftDelete\", \"HardDelete\", \"MoveToDeletedItems\") and\n    event.outcome == \"success\" and\n    (\n        o365.audit.AffectedItems.Subject like~ (\n            /* new + (mfa|multi-|factor|method|device|security) */\n            \"*new mfa*\", \"*new multi*\", \"*new factor*\", \"*new method*\", \"*new device*\", \"*new security*\",\n            /* 2fa and 2-step */\n            \"*2fa*\", \"*2-step*\",\n            /* mfa + action verbs */\n            \"*mfa enroll*\", \"*mfa register*\", \"*mfa added*\", \"*mfa change*\",\n            \"*mfa verify*\", \"*mfa update*\", \"*mfa activate*\", \"*mfa configure*\", \"*mfa setup*\",\n            /* factor + action verbs */\n            \"*factor enroll*\", \"*factor register*\", \"*factor added*\", \"*factor change*\",\n            \"*factor verify*\", \"*factor update*\", \"*factor activate*\", \"*factor configure*\", \"*factor setup*\",\n            /* method + action verbs */\n            \"*method enroll*\", \"*method register*\", \"*method added*\", \"*method change*\",\n            \"*method verify*\", \"*method update*\", \"*method activate*\", \"*method configure*\", \"*method setup*\",\n            /* device + action verbs */\n            \"*device enroll*\", \"*device register*\", \"*device added*\", \"*device change*\",\n            \"*device verify*\", \"*device update*\", \"*device activate*\", \"*device configure*\", \"*device setup*\",\n            /* security + action verbs */\n            \"*security enroll*\", \"*security register*\", \"*security added*\", \"*security change*\",\n            \"*security verify*\", \"*security update*\", \"*security activate*\", \"*security configure*\", \"*security setup*\",\n            /* Additional security notifications */\n            \"*authenticator*\", \"*verification code*\", \"*security info*\", \"*security alert*\"\n        ) and not\n        o365.audit.AffectedItems.Subject like~ (\"*sign-in*\", \"*sign in*\", \"*log-in*\", \"*log in*\", \"*logon*\")\n    )\n",
+        "references": [
+            "https://cloud.google.com/blog/topics/threat-intelligence/expansion-shinyhunters-saas-data-theft"
+        ],
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.AffectedItems.Subject",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "c9636a6e-125e-11f1-9cd3-f661ea17fbce",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Data Source: Microsoft 365",
+            "Data Source: Microsoft 365 Audit Logs",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1070",
+                        "name": "Indicator Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1070/",
+                        "subtechnique": [
+                            {
+                                "id": "T1070.008",
+                                "name": "Clear Mailbox Data",
+                                "reference": "https://attack.mitre.org/techniques/T1070/008/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "c9636a6e-125e-11f1-9cd3-f661ea17fbce_1",
+    "type": "security-rule"
+}

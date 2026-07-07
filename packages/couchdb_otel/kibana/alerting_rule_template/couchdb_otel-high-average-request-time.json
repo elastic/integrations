@@ -1,0 +1,48 @@
+{
+    "id": "couchdb_otel-high-average-request-time",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when the average HTTP request time on a CouchDB node exceeds a configurable latency threshold. Rising request times indicate disk I/O saturation, lock contention, view rebuilds, or general resource pressure.",
+        "name": "[CouchDB OTel] High average request time (latency)",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "couchdb"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Average Request Time (Latency)\n\n### Triage Steps\n1. Open the CouchDB overview dashboard and identify the node and time range where latency spiked.\n2. Correlate with HTTP request rate — was there a traffic surge, or did latency climb at constant load?\n3. Check `couchdb.database.operations` (reads vs writes) and `couchdb.httpd.bulk_requests` for workload composition shifts.\n4. Review host metrics: disk I/O wait, CPU saturation, and memory pressure.\n5. Check for view rebuilds — design document changes trigger costly background indexing that can stall queries.\n\n### Remediation\n- If view rebuilds are the cause, schedule design document changes during off-peak hours and pre-warm views with `?stale=update_after`.\n- For disk I/O saturation, move data files to faster storage or reduce write rate via batching.\n- Tune `[httpd] max_connections` and `[chttpd] backlog` to prevent request queueing under load.\n- Consider compacting databases (`POST /{db}/_compact`) if file sizes are bloated.\n\n### Threshold Tuning\nThe default 1000ms threshold is a generic starting point. Set it to align with your CouchDB SLO — typical OLTP workloads target <100-500ms. The rule uses peak (MAX) latency in the window, so brief spikes are detected; switch to averaging if you want to filter out transient outliers."
+            },
+            "dashboards": [
+                {"id": "couchdb_otel-overview"}
+            ]
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-couchdbreceiver.otel-default\n// Average request time is a gauge — use MAX_OVER_TIME for peak detection\n| WHERE couchdb.average_request_time IS NOT NULL\n| STATS max_avg_request_time_ms = MAX(MAX_OVER_TIME(couchdb.average_request_time))\n  BY couchdb.node.name\n// Latency threshold in ms — adjust for your SLO (e.g. 500–2000 ms)\n| WHERE max_avg_request_time_ms > 1000\n| SORT max_avg_request_time_ms DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "couchdb.node.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

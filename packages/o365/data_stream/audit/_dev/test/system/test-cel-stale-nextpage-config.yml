@@ -1,0 +1,34 @@
+input: cel
+service: o365-cel
+vars: ~
+policy_template: o365
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}
+    token_url: http://{{Hostname}}:{{Port}}
+    preserve_original_event: true
+    client_id: test-cel-client-id
+    client_secret: test-cel-client-secret
+    azure_tenant_id: test-cel-tenant-id
+    content_types: "Audit.Exchange"
+    initial_interval: 30m
+    maximum_age: 1h
+    enable_request_tracer: true
+# Exercises the pre-flight filter that drops queued listing links whose
+# startTime has aged past maximum_age (see packages/o365/changelog.yml 3.8.1).
+# The mock's Audit.Exchange first page returns a NextPageUri with a 2019
+# startTime; with a 1h maximum_age that NextPageUri must be pruned by the
+# filter rather than followed.
+#
+# initial_interval (30m) is deliberately less than maximum_age (1h) so the
+# fresh first listing URL's startTime (now - 30m) sits comfortably inside
+# the window (now - 1h) with 30 minutes of buffer against iteration delay.
+# This mirrors the package default, where initial_interval (167h) is 55m
+# less than maximum_age (167h55m); setting the two equal would place the
+# fresh URL exactly at the boundary and let iteration-time drift put it
+# outside.
+#
+# The first-page event ingests normally, the NextPageUri event must not.
+# hit_count is therefore 1, not 2.
+assert:
+  hit_count: 1

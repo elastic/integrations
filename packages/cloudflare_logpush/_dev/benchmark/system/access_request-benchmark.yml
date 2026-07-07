@@ -1,0 +1,26 @@
+---
+description: Benchmark 10000 access_request events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: access_request
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/access_request
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-access-request
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./access_request-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./access_request-benchmark/config.yml
+    fields:
+      path: ./access_request-benchmark/fields.yml

@@ -30,6 +30,33 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Remove Sysdig null values from the parsed event JSON before any type conversion.
+      tag: script_remove_string_null_values_
+      lang: painless
+      if: ctx.json != null
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == '<NA>' || v == '{}' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == '<NA>' || v == '{}' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx.json);
   - set:
       field: observer.vendor
       tag: set_observer_vendor
@@ -181,6 +208,21 @@ processors:
       tag: rename_content_fields_proc_ppid_ts
       target_field: sysdig.event.content.fields.proc.ppid_ts
       ignore_missing: true
+  - script:
+      description: Remove empty proc.pid and proc.ppid maps left after timestamp field expansion.
+      tag: script_sanitize_proc_timestamp_maps
+      lang: painless
+      if: ctx.sysdig?.event?.content?.fields instanceof Map && (ctx.sysdig.event.content.fields['proc.pid.ts'] != null || ctx.sysdig.event.content.fields['proc.ppid.ts'] != null || ctx.sysdig?.event?.content?.fields?.proc?.pid_ts != null || ctx.sysdig?.event?.content?.fields?.proc?.ppid_ts != null)
+      source: |
+        if (ctx.sysdig.event.content.fields.proc instanceof Map) {
+          def proc = ctx.sysdig.event.content.fields.proc;
+          if (proc.containsKey('pid') && proc.pid instanceof Map && proc.pid.size() == 0) {
+            proc.remove('pid');
+          }
+          if (proc.containsKey('ppid') && proc.ppid instanceof Map && proc.ppid.size() == 0) {
+            proc.remove('ppid');
+          }
+        }
   - dot_expander:
       field: ct.user
       tag: dot_expander_ct_user
@@ -200,6 +242,7 @@ processors:
       tag: dot_expander_content_fields
       path: sysdig.event.content.fields
       override: true
+      if: ctx.sysdig?.event?.content?.fields instanceof Map
       on_failure:
         - append:
             field: error.message
@@ -1020,6 +1063,7 @@ processors:
       field: '*'
       tag: dot_expander_labels
       path: sysdig.event.labels
+      if: ctx.sysdig?.event?.labels instanceof Map
       on_failure:
         - append:
             field: error.message
@@ -1477,7 +1521,7 @@ processors:
             } else if (v instanceof List) {
                 handleList(v);
             }
-            return v == null || v == '' || v == '<NA>' || v == '-1' ||(v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            return v == null || v == '' || v == '<NA>' || v == '-1' || v == '{}' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
           });
         }
         void handleList(List list) {
@@ -1487,7 +1531,7 @@ processors:
             } else if (v instanceof List) {
                 handleList(v);
             }
-            return v == null || v == '' || v == '<NA>' || v == '-1' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            return v == null || v == '' || v == '<NA>' || v == '-1' || v == '{}' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
           });
         }
         handleMap(ctx);

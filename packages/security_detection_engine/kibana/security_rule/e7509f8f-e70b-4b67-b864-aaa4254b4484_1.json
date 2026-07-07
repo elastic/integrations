@@ -1,0 +1,102 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies retrieval of Azure VM boot diagnostics data (\"MICROSOFT.COMPUTE/VIRTUALMACHINES/RETRIEVEBOOTDIAGNOSTICSDATA/ACTION\") by an identity that has not performed this operation recently. Boot diagnostics expose the VM serial console log and a console screenshot, which frequently contain plaintext boot-time output such as credentials, tokens, cloud-init/agent secrets, and command history. An adversary with VM read/contributor rights can retrieve this data over the control plane, without logging into the guest or touching the network, to harvest credentials.",
+        "false_positives": [
+            "Support engineers, infrastructure-as-code, and VM health automation may legitimately retrieve boot diagnostics during troubleshooting. The first occurrence per principal will alert; baseline expected support users, service principals, and managed identities and exclude them if the activity is verified as authorized."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-azure.activitylogs-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.outcome",
+                "azure.activitylogs.operation_name",
+                "azure.activitylogs.identity.authorization.evidence.principal_id",
+                "azure.activitylogs.identity.authorization.evidence.principal_type",
+                "azure.activitylogs.identity.claims.appid",
+                "azure.resource.name",
+                "azure.resource.id",
+                "source.ip",
+                "source.as.number",
+                "source.as.organization.name",
+                "source.geo.country_name",
+                "azure.subscription_id",
+                "azure.activitylogs.tenant_id"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Azure VM Boot Diagnostics Retrieved",
+        "note": "## Triage and analysis\n\n### Investigating Azure VM Boot Diagnostics Retrieved\n\nRetrieving boot diagnostics (`retrieveBootDiagnosticsData/action`) returns SAS URIs to the VM serial console log and a\nconsole screenshot. The serial log often contains plaintext boot output: cloud-init/agent activity, command history, and\nsometimes credentials or tokens. The action is a control-plane read requiring only VM read/contributor rights, leaves no\nguest footprint, and bypasses NSG/JIT.\n\n### Triage checklist\n\n- Identify the acting principal via `azure.activitylogs.identity.authorization.evidence.principal_id` and\n  `...principal_type` (User vs ServicePrincipal) and `azure.activitylogs.identity.claims.appid`. Service principal or\n  managed identity retrieval is more suspicious than a known support user.\n- Review the source: `source.ip`, `source.as.number`, `source.as.organization.name`, `source.geo.country_name`.\n  Retrieval from cloud hosting, VPS, or anonymizing networks is more suspicious than known corporate egress.\n- Inspect `azure.resource.id` / `azure.resource.name` to identify the target VM. Was the same principal recently granted\n  access to it, or is this their first interaction?\n- Did the same principal recently perform reconnaissance, role assignments, Run Command, or extension operations on the\n  VM or subscription?\n\n### Possible investigation steps\n\n- Review the principal's Entra ID sign-in logs and RBAC role assignments on the subscription, resource group, and VM.\n- Retrieve the boot diagnostics serial log and screenshot from the VM and assess whether they exposed credentials or\n  other secrets that now require rotation.\n- Pivot on the VM and any credentials observed in the serial log for follow-on access, lateral movement, or persistence.\n\n### Response and remediation\n\n- If unauthorized, rotate any credentials/tokens exposed in the serial log, review RBAC on the affected scope, and revoke\n  the principal's access if compromised.\n- Collect activity log artifacts per incident procedures.\n",
+        "query": "data_stream.dataset:azure.activitylogs and\n    event.action:\"MICROSOFT.COMPUTE/VIRTUALMACHINES/RETRIEVEBOOTDIAGNOSTICSDATA/ACTION\" and\n    event.outcome:(success or Success)\n",
+        "references": [
+            "https://blog.pwnedlabs.io/diving-deep-into-azure-vm-attack-vectors",
+            "https://www.microsoft.com/en-us/msrc/blog/2023/08/azure-serial-console-attack-and-defense-part-1",
+            "https://learn.microsoft.com/en-us/azure/virtual-machines/boot-diagnostics",
+            "https://www.netspi.com/blog/technical-blog/adversary-simulation/7-ways-to-execute-command-on-azure-virtual-machine-virtual-machine-scale-sets/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "activitylogs",
+                "package": "azure",
+                "version": "^1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e7509f8f-e70b-4b67-b864-aaa4254b4484",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Endpoint",
+            "Data Source: Azure",
+            "Data Source: Azure Activity Logs",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "e7509f8f-e70b-4b67-b864-aaa4254b4484_1",
+    "type": "security-rule"
+}

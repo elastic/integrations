@@ -1,0 +1,25 @@
+---
+description: Pipeline for processing Kafka Connect client metrics
+processors:
+  - set:
+      field: ecs.version
+      value: '8.17.0'
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.module
+      value: kafka_connect
+  - rename:
+      field: jolokia.kafka_connect
+      target_field: kafka_connect
+      ignore_missing: true
+      ignore_failure: true
+  - dissect:
+      if: ctx.kafka_connect?.client?.id == null
+      field: kafka_connect.mbean
+      pattern: 'kafka.connect:client-id=%{kafka_connect.client.id},%{}'
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

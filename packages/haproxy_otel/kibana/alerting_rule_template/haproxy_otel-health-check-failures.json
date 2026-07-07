@@ -1,0 +1,51 @@
+{
+  "id": "haproxy_otel-health-check-failures",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when any server-level `haproxy.failed_checks` increase. Failed health checks precede the server being marked DOWN.",
+    "name": "[HAProxy OTel] Server health check failures",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "haproxy"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "haproxy_otel-server"
+        },
+        {
+          "id": "haproxy_otel-backend"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## HAProxy server health check failures\n\n### What fired\n`haproxy.failed_checks` on a server increased during the window.\n\n### Why it matters\nA health-check failure while UP means the check was slow or returned an error. Repeated failures will flip the server to DOWN, removing it from rotation.\n\n### Triage\n1. Check the server's application logs and CPU/memory.\n2. Inspect network latency to the server.\n3. Validate the health-check path is cheap and always available.\n\n### Remediation\n- Fix the server or health-check.\n- Temporarily increase health-check tolerance if it is overly sensitive.\n\n### Tuning\n- Fires on any increase.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-haproxyreceiver.otel-*\n// Failed checks (while server UP) \u2014 server-level counter only\n| WHERE haproxy.failed_checks IS NOT NULL\n| WHERE haproxy.service_name != \"FRONTEND\" AND haproxy.service_name != \"BACKEND\"\n| STATS fail_increase = SUM(INCREASE(haproxy.failed_checks))\n  BY haproxy.proxy_name, haproxy.service_name, haproxy.addr\n| WHERE fail_increase > 0\n| EVAL alert_key = CONCAT(TO_STRING(haproxy.proxy_name), \"::\", TO_STRING(haproxy.service_name), \"::\", COALESCE(TO_STRING(haproxy.addr), \"\"))\n| SORT fail_increase DESC\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "alert_key",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

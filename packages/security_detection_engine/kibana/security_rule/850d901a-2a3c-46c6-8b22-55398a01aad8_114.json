@@ -1,0 +1,140 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies remote access to the registry to potentially dump credential data from the Security Account Manager (SAM) registry hive in preparation for credential access and privileges elevation.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.name",
+                "user.id",
+                "process.executable",
+                "process.command_line",
+                "process.entity_id",
+                "process.parent.executable",
+                "process.Ext.authentication_id",
+                "process.Ext.session_info.logon_type",
+                "process.Ext.session_info.authentication_package",
+                "process.Ext.token.elevation_level",
+                "file.path",
+                "file.size",
+                "file.Ext.header_bytes"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Remote Credential Access via Registry",
+        "note": "## Triage and analysis\n\n### Investigating Potential Remote Credential Access via Registry\n\n#### Possible investigation steps\n\n- Does the alert-local file prove a registry hive save?\n  - Focus: `event.action`, `file.path`, `file.size`, `file.Ext.header_bytes`, and `process.name`.\n  - Implication: escalate when svchost.exe writes a hive-sized Windows temp file with REGF header bytes; lower concern only when content or location contradicts hive export or matches a recognized hive-export workflow on this host.\n\n- Does the svchost instance fit RemoteRegistry-backed collection?\n  - Focus: `process.executable`, `process.command_line`, `process.parent.executable`, `process.Ext.session_info.logon_type`, and `process.Ext.session_info.authentication_package`.\n  - Hint: if parent or session fields are absent, recover the endpoint process event with `host.id` and `process.entity_id`.\n  - Implication: escalate when svchost is outside the Windows system path, lacks service-control lineage, uses an unusual service group, or runs under an unexpected remote/network session; lower concern when service context and session fields align with one recognized collection workflow.\n\n- Did the same process create companion hive artifacts?\n  - Why: secretsdump-style collection often saves SAM, SECURITY, and SYSTEM hives to target temp storage before parsing or retrieval.\n  - Focus: file events on `host.id` scoped to `process.entity_id`: `file.path`, `file.name`, `file.size`, `file.Ext.header_bytes`, and `file.Ext.original.path`. !{investigate{\"description\":\"\",\"label\":\"File activity for the same process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the same process creates multiple hive-sized REGF temp files, renamed copies, or cleanup artifacts; a single hive artifact narrows scope but does not clear the alert by itself.\n\n- Does the account and logon session fit recognized collection on this host?\n  - Focus: `user.id`, `user.name`, `user.domain`, `process.Ext.authentication_id`, and `process.Ext.token.elevation_level`.\n  - Hint: if Windows Security telemetry exists, bridge `process.Ext.authentication_id` to same-host logon events and read source host/IP, logon type, and authentication package. Missing authentication telemetry is unresolved, not benign. !{investigate{\"description\":\"\",\"label\":\"Windows Security events for the local process session\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TargetLogonId\",\"queryType\":\"phrase\",\"value\":\"{{process.Ext.authentication_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4624\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.SubjectLogonId\",\"queryType\":\"phrase\",\"value\":\"{{process.Ext.authentication_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4648\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when account, SID/domain, logon session, or elevation is not the identity used for recognized collection on this host; lower concern only when the same account and session context match that exact workflow.\n\n- Did the same session leave local staging, cleanup, or follow-on credential-access activity?\n  - Focus: endpoint process events on `host.id` scoped to `process.Ext.authentication_id`, then file events for matching `process.entity_id`: `process.command_line`, `process.parent.command_line`, `file.path`, and `file.Ext.original.path`. !{investigate{\"description\":\"\",\"label\":\"Process events for the same session\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.Ext.authentication_id\",\"queryType\":\"phrase\",\"value\":\"{{process.Ext.authentication_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if the alert lacks `process.Ext.authentication_id`, recover it from the endpoint process event before same-session review.\n  - Implication: escalate when the same session starts service-control, scripting, copy, compression, cleanup, or additional credential-access activity around the hive write; a single visible hive file remains unresolved because missing follow-on endpoint evidence is not benign.\n\n- If local evidence remains suspicious or incomplete, do related alerts widen scope?\n  - Focus: related `user.id` alerts for credential dumping, remote-service abuse, hive saves, or archive staging. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: if account ownership is shared or ambiguous, compare `host.id` alerts for remote execution, service abuse, or alternate collection paths. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden when the same user or host shows credential dumping, remote-service abuse, archive staging, or repeated hive-save alerts; keep local when related activity stays confined to one recognized collection case.\n\n- Escalate on a valid hive save plus unexplained service context, account/session, companion artifacts, cleanup, or related-alert evidence; close only when endpoint evidence and any needed outside confirmation bind one exact recognized workflow on this host; preserve and escalate when evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Incident-response, forensic acquisition, recovery, or credential-audit jobs can legitimately trigger only when they explicitly export registry hives. Confirm one exact workflow across svchost service context, `process.command_line`, `user.id`, `host.id`, session fields, hive-sized temp `file.path` values, and companion SAM, SECURITY, or SYSTEM artifacts. If telemetry cannot prove legitimacy, require case or owner confirmation; do not close if account, service context, artifact set, or host scope expands beyond that workflow.\n- Before exceptioning, validate stable `process.command_line`, `process.executable`, parent context, `user.id`, `host.id`, hive temp-path pattern, and `file.Ext.header_bytes` across prior alerts. Avoid exceptions on svchost.exe, temp paths, or REGF header bytes alone.\n\n### Response and remediation\n\n- If confirmed benign, release temporary containment and document the recognized service context, `process.command_line`, account, session context, `host.id`, hive `file.path` values, and companion artifacts that matched the collection workflow. Create an exception only after the same evidence pattern is stable across prior alerts from this rule.\n- If suspicious but unconfirmed, preserve a case export covering the alert file, same-process companion hives, same-session process and file activity, process tree, related-alert records, hive paths, sizes, and header bytes before containment. Record the re-query anchors `host.id`, `user.id`, `process.entity_id`, and `process.Ext.authentication_id` with the preserved case export. Apply reversible containment first, such as temporary RemoteRegistry restrictions, share restrictions, or heightened monitoring for the affected account and host; weigh server criticality before isolation.\n- If confirmed malicious, first preserve the case export and record `process.entity_id`, `process.command_line`, parent context, companion hive paths, same-session activity, and affected `host.id`. Then isolate the host when artifact, service-context, session, or related-alert evidence establishes unauthorized hive collection. Kill or suspend the responsible process and disable or reset the involved account only after evidence capture and only when the `user.id` evidence supports compromise or unauthorized use.\n- Treat companion SAM, SECURITY, and SYSTEM artifacts as exposure of local account material, cached secrets, machine secrets, and LSA secrets for the affected asset. Start credential hygiene appropriate to the host role and any accounts or services touched by the same session.\n- After scoping, eradicate only artifacts and changes identified during triage: unauthorized hive copies, staging archives, dump tooling, cleanup scripts, and remote-service changes that enabled the access. Restore legitimate RemoteRegistry or backup configuration if it was altered, and remediate the entry path that allowed the hive save.\n- Post-incident hardening: restrict RemoteRegistry-backed hive collection to controlled workflows, minimize accounts allowed to perform remote collection, and retain endpoint process and file telemetry needed to distinguish secretsdump-style, VSS-based, or WMI-based variants in future cases.\n",
+        "query": "file where host.os.type == \"windows\" and\n  event.action == \"creation\" and process.name : \"svchost.exe\" and\n  file.Ext.header_bytes : \"72656766*\" and user.id : (\"S-1-5-21-*\", \"S-1-12-1-*\") and file.size >= 30000 and\n  file.path : (\"?:\\\\Windows\\\\system32\\\\*.tmp\", \"?:\\\\WINDOWS\\\\Temp\\\\*.tmp\")\n",
+        "references": [
+            "https://github.com/fortra/impacket/blob/master/examples/secretsdump.py",
+            "https://www.elastic.co/security-labs/detect-credential-access"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "file.Ext.header_bytes",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.size",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "850d901a-2a3c-46c6-8b22-55398a01aad8",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.002",
+                                "name": "Security Account Manager",
+                                "reference": "https://attack.mitre.org/techniques/T1003/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 114
+    },
+    "id": "850d901a-2a3c-46c6-8b22-55398a01aad8_114",
+    "type": "security-rule"
+}
