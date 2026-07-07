@@ -234,7 +234,7 @@ When cursor is enabled:
 3. Include an `ORDER BY` clause on the cursor column matching the configured direction.
 4. Include exactly one `:cursor` placeholder in the WHERE clause.
 
-Requirements 1, 2, and 4 are validated at startup and produce an error if violated. Requirement 3 is **not** validated: an omitted or mismatched `ORDER BY` will not raise an error, but the cursor can advance based on an arbitrary row from the result set, causing rows to be silently skipped or re-fetched. Always verify the `ORDER BY` clause manually.
+Requirements 1, 2, and 4 are enforced at startup and the input fails with a clear error if they are violated. Requirement 3 is **not** enforced: no error is raised when `ORDER BY` is missing or does not match the cursor direction. The cursor always advances to the maximum (ascending) or minimum (descending) value among the rows returned by a fetch — but when the query also uses `LIMIT`/`TOP`, the database returns a non-deterministic subset of the matching rows, so the cursor can jump past rows that were not in that batch and skip them permanently on the next cycle. Always include an `ORDER BY` on the cursor column matching the configured direction.
 
 #### State persistence
 
