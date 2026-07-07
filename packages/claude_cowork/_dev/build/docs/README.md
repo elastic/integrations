@@ -25,21 +25,21 @@ The integration processes these event types:
 | Event | Description | ECS category |
 |-------|-------------|--------------|
 | `tool_result` | Tool execution outcome (success/failure, duration). | `process` |
-| `tool_decision` | Permission decision for a tool call (accept/reject, source). | `process` |
-| `api_request` | API call to Anthropic (model, cost, tokens, duration). | `web` |
-| `api_error` | Failed API call to Anthropic. | `web` |
-| `api_refusal` | Content safety refusal from the model. | `web` |
-| `api_retries_exhausted` | API call gave up after retries. | `web` |
-| `user_prompt` | User prompt submission (length, optionally text). | `process` |
+| `tool_decision` | Permission decision for a tool call (accept/reject, source). | `iam` |
+| `api_request` | API call to Anthropic (model, cost, tokens, duration). | `api` |
+| `api_error` | Failed API call to Anthropic. | `api` |
+| `api_refusal` | Content safety refusal from the model. | `api` |
+| `api_retries_exhausted` | API call gave up after retries. | `api` |
+| `user_prompt` | User prompt submission (length, optionally text). | |
 | `auth` | Authentication event. | `authentication` |
 | `permission_mode_changed` | Session permission mode change. | `configuration` |
 | `mcp_server_connection` | MCP server connection state change. | `network` |
-| `hook_registered` | Hook registered for an event. | `process` |
+| `hook_registered` | Hook registered for an event. | `configuration` |
 | `hook_execution_start` | Hook execution start. | `process` |
 | `hook_execution_complete` | Hook execution result (success/failure counts, duration). | `process` |
-| `plugin_loaded` | Plugin loaded (name, scope, paths). | `package` |
+| `plugin_loaded` | Plugin loaded (name, scope, paths). | `library` |
 | `plugin_installed` | Plugin installed. | `package` |
-| `skill_activated` | Skill activated. | `process` |
+| `skill_activated` | Skill activated. | |
 
 ## What do I need to use this integration?
 
@@ -115,7 +115,7 @@ event.action: "tool_result" AND related.user: "user@example.com"
 **MCP tool access monitoring** — track which MCP tools are invoked:
 
 ```
-event.action: "tool_result" AND claude_cowork.events.mcp_tool.name: *
+event.action: "tool_result" AND claude_cowork.events.mcp_server.name: *
 ```
 
 ### Logs reference
