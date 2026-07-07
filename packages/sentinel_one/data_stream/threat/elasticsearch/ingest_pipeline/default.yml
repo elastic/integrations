@@ -1,6 +1,12 @@
 ---
 description: Pipeline for processing threat logs.
 processors:
+  - drop:
+      tag: drop_cel_retry_placeholder
+      if: ctx.retry == true && ctx.message == null && ctx.event?.original == null
+      description: >-
+        Drops the placeholder event emitted by the CEL program to continue
+        list pagination when a page carries a next-page cursor but no data.
   - remove:
       field:
         - organization

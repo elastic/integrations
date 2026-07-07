@@ -26,7 +26,7 @@ cel.redact:
     - api_token
 cel.program: |-
   (
-    (size(state.?worklist.?data.orValue([])) > 0) ?
+    state.?worklist.data[0].hasValue() ?
       state
     :
       (
@@ -35,10 +35,7 @@ cel.program: |-
         :
           state.with(
             {
-              "list_updated_at_gte": (state.?cursor.?last_update_at.orValue("") != "") ?
-                string(state.cursor.last_update_at)
-              :
-                (now - duration(state.initial_interval)).format(time_layout.RFC3339),
+              "list_updated_at_gte": state.?cursor.last_update_at.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
             }
           )
       ).as(state,
@@ -68,7 +65,7 @@ cel.program: |-
                     ?"token": has_more_list ? optional.of(body.pagination.nextCursor) : optional.none(),
                   },
                   "has_more_timeline": false,
-                  "list_updated_at_gte": has_more_list ? state.list_updated_at_gte : "",
+                  ?"list_updated_at_gte": has_more_list ? optional.of(state.list_updated_at_gte) : optional.none(),
                 }
               )
             )
@@ -77,12 +74,12 @@ cel.program: |-
               "events": {
                 "error": {
                   "code": string(resp.StatusCode),
-                  "id": string(resp.Status),
+                  "id": resp.Status,
                   "message": "GET " + state.url.trim_right("/") + ": " + (
                     (size(resp.Body) != 0) ?
                       string(resp.Body)
                     :
-                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                      resp.Status + " (" + string(resp.StatusCode) + ")"
                   ),
                 },
               },
@@ -93,9 +90,11 @@ cel.program: |-
       )
   ).as(state,
     state.with(
-      !has(state.worklist) ? // Exit early due to GET failure.
+      has(state.events) ? // Exit early due to GET failure.
         state
-      : (size(state.?worklist.?data.orValue([])) > 0) ?
+      : !has(state.worklist) ?
+        state
+      : state.?worklist.data[0].hasValue() ?
         state.worklist.data[0].as(threat,
           (state.enable_star_rule_enrichment && has(threat.id)) ?
             request(
@@ -116,7 +115,7 @@ cel.program: |-
               resp.Body.decode_json().as(body,
                 (body.?pagination.?nextCursor.orValue(null) != null).as(has_more_timeline,
                   {
-                    "events": (size(body.?data.orValue([])) > 0) ?
+                    "events": body.?data[0].hasValue() ?
                       body.data.map(e,
                         {
                           "message": threat.with(
@@ -144,7 +143,7 @@ cel.program: |-
                       state.?cursor.orValue({})
                     :
                       {
-                        "last_update_at": threat.?threatInfo.updatedAt.orValue(state.?cursor.last_update_at.orValue("")),
+                        ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.last_update_at),
                       },
                     "want_more": has_more_timeline || size(state.worklist.data) > 1 ||
                     state.?next_page.token.orValue(null) != null,
@@ -158,7 +157,7 @@ cel.program: |-
                 "next_chain": {},
                 "has_more_timeline": false,
                 "cursor": {
-                  "last_update_at": threat.?threatInfo.updatedAt.orValue(state.?cursor.last_update_at.orValue("")),
+                  ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.last_update_at),
                 },
                 "want_more": size(state.worklist.data) > 1 || state.?next_page.token.orValue(null) != null,
               }
@@ -168,12 +167,12 @@ cel.program: |-
                   {
                     "error": {
                       "code": string(resp.StatusCode),
-                      "id": string(resp.Status),
+                      "id": resp.Status,
                       "message": "GET " + state.url.trim_right("/") + "/" + string(threat.id) + "/timeline: " + (
                         (size(resp.Body) != 0) ?
                           string(resp.Body)
                         :
-                          string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          resp.Status + " (" + string(resp.StatusCode) + ")"
                       ),
                     },
                   },
@@ -182,7 +181,7 @@ cel.program: |-
                 "next_chain": {},
                 "has_more_timeline": false,
                 "cursor": {
-                  "last_update_at": threat.?threatInfo.updatedAt.orValue(state.?cursor.last_update_at.orValue("")),
+                  ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.last_update_at),
                 },
                 "want_more": size(state.worklist.data) > 1 || state.?next_page.token.orValue(null) != null,
               }
@@ -194,7 +193,7 @@ cel.program: |-
               "next_chain": {},
               "has_more_timeline": false,
               "cursor": {
-                "last_update_at": threat.?threatInfo.updatedAt.orValue(state.?cursor.last_update_at.orValue("")),
+                ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.last_update_at),
               },
               "want_more": size(state.worklist.data) > 1 || state.?next_page.token.orValue(null) != null,
             }
@@ -202,14 +201,13 @@ cel.program: |-
       :
         (state.?next_page.token.orValue(null) != null) ?
           {
-            "events": [],
+            "events": [{"retry": true}],
             "want_more": true,
           }
         :
           {
             "events": [],
             "want_more": false,
-            "list_updated_at_gte": "",
           }
     )
   )
