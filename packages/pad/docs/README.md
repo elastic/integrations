@@ -86,8 +86,10 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 
 | Transform name                            | Purpose                                                           | Source index | Destination index                               | Alias                                     | Supported Platform |
 |-------------------------------------------|-------------------------------------------------------------------|--------------|-------------------------------------------------|-------------------------------------------|--------------------|
-| pad.pivot_transform_okta_sessions_ea      | Collects user session information for Okta events                 | logs-*       | ml_okta_multiple_user_sessions_pad_ea-[version] | ml_okta_multiple_user_sessions_pad_ea.all | Okta               |
-| pad.pivot_transform_win_privilege_list_ea | Collects special privileges assigned to a user for Windows events | logs-*       | ml_windows_privilege_type_pad_ea-[version]      | ml_windows_privilege_type_pad_ea.all      | Windows            |
+| pad.pivot_transform_okta_sessions_ea      | Collects user session information for Okta events                 | `logs-okta.system-*`                            | ml_okta_multiple_user_sessions_pad_ea-[version] | ml_okta_multiple_user_sessions_pad_ea.all | Okta               |
+| pad.pivot_transform_win_privilege_list_ea | Collects special privileges assigned to a user for Windows events | `logs-system.security-*,logs-windows.*`         | ml_windows_privilege_type_pad_ea-[version]      | ml_windows_privilege_type_pad_ea.all      | Windows            |
+
+**Source index patterns**: `logs-okta.system-*` holds Okta system logs collected by the [Okta](https://www.elastic.co/docs/reference/integrations/okta) integration, `logs-system.security-*` holds Windows security event logs collected by the [System](https://www.elastic.co/docs/reference/integrations/system) integration, and `logs-windows.*` holds Windows event logs collected by the [Windows](https://www.elastic.co/docs/reference/integrations/windows) integration.
 
 When querying the destination indices for Okta and Windows logs, we advise using the alias for the destination index (`ml_okta_multiple_user_sessions_pad_ea.all` and `ml_windows_privilege_type_pad_ea.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings. 
 
