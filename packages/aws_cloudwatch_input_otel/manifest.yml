@@ -1,10 +1,10 @@
 format_version: 3.5.0
 name: aws_cloudwatch_input_otel
 title: "AWS CloudWatch (OpenTelemetry)"
-version: 0.4.0
+version: 0.5.0
 source:
   license: "Elastic-2.0"
-description: "Collect AWS CloudWatch metrics for selected AWS services (EC2, RDS, SQS, ELB, Lambda, Fargate) using the OpenTelemetry Collector awscloudwatch receiver."
+description: "Collect AWS CloudWatch metrics for selected AWS services (EC2, RDS, SQS, ELB — Application, Classic, Network, Gateway — Lambda, Fargate) using the OpenTelemetry Collector awscloudwatch receiver."
 type: input
 categories:
   - aws
@@ -319,8 +319,8 @@ policy_templates:
 
   - name: aws.elb
     type: metrics
-    title: AWS Application ELB OpenTelemetry Metrics
-    description: Collect AWS/ApplicationELB CloudWatch metrics.
+    title: AWS Application Load Balancer (ALB) OpenTelemetry Metrics
+    description: Collect AWS/ApplicationELB CloudWatch metrics for Application Load Balancers.
     input: otelcol
     template_path: input.yml.hbs
     icons:
@@ -341,7 +341,189 @@ policy_templates:
         type: integer
         title: Autodiscover Limit
         description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
-        default: 100
+        default: 250
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch.
+        default: 1m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution.
+        default: 1m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 5m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Maximum
+          - Average
+          - Sum
+        required: true
+        show_user: false
+
+  - name: aws.elb_classic
+    type: metrics
+    title: AWS Classic Load Balancer (CLB) OpenTelemetry Metrics
+    description: Collect AWS/ELB CloudWatch metrics for Classic Load Balancers (legacy HTTP/TCP layer 4+7).
+    input: otelcol
+    template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_elb.svg
+        title: AWS ELB logo
+        size: 32x32
+        type: image/svg+xml
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/ELB"
+        required: true
+        show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 250
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch.
+        default: 1m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution.
+        default: 1m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 5m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Maximum
+          - Average
+          - Sum
+        required: true
+        show_user: false
+
+  - name: aws.elb_network
+    type: metrics
+    title: AWS Network Load Balancer (NLB) OpenTelemetry Metrics
+    description: Collect AWS/NetworkELB CloudWatch metrics for Network Load Balancers.
+    input: otelcol
+    template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_elb.svg
+        title: AWS ELB logo
+        size: 32x32
+        type: image/svg+xml
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/NetworkELB"
+        required: true
+        show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: >-
+          Maximum number of metrics to enumerate for this namespace.
+          NLB can have 200+ metric/dimension combinations — set this higher than the default if metrics are missing.
+        default: 250
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch.
+        default: 1m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution.
+        default: 1m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 5m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Maximum
+          - Average
+          - Sum
+        required: true
+        show_user: false
+
+  - name: aws.elb_gateway
+    type: metrics
+    title: AWS Gateway Load Balancer (GWLB) OpenTelemetry Metrics
+    description: Collect AWS/GatewayELB CloudWatch metrics for Gateway Load Balancers.
+    input: otelcol
+    template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_elb.svg
+        title: AWS ELB logo
+        size: 32x32
+        type: image/svg+xml
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/GatewayELB"
+        required: true
+        show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 250
         required: false
         show_user: false
       - name: collection_interval

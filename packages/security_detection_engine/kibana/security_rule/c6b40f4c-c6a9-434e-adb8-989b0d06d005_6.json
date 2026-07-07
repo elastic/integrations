@@ -1,0 +1,168 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Correlates network connections to the standard Kerberos port by an unusual process from the source machine with a Kerberos authentication ticket request from the target domain controller.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.network-*",
+            "logs-windows.sysmon_operational-*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "source.ip",
+                "source.port",
+                "host.id"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Kerberos Authentication Ticket Request",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious Kerberos Authentication Ticket Request\n\n#### Possible investigation steps\n\n- Which Timeline member events define this Kerberos sequence?\n  - Focus: Timeline members keyed by alert `source.ip` and `source.port`; recover source `process.executable`, Kerberos `destination.ip`, and auth `event.code`.\n  - Hint: record `host.id` and `process.entity_id`; verify auth `winlog.computer_name` is the DC.\n  - Implication: escalate when one non-\"lsass.exe\" source process maps to a DC \"4768\" or \"4769\" event in the sequence window; lower concern for socket reuse, a different process, or non-DC destination.\n\n- Is the recovered source process a recognized Kerberos-capable client?\n  - Focus: `process.executable`, `process.hash.sha256`, `process.pe.original_file_name`, `process.code_signature.subject_name`, and `process.code_signature.trusted`.\n  - Hint: open process start with recovered `host.id` and `process.entity_id`; if absent, use `host.id`, `process.pid`, and sequence window.\n  - Implication: escalate when the binary is unsigned, renamed, user-writable, signer-mismatched, or outside known AD audit, Kerberos diagnostic, or security-test tooling; lower concern only when path, signer, hash history, command, and parent converge on one known tool.\n\n- Does command-line and parentage show ticket-tool intent?\n  - Focus: recovered `process.command_line`, `process.parent.executable`, `process.parent.command_line`, and broader process lineage when needed.\n  - Implication: escalate on Bifrost-like verbs or flags such as asktgt, asktgs, s4u, ptt, kerberoast, service/SPN targets, hashes, keytabs, RC4, or base64 tickets, especially from shell or script parents; bounded diagnostics from a recognized admin tool reduce but do not clear concern.\n\n- Which ticket path and target account did the DC member event show?\n  - Focus: recovered auth `event.code`, `winlog.event_data.TargetUserName`, and `winlog.event_data.TargetDomainName`.\n  - Implication: escalate when \"4769\" shows service-ticket activity or \"4768\" shows TGT handling for privileged, service, machine, or delegation-sensitive targets from the unusual process; fan-out increases concern.\n\n- Does the source user and session context fit one bounded admin or audit source?\n  - Focus: recovered `user.id`, `user.name`, `user.domain`, and `winlog.event_data.TargetUserName`.\n  - Implication: escalate when privileged, service, or user-account tickets originate from a workstation, user session, or non-management tool; lower concern only when source host, user, process identity, command/parent, and target account recur as one bounded Kerberos diagnostic or audit pattern.\n\n- Do surrounding Kerberos events show repetition or account fan-out?\n  - Focus: same-source Kerberos network and authentication events, checking additional \"4768\"/\"4769\" events and `winlog.event_data.TargetUserName`.\n    - !{investigate{\"description\":\"\",\"label\":\"Kerberos network events from the same source IP\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"source.ip\",\"queryType\":\"phrase\",\"value\":\"{{source.ip}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"destination.port\",\"queryType\":\"phrase\",\"value\":\"88\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Authentication events for the same source IP\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"authentication\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"source.ip\",\"queryType\":\"phrase\",\"value\":\"{{source.ip}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when requests repeat or fan out across accounts; a single bounded request narrows scope but does not close if process identity or command intent remains suspicious. Missing network or authentication telemetry is unresolved, not benign.\n\n- Do later logon or explicit-credential events suggest ticket use?\n  - Focus: same-source authentication results, checking later `event.code` \"4624\"/\"4648\", `winlog.event_data.TargetUserName`, and 4648 `winlog.event_data.TargetServerName`.\n  - Implication: escalate when post-ticket logon or explicit-credential activity reaches sensitive accounts or servers from the same source; absence narrows impact but does not close if the ticket request remains suspicious. Missing same-source authentication telemetry leaves ticket use unresolved, not benign.\n\n- If local evidence remains suspicious or unresolved, does the same source show related alerts?\n  - Focus: related alerts for `source.ip`; manually pivot on recovered `process.hash.sha256` or `winlog.event_data.TargetUserName` when locally suspicious. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the same source IP\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"source.ip\",\"queryType\":\"phrase\",\"value\":\"{{source.ip}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope when credential-access, Kerberoasting, relay, or lateral-movement alerts share the source, process, or target account; keep local only when related alerts are absent and recovered evidence resolves cleanly.\n\n- Escalate when sequence recovery, source-process identity, command intent, DC ticket target, account context, or surrounding ticket/logon activity show unauthorized direct Kerberos; close only when telemetry binds one recognized tool, source host, user, and target account and outside confirmation verifies exact activity when telemetry cannot; preserve and escalate when visibility is incomplete or evidence conflicts.\n\n### False positive analysis\n\n- AD audit tools, Kerberos diagnostics, interoperability testing, or security testing can request tickets directly instead of through \"lsass.exe\". Confirm only when process path, signer/hash, parent, command line, `source.ip`, `user.id`, `event.code`, and target account align with the same recognized tool on a dedicated admin, lab, or audit source; without outside records, require the same process identity, source host/user, target account, and bounded ticket pattern across prior alerts from this rule.\n- Treat partial matches as unresolved when process identity fits but the command targets unusual SPNs, privileged accounts, RC4/kerberoast behavior, or follow-on \"4624\"/\"4648\" activity. Do not close on signer, source IP, or event code alone when ticket target or command intent contradicts benign workflow.\n- Before creating an exception, anchor it to the minimum stable workflow: dedicated `source.ip` or source host, process signer/hash/path, parent workflow, `user.id`, target account, and bounded `event.code` pattern. Avoid exceptions on `source.port`, `event.code`, process name, or broad account patterns alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document the recovered source host/IP, process identity, command line, source user, DC ticket event, and target account that proved the recognized workflow. Create an exception only after the same dedicated source and process pattern recurs consistently.\n- If suspicious but unconfirmed, preserve the alert, Timeline member events, suspicious process binary and command line, source socket, DC authentication record, and any follow-on \"4624\" or \"4648\" evidence before containment or process action.\n- Apply reversible containment next: restrict the recovered source host's Kerberos/DC access or isolate the host when its role tolerates isolation, and suspend the recovered process only after process and authentication artifacts are captured.\n- If confirmed malicious, isolate the recovered source host, terminate or suspend the recovered process after recording its `process.entity_id`, expire exposed Kerberos tickets where operationally appropriate, and reset or rotate impacted credentials, prioritizing privileged, service, machine, and delegation-capable accounts.\n- Before cleanup, search for the same source IP, recovered process hash, target account, and related credential-access, Kerberoasting, relay, or lateral-movement activity so scope is not limited to the first sequence.\n- After containment, retain DC \"4768\"/\"4769\" auditing and endpoint network telemetry, restrict direct Kerberos tooling to controlled admin/testing hosts, and document the recovered tool pattern and any logging gaps in the case record.\n",
+        "query": "sequence by source.port, source.ip with maxspan=3s\n [network where host.os.type == \"windows\" and destination.port == 88 and\n  process.executable != null and process.pid != 4 and \n  not process.executable : (\n        \"?:\\\\Windows\\\\system32\\\\lsass.exe\",\n        \"\\\\device\\\\harddiskvolume*\\\\windows\\\\system32\\\\lsass.exe\",\n        \"\\\\device\\\\harddiskvolume*\\\\windows\\\\system32\\\\svchost.exe\"\n  ) and\n  not (\n    process.executable : (\n      \"C:\\\\Windows\\\\System32\\\\svchost.exe\",\n      \"C:\\\\Program Files\\\\VMware\\\\VMware View\\\\Server\\\\bin\\\\ws_TomcatService.exe\",\n      \"C:\\\\Program Files\\\\Omnissa\\\\Horizon\\\\Server\\\\bin\\\\ws_TomcatService.exe\",\n      \"C:\\\\Program Files\\\\SysAidServer\\\\root\\\\WEB-INF\\\\domains\\\\NetworkDiscovery.exe\",\n      \"C:\\\\Program Files (x86)\\\\IGEL\\\\RemoteManager\\\\*\\\\bin\\\\tomcat10.exe\",\n      \"F:\\\\IGEL\\\\RemoteManager\\\\*\\\\bin\\\\tomcat10.exe\"\n    ) and\n    user.id in (\"S-1-5-20\", \"S-1-5-18\")\n  ) and\n  source.ip != \"127.0.0.1\" and destination.ip != \"::1\" and destination.ip != \"127.0.0.1\"]\n [authentication where host.os.type == \"windows\" and event.code in (\"4768\", \"4769\")]\n",
+        "references": [
+            "https://github.com/its-a-feature/bifrost",
+            "https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4768",
+            "https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4769"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "source.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c6b40f4c-c6a9-434e-adb8-989b0d06d005",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [Sysmon Event ID 3 - Network Connection](https://ela.st/sysmon-event-3-setup)\n- [Audit Kerberos Authentication Service](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/audit-kerberos-authentication-service)\n- [Audit Kerberos Service Ticket Operations](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/audit-kerberos-service-ticket-operations)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Identity",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Use Case: Active Directory Monitoring",
+            "Data Source: Active Directory",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/",
+                        "subtechnique": [
+                            {
+                                "id": "T1550.003",
+                                "name": "Pass the Ticket",
+                                "reference": "https://attack.mitre.org/techniques/T1550/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1558",
+                        "name": "Steal or Forge Kerberos Tickets",
+                        "reference": "https://attack.mitre.org/techniques/T1558/",
+                        "subtechnique": [
+                            {
+                                "id": "T1558.003",
+                                "name": "Kerberoasting",
+                                "reference": "https://attack.mitre.org/techniques/T1558/003/"
+                            },
+                            {
+                                "id": "T1558.004",
+                                "name": "AS-REP Roasting",
+                                "reference": "https://attack.mitre.org/techniques/T1558/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 6
+    },
+    "id": "c6b40f4c-c6a9-434e-adb8-989b0d06d005_6",
+    "type": "security-rule"
+}
