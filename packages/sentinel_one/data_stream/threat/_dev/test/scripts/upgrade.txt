@@ -1,0 +1,118 @@
+# Test that upgrading from 2.8.2 (declarative httpjson) to ${CURRENT_VERSION}
+# (run_as_cel) preserves the threat stream cursor and continues incremental
+# collection.
+#
+# 2.8.2 is hardcoded the last EPR release before the run_as_cel migration —
+# not ${PREVIOUS_VERSION}, which would drift on every package bump.
+#
+# Phase 1 (2.8.2, declarative httpjson): collect 2 threats with updatedAt
+# 2024-01-15T10:01Z and 2024-01-15T10:06Z. Cursor should advance to the last
+# updatedAt (10:06Z).
+#
+# After upgrade_package_latest, phase 2 mock returns the new threat only when
+# updatedAt__gte matches a preserved httpjson cursor (2024-01-15T10:01* or
+# 2024-01-15T10:06*). A reset to initial_interval uses a 2026-* lookback and
+# does not match a rule, yielding no new data.
+#
+# Expected outcome when cursor is preserved: 3 unique threat documents total.
+# Expected failure when cursor resets: count stays at 2 (pipeline fingerprint
+# deduplicates re-fetched threats, so duplicate doc inflation is not observable).
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[breaking_change] skip 'Cannot upgrade across breaking change.'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} s1-mock
+
+install_package_from_registry -profile ${CONFIG_PROFILES}/${PROFILE} ${PACKAGE_NAME} 2.8.2
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} -version 2.8.2 test_config.yaml DATA_STREAM_NAME
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs_pre_upgrade.json
+
+exec jq '[.hits.hits[]._source.sentinel_one.threat.threat_id] | sort | join(",")' got_docs_pre_upgrade.json
+stdout '"threat-00000000000000000000000000000001,threat-00000000000000000000000000000002"'
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+upgrade_package_latest -profile ${CONFIG_PROFILES}/${PROFILE}
+stdout 'upgraded package '${PACKAGE_NAME}
+
+docker_down s1-mock
+cp s1-mock/config-phase2.yml s1-mock/config.yml
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} s1-mock
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs_post_upgrade.json
+
+exec jq '[.hits.hits[]._source.sentinel_one.threat.threat_id | select(. != null)] | unique | sort | join(",")' got_docs_post_upgrade.json
+stdout '"threat-00000000000000000000000000000001,threat-00000000000000000000000000000002,threat-00000000000000000000000000000003"'
+
+exec jq '[.hits.hits[]._source | select(.sentinel_one.threat.threat_id != null)] | length' got_docs_post_upgrade.json
+stdout '^3$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down s1-mock
+
+-- test_config.yaml --
+input: httpjson
+vars:
+  url: http://s1-mock:8080
+  api_token: test-api-token
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 1h
+    preserve_original_event: true
+    enable_request_tracer: false
+-- s1-mock/docker-compose.yml --
+version: '2.3'
+services:
+  s1-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: s1-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- s1-mock/config.yml --
+rules:
+  - path: /web/api/v2.1/threats
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "ApiToken test-api-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":[{"agentDetectionInfo":{"agentId":"agent-001","siteId":"site-001","siteName":"Default","agentOsName":"Windows 10","machineType":"desktop","agentVersion":"22.2.5.2"},"threatInfo":{"threatId":"threat-00000000000000000000000000000001","threatName":"UpgradeThreat1","classification":"Malware","createdAt":"2024-01-15T10:00:00.000Z","updatedAt":"2024-01-15T10:01:00.000Z","incidentStatus":"Unresolved","analystVerdict":"Undefined","status":"Active","severity":"High"}},{"agentDetectionInfo":{"agentId":"agent-002","siteId":"site-001","siteName":"Default","agentOsName":"Windows 11","machineType":"laptop","agentVersion":"22.2.5.2"},"threatInfo":{"threatId":"threat-00000000000000000000000000000002","threatName":"UpgradeThreat2","classification":"Ransomware","createdAt":"2024-01-15T10:05:00.000Z","updatedAt":"2024-01-15T10:06:00.000Z","incidentStatus":"Unresolved","analystVerdict":"Undefined","status":"Active","severity":"Critical"}}],"pagination":{"nextCursor":null,"totalItems":2}}
+-- s1-mock/config-phase2.yml --
+rules:
+  # Cursor preserved if the agent sends updatedAt__gte from the migrated
+  # httpjson cursor (10:01Z or 10:06Z after the phase-1 page).
+  - path: /web/api/v2.1/threats
+    methods: [GET]
+    query_params:
+      updatedAt__gte: "{updatedAtGte:2024-01-15T10:0[16].*}"
+    request_headers:
+      Authorization:
+        - "ApiToken test-api-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":[{"agentDetectionInfo":{"agentId":"agent-003","siteId":"site-001","siteName":"Default","agentOsName":"Windows 10","machineType":"desktop","agentVersion":"22.2.5.2"},"threatInfo":{"threatId":"threat-00000000000000000000000000000003","threatName":"UpgradeThreat3","classification":"Malware","createdAt":"2024-01-15T10:59:00.000Z","updatedAt":"2024-01-15T11:00:00.000Z","incidentStatus":"Unresolved","analystVerdict":"Undefined","status":"Active","severity":"High"}}],"pagination":{"nextCursor":null,"totalItems":1}}

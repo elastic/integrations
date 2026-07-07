@@ -3,33 +3,40 @@ description: "Pipeline for AWS Network Firewall logs"
 processors:
   # General data
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: 8.11.0
   - rename:
+      tag: rename_message_to_event_original_b273fe21
       field: message
       target_field: event.original
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_0ae73460
       field: event.original
       allow_duplicate_keys: true
       target_field: json
   - date:
+      tag: date_json_event_timestamp_to_timestamp_6f056b56
       field: json.event.timestamp
       target_field: "@timestamp"
       formats:
         - ISO8601
       ignore_failure: true
   - rename:
+      tag: rename_json_availability_zone_to_cloud_availability_zone_2454a9cd
       field: json.availability_zone
       target_field: cloud.availability_zone
       ignore_missing: true
   - grok:
+      tag: grok_cloud_availability_zone_15df6cab
       field: cloud.availability_zone
       ignore_missing: true
       ignore_failure: true
@@ -38,65 +45,80 @@ processors:
       pattern_definitions:
         LETTER: '[a-z]+'
   - rename:
+      tag: rename_json_firewall_name_to_observer_name_d1444b7b
       field: json.firewall_name
       target_field: observer.name
       ignore_missing: true
   - set:
+      tag: set_observer_type_5dddf3ba
       field: observer.type
       value: firewall
   - set:
+      tag: set_observer_vendor_a5a87193
       field: observer.vendor
       value: AWS
   - set:
+      tag: set_observer_product_4f4e632d
       field: observer.product
       value: "Network Firewall"
 
   # Event metadata
   - append:
+      tag: append_event_category_2559ac69
       field: event.category
       value: network
       allow_duplicates: false
   - append:
+      tag: append_event_type_22176541
       field: event.type
       value: connection
       allow_duplicates: false
   - set:
+      tag: set_json_event_event_type_a8d1ed03
       field: json.event.event_type
       value: event
       if: ctx.json?.event?.event_type == "netflow"
   - set:
+      tag: set_event_kind_388ffb0b
       field: event.kind
       value: "{{json.event.event_type}}"
       if: ctx.json?.event?.event_type != null
   - set:
+      tag: set_json_event_alert_action_19dd3d46
       field: json.event.alert.action
       value: denied
       if: ctx.json?.event?.alert?.action == "blocked"
   - append:
+      tag: append_event_type_1265169e
       field: event.type
       value: "{{json.event.alert.action}}"
       if: ctx.json?.event?.alert?.action != null
 
   # Source IP/port/geo
   - convert:
+      tag: convert_json_event_src_ip_to_source_address_2e76e663
       field: json.event.src_ip
       target_field: source.address
       type: ip
       ignore_missing: true
   - set:
+      tag: set_source_ip_6f8ffc88
       field: source.ip
       copy_from: source.address
       if: ctx?.source?.address != null
   - convert:
+      tag: convert_json_event_src_port_to_source_port_2c835d7c
       field: json.event.src_port
       type: integer
       target_field: source.port
       if: ctx?.json?.event?.src_port != null
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       ignore_missing: true
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -105,42 +127,51 @@ processors:
         - asn
         - organization_name
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_network_type_146bf959
       field: network.type
       value: 'ipv4'
       if: 'ctx.network?.type == null && ctx.source?.ip != null && ctx.source.ip.contains(".")'
   - set:
+      tag: set_network_type_c269de1b
       field: network.type
       value: 'ipv6'
       if: 'ctx.network?.type == null && ctx.source?.ip != null && ctx.source.ip.contains(":")'
 
   # Destination IP/port/geo
   - convert:
+      tag: convert_json_event_dest_ip_to_destination_address_95c075f8
       field: json.event.dest_ip
       target_field: destination.address
       type: ip
       ignore_missing: true
   - set:
+      tag: set_destination_ip_7eb05f79
       field: destination.ip
       copy_from: destination.address
       if: ctx?.destination?.address != null
   - convert:
+      tag: convert_json_event_dest_port_to_destination_port_4bcb82c9
       field: json.event.dest_port
       type: integer
       target_field: destination.port
       if: ctx?.json?.event?.dest_port != null
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -149,151 +180,185 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
 
   # Transport protocol
   - rename:
+      tag: rename_json_event_proto_to_network_transport_3cf4d2ef
       field: json.event.proto
       target_field: network.transport
       ignore_missing: true
   - lowercase:
+      tag: lowercase_network_transport_bc8c1c12
       field: network.transport
       ignore_missing: true
 
   # Alert and metadata
   - convert:
+      tag: convert_json_event_alert_category_to_message_ae9cfdeb
       field: json.event.alert.category
       target_field: message
       type: string
       ignore_missing: true
   - set:
+      tag: set_rule_category_29a34b20
       field: rule.category
       value: "{{json.event.alert.category}}"
       ignore_empty_value: true
   - set:
+      tag: set_rule_id_9ed09f85
       field: rule.id
       value: "{{json.event.alert.signature_id}}"
       ignore_empty_value: true
   - set:
+      tag: set_rule_name_eea661d5
       field: rule.name
       value: "{{json.event.alert.signature}}"
       ignore_empty_value: true
   - set:
+      tag: set_rule_name_80701699
       field: rule.name
       value: rule.id
       if: ctx?.rule?.name == null && ctx?.rule?.id != null
   - rename:
+      tag: rename_json_event_alert_rev_id_to_rule_version_1e31fb0d
       field: json.event.alert.rev_id
       target_field: rule.version
       ignore_missing: true
   - rename:
+      tag: rename_json_event_alert_severity_to_event_severity_5e62b906
       field: json.event.alert.severity
       target_field: event.severity
       ignore_missing: true
   - rename:
+      tag: rename_json_event_app_proto_to_network_protocol_55c990a4
       field: json.event.app_proto
       target_field: network.protocol
       ignore_missing: true
   - set:
+      tag: set_network_protocol_f69bbc1f
       field: network.protocol
       value: "unknown"
       if: ctx?.network?.protocol == null || ctx?.network?.protocol == "failed"
 
   # HTTP
   - rename:
+      tag: rename_json_event_http_hostname_to_destination_domain_2572dd3d
       field: json.event.http.hostname
       target_field: destination.domain
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_json_event_http_url_4103c275
       field: json.event.http.url
       if: ctx?.json?.event?.http?.url != null
   - rename:
+      tag: rename_json_event_http_http_method_to_http_request_method_70266904
       field: json.event.http.http_method
       target_field: http.request.method
       ignore_missing: true
   - user_agent:
+      tag: user_agent_json_event_http_http_user_agent_66d79569
       field: json.event.http.http_user_agent
       ignore_missing: true
   - dissect:
+      tag: dissect_json_event_http_protocol_77be47a3
       field: json.event.http.protocol
       pattern: "HTTP/%{http.version}"
       ignore_missing: true
 
   # TLS
   - rename:
+      tag: rename_json_event_tls_sni_to_tls_client_server_name_474e13fa
       field: json.event.tls.sni
       target_field: tls.client.server_name
       ignore_missing: true
   - set:
+      tag: set_destination_domain_864b52ef
       field: destination.domain
       copy_from: tls.client.server_name
       if: ctx?.tls?.client?.server_name != null
   - dissect:
+      tag: dissect_json_event_tls_version_52c351e4
       field: json.event.tls.version
       pattern: "%{tls.version_protocol} %{tls.version}"
       ignore_missing: true
       if: ctx?.json?.event?.tls?.version != "UNDETERMINED"
   - lowercase:
+      tag: lowercase_tls_version_protocol_b840a1f9
       field: tls.version_protocol
       ignore_missing: true
   - rename:
+      tag: rename_json_event_tls_ja3s_hash_to_tls_server_ja3s_c9fa4297
       field: json.event.tls.ja3s.hash
       target_field: tls.server.ja3s
       ignore_missing: true
   - rename:
+      tag: rename_json_event_tls_ja3_hash_to_tls_server_ja3_3776ddd5
       field: json.event.tls.ja3.hash
       target_field: tls.server.ja3
       ignore_missing: true
   - rename:
+      tag: rename_json_event_tls_certificate_to_tls_server_certificate_09c0fb43
       field: json.event.tls.certificate
       target_field: tls.server.certificate
       ignore_missing: true
   - rename:
+      tag: rename_tls_server_certificate_chain_to_json_event_tls_chain_dca83faf
       field: tls.server.certificate_chain
       target_field: json.event.tls.chain
       ignore_missing: true
   - rename:
+      tag: rename_tls_server_x509_serial_number_to_json_event_tls_serial_97fa0a5d
       field: tls.server.x509.serial_number
       target_field: json.event.tls.serial
       ignore_missing: true
   - gsub:
+      tag: gsub_tls_server_x509_serial_number_a894c049
       field: tls.server.x509.serial_number
       pattern: ":"
       replacement: ""
       ignore_missing: true
   - date:
+      tag: date_json_event_tls_notafter_to_tls_server_not_after_93ed6459
       field: json.event.tls.notafter
       target_field: tls.server.not_after
       formats:
         - ISO8601
       if: ctx.json?.event?.tls?.notafter != null
   - date:
+      tag: date_json_event_tls_notbefore_to_tls_server_not_before_c4281b44
       field: json.event.tls.notbefore
       target_field: tls.server.not_before
       formats:
         - ISO8601
       if: ctx.json?.event?.tls?.notbefore != null
   - rename:
+      tag: rename_tls_server_not_after_to_tls_server_x509_not_after_a7deac2e
       field: tls.server.not_after
       target_field: tls.server.x509.not_after
       ignore_missing: true
   - rename:
+      tag: rename_tls_server_not_before_to_tls_server_x509_not_before_21c1974c
       field: tls.server.not_before
       target_field: tls.server.x509.not_before
       ignore_missing: true
 
   # TCP
   - rename:
+      tag: rename_json_event_tcp_tcp_flags_to_aws_firewall_tcp_flags_933918f8
       field: json.event.tcp.tcp_flags
       target_field: aws.firewall.tcp_flags
       ignore_missing: true
   - script:
+      tag: script_ec11aadf
       lang: painless
       ignore_failure: true
       if: "ctx?.aws?.firewall?.tcp_flags != null"
@@ -326,30 +391,36 @@ processors:
 
   # Flow
   - rename:
+      tag: rename_json_event_netflow_to_aws_firewall_flow_864d0936
       field: json.event.netflow
       target_field: aws.firewall.flow
       ignore_missing: true
   - rename:
+      tag: rename_json_event_flow_id_to_aws_firewall_flow_id_9bf339da
       field: json.event.flow_id
       target_field: aws.firewall.flow.id
       ignore_missing: true
   - convert:
+      tag: convert_aws_firewall_flow_id_24962d4e
       field: aws.firewall.flow.id
       type: string
       ignore_missing: true
 
   # Related IPs
   - append:
+      tag: append_related_hosts_dc368f48
       field: related.hosts
       value: "{{url.domain}}"
       if: ctx.url?.domain != null && ctx.url?.domain != ""
       allow_duplicates: false
   - append:
+      tag: append_related_ip_a2836bfa
       if: ctx?.source?.ip != null
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
   - append:
+      tag: append_related_ip_bd4aa684
       if: ctx?.destination?.ip != null
       field: related.ip
       value: "{{destination.ip}}"
@@ -357,11 +428,13 @@ processors:
 
   # Community ID
   - community_id:
+      tag: community_id_99f56bc8
       ignore_missing: true
       ignore_failure: true
 
   # Remove other fields
   - script:
+      tag: script_fa6ab501
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -386,6 +459,7 @@ processors:
         }
         handleMap(ctx);
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
 on_failure:
@@ -397,4 +471,4 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
