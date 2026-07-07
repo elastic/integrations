@@ -1,0 +1,105 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a Windows host where two or more distinct remote monitoring and management (RMM) or remote-access tool vendors are observed starting processes within the same eight-minute window. Legitimate MSP environments may run multiple tools, but this pattern can also indicate compromise, shadow IT, or attacker staging of redundant access. Processes are mapped to a single vendor label so multiple binaries from the same vendor do not inflate the count.",
+        "from": "now-9m",
+        "interval": "8m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Multiple Remote Management Tool Vendors on Same Host",
+        "note": "## Triage and analysis\n\n### Investigating Multiple Remote Management Tool Vendors on Same Host\n\nThis rule aggregates process start events by `host.id` and host name within the rule's nine-minute lookback window. Data can come from Elastic Defend, Sysmon, Winlogbeat, Windows Security / forwarded events, Microsoft Defender XDR, SentinelOne, or CrowdStrike FDR\u2014where ECS process fields are populated. Each known RMM-related process name maps to one **vendor** label (e.g. TeamViewer, AnyDesk, ScreenConnect). If **two or more different vendor labels** appear within the same lookback window, the rule signals.\n\n### Possible investigation steps\n\n- Open **Esql.vendors_seen** and **Esql.processes_executable_values** on the alert to see which tools fired in the window.\n- Confirm whether the host is an MSP-managed jump box, helpdesk workstation, or lab where multiple RMM stacks are expected.\n- For servers or standard user endpoints, treat as higher risk: review install source, code signatures, and recent logons.\n- Correlate with other alerts (ingress tool transfer, suspicious scripting, new persistence) on the same `host.id`.\n- Check asset inventory and change tickets for approved RMM software.\n\n### False positive analysis\n\n- **MSP / IT tooling**: A technician machine with two approved agents (e.g. RMM + remote support) may match. Tune with host or organizational unit exceptions, or raise the vendor threshold if your environment standardizes on a known pair.\n- **Vendor rebrands or bundles**: Rare overlaps during migrations can briefly show two vendors; validate timeline and packages.\n\n### Response and remediation\n\n- If unauthorized or unexplained: isolate the host, inventory installed remote-access software, remove unapproved tools, and reset credentials that may have been exposed. Enforce a single approved RMM stack per asset class where possible.\n",
+        "query": "from logs-endpoint.events.process-*, logs-crowdstrike.fdr*, logs-m365_defender.event-*, logs-sentinel_one_cloud_funnel.*, logs-system.security*, logs-windows.sysmon_operational-*, logs-windows.forwarded*, winlogbeat-* metadata _id, _version, _index\n| where (host.os.type == \"windows\" or host.os.family == \"windows\")\n    and event.category == \"process\"\n    and event.type == \"start\"\n    and process.name is not null\n| eval Esql.rmm_vendor = case(\n    process.name.caseless like \"aa_v*.exe\", \"AnyAssist\",\n    process.name.caseless == \"acroniscyberprotectconnectagent.exe\", \"Acronis\",\n    process.name.caseless == \"aeroadmin.exe\", \"AeroAdmin\",\n    process.name.caseless == \"agentmon.exe\", \"ConnectWiseAutomate\",\n    process.name.caseless == \"anydesk.exe\", \"AnyDesk\",\n    process.name.caseless == \"apc_admin.exe\", \"APC\",\n    process.name.caseless == \"apc_host.exe\", \"APC\",\n    process.name.caseless == \"ateraagent.exe\", \"Atera\",\n    process.name.caseless like \"aweray_remote*.exe\", \"AweSun\",\n    process.name.caseless == \"awesun.exe\", \"AweSun\",\n    process.name.caseless == \"b4-service.exe\", \"BeyondTrust\",\n    process.name.caseless == \"basupsrvc.exe\", \"BeyondTrust\",\n    process.name.caseless == \"bomgar-scc.exe\", \"BeyondTrust\",\n    process.name.caseless == \"remote support.exe\", \"BeyondTrust\",\n    process.name.caseless == \"cagservice.exe\", \"BarracudaRMM\",\n    process.name.caseless == \"cloudracmd.exe\", \"CloudRadial\",\n    process.name.caseless == \"cloudrasd.exe\", \"CloudRadial\",\n    process.name.caseless == \"cloudraservice.exe\", \"CloudRadial\",\n    process.name.caseless like \"connectwisecontrol*.exe\", \"ScreenConnect\",\n    process.name.caseless == \"domotzagent.exe\", \"Domotz\",\n    process.name.caseless == \"domotz-windows-x64-10.exe\", \"Domotz\",\n    process.name.caseless == \"dwagsvc.exe\", \"DWService\",\n    process.name.caseless == \"dwrcc.exe\", \"DWService\",\n    process.name.caseless == \"dwrcs.exe\", \"DWService\",\n    process.name.caseless == \"dwrcst.exe\", \"DWService\",\n    process.name.caseless like \"fleetdeck_commander*.exe\", \"FleetDeck\",\n    process.name.caseless == \"g2aservice.exe\", \"GoTo\",\n    process.name.caseless == \"getscreen.exe\", \"GetScreen\",\n    process.name.caseless == \"gotoassistservice.exe\", \"GoTo\",\n    process.name.caseless == \"gotohttp.exe\", \"GoTo\",\n    process.name.caseless == \"gotoresolveprocesschecker.exe\", \"GoTo\",\n    process.name.caseless == \"gotoresolveremotecontrol.exe\", \"GoTo\",\n    process.name.caseless == \"gotoresolveservice.exe\", \"GoTo\",\n    process.name.caseless == \"gotoresolveterminal.exe\", \"GoTo\",\n    process.name.caseless == \"gotoresolveunattended.exe\", \"GoTo\",\n    process.name.caseless == \"helpwire.exe\", \"HelpWire\",\n    process.name.caseless == \"immyagent.exe\", \"ImmyBot\",\n    process.name.caseless == \"immybot.agent.ephemeral.exe\", \"ImmyBot\",\n    process.name.caseless == \"immyupdater.exe\", \"ImmyBot\",\n    process.name.caseless == \"imperoclientsvc.exe\", \"Impero\",\n    process.name.caseless == \"imperoserversvc.exe\", \"Impero\",\n    process.name.caseless == \"isllight.exe\", \"ISLOnline\",\n    process.name.caseless == \"isllightclient.exe\", \"ISLOnline\",\n    process.name.caseless == \"jumpcloud-agent.exe\", \"JumpCloud\",\n    process.name.caseless == \"komari.exe\", \"Komari\",\n    process.name.caseless == \"komari-agent.exe\", \"Komari\",\n    process.name.caseless == \"level.exe\", \"Level\",\n    process.name.caseless == \"lmi_rescue.exe\", \"LogMeIn\",\n    process.name.caseless == \"lmi_rescue_srv.exe\", \"LogMeIn\",\n    process.name.caseless == \"lmiignition.exe\", \"LogMeIn\",\n    process.name.caseless == \"logmein.exe\", \"LogMeIn\",\n    process.name.caseless == \"ltsvc.exe\", \"ConnectWiseAutomate\",\n    process.name.caseless == \"ltsvcmon.exe\", \"ConnectWiseAutomate\",\n    process.name.caseless == \"lttray.exe\", \"ConnectWiseAutomate\",\n    process.name.caseless == \"lunixar.exe\", \"Lunixar\",\n    process.name.caseless == \"lunixarremote.exe\", \"Lunixar\",\n    process.name.caseless == \"lunixarupdater.exe\", \"Lunixar\",\n    process.name.caseless == \"lvagent.exe\", \"Level\",\n    process.name.caseless == \"manageengine_remote_access_plus.exe\", \"ManageEngine\",\n    process.name.caseless == \"meshagent.exe\", \"MeshCentral\",\n    process.name.caseless == \"mikogo-service.exe\", \"Mikogo\",\n    process.name.caseless == \"nezha-agent.exe\", \"Nezha\",\n    process.name.caseless == \"ninjarmmagent.exe\", \"NinjaOne\",\n    process.name.caseless == \"ninjarmmagentpatcher.exe\", \"NinjaOne\",\n    process.name.caseless == \"ninjarmm-cli.exe\", \"NinjaOne\",\n    process.name.caseless == \"parsec.exe\", \"Parsec\",\n    process.name.caseless == \"pservice.exe\", \"Pulseway\",\n    process.name.caseless == \"quickassist.exe\", \"QuickAssist\",\n    process.name.caseless == \"r_server.exe\", \"Radmin\",\n    process.name.caseless == \"radmin.exe\", \"Radmin\",\n    process.name.caseless == \"radmin3.exe\", \"Radmin\",\n    process.name.caseless == \"rcengmgru.exe\", \"Rsupport\",\n    process.name.caseless == \"rcclient.exe\", \"RPCSuite\",\n    process.name.caseless == \"rcmgrsvc.exe\", \"Rsupport\",\n    process.name.caseless == \"rcservice.exe\", \"RPCSuite\",\n    process.name.caseless == \"remotedesktopmanager.exe\", \"Devolutions\",\n    process.name.caseless == \"remotely_agent.exe\", \"Remotely\",\n    process.name.caseless == \"remotely_desktop.exe\", \"Remotely\",\n    process.name.caseless == \"remotepc.exe\", \"RemotePC\",\n    process.name.caseless == \"remotepcdesktop.exe\", \"RemotePC\",\n    process.name.caseless == \"remotepcservice.exe\", \"RemotePC\",\n    process.name.caseless == \"remoteview.exe\", \"Rsupport\",\n    process.name.caseless == \"rfusclient.exe\", \"RemoteUtilities\",\n    process.name.caseless == \"rmm.agent.exe\", \"SuperOps\",\n    process.name.caseless == \"romserver.exe\", \"RealVNC\",\n    process.name.caseless == \"romviewer.exe\", \"RealVNC\",\n    process.name.caseless == \"rpcsuite.exe\", \"RPCSuite\",\n    process.name.caseless == \"rserver3.exe\", \"Radmin\",\n    process.name.caseless == \"rustdesk.exe\", \"RustDesk\",\n    process.name.caseless == \"rutserv.exe\", \"RemoteUtilities\",\n    process.name.caseless == \"rutview.exe\", \"RemoteUtilities\",\n    process.name.caseless == \"rvagent.exe\", \"Rsupport\",\n    process.name.caseless == \"rvagtray.exe\", \"Rsupport\",\n    process.name.caseless == \"saazapsc.exe\", \"Kaseya\",\n    process.name.caseless like \"screenconnect*.exe\", \"ScreenConnect\",\n    process.name.caseless == \"session_win.exe\", \"ZohoAssist\",\n    process.name.caseless == \"simplegatewayservice.exe\", \"SimpleHelp\",\n    process.name.caseless == \"simplehelpcustomer.exe\", \"SimpleHelp\",\n    process.name.caseless == \"smpcview.exe\", \"Splashtop\",\n    process.name.caseless == \"spclink.exe\", \"Splashtop\",\n    process.name.caseless == \"splashtop-streamer.exe\", \"Splashtop\",\n    process.name.caseless == \"splashtopsos.exe\", \"Splashtop\",\n    process.name.caseless == \"spsrv.exe\", \"Splashtop\",\n    process.name.caseless == \"sragent.exe\", \"Splashtop\",\n    process.name.caseless == \"srservice.exe\", \"Splashtop\",\n    process.name.caseless == \"srmanager.exe\", \"Splashtop\",\n    process.name.caseless == \"srserver.exe\", \"Splashtop\",\n    process.name.caseless == \"strwinclt.exe\", \"Splashtop\",\n    process.name.caseless == \"supremo.exe\", \"Supremo\",\n    process.name.caseless == \"supremoservice.exe\", \"Supremo\",\n    process.name.caseless == \"syncro.app.runner.exe\", \"Splashtop\",\n    process.name.caseless == \"syncro.installer.exe\", \"Splashtop\",\n    process.name.caseless == \"syncro.overmind.service.exe\", \"Splashtop\",\n    process.name.caseless == \"syncro.service.exe\", \"Splashtop\",\n    process.name.caseless == \"syncrolive.agent.exe\", \"Splashtop\",\n    process.name.caseless == \"syncrolive.agent.runner.exe\", \"Splashtop\",\n    process.name.caseless == \"syncrolive.service.exe\", \"Splashtop\",\n    process.name.caseless == \"tacticalrmm.exe\", \"TacticalRMM\",\n    process.name.caseless == \"tailscale.exe\", \"Tailscale\",\n    process.name.caseless == \"tailscaled.exe\", \"Tailscale\",\n    process.name.caseless == \"teamviewer.exe\", \"TeamViewer\",\n    process.name.caseless == \"teamviewer_desktop.exe\", \"TeamViewer\",\n    process.name.caseless == \"teamviewer_service.exe\", \"TeamViewer\",\n    process.name.caseless == \"tiagent.exe\", \"Tiflux\",\n    process.name.caseless == \"ticlientcore.exe\", \"Tiflux\",\n    process.name.caseless == \"todesk_service.exe\", \"ToDesk\",\n    process.name.caseless == \"toolsiq.exe\", \"ToolsIQ\",\n    process.name.caseless == \"tsclient.exe\", \"Techinline\",\n    process.name.caseless == \"tvn.exe\", \"TightVNC\",\n    process.name.caseless == \"tvnserver.exe\", \"TightVNC\",\n    process.name.caseless == \"tvnviewer.exe\", \"TightVNC\",\n    process.name.caseless == \"twingate.exe\", \"Twingate\",\n    process.name.caseless like \"ultravnc*.exe\", \"UltraVNC\",\n    process.name.caseless like \"ultraviewer*.exe\", \"UltraViewer\",\n    process.name.caseless == \"velociraptor.exe\", \"Velociraptor\",\n    process.name.caseless == \"vncserver.exe\", \"RealVNC\",\n    process.name.caseless == \"vncviewer.exe\", \"RealVNC\",\n    process.name.caseless == \"winvnc.exe\", \"RealVNC\",\n    process.name.caseless == \"winwvc.exe\", \"TightVNC\",\n    process.name.caseless == \"za_access.exe\", \"ZohoAssist\",\n    process.name.caseless == \"za_connect.exe\", \"ZohoAssist\",\n    process.name.caseless == \"zaservice.exe\", \"ZohoAssist\",\n    process.name.caseless == \"zmagent.exe\", \"ZohoAssist\",\n    process.name.caseless == \"zohomeeting.exe\", \"ZohoAssist\",\n    process.name.caseless == \"zohotray.exe\", \"ZohoAssist\",\n    process.name.caseless == \"zohours.exe\", \"ZohoAssist\",\n    process.name.caseless == \"zohoursservice.exe\", \"ZohoAssist\",\n    \"\"\n  )\n| where Esql.rmm_vendor != \"\" and Esql.rmm_vendor is not NULL\n| stats Esql.vendor_count = count_distinct(Esql.rmm_vendor),\n        Esql.vendors_seen = values(Esql.rmm_vendor),\n        Esql.processes_executable_values = values(process.executable),\n        Esql.first_seen = min(@timestamp),\n        Esql.last_seen = max(@timestamp)\n  by host.name, host.id\n| where Esql.vendor_count >= 2\n| sort Esql.vendor_count desc\n| keep host.id, host.name, Esql.*\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1219/",
+            "https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-025a",
+            "https://lolrmm.io/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c3f8a1d2-4b5e-4c6f-9a8b-1e2d3f4a5b6c",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Crowdstrike",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Winlogbeat"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1219",
+                        "name": "Remote Access Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1219/",
+                        "subtechnique": [
+                            {
+                                "id": "T1219.002",
+                                "name": "Remote Desktop Software",
+                                "reference": "https://attack.mitre.org/techniques/T1219/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 4
+    },
+    "id": "c3f8a1d2-4b5e-4c6f-9a8b-1e2d3f4a5b6c_4",
+    "type": "security-rule"
+}
