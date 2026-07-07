@@ -1,0 +1,109 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies ICMP Echo traffic from an internal host to an external destination with a larger-than-typical transaction size. Covert channels and ICMP tunneling tools embed data in echo payloads that exceed normal OS ping behavior, which is usually limited to small fixed-size packets.",
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-network_traffic.icmp-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Potential ICMP Tunneling Activity to the Internet",
+        "new_terms_fields": [
+            "source.ip",
+            "destination.ip"
+        ],
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential ICMP Tunneling Activity to the Internet\n\nICMP tunneling encodes C2 or exfiltrated data inside echo request and reply payloads. This rule focuses on internal\nhosts sending unusually large echo transactions to external destinations, a pattern that differs from routine\noperating-system ping and most availability monitoring.\n\n### Possible investigation steps\n\n- Identify the `source.ip` host role. Servers and workstations that rarely initiate ICMP externally are higher concern.\n- Review the volume and cadence of echo traffic to the same `destination.ip` for beacon-like regularity.\n- Compare `network.bytes` across the conversation for asymmetric or variable payload sizes.\n- Correlate with endpoint process telemetry for non-standard ping utilities or custom clients if available.\n\n### False positive analysis\n\n- Some network path MTU discovery, diagnostic suites, or vendor appliances generate larger ICMP payloads. Validate and\n  except known monitoring sources and destinations.\n- Cloud health checks occasionally use ICMP with non-default sizes; confirm against provider documentation before\n  excepting.\n\n### Response and remediation\n\n- Block unauthorized outbound ICMP at the perimeter where policy permits, or restrict it to approved monitoring paths.\n- Isolate the source host if covert-channel tooling is confirmed.\n- Inspect the external destination against threat intelligence and block if malicious.",
+        "query": "data_stream.dataset:network_traffic.icmp\n  and (network_traffic.icmp.request.type:(8 or 128) or icmp.request.type:(8 or 128))\n  and network.transport:(icmp or ipv6-icmp)\n  and source.ip:(10.0.0.0/8 or 172.16.0.0/12 or 192.168.0.0/16 or \"FC00::/7\")\n  and network.bytes >= 256\n  and not destination.ip:(\n    10.0.0.0/8 or 100.64.0.0/10 or 127.0.0.0/8 or 169.254.0.0/16 or 172.16.0.0/12 or 192.168.0.0/16 or\n    192.0.0.0/24 or 192.0.0.0/29 or 192.0.0.8/32 or 192.0.0.9/32 or 192.0.0.10/32 or 192.0.0.170/32 or\n    192.0.0.171/32 or 192.0.2.0/24 or 192.175.48.0/24 or 192.31.196.0/24 or 192.52.193.0/24 or 192.88.99.0/24 or\n    198.18.0.0/15 or 198.51.100.0/24 or 203.0.113.0/24 or 224.0.0.0/4 or 240.0.0.0/4 or \"::1\" or \"FC00::/7\" or\n    \"FE80::/10\" or \"FF00::/8\"\n  )\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1572/",
+            "https://www.rfc-editor.org/rfc/rfc792",
+            "https://www.levelblue.com/blogs/spiderlabs-blog/backdoor-at-the-end-of-the-icmp-tunnel"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "icmp.request.type",
+                "type": "integer"
+            },
+            {
+                "ecs": true,
+                "name": "network.bytes",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "network.transport",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "network_traffic.icmp.request.type",
+                "type": "integer"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "96dd08d8-8f3d-4f55-ada8-7dc1e05dbd47",
+        "setup": "## Setup\n\nThis rule requires the Elastic network_traffic integration capturing ICMP transactions (`network_traffic.icmp` data\nstream). Flow-only telemetry without ICMP payload size is insufficient.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Network",
+            "Tactic: Command and Control",
+            "Use Case: Threat Detection",
+            "Use Case: Network Security Monitoring",
+            "Data Source: Network Traffic",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1095",
+                        "name": "Non-Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1095/"
+                    },
+                    {
+                        "id": "T1572",
+                        "name": "Protocol Tunneling",
+                        "reference": "https://attack.mitre.org/techniques/T1572/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "96dd08d8-8f3d-4f55-ada8-7dc1e05dbd47_1",
+    "type": "security-rule"
+}

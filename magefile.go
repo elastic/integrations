@@ -23,6 +23,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/elastic/integrations/dev/backports"
+	"github.com/elastic/integrations/dev/backports/apply"
 	"github.com/elastic/integrations/dev/backports/changelog"
 	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
@@ -228,6 +229,16 @@ func ValidateBackportsInventory() error {
 	return backports.ValidateInventory(".backports.yml", "packages")
 }
 
+// ValidateBackportBranchName checks that the given branch name is valid for the given package.
+// The branch must match backport-<package>-<suffix> and start with "backport-<packageName>-".
+func ValidateBackportBranchName(packageName, branch string) error {
+	if err := backports.ValidateBranchName(packageName, branch); err != nil {
+		return err
+	}
+	fmt.Printf("Branch name %q is valid for package %q.\n", branch, packageName)
+	return nil
+}
+
 // ListPackages lists all packages found under the packages directory.
 func ListPackages() error {
 	const packagesDir = "packages"
@@ -324,6 +335,26 @@ func IsVersionLessThanLogsDBGA(version string) error {
 	return nil
 }
 
+// AddBackportEntry adds a new entry to .backports.yml for the given package and
+// base version. The branch name is derived as backport-<package>-<major>.<minor>,
+// archived is set to false, and maintained_until to null. The base commit is
+// resolved via dev/scripts/get_release_commit.sh. The entry is inserted in
+// sorted order (by package name ascending, then by version descending — newest first).
+func AddBackportEntry(packageName, baseVersion string) error {
+	baseCommit, err := sh.Output("bash", "dev/scripts/get_release_commit.sh", "-p", packageName, "-v", baseVersion)
+	if err != nil {
+		return fmt.Errorf("resolving base commit for %s@%s: %w", packageName, baseVersion, err)
+	}
+	commit := strings.TrimSpace(baseCommit)
+	branch, err := backports.AddEntry(".backports.yml", packageName, baseVersion, commit, "packages")
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Added: branch=%s base_commit=%s\n", branch, commit)
+	fmt.Printf("Tip: if you need a custom branch name, edit the 'branch' field in .backports.yml before opening the PR (must start with \"backport-%s-\").\n", packageName)
+	return nil
+}
+
 // CheckBackportBranchActive reports whether a backport branch is active per .backports.yml.
 // Prints "<branch>: active" or "<branch>: inactive (<reason>)".
 // Pass -json for JSON output: mage CheckBackportBranchActive <branch> -json
@@ -412,6 +443,7 @@ func SyncBackportChangelog() error {
 	}
 
 	syncResult, err := changelog.CreateSyncPR(
+		"",
 		collectResult.EntriesTSV,
 		collectResult.WorkingBranch,
 		collectResult.BackportPRNumber,
@@ -449,6 +481,71 @@ func PostBackportComment() error {
 		os.Getenv("RUN_ID"),
 		repository,
 	)
+}
+
+// ApplyBackport cherry-picks a fix commit onto a backport branch, bumps the patch
+// version, writes a correct changelog entry, and optionally opens a PR.
+//
+// Usage: mage ApplyBackport <sha> <package> <target> [-openPR] [-asJSON] [-dryRun] \
+//
+//	[repository] [packagesDir]
+//
+// sha, pkg, target are required. All remaining parameters are optional (nil = unset).
+// *bool flags may be passed as -openPR / -asJSON / -dryRun on the command line.
+func ApplyBackport(sha, pkg, target string, openPR, asJSON, dryRun *bool, remote, repository, packagesDir *string) error {
+	opts := apply.Options{
+		SHA:         sha,
+		Package:     pkg,
+		Target:      target,
+		OpenPR:      openPR != nil && *openPR,
+		AsJSON:      asJSON != nil && *asJSON,
+		DryRun:      dryRun != nil && *dryRun,
+		Remote:      deref(remote),
+		Repository:  deref(repository),
+		PackagesDir: deref(packagesDir),
+	}
+
+	result, err := apply.Apply(opts)
+	if err != nil {
+		return err
+	}
+
+	if opts.AsJSON {
+		data, err := json.Marshal(result)
+		if err != nil {
+			return fmt.Errorf("marshalling result: %w", err)
+		}
+		fmt.Println(string(data))
+		if result.Status == "conflict" {
+			return fmt.Errorf("cherry-pick conflict on %s", strings.Join(result.ConflictingFiles, ", "))
+		}
+	} else if result.Status == "conflict" {
+		fmt.Fprintf(os.Stderr, "conflict: cherry-pick of %s onto %s failed\n", result.SHA, result.TargetBranch)
+		fmt.Fprintf(os.Stderr, "conflicting files:\n")
+		for _, f := range result.ConflictingFiles {
+			fmt.Fprintf(os.Stderr, "  %s\n", f)
+		}
+		fmt.Fprintf(os.Stderr, "suggested command: %s\n", result.SuggestedCommand)
+		return fmt.Errorf("cherry-pick conflict on %s", strings.Join(result.ConflictingFiles, ", "))
+	} else if result.WorkingBranch != "" {
+		fmt.Printf("dry run: branch %q created locally with version %s — review with: git checkout %s\n",
+			result.WorkingBranch, result.NewVersion, result.WorkingBranch)
+	} else {
+		fmt.Printf("backport success: %s %s", result.TargetBranch, result.NewVersion)
+		if result.PRURL != "" {
+			fmt.Printf(", PR: %s", result.PRURL)
+		}
+		fmt.Println()
+	}
+	return nil
+}
+
+// deref returns the string pointed to by s, or "" if s is nil.
+func deref(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 // writeGitHubOutputs appends key=value pairs to the file named by $GITHUB_OUTPUT.

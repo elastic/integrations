@@ -1,0 +1,290 @@
+---
+description: Pipeline for categorizing Thor logs.
+processors:
+  - script:
+      tag: script_set_event_categorization
+      lang: painless
+      if: ctx.thor?.module != null
+      description: Categorize event.category, kind, and type for THOR based on module.
+      params:
+        Amcache:
+          category:
+            - registry
+          kind: event
+          type:
+            - access
+        AtJobs:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        Autoruns:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        DNSCache:
+          category:
+            - network
+          kind: event
+          type:
+            - info
+        EnvCheck:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        EtwWatcher:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        Eventlog:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        Events:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        Filescan:
+          category:
+            - file
+          kind: event
+          type:
+            - info
+        Firewall:
+          category:
+            - network
+          kind: event
+          type:
+            - info
+        Hosts:
+          category:
+            - host
+          kind: event
+          type:
+            - info
+        HotfixCheck:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        Init:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        LSASessions:
+          category:
+            - session
+            - iam
+          kind: event
+          type:
+            - info
+        LogScan:
+          category:
+            - file
+          kind: event
+          type:
+            - info
+        LoggedIn:
+          category:
+            - iam
+          kind: event
+          type:
+            - info
+        Mutex:
+          category:
+            - process
+          kind: event
+          type:
+            - info
+        NetworkSessions:
+          category:
+            - network
+            - session
+          kind: event
+          type:
+            - info
+        NetworkShares:
+          category:
+            - network
+          kind: event
+          type:
+            - info
+        Pipes:
+          category:
+            - process
+          kind: event
+          type:
+            - info
+        ProcessCheck:
+          category:
+            - process
+          kind: event
+          type:
+            - info
+        ProcessConnections:
+          category:
+            - process
+            - network
+          kind: event
+          type:
+            - info
+        RegistryChecks:
+          category:
+            - registry
+          kind: event
+          type:
+            - access
+        RegistryHive:
+          category:
+            - registry
+          kind: event
+          type:
+            - access
+        Report:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        Rootkit:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        SHIMCache:
+          category:
+            - registry
+          kind: event
+          type:
+            - access
+        ScheduledTasks:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        ServiceCheck:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        Sigma:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        Startup:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        Timestomp:
+          category:
+            - file
+          kind: event
+          type:
+            - info
+        UserDir:
+          category:
+            - iam
+          kind: event
+          type:
+            - info
+            - user
+        Users:
+          category:
+            - iam
+          kind: event
+          type:
+            - info
+            - user
+        VulnerabilityCheck:
+          category:
+            - vulnerability
+          kind: event
+          type:
+            - info
+        WER:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        WMIPersistence:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        WMIStartup:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+        Yara:
+          category:
+            - configuration
+          kind: event
+          type:
+            - info
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        def m = params.get(ctx.thor.module);
+        if (m != null) {
+          m.forEach((k, v) -> {
+            if (v instanceof List) {
+              ctx.event[k] = new ArrayList(v);
+            } else {
+              ctx.event[k] = v;
+            }
+          });
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            tag: append_error_message_script_set_event_categorization
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_alert
+      value: alert
+      if: ctx.thor?.level == "Alert"
+  - append:
+      field: event.category
+      value: malware
+      if: ctx.thor?.message == "Malware file found"
+      allow_duplicates: false
+      tag: append_event_category_malware
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      tag: append_pipeline_error_message
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      tag: append_preserve_original_event_tag

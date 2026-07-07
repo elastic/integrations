@@ -1,0 +1,113 @@
+config_version: 2
+interval: {{interval}}
+run_as_cel: true
+request.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.url: {{url}}/web/api/v2.1/threats
+cel.state:
+  api_token: {{api_token}}
+  page_size: {{page_size}}
+  initial_interval: {{initial_interval}}
+{{#if site_ids }}
+  site_ids: !!str {{site_ids}}
+{{/if}}
+cel.redact:
+  fields:
+    - api_token
+cel.program: |-
+  (
+    state.?want_more.orValue(false) ?
+      state.list_updated_at_gte
+    :
+      state.?cursor.last_update_at.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339))
+  ).as(list_updated_at_gte,
+    state.with(
+      request(
+        "GET",
+        state.url + "?" + {
+          "limit": [string(state.page_size)],
+          "sortBy": ["updatedAt"],
+          "sortOrder": ["asc"],
+          "updatedAt__gte": [list_updated_at_gte],
+          ?"siteIds": state.?site_ids.optMap(v, [v]),
+          ?"cursor": state.?next_page.token.optMap(v, [v]),
+        }.format_query()
+      ).with(
+        {
+          "Header": {
+            "Authorization": ["ApiToken " + state.api_token],
+          },
+        }
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          {
+            "events": (size(body.?data.orValue([])) > 0) ?
+              body.data.map(e, {"message": e.encode_json()})
+            :
+              [],
+            "cursor": (size(body.?data.orValue([])) > 0) ?
+              body.data.map(e, e.?threatInfo.updatedAt.orValue(null)).filter(v, v != null).as(updates,
+                updates.size() > 0 ?
+                  {
+                    "last_update_at": (
+                      [?state.?cursor.last_update_at] + updates
+                    ).map(t, timestamp(t)).max().format(time_layout.RFC3339),
+                  }
+                :
+                  state.?cursor.orValue({})
+              )
+            :
+              state.?cursor.orValue({}),
+            "next_page": {
+              ?"token": body.?pagination.nextCursor.orValue(null) != null ?
+                optional.of(body.pagination.nextCursor)
+              :
+                optional.none(),
+            },
+            "list_updated_at_gte": list_updated_at_gte,
+            "want_more": body.?pagination.nextCursor.orValue(null) != null,
+          }
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + state.url + ": " + (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "list_updated_at_gte": list_updated_at_gte,
+          "want_more": false,
+        }
+      )
+    )
+  )
+tags:
+  - run_as_cel
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
