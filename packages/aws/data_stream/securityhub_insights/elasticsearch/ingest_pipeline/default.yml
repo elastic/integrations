@@ -13,12 +13,15 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - set:
@@ -26,36 +29,44 @@ processors:
       value: AWS Security Hub CSPM
       tag: set_observer_vendor
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - rename:
+      tag: rename_json_Filters_AwsAccountId_to_aws_securityhub_insights_filters_aws_account_id_7d9c5130
       field: json.Filters.AwsAccountId
       target_field: aws.securityhub_insights.filters.aws_account_id
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_CompanyName_to_aws_securityhub_insights_filters_company_name_4b695968
       field: json.Filters.CompanyName
       target_field: aws.securityhub_insights.filters.company.name
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ComplianceStatus_to_aws_securityhub_insights_filters_compliance_status_029e914c
       field: json.Filters.ComplianceStatus
       target_field: aws.securityhub_insights.filters.compliance.status
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_Confidence_to_aws_securityhub_insights_filters_confidence_d21eab9c
       field: json.Filters.Confidence
       target_field: aws.securityhub_insights.filters.confidence
       ignore_missing: true
   - foreach:
+      tag: foreach_json_Filters_CreatedAt_7990b1a8
       field: json.Filters.CreatedAt
       processor:
         rename:
@@ -65,6 +76,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.CreatedAt != null && ctx.json?.Filters?.CreatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_CreatedAt_73195d1a
       field: json.Filters.CreatedAt
       processor:
         rename:
@@ -74,6 +86,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.CreatedAt != null && ctx.json?.Filters?.CreatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_CreatedAt_23354fe8
       field: json.Filters.CreatedAt
       processor:
         date:
@@ -86,6 +99,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.CreatedAt != null && ctx.json?.Filters?.CreatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_CreatedAt_de1a2920
       field: json.Filters.CreatedAt
       processor:
         date:
@@ -98,6 +112,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.CreatedAt != null && ctx.json?.Filters?.CreatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_CreatedAt_3501ad7a
       field: json.Filters.CreatedAt
       processor:
         remove:
@@ -108,46 +123,57 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.CreatedAt != null && ctx.json?.Filters?.CreatedAt instanceof List
   - rename:
+      tag: rename_json_Filters_CreatedAt_to_aws_securityhub_insights_filters_created_at_fa003e79
       field: json.Filters.CreatedAt
       target_field: aws.securityhub_insights.filters.created_at
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_Criticality_to_aws_securityhub_insights_filters_criticality_8c33f134
       field: json.Filters.Criticality
       target_field: aws.securityhub_insights.filters.criticality
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_Description_to_aws_securityhub_insights_filters_description_e3450b80
       field: json.Filters.Description
       target_field: aws.securityhub_insights.filters.description
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_FindingProviderFieldsConfidence_to_aws_securityhub_insights_filters_finding_provider_fields_confidence_19ff433a
       field: json.Filters.FindingProviderFieldsConfidence
       target_field: aws.securityhub_insights.filters.finding_provider_fields.confidence
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_FindingProviderFieldsCriticality_to_aws_securityhub_insights_filters_finding_provider_fields_criticality_52864aa8
       field: json.Filters.FindingProviderFieldsCriticality
       target_field: aws.securityhub_insights.filters.finding_provider_fields.criticality
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_FindingProviderFieldsRelatedFindingsId_to_aws_securityhub_insights_filters_finding_provider_fields_related_findings_id_bfab5c87
       field: json.Filters.FindingProviderFieldsRelatedFindingsId
       target_field: aws.securityhub_insights.filters.finding_provider_fields.related_findings.id
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_FindingProviderFieldsRelatedFindingsProductArn_to_aws_securityhub_insights_filters_finding_provider_fields_related_findings_product_arn_467c9231
       field: json.Filters.FindingProviderFieldsRelatedFindingsProductArn
       target_field: aws.securityhub_insights.filters.finding_provider_fields.related_findings.product.arn
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_FindingProviderFieldsSeverityLabel_to_aws_securityhub_insights_filters_finding_provider_fields_severity_label_3833409a
       field: json.Filters.FindingProviderFieldsSeverityLabel
       target_field: aws.securityhub_insights.filters.finding_provider_fields.severity.label
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_FindingProviderFieldsSeverityOriginal_to_aws_securityhub_insights_filters_finding_provider_fields_severity_original_c593742e
       field: json.Filters.FindingProviderFieldsSeverityOriginal
       target_field: aws.securityhub_insights.filters.finding_provider_fields.severity.original
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_FindingProviderFieldsTypes_to_aws_securityhub_insights_filters_finding_provider_fields_types_fb2d68c0
       field: json.Filters.FindingProviderFieldsTypes
       target_field: aws.securityhub_insights.filters.finding_provider_fields.types
       ignore_missing: true
   - foreach:
+      tag: foreach_json_Filters_FirstObservedAt_383e75f6
       field: json.Filters.FirstObservedAt
       processor:
         rename:
@@ -157,6 +183,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.FirstObservedAt != null && ctx.json?.Filters?.FirstObservedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_FirstObservedAt_55516bc0
       field: json.Filters.FirstObservedAt
       processor:
         rename:
@@ -166,6 +193,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.FirstObservedAt != null && ctx.json?.Filters?.FirstObservedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_FirstObservedAt_32cf9a12
       field: json.Filters.FirstObservedAt
       processor:
         date:
@@ -178,6 +206,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.FirstObservedAt != null && ctx.json?.Filters?.FirstObservedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_FirstObservedAt_3cbd9812
       field: json.Filters.FirstObservedAt
       processor:
         date:
@@ -190,6 +219,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.FirstObservedAt != null && ctx.json?.Filters?.FirstObservedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_FirstObservedAt_fa3c0584
       field: json.Filters.FirstObservedAt
       processor:
         remove:
@@ -200,22 +230,27 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.FirstObservedAt != null && ctx.json?.Filters?.FirstObservedAt instanceof List
   - rename:
+      tag: rename_json_Filters_FirstObservedAt_to_aws_securityhub_insights_filters_first_observed_at_fa202d66
       field: json.Filters.FirstObservedAt
       target_field: aws.securityhub_insights.filters.first_observed_at
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_GeneratorId_to_aws_securityhub_insights_filters_generator_id_f46891a0
       field: json.Filters.GeneratorId
       target_field: aws.securityhub_insights.filters.generator.id
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_Id_to_aws_securityhub_insights_filters_id_63ebe9d6
       field: json.Filters.Id
       target_field: aws.securityhub_insights.filters.id
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_Keyword_to_aws_securityhub_insights_filters_keyword_c5877148
       field: json.Filters.Keyword
       target_field: aws.securityhub_insights.filters.keyword
       ignore_missing: true
   - foreach:
+      tag: foreach_json_Filters_LastObservedAt_7038e934
       field: json.Filters.LastObservedAt
       processor:
         rename:
@@ -225,6 +260,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.LastObservedAt != null && ctx.json?.Filters?.LastObservedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_LastObservedAt_ede31f46
       field: json.Filters.LastObservedAt
       processor:
         rename:
@@ -234,6 +270,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.LastObservedAt != null && ctx.json?.Filters?.LastObservedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_LastObservedAt_0a181104
       field: json.Filters.LastObservedAt
       processor:
         date:
@@ -246,6 +283,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.LastObservedAt != null && ctx.json?.Filters?.LastObservedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_LastObservedAt_b3620a6c
       field: json.Filters.LastObservedAt
       processor:
         date:
@@ -258,6 +296,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.LastObservedAt != null && ctx.json?.Filters?.LastObservedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_LastObservedAt_c160d15e
       field: json.Filters.LastObservedAt
       processor:
         remove:
@@ -268,74 +307,92 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.LastObservedAt != null && ctx.json?.Filters?.LastObservedAt instanceof List
   - rename:
+      tag: rename_json_Filters_LastObservedAt_to_aws_securityhub_insights_filters_last_observed_at_185c710c
       field: json.Filters.LastObservedAt
       target_field: aws.securityhub_insights.filters.last_observed_at
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_MalwareName_to_aws_securityhub_insights_filters_malware_name_560a52e8
       field: json.Filters.MalwareName
       target_field: aws.securityhub_insights.filters.malware.name
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_MalwarePath_to_aws_securityhub_insights_filters_malware_path_71977db8
       field: json.Filters.MalwarePath
       target_field: aws.securityhub_insights.filters.malware.path
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_MalwareState_to_aws_securityhub_insights_filters_malware_state_2d676798
       field: json.Filters.MalwareState
       target_field: aws.securityhub_insights.filters.malware.state
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_MalwareType_to_aws_securityhub_insights_filters_malware_type_96d84c3a
       field: json.Filters.MalwareType
       target_field: aws.securityhub_insights.filters.malware.type
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_NetworkDestinationDomain_to_aws_securityhub_insights_filters_network_destination_domain_453cfe1c
       field: json.Filters.NetworkDestinationDomain
       target_field: aws.securityhub_insights.filters.network.destination.domain
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_NetworkDestinationIpV4_to_aws_securityhub_insights_filters_network_destination_ip_v4_9f37f0bc
       field: json.Filters.NetworkDestinationIpV4
       target_field: aws.securityhub_insights.filters.network.destination.ip.v4
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_NetworkDestinationIpV6_to_aws_securityhub_insights_filters_network_destination_ip_v6_b4526c60
       field: json.Filters.NetworkDestinationIpV6
       target_field: aws.securityhub_insights.filters.network.destination.ip.v6
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_NetworkDestinationPort_to_aws_securityhub_insights_filters_network_destination_port_70b1e2ea
       field: json.Filters.NetworkDestinationPort
       target_field: aws.securityhub_insights.filters.network.destination.port
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_NetworkDirection_to_aws_securityhub_insights_filters_network_direction_1222eb02
       field: json.Filters.NetworkDirection
       target_field: aws.securityhub_insights.filters.network.direction
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_NetworkProtocol_to_aws_securityhub_insights_filters_network_protocol_695743fa
       field: json.Filters.NetworkProtocol
       target_field: aws.securityhub_insights.filters.network.protocol
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_NetworkSourceDomain_to_aws_securityhub_insights_filters_network_source_domain_0e324512
       field: json.Filters.NetworkSourceDomain
       target_field: aws.securityhub_insights.filters.network.source.domain
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_NetworkSourceIpV4_to_aws_securityhub_insights_filters_network_source_ip_v4_ce9edc24
       field: json.Filters.NetworkSourceIpV4
       target_field: aws.securityhub_insights.filters.network.source.ip.v4
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_NetworkSourceIpV6_to_aws_securityhub_insights_filters_network_source_ip_v6_a13c46f8
       field: json.Filters.NetworkSourceIpV6
       target_field: aws.securityhub_insights.filters.network.source.ip.v6
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_NetworkSourceMac_to_aws_securityhub_insights_filters_network_source_mac_7e493296
       field: json.Filters.NetworkSourceMac
       target_field: aws.securityhub_insights.filters.network.source.mac
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_NetworkSourcePort_to_aws_securityhub_insights_filters_network_source_port_c8ad59fa
       field: json.Filters.NetworkSourcePort
       target_field: aws.securityhub_insights.filters.network.source.port
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_NoteText_to_aws_securityhub_insights_filters_note_text_a049eea6
       field: json.Filters.NoteText
       target_field: aws.securityhub_insights.filters.note.text
       ignore_missing: true
   - foreach:
+      tag: foreach_json_Filters_NoteUpdatedAt_b18f5aeb
       field: json.Filters.NoteUpdatedAt
       processor:
         rename:
@@ -345,6 +402,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.NoteUpdatedAt != null && ctx.json?.Filters?.NoteUpdatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_NoteUpdatedAt_4d932739
       field: json.Filters.NoteUpdatedAt
       processor:
         rename:
@@ -354,6 +412,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.NoteUpdatedAt != null && ctx.json?.Filters?.NoteUpdatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_NoteUpdatedAt_484432b5
       field: json.Filters.NoteUpdatedAt
       processor:
         date:
@@ -366,6 +425,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.NoteUpdatedAt != null && ctx.json?.Filters?.NoteUpdatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_NoteUpdatedAt_fad04fb5
       field: json.Filters.NoteUpdatedAt
       processor:
         date:
@@ -378,6 +438,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.NoteUpdatedAt != null && ctx.json?.Filters?.NoteUpdatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_NoteUpdatedAt_236111b9
       field: json.Filters.NoteUpdatedAt
       processor:
         remove:
@@ -388,14 +449,17 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.NoteUpdatedAt != null && ctx.json?.Filters?.NoteUpdatedAt instanceof List
   - rename:
+      tag: rename_json_Filters_NoteUpdatedAt_to_aws_securityhub_insights_filters_note_updated_at_4073adf3
       field: json.Filters.NoteUpdatedAt
       target_field: aws.securityhub_insights.filters.note.updated_at
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_NoteUpdatedBy_to_aws_securityhub_insights_filters_note_updated_by_17c73d73
       field: json.Filters.NoteUpdatedBy
       target_field: aws.securityhub_insights.filters.note.updated_by
       ignore_missing: true
   - foreach:
+      tag: foreach_json_Filters_ProcessLaunchedAt_40077cf3
       field: json.Filters.ProcessLaunchedAt
       processor:
         rename:
@@ -405,6 +469,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ProcessLaunchedAt != null && ctx.json?.Filters?.ProcessLaunchedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ProcessLaunchedAt_3bd97741
       field: json.Filters.ProcessLaunchedAt
       processor:
         rename:
@@ -414,6 +479,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ProcessLaunchedAt != null && ctx.json?.Filters?.ProcessLaunchedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ProcessLaunchedAt_44097eed
       field: json.Filters.ProcessLaunchedAt
       processor:
         date:
@@ -426,6 +492,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ProcessLaunchedAt != null && ctx.json?.Filters?.ProcessLaunchedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ProcessLaunchedAt_26a4f02d
       field: json.Filters.ProcessLaunchedAt
       processor:
         date:
@@ -438,6 +505,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ProcessLaunchedAt != null && ctx.json?.Filters?.ProcessLaunchedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ProcessLaunchedAt_c6e6d581
       field: json.Filters.ProcessLaunchedAt
       processor:
         remove:
@@ -448,26 +516,32 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ProcessLaunchedAt != null && ctx.json?.Filters?.ProcessLaunchedAt instanceof List
   - rename:
+      tag: rename_json_Filters_ProcessLaunchedAt_to_aws_securityhub_insights_filters_process_launched_at_afef394d
       field: json.Filters.ProcessLaunchedAt
       target_field: aws.securityhub_insights.filters.process.launched_at
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ProcessName_to_aws_securityhub_insights_filters_process_name_d1295940
       field: json.Filters.ProcessName
       target_field: aws.securityhub_insights.filters.process.name
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ProcessParentPid_to_aws_securityhub_insights_filters_process_parent_pid_d5ebf664
       field: json.Filters.ProcessParentPid
       target_field: aws.securityhub_insights.filters.process.parent.pid
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ProcessPath_to_aws_securityhub_insights_filters_process_path_e73c7244
       field: json.Filters.ProcessPath
       target_field: aws.securityhub_insights.filters.process.path
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ProcessPid_to_aws_securityhub_insights_filters_process_pid_5d364840
       field: json.Filters.ProcessPid
       target_field: aws.securityhub_insights.filters.process.pid
       ignore_missing: true
   - foreach:
+      tag: foreach_json_Filters_ProcessTerminatedAt_1ef7d40c
       field: json.Filters.ProcessTerminatedAt
       processor:
         rename:
@@ -477,6 +551,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ProcessTerminatedAt != null && ctx.json?.Filters?.ProcessTerminatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ProcessTerminatedAt_eb39097e
       field: json.Filters.ProcessTerminatedAt
       processor:
         rename:
@@ -486,6 +561,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ProcessTerminatedAt != null && ctx.json?.Filters?.ProcessTerminatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ProcessTerminatedAt_3439e70c
       field: json.Filters.ProcessTerminatedAt
       processor:
         date:
@@ -498,6 +574,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ProcessTerminatedAt != null && ctx.json?.Filters?.ProcessTerminatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ProcessTerminatedAt_5eb4eff4
       field: json.Filters.ProcessTerminatedAt
       processor:
         date:
@@ -510,6 +587,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ProcessTerminatedAt != null && ctx.json?.Filters?.ProcessTerminatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ProcessTerminatedAt_a9dc7616
       field: json.Filters.ProcessTerminatedAt
       processor:
         remove:
@@ -520,62 +598,77 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ProcessTerminatedAt != null && ctx.json?.Filters?.ProcessTerminatedAt instanceof List
   - rename:
+      tag: rename_json_Filters_ProcessTerminatedAt_to_aws_securityhub_insights_filters_process_terminated_at_efee7d27
       field: json.Filters.ProcessTerminatedAt
       target_field: aws.securityhub_insights.filters.process.terminated_at
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ProductArn_to_aws_securityhub_insights_filters_product_arn_0e9200b0
       field: json.Filters.ProductArn
       target_field: aws.securityhub_insights.filters.product.arn
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ProductFields_to_aws_securityhub_insights_filters_product_fields_82c8e51c
       field: json.Filters.ProductFields
       target_field: aws.securityhub_insights.filters.product.fields
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ProductName_to_aws_securityhub_insights_filters_product_name_08a71618
       field: json.Filters.ProductName
       target_field: aws.securityhub_insights.filters.product.name
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_RecommendationText_to_aws_securityhub_insights_filters_recommendation_text_134815b9
       field: json.Filters.RecommendationText
       target_field: aws.securityhub_insights.filters.recommendation_text
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_RecordState_to_aws_securityhub_insights_filters_record_state_1a7de2d3
       field: json.Filters.RecordState
       target_field: aws.securityhub_insights.filters.record_state
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_Region_to_aws_securityhub_insights_filters_region_63957034
       field: json.Filters.Region
       target_field: aws.securityhub_insights.filters.region
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_RelatedFindingsId_to_aws_securityhub_insights_filters_related_findings_id_4d13d533
       field: json.Filters.RelatedFindingsId
       target_field: aws.securityhub_insights.filters.related_findings.id
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_RelatedFindingsProductArn_to_aws_securityhub_insights_filters_related_findings_product_arn_9deadc11
       field: json.Filters.RelatedFindingsProductArn
       target_field: aws.securityhub_insights.filters.related_findings.product.arn
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsEc2InstanceIamInstanceProfileArn_to_aws_securityhub_insights_filters_resource_aws_ec2_instance_iam_instance_profile_arn_9f3370ec
       field: json.Filters.ResourceAwsEc2InstanceIamInstanceProfileArn
       target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.iam_instance_profile.arn
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsEc2InstanceImageId_to_aws_securityhub_insights_filters_resource_aws_ec2_instance_image_id_b8694324
       field: json.Filters.ResourceAwsEc2InstanceImageId
       target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.image.id
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsEc2InstanceIpV4Addresses_to_aws_securityhub_insights_filters_resource_aws_ec2_instance_ip_v4_addresses_ecdd30d7
       field: json.Filters.ResourceAwsEc2InstanceIpV4Addresses
       target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.ip.v4_addresses
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsEc2InstanceIpV6Addresses_to_aws_securityhub_insights_filters_resource_aws_ec2_instance_ip_v6_addresses_43d18f23
       field: json.Filters.ResourceAwsEc2InstanceIpV6Addresses
       target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.ip.v6_addresses
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsEc2InstanceKeyName_to_aws_securityhub_insights_filters_resource_aws_ec2_instance_key_name_b5d8bb10
       field: json.Filters.ResourceAwsEc2InstanceKeyName
       target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.key.name
       ignore_missing: true
   - foreach:
+      tag: foreach_json_Filters_ResourceAwsEc2InstanceLaunchedAt_e314785c
       field: json.Filters.ResourceAwsEc2InstanceLaunchedAt
       processor:
         rename:
@@ -585,6 +678,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt != null && ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ResourceAwsEc2InstanceLaunchedAt_b44da6ce
       field: json.Filters.ResourceAwsEc2InstanceLaunchedAt
       processor:
         rename:
@@ -594,6 +688,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt != null && ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ResourceAwsEc2InstanceLaunchedAt_cf7ab6dc
       field: json.Filters.ResourceAwsEc2InstanceLaunchedAt
       processor:
         date:
@@ -606,6 +701,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt != null && ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ResourceAwsEc2InstanceLaunchedAt_f53c5944
       field: json.Filters.ResourceAwsEc2InstanceLaunchedAt
       processor:
         date:
@@ -618,6 +714,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt != null && ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ResourceAwsEc2InstanceLaunchedAt_5b1c2506
       field: json.Filters.ResourceAwsEc2InstanceLaunchedAt
       processor:
         remove:
@@ -628,22 +725,27 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt != null && ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt instanceof List
   - rename:
+      tag: rename_json_Filters_ResourceAwsEc2InstanceLaunchedAt_to_aws_securityhub_insights_filters_resource_aws_ec2_instance_launched_at_0a47404b
       field: json.Filters.ResourceAwsEc2InstanceLaunchedAt
       target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.launched_at
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsEc2InstanceSubnetId_to_aws_securityhub_insights_filters_resource_aws_ec2_instance_subnet_id_2c1909f0
       field: json.Filters.ResourceAwsEc2InstanceSubnetId
       target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.subnet.id
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsEc2InstanceType_to_aws_securityhub_insights_filters_resource_aws_ec2_instance_type_e9f23480
       field: json.Filters.ResourceAwsEc2InstanceType
       target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.type
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsEc2InstanceVpcId_to_aws_securityhub_insights_filters_resource_aws_ec2_instance_vpc_id_e77c1424
       field: json.Filters.ResourceAwsEc2InstanceVpcId
       target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.vpc.id
       ignore_missing: true
   - foreach:
+      tag: foreach_json_Filters_ResourceAwsIamAccessKeyCreatedAt_4d1c1737
       field: json.Filters.ResourceAwsIamAccessKeyCreatedAt
       processor:
         rename:
@@ -653,6 +755,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt != null && ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ResourceAwsIamAccessKeyCreatedAt_1a456765
       field: json.Filters.ResourceAwsIamAccessKeyCreatedAt
       processor:
         rename:
@@ -662,6 +765,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt != null && ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ResourceAwsIamAccessKeyCreatedAt_80aa64b1
       field: json.Filters.ResourceAwsIamAccessKeyCreatedAt
       processor:
         date:
@@ -674,6 +778,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt != null && ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ResourceAwsIamAccessKeyCreatedAt_bb814411
       field: json.Filters.ResourceAwsIamAccessKeyCreatedAt
       processor:
         date:
@@ -686,6 +791,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt != null && ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ResourceAwsIamAccessKeyCreatedAt_ea6fc82d
       field: json.Filters.ResourceAwsIamAccessKeyCreatedAt
       processor:
         remove:
@@ -696,42 +802,52 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt != null && ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt instanceof List
   - rename:
+      tag: rename_json_Filters_ResourceAwsIamAccessKeyCreatedAt_to_aws_securityhub_insights_filters_resource_aws_iam_access_key_created_at_9cbe108a
       field: json.Filters.ResourceAwsIamAccessKeyCreatedAt
       target_field: aws.securityhub_insights.filters.resource.aws_iam_access_key.created_at
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsIamAccessKeyPrincipalName_to_aws_securityhub_insights_filters_resource_aws_iam_access_key_principal_name_1cb3d833
       field: json.Filters.ResourceAwsIamAccessKeyPrincipalName
       target_field: aws.securityhub_insights.filters.resource.aws_iam_access_key.principal.name
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsIamAccessKeyStatus_to_aws_securityhub_insights_filters_resource_aws_iam_access_key_status_27bb8e05
       field: json.Filters.ResourceAwsIamAccessKeyStatus
       target_field: aws.securityhub_insights.filters.resource.aws_iam_access_key.status
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsIamAccessKeyUserName_to_aws_securityhub_insights_filters_resource_aws_iam_access_key_user_name_34f26a73
       field: json.Filters.ResourceAwsIamAccessKeyUserName
       target_field: aws.securityhub_insights.filters.resource.aws_iam_access_key.user.name
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsIamUserUserName_to_aws_securityhub_insights_filters_resource_aws_iam_user_user_name_ab3aad46
       field: json.Filters.ResourceAwsIamUserUserName
       target_field: aws.securityhub_insights.filters.resource.aws_iam_user.user.name
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsS3BucketOwnerId_to_aws_securityhub_insights_filters_resource_aws_s3_bucket_owner_id_3e754466
       field: json.Filters.ResourceAwsS3BucketOwnerId
       target_field: aws.securityhub_insights.filters.resource.aws_s3_bucket.owner.id
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceAwsS3BucketOwnerName_to_aws_securityhub_insights_filters_resource_aws_s3_bucket_owner_name_961e92ea
       field: json.Filters.ResourceAwsS3BucketOwnerName
       target_field: aws.securityhub_insights.filters.resource.aws_s3_bucket.owner.name
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceContainerImageId_to_aws_securityhub_insights_filters_resource_container_image_id_8ca97a7c
       field: json.Filters.ResourceContainerImageId
       target_field: aws.securityhub_insights.filters.resource.container.image.id
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceContainerImageName_to_aws_securityhub_insights_filters_resource_container_image_name_04c255d8
       field: json.Filters.ResourceContainerImageName
       target_field: aws.securityhub_insights.filters.resource.container.image.name
       ignore_missing: true
   - foreach:
+      tag: foreach_json_Filters_ResourceContainerLaunchedAt_e31051f1
       field: json.Filters.ResourceContainerLaunchedAt
       processor:
         rename:
@@ -741,6 +857,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceContainerLaunchedAt != null && ctx.json?.Filters?.ResourceContainerLaunchedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ResourceContainerLaunchedAt_1da27c27
       field: json.Filters.ResourceContainerLaunchedAt
       processor:
         rename:
@@ -750,6 +867,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceContainerLaunchedAt != null && ctx.json?.Filters?.ResourceContainerLaunchedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ResourceContainerLaunchedAt_0ea1862f
       field: json.Filters.ResourceContainerLaunchedAt
       processor:
         date:
@@ -762,6 +880,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceContainerLaunchedAt != null && ctx.json?.Filters?.ResourceContainerLaunchedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ResourceContainerLaunchedAt_21990087
       field: json.Filters.ResourceContainerLaunchedAt
       processor:
         date:
@@ -774,6 +893,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceContainerLaunchedAt != null && ctx.json?.Filters?.ResourceContainerLaunchedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ResourceContainerLaunchedAt_05759ac3
       field: json.Filters.ResourceContainerLaunchedAt
       processor:
         remove:
@@ -784,62 +904,77 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ResourceContainerLaunchedAt != null && ctx.json?.Filters?.ResourceContainerLaunchedAt instanceof List
   - rename:
+      tag: rename_json_Filters_ResourceContainerLaunchedAt_to_aws_securityhub_insights_filters_resource_container_launched_at_ed0d3d5b
       field: json.Filters.ResourceContainerLaunchedAt
       target_field: aws.securityhub_insights.filters.resource.container.launched_at
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceContainerName_to_aws_securityhub_insights_filters_resource_container_name_8da057b6
       field: json.Filters.ResourceContainerName
       target_field: aws.securityhub_insights.filters.resource.container.name
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceDetailsOther_to_aws_securityhub_insights_filters_resource_details_other_a2be770b
       field: json.Filters.ResourceDetailsOther
       target_field: aws.securityhub_insights.filters.resource.details_other
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceId_to_aws_securityhub_insights_filters_resource_id_573229ca
       field: json.Filters.ResourceId
       target_field: aws.securityhub_insights.filters.resource.id
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourcePartition_to_aws_securityhub_insights_filters_resource_partition_7cf9bee6
       field: json.Filters.ResourcePartition
       target_field: aws.securityhub_insights.filters.resource.partition
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceRegion_to_aws_securityhub_insights_filters_resource_region_d3c1c1fe
       field: json.Filters.ResourceRegion
       target_field: aws.securityhub_insights.filters.resource.region
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceTags_to_aws_securityhub_insights_filters_resource_tags_e6bf5a2e
       field: json.Filters.ResourceTags
       target_field: aws.securityhub_insights.filters.resource.tags
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ResourceType_to_aws_securityhub_insights_filters_resource_type_1de8508e
       field: json.Filters.ResourceType
       target_field: aws.securityhub_insights.filters.resource.type
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_Sample_to_aws_securityhub_insights_filters_sample_f868f35c
       field: json.Filters.Sample
       target_field: aws.securityhub_insights.filters.sample
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_SeverityLabel_to_aws_securityhub_insights_filters_severity_label_598340fa
       field: json.Filters.SeverityLabel
       target_field: aws.securityhub_insights.filters.severity.label
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_SeverityNormalized_to_aws_securityhub_insights_filters_severity_normalized_cc0552b0
       field: json.Filters.SeverityNormalized
       target_field: aws.securityhub_insights.filters.severity.normalized
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_SeverityProduct_to_aws_securityhub_insights_filters_severity_product_d5573ee8
       field: json.Filters.SeverityProduct
       target_field: aws.securityhub_insights.filters.severity.product
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_SourceUrl_to_aws_securityhub_insights_filters_source_url_eeef5ee7
       field: json.Filters.SourceUrl
       target_field: aws.securityhub_insights.filters.source_url
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ThreatIntelIndicatorCategory_to_aws_securityhub_insights_filters_threat_intel_indicator_category_d82b128c
       field: json.Filters.ThreatIntelIndicatorCategory
       target_field: aws.securityhub_insights.filters.threat_intel_indicator.category
       ignore_missing: true
   - foreach:
+      tag: foreach_json_Filters_ThreatIntelIndicatorLastObservedAt_aa5a0dff
       field: json.Filters.ThreatIntelIndicatorLastObservedAt
       processor:
         rename:
@@ -849,6 +984,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt != null && ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ThreatIntelIndicatorLastObservedAt_0212296d
       field: json.Filters.ThreatIntelIndicatorLastObservedAt
       processor:
         rename:
@@ -858,6 +994,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt != null && ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ThreatIntelIndicatorLastObservedAt_4a1c55a9
       field: json.Filters.ThreatIntelIndicatorLastObservedAt
       processor:
         date:
@@ -870,6 +1007,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt != null && ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ThreatIntelIndicatorLastObservedAt_70148249
       field: json.Filters.ThreatIntelIndicatorLastObservedAt
       processor:
         date:
@@ -882,6 +1020,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt != null && ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_ThreatIntelIndicatorLastObservedAt_204dd315
       field: json.Filters.ThreatIntelIndicatorLastObservedAt
       processor:
         remove:
@@ -892,34 +1031,42 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt != null && ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt instanceof List
   - rename:
+      tag: rename_json_Filters_ThreatIntelIndicatorLastObservedAt_to_aws_securityhub_insights_filters_threat_intel_indicator_last_observed_at_eb54c5be
       field: json.Filters.ThreatIntelIndicatorLastObservedAt
       target_field: aws.securityhub_insights.filters.threat_intel_indicator.last_observed_at
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ThreatIntelIndicatorSource_to_aws_securityhub_insights_filters_threat_intel_indicator_source_4efb6030
       field: json.Filters.ThreatIntelIndicatorSource
       target_field: aws.securityhub_insights.filters.threat_intel_indicator.source
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ThreatIntelIndicatorSourceUrl_to_aws_securityhub_insights_filters_threat_intel_indicator_source_url_5a6e8181
       field: json.Filters.ThreatIntelIndicatorSourceUrl
       target_field: aws.securityhub_insights.filters.threat_intel_indicator.source_url
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ThreatIntelIndicatorType_to_aws_securityhub_insights_filters_threat_intel_indicator_type_8e8e9890
       field: json.Filters.ThreatIntelIndicatorType
       target_field: aws.securityhub_insights.filters.threat_intel_indicator.type
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_ThreatIntelIndicatorValue_to_aws_securityhub_insights_filters_threat_intel_indicator_value_f658672c
       field: json.Filters.ThreatIntelIndicatorValue
       target_field: aws.securityhub_insights.filters.threat_intel_indicator.value
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_Title_to_aws_securityhub_insights_filters_title_95601ccc
       field: json.Filters.Title
       target_field: aws.securityhub_insights.filters.title
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_Type_to_aws_securityhub_insights_filters_type_be3b63f4
       field: json.Filters.Type
       target_field: aws.securityhub_insights.filters.type
       ignore_missing: true
   - foreach:
+      tag: foreach_json_Filters_UpdatedAt_1397d65b
       field: json.Filters.UpdatedAt
       processor:
         rename:
@@ -929,6 +1076,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.UpdatedAt != null && ctx.json?.Filters?.UpdatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_UpdatedAt_e8e1aaa9
       field: json.Filters.UpdatedAt
       processor:
         rename:
@@ -938,6 +1086,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.UpdatedAt != null && ctx.json?.Filters?.UpdatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_UpdatedAt_2f220665
       field: json.Filters.UpdatedAt
       processor:
         date:
@@ -950,6 +1099,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.UpdatedAt != null && ctx.json?.Filters?.UpdatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_UpdatedAt_71fbcca5
       field: json.Filters.UpdatedAt
       processor:
         date:
@@ -962,6 +1112,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.UpdatedAt != null && ctx.json?.Filters?.UpdatedAt instanceof List
   - foreach:
+      tag: foreach_json_Filters_UpdatedAt_9b86f049
       field: json.Filters.UpdatedAt
       processor:
         remove:
@@ -972,42 +1123,52 @@ processors:
       ignore_failure: true
       if: ctx.json?.Filters?.UpdatedAt != null && ctx.json?.Filters?.UpdatedAt instanceof List
   - rename:
+      tag: rename_json_Filters_UpdatedAt_to_aws_securityhub_insights_filters_updated_at_29c6f55d
       field: json.Filters.UpdatedAt
       target_field: aws.securityhub_insights.filters.updated_at
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_UserDefinedFields_to_aws_securityhub_insights_filters_user_defined_fields_51f7e45a
       field: json.Filters.UserDefinedFields
       target_field: aws.securityhub_insights.filters.user_defined_fields
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_VerificationState_to_aws_securityhub_insights_filters_verification_state_877df380
       field: json.Filters.VerificationState
       target_field: aws.securityhub_insights.filters.verification.state
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_WorkflowState_to_aws_securityhub_insights_filters_workflow_state_43bd5cf0
       field: json.Filters.WorkflowState
       target_field: aws.securityhub_insights.filters.workflow.state
       ignore_missing: true
   - rename:
+      tag: rename_json_Filters_WorkflowStatus_to_aws_securityhub_insights_filters_workflow_status_5fc600dc
       field: json.Filters.WorkflowStatus
       target_field: aws.securityhub_insights.filters.workflow.status
       ignore_missing: true
   - rename:
+      tag: rename_json_GroupByAttribute_to_aws_securityhub_insights_group_by_attribute_59ad40a2
       field: json.GroupByAttribute
       target_field: aws.securityhub_insights.group_by_attribute
       ignore_missing: true
   - rename:
+      tag: rename_json_InsightArn_to_aws_securityhub_insights_insight_arn_4d0cc417
       field: json.InsightArn
       target_field: aws.securityhub_insights.insight_arn
       ignore_missing: true
   - rename:
+      tag: rename_json_Name_to_aws_securityhub_insights_name_8dc3d1e4
       field: json.Name
       target_field: aws.securityhub_insights.name
       ignore_missing: true
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
   - script:
+      tag: script_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -1033,4 +1194,4 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

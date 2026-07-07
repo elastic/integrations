@@ -1,0 +1,38 @@
+{
+    "id": "ti_ticura-search-phishing-urls",
+    "type": "search",
+    "namespaces": [
+        "default"
+    ],
+    "migrationVersion": {
+        "search": "8.0.0"
+    },
+    "attributes": {
+        "title": "[Ticura] Active phishing URLs",
+        "description": "All Ticura URL indicators tagged as phishing that have not aged out.",
+        "columns": [
+            "threat.indicator.url.full",
+            "threat.indicator.url.domain",
+            "event.severity",
+            "ticura.indicator.confidence_category",
+            "threat.indicator.first_seen"
+        ],
+        "sort": [
+            [
+                "event.severity",
+                "desc"
+            ]
+        ],
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"filter\": [], \"query\": {\"language\": \"kuery\", \"query\": \"event.module:\\\"ti_ticura\\\" and labels.is_ioc_transform_source:false and threat.indicator.type:\\\"url\\\" and ticura.indicator.additional_info.threat_types:\\\"Phishing\\\"\"}, \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+        }
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        }
+    ],
+    "coreMigrationVersion": "8.8.0"
+}

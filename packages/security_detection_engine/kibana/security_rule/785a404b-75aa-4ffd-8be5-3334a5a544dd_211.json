@@ -1,0 +1,95 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when an administrator adds a Google Workspace Marketplace application to the domain. Adversaries with administrative access may register a malicious OAuth application to establish long-lived API access to mail, drive, and other Workspace data, maintaining persistence and enabling collection without relying on a single user password alone.",
+        "false_positives": [
+            "Applications can be added to a Google Workspace domain by system administrators. Verify that the configuration change was expected. Exceptions can be added to this rule to filter expected behavior."
+        ],
+        "from": "now-130m",
+        "index": [
+            "filebeat-*",
+            "logs-google_workspace.admin-*"
+        ],
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "user.name",
+                "user.email",
+                "user.domain",
+                "event.action",
+                "google_workspace.admin.application.name",
+                "google_workspace.admin.application.enabled"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Application Added to Google Workspace Domain",
+        "note": "## Triage and analysis\n\n### Investigating Application Added to Google Workspace Domain\n\nGoogle Workspace Marketplace applications can request OAuth scopes to read or modify tenant data. When an administrator\nadds an application at the domain level, users may be able to install or authorize it broadly, creating a durable\nthird-party access path. Threat actors with admin rights may add an adversary-controlled app to maintain API-based\npersistence and access sensitive resources at scale.\n\nThis rule identifies when an administrator adds a Marketplace application via the `ADD_APPLICATION` event in the\n`google_workspace.admin` data stream.\n\n### Possible investigation steps\n\n- Identify the initiating (actor) administrator by reviewing `user.email` or `user.name`, and note `@timestamp`.\n- Identify the application added by reviewing `google_workspace.admin.application.name` and related application metadata in the raw event.\n- Determine whether the change is expected and authorized:\n  - Validate there is an approved change request or vendor onboarding record for the application.\n  - If the actor account is unusual, treat the alert as higher priority until proven benign.\n- Review Marketplace apps in the Google Admin console:\n  - Navigate to Apps > Google Workspace Marketplace apps.\n  - Confirm whether the application is allowed domain-wide or for specific organizational units, and review requested API scopes against least-privilege expectations.\n- Search Kibana for related admin and OAuth activity:\n  - Find other Marketplace changes by the same actor:\n    ```\n    data_stream.dataset: \"google_workspace.admin\" and user.email: \"<ACTOR_EMAIL>\" and event.action: (\"ADD_APPLICATION\" or \"REMOVE_APPLICATION\")\n    ```\n  - After the add, review OAuth authorizations that may indicate users or admins granting access to the app:\n    ```\n    data_stream.dataset: \"google_workspace.token\" and event.action: \"authorize\"\n    ```\n  - Scope for other security-weakening admin actions from the same `user.email` within the last 48 hours, such as Marketplace restriction changes, blocklist removals, or role assignments.\n\n### False positive analysis\n\n- Verify the application is an approved business tool with documented vendor risk review and scope justification.\n- New application rollouts during migrations or acquisitions can trigger this rule, validate timing against change windows.\n\n### Response and remediation\n\n- Initiate the incident response process based on triage findings.\n- If the add is not clearly authorized, remove or block the application under Google Workspace Marketplace apps while the investigation proceeds.\n- Revoke OAuth tokens for the application client if users have already authorized it (`Security` > Access and data control > API controls, or user token review in admin reports).\n- If the initiating admin account is suspected compromised, reset credentials, revoke active sessions, and review delegated admin roles assigned to that account.\n- Identify the possible impact of the incident and prioritize accordingly; the following actions can help you gain context:\n    - Identify the account role in the cloud environment.\n    - Assess the criticality of affected services and servers.\n    - Work with your IT team to identify and minimize the impact on users.\n    - Identify if the attacker is moving laterally and compromising other accounts, servers, or services.\n    - Identify any regulatory or legal ramifications related to this activity.\n- Investigate credential exposure on systems compromised or used by the attacker to ensure all compromised accounts are identified. Reset passwords or delete API keys as needed to revoke the attacker's access to the environment. Work with your IT teams to minimize the impact on business operations during these actions.\n- Review the permissions assigned to the implicated administrator to ensure that the least privilege principle is being followed.\n- Implement security best practices [outlined](https://support.google.com/a/answer/7587183) by Google.\n- Determine the initial vector abused by the attacker and take action to prevent reinfection via the same vector.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).\n\n\n\n### Important Information Regarding Google Workspace Event Lag Times\n- As per Google's documentation, Google Workspace administrators may observe lag times ranging from minutes up to 3 days between the time of an event's occurrence and the event being visible in the Google Workspace admin/audit logs.\n- This rule is configured to run every 10 minutes with a lookback time of 130 minutes.\n- To reduce the risk of false negatives, consider reducing the interval that the Google Workspace (formerly G Suite) Filebeat module polls Google's reporting API for new events. By default, `var.interval` is set to 2 hours (2h). Consider changing this interval to a lower value, such as 10 minutes (10m).\n- See the following references for further information:\n  - https://support.google.com/a/answer/7061566\n  - https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-module-google_workspace.html",
+        "query": "data_stream.dataset:google_workspace.admin and event.action:ADD_APPLICATION\n",
+        "references": [
+            "https://support.google.com/a/answer/6328701?hl=en#",
+            "https://www.elastic.co/security-labs/google-workspace-attack-surface-part-one",
+            "https://www.elastic.co/security-labs/google-workspace-attack-surface-part-two"
+        ],
+        "related_integrations": [
+            {
+                "package": "google_workspace",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "785a404b-75aa-4ffd-8be5-3334a5a544dd",
+        "setup": "The Google Workspace Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Google Workspace",
+            "Use Case: Configuration Audit",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.001",
+                                "name": "Additional Cloud Credentials",
+                                "reference": "https://attack.mitre.org/techniques/T1098/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 211
+    },
+    "id": "785a404b-75aa-4ffd-8be5-3334a5a544dd_211",
+    "type": "security-rule"
+}

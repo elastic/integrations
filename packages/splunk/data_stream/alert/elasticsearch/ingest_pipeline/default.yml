@@ -58,10 +58,14 @@ processors:
       field: _temp.alert
       target_field: splunk.alert
       field_split: ', '
-      exclude_keys: [annotations.mitre_attack]
+      exclude_keys: [annotations.mitre_attack, _time]
       value_split: '='
       trim_value: '\\\"'
       ignore_failure: true
+      description: >-
+        Excludes `_time` so a `_time` key embedded in `_raw` cannot collide with
+        the top-level `_time` and turn `splunk.alert._time` (and therefore
+        `@timestamp`) into an array, which Elasticsearch rejects.
   - kv:
       field: _temp.alert
       target_field: _temp.key
