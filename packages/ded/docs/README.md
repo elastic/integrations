@@ -41,7 +41,9 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 
 | Transform name         | Purpose                                     | Source index | Destination index           | Alias                 | Supported Platform | Event Category |
 |------------------------|---------------------------------------------|--------------|-----------------------------|-----------------------|--------------------|----------------|
-| ded.pivot_transform_ea | Collects network logs from your environment | logs-*       | ml_network_ded_ea-[version] | ml_network_ded_ea.all | Linux, Windows     | network        |
+| ded.pivot_transform_ea | Collects network logs from your environment | `logs-endpoint.events.network-*,logs-network_traffic.*` | ml_network_ded_ea-[version] | ml_network_ded_ea.all | Linux, Windows     | network        |
+
+**Source index patterns**: `logs-endpoint.events.network-*` holds network events collected by the [Elastic Defend](https://www.elastic.co/docs/reference/integrations/endpoint) integration, and `logs-network_traffic.*` holds network packet traffic collected by the [Network Packet Capture](https://www.elastic.co/docs/reference/integrations/network_traffic) integration.
 
 **Note**: The transform applies only to network data and does not currently support macOS network logs.
 
