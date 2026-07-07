@@ -1,0 +1,19 @@
+# Cursor-based incremental fetching requires the SQL module cursor backend,
+# available in the Elastic Agent bundled with Elastic Stack 9.4+.
+service: sql_input_mysql
+vars:
+  hosts:
+    - root:test@tcp({{Hostname}}:{{Port}})/testdb
+  driver: "mysql"
+  # id is CAST to CHAR so the emitted sql.metrics.* fields are keywords (matching
+  # the package field mappings, as the mssql/postgresql tests also do). The WHERE
+  # and ORDER BY still use the real integer column so the integer cursor advances
+  # correctly. The literal 'has "quotes" here' embeds double quotes to exercise
+  # the escape_string rendering of the sql_query field in the input template.
+  sql_query: 'SELECT CAST(id AS CHAR) AS id, event_type, ''has "quotes" here'' AS note FROM audit_log WHERE id > :cursor ORDER BY audit_log.id ASC LIMIT 500'
+  sql_response_format: "table"
+  cursor: |
+    enabled: true
+    column: id
+    type: integer
+    default: "0"

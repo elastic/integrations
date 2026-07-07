@@ -200,7 +200,7 @@ direction: desc
 |--------|----------|-------------|
 | `enabled` | No | Set to `true` to enable cursor-based fetching. Default: `false`. |
 | `column` | Yes (when enabled) | Name of the column to track. Must appear in the query results. |
-| `type` | Yes (when enabled) | Data type of the cursor column. One of: `integer`, `timestamp`, `date`, `float`, `decimal`. |
+| `type` | No | Data type of the cursor column. One of: `integer`, `timestamp`, `date`, `float`, `decimal`. If omitted, it is inferred from `default` and refined from result rows; setting it explicitly is recommended to avoid ambiguous inference (for example, a `decimal` column being inferred as `integer`). |
 | `default` | Yes (when enabled) | Initial cursor value used before any state is persisted. |
 | `direction` | No | `asc` (default) tracks the maximum value; `desc` tracks the minimum value. |
 
@@ -233,7 +233,8 @@ When cursor is enabled:
 2. Set **SQL Response Format** to `table`.
 3. Include an `ORDER BY` clause on the cursor column matching the configured direction.
 4. Include exactly one `:cursor` placeholder in the WHERE clause.
-5. Cursor is not compatible with `fetch_from_all_databases`. Use separate module blocks per database if needed.
+
+Requirements 1, 2, and 4 are validated at startup and produce an error if violated. Requirement 3 is **not** validated: an omitted or mismatched `ORDER BY` will not raise an error, but the cursor can advance based on an arbitrary row from the result set, causing rows to be silently skipped or re-fetched. Always verify the `ORDER BY` clause manually.
 
 #### State persistence
 
