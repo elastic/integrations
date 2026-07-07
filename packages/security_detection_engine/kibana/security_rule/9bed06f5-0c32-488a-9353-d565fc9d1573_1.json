@@ -1,0 +1,136 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies remote access to the Windows Protected Storage Service through the IPC$ share. Attackers may abuse this named pipe to interact with the Protected Storage Service and extract sensitive credentials, certificates, or DPAPI backup keys.",
+        "from": "now-9m",
+        "index": [
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Protected Storage Service Access via SMB",
+        "note": "## Triage and analysis\n\n### Investigating Protected Storage Service Access via SMB\n\nThe Protected Storage Service manages sensitive user data such as passwords, certificates, and private keys. Remote\naccess to the `protected_storage` named pipe over the IPC$ share is unusual and may indicate an attempt to extract\ncredentials or abuse DPAPI to retrieve domain backup keys from domain controllers.\n\n#### Possible investigation steps\n\n- Identify the source system and user account that initiated the access by reviewing `source.ip`, `user.name`, and\n  `winlog.event_data.SubjectUserName`.\n- Determine whether the target host is a domain controller or other high-value system that stores DPAPI backup keys.\n- Review authentication events (4624, 4625) around the alert time to identify how the source authenticated to the\n  target.\n- Investigate other alerts associated with the source host or user during the past 48 hours.\n- Check for follow-on credential access activity such as registry hive access, LSASS access, or lateral movement.\n\n### False positive analysis\n\n- This activity is rarely expected in most environments. If legitimate administrative tooling accesses this pipe,\n  confirm the source, account, and target system before adding an exception.\n\n### Response and remediation\n\n- Initiate the incident response process based on the outcome of the triage.\n- Isolate the source host if unauthorized access is confirmed.\n- Investigate credential exposure and reset passwords for potentially compromised accounts.\n- Review domain controller DPAPI backup key exposure if the target is a domain controller.\n",
+        "query": "host.os.type:windows and event.category:file and event.code:5145 and\n  winlog.event_data.ShareName:\"\\\\\\\\*\\\\IPC$\" and\n  winlog.event_data.RelativeTargetName:\"protected_storage\" and\n  not source.ip:(\"::\" or \"::1\" or \"0.0.0.0\" or \"127.0.0.1\")\n",
+        "references": [
+            "https://threathunterplaybook.com/hunts/windows/190620-DomainDPAPIBackupKeyExtraction/notebook.html",
+            "https://www.elastic.co/security-labs/detect-credential-access"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.RelativeTargetName",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.ShareName",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "9bed06f5-0c32-488a-9353-d565fc9d1573",
+        "setup": "## Setup\n\nAudit Detailed File Share must be enabled to generate the events used by this rule.\nSetup instructions: https://ela.st/audit-detailed-file-share\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Lateral Movement",
+            "Resources: Investigation Guide",
+            "Use Case: Active Directory Monitoring",
+            "Data Source: Active Directory",
+            "Data Source: Windows Security Event Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1555",
+                        "name": "Credentials from Password Stores",
+                        "reference": "https://attack.mitre.org/techniques/T1555/"
+                    },
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.004",
+                                "name": "Private Keys",
+                                "reference": "https://attack.mitre.org/techniques/T1552/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.002",
+                                "name": "SMB/Windows Admin Shares",
+                                "reference": "https://attack.mitre.org/techniques/T1021/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "9bed06f5-0c32-488a-9353-d565fc9d1573_1",
+    "type": "security-rule"
+}
