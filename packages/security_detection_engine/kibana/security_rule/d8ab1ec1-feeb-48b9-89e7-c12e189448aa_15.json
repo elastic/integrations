@@ -1,0 +1,119 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies an untrusted driver loaded by the Windows kernel. Adversaries may modify code signing policies to enable execution of unsigned or self-signed kernel code.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.library-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "process.pid",
+                "dll.path",
+                "dll.name",
+                "dll.hash.sha256",
+                "dll.pe.original_file_name",
+                "dll.code_signature.exists",
+                "dll.code_signature.trusted",
+                "dll.code_signature.status",
+                "dll.code_signature.subject_name",
+                "dll.code_signature.thumbprint_sha256",
+                "dll.Ext.relative_file_creation_time",
+                "dll.Ext.relative_file_name_modify_time"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Untrusted Driver Loaded",
+        "note": "## Triage and analysis\n\n### Investigating Untrusted Driver Loaded\n\n#### Possible investigation steps\n\n- What exact kernel driver loaded, and what trust failure made it alert?\n  - Focus: `process.pid`, `dll.path`, `dll.code_signature.exists`, `dll.code_signature.trusted`, and `dll.code_signature.status`.\n  - Implication: escalate when System loaded an unsigned or untrusted driver from a non-vendor, user-writable, temp, or renamed path; lower concern only when the trust failure fits a controlled driver-development or hardware-validation host class.\n\n- Does the driver identity map to a known vulnerable driver, BYOVD chain, or offensive loader?\n  - Why: TDL-style and BYOVD activity may be easier to recognize by stable hash, original PE name, or signer than current file name.\n  - Focus: `dll.hash.sha256`, `dll.pe.original_file_name`, `dll.code_signature.subject_name`, and `dll.code_signature.thumbprint_sha256`.\n  - Implication: escalate when hash, original name, or signer maps to a vulnerable-driver blocklist, signature-bypass loader, or malicious kernel tooling; lower concern only when the same artifact is tied to a controlled lab or validation cohort.\n\n- Does recency or rename timing show the driver was staged for this load?\n  - Focus: `dll.Ext.relative_file_creation_time`, `dll.Ext.relative_file_name_modify_time`, and `dll.path`; if file-event telemetry is available, use the same `host.id` and path to identify who wrote or renamed it. !{investigate{\"description\":\"\",\"label\":\"File events for the loaded driver path\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"file.path\",\"queryType\":\"phrase\",\"value\":\"{{dll.path}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the driver appeared just before load, was recently renamed, or was written by an unrelated staging process. Missing file-event telemetry leaves provenance unresolved, not benign.\n\n- What resident service or device identity is tied to the loaded image?\n  - Focus: compare `dll.path`, `dll.hash.sha256`, and `dll.code_signature.subject_name` with current Osquery driver inventory and service output.\n  - Hint: For non-Microsoft drivers by `image`, `service`, `signed`, `subject_name`, and `VtLink`; use it as current-state context, and keep the alert as the historical load record if no matching image exists.\n    - !{osquery{\"label\":\"Osquery - Retrieve All Non-Microsoft Drivers with Virustotal Link\",\"query\":\"SELECT concat('https://www.virustotal.com/gui/file/', sha1) AS VtLink, class, description, directory, image,\\nissuer_name, manufacturer, service, signed, subject_name FROM drivers JOIN authenticode ON drivers.image =\\nauthenticode.path JOIN hash ON drivers.image = hash.path WHERE NOT (provider == \\\"Microsoft\\\" AND signed == \\\"1\\\")\\n\"}}\n  - Hint: For unsigned current drivers when the alert shows missing or untrusted signature metadata; current signed or service values do not prove what existed at `@timestamp`.\n    - !{osquery{\"label\":\"Osquery - Retrieve All Unsigned Drivers with Virustotal Link\",\"query\":\"SELECT concat('https://www.virustotal.com/gui/file/', sha1) AS VtLink, class, description, directory, image,\\nissuer_name, manufacturer, service, signed, subject_name FROM drivers JOIN authenticode ON drivers.image =\\nauthenticode.path JOIN hash ON drivers.image = hash.path WHERE signed == \\\"0\\\"\\n\"}}\n  - Implication: escalate when current inventory lacks a coherent image or service entry, the service is unexpected for the host, or other unsigned drivers do not fit the host role. Treat osquery as corroboration; do not delay escalation when alert-local identity, trust, or recency evidence is decisive.\n\n- Did signing or code-integrity control activity make this load possible?\n  - Why: 64-bit Windows normally enforces kernel-mode driver signing, while test-signing, DSE tampering, or vulnerable-driver loaders can open a path for untrusted kernel code.\n  - Focus: same-host process events around the load using `host.id`, `process.name`, `process.executable`, and `process.command_line` for bcdedit test-signing/nointegritychecks changes or known vulnerable-driver loader activity. !{investigate{\"description\":\"\",\"label\":\"Process events on the driver host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when surrounding process evidence shows test-signing changes, code-integrity bypass tooling, or vulnerable-driver loader execution; absent process evidence weakens this corroborator but does not clear an unexplained untrusted driver load.\n\n- Does the host cohort and prevalence fit a controlled driver workflow?\n  - Focus: `host.id`, `host.name`, and the smallest stable indicator, usually `dll.hash.sha256`, `dll.path`, or `dll.code_signature.subject_name`.\n  - Hint: broaden only when identity, recency, inventory, or tampering evidence remains suspicious or unresolved. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the driver identity\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"dll.hash.sha256\",\"queryType\":\"phrase\",\"value\":\"{{dll.hash.sha256}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"dll.path\",\"queryType\":\"phrase\",\"value\":\"{{dll.path}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the driver appears on production systems, user-writable paths, unrelated hosts, or outside the expected lab cohort; lower concern only when artifact, path pattern, signer, and host cohort consistently match a controlled validation workflow.\n\n- Using identity, trust failure, staging/provenance, osquery inventory, signing-control evidence, and host-cohort spread: escalate unauthorized kernel code, BYOVD, or signature-bypass evidence; close only when telemetry binds the load to one controlled driver workflow; preserve artifacts and escalate mixed or incomplete cases.\n\n### False positive analysis\n\n- Controlled driver-development, OEM hardware validation, and authorized security or EDR compatibility testing can load test-signed or unsigned drivers on isolated lab hosts. Confirm first with telemetry: `dll.hash.sha256`, `dll.path`, `dll.code_signature.status` or `dll.code_signature.subject_name`, current osquery image and service output, and `host.id` cohort must align with one workflow. Use build, test, or change records only after telemetry binds the exact artifact and cohort; if unavailable, require prior alerts for the same driver artifact and host cohort before exceptioning. If any evidence dimension contradicts the workflow, do not close as benign.\n- Build exceptions only from the minimum confirmed pattern, such as `dll.hash.sha256` plus `dll.path` plus bounded `host.id` cohort or service identity. Avoid exceptions on `dll.name`, signer, or generic unsigned-driver conditions alone.\n\n### Response and remediation\n\n- If confirmed benign:\n  - Reverse temporary containment and document the driver artifact, host cohort, current osquery image and service values, and any corroborating external record. Keep exceptions narrow to the confirmed hash, path, host cohort, or service identity.\n- If suspicious but unconfirmed:\n  - Preserve the driver file if accessible, the alert event export, osquery driver inventory results, surrounding signing-control process events, and the case timeline before containment or cleanup.\n  - Apply reversible containment first, such as temporary network restriction or heightened monitoring, while scoping the same `dll.hash.sha256` or `dll.path` across other hosts.\n  - Escalate to host isolation before reboot, uninstall, or cleanup only if evidence shows code-integrity tampering, vulnerable-driver loader activity, post-load abuse, or spread outside the expected lab cohort.\n- If confirmed malicious:\n  - Isolate the host after preserving the driver artifact, service or boot-start context, signing-control evidence, and affected `host.id` or `host.name`. If endpoint response is unavailable, hand off that evidence set to the team that can contain the system.\n  - Scope other hosts for the same `dll.hash.sha256`, `dll.path`, or `dll.code_signature.subject_name` before uninstalling the driver, deleting the file, removing the backing service, or rebooting.\n  - Remove the malicious driver, related service or boot-start entry, and code-signing or DSE changes identified during investigation, then remediate the loader or vulnerable-driver path that introduced it.\n- Post-incident hardening:\n  - Re-enable or enforce driver-signing and code-integrity controls on the affected host class, block confirmed malicious or vulnerable `dll.hash.sha256` values and `dll.path` locations, and restrict test-signing to isolated lab systems.\n  - Document any BYOVD family, loader service name, or host-cohort pattern uncovered during triage for future response cases.\n",
+        "query": "driver where host.os.type == \"windows\" and process.pid == 4 and\n  (dll.code_signature.trusted == false or dll.code_signature.exists == false) and\n  /* errorExpired and errorRevoked are handled by d12bac54-ab2a-4159-933f-d7bcefa7b61d */\n  not dll.code_signature.status : (\"errorExpired\", \"errorRevoked\", \"errorCode_endpoint:*\") and\n  \n  not dll.hash.sha256 : (\n        /* HP DOT4 printer driver family FPs (Dot4.sys, Dot4Prt.sys, Dot4usb.sys, Dot4Scan.sys) */\n        \"f21c1d478180bc5e932bb2c2e4618e3ed463ca87acedeb139682d218435f82f1\",\n        \"7e2f2a139e897eae56038b920bda9381094bc0ae9e626f6634e6b444b8b0c91f\",\n        \"12ffdf5f48a79b1b4adbb88ba2cb6c59dd6719554e8ea6beefe99b3e3c66f1ac\",\n        \"dbc6afaf80141e2480e19878f581edfe9c2b018da2ec527c4025ff04d5587afd\",\n        /* (dc3d.sys, test-signed) */\n        \"ca8f9564733ded4c3895cf7150bb254995d66889e6be08d6654e4f897e4ff7a4\"\n  )\n",
+        "references": [
+            "https://github.com/hfiref0x/TDL",
+            "https://docs.microsoft.com/en-us/previous-versions/windows/hardware/design/dn653559(v=vs.85)?redirectedfrom=MSDN"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "dll.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "dll.code_signature.status",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "dll.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "dll.hash.sha256",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pid",
+                "type": "long"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "d8ab1ec1-feeb-48b9-89e7-c12e189448aa",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1036",
+                        "name": "Masquerading",
+                        "reference": "https://attack.mitre.org/techniques/T1036/",
+                        "subtechnique": [
+                            {
+                                "id": "T1036.001",
+                                "name": "Invalid Code Signature",
+                                "reference": "https://attack.mitre.org/techniques/T1036/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 15
+    },
+    "id": "d8ab1ec1-feeb-48b9-89e7-c12e189448aa_15",
+    "type": "security-rule"
+}
