@@ -23,9 +23,7 @@ From within the package directory, start Elasticsearch, Kibana, and Fleet Server
 ```bash
 cd packages/cloud_defend_otel
 
-elastic-package stack up -v \
-  --version 8.19.0 \
-  -U stack.elastic_subscription=enterprise
+elastic-package stack up -v
 ```
 
 > **Note**: The package requires Kibana `^8.19.0 || ^9.3.0` and an `enterprise` subscription — both flags above are required.
@@ -36,7 +34,7 @@ Check the stack is ready:
 elastic-package stack status
 ```
 
-Kibana will be available at **http://localhost:5601** (`elastic` / `changeme`).
+Kibana will be available at **https://localhost:5601** (`elastic` / `changeme`).
 
 ## 2. Install the Integration
 
@@ -53,10 +51,13 @@ This registers the package so it's available to create policies in Kibana.
 Go to **Kibana → Fleet → Agents → Add agent**, create an agent policy using the `cloud_defend_otel` integration, then enroll a local agent using the enrollment token shown in the UI:
 
 ```bash
-elastic-agent install \
-  --url=https://localhost:8220 \
-  --enrollment-token=<TOKEN_FROM_FLEET_UI> \
-  --insecure
+docker run \
+  --network elastic-package-stack_default \
+  --env FLEET_ENROLL=1  --env FLEET_INSECURE=true \
+  --env FLEET_URL=https://fleet-server:8220 \
+  --env FLEET_ENROLLMENT_TOKEN="${FLEET_ENROLLMENT_TOKEN}" \
+  -p 14317:4317 \
+  docker.elastic.co/elastic-agent/elastic-agent:9.4.2
 ```
 
 ### Using a custom Elastic Agent image
@@ -65,10 +66,7 @@ To completely replace the agent image used by the stack (e.g. a locally built or
 
 ```bash
 export ELASTIC_AGENT_IMAGE_REF_OVERRIDE=docker.elastic.co/elastic-agent/elastic-agent:my-custom-tag
-
-elastic-package stack up -v \
-  --version 8.19.0 \
-  -U stack.elastic_subscription=enterprise
+elastic-package stack up -v
 ```
 
 This overrides the agent image entirely, regardless of the `--version` flag.

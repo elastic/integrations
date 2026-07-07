@@ -30,13 +30,18 @@ processors:
                 - set(attributes["data_stream.type"], "logs")
                 - set(attributes["data_stream.dataset"], "cloud_defend.file")
                 - set(attributes["data_stream.namespace"], "ep")
+    transform/componentid-2:
+        log_statements:
+            - context: scope
+              statements:
+                - set(attributes["elastic.mapping.mode"], "bodymap")
 receivers:
+    debug/componentid-1:
+        verbosity: detailed
     otlp/componentid-0:
         protocols:
             grpc:
                 endpoint: localhost:4317
-            http:
-                endpoint: localhost:4318
 secret_references: []
 service:
     pipelines:
@@ -50,6 +55,7 @@ service:
                 - forward
             processors:
                 - resourcedetection/componentid-0
+                - transform/componentid-2
                 - transform/componentid-1
             receivers:
                 - otlp/componentid-0
