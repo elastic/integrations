@@ -1,0 +1,137 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  batch_size: {{batch_size}}
+  token: {{token}}
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+  sandbox_token: {{sandbox_token}}
+redact:
+  fields:
+    - token
+    - client_secret
+    - sandbox_token
+program: |-
+  (
+    (state.?client_id.orValue("") != "") ?
+      request(
+        "POST",
+        state.url.trim_right("/") + "/api/v1/oauth/token"
+      ).with(
+        {
+          "Header": {"Content-Type": ["application/json"]},
+          "Body": {
+            "client_id": state.client_id,
+            "client_secret": state.client_secret,
+          }.encode_json(),
+        }
+      ).do_request().as(tok_resp,
+        (tok_resp.StatusCode == 200) ?
+          {"ok": true, "token": string(tok_resp.Body.decode_json().access_token)}
+        :
+          {
+            "ok": false,
+            "code": string(tok_resp.StatusCode),
+            "status": string(tok_resp.Status),
+            "body": string(tok_resp.Body),
+          }
+      )
+    :
+      {"ok": true, "token": state.?token.orValue("")}
+  ).as(auth,
+    !auth.ok ?
+      state.with(
+        {
+          "events": {
+            "error": {
+              "code": auth.code,
+              "id": auth.status,
+              "message": "POST /api/v1/oauth/token: " + auth.body,
+            },
+          },
+          "want_more": false,
+        }
+      )
+    :
+      state.with(
+        request(
+          "POST",
+          state.url.trim_right("/") + "/api/v1/entities/events"
+        ).with(
+          {
+            "Header": {
+              "Content-Type": ["application/json"],
+              ?"Authorization": (auth.token != "") ?
+                optional.of(["Bearer " + auth.token])
+              :
+                optional.none(),
+              ?"Anduril-Sandbox-Authorization": (state.?sandbox_token.orValue("") != "") ?
+                optional.of(["Bearer " + state.sandbox_token])
+              :
+                optional.none(),
+            },
+            "Body": {
+              "sessionToken": state.?cursor.session_token.orValue(""),
+              "batchSize": int(state.batch_size),
+            }.encode_json(),
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              ((body.?entityEvents.orValue(null) != null) ? body.entityEvents : []).as(events,
+                (size(events) > 0) ?
+                  {
+                    "events": events.map(e, {"message": e.encode_json()}),
+                    "cursor": {"session_token": body.sessionToken},
+                    "want_more": size(events) >= int(state.batch_size),
+                  }
+                :
+                  {
+                    "events": [{"retry": true}],
+                    "cursor": {"session_token": body.sessionToken},
+                    "want_more": false,
+                  }
+              )
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "POST /api/v1/entities/events: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}
