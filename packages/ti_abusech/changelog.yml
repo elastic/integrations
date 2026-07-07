@@ -1,4 +1,34 @@
 # newer versions go on top
+- version: "4.1.2"
+  changes:
+    - description: Fix transform destination to use keyword for data_stream.namespace, allowing multi-namespace deployments.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20002
+- version: "4.1.1"
+  changes:
+    - description: Guard deleted_at date processor and fall back to 90-day default expiration when ioc_expiration_duration is absent, fixing pipeline errors during upgrade from earlier versions.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19491
+- version: "4.1.0"
+  changes:
+    - description: Use new `release` field for agentless deployment mode to establish as beta.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/18552
+- version: "4.0.0"
+  changes:
+    - description: Switch URL data stream from full export ZIP to incremental `/v1/urls/recent/` API and add user-configurable `ioc_expiration_duration` setting (default 90d).
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/18945
+    - description: |
+        Users upgrading from a previous version must update the URL setting from the old full export endpoint (`/downloads/json`) to `https://urlhaus-api.abuse.ch/v1/urls/recent/` in their integration policy.
+        The `labels.interval` field is removed from URL data stream documents; IOC expiration is now controlled by the new `ioc_expiration_duration` setting (default 90d). Users should remove any references to `labels.interval` in saved queries, detection rules, or dashboards, and review the IOC Expiration Duration setting to match their retention requirements.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/18945
+- version: "3.7.0"
+  changes:
+    - description: Use num_failure_retries instead of unattended mode for transform failure recovery.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/18404
 - version: "3.6.0"
   changes:
     - description: Add tags to ingest pipelines.

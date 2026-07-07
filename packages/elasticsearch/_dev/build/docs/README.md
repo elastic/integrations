@@ -30,6 +30,12 @@ NOTE: Configure the `var.paths` setting to point to JSON logs.
 
 {{fields "slowlog"}}
 
+### Querylog
+
+Collects [query logs](https://www.elastic.co/docs/deploy-manage/monitor/logging-configuration/query-logs) emitted by Elasticsearch 9.4+.
+
+{{fields "querylog"}}
+
 ## Metrics
 
 ### Usage for Stack Monitoring

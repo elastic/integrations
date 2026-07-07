@@ -1,0 +1,652 @@
+---
+description: Pipeline for processing CrowdStrike Falcon Identity Protection timeline (GraphQL) events.
+processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: crowdstrike.idp.timeline
+  - fingerprint:
+      fields:
+        - event.original
+      tag: fingerprint_identity_protection_timeline
+      target_field: _id
+      ignore_missing: true
+
+  # Rename camelCase keys to snake_case under crowdstrike.idp.
+  - script:
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      description: Convert camelCase to snake_case.
+      if: ctx.crowdstrike?.idp?.timeline != null
+      source: |
+        String camelToSnake(String str) {
+          def result = "";
+          def lastCharWasUpperCase = false;
+          for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0 && !lastCharWasUpperCase) {
+                result += "_";
+              }
+              result += Character.toLowerCase(c);
+              lastCharWasUpperCase = true;
+            } else {
+              result += c;
+              lastCharWasUpperCase = false;
+            }
+          }
+          return result;
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              newObj[camelToSnake(entry.getKey())] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            if (obj == "") {
+              return null;
+            }
+            return obj;
+          }
+        }
+        ctx.crowdstrike.idp.timeline = convertToSnakeCase(ctx.crowdstrike.idp.timeline);
+      on_failure:
+        - append:
+            tag: append_error_message_timeline_script
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Event categorization
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+      if: ctx.crowdstrike?.idp != null
+  - script:
+      tag: set_event_category_and_type_from_timeline_event_type
+      if: ctx.crowdstrike?.idp?.timeline?.event_type != null
+      params:
+        SUCCESSFUL_AUTHENTICATION:
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+        FAILED_AUTHENTICATION:
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+        SERVICE_ACCESS:
+          category:
+            - network
+          type:
+            - access
+        LDAP_SEARCH:
+          category:
+            - database
+          type:
+            - info
+        ACCOUNT_CREATED:
+          category:
+            - iam
+          type:
+            - creation
+        PASSWORD_CHANGE:
+          category:
+            - iam
+          type:
+            - change
+        ACCOUNT_ENABLED:
+          category:
+            - iam
+          type:
+            - change
+        ACCOUNT_DISABLED:
+          category:
+            - iam
+          type:
+            - change
+        ACCOUNT_LOCKED:
+          category:
+            - iam
+          type:
+            - change
+        ACCOUNT_UNLOCKED:
+          category:
+            - iam
+          type:
+            - change
+        PRIVILEGE_ESCALATION:
+          category:
+            - iam
+          type:
+            - change
+      source: |-
+        def m = params.get(ctx.crowdstrike.idp.timeline.event_type);
+        if (m != null) {
+          m.forEach((k, v) -> {
+            if (v instanceof List) {
+              ctx.event[k] = new ArrayList(v);
+            } else {
+              ctx.event[k] = v;
+            }
+          });
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_0b0b54ba
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Map event_severity to ECS event.severity.
+  - script:
+      lang: painless
+      tag: map_timeline_event_severity
+      description: Map CrowdStrike timeline event_severity to ECS event.severity.
+      if: ctx.crowdstrike?.idp?.timeline?.event_severity instanceof String && ctx.crowdstrike.idp.timeline.event_severity != ''
+      params:
+        NEUTRAL: 21
+        MODERATE: 47
+        IMPORTANT: 73
+      source: |
+        Integer severity = params[ctx.crowdstrike.idp.timeline.event_severity.toUpperCase()];
+        if (severity != null) {
+          ctx.event = ctx.event ?: [:];
+          ctx.event.severity = severity;
+        }
+
+  - set:
+      tag: set_event_id_f48bfe47
+      field: event.id
+      copy_from: crowdstrike.idp.timeline.event_id
+      ignore_empty_value: true
+  - set:
+      tag: set_event_action_71e8636b
+      field: event.action
+      copy_from: crowdstrike.idp.timeline.event_type
+      ignore_empty_value: true
+  - set:
+      tag: set_user_full_name_26c188b2
+      field: user.full_name
+      copy_from: crowdstrike.idp.timeline.user_display_name
+      ignore_empty_value: true
+  - set:
+      tag: set_user_name_d7b52186
+      field: user.name
+      copy_from: crowdstrike.idp.timeline.user_entity.primary_display_name
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      tag: map_entity_identity_fields_by_type
+      description: >-
+        Map entity fields to ECS based on entity.type. USER entities populate user.*;
+        ENDPOINT entities populate host.*.
+      if: ctx.crowdstrike?.idp?.timeline?.entity != null
+      source: |
+        def entity = ctx.crowdstrike.idp.timeline.entity;
+        def entityType = entity.type;
+        def secondary = entity.secondary_display_name;
+        if (secondary != null && secondary instanceof String && secondary != '') {
+          int slash = secondary.indexOf('\\');
+          if (slash >= 0) {
+            def domain = secondary.substring(0, slash);
+            if (domain != null && domain != '' && entityType == 'USER') {
+              ctx.user = ctx.user ?: [:];
+              ctx.user.domain = domain;
+            }
+          } else if (entityType == 'ENDPOINT') {
+            ctx.host = ctx.host ?: [:];
+            ctx.host.hostname = secondary;
+          }
+        }
+        if (entityType == 'ENDPOINT') {
+          if (entity.primary_display_name != null) {
+            ctx.host = ctx.host ?: [:];
+            ctx.host.name = entity.primary_display_name;
+          }
+        } else if (entityType == 'USER') {
+          if (entity.primary_display_name != null) {
+            ctx.user = ctx.user ?: [:];
+            ctx.user.full_name = entity.primary_display_name;
+          }
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_map_entity_identity_fields_by_type
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_host_name_f224d0b1
+      field: host.name
+      copy_from: crowdstrike.idp.timeline.endpoint_entity.primary_display_name
+      ignore_empty_value: true
+  - set:
+      tag: set_host_name_bf84cf7e
+      field: host.name
+      copy_from: crowdstrike.idp.timeline.endpoint_display_name
+      ignore_empty_value: true
+      if: ctx.host?.name == null
+  - set:
+      tag: set_host_hostname_b832e735
+      field: host.hostname
+      copy_from: crowdstrike.idp.timeline.host_name
+      ignore_empty_value: true
+  - set:
+      tag: set_destination_domain_52c44b10
+      field: destination.domain
+      copy_from: crowdstrike.idp.timeline.target_endpoint_entity.primary_display_name
+      ignore_empty_value: true
+  - set:
+      tag: set_network_protocol_31cc014f
+      field: network.protocol
+      copy_from: crowdstrike.idp.timeline.protocol_type
+      ignore_empty_value: true
+  - lowercase:
+      tag: lowercase_network_protocol_49872259
+      field: network.protocol
+      ignore_missing: true
+  - set:
+      tag: set_tls_version_69497c61
+      field: tls.version
+      copy_from: crowdstrike.idp.timeline.tls_version
+      ignore_empty_value: true
+  - set:
+      tag: set_service_name_3d56bd1c
+      field: service.name
+      copy_from: crowdstrike.idp.timeline.target_service_display_name
+      ignore_empty_value: true
+  - set:
+      field: service.id
+      tag: set_service_id_from_target_service_identifier
+      copy_from: crowdstrike.idp.timeline.target_service_identifier
+      ignore_empty_value: true
+  - set:
+      tag: set_host_os_full_3506ada7
+      field: host.os.full
+      copy_from: crowdstrike.idp.timeline.operating_system_info.display_name
+      ignore_empty_value: true
+  - set:
+      tag: set_host_os_name_be51924d
+      field: host.os.name
+      copy_from: crowdstrike.idp.timeline.operating_system_info.name
+      ignore_empty_value: true
+  - script:
+      tag: script_set_host_os_type_from_operating_system_info_family
+      description: Set host.os.type from operating_system_info.family.
+      lang: painless
+      if: ctx.crowdstrike?.idp?.timeline?.operating_system_info?.family != null
+      params:
+        WINDOWS: windows
+        OSX: macos
+        UNIX: unix
+        LINUX: linux
+        IOS: ios
+        ANDROID: android
+      source: |
+        def os = params[ctx.crowdstrike.idp.timeline.operating_system_info.family.toUpperCase()];
+        if (os != null) {
+          ctx.host = ctx.host ?: [:];
+          ctx.host.os = ctx.host.os ?: [:];
+          ctx.host.os.type = os;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_set_host_os_type_script
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_host_os_version_bdb32d76
+      field: host.os.version
+      copy_from: crowdstrike.idp.timeline.operating_system_info.version
+      ignore_empty_value: true
+  - set:
+      tag: set_source_geo_country_name_c1187261
+      field: source.geo.country_name
+      copy_from: crowdstrike.idp.timeline.geo_location.country
+      ignore_empty_value: true
+  - set:
+      tag: set_source_geo_city_name_12c77d6d
+      field: source.geo.city_name
+      copy_from: crowdstrike.idp.timeline.geo_location.city
+      ignore_empty_value: true
+
+  # user_entity.email_addresses[] → user.email (first value)
+  - script:
+      lang: painless
+      tag: set_user_email_from_email_addresses
+      description: Take the first email from user_entity.email_addresses when present.
+      if: ctx.crowdstrike?.idp?.timeline?.user_entity?.email_addresses instanceof List
+      source: |
+        def emails = ctx.crowdstrike.idp.timeline.user_entity.email_addresses;
+        if (emails.size() > 0 && emails[0] != null) {
+          ctx.user = ctx.user ?: [:];
+          ctx.user.email = emails[0];
+        }
+
+  # entity.accounts[] → host.* (ENDPOINT) or user.* (USER) from first account descriptor
+  - script:
+      lang: painless
+      tag: map_entity_accounts_by_type
+      description: >-
+        Map the first Active Directory account descriptor to ECS fields based on
+        entity.type.
+      if: ctx.crowdstrike?.idp?.timeline?.entity?.accounts instanceof List
+      source: |
+        def entity = ctx.crowdstrike.idp.timeline.entity;
+        def entityType = entity.type;
+        def accounts = entity.accounts;
+        if (accounts.size() == 0 || !(accounts[0] instanceof Map)) {
+          return;
+        }
+        def acc = accounts[0];
+        if (entityType == 'ENDPOINT') {
+          ctx.host = ctx.host ?: [:];
+          if (acc.sam_account_name != null) {
+            def sam = acc.sam_account_name;
+            if (sam.endsWith('$')) {
+              sam = sam.substring(0, sam.length() - 1);
+            }
+            if (ctx.host.name == null) {
+              ctx.host.name = sam;
+            }
+          }
+          if (acc.object_sid != null) {
+            ctx.host.id = acc.object_sid;
+          }
+        } else if (entityType == 'USER') {
+          ctx.user = ctx.user ?: [:];
+          if (acc.sam_account_name != null) {
+            ctx.user.name = acc.sam_account_name;
+            ctx.user.target = ctx.user.target ?: [:];
+            ctx.user.target.name = acc.sam_account_name;
+          }
+          if (acc.object_sid != null) {
+            ctx.user.id = acc.object_sid;
+          }
+        } else {
+          ctx.entity = ctx.entity ?: [:];
+          if (acc.sam_account_name != null) {
+            ctx.entity.target = ctx.entity.target ?: [:];
+            ctx.entity.target.name = acc.sam_account_name;
+          }
+          if (acc.object_sid != null) {
+            ctx.entity.id = acc.object_sid;
+          }
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_map_entity_accounts_by_type
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ip_address → source.ip
+  - convert:
+      field: crowdstrike.idp.timeline.ip_address
+      type: ip
+      target_field: source.ip
+      tag: convert_timeline_ip_address_to_source_ip
+      ignore_missing: true
+      if: ctx.crowdstrike?.idp?.timeline?.ip_address != null && ctx.crowdstrike.idp.timeline.ip_address != ''
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_idp_timeline_ip_address_e5d437d6
+            field: crowdstrike.idp.timeline.ip_address
+            ignore_missing: true
+        - append:
+            tag: append_error_message_convert_timeline_ip_address_to_source_ip
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - geoip:
+      tag: geoip_source_ip_into_source_geo_fcc86651
+      if: ctx.source?.ip != null
+      field: source.ip
+      target_field: source.geo
+      first_only: true
+      ignore_missing: true
+  - geoip:
+      tag: geoip_source_ip_into_source_as_56e63fbc
+      if: ctx.source?.ip != null
+      field: source.ip
+      target_field: source.as
+      database_file: GeoLite2-ASN.mmdb
+      first_only: true
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  - date:
+      field: crowdstrike.idp.timeline.timestamp
+      tag: date_crowdstrike_idp_timestamp
+      target_field: crowdstrike.idp.timeline.timestamp
+      formats:
+        - ISO8601
+      if: ctx.crowdstrike?.idp?.timeline?.timestamp != null && ctx.crowdstrike.idp.timeline.timestamp != ''
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_idp_timeline_timestamp_106c6945
+            field: crowdstrike.idp.timeline.timestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_crowdstrike_idp_timestamp
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: crowdstrike.idp.timeline.start_time
+      tag: date_crowdstrike_idp_start_time
+      target_field: crowdstrike.idp.timeline.start_time
+      formats:
+        - ISO8601
+      if: ctx.crowdstrike?.idp?.timeline?.start_time != null && ctx.crowdstrike.idp.timeline.start_time != ''
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_idp_timeline_start_time_484e7073
+            field: crowdstrike.idp.timeline.start_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_crowdstrike_idp_start_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: crowdstrike.idp.timeline.end_time
+      tag: date_crowdstrike_idp_end_time
+      target_field: crowdstrike.idp.timeline.end_time
+      formats:
+        - ISO8601
+      if: ctx.crowdstrike?.idp?.timeline?.end_time != null && ctx.crowdstrike.idp.timeline.end_time != ''
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_idp_timeline_end_time_987e69e5
+            field: crowdstrike.idp.timeline.end_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_crowdstrike_idp_end_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - set:
+      tag: set_timestamp_22d4fb46
+      field: '@timestamp'
+      copy_from: crowdstrike.idp.timeline.timestamp
+      ignore_empty_value: true
+  - set:
+      tag: set_event_start_2b6031f0
+      field: event.start
+      copy_from: crowdstrike.idp.timeline.start_time
+      ignore_empty_value: true
+  - set:
+      tag: set_event_end_6ecaa9a2
+      field: event.end
+      copy_from: crowdstrike.idp.timeline.end_time
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      tag: append_user_name_to_related
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      value: '{{{user.target.name}}}'
+      tag: append_user_target_name_to_related
+      allow_duplicates: false
+      if: ctx.user?.target?.name != null
+  - append:
+      field: related.user
+      value: '{{{user.full_name}}}'
+      tag: append_user_full_name_to_related
+      allow_duplicates: false
+      if: ctx.user?.full_name != null
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      tag: append_user_email_to_related
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      field: related.hosts
+      value: '{{{host.name}}}'
+      tag: append_host_name_to_related
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      tag: append_host_hostname_to_related
+      allow_duplicates: false
+      if: ctx.host?.hostname != null
+  - append:
+      field: related.hosts
+      value: '{{{destination.domain}}}'
+      tag: append_destination_domain_to_related_hosts
+      allow_duplicates: false
+      if: ctx.destination?.domain != null
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      tag: append_source_ip_to_related
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+
+  - remove:
+      field:
+        - crowdstrike.idp.timeline.event_id
+        - crowdstrike.idp.timeline.event_type
+        - crowdstrike.idp.timeline.timestamp
+        - crowdstrike.idp.timeline.start_time
+        - crowdstrike.idp.timeline.end_time
+        - crowdstrike.idp.timeline.endpoint_entity
+        - crowdstrike.idp.timeline.ip_address
+        - crowdstrike.idp.timeline.protocol_type
+        - crowdstrike.idp.timeline.tls_version
+        - crowdstrike.idp.timeline.target_service_display_name
+        - crowdstrike.idp.timeline.target_service_identifier
+        - crowdstrike.idp.timeline.user_display_name
+        - crowdstrike.idp.timeline.user_entity.primary_display_name
+        - crowdstrike.idp.timeline.entity.primary_display_name
+        - crowdstrike.idp.timeline.operating_system_info
+        - crowdstrike.idp.timeline.geo_location
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_tags_preserve_original_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

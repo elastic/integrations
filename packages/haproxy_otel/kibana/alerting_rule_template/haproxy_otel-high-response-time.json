@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `haproxy.responses.average_time > 500 ms`. Backend application latency directly degrades user experience.",
     "name": "[HAProxy OTel] High backend response time",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -14,6 +15,19 @@
     },
     "alertDelay": {
       "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "haproxy_otel-backend"
+        },
+        {
+          "id": "haproxy_otel-server"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## HAProxy high backend response time\n\n### What fired\n`haproxy.responses.average_time > 500 ms` during the window.\n\n### Why it matters\nResponse time measures the interval from connection to first response byte \u2014 the actual application processing latency. Regressions here usually reflect application or dependency issues.\n\n### Triage\n1. Correlate with application metrics / traces on the backend.\n2. Check error and retry counters on the same backend.\n3. Inspect DB/cache latency from the backend.\n\n### Remediation\n- Fix the slow application or dependency.\n- Scale backends if the workload has grown.\n\n### Tuning\n- 500 ms is a generic threshold; tune to SLA.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

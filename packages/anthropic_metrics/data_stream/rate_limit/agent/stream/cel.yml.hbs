@@ -1,0 +1,91 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}/v1/organizations/rate_limits
+resource.headers:
+  anthropic-version:
+    - "{{anthropic_version}}"
+resource.rate_limit.limit: 10
+resource.rate_limit.burst: 10
+state:
+  admin_api_key: {{admin_api_key}}
+redact:
+  fields:
+    - admin_api_key
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.drop(["page"])
+  ).as(state,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "?" + {
+          ?"page": state.?page.orValue("") != "" ?
+            optional.of([string(state.page)])
+          :
+            optional.none(),
+        }.format_query()
+      ).with({
+        "Header": {
+          "x-api-key": [state.admin_api_key],
+        },
+      }).do_request().as(resp,
+        resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body,
+            body.?data.orValue([]).map(e, {"message": e.encode_json()}).as(events, {
+              "events": events,
+              "want_more": body.?next_page.orValue(null) != null,
+              ?"page": body.?next_page.orValue(null) != null ?
+                optional.of(body.next_page)
+              :
+                optional.none(),
+            })
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /v1/organizations/rate_limits: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

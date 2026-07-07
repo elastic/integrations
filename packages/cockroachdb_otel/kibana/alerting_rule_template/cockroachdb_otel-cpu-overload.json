@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when a CockroachDB node's process CPU utilization exceeds 80% (normalized 0-1). Sustained values above this threshold indicate the workload is outpacing provisioned CPU and will starve Raft, compactions and SQL execution.",
     "name": "[CockroachDB OTel] CPU utilization high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cockroachdb_otel-overview"
+        },
+        {
+          "id": "cockroachdb_otel-sql-transactions"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## CockroachDB CPU utilization high\n\n### What fired\n`sys_cpu_combined_percent_normalized` for a node exceeded `0.8` (80%) over the evaluation window. This is the CockroachDB process CPU only (not the host), normalized by the number of cores visible to the process.\n\n### Why it matters\nSustained high CPU on a CockroachDB node causes queue build-up across SQL execution, Raft, and the storage engine. Knock-on effects commonly include elevated `sys_runnable_goroutines_per_cpu`, LSM compaction backlogs (`storage_l0_sublevels`, `storage_l0_num_files`), write stalls, and unavailable/under-replicated ranges if leaseholders stop heartbeating.\n\n### Triage\n1. Confirm the scope \u2014 single node or cluster-wide? Check the CockroachDB OTel Overview dashboard, filtered by `attributes.node_id`.\n2. Compare host CPU (`sys_cpu_host_combined_percent_normalized`) with process CPU. If host CPU is also pegged, another process on the box is competing.\n3. Inspect SQL workload on the hot node: `sql_statements_active`, `sql_select_count`/`sql_insert_count`/... rates and `sql_distsql_contended_queries_count`.\n4. Check for hot ranges / lease imbalance: `replicas_leaseholders` and `rebalancing_queriespersecond` per store.\n5. Look at `sys_runnable_goroutines_per_cpu`; values >30 corroborate true CPU saturation.\n\n### Remediation\n- If one node is hot, consider lease rebalancing or identifying hot keys in the SQL workload.\n- If cluster-wide, scale out nodes or investigate a recently deployed workload / migration.\n- Check for expensive queries via `sql_full_scan_count` increases.\n\n### Tuning\n- Default threshold is 80% (`> 0.8`). For steady-state heavy workloads, raise to 0.85-0.9 to reduce noise.\n- `alertDelay.active` is 2 consecutive runs over a 10-minute window \u2014 increase for flappy environments.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND sys_cpu_combined_percent_normalized IS NOT NULL\n  AND sys_cpu_combined_percent_normalized > 0.8\n// Node-level: CockroachDB process CPU; > 0.8 indicates overload\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n| STATS cpu_pct = ROUND(MAX(sys_cpu_combined_percent_normalized) * 100.0, 1) BY attributes.node_id, host.name\n| SORT cpu_pct DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 10,

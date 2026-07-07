@@ -1,6 +1,6 @@
 # Vale Lint Workflow
 #
-# This workflow runs Vale linting on documentation changes.
+# This workflow runs Vale linting on documentation and user-facing metadata changes.
 #
 # IMPORTANT: This workflow works with report.yml to post PR comments.
 # Both files must be present for full functionality.
@@ -13,30 +13,94 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - '**.md'
-      - '**.mdx'
-      - 'packages/**/docs/**'
+      - 'packages/**/_dev/build/docs/README.md'
+      - 'packages/**/docs/README.md'
+      - 'packages/**/manifest.yml'
+      - 'packages/**/data_stream/*/fields/fields.yml'
+      - 'packages/**/data_stream/*/manifest.yml'
+      - 'packages/**/changelog.yml'
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   vale-lint:
-    name: Lint Documentation
+    name: Lint user-facing content
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
+      - name: Select files to lint
+        id: select-files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          mapfile -t changed_files < <(
+            gh api "repos/${GH_REPOSITORY}/pulls/${PR_NUMBER}/files" \
+              --paginate \
+              | jq -rs 'add // [] | .[] | select(.status != "removed") | .filename'
+          )
+
+          files_to_lint=()
+          for file in "${changed_files[@]}"; do
+            case "$file" in
+              packages/**/_dev/build/docs/README.md|\
+              packages/**/manifest.yml|\
+              packages/**/data_stream/*/fields/fields.yml|\
+              packages/**/data_stream/*/manifest.yml|\
+              packages/**/changelog.yml)
+                files_to_lint+=("$file")
+                ;;
+              packages/**/docs/README.md)
+                package_dir="${file%/docs/README.md}"
+                if [ ! -f "$package_dir/_dev/build/docs/README.md" ]; then
+                  files_to_lint+=("$file")
+                else
+                  echo "Skipping $file because $package_dir/_dev/build/docs/README.md exists"
+                fi
+                ;;
+            esac
+          done
+
+          if [ "${#files_to_lint[@]}" -eq 0 ]; then
+            echo "has_files=false" >> "$GITHUB_OUTPUT"
+            echo "No matching files to lint"
+            exit 0
+          fi
+
+          printf 'Files to lint:\n'
+          printf '  %s\n' "${files_to_lint[@]}"
+          files=$(printf '%s ' "${files_to_lint[@]}")
+          echo "files=${files% }" >> "$GITHUB_OUTPUT"
+          echo "has_files=true" >> "$GITHUB_OUTPUT"
+
       - name: Run Elastic Vale Linter
-        uses: elastic/vale-rules/lint@main
+        if: steps.select-files.outputs.has_files == 'true'
+        uses: elastic/docs-actions/vale/lint@v1
         with:
+          files: ${{ steps.select-files.outputs.files }}
+
           # Fail the workflow if Vale finds error-level issues
           # Set to 'true' to enforce style as a required check
           fail_on_error: false
+          vale-overrides: |
+            [*.{yml,yaml}]
+            BasedOnStyles = Elastic
+            Elastic.Spelling = NO
+          vale-paths: |
+            packages/**/_dev/build/docs/README.md
+            packages/**/docs/README.md
+            packages/**/manifest.yml
+            packages/**/data_stream/*/fields/fields.yml
+            packages/**/data_stream/*/manifest.yml
+            packages/**/changelog.yml
 
           # Optional: Enable debug output for troubleshooting
           # debug: true

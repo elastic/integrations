@@ -2,7 +2,7 @@
 
 The Living off the Land Attack (LotL) Detection package contains a supervised machine learning model, called [ProblemChild and associated assets](https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration), which are used to detect living off the land (LotL) activity in your environment. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
-This package support data from Elastic Endpoint via Elastic Defend or winlogbeat on Windows only, although Elastic Defend is reccomended. Prior to using this integration, Elastic Defend should be installed through Elastic Agent (or winlogbeat should be enrolled) and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
+This package supports Windows data from Elastic Defend and Winlogbeat only, although Elastic Defend is strongly recommended. Other integrations do not capture all the process event fields used to train the ProblemChild model, which might lead to incomplete data and potentially degraded prediction quality. Before using this integration, Elastic Defend should be installed through Elastic Agent (or Winlogbeat should be enrolled) and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
 
 **Note**: In versions 2.1.1 and later, this package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
@@ -35,7 +35,7 @@ The following blogs and webinar provide additional context. For the most current
       }
       ```
     - If `logs-endpoint.events.process@custom` already exists, select the three dots next to it and choose **Edit**. Click **Add a processor**. Select **Pipeline** for Processor, enter `<VERSION>-problem_child_ingest_pipeline` for name (replacing `<VERSION>` with the current package version), and check **Ignore missing pipeline** and **Ignore failures for this processor**. Select **Add Processor**.
-    - If using an Elastic Beat such as Winlogbeat, see the next step on how to add the ingest pipeline as part of the component template
+    - If using Winlogbeat, see the next step on how to add the ingest pipeline as part of the component template
 1. **Add the required mappings to the component template**: Go to **Stack Management > Index Management > Component Templates**. Templates that can be edited to add custom components will be marked with a `@custom` suffix. For instance, the custom component template for Elastic Defend process events is `logs-endpoint.events.process@custom`. **Note:** Do not attempt to edit the `@package` template if present. ![Component Templates](../img/component-templates.png)
      
     #### Elastic Defend

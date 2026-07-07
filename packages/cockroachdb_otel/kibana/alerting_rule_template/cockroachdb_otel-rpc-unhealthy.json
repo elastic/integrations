@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when a node reports one or more unhealthy bidirectional inter-node RPC connections (`rpc_connection_unhealthy > 0`). This is a strong signal of a network partition or a struggling peer.",
     "name": "[CockroachDB OTel] Unhealthy RPC connections",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cockroachdb_otel-overview"
+        },
+        {
+          "id": "cockroachdb_otel-replication"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## CockroachDB unhealthy RPC connections\n\n### What fired\n`rpc_connection_unhealthy` on at least one node exceeded 0 over the evaluation window. In a healthy cluster this gauge should always be 0.\n\n### Why it matters\nCockroachDB maintains bidirectional RPC connections between every pair of nodes. An unhealthy connection means the two nodes cannot reliably talk to each other, which can cause lease churn, replication delays, and \u2014 if persistent \u2014 under-replication or range unavailability.\n\n### Triage\n1. Identify the reporting node from the alert context and, from the Overview dashboard, check which peer(s) are unhealthy.\n2. Inspect `rpc_connection_failures` and `rpc_connection_avg_round_trip_latency` on both ends of the suspect link.\n3. Correlate with `liveness_heartbeatfailures` and `liveness_livenodes`.\n4. Check `clock_offset_meannanos` \u2014 large clock skew can poison the connection.\n5. Inspect host-level network metrics and your cloud's VPC/security-group configuration for the affected pair.\n\n### Remediation\n- Fix the network path (MTU, firewall, route) between the two nodes.\n- Restart NTP/chrony and verify clock skew is sub-millisecond.\n- If one node is unhealthy due to resource pressure, treat it as a separate incident.\n\n### Tuning\n- 1-minute evaluation with a 5-minute window is tight on purpose \u2014 RPC unhealth is a leading indicator of outages.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND rpc_connection_unhealthy IS NOT NULL\n  AND rpc_connection_unhealthy > 0\n// > 0 indicates possible network partition\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n| STATS unhealthy = MAX(rpc_connection_unhealthy) BY attributes.node_id, host.name\n| SORT unhealthy DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

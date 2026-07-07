@@ -13,6 +13,8 @@ resource.ssl: {{ssl}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
 resource.url: {{url}}
 auth.oauth2:
   client.id: {{client_id}}
@@ -33,6 +35,7 @@ state:
          nodes {
           id
           analyzedAt
+          updatedAt
           severity
           result
           remediation
@@ -80,16 +83,16 @@ max_executions: {{max_executions}}
 {{/if}}
 program: |
   state.with(
-    post_request(
-      state.url.trim_right("/") + "/graphql",
-      "application/json",
+    request(
+      "POST",
+      state.url.trim_right("/").trim_suffix("/graphql") + "/graphql",
       {
         "query": state.query,
         "variables": {
           "first": state.batch_size,
           "after": state.?end_cursor.value.orValue(null),
           "filterBy": {
-            "analyzedAt": {
+            "updatedAt": {
               "after": state.want_more ?
                   state.?cursor.first_timestamp.orValue(null)
                 :
@@ -98,7 +101,12 @@ program: |
           }
         }
       }.encode_json()
-    ).do_request().as(resp, resp.StatusCode == 200 ?
+    ).with({
+      "Header": {
+        "Content-Type": ["application/json"],
+        "User-Agent": [useragent],
+      },
+    }).do_request().as(resp, resp.StatusCode == 200 ?
         bytes(resp.Body).decode_json().as(body, body.?data.configurationFindings.nodes.orValue(null) != null ?
           {
             "events": body.data.configurationFindings.nodes.map(e, {
@@ -106,7 +114,7 @@ program: |
             }),
             "cursor": {
               ?"last_timestamp": body.data.configurationFindings.nodes.size() > 0 ?
-                  optional.of(body.data.configurationFindings.nodes.map(e, timestamp(e.analyzedAt)).max().as(last,
+                  optional.of(body.data.configurationFindings.nodes.map(e, timestamp(e.updatedAt)).max().as(last,
                     has(state.?cursor.last_timestamp) && last < timestamp(state.cursor.last_timestamp) ?
                       state.cursor.last_timestamp
                     :

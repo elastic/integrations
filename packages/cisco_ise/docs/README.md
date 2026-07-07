@@ -1,6 +1,5 @@
 # Cisco ISE Integration for Elastic
 
-> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
@@ -423,12 +422,19 @@ The following table lists the exported fields for this data stream:
 | cisco_ise.log.category.name |  | keyword |
 | cisco_ise.log.cause |  | keyword |
 | cisco_ise.log.cisco_av_pair.AuthenticationIdentityStore |  | keyword |
+| cisco_ise.log.cisco_av_pair.FQSubjectName |  | keyword |
 | cisco_ise.log.cisco_av_pair.audit-session-id |  | keyword |
+| cisco_ise.log.cisco_av_pair.client-iif-id |  | keyword |
 | cisco_ise.log.cisco_av_pair.coa-push |  | boolean |
 | cisco_ise.log.cisco_av_pair.cts-device-capability |  | keyword |
 | cisco_ise.log.cisco_av_pair.cts-environment-data |  | keyword |
 | cisco_ise.log.cisco_av_pair.cts-environment-version |  | keyword |
 | cisco_ise.log.cisco_av_pair.cts-pac-opaque |  | keyword |
+| cisco_ise.log.cisco_av_pair.dc-certainty-metric |  | keyword |
+| cisco_ise.log.cisco_av_pair.dc-device-class-tag |  | keyword |
+| cisco_ise.log.cisco_av_pair.dc-device-name |  | keyword |
+| cisco_ise.log.cisco_av_pair.dc-profile-name |  | keyword |
+| cisco_ise.log.cisco_av_pair.dc-protocol-map |  | keyword |
 | cisco_ise.log.cisco_av_pair.device-uid-global |  | keyword |
 | cisco_ise.log.cisco_av_pair.mdm-tlv.ac-user-agent |  | keyword |
 | cisco_ise.log.cisco_av_pair.mdm-tlv.computer-name |  | keyword |
@@ -439,6 +445,8 @@ The following table lists the exported fields for this data stream:
 | cisco_ise.log.cisco_av_pair.mdm-tlv.device-type |  | keyword |
 | cisco_ise.log.cisco_av_pair.mdm-tlv.device-uid |  | keyword |
 | cisco_ise.log.cisco_av_pair.mdm-tlv.device-uid-global |  | keyword |
+| cisco_ise.log.cisco_av_pair.method |  | keyword |
+| cisco_ise.log.cisco_av_pair.service-type |  | keyword |
 | cisco_ise.log.class |  | keyword |
 | cisco_ise.log.client.latency |  | long |
 | cisco_ise.log.cmdset |  | keyword |

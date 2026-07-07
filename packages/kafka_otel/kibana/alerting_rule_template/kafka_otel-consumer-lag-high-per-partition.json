@@ -1,42 +1,56 @@
 {
-    "id": "kafka_otel-consumer-lag-high-per-partition",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Kafka OTel] High consumer lag per partition",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "kafka"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "kafka_otel-consumer-lag-high-per-partition",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when per-partition `kafka.consumer_group.lag > 10000`. Per-partition lag surfaces hot-spotting and stuck consumers.",
+    "name": "[Kafka OTel] High consumer lag per partition",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "kafka"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "kafka_otel-consumer-groups"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "enabled": true,
-            "lookBackWindow": 6,
-            "statusChangeThreshold": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-kafkametricsreceiver.otel-*\n// Per-partition consumer group lag (offset distance behind log-end)\n| WHERE kafka.consumer_group.lag IS NOT NULL\n| STATS max_lag = MAX(kafka.consumer_group.lag)\n  BY attributes.group, attributes.topic, attributes.partition\n// Threshold: lag in messages. Adjust for your throughput (e.g. 10000, 100000)\n| WHERE max_lag > 10000\n| SORT max_lag DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "attributes.group",
-            "termSize": 20,
-            "excludeHitsFromPreviousRun": false
+        {
+          "id": "kafka_otel-topics-partitions"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Kafka high consumer lag per partition\n\n### What fired\n`kafka.consumer_group.lag > 10,000` on at least one partition.\n\n### Why it matters\nPer-partition lag isolates the specific partitions / consumers struggling. Useful for detecting key-skew or specific consumer crashes.\n\n### Triage\n1. Look at partition assignment (is one consumer owning the hot partition?).\n2. Check recent rebalances in the consumer group.\n\n### Remediation\n- Rebalance manually or fix the slow consumer.\n- Re-key producer data to distribute load.\n\n### Tuning\n- 10,000 per partition is generic; tune to throughput.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-kafkametricsreceiver.otel-*\n// Per-partition consumer group lag (offset distance behind log-end)\n| WHERE kafka.consumer_group.lag IS NOT NULL\n| STATS max_lag = MAX(kafka.consumer_group.lag)\n  BY attributes.group, attributes.topic, attributes.partition\n// Threshold: lag in messages. Adjust for your throughput (e.g. 10000, 100000)\n| WHERE max_lag > 10000\n| SORT max_lag DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.group",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
     }
+  }
 }

@@ -35,6 +35,39 @@ streams:
         required: true
         show_user: true
         default: all
+      - name: enrich_with_mfa
+        type: bool
+        title: MFA Enrichment
+        description: >-
+          Enable enrichment of user records with MFA registration details. Requires
+          the AuditLog.Read.All application permission in Azure in addition to the
+          existing permissions. Populates user.entity.attributes.mfa_enabled.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: user_direct_reports
+        type: bool
+        title: User Direct Reports
+        description: >-
+          Enable enrichment of user records with their direct reports by expanding
+          the directReports property. Populates user.entity.relationships.supervises.
+          Note: Microsoft Graph limits this expansion to 20 objects per query.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: user_app_role_assignments
+        type: bool
+        title: User App Role Assignments
+        description: >-
+          Enable enrichment of user records with their app role assignments by
+          expanding the appRoleAssignments property. Populates
+          user.entity.attributes.permissions.
+        multi: false
+        required: false
+        show_user: true
+        default: false
       - name: intune_managed_devices
         type: bool
         title: Intune Managed Device Properties
@@ -42,7 +75,8 @@ streams:
           Enable collection of additional device properties managed by Microsoft
           Intune (isCompliant, isManaged, deviceCategory, deviceOwnership,
           enrollmentProfileName, mdmAppId, complianceExpirationDateTime,
-          manufacturer, model, registrationDateTime, systemLabels). Requires the
+          manufacturer, model, registrationDateTime, systemLabels) and the
+          device last sign-in time (approximateLastSignInDateTime). Requires the
           DeviceManagementManagedDevices.Read.All application permission and an
           active Intune license on the tenant.
         multi: false

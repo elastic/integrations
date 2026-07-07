@@ -31,6 +31,9 @@
         - name: usage_object_type
           type: keyword
           description: Type of the usage record
+        - name: usage_tokens
+          type: long
+          description: Total tokens consumed by this usage record, normalized across usage data streams for rate-limit headroom calculations.
     # Embeddings-specific fields
     - name: embeddings
       type: group
@@ -39,3 +42,57 @@
         - name: input_tokens
           type: long
           description: Number of input tokens used.
+    # Token/usage fields from sibling data streams are mapped (but not populated) here so the
+    # shared OpenAI Usage Overview dashboard can aggregate usage across collections even when
+    # only a subset of them is enabled. See https://github.com/elastic/integrations/issues/19340
+    - name: completions
+      type: group
+      description: OpenAI completions usage metrics and metadata
+      fields:
+        - name: output_audio_tokens
+          type: long
+          description: Number of audio output tokens used
+        - name: input_audio_tokens
+          type: long
+          description: Number of audio input tokens used, including cached tokens
+        - name: input_cached_tokens
+          type: long
+          description: Number of text input tokens that has been cached from previous requests. For customers subscribe to scale tier, this includes scale tier tokens
+        - name: input_tokens
+          type: long
+          description: Number of text input tokens used, including cached tokens. For customers subscribe to scale tier, this includes scale tier tokens
+        - name: output_tokens
+          type: long
+          description: Number of text output tokens used. For customers subscribe to scale tier, this includes scale tier tokens
+    - name: moderations
+      type: group
+      description: OpenAI moderations usage metrics and metadata
+      fields:
+        - name: input_tokens
+          type: long
+          description: Number of input tokens used.
+    - name: images
+      type: group
+      description: OpenAI images usage metrics and metadata
+      fields:
+        - name: images
+          type: long
+          description: Number of images processed
+        - name: size
+          type: keyword
+          description: Image size (dimension of the generated image)
+    - name: audio_transcriptions
+      type: group
+      description: OpenAI audio transcriptions usage metrics and metadata
+      fields:
+        - name: seconds
+          type: long
+          unit: s
+          description: Number of seconds processed
+    - name: audio_speeches
+      type: group
+      description: OpenAI audio speeches usage metrics and metadata
+      fields:
+        - name: characters
+          type: long
+          description: Number of characters processed

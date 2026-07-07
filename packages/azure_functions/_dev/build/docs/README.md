@@ -4,6 +4,22 @@ The Azure Functions integration allows you to monitor Azure Functions. Azure Fun
 
 Use Azure Functions to build web APIs, respond to database changes, process IoT streams, manage message queues, and more. Refer to common [Azure Functions scenarios](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scenarios?pivots=programming-language-csharp) for more information.
 
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to collect data from Azure and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Agentless deployment
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html)
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+> **Note:** Agentless deployment is currently supported for Azure Functions metrics only. Log collection is not available via agentless and requires a traditional Elastic Agent deployment.
+
 ## Hosting plans and metrics
 
 Each Azure Functions app requires a hosting plan: Consumption plan, Flex Consumption plan, Premium plan, Dedicated plan, or Container Apps. For more details on the various plans, check the [Azure Functions hosting options](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale?WT.mc_id=Portal-WebsitesExtension).

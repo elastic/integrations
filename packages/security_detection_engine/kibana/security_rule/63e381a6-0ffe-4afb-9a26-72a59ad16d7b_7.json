@@ -1,0 +1,128 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to access registry backup hives that can contain or enable access to credential material.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.name",
+                "user.id",
+                "process.executable",
+                "process.entity_id",
+                "process.command_line",
+                "process.parent.executable",
+                "process.pe.original_file_name",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.Ext.authentication_id",
+                "file.path",
+                "file.size"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Sensitive Registry Hive Access via RegBack",
+        "note": "## Triage and analysis\n\n### Investigating Sensitive Registry Hive Access via RegBack\n\n#### Possible investigation steps\n\n- Which RegBack hives did the process open, and is the set usable for credential access?\n  - Why: \"SAM\" or \"SECURITY\" becomes credential material when paired with \"SYSTEM\"; `file.size` helps assess populated hives but does not replace hive-set review.\n  - Focus: alert `file.path` and `file.size`, then same-process opens for other RegBack hives. !{investigate{\"description\":\"\",\"label\":\"File activity for the same process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when one process accesses \"SAM\" plus \"SYSTEM\" or all three hives, especially with populated sizes; do not close on empty/missing size alone, and keep isolated single-hive access unresolved until identity and staging are checked.\n\n- Does the accessing process fit a recognized recovery, backup, or forensic chain?\n  - Focus: `process.executable`, `process.code_signature.subject_name`, `process.code_signature.trusted`, and `process.parent.executable`.\n  - Hint: use `process.entity_id` to tie `process.command_line` and `process.parent.command_line` to the opener; if renamed, check `process.pe.original_file_name`. Trusted signer or Microsoft path does not clear credential-hive access.\n  - Implication: escalate when the binary is unsigned, user-writable, renamed, or launched by shell, script, Office, or remote-admin lineage outside recovery/evidence collection; lower suspicion when signer, path, parent, and command lines converge on one recognized workflow.\n\n- Did the same process stage, rename, archive, or hide hive files?\n  - Focus: same-process file events by `host.id` and `process.entity_id`, especially `file.path` and `file.size`.\n  - Hint: look for temp, user-profile, admin-share, removable, archive, or deceptive names omitting \"SAM\", \"SECURITY\", or \"SYSTEM\".\n  - Implication: escalate when hives are copied, renamed, compressed, or staged outside a recognized evidence or backup repository; lower suspicion when copies stay inside the bounded recovery/forensic case path.\n\n- Does the user and session identity fit protected RegBack access?\n  - Focus: `user.id`, `process.Ext.authentication_id`, `process.command_line`, and `process.parent.executable`.\n  - Hint: when present, use `process.Ext.session_info.logon_type` only as support; otherwise anchor on `process.Ext.authentication_id`, parent, and command line.\n  - Implication: escalate on rare user, unexplained session identifier, or remote-admin lineage without matching process and file-path evidence for recovery or forensics; lower suspicion when account, session, parent, and command line match the bounded workflow.\n\n- Do command lines or child processes show hive parsing, cleanup, or transfer?\n  - Why: RegBack reads may pair with \"reg save\", shadow-copy, or raw-copy variants for offline secret extraction.\n  - Focus: `process.command_line`, child process events where `process.parent.entity_id` matches `process.entity_id`, and copied-hive `file.path` values. !{investigate{\"description\":\"\",\"label\":\"Child process events for the accessing process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: check for \"reg.exe save\", shadow-copy utilities, raw-copy tools, archive tools, credential dumpers, cleanup commands, removable paths, or UNC paths.\n  - Implication: escalate when the lineage parses hives, creates archives, deletes staged hives, writes UNC/removable paths, or uses reg-save/shadow-copy/raw-copy variants; absence of these follow-on artifacts does not clear populated multi-hive access.\n\n- If local evidence is suspicious or incomplete, do related alerts expand scope?\n  - Focus: related alerts for `user.id` covering credential access, privilege escalation, staging, transfer, persistence, or lateral movement. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: use `host.id` when user scope is quiet or the actor is \"S-1-5-18\" or another service context. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden containment and credential-impact review when related alerts show adjacent post-compromise behavior; keep the case local when related alerts are quiet and all local evidence fits one recognized workflow.\n\n- Escalate on populated multi-hive access with suspicious identity, staging, transfer, privilege, or related-alert context; close only when telemetry aligns with one recognized backup, recovery, or forensic workflow and no contradictory evidence remains; preserve hives, process records, and copied artifacts when evidence is mixed, incomplete, or needs outside confirmation.\n\n### False positive analysis\n\n- Endpoint security products (AV/EDR) routinely open RegBack hives during full-disk scans. Confirm when `process.executable` is a trusted-signed binary from a `Program Files` AV/EDR install path, `user.id` is `S-1-5-18`, and the same `process.entity_id` shows no staging, copy, archive, or multi-hive credential-set access.\n- Recognized backup, recovery, or forensic workflows can legitimately access RegBack hives only when `process.executable`, `process.code_signature.subject_name`, `process.parent.executable`, `process.command_line`, copied `file.path`, `user.id`, `process.Ext.authentication_id`, and `host.id` identify the same bounded maintenance or evidence-collection scope. Leave unresolved if staging, child-process, or related-alert evidence contradicts the workflow or legitimacy rests only on owner/context.\n- Before creating an exception, require recurring `process.executable`, `process.command_line`, `file.path`, `user.id`, and `host.id` across prior alerts; avoid exceptions on the RegBack path, hive name, or host alone.\n\n### Response and remediation\n\n- If confirmed benign, release any temporary containment and document the confirmed workflow anchors: tool identity, parent and command line, bounded RegBack `file.path` set, copied path pattern, `user.id`, and `host.id`. Create an exception only if those anchors recur consistently across prior alerts from this rule.\n- If suspicious but unconfirmed, export the alert, process timeline, same-process file activity, and any copied, archived, UNC, or removable-media hive paths before containment. Preserve hive copies when present. Apply reversible containment first, such as restricting the process, copied path, share access, or involved `user.id`; escalate to host isolation only when populated multi-hive access is paired with staging, transfer paths, or related post-compromise alerts and the asset can tolerate it.\n- If confirmed malicious, record and preserve the responsible process instance, process timeline, and hive artifact paths before containment. Then use Elastic Defend response actions to isolate the host and kill or suspend the process. If direct endpoint response is unavailable, escalate with those artifacts to the team that can isolate the host or disable the involved account. Block confirmed malicious tools, paths, shares, and copied artifacts tied to the RegBack access before cleanup.\n- If the same process accessed populated \"SAM\", \"SECURITY\", and \"SYSTEM\" files, treat the case as higher-confidence credential exposure and begin local-account and cached-credential hygiene appropriate to the host role. On shared admin systems or servers with privileged local accounts, escalate identity-impact handling according to the credential-compromise runbook.\n- Before eradication, scope the same process identity, RegBack path set, copy destinations, `user.id`, and `host.id` across related alerts so evidence is preserved before cleanup. Then remove unauthorized tools, copied hives, archives, remote-share artifacts, and persistence mechanisms uncovered during the investigation, and remediate the access vector or privilege path that allowed RegBack access.\n- Post-incident hardening: restrict RegBack access to recognized backup, recovery, and forensic tooling; retain endpoint process and file telemetry needed for this workflow; and document any \"reg save\", shadow-copy, or raw-copy variants surfaced during triage for future case comparison.\n",
+        "query": "file where host.os.type == \"windows\" and\n event.action == \"open\" and event.outcome == \"success\" and process.executable != null and\n file.path :\n      (\"?:\\\\Windows\\\\System32\\\\config\\\\RegBack\\\\SAM\",\n       \"?:\\\\Windows\\\\System32\\\\config\\\\RegBack\\\\SECURITY\",\n       \"?:\\\\Windows\\\\System32\\\\config\\\\RegBack\\\\SYSTEM\") and\n not (\n    user.id == \"S-1-5-18\" and process.executable : (\n        \"?:\\\\Windows\\\\system32\\\\taskhostw.exe\",\n        \"?:\\\\Windows\\\\system32\\\\taskhost.exe\",\n        \"?:\\\\Program Files\\\\Sophos\\\\Endpoint Defense\\\\SophosScanCoordinator.exe\",\n        \"?:\\\\Program Files\\\\Sophos\\\\Endpoint Defense\\\\SSPService.exe\",\n        \"?:\\\\Program Files\\\\Windows Defender Advanced Threat Protection\\\\MsSense.exe\",\n        \"?:\\\\Program Files\\\\Trend Micro\\\\AMSP\\\\coreServiceShell.exe\",\n        \"?:\\\\Program Files\\\\Symantec\\\\Symantec Endpoint Protection\\\\*\\\\Bin64\\\\ccSvcHst.exe\",\n        \"?:\\\\Program Files\\\\Bitdefender\\\\Endpoint Security\\\\EPSecurityService.exe\",\n        \"?:\\\\Program Files\\\\N-able Technologies\\\\AVDefender\\\\EPSecurityService.exe\",\n        \"?:\\\\Program Files\\\\Cylance\\\\Optics\\\\CyOptics.exe\",\n        \"?:\\\\Program Files\\\\Common Files\\\\McAfee\\\\AVSolution\\\\mcshield.exe\",\n        \"?:\\\\Program Files (x86)\\\\Padvish AV\\\\APCcSvc.exe\"\n    )\n )\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1003/002/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "63e381a6-0ffe-4afb-9a26-72a59ad16d7b",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.002",
+                                "name": "Security Account Manager",
+                                "reference": "https://attack.mitre.org/techniques/T1003/002/"
+                            },
+                            {
+                                "id": "T1003.004",
+                                "name": "LSA Secrets",
+                                "reference": "https://attack.mitre.org/techniques/T1003/004/"
+                            },
+                            {
+                                "id": "T1003.005",
+                                "name": "Cached Domain Credentials",
+                                "reference": "https://attack.mitre.org/techniques/T1003/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 7
+    },
+    "id": "63e381a6-0ffe-4afb-9a26-72a59ad16d7b_7",
+    "type": "security-rule"
+}

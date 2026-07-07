@@ -2,14 +2,35 @@
   "id": "mongodb_otel-high-operation-latency",
   "type": "alerting_rule_template",
   "attributes": {
+    "description": "Alerts when average operation time per op exceeds threshold by operation type. Identifies slow operations.",
     "name": "[MongoDB OTel] High operation latency",
+    "ruleTypeId": ".es-query",
     "tags": [
       "observability",
       "mongodb"
     ],
-    "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mongodb_otel-operations"
+        },
+        {
+          "id": "mongodb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## MongoDB high operation latency\n\n### What fired\nPer-operation-type latency rose above the computed threshold.\n\n### Why it matters\nRising average operation latency indicates server- or storage-side slowdowns. Break down by operation type (insert/query/update/command) to localise.\n\n### Triage\n1. Check disk I/O and WT cache hit.\n2. Look for slow queries in profiler logs.\n\n### Remediation\n- Fix slow queries / missing indexes.\n- Scale storage.\n\n### Tuning\n- Thresholds tune in the query.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",
@@ -20,13 +41,6 @@
       },
       "groupBy": "row",
       "timeField": "@timestamp"
-    },
-    "alertDelay": {
-      "active": 2
-    },
-    "flapping": {
-      "lookBackWindow": 10,
-      "statusChangeThreshold": 4
     }
   },
   "managed": true,

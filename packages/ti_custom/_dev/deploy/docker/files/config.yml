@@ -1,4 +1,53 @@
 rules:
+  - path: /taxii2/root/collections/b4f80a3f-2e68-4f3b-a3f6-1b6e4a0a7c31/objects/
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - 'Bearer abcd1234'
+    query_params:
+      added_after: '{added_after:[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{6}Z}'
+      next: null
+    responses:
+      - status_code: 200
+        headers:
+          X-TAXII-Date-Added-Last: "2024-05-15T09:12:16.432Z"
+          Content-Type: "application/taxii+json;version=2.1"
+        body: |-
+          {
+            "more": true,
+            "objects": [
+              {
+                "id": "indicator--2ec88a3e-7c5d-4e10-9f27-ea3a4f54b3e0",
+                "spec_version": "2.1",
+                "type": "indicator",
+                "created": "2024-05-15T09:12:16.432Z",
+                "modified": "2024-05-15T09:12:16.432Z",
+                "name": "added-after.example.com",
+                "description": "Indicator used to verify added_after timestamp precision.",
+                "pattern": "[domain-name:value = 'added-after.example.com']",
+                "pattern_type": "stix",
+                "pattern_version": "2.1",
+                "valid_from": "2024-05-15T09:12:16.432Z"
+              }
+            ],
+            "next": "empty_page"
+          }
+  - path: /taxii2/root/collections/b4f80a3f-2e68-4f3b-a3f6-1b6e4a0a7c31/objects/
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - 'Bearer abcd1234'
+    query_params:
+      next: 'empty_page'
+    responses:
+      - status_code: 200
+        headers:
+          X-TAXII-Date-Added-Last: "2024-05-15T09:12:16.432Z"
+          Content-Type: "application/taxii+json;version=2.1"
+        body: |-
+          {
+            "more": false
+          }
   - path: /taxii2/root/collections/e554c1d6-a37a-4267-9ff0-e8b9806b48c4/objects/
     methods: ["GET"]
     request_headers:

@@ -2,14 +2,35 @@
   "id": "mongodb_otel-high-cache-miss-rate",
   "type": "alerting_rule_template",
   "attributes": {
+    "description": "Alerts when the WiredTiger cache miss rate rises. Low cache hit ratios mean reads are going to disk.",
     "name": "[MongoDB OTel] High cache miss rate",
+    "ruleTypeId": ".es-query",
     "tags": [
       "observability",
       "mongodb"
     ],
-    "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mongodb_otel-capacity"
+        },
+        {
+          "id": "mongodb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## MongoDB high cache miss rate\n\n### What fired\nPer-server cache miss rate rose above the computed threshold.\n\n### Why it matters\nWiredTiger's internal cache is the main performance buffer. Rising miss rate means working set has exceeded cache or cache has been evicted \u2014 reads slow dramatically.\n\n### Triage\n1. Check cache sizing.\n2. Look at recent workload changes.\n\n### Remediation\n- Add memory / raise `wiredTigerCacheSizeGB`.\n- Tune queries / indexes to reduce scanned data.\n\n### Tuning\n- Fires on relative miss rate growth; thresholds tune in the query.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",
@@ -20,13 +41,6 @@
       },
       "groupBy": "row",
       "timeField": "@timestamp"
-    },
-    "alertDelay": {
-      "active": 2
-    },
-    "flapping": {
-      "lookBackWindow": 10,
-      "statusChangeThreshold": 4
     }
   },
   "managed": true,

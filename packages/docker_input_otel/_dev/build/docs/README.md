@@ -1,8 +1,8 @@
-# Docker OpenTelemetry Input Package
+# Docker (OpenTelemetry)
 
 ## Overview
 
-The Docker OpenTelemetry Input Package for Elastic enables collection of telemetry data from Docker containers through OpenTelemetry protocols using the [dockerstats receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/dockerstatsreceiver). It provides comprehensive metrics about container resource usage including CPU, memory, network, and block I/O statistics.
+This input package enables collection of telemetry data from Docker containers through OpenTelemetry protocols using the [dockerstats receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/dockerstatsreceiver). It provides comprehensive metrics about container resource usage including CPU, memory, network, and block I/O statistics.
 
 ### How it works
 

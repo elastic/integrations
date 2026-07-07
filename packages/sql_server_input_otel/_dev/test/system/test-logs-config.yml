@@ -1,6 +1,3 @@
-skip:
-  reason: Test is skipped until we support multisignal inputs.
-  link: https://github.com/elastic/elastic-package/issues/3298
 service: sql_server_input_otel
 vars:
   server: "{{Hostname}}"
@@ -11,8 +8,10 @@ vars:
   initial_delay: 1s
   enable_query_sample_events: true
   enable_top_query_events: true
-  top_query_lookback_time: 60s
+  top_query_lookback_time: 20s
   top_query_collection_interval: 10s
+signal_types:
+  - logs
 assert:
   min_count: 10
   fields_present:
@@ -29,7 +28,8 @@ assert:
     - sqlserver.total_physical_reads
     - sqlserver.execution_count
     - sqlserver.total_grant_kb
-    - sqlserver.query_plan
+    # sqlserver.query_plan is excluded: the XML plan content exceeds the Elasticsearch
+    # keyword ignore_above limit, so the field is stored in _ignored and is not indexed/searchable.
     # Query-Sample Collection (db.server.query_sample)
     - db.system.name
     - db.namespace
@@ -59,4 +59,4 @@ assert:
     - sqlserver.deadlock_priority
     - sqlserver.row_count
     - sqlserver.context_info
-    - sqlserver.username
+    - user.name

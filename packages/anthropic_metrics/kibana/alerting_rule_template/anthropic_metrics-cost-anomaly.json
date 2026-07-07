@@ -1,0 +1,43 @@
+{
+    "id": "anthropic_metrics-cost-anomaly",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Anthropic] Cost Anomaly",
+        "description": "Alerts when daily cost exceeds a configurable threshold. Catches unexpected spend spikes from runaway workloads or new model adoption before they accumulate.",
+        "tags": [
+            "Anthropic",
+            "Cost",
+            "Budget"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1h"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 24,
+            "timeWindowUnit": "h",
+            "esqlQuery": {
+                "esql": "// Alert when daily cost exceeds a threshold (in cents).\n// The amount field is in cents — 5000 = $50.00.\n// Adjust the threshold in the final WHERE clause as needed.\nFROM metrics-anthropic_metrics.cost-*\n| WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.currency == \"USD\"\n| STATS daily_cost_cents = SUM(anthropic.cost.amount)\n| EVAL daily_cost_usd = ROUND(daily_cost_cents / 100.0, 2)\n| WHERE daily_cost_cents > 5000"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "anthropic_metrics-2bd61c2c-4418-458f-a79e-12a74c34b2f0"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Cost Anomaly\n\n### Triage Steps\n1. Open the Cost & Billing dashboard and review the daily cost trend.\n2. Identify which models and workspaces are contributing most to the spike using the cost breakdown panels.\n3. Cross-reference with the Token Usage dashboard to see if the cost spike correlates with a token usage spike.\n4. Check `anthropic.cost.cost_type` to determine whether the cost is from tokens, web search, or code execution.\n5. Review `anthropic.cost.workspace_id` to identify the responsible team or project.\n\n### Common Causes\n- Unexpected increase in API call volume from a new feature or workload\n- Switch to a more expensive model (e.g., from Haiku to Opus)\n- Web search or code execution features enabled without cost awareness\n- Batch processing jobs running without rate limiting\n\n### Tuning\n- Adjust the `5000` cent threshold ($50) in the WHERE clause to match your organization's daily budget.\n- Consider using the Per-Workspace Daily Cost Spike alert for finer-grained workspace-level monitoring."
+            }
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

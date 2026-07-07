@@ -149,6 +149,33 @@ curl --request PUT \
 	"index.default_pipeline": "test-pipeline"
 }}'
 
+# Query activity logs (elasticsearch.querylog) are not written by Elasticsearch 8.x default
+# log4j2; append ECS JSON lines so the logfile system test can ingest them.
+CLUSTER_NAME=$(curl -s --request GET \
+  --url "$ES_SERVICE_HOST/" \
+  --header "Authorization: Basic $auth" | tr ',' '\n' | grep '"cluster_name"' | head -1 | cut -d'"' -f4)
+if [ -z "$CLUSTER_NAME" ]; then CLUSTER_NAME=elasticsearch; fi
+
+CLUSTER_UUID=$(curl -s --request GET \
+  --url "$ES_SERVICE_HOST/" \
+  --header "Authorization: Basic $auth" | tr ',' '\n' | grep '"cluster_uuid"' | head -1 | cut -d'"' -f4)
+if [ -z "$CLUSTER_UUID" ]; then CLUSTER_UUID=unknown-cluster-uuid; fi
+
+NODE_INFO=$(curl -s --request GET \
+  --url "$ES_SERVICE_HOST/_cat/nodes?h=id,name" \
+  --header "Authorization: Basic $auth" | head -1)
+NODE_ID=$(echo "$NODE_INFO" | awk '{print $1}')
+NODE_NAME=$(echo "$NODE_INFO" | awk '{print $2}')
+if [ -z "$NODE_ID" ]; then NODE_ID=unknown-node-id; fi
+if [ -z "$NODE_NAME" ]; then NODE_NAME=unknown-node-name; fi
+
+touch /var/log/integration_querylog.json
+
+append_querylog_fixture() {
+  ts=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
+  printf '%s\n' "{\"@timestamp\":\"${ts}\",\"log.level\":\"INFO\",\"auth.type\":\"REALM\",\"elasticsearch.querylog.dsl.total_count\":3,\"elasticsearch.querylog.indices\":[\"query_log_test_index\"],\"elasticsearch.querylog.query\":\"{\\\"size\\\":10,\\\"query\\\":{\\\"match_all\\\":{\\\"boost\\\":1.0}}}\",\"elasticsearch.querylog.result_count\":3,\"elasticsearch.querylog.shards.successful\":1,\"elasticsearch.querylog.took\":1577209,\"elasticsearch.querylog.took_millis\":1,\"elasticsearch.querylog.type\":\"dsl\",\"elasticsearch.task.id\":16285,\"event.duration\":1577209,\"event.outcome\":\"success\",\"http.request.headers.x_opaque_id\":\"myApp1\",\"trace.id\":\"0af7651916cd43dd8448eb211c80319c\",\"user.name\":\"elastic\",\"user.realm\":\"reserved\",\"ecs.version\":\"1.2.0\",\"service.name\":\"ES_ECS\",\"event.dataset\":\"elasticsearch.querylog\",\"process.thread.name\":\"elasticsearch[integration-test][search][T#1]\",\"log.logger\":\"elasticsearch.querylog\",\"elasticsearch.cluster.uuid\":\"${CLUSTER_UUID}\",\"elasticsearch.node.id\":\"${NODE_ID}\",\"elasticsearch.node.name\":\"${NODE_NAME}\",\"elasticsearch.cluster.name\":\"${CLUSTER_NAME}\"}" >> /var/log/integration_querylog.json
+}
+
 while true
 do
   echo Generating slowlogs, audit and deprecation
@@ -243,6 +270,8 @@ do
   }'
 
   copy_log_files
+
+  append_querylog_fixture
 
   echo Generating ingest pipeline load
   curl --request POST \

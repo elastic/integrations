@@ -1,37 +1,51 @@
 {
-    "id": "apache_tomcat_otel-high-jvm-process-cpu",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Tomcat OTel] High JVM process CPU usage",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "tomcat"
-        ],
-        "schedule": {
-            "interval": "1m"
+  "id": "apache_tomcat_otel-high-jvm-process-cpu",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the JVM process CPU load averages above 90% (`java_lang_OperatingSystem_ProcessCpuLoad > 0.9`). Sustained high CPU degrades request latency and often correlates with GC pressure.",
+    "name": "[Tomcat OTel] High JVM process CPU usage",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "tomcat"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_tomcat_otel-jvm-os-resources"
         },
-        "alertDelay": {
-            "active": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-tomcat.otel-*\n| WHERE java_lang_OperatingSystem_ProcessCpuLoad IS NOT NULL\n| STATS avg_cpu = AVG(java_lang_OperatingSystem_ProcessCpuLoad)\n  BY host.name\n| EVAL cpu_pct = ROUND(avg_cpu * 100.0, 2)\n// JVM process CPU threshold \u2014 sustained high CPU often correlates with\n// GC pressure, thread contention, or compute-heavy request processing\n// Adjust based on expected workload and available CPU cores\n| WHERE cpu_pct > 90.0\n| SORT cpu_pct DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 100,
-            "excludeHitsFromPreviousRun": true
+        {
+          "id": "apache_tomcat_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Tomcat high JVM process CPU usage\n\n### What fired\n`java_lang_OperatingSystem_ProcessCpuLoad` averaged above 0.90 during the evaluation window.\n\n### Why it matters\nPersistent high CPU use usually points to GC churn, synchronized-block contention, or compute-heavy request handling. Under CPU pressure, response latency degrades and the thread pool can saturate quickly.\n\n### Triage\n1. JVM & OS Resources dashboard: confirm host and trend.\n2. Inspect GC metrics (`java_lang_G1_Young_Generation_CollectionTime`, `java_lang_G1_Old_Generation_CollectionTime`) for GC dominating the CPU.\n3. Check thread counts and stack depth via thread dumps if CPU-bound without GC.\n4. Look at request mix \u2014 CPU-heavy endpoints like PDF generation, compression, TLS handshake bursts.\n\n### Remediation\n- Reduce GC tax (size heap correctly, tune G1 regions).\n- Profile hot methods (async-profiler, JFR) and optimise.\n- Scale out instances or up to more cores.\n\n### Tuning\n- `> 90%` is conservative. Many ops teams alert at 85% for earlier warning.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-tomcat.otel-*\n| WHERE java_lang_OperatingSystem_ProcessCpuLoad IS NOT NULL\n| STATS avg_cpu = AVG(java_lang_OperatingSystem_ProcessCpuLoad)\n  BY host.name\n| EVAL cpu_pct = ROUND(avg_cpu * 100.0, 2)\n// JVM process CPU threshold \u2014 sustained high CPU often correlates with\n// GC pressure, thread contention, or compute-heavy request processing\n// Adjust based on expected workload and available CPU cores\n| WHERE cpu_pct > 90.0\n| SORT cpu_pct DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }
