@@ -52,6 +52,12 @@ func sendLogs(ctx context.Context, res *resource.Resource) error {
 	exporter, err := otlploggrpc.New(ctx,
 		otlploggrpc.WithInsecure(),
 		otlploggrpc.WithEndpoint(endpointGRPC),
+		otlploggrpc.WithRetry(otlploggrpc.RetryConfig{
+			Enabled:         true,
+			InitialInterval: 5 * time.Second,
+			MaxInterval:     30 * time.Second,
+			MaxElapsedTime:  time.Minute,
+		}),
 	)
 	if err != nil {
 		return fmt.Errorf("create log exporter: %w", err)
