@@ -46,15 +46,6 @@ policy_templates:
         required: true
         show_user: true
         default: "mysql"
-      - name: sql_query
-        type: text
-        title: SQL Query (Cursor Mode)
-        multi: false
-        required: false
-        show_user: true
-        default: ""
-        description: >-
-          Single SQL query for cursor-based incremental fetching. Include a :cursor placeholder in the WHERE clause. When set, this is used instead of SQL Queries. Requires SQL Response Format set to "table".
       - name: sql_queries
         type: yaml
         title: SQL Queries
@@ -62,20 +53,8 @@ policy_templates:
         required: true
         show_user: true
         default: "- query: SHOW GLOBAL STATUS LIKE 'Innodb_system%'\n  response_format: variables\n        \n"
-      - name: sql_response_format
-        type: select
-        title: SQL Response Format
-        multi: false
-        required: false
-        show_user: true
-        default: "variables"
-        options:
-          - text: Variables
-            value: variables
-          - text: Table
-            value: table
         description: >-
-          Format of the query response. Must be set to "table" when using SQL Query (Cursor Mode).
+          One or more SQL queries to run each collection period, each with its own response_format (variables or table). This is the standard collection mode. Ignored when a Cursor Query is set.
       - name: cursor
         type: yaml
         title: Cursor Configuration
@@ -89,6 +68,15 @@ policy_templates:
           column: id
           type: integer
           default: "0"
+      - name: sql_query
+        type: text
+        title: Cursor Query
+        multi: false
+        required: false
+        show_user: true
+        default: ""
+        description: >-
+          A single SQL query for cursor-based incremental fetching, used together with Cursor Configuration (enabled: true). When set, it replaces SQL Queries and always runs with "table" response format. Include exactly one :cursor placeholder in the WHERE clause and an ORDER BY on the cursor column.
       - name: merge_results
         type: bool
         title: Merge Results

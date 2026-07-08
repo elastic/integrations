@@ -84,9 +84,9 @@ sql_queries:
 
 For more examples of response format please refer [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html)
 
-### SQL Query (Cursor Mode)
+### Cursor Query
 
-A single SQL query used for cursor-based incremental data fetching. When this field is set, it is used instead of **SQL Queries**. The query must include a `:cursor` placeholder in the WHERE clause. Set **SQL Response Format** to `table`. See the Cursor-based incremental data fetching section below for details.
+A single SQL query used for cursor-based incremental data fetching. When this field is set, it is used instead of **SQL Queries** and always runs with `table` response format. The query must include a `:cursor` placeholder in the WHERE clause. See the Cursor-based incremental data fetching section below for details.
 
 ### Merge Results
 Merge multiple queries into a single event.
@@ -117,13 +117,12 @@ Cursor-based incremental data fetching is a beta feature introduced in Elastic S
 
 Cursor support enables incremental fetching by tracking the last fetched row value and using it to fetch only new data on subsequent collection cycles. This is useful for continuously appended data like audit logs, event tables, or time-series data where you want to avoid re-fetching already-seen rows.
 
-When cursor is enabled, you must use the **SQL Query (Cursor Mode)** field instead of the **SQL Queries** field. Cursor mode requires a single query; it does not support multiple queries. Set **SQL Response Format** to `table`.
+When cursor is enabled, you must use the **Cursor Query** field instead of the **SQL Queries** field. Cursor mode requires a single query; it does not support multiple queries. The response format is always `table` in this mode and is applied automatically.
 
 #### Required fields
 
-- **SQL Query (Cursor Mode):** Enter a single SQL query string. Include exactly one `:cursor` placeholder in the WHERE clause and an `ORDER BY` clause on the cursor column.
+- **Cursor Query:** Enter a single SQL query string. Include exactly one `:cursor` placeholder in the WHERE clause and an `ORDER BY` clause on the cursor column.
 - **Cursor Configuration:** Enter YAML in the form shown below.
-- **SQL Response Format:** Must be set to `table`.
 
 #### Cursor Configuration field value
 
@@ -136,7 +135,7 @@ type: integer
 default: "0"
 ```
 
-#### SQL Query (Cursor Mode) field examples
+#### Cursor Query field examples
 
 **Integer cursor (auto-increment ID):**
 
@@ -229,12 +228,11 @@ For best performance, ensure the cursor column has a database index. Without an 
 
 When cursor is enabled:
 
-1. Use the **SQL Query (Cursor Mode)** field (not SQL Queries).
-2. Set **SQL Response Format** to `table`.
-3. Include an `ORDER BY` clause on the cursor column matching the configured direction.
-4. Include exactly one `:cursor` placeholder in the WHERE clause.
+1. Use the **Cursor Query** field (not SQL Queries).
+2. Include an `ORDER BY` clause on the cursor column matching the configured direction.
+3. Include exactly one `:cursor` placeholder in the WHERE clause.
 
-Requirements 1, 2, and 4 are enforced at startup and the input fails with a clear error if they are violated. Requirement 3 is **not** enforced: no error is raised when `ORDER BY` is missing or does not match the cursor direction. The cursor always advances to the maximum (ascending) or minimum (descending) value among the rows returned by a fetch — but when the query also uses `LIMIT`/`TOP`, the database returns a non-deterministic subset of the matching rows, so the cursor can jump past rows that were not in that batch and skip them permanently on the next cycle. Always include an `ORDER BY` on the cursor column matching the configured direction.
+The `table` response format is applied automatically in cursor mode. Requirements 1 and 3 are enforced at startup and the input fails with a clear error if they are violated. Requirement 2 is **not** enforced: no error is raised when `ORDER BY` is missing or does not match the cursor direction. The cursor always advances to the maximum (ascending) or minimum (descending) value among the rows returned by a fetch — but when the query also uses `LIMIT`/`TOP`, the database returns a non-deterministic subset of the matching rows, so the cursor can jump past rows that were not in that batch and skip them permanently on the next cycle. Always include an `ORDER BY` on the cursor column matching the configured direction.
 
 #### State persistence
 
