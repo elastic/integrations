@@ -59,3 +59,7 @@ echo ""
 echo "=== Running backport_branch_lib.sh tests ==="
 # test_backport_branch.sh also requires yq.
 run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_backport_branch.sh"
+
+echo ""
+echo "=== Running non_package_patterns tests ==="
+run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_non_package_patterns.sh"

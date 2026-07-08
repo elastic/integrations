@@ -1,0 +1,108 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects successful GKE audit events where a pod is created with allowPrivilegeEscalation enabled. This weakens container isolation and can help an attacker escalate toward host access. Standalone pods are included; workloads owned by ReplicaSet, DaemonSet, or StatefulSet controllers are excluded.",
+        "false_positives": [
+            "Debug or break-glass pods may enable privilege escalation intentionally. Exclude trusted namespaces, users, or deployment patterns after baselining."
+        ],
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Privileged Pod Created",
+        "note": "## Triage and analysis\n\n### Investigating GKE Privileged Pod Created\n\nReview `user.email`, `orchestrator.resource.name`, `orchestrator.namespace`, and the pod spec in `gcp.audit.request`.\nConfirm whether allowPrivilegeEscalation is required for the workload.\n\n### Investigation steps\n\n- Identify the actor and source (`user.email`, `source.ip`, `user_agent.original`).\n- Inspect container images and securityContext in the audit request payload.\n- Correlate with RBAC changes, secret access, or exec activity from the same identity.\n\n### False positives\n\n- One-off admin debugging pods; tune by user or namespace when documented.",
+        "query": "data_stream.dataset:gcp.audit and event.action:\"io.k8s.core.v1.pods.create\" and event.outcome:success and\ngcp.audit.request.spec.containers.securityContext.allowPrivilegeEscalation:true and\nnot gcp.audit.request.metadata.ownerReferences.kind:(\"ReplicaSet\" or \"DaemonSet\" or \"StatefulSet\")\n",
+        "references": [
+            "https://cloud.google.com/kubernetes-engine/docs/how-to/audit-logging",
+            "https://kubernetes.io/docs/tasks/configure-pod-container/security-context/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.request.metadata.ownerReferences.kind",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.request.spec.containers.securityContext.allowPrivilegeEscalation",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a7b984e4-16ff-405b-80be-31a94a03e929",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1611",
+                        "name": "Escape to Host",
+                        "reference": "https://attack.mitre.org/techniques/T1611/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1610",
+                        "name": "Deploy Container",
+                        "reference": "https://attack.mitre.org/techniques/T1610/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "a7b984e4-16ff-405b-80be-31a94a03e929_1",
+    "type": "security-rule"
+}

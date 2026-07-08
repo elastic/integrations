@@ -20,7 +20,7 @@ This package includes one pre-built Kibana dashboard:
 
 | Name | Description |
 |---|---|
-| [AWS OTel] SQS | AWS SQS dashboard for CloudWatch metrics collected by the OpenTelemetry Collector. |
+| [AWS SQS OTel] Metrics | AWS SQS dashboard for CloudWatch metrics collected by the OpenTelemetry Collector. |
 
 ## Alerting Rule Templates
 {{alertRuleTemplates}}
