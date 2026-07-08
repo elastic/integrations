@@ -16,6 +16,12 @@ processors:
       field: event.kind
       value: "event"
       override: false
+  - set:
+      tag: set_timestamp_from_event_created
+      field: "@timestamp"
+      copy_from: event.created
+      ignore_empty_value: true
+      if: ctx['@timestamp'] == null
   - date:
       tag: date_timestamp
       field: "@timestamp"
