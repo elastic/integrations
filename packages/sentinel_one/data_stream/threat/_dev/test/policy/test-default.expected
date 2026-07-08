@@ -9,7 +9,7 @@ inputs:
         - cel.max_executions: 1000
           cel.program: |-
             (
-              state.?worklist.data[0].hasValue() ?
+              state.?cursor.?worklist.data[0].hasValue() ?
                 state
               :
                 (
@@ -18,7 +18,7 @@ inputs:
                   :
                     state.with(
                       {
-                        "list_updated_at_gte": state.?cursor.last_update_at.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+                        "list_updated_at_gte": state.?cursor.?last_update_at.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
                       }
                     )
                 ).as(state,
@@ -31,7 +31,7 @@ inputs:
                         "sortOrder": ["asc"],
                         "updatedAt__gte": [state.list_updated_at_gte],
                         ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
-                        ?"cursor": state.?next_page.token.optMap(v, [v]),
+                        ?"cursor": state.?cursor.?next_page.token.optMap(v, [v]),
                       }.format_query()
                     ).with(
                       {
@@ -43,11 +43,14 @@ inputs:
                       resp.Body.decode_json().as(body,
                         (body.?pagination.nextCursor.orValue(null) != null).as(has_more_list,
                           {
-                            "worklist": body,
-                            "next_page": {
-                              ?"token": has_more_list ? optional.of(body.pagination.nextCursor) : optional.none(),
+                            "cursor": {
+                              ?"last_update_at": state.?cursor.?last_update_at,
+                              "worklist": body,
+                              "next_page": {
+                                ?"token": has_more_list ? optional.of(body.pagination.nextCursor) : optional.none(),
+                              },
+                              "has_more_timeline": false,
                             },
-                            "has_more_timeline": false,
                             ?"list_updated_at_gte": has_more_list ? optional.of(state.list_updated_at_gte) : optional.none(),
                           }
                         )
@@ -75,10 +78,10 @@ inputs:
               state.with(
                 has(state.events) ? // Exit early due to GET failure.
                   state
-                : !has(state.worklist) ?
+                : !has(state.?cursor.worklist) ?
                   state
-                : state.?worklist.data[0].hasValue() ?
-                  state.worklist.data[0].as(threat,
+                : state.?cursor.?worklist.data[0].hasValue() ?
+                  state.cursor.worklist.data[0].as(threat,
                     (state.enable_star_rule_enrichment && has(threat.id)) ?
                       request(
                         "GET",
@@ -86,7 +89,7 @@ inputs:
                           "limit": [string(state.page_size)],
                           "sortBy": ["createdAt"],
                           "sortOrder": ["desc"],
-                          ?"cursor": state.?next_chain.token.optMap(v, [v]),
+                          ?"cursor": state.?cursor.?next_chain.token.optMap(v, [v]),
                         }.format_query()
                       ).with(
                         {
@@ -114,35 +117,41 @@ inputs:
                                 )
                               :
                                 [{"message": threat.encode_json()}],
-                              "has_more_timeline": has_more_timeline,
-                              "worklist": has_more_timeline ?
-                                state.worklist
-                              :
-                                {"data": tail(state.worklist.data)},
-                              "next_chain": {
-                                ?"token": has_more_timeline ? optional.of(body.pagination.nextCursor) : optional.none(),
-                              },
                               "cursor": has_more_timeline ?
-                                state.?cursor.orValue({})
+                                state.cursor.with(
+                                  {
+                                    "has_more_timeline": has_more_timeline,
+                                    "next_chain": {
+                                      ?"token": optional.of(body.pagination.nextCursor),
+                                    },
+                                  }
+                                )
                               :
-                                {
-                                  ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.last_update_at),
-                                },
-                              "want_more": has_more_timeline || size(state.worklist.data) > 1 ||
-                              state.?next_page.token.orValue(null) != null,
+                                state.cursor.with(
+                                  {
+                                    "has_more_timeline": has_more_timeline,
+                                    "worklist": {"data": tail(state.cursor.worklist.data)},
+                                    "next_chain": {},
+                                    ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.?last_update_at),
+                                  }
+                                ),
+                              "want_more": has_more_timeline || size(state.cursor.worklist.data) > 1 ||
+                              state.?cursor.?next_page.token.orValue(null) != null,
                             }
                           )
                         )
                       : (resp.StatusCode == 404) ?
                         {
                           "events": [{"message": threat.encode_json()}],
-                          "worklist": {"data": tail(state.worklist.data)},
-                          "next_chain": {},
-                          "has_more_timeline": false,
-                          "cursor": {
-                            ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.last_update_at),
-                          },
-                          "want_more": size(state.worklist.data) > 1 || state.?next_page.token.orValue(null) != null,
+                          "cursor": state.cursor.with(
+                            {
+                              "worklist": {"data": tail(state.cursor.worklist.data)},
+                              "next_chain": {},
+                              "has_more_timeline": false,
+                              ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.?last_update_at),
+                            }
+                          ),
+                          "want_more": size(state.cursor.worklist.data) > 1 || state.?cursor.?next_page.token.orValue(null) != null,
                         }
                       :
                         {
@@ -160,29 +169,33 @@ inputs:
                               },
                             },
                           ],
-                          "worklist": {"data": tail(state.worklist.data)},
-                          "next_chain": {},
-                          "has_more_timeline": false,
-                          "cursor": {
-                            ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.last_update_at),
-                          },
-                          "want_more": size(state.worklist.data) > 1 || state.?next_page.token.orValue(null) != null,
+                          "cursor": state.cursor.with(
+                            {
+                              "worklist": {"data": tail(state.cursor.worklist.data)},
+                              "next_chain": {},
+                              "has_more_timeline": false,
+                              ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.?last_update_at),
+                            }
+                          ),
+                          "want_more": size(state.cursor.worklist.data) > 1 || state.?cursor.?next_page.token.orValue(null) != null,
                         }
                       )
                     :
                       {
                         "events": [{"message": threat.encode_json()}],
-                        "worklist": {"data": tail(state.worklist.data)},
-                        "next_chain": {},
-                        "has_more_timeline": false,
-                        "cursor": {
-                          ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.last_update_at),
-                        },
-                        "want_more": size(state.worklist.data) > 1 || state.?next_page.token.orValue(null) != null,
+                        "cursor": state.cursor.with(
+                          {
+                            "worklist": {"data": tail(state.cursor.worklist.data)},
+                            "next_chain": {},
+                            "has_more_timeline": false,
+                            ?"last_update_at": threat.?threatInfo.updatedAt.or(state.?cursor.?last_update_at),
+                          }
+                        ),
+                        "want_more": size(state.cursor.worklist.data) > 1 || state.?cursor.?next_page.token.orValue(null) != null,
                       }
                   )
                 :
-                  (state.?next_page.token.orValue(null) != null) ?
+                  (state.?cursor.?next_page.token.orValue(null) != null) ?
                     {
                       "events": [{"retry": true}],
                       "want_more": true,
