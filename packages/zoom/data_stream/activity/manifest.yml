@@ -27,7 +27,7 @@ streams:
         description: Page size for the response of the Zoom API.
         required: true
         show_user: false
-        default: 100
+        default: 300
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
@@ -47,17 +47,20 @@ streams:
       - name: resource_rate_limit_limit
         type: text
         title: Rate Limit
-        description: The maximum number of API requests allowed per second. Leave empty to disable client-side rate limiting. Zoom's `/report/activities` endpoint is a Heavy API whose per-second and daily quotas vary by account plan.
+        description: >-
+          The maximum number of API requests allowed per second. Zoom's `/report/activities` endpoint is a Heavy API, and the per-second and daily request quotas are shared across all Zoom Report data streams and apps on the account. Leave empty to disable client-side rate limiting.
         multi: false
         required: false
         show_user: false
+        default: "0.1"
       - name: resource_rate_limit_burst
         type: integer
         title: Rate Limit Burst
-        description: The maximum number of API requests that can be made in a burst following an idle period. Leave empty to disable client-side rate limiting.
+        description: The maximum number of API requests that can be made in a burst following an idle period. Kept small so a simultaneous burst across the Report data streams stays within the account's per-second quota. Leave empty to disable client-side rate limiting.
         multi: false
         required: false
         show_user: false
+        default: 3
       - name: tags
         type: text
         title: Tags
