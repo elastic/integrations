@@ -207,6 +207,40 @@ For more information on architectures that can be used for scaling this integrat
 
 You'll find events from Stormshield SNS logs in the `log` data stream. This data stream includes logs of the following types: traffic, filter, protection, and system events.
 
+##### ECS event categorization
+
+Each log family (identified by the `logtype` field) is mapped to the ECS categorization fields. Alarms raised by the intrusion prevention engine produce `event.kind: alert`. The periodic statistics families (`monitor`, `filterstat`, `count`, `routerstat`, `authstat`, `ipsecstat`) produce `event.kind: metric`, so health telemetry can be excluded from detection rule scopes with a single filter. All other families produce `event.kind: event`.
+
+| logtype | event.kind | event.category | event.type |
+|---|---|---|---|
+| alarm | alert | intrusion_detection, network | info |
+| auth | event | authentication | start |
+| authstat | metric | authentication | info |
+| connection | event | network, session | connection, end |
+| count, filterstat, ipsecstat, routerstat | metric | network | info |
+| date | event | host | change |
+| dmrouting, routing | event | network, host | change |
+| filter | event | network | connection |
+| ftp | event | network | info |
+| monitor | metric | host | info |
+| plugin | event | network | protocol |
+| pop3, smtp | event | email, network | info |
+| pvm | event | vulnerability | info |
+| restapi | event | web, configuration | access |
+| sandboxing | event | network | info |
+| server | event | configuration | access |
+| ssl | event | network | connection |
+| system | event | host | info |
+| vpn | event | network | info |
+| web | event | web, network | access |
+| xvpn | event | network, session | connection |
+
+For the families that carry a rule action, `event.type` additionally receives `allowed` when the action is `pass` and `denied` when the action is `block` (matched case-insensitively). An empty action field corresponds to a rule set to Log, and no modifier is added. Unknown log families fall back to `event.kind: event` without `event.category` or `event.type`, so a family missing from the table is visible instead of being mislabeled.
+
+For alarm logs, `event.code` carries the Stormshield alarm identifier, `event.risk_score` the `risk` field (1-100), and `event.severity` the vendor alarm level from `pri`, where 1 is a major alarm and 4 a minor alarm. This scale is specific to the alarm family. In most other families, the appliance hardcodes the `pri` field to 5.
+
+`network.direction` is computed from the source and destination IP addresses, treating private (RFC 1918) address ranges as internal networks.
+
 ##### `log` fields
 
 You'll find a list of all exported fields in the following table:
