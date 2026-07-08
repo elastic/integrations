@@ -616,12 +616,9 @@ func (a applier) computeOwnerSyncPlan(remote, sourceBranch, pkgDir string) (plan
 		return owners.SyncPlan{}, "", err
 	}
 
-	dataStreamNames, err := listDataStreams(pkgDir)
-	if err != nil {
-		return owners.SyncPlan{}, "", fmt.Errorf("listing data streams: %w", err)
-	}
+	subPaths := existingSubPaths(a.workDir, pkgPath, currentCodeowners, sourceCodeowners)
 
-	syncPlan, found := owners.Plan(pkgPath, dataStreamNames, currentCodeowners, sourceCodeowners, currentManifestOwner, sourceManifestOwner)
+	syncPlan, found := owners.Plan(pkgPath, subPaths, currentCodeowners, sourceCodeowners, currentManifestOwner, sourceManifestOwner)
 	if !found {
 		return owners.SyncPlan{}, pkgPath, nil
 	}
@@ -675,23 +672,28 @@ func (a applier) readManifestOwners(remoteRef, pkgDir, relPkgDir string) (curren
 	return current, source, nil
 }
 
-// listDataStreams returns the data stream names present in pkgDir's
-// checkout, or nil if the package has no data_stream directory at all.
-func listDataStreams(pkgDir string) ([]string, error) {
-	entries, err := os.ReadDir(filepath.Join(pkgDir, "data_stream"))
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, err
+// existingSubPaths returns the full CODEOWNERS paths nested under pkgPath
+// that actually exist in the current worktree checkout — the union of every
+// explicit entry current and source declare under pkgPath (data streams, a
+// kibana/ directory, or anything else), filtered down to the ones present on
+// disk. owners.Plan never touches a sub-path outside this set, since it may
+// not exist in this backport branch's version of the package.
+func existingSubPaths(workDir, pkgPath string, current, source *owners.Owners) []string {
+	candidates := make(map[string]bool)
+	for _, p := range current.EntriesUnder(pkgPath) {
+		candidates[p] = true
 	}
-	names := make([]string, 0, len(entries))
-	for _, e := range entries {
-		if e.IsDir() {
-			names = append(names, e.Name())
+	for _, p := range source.EntriesUnder(pkgPath) {
+		candidates[p] = true
+	}
+
+	paths := make([]string, 0, len(candidates))
+	for p := range candidates {
+		if _, err := os.Stat(filepath.Join(workDir, strings.TrimPrefix(p, "/"))); err == nil {
+			paths = append(paths, p)
 		}
 	}
-	return names, nil
+	return paths
 }
 
 // writeOwnerSyncPlan applies plan's changes to pkgDir/manifest.yml and
@@ -703,13 +705,11 @@ func writeOwnerSyncPlan(workDir, pkgDir, pkgPath string, plan owners.SyncPlan) e
 		}
 	}
 
-	updates := make(map[string][]string, len(plan.DataStreams)+1)
+	updates := make(map[string][]string, len(plan.SubPaths)+1)
 	if plan.PackageOwner != nil {
 		updates[pkgPath] = plan.PackageOwner
 	}
-	for ds, owner := range plan.DataStreams {
-		updates[pkgPath+"/data_stream/"+ds] = owner
-	}
+	maps.Copy(updates, plan.SubPaths)
 	if len(updates) == 0 {
 		return nil
 	}

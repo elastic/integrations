@@ -73,6 +73,22 @@ func (o *Owners) ResolveOwner(p string) ([]string, bool) {
 	}
 }
 
+// EntriesUnder returns the full paths of every explicit entry nested under
+// prefix — e.g. prefix "/packages/aws" matches
+// "/packages/aws/data_stream/cloudtrail" and "/packages/aws/kibana", but not
+// "/packages/aws" itself or an unrelated "/packages/awsome". Order is
+// unspecified.
+func (o *Owners) EntriesUnder(prefix string) []string {
+	prefix = strings.TrimSuffix(prefix, "/") + "/"
+	var paths []string
+	for p := range o.entries {
+		if strings.HasPrefix(p, prefix) {
+			paths = append(paths, p)
+		}
+	}
+	return paths
+}
+
 // ManifestOwner extracts the owner.github field from manifest.yml content,
 // via dev/citools' shared manifest parser.
 func ManifestOwner(manifestYAML []byte) (string, error) {
@@ -97,33 +113,53 @@ type SyncPlan struct {
 	// PackageOwner is the new value for the package's own CODEOWNERS line.
 	// Nil means unchanged.
 	PackageOwner []string
-	// DataStreams maps data stream name to the new explicit CODEOWNERS line
-	// needed for it. Only data streams that need an explicit line written
-	// (new or updated) are present.
-	DataStreams map[string][]string
+	// SubPaths maps a full CODEOWNERS path nested under the package — a data
+	// stream (".../data_stream/<name>"), a kibana/ directory, or any other
+	// overridden subdirectory — to the new explicit line needed for it. Only
+	// sub-paths that need an explicit line written (new or updated) are
+	// present.
+	SubPaths map[string][]string
 }
 
 // Empty reports whether the plan requires no changes.
 func (p SyncPlan) Empty() bool {
-	return p.ManifestOwner == "" && p.PackageOwner == nil && len(p.DataStreams) == 0
+	return p.ManifestOwner == "" && p.PackageOwner == nil && len(p.SubPaths) == 0
 }
 
 // Plan computes the changes needed to bring pkgPath's owners (CODEOWNERS
-// package line, manifest.yml owner, and data-stream overrides) in line with
-// main's resolution. dataStreamNames must be exactly the data streams that
-// exist in the current worktree checkout for this package: Plan never adds a
-// line for a data stream absent from dataStreamNames, since it may not exist
-// in this backport branch's version of the package.
+// package line, manifest.yml owner, and any explicit sub-path overrides —
+// data streams, a kibana/ directory, or anything else) in line with main's
+// resolution. existingSubPaths must be exactly the full CODEOWNERS paths
+// nested under pkgPath that actually exist in the current worktree checkout
+// for this package (e.g. "/packages/aws/data_stream/cloudtrail",
+// "/packages/aws/kibana"): Plan never adds a line for a sub-path absent from
+// existingSubPaths, since it may not exist in this backport branch's version
+// of the package.
 //
 // If a package no longer resolves to an owner on main (e.g. it was removed),
 // Plan returns (SyncPlan{}, false) so the caller can skip it cleanly.
 //
-// When main's resolution requires a per-data-stream split that isn't fully
-// explicit in the current worktree yet, Plan includes an entry for every data
-// stream in dataStreamNames (not just the one whose owner changed), so
-// writing the plan keeps CODEOWNERS' all-or-nothing per-package data-stream
-// override invariant satisfied.
-func Plan(pkgPath string, dataStreamNames []string, current, main *Owners, currentManifestOwner, mainManifestOwner string) (SyncPlan, bool) {
+// Plan only ever mirrors what main explicitly says about a given sub-path —
+// it never invents a new explicit override for one main leaves implicit,
+// even when a sibling sub-path in the same package does gain one.
+// Concretely, per sub-path:
+//   - if the current worktree already has an explicit line for it, that line
+//     is kept explicit and its value is synced to main's resolution (which
+//     falls back to the package owner if main consolidated an override back
+//     to the package level);
+//   - otherwise, a new explicit line is added only if main itself has an
+//     explicit entry for that exact sub-path;
+//   - if neither side calls it out explicitly, it's left alone, inheriting
+//     the package owner on both sides.
+//
+// This can leave a package's CODEOWNERS only partially split across its
+// sub-paths (failing dev/codeowners' all-or-nothing invariant for data
+// streams) when main itself hasn't defined owners for every one it shares
+// with this branch. That's intentional: deciding an owner for something
+// nobody has assigned is a human judgment call, not something to guess a
+// default for — codeowners.Check() (or the backport-branch CI check)
+// surfaces that gap for a person to resolve instead.
+func Plan(pkgPath string, existingSubPaths []string, current, main *Owners, currentManifestOwner, mainManifestOwner string) (SyncPlan, bool) {
 	mainPkgOwner, found := main.ResolveOwner(pkgPath)
 	if !found {
 		return SyncPlan{}, false
@@ -140,45 +176,32 @@ func Plan(pkgPath string, dataStreamNames []string, current, main *Owners, curre
 		plan.PackageOwner = mainPkgOwner
 	}
 
-	if len(dataStreamNames) == 0 {
+	if len(existingSubPaths) == 0 {
 		return plan, true
 	}
 
-	resolved := make(map[string][]string, len(dataStreamNames))
-	needSplit := false
-	for _, ds := range dataStreamNames {
-		owner, _ := main.ResolveOwner(dataStreamPath(pkgPath, ds))
-		resolved[ds] = owner
-		if !slices.Equal(owner, mainPkgOwner) {
-			needSplit = true
-		}
-	}
-
-	dataStreamPlan := make(map[string][]string)
-	for _, ds := range dataStreamNames {
-		mainOwner := resolved[ds]
-
-		if needSplit {
-			dataStreamPlan[ds] = mainOwner
+	subPathPlan := make(map[string][]string, len(existingSubPaths))
+	for _, subPath := range existingSubPaths {
+		if currentOwner, hasCurrentExplicit := current.entries[subPath]; hasCurrentExplicit {
+			mainOwner, _ := main.ResolveOwner(subPath)
+			if !slices.Equal(currentOwner, mainOwner) {
+				subPathPlan[subPath] = mainOwner
+			}
 			continue
 		}
 
-		_, hasExplicit := current.entries[dataStreamPath(pkgPath, ds)]
-		if !hasExplicit {
+		mainOwner, hasMainExplicit := main.entries[subPath]
+		if !hasMainExplicit {
 			continue
 		}
-		currentOwner, _ := current.ResolveOwner(dataStreamPath(pkgPath, ds))
+		currentOwner, _ := current.ResolveOwner(subPath)
 		if !slices.Equal(currentOwner, mainOwner) {
-			dataStreamPlan[ds] = mainOwner
+			subPathPlan[subPath] = mainOwner
 		}
 	}
-	if len(dataStreamPlan) > 0 {
-		plan.DataStreams = dataStreamPlan
+	if len(subPathPlan) > 0 {
+		plan.SubPaths = subPathPlan
 	}
 
 	return plan, true
-}
-
-func dataStreamPath(pkgPath, dataStream string) string {
-	return pkgPath + "/data_stream/" + dataStream
 }
