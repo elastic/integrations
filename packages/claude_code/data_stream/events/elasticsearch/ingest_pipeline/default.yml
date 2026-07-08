@@ -1,0 +1,570 @@
+---
+description: Pipeline for processing Claude Code OTel events.
+processors:
+  - script:
+      tag: set_event_original
+      lang: painless
+      description: Preserve the raw OTel event for forensic analysis.
+      if: >-
+        (ctx.tags instanceof List && ctx.tags.contains('preserve_original_event'))
+        || (ctx.attributes instanceof Map && ctx.attributes.containsKey('elastic.preserve_original_event') && ctx.attributes.get('elastic.preserve_original_event') == 'true')
+      source: >
+        ctx.event = ctx.event ?: [:];
+        ctx.event.original = Json.dump(ctx);
+        ctx.tags = ctx.tags ?: [];
+        if (!ctx.tags.contains('preserve_original_event')) {
+          ctx.tags.add('preserve_original_event');
+        }
+
+  - remove:
+      tag: remove_preserve_original_event_marker
+      field: attributes.elastic.preserve_original_event
+      ignore_missing: true
+
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: "9.3.0"
+
+  - json:
+      tag: parse_tool_parameters
+      field: attributes.tool_parameters
+      target_field: attributes.tool_parameters_flattened
+      if: ctx.attributes?.tool_parameters != null && ctx.attributes.tool_parameters != ''
+      on_failure:
+        - append:
+            tag: append_error_tool_parameters
+            field: error.message
+            value: "Failed to parse tool_parameters: {{{_ingest.on_failure_message}}}"
+
+  - json:
+      tag: parse_tool_input
+      field: attributes.tool_input
+      target_field: attributes.tool_input_flattened
+      if: ctx.attributes?.tool_input != null && ctx.attributes.tool_input != ''
+      on_failure:
+        - append:
+            tag: append_error_tool_input
+            field: error.message
+            value: "Failed to parse tool_input: {{{_ingest.on_failure_message}}}"
+
+  - set:
+      tag: extract_mcp_server_name
+      field: attributes.mcp_server_name
+      copy_from: attributes.tool_parameters_flattened.mcp_server_name
+      if: ctx.attributes?.tool_parameters_flattened?.mcp_server_name != null
+  - set:
+      tag: extract_mcp_tool_name
+      field: attributes.mcp_tool_name
+      copy_from: attributes.tool_parameters_flattened.mcp_tool_name
+      if: ctx.attributes?.tool_parameters_flattened?.mcp_tool_name != null
+
+  - set:
+      tag: extract_command_line
+      field: process.command_line
+      copy_from: attributes.tool_parameters_flattened.full_command
+      if: ctx.attributes?.tool_parameters_flattened?.full_command != null
+
+  - set:
+      tag: extract_file_path
+      field: file.path
+      copy_from: attributes.tool_parameters_flattened.file_path
+      if: ctx.attributes?.tool_parameters_flattened?.file_path != null
+  - set:
+      tag: extract_file_path_alt
+      field: file.path
+      copy_from: attributes.tool_parameters_flattened.path
+      if: ctx.file?.path == null && ctx.attributes?.tool_parameters_flattened?.path != null
+
+  - set:
+      tag: extract_url
+      field: url.full
+      copy_from: attributes.tool_parameters_flattened.url
+      if: ctx.attributes?.tool_parameters_flattened?.url != null
+
+  - script:
+      tag: ecs_categorization
+      lang: painless
+      description: Set ECS event.kind, event.category, and event.type.
+      if: ctx.event_name != null
+      params:
+        categories:
+          tool_result:
+            category:
+              - process
+            type:
+              - info
+          api_request:
+            category:
+              - api
+            type:
+              - info
+          api_error:
+            category:
+              - api
+            type:
+              - info
+          api_retries_exhausted:
+            category:
+              - api
+            type:
+              - info
+          api_refusal:
+            category:
+              - api
+            type:
+              - denied
+          auth:
+            category:
+              - authentication
+            type:
+              - info
+          permission_mode_changed:
+            category:
+              - configuration
+            type:
+              - change
+          mcp_server_connection:
+            category:
+              - network
+            type:
+              - connection
+          hook_registered:
+            category:
+              - configuration
+            type:
+              - info
+          hook_execution_start:
+            category:
+              - process
+            type:
+              - start
+          hook_execution_complete:
+            category:
+              - process
+            type:
+              - end
+          plugin_loaded:
+            category:
+              - library
+            type:
+              - start
+          plugin_installed:
+            category:
+              - package
+            type:
+              - info
+      source: >
+        def name = ctx.event_name;
+        ctx.event = ctx.event ?: new HashMap();
+        ctx.event.kind = 'event';
+        if (name == 'user_prompt' || name == 'skill_activated') {
+          return;
+        }
+        if (name == 'tool_decision') {
+          ctx.event.category = ['iam'];
+          ctx.event.type = ['info'];
+          return;
+        }
+        def entry = params.categories.getOrDefault(name, null);
+        if (entry != null) {
+          ctx.event.category = entry.category;
+          ctx.event.type = entry.type;
+        } else {
+          ctx.event.category = ['host'];
+          ctx.event.type = ['info'];
+        }
+
+  - remove:
+      tag: remove_empty_tool_parameters_flattened
+      field:
+        - attributes.tool_parameters_flattened
+      if: ctx.attributes?.tool_parameters_flattened != null && ctx.attributes.tool_parameters_flattened instanceof Map && ctx.attributes.tool_parameters_flattened.isEmpty()
+      ignore_missing: true
+
+  - remove:
+      tag: remove_empty_tool_input_flattened
+      field:
+        - attributes.tool_input_flattened
+      if: ctx.attributes?.tool_input_flattened != null && ctx.attributes.tool_input_flattened instanceof Map && ctx.attributes.tool_input_flattened.isEmpty()
+      ignore_missing: true
+  - rename:
+      tag: rename_prompt_to_prompt_text
+      field: attributes.prompt
+      target_field: attributes.prompt_text
+      ignore_missing: true
+  - dot_expander:
+      tag: expand_attributes
+      field: "*"
+      path: attributes
+      if: ctx.attributes != null
+  - rename:
+      tag: namespace_attributes_to_claude_code_events
+      field: attributes
+      target_field: claude_code.events
+      ignore_missing: true
+
+  # Remove OTel infrastructure fields.
+  - remove:
+      tag: remove_otel_infrastructure
+      field:
+        - body
+        - event_name
+      ignore_missing: true
+
+  # Convert numeric OTel attributes from strings to their declared types.
+  - convert:
+      tag: convert_duration_ms
+      field: claude_code.events.duration_ms
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_event_sequence
+      field: claude_code.events.event.sequence
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_tool_input_size_bytes
+      field: claude_code.events.tool_input_size_bytes
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_tool_result_size_bytes
+      field: claude_code.events.tool_result_size_bytes
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_input_tokens
+      field: claude_code.events.input_tokens
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_output_tokens
+      field: claude_code.events.output_tokens
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_cache_read_tokens
+      field: claude_code.events.cache_read_tokens
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_cache_creation_tokens
+      field: claude_code.events.cache_creation_tokens
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_cost_usd
+      field: claude_code.events.cost_usd
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_cost_usd_micros
+      field: claude_code.events.cost_usd_micros
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_prompt_length
+      field: claude_code.events.prompt_length
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_num_hooks
+      field: claude_code.events.num_hooks
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_num_success
+      field: claude_code.events.num_success
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_num_blocking
+      field: claude_code.events.num_blocking
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_num_non_blocking_error
+      field: claude_code.events.num_non_blocking_error
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_num_cancelled
+      field: claude_code.events.num_cancelled
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_total_duration_ms
+      field: claude_code.events.total_duration_ms
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_agent_path_count
+      field: claude_code.events.agent_path_count
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_command_path_count
+      field: claude_code.events.command_path_count
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_skill_path_count
+      field: claude_code.events.skill_path_count
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_is_plugin
+      field: claude_code.events.is_plugin
+      type: boolean
+      ignore_missing: true
+  - convert:
+      tag: convert_has_hooks
+      field: claude_code.events.has_hooks
+      type: boolean
+      ignore_missing: true
+  - convert:
+      tag: convert_has_mcp
+      field: claude_code.events.has_mcp
+      type: boolean
+      ignore_missing: true
+
+  # Map to ECS gen_ai.* fields.
+  - set:
+      tag: set_gen_ai_provider
+      field: gen_ai.provider.name
+      value: anthropic
+      if: ctx.claude_code?.events?.event?.name != null
+  - rename:
+      tag: rename_gen_ai_response_model
+      field: claude_code.events.model
+      target_field: gen_ai.response.model
+      if: ctx.claude_code?.events?.model != null
+      ignore_missing: true
+  - set:
+      tag: set_gen_ai_request_model
+      field: gen_ai.request.model
+      copy_from: gen_ai.response.model
+      if: ctx.gen_ai?.response?.model != null
+  - rename:
+      tag: rename_gen_ai_response_id
+      field: claude_code.events.request_id
+      target_field: gen_ai.response.id
+      ignore_missing: true
+  - rename:
+      tag: rename_gen_ai_usage_input_tokens
+      field: claude_code.events.input_tokens
+      target_field: gen_ai.usage.input_tokens
+      ignore_missing: true
+  - rename:
+      tag: rename_gen_ai_usage_output_tokens
+      field: claude_code.events.output_tokens
+      target_field: gen_ai.usage.output_tokens
+      ignore_missing: true
+  - rename:
+      tag: rename_gen_ai_usage_cache_read
+      field: claude_code.events.cache_read_tokens
+      target_field: gen_ai.usage.cache_read.input_tokens
+      ignore_missing: true
+  - rename:
+      tag: rename_gen_ai_usage_cache_creation
+      field: claude_code.events.cache_creation_tokens
+      target_field: gen_ai.usage.cache_creation.input_tokens
+      ignore_missing: true
+  - rename:
+      tag: rename_gen_ai_operation_name
+      field: claude_code.events.query_source
+      target_field: gen_ai.operation.name
+      ignore_missing: true
+  - rename:
+      tag: rename_gen_ai_tool_name_mcp
+      field: claude_code.events.mcp_tool_name
+      target_field: gen_ai.tool.name
+      if: ctx.claude_code?.events?.mcp_tool_name != null
+      ignore_missing: true
+  - rename:
+      tag: rename_gen_ai_tool_name
+      field: claude_code.events.tool_name
+      target_field: gen_ai.tool.name
+      if: ctx.gen_ai?.tool?.name == null && ctx.claude_code?.events?.tool_name != null
+      ignore_missing: true
+  - remove:
+      tag: remove_tool_name_after_mcp
+      field: claude_code.events.tool_name
+      if: ctx.gen_ai?.tool?.name != null && ctx.claude_code?.events?.tool_name != null
+      ignore_missing: true
+  - rename:
+      tag: rename_gen_ai_tool_call_id
+      field: claude_code.events.tool_use_id
+      target_field: gen_ai.tool.call.id
+      ignore_missing: true
+  - rename:
+      tag: rename_gen_ai_tool_call_args
+      field: claude_code.events.tool_input_flattened
+      target_field: gen_ai.tool.call.arguments
+      if: ctx.claude_code?.events?.tool_input_flattened != null
+      ignore_missing: true
+  - rename:
+      tag: rename_gen_ai_tool_call_args_fallback
+      field: claude_code.events.tool_parameters_flattened
+      target_field: gen_ai.tool.call.arguments
+      if: ctx.gen_ai?.tool?.call?.arguments == null && ctx.claude_code?.events?.tool_parameters_flattened != null
+      ignore_missing: true
+
+  # Map to ECS core fields.
+  - rename:
+      tag: rename_error_code
+      field: claude_code.events.error_code
+      target_field: error.code
+      ignore_missing: true
+  - rename:
+      tag: rename_error_type
+      field: claude_code.events.error_type
+      target_field: error.type
+      ignore_missing: true
+  - rename:
+      tag: rename_organization_id
+      field: claude_code.events.organization.id
+      target_field: organization.id
+      ignore_missing: true
+  - rename:
+      tag: rename_user_email
+      field: claude_code.events.user.email
+      target_field: user.email
+      ignore_missing: true
+  - rename:
+      tag: rename_user_id
+      field: claude_code.events.user.id
+      target_field: user.id
+      ignore_missing: true
+
+  - set:
+      tag: set_event_action
+      field: event.action
+      copy_from: claude_code.events.event.name
+      if: ctx.claude_code?.events?.event?.name != null
+
+  - script:
+      tag: set_event_duration
+      lang: painless
+      if: ctx.claude_code?.events?.duration_ms != null
+      source: >
+        ctx.event.duration = ((long)ctx.claude_code.events.duration_ms) * 1000000L;
+  - remove:
+      tag: remove_ms_duration
+      field: claude_code.events.duration_ms
+      ignore_missing: true
+
+  - set:
+      tag: set_event_outcome_success
+      field: event.outcome
+      value: success
+      if: ctx.claude_code?.events?.success == 'true'
+  - set:
+      tag: set_event_outcome_failure
+      field: event.outcome
+      value: failure
+      if: "ctx.claude_code?.events?.success == 'false' || ctx.claude_code?.events?.event?.name == 'api_error' || ctx.claude_code?.events?.event?.name == 'api_retries_exhausted'"
+  - set:
+      tag: set_event_outcome_decision_accept
+      field: event.outcome
+      value: success
+      if: "ctx.event?.outcome == null && ctx.claude_code?.events?.decision == 'accept'"
+  - set:
+      tag: set_event_outcome_decision_reject
+      field: event.outcome
+      value: failure
+      if: "ctx.event?.outcome == null && ctx.claude_code?.events?.decision == 'reject'"
+  - set:
+      tag: set_event_outcome_unknown
+      field: event.outcome
+      value: unknown
+      if: ctx.event?.outcome == null
+
+  - set:
+      tag: set_event_provider
+      field: event.provider
+      value: claude-code
+
+  - set:
+      tag: set_event_reason
+      field: event.reason
+      copy_from: claude_code.events.error
+      if: ctx.claude_code?.events?.error != null
+
+  - append:
+      tag: append_related_user_email
+      field: related.user
+      value: "{{{user.email}}}"
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      tag: append_related_user_id
+      field: related.user
+      value: "{{{user.id}}}"
+      allow_duplicates: false
+      if: ctx.user?.id != null
+
+  - append:
+      tag: append_related_hosts
+      field: related.hosts
+      value: "{{{claude_code.events.server_name}}}"
+      allow_duplicates: false
+      if: ctx.claude_code?.events?.server_name != null
+
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null/empty values.
+      tag: remove_nulls
+      source: |-
+        void handleMap(Map map) {
+            map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            });
+        }
+        void handleList(List list) {
+            list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            });
+        }
+        handleMap(ctx);
+
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor {{{_ingest.on_failure_processor_type}}}
+        with tag {{{_ingest.on_failure_processor_tag}}}
+        in pipeline {{{_ingest.pipeline}}}
+        failed with message:
+        {{{_ingest.on_failure_message}}}
+  - set:
+      tag: set_pipeline_error_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

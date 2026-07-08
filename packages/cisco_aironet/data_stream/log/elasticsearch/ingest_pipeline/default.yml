@@ -130,7 +130,7 @@ processors:
   # Adding information to event types
   - grok:
       tag: grok_message_c41fbfd3
-      description: SISF-6-ENTRY_CREATED, SISF-6-ENTRY_DELETED, SISF-6-ENTRY_CHANGED, LOG-6-Q_IND
+      description: SISF-6-ENTRY_CREATED, SISF-6-ENTRY_DELETED, SISF-6-ENTRY_CHANGED, LOG-6-Q_IND (SISF binding, username, and Radius override)
       field: message
       if: >-
         ctx._temp_?.reason == 'SISF-6-ENTRY_CREATED' ||
@@ -140,6 +140,7 @@ processors:
       patterns:
         - "A=%{IP:client.ip} V=%{INT} I=%{DATA:cisco.interface.type}:%{INT} P=%{INT} M=((%{MAC:client.mac})|$)"
         - "Username entry \\(%{DATA:user.name}\\)%{DATA}mobile %{MAC:client.mac}"
+        - "Radius overrides %{WORD:cisco.radius.status}(?:, ignoring source %{INT:cisco.radius.source:int})?"
       ignore_failure: false
   ###
   - grok:
