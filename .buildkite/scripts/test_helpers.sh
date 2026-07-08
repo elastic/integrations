@@ -27,3 +27,29 @@ assert_exit_code() {
         (( fail++ )) || true
     fi
 }
+
+assert_file_contains() {
+    local description="$1"
+    local needle="$2"
+    local file="$3"
+    if grep -qF "${needle}" "${file}" 2>/dev/null; then
+        echo "PASS: ${description}"
+        (( pass++ )) || true
+    else
+        echo "FAIL: ${description} — '${needle}' not found in ${file}"
+        (( fail++ )) || true
+    fi
+}
+
+assert_file_not_contains() {
+    local description="$1"
+    local needle="$2"
+    local file="$3"
+    if ! grep -qF "${needle}" "${file}" 2>/dev/null; then
+        echo "PASS: ${description}"
+        (( pass++ )) || true
+    else
+        echo "FAIL: ${description} — '${needle}' unexpectedly found in ${file}"
+        (( fail++ )) || true
+    fi
+}

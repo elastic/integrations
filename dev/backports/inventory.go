@@ -5,11 +5,13 @@
 package backports
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Masterminds/semver/v3"
@@ -23,12 +25,13 @@ type inventory struct {
 }
 
 type entry struct {
-	Package         string  `yaml:"package"`
-	Branch          string  `yaml:"branch"`
-	BaseVersion     string  `yaml:"base_version"`
-	BaseCommit      string  `yaml:"base_commit"`
-	MaintainedUntil *string `yaml:"maintained_until"` // null → nil; "YYYY-MM-DD" → &string
-	Archived        *bool   `yaml:"archived"`         // nil when field is absent
+	Package             string  `yaml:"package"`
+	Branch              string  `yaml:"branch"`
+	BaseVersion         string  `yaml:"base_version"`
+	BaseCommit          string  `yaml:"base_commit"`
+	MaintainedUntil     *string `yaml:"maintained_until"`      // null → nil; "YYYY-MM-DD" → &string
+	Archived            *bool   `yaml:"archived"`              // nil when field is absent
+	RemoveOtherPackages *bool   `yaml:"remove_other_packages"` // nil when field is absent
 }
 
 const maintainedUntilLayout = "2006-01-02"
@@ -47,14 +50,14 @@ var duplicatePackageVersionExceptions = map[string]struct{}{
 
 // branchRE matches a valid backport branch name:
 //
-//	backport-<package>-<version>
+//	backport-<package>-<suffix>
 //
 // where <package> is one or more letters, digits, or underscores, and
-// <version> starts with a digit followed by digits, dots, and an optional
-// trailing 'x' wildcard (e.g. "6.x" or "6.14.x").
-// Whitespace, quotes, colons, semicolons, and all other special characters
-// are not permitted.
-var branchRE = regexp.MustCompile(`^backport-[a-zA-Z0-9_]+-[0-9][0-9.]*x?$`)
+// <suffix> starts with a letter or digit and may contain letters, digits,
+// dots, underscores, or hyphens (e.g. "3.17", "6.x", "7.15.0", "2024-hotfix").
+// Whitespace, quotes, colons, semicolons, dollar signs, backticks, and all
+// other special characters are not permitted.
+var branchRE = regexp.MustCompile(`^backport-[a-zA-Z0-9_]+-[a-zA-Z0-9][a-zA-Z0-9_.\-]*$`)
 
 // ActiveResult is the result of a CheckActive call.
 type ActiveResult struct {
@@ -111,6 +114,168 @@ func (e entry) activeResult(now time.Time) ActiveResult {
 	return result
 }
 
+// validateBranchFormat checks that branch matches the required backport branch format:
+// backport-<package>-<suffix>, where package is letters/digits/underscores and suffix
+// starts with a letter or digit and may contain letters, digits, dots, underscores, or hyphens.
+// Whitespace, quotes, colons, semicolons, dollar signs, backticks, and other special characters
+// are not permitted.
+func validateBranchFormat(branch string) error {
+	if !branchRE.MatchString(branch) {
+		return fmt.Errorf("invalid branch %q: must match backport-<package>-<suffix> "+
+			"(package: letters/digits/underscores; suffix: letters/digits/dots/underscores/hyphens; "+
+			"no whitespace, quotes, colons, semicolons, dollar signs, backticks or other special characters)", branch)
+	}
+	return nil
+}
+
+// ValidateBranchName checks that branch is a valid backport branch name for the given package:
+// it must pass ValidateBranchFormat and start with "backport-<packageName>-".
+func ValidateBranchName(packageName, branch string) error {
+	if err := validateBranchFormat(branch); err != nil {
+		return err
+	}
+	if !strings.HasPrefix(branch, "backport-"+packageName+"-") {
+		return fmt.Errorf("branch %q must start with \"backport-%s-\"", branch, packageName)
+	}
+	return nil
+}
+
+// AddEntry inserts a new backport entry into the inventory at path.
+// The branch name is derived as backport-<packageName>-<major>.<minor>.
+// archived is set to false and maintained_until to null.
+// The entry is placed in sorted order: package name ascending, then version descending (newest first).
+// packagesDir is the path to the packages/ directory used to verify that packageName names a real
+// package. Pass an empty string to skip this check.
+// Returns the derived branch name.
+func AddEntry(path, packageName, baseVersion, baseCommit, packagesDir string) (string, error) {
+	v, err := semver.StrictNewVersion(baseVersion)
+	if err != nil {
+		return "", fmt.Errorf("invalid base_version %q: %w", baseVersion, err)
+	}
+	branch := fmt.Sprintf("backport-%s-%d.%d", packageName, v.Major(), v.Minor())
+
+	knownPackages, err := buildKnownPackages(packagesDir)
+	if err != nil {
+		return "", fmt.Errorf("loading packages from %s: %w", packagesDir, err)
+	}
+	if knownPackages != nil {
+		if _, ok := knownPackages[packageName]; !ok {
+			return "", fmt.Errorf("unknown package %q: not found under %s", packageName, packagesDir)
+		}
+	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("reading inventory: %w", err)
+	}
+
+	var doc yaml.Node
+	if err := yaml.Unmarshal(data, &doc); err != nil {
+		return "", fmt.Errorf("parsing inventory: %w", err)
+	}
+
+	seq, err := backportsSequenceNode(&doc)
+	if err != nil {
+		return "", err
+	}
+
+	pos := entryInsertPos(seq, packageName, v)
+	newNode := newEntryNode(packageName, branch, baseVersion, baseCommit)
+
+	updated := make([]*yaml.Node, len(seq.Content)+1)
+	copy(updated, seq.Content[:pos])
+	updated[pos] = newNode
+	copy(updated[pos+1:], seq.Content[pos:])
+	seq.Content = updated
+
+	var buf bytes.Buffer
+	enc := yaml.NewEncoder(&buf)
+	enc.SetIndent(2)
+	if err := enc.Encode(&doc); err != nil {
+		return "", fmt.Errorf("marshaling inventory: %w", err)
+	}
+	if err := os.WriteFile(path, buf.Bytes(), 0o644); err != nil {
+		return "", fmt.Errorf("writing inventory: %w", err)
+	}
+	return branch, nil
+}
+
+// backportsSequenceNode navigates from the document root to the sequence node
+// under the "backports" key.
+func backportsSequenceNode(doc *yaml.Node) (*yaml.Node, error) {
+	if doc.Kind != yaml.DocumentNode || len(doc.Content) == 0 {
+		return nil, fmt.Errorf("unexpected document structure")
+	}
+	root := doc.Content[0]
+	if root.Kind != yaml.MappingNode {
+		return nil, fmt.Errorf("expected mapping at document root")
+	}
+	for i := 0; i+1 < len(root.Content); i += 2 {
+		if root.Content[i].Value == "backports" {
+			seq := root.Content[i+1]
+			if seq.Kind != yaml.SequenceNode {
+				return nil, fmt.Errorf("'backports' is not a sequence")
+			}
+			return seq, nil
+		}
+	}
+	return nil, fmt.Errorf("'backports' key not found in inventory")
+}
+
+// entryInsertPos returns the index at which a new entry with the given package
+// and version should be inserted to keep the sequence sorted (package ascending,
+// then version descending within the same package — newest first).
+func entryInsertPos(seq *yaml.Node, newPkg string, newVer *semver.Version) int {
+	for i, node := range seq.Content {
+		pkg := mappingFieldValue(node, "package")
+		if pkg > newPkg {
+			return i
+		}
+		if pkg == newPkg {
+			ver, err := semver.StrictNewVersion(mappingFieldValue(node, "base_version"))
+			if err == nil && ver.LessThan(newVer) {
+				return i
+			}
+		}
+	}
+	return len(seq.Content)
+}
+
+// mappingFieldValue returns the scalar value for the given key in a YAML mapping node.
+func mappingFieldValue(node *yaml.Node, key string) string {
+	for i := 0; i+1 < len(node.Content); i += 2 {
+		if node.Content[i].Value == key {
+			return node.Content[i+1].Value
+		}
+	}
+	return ""
+}
+
+// newEntryNode builds a YAML mapping node for a new backport entry.
+// base_version and base_commit are double-quoted to match the existing file style.
+func newEntryNode(pkg, branch, baseVersion, baseCommit string) *yaml.Node {
+	scalar := func(value, tag string, style yaml.Style) *yaml.Node {
+		return &yaml.Node{Kind: yaml.ScalarNode, Tag: tag, Value: value, Style: style}
+	}
+	key := func(k string) *yaml.Node { return scalar(k, "!!str", 0) }
+	str := func(v string) *yaml.Node { return scalar(v, "!!str", 0) }
+	quoted := func(v string) *yaml.Node { return scalar(v, "!!str", yaml.DoubleQuotedStyle) }
+
+	return &yaml.Node{
+		Kind: yaml.MappingNode,
+		Tag:  "!!map",
+		Content: []*yaml.Node{
+			key("package"), str(pkg),
+			key("branch"), str(branch),
+			key("base_version"), quoted(baseVersion),
+			key("base_commit"), quoted(baseCommit),
+			key("maintained_until"), scalar("null", "!!null", 0),
+			key("archived"), scalar("false", "!!bool", 0),
+			key("remove_other_packages"), scalar("true", "!!bool", 0),
+		},
+	}
+}
+
 // ValidateInventory reads the .backports.yml inventory at path and returns a
 // combined error listing every schema violation found across all entries.
 //
@@ -162,10 +327,12 @@ func validateEntryFields(i int, e entry, knownPackages map[string]struct{}, pack
 
 	if e.Branch == "" {
 		errs = append(errs, fmt.Errorf("%s: missing required field 'branch'", id))
-	} else if !branchRE.MatchString(e.Branch) {
-		errs = append(errs, fmt.Errorf("%s: invalid branch %q: must match backport-<package>-<version> "+
-			"(letters/digits/underscores in package name, version starts with a digit; "+
-			"no whitespace, quotes, colons, semicolons or other special characters)", id, e.Branch))
+	} else if e.Package != "" {
+		if err := ValidateBranchName(e.Package, e.Branch); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", id, err))
+		}
+	} else if err := validateBranchFormat(e.Branch); err != nil {
+		errs = append(errs, fmt.Errorf("%s: %w", id, err))
 	}
 
 	if e.BaseVersion == "" {
@@ -182,6 +349,10 @@ func validateEntryFields(i int, e entry, knownPackages map[string]struct{}, pack
 
 	if e.Archived == nil {
 		errs = append(errs, fmt.Errorf("%s: missing required field 'archived'", id))
+	}
+
+	if e.RemoveOtherPackages == nil {
+		errs = append(errs, fmt.Errorf("%s: missing required field 'remove_other_packages'", id))
 	}
 
 	if e.MaintainedUntil != nil {

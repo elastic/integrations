@@ -1,0 +1,402 @@
+---
+description: Pipeline for NG-SIEM correlation-detection alerts.
+processors:
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+  - set:
+      field: message
+      tag: set_message_from_display_name
+      copy_from: crowdstrike.alert.display_name
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_name
+      copy_from: crowdstrike.alert.name
+      ignore_empty_value: true
+      if: ctx.message == null || ctx.message == ''
+  - set:
+      field: event.url
+      tag: set_event_url_from_falcon_host_link
+      copy_from: crowdstrike.alert.falcon_host_link
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_display_name
+      copy_from: crowdstrike.alert.display_name
+      ignore_empty_value: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_correlation_rule_id
+      copy_from: crowdstrike.alert.correlation_rule_id
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      tag: set_event_provider_from_first_source_product
+      if: ctx.crowdstrike?.alert?.source_products instanceof List && !ctx.crowdstrike.alert.source_products.isEmpty()
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        ctx.event.provider = ctx.crowdstrike.alert.source_products[0];
+  - convert:
+      field: crowdstrike.alert.has_truncated_entities
+      tag: convert_has_truncated_entities_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_alert_has_truncated_entities
+            field: crowdstrike.alert.has_truncated_entities
+            ignore_missing: true
+        - append:
+            tag: append_error_message_has_truncated_entities
+            field: error.message
+            value: |-
+              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - convert:
+      field: crowdstrike.alert.correlation_rule_create_case
+      tag: convert_correlation_rule_create_case_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_alert_correlation_rule_create_case
+            field: crowdstrike.alert.correlation_rule_create_case
+            ignore_missing: true
+        - append:
+            tag: append_error_message_correlation_rule_create_case
+            field: error.message
+            value: |-
+              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - convert:
+      field: crowdstrike.alert.original_correlation_rules_entities_count
+      tag: convert_original_correlation_rules_entities_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_alert_original_correlation_rules_entities_count
+            field: crowdstrike.alert.original_correlation_rules_entities_count
+            ignore_missing: true
+        - append:
+            tag: append_error_message_original_correlation_rules_entities_count
+            field: error.message
+            value: |-
+              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - convert:
+      field: crowdstrike.alert.original_indicator_entities_count
+      tag: convert_original_indicator_entities_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_alert_original_indicator_entities_count
+            field: crowdstrike.alert.original_indicator_entities_count
+            ignore_missing: true
+        - append:
+            tag: append_error_message_original_indicator_entities_count
+            field: error.message
+            value: |-
+              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - foreach:
+      tag: foreach_crowdstrike_alert_users_ccacc2db
+      field: crowdstrike.alert.users
+      if: ctx.crowdstrike?.alert?.users instanceof List
+      processor:
+        convert:
+          field: _ingest._value.full_name_is_enriched
+          tag: convert_users_full_name_is_enriched_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.full_name_is_enriched
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: |-
+                  Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - foreach:
+      tag: foreach_crowdstrike_alert_comments_timestamp
+      field: crowdstrike.alert.comments
+      if: ctx.crowdstrike?.alert?.comments instanceof List
+      processor:
+        date:
+          field: _ingest._value.timestamp
+          tag: date_comments_timestamp
+          target_field: _ingest._value.timestamp
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.timestamp
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: |-
+                  Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - foreach:
+      tag: foreach_crowdstrike_alert_users_f4c467bd
+      field: crowdstrike.alert.users
+      if: ctx.crowdstrike?.alert?.users instanceof List
+      processor:
+        convert:
+          field: _ingest._value.idp_id_is_enriched
+          tag: convert_users_idp_id_is_enriched_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.idp_id_is_enriched
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: |-
+                  Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - script:
+      lang: painless
+      tag: set_host_name_from_first_host_name
+      if: ctx.crowdstrike?.alert?.host_names instanceof List && !ctx.crowdstrike.alert.host_names.isEmpty()
+      source: |-
+        ctx.host = ctx.host ?: [:];
+        if (ctx.host.name == null || ctx.host.name == '') {
+          ctx.host.name = ctx.crowdstrike.alert.host_names[0];
+        }
+  - foreach:
+      field: crowdstrike.alert.host_names
+      tag: foreach_host_names_related_hosts
+      if: ctx.crowdstrike?.alert?.host_names instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_related_hosts_from_host_names
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: crowdstrike.alert.source_hosts
+      tag: foreach_source_hosts_related_hosts
+      if: ctx.crowdstrike?.alert?.source_hosts instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_related_hosts_from_source_hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: crowdstrike.alert.destination_hosts
+      tag: foreach_destination_hosts_related_hosts
+      if: ctx.crowdstrike?.alert?.destination_hosts instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_related_hosts_from_destination_hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - script:
+      lang: painless
+      tag: set_source_domain_from_first_source_host
+      if: ctx.crowdstrike?.alert?.source_hosts instanceof List && !ctx.crowdstrike.alert.source_hosts.isEmpty()
+      source: |-
+        ctx.source = ctx.source ?: [:];
+        if (ctx.source.domain == null || ctx.source.domain == '') {
+          ctx.source.domain = ctx.crowdstrike.alert.source_hosts[0];
+        }
+  - script:
+      lang: painless
+      tag: set_destination_domain_from_first_destination_host
+      if: ctx.crowdstrike?.alert?.destination_hosts instanceof List && !ctx.crowdstrike.alert.destination_hosts.isEmpty()
+      source: |-
+        ctx.destination = ctx.destination ?: [:];
+        if (ctx.destination.domain == null || ctx.destination.domain == '') {
+          ctx.destination.domain = ctx.crowdstrike.alert.destination_hosts[0];
+        }
+  - foreach:
+      field: crowdstrike.alert.source_ips
+      tag: foreach_source_ips_convert_to_ip
+      if: ctx.crowdstrike?.alert?.source_ips instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_source_ips_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: |-
+                  Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - script:
+      lang: painless
+      tag: set_source_ip_from_first_source_ip
+      if: ctx.crowdstrike?.alert?.source_ips instanceof List && !ctx.crowdstrike.alert.source_ips.isEmpty()
+      source: |-
+        ctx.source = ctx.source ?: [:];
+        if (ctx.source.ip == null || ctx.source.ip == '') {
+          ctx.source.ip = ctx.crowdstrike.alert.source_ips[0];
+        }
+  - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - foreach:
+      field: crowdstrike.alert.source_ips
+      tag: foreach_source_ips_related_ip
+      if: ctx.crowdstrike?.alert?.source_ips instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_related_ip_from_source_ips
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: crowdstrike.alert.destination_ips
+      tag: foreach_destination_ips_convert_to_ip
+      if: ctx.crowdstrike?.alert?.destination_ips instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_destination_ips_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: |-
+                  Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - script:
+      lang: painless
+      tag: set_destination_ip_from_first_destination_ip
+      if: ctx.crowdstrike?.alert?.destination_ips instanceof List && !ctx.crowdstrike.alert.destination_ips.isEmpty()
+      source: |-
+        ctx.destination = ctx.destination ?: [:];
+        if (ctx.destination.ip == null || ctx.destination.ip == '') {
+          ctx.destination.ip = ctx.crowdstrike.alert.destination_ips[0];
+        }
+  - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - foreach:
+      field: crowdstrike.alert.destination_ips
+      tag: foreach_destination_ips_related_ip
+      if: ctx.crowdstrike?.alert?.destination_ips instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_related_ip_from_destination_ips
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_related_user_from_correlation_rule_user_id
+      value: '{{{crowdstrike.alert.correlation_rule_user_id}}}'
+      allow_duplicates: false
+      if: ctx.crowdstrike?.alert?.correlation_rule_user_id != null && ctx.crowdstrike.alert.correlation_rule_user_id != ''
+  - script:
+      lang: painless
+      tag: set_user_name_from_first_user_name
+      if: ctx.crowdstrike?.alert?.user_names instanceof List && !ctx.crowdstrike.alert.user_names.isEmpty()
+      source: |-
+        ctx.user = ctx.user ?: [:];
+        if (ctx.user.name == null || ctx.user.name == '') {
+          ctx.user.name = ctx.crowdstrike.alert.user_names[0];
+        }
+  - foreach:
+      field: crowdstrike.alert.user_names
+      tag: foreach_user_names_related_user
+      if: ctx.crowdstrike?.alert?.user_names instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_related_user_from_user_names
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - script:
+      lang: painless
+      tag: set_user_from_users_entries
+      if: ctx.crowdstrike?.alert?.users instanceof List && !ctx.crowdstrike.alert.users.isEmpty()
+      source: |-
+        for (def userEntry : ctx.crowdstrike.alert.users) {
+          if (userEntry.user_name != null && userEntry.user_name != '') {
+            ctx.user = ctx.user ?: [:];
+            if (ctx.user.name == null || ctx.user.name == '') {
+              ctx.user.name = userEntry.user_name;
+            }
+
+            ctx.related = ctx.related ?: [:];
+            ctx.related.user = ctx.related.user ?: [];
+            if (!ctx.related.user.contains(userEntry.user_name)) {
+              ctx.related.user.add(userEntry.user_name);
+            }
+          }
+
+          ctx.user = ctx.user ?: [:];
+          if (userEntry.sid != null && userEntry.sid != '' && (ctx.user.id == null || ctx.user.id == '')) {
+            ctx.user.id = userEntry.sid;
+          }
+        }
+
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_tags_9fe66b2c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_tag
+      value: preserve_original_event
+      allow_duplicates: false
