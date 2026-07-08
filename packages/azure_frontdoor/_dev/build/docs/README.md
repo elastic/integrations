@@ -17,7 +17,7 @@ Currently, the integration does not support **Activity Logs**.
 
 ## Data streams
 
-This integration collects two types of data streams:
+This integration collects three types of data streams:
 
 - access log
 - waf logs
