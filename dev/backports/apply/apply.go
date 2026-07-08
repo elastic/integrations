@@ -159,7 +159,7 @@ func Apply(opts Options) (*Result, error) {
 		return nil, err
 	}
 
-	a.syncOwners(remote, "main", opts.Package, pkgDir)
+	a.syncOwners(remote, "sync_owners_backports", opts.Package, pkgDir)
 
 	if opts.DryRun {
 		success = true
@@ -593,9 +593,11 @@ func (a applier) syncOwners(remote, sourceBranch, pkg, pkgDir string) {
 // it's a normal skip, not a failure.
 func (a applier) computeOwnerSyncPlan(remote, sourceBranch, pkgDir string) (plan owners.SyncPlan, pkgPath string, err error) {
 	if err := a.git.Run("fetch", remote, sourceBranch); err != nil {
-		return owners.SyncPlan{}, "", fmt.Errorf("fetching %s: %w", sourceBranch, err)
+		fmt.Printf("fetching %s: %v\n", sourceBranch, err)
+		// return owners.SyncPlan{}, "", fmt.Errorf("fetching %s: %w", sourceBranch, err)
 	}
-	remoteRef := remote + "/" + sourceBranch
+	// remoteRef := remote + "/" + sourceBranch
+	remoteRef := sourceBranch
 
 	currentCodeowners, sourceCodeowners, err := a.readCodeowners(remoteRef)
 	if err != nil {
