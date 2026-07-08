@@ -1,0 +1,80 @@
+format_version: "3.6.0"
+name: anthropic_metrics
+title: Anthropic Metrics
+version: "0.2.0"
+source:
+  license: "Elastic-2.0"
+description: Collect API usage, cost, and rate limit metrics from Anthropic Admin APIs.
+type: integration
+categories:
+  - observability
+  - monitoring
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/anthropic-logo.svg
+    title: Anthropic logo
+    size: 32x32
+    type: image/svg+xml
+screenshots:
+  - src: /img/executive.png
+    title: Executive Overview
+    size: 1920x1080
+    type: image/png
+  - src: /img/tokenusage.png
+    title: Token Usage
+    size: 1920x1080
+    type: image/png
+  - src: /img/rate_limit.png
+    title: Rate Limit Headroom
+    size: 1920x1080
+    type: image/png
+  - src: /img/billing.png
+    title: Cost & Billing
+    size: 1920x1080
+    type: image/png
+policy_templates:
+  - name: anthropic_metrics
+    title: Anthropic Metrics
+    description: Collect Anthropic organization metrics via Admin APIs.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+    inputs:
+      - type: cel
+        title: Collect Anthropic metrics via Admin API
+        description: Collecting usage, cost, and rate limit metrics from Anthropic Admin APIs.
+        vars:
+          - name: url
+            type: text
+            title: API URL
+            description: Base URL of the Anthropic API.
+            default: https://api.anthropic.com
+            required: true
+            show_user: false
+          - name: admin_api_key
+            type: password
+            title: Admin API Key
+            description: "Anthropic Admin API key (starts with sk-ant-admin...)."
+            required: true
+            show_user: true
+            secret: true
+          - name: anthropic_version
+            type: text
+            title: API Version
+            description: Anthropic API version header value.
+            default: "2023-06-01"
+            required: true
+            show_user: false
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic

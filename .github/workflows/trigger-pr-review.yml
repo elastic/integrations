@@ -6,18 +6,20 @@ on:
 permissions:
   actions: read
   contents: read
+  copilot-requests: write
   issues: write
   pull-requests: write
 
 jobs:
   run:
-    if: >-
-      (contains(fromJSON('["Copilot","dependabot[bot]","github-actions[bot]"]'), github.event.pull_request.user.login)) &&
-      github.event.pull_request.draft == false &&
-      !contains(github.event.pull_request.labels.*.name, 'no-pr-review')
+    # Disabled 2026-07-02 — no current owner. To re-enable, remove `if: false`
+    # and restore the original activation condition below via a reviewed PR:
+    #   if: >-
+    #     (contains(fromJSON('["Copilot","dependabot[bot]","github-actions[bot]"]'), github.event.pull_request.user.login)) &&
+    #     github.event.pull_request.draft == false &&
+    #     !contains(github.event.pull_request.labels.*.name, 'no-pr-review')
+    if: false
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
     with:
       intensity: aggressive
       minimum_severity: nitpick
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

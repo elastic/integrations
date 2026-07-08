@@ -98,16 +98,18 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
   - Vulnerability data is fetched for the previous day.
   - Custom headers are not supported in this integration. Only the standard Authorization header (for example, Bearer token) is used for API requests.
 
-### Troubleshooting
+### Transforms
 
-The transforms used in the Wiz integration depend on the presence of the `event.ingested` field to function correctly.
+The Wiz integration creates transforms to support [CDR](https://www.elastic.co/what-is/cloud-detection-response), for the following data streams:
 
-When using Fleet-managed Elastic Agents, the `.fleet_final_pipeline-1` is automatically executed and ensures that the `event.ingested` field is added to all events.
+| Data stream name                                      | Transform destination alias                     |
+|-------------------------------------------------------|-------------------------------------------------|
+| `logs-wiz.vulnerability-*`                            | `security_solution-wiz.vulnerability_latest`    |
+| `logs-wiz.cloud_configuration_finding_full_posture-*` | `security_solution-wiz.misconfiguration_latest` |
 
-However, when using standalone Elastic Agents, this pipeline is not applied, and the `event.ingested` field is not automatically added.
+The source data streams contain historical events and are suitable for most uses, while the aliased transform destination indexes provide a view of the current state of Wiz findings to support Elastic Security CDR workflows. The dashboards included in the Wiz integration use the source data streams.
 
-📌 Action Required (for standalone agents):
-You must manually add the `event.ingested` field, preferably via a custom ingest pipeline (e.g., using the @custom pipeline).
+The transforms use `event.ingested` as their sync field. Fleet-managed Elastic Agents add this field automatically but for other setups this field might need to be added separately.
 
 ## Logs reference
 
@@ -298,7 +300,7 @@ An example event for `cloud_configuration_finding` looks as following:
         "id": "1243196d-a365-589a-a8aa-13817c9877b2",
         "ingested": "2025-04-22T09:54:52Z",
         "kind": "state",
-        "original": "{\"analyzedAt\":\"2024-08-07T12:55:52.012378Z\",\"id\":\"1243196d-a365-589a-a8aa-13817c9877b2\",\"remediation\":null,\"resource\":{\"cloudPlatform\":\"EKS\",\"id\":\"f0f4163d-cbd7-517c-ba9e-f96bb90ab5ea\",\"name\":\"Root user\",\"nativeType\":\"rootUser\",\"providerId\":\"arn:aws:iam::998231069301:root\",\"region\":null,\"subscription\":{\"cloudProvider\":\"AWS\",\"externalId\":\"998231069301\",\"id\":\"94e76baa-85fd-5928-b829-1669a2ca9660\",\"name\":\"wiz-integrations\"},\"tags\":[],\"type\":\"USER_ACCOUNT\"},\"result\":\"PASS\",\"rule\":{\"description\":\"This rule checks if the AWS Root Account has access keys. \\nThis rule fails if `AccountAccessKeysPresent` is not set to `0`. Note that it does not take into consideration the status of the keys if present. \\nThe root account should avoid using access keys. Since the root account has full permissions across the entire account, creating access keys for it increases the chance that they will be compromised. Instead, it is recommended to create IAM users with predefined roles.\\n\\u003e**Note** \\nSee Cloud Configuration Rule `IAM-207` to see if the Root account's access keys are active.\",\"id\":\"563ed717-4fb6-47fd-929e-9c794e201d0a\",\"name\":\"Root account access keys should not exist\",\"remediationInstructions\":\"Perform the following steps, while being signed in as the Root user, in order to delete the root user's access keys via AWS CLI: \\n1. Use the following command to list the Root user's access keys. \\nCopy the `AccessKeyId` from the output and paste it into the `access-key-id` value in the next step. \\n```\\naws iam list-access-keys\\n```\\n2. Use the following command to delete the access key(s). \\n```\\naws iam delete-access-key /\\n --access-key-id \\u003cvalue\\u003e\\n```\\n\\u003e**Note** \\nOnce an access key is removed, any application using it will not work until a new one is configured for it.\",\"shortId\":\"IAM-006\"},\"severity\":\"MEDIUM\"}",
+        "original": "{\"analyzedAt\":\"2024-08-07T12:55:52.012378Z\",\"updatedAt\":\"2024-08-07T12:55:52.012378Z\",\"id\":\"1243196d-a365-589a-a8aa-13817c9877b2\",\"remediation\":null,\"resource\":{\"cloudPlatform\":\"EKS\",\"id\":\"f0f4163d-cbd7-517c-ba9e-f96bb90ab5ea\",\"name\":\"Root user\",\"nativeType\":\"rootUser\",\"providerId\":\"arn:aws:iam::998231069301:root\",\"region\":null,\"subscription\":{\"cloudProvider\":\"AWS\",\"externalId\":\"998231069301\",\"id\":\"94e76baa-85fd-5928-b829-1669a2ca9660\",\"name\":\"wiz-integrations\"},\"tags\":[],\"type\":\"USER_ACCOUNT\"},\"result\":\"PASS\",\"rule\":{\"description\":\"This rule checks if the AWS Root Account has access keys. \\nThis rule fails if `AccountAccessKeysPresent` is not set to `0`. Note that it does not take into consideration the status of the keys if present. \\nThe root account should avoid using access keys. Since the root account has full permissions across the entire account, creating access keys for it increases the chance that they will be compromised. Instead, it is recommended to create IAM users with predefined roles.\\n\\u003e**Note** \\nSee Cloud Configuration Rule `IAM-207` to see if the Root account's access keys are active.\",\"id\":\"563ed717-4fb6-47fd-929e-9c794e201d0a\",\"name\":\"Root account access keys should not exist\",\"remediationInstructions\":\"Perform the following steps, while being signed in as the Root user, in order to delete the root user's access keys via AWS CLI: \\n1. Use the following command to list the Root user's access keys. \\nCopy the `AccessKeyId` from the output and paste it into the `access-key-id` value in the next step. \\n```\\naws iam list-access-keys\\n```\\n2. Use the following command to delete the access key(s). \\n```\\naws iam delete-access-key /\\n --access-key-id \\u003cvalue\\u003e\\n```\\n\\u003e**Note** \\nOnce an access key is removed, any application using it will not work until a new one is configured for it.\",\"shortId\":\"IAM-006\"},\"severity\":\"MEDIUM\"}",
         "outcome": "success",
         "type": [
             "info"
@@ -341,6 +343,7 @@ An example event for `cloud_configuration_finding` looks as following:
     "wiz": {
         "cloud_configuration_finding": {
             "analyzed_at": "2024-08-07T12:55:52.012Z",
+            "updated_at": "2024-08-07T12:55:52.012Z",
             "id": "1243196d-a365-589a-a8aa-13817c9877b2",
             "resource": {
                 "cloud_platform": "EKS",
@@ -413,6 +416,7 @@ An example event for `cloud_configuration_finding` looks as following:
 | wiz.cloud_configuration_finding.rule.name |  | keyword |
 | wiz.cloud_configuration_finding.rule.remediation_instructions |  | text |
 | wiz.cloud_configuration_finding.rule.short_id |  | keyword |
+| wiz.cloud_configuration_finding.updated_at |  | date |
 
 
 ### Cloud configuration finding full posture
@@ -466,7 +470,7 @@ An example event for `cloud_configuration_finding_full_posture` looks as followi
         "id": "1243196d-a365-589a-a8aa-13817c9877b2",
         "ingested": "2025-04-22T09:55:55Z",
         "kind": "state",
-        "original": "{\"analyzedAt\":\"2024-08-07T12:55:52.012378Z\",\"id\":\"1243196d-a365-589a-a8aa-13817c9877b2\",\"remediation\":null,\"resource\":{\"cloudPlatform\":\"EKS\",\"id\":\"f0f4163d-cbd7-517c-ba9e-f96bb90ab5ea\",\"name\":\"Root user\",\"nativeType\":\"rootUser\",\"providerId\":\"arn:aws:iam::998231069301:root\",\"region\":null,\"subscription\":{\"cloudProvider\":\"AWS\",\"externalId\":\"998231069301\",\"id\":\"94e76baa-85fd-5928-b829-1669a2ca9660\",\"name\":\"wiz-integrations\"},\"tags\":[],\"type\":\"USER_ACCOUNT\"},\"result\":\"PASS\",\"rule\":{\"description\":\"description\",\"id\":\"563ed717-4fb6-47fd-929e-9c794e201d0a\",\"name\":\"Root account access keys should not exist\",\"remediationInstructions\":\"instructions\",\"shortId\":\"IAM-006\"},\"severity\":\"MEDIUM\"}",
+        "original": "{\"analyzedAt\":\"2024-08-07T12:55:52.012378Z\",\"updatedAt\":\"2024-08-07T12:55:52.012378Z\",\"id\":\"1243196d-a365-589a-a8aa-13817c9877b2\",\"remediation\":null,\"resource\":{\"cloudPlatform\":\"EKS\",\"id\":\"f0f4163d-cbd7-517c-ba9e-f96bb90ab5ea\",\"name\":\"Root user\",\"nativeType\":\"rootUser\",\"providerId\":\"arn:aws:iam::998231069301:root\",\"region\":null,\"subscription\":{\"cloudProvider\":\"AWS\",\"externalId\":\"998231069301\",\"id\":\"94e76baa-85fd-5928-b829-1669a2ca9660\",\"name\":\"wiz-integrations\"},\"tags\":[],\"type\":\"USER_ACCOUNT\"},\"result\":\"PASS\",\"rule\":{\"description\":\"description\",\"id\":\"563ed717-4fb6-47fd-929e-9c794e201d0a\",\"name\":\"Root account access keys should not exist\",\"remediationInstructions\":\"instructions\",\"shortId\":\"IAM-006\"},\"severity\":\"MEDIUM\"}",
         "outcome": "success",
         "type": [
             "info"
@@ -507,6 +511,7 @@ An example event for `cloud_configuration_finding_full_posture` looks as followi
     "wiz": {
         "cloud_configuration_finding_full_posture": {
             "analyzed_at": "2024-08-07T12:55:52.012Z",
+            "updated_at": "2024-08-07T12:55:52.012Z",
             "id": "1243196d-a365-589a-a8aa-13817c9877b2",
             "resource": {
                 "cloud_platform": "EKS",
@@ -581,6 +586,7 @@ An example event for `cloud_configuration_finding_full_posture` looks as followi
 | wiz.cloud_configuration_finding_full_posture.rule.remediation_instructions |  | text |
 | wiz.cloud_configuration_finding_full_posture.rule.short_id |  | keyword |
 | wiz.cloud_configuration_finding_full_posture.status |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.updated_at |  | date |
 
 
 ### Defend

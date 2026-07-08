@@ -4,6 +4,11 @@ This integration is for Microsoft Exchange Online Message Trace logs. It include
 
 - `log` dataset: supports Microsoft Exchange Online Message Trace logs.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Migration from the Legacy Message Trace API to the Graph API
 
 Microsoft has announced the deprecation on March 18th, 2026 of the legacy Message Trace API support in the Reporting Webservice.

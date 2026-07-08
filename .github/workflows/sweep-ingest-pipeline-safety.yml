@@ -7,11 +7,15 @@ on:
 permissions:
   actions: read
   contents: read
+  copilot-requests: write
   issues: write
   pull-requests: read
 
 jobs:
   run:
+    # Disabled 2026-07-02 — no current owner. Re-enable by removing this
+    # `if: false` line via a reviewed PR so the change is visible.
+    if: false
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-quality-audit.lock.yml@v0
     with:
       title-prefix: "[ingest-pipeline-safety]"
@@ -91,5 +95,3 @@ jobs:
         - Each confirmed bug: the pipeline file, the processor, the exact triggering document,
           what the failure looks like, and the one-line fix
         - Pipelines you read thoroughly and found safe, with what protects them
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

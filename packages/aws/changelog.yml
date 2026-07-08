@@ -1,4 +1,68 @@
 # newer versions go on top
+- version: "6.21.0"
+  changes:
+    - description: Poll Amazon Inspector findings on `updatedAt` instead of `lastObservedAt` so that findings AWS marks CLOSED or SUPPRESSED are collected and no longer remain stale in Elastic.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19918
+    - description: Include all Inspector finding statuses in the vulnerability latest transform and map `aws.inspector.status` to the `vulnerability.status` field (CLOSED as `fixed`), so remediated findings can be filtered out on the Vulnerability Findings page.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19918
+    - description: Add a `lag_time` variable to the Amazon Inspector data stream that offsets the poll cursor to tolerate delay between when a finding's `updatedAt` is set and when it becomes available from the API, preventing missed findings.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19918
+- version: "6.20.4"
+  changes:
+    - description: Add security category to the Transit Gateway data stream to match its policy template categories.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19911
+- version: "6.20.3"
+  changes:
+    - description: Add processor tags to all ingest pipeline processors to satisfy elastic-package linter requirements for format_version 3.6.0 and above.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19824
+- version: "6.20.2"
+  changes:
+    - description: Skip AWS service-linked Config rules when collecting compliance details so the AWS Config data stream no longer degrades on `AccessDeniedException`, and treat per-rule compliance errors as non-fatal so a single failing rule does not stop ingestion of the rest.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19803
+- version: "6.20.1"
+  changes:
+    - description: Revert addition of assignment of host.id from CloudTrail target hosts.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19630
+- version: "6.20.0"
+  changes:
+    - description: Enable agentless deployment mode for CloudWatch, EBS, EC2, ECS, and S3 policy templates.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19339
+    - description: Disable TSDB on the S3 daily storage data stream to avoid rejection of late-arriving daily CloudWatch metrics.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19339
+- version: "6.19.2"
+  changes:
+    - description: Restore a stable endInclusive bound to Inspector findings filter to prevent potential nextToken invalidation.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19144
+- version: "6.19.1"
+  changes:
+    - description: Fix aws.lambda.message flattened field handling.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19250
+- version: "6.19.0"
+  changes:
+    - description: Use new `release` field for agentless deployment mode to establish as beta.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/18552
+- version: "6.18.1"
+  changes:
+    - description: Add documentation for authenticating the CloudTrail integration using AWS IAM Roles Anywhere for agents running outside AWS.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19140
+- version: "6.18.0"
+  changes:
+    - description: Set `event.kind` to `alert` for AWS GuardDuty findings.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/18895
 - version: "6.17.1"
   changes:
     - description: Fix Security Hub findings collection by restoring a stable UpdatedAt end bound.

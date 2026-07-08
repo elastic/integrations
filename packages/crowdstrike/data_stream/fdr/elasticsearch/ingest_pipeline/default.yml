@@ -365,6 +365,10 @@ processors:
       tag: pipeline_fim_rule_matched_33f5a923
       if: ctx.crowdstrike?.ExternalApiType == 'Event_FileIntegrityMonitorRuleMatchedEnriched' || ctx.crowdstrike?.event_simpleName == 'FileIntegrityMonitorRuleMatched'
       name: '{{ IngestPipeline "fim_rule_matched" }}'
+  - pipeline:
+      tag: pipeline_automated_lead_summary
+      if: ctx.crowdstrike?.ExternalApiType == 'Event_AutomatedLeadSummaryEvent'
+      name: '{{ IngestPipeline "automated_lead_summary" }}'
 
   # Handle case changes.
   - rename:
@@ -621,12 +625,6 @@ processors:
       field: event.id
       value: '{{{#crowdstrike.id}}}{{{ crowdstrike.id }}}{{{/crowdstrike.id}}}|{{{#crowdstrike.aid}}}{{{ crowdstrike.aid }}}{{{/crowdstrike.aid}}}|{{{#crowdstrike.cid}}}{{{ crowdstrike.cid }}}{{{/crowdstrike.cid}}}'
       override: false
-  - set:
-      tag: construct_message_from_event_simpleName_649b7fba
-      field: message
-      copy_from: crowdstrike.event_simpleName
-      override: false
-      ignore_empty_value: true
   - set:
       tag: set_event_action_from_event_simpleName_0069f759
       field: event.action
@@ -1260,11 +1258,6 @@ processors:
 
   # Library fields.
   - set:
-      tag: set_event_action_735cfe72
-      if: ctx._temp?.isDriver == true
-      field: event.action
-      value: load
-  - set:
       tag: set_dll_pe_original_file_name_7a4c66c0
       if: (ctx._temp?.isLibrary == true || ctx._temp?.isDriver == true) && ctx.host?.os?.type == 'windows'
       field: dll.pe.original_file_name
@@ -1412,36 +1405,27 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - script:
-      tag: script_set_event_action_and_type_29345ceb
+      tag: script_set_event_type_29345ceb
       if: ctx.crowdstrike?.RegOperationType != null
       params:
         op_types:
           "1":
-            action: modification
             type: change
           "2":
-            action: deletion
             type: deletion
           "3":
-            action: creation
             type: creation
           "4":
-            action: deletion
             type: deletion
           "5":
-            action: modification
             type: change
           "6":
-            action: load
             type: info
           "7":
-            action: modification
             type: change
           "8":
-            action: open
             type: access
           "9":
-            action: query
             type: access
       source: |-
         def op = params.get('op_types')[ctx.crowdstrike.RegOperationType];
@@ -1449,7 +1433,6 @@ processors:
           ctx.event = ctx.event ?: [:];
           ctx.event.type = [];
           ctx.event.type.add(op.type);
-          ctx.event.action = op.action;
         }
   - script:
       tag: script_set_registry_data_type_e45a255a
@@ -2251,11 +2234,6 @@ processors:
       field: file.hash.sha256
       copy_from: crowdstrike.SHA256HashData
       ignore_empty_value: true
-  - set:
-      tag: set_event_action_526984f8
-      if: ctx.event?.action != null && ctx.event.action.endsWith('Written') && ctx.host?.os?.type == 'windows'
-      field: event.action
-      value: creation
 
   # Device Fields.
   - set:

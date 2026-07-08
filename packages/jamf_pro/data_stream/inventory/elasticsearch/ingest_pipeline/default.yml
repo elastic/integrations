@@ -128,7 +128,15 @@ processors:
     ignore_empty_value: true
     ignore_failure: true
 - set:
-    field: os.name
+    field: host.entity.attributes.managed
+    copy_from: jamf_pro.inventory.general.remote_management.managed
+    ignore_empty_value: true
+- set:
+    field: host.entity.lifecycle.last_activity
+    copy_from: jamf_pro.inventory.general.last_contact_time
+    ignore_empty_value: true
+- set:
+    field: host.os.name
     copy_from: jamf_pro.inventory.operating_system.name
     ignore_empty_value: true
 - script:
@@ -199,17 +207,16 @@ processors:
       ctx.jamf_pro.inventory.operating_system.version = normalize(ctx.jamf_pro.inventory.operating_system.version);
       String name = full_name(ctx.jamf_pro.inventory.operating_system.version);
       if (name != '') {
-        if (ctx.os == null) {
-          ctx.os = [:];
-        }
-        ctx.os.full = name;
+        ctx.host = ctx.host ?: [:];
+        ctx.host.os = ctx.host.os ?: [:];
+        ctx.host.os.full = name;
       }
 - set:
-    field: os.version
+    field: host.os.version
     copy_from: jamf_pro.inventory.operating_system.version
     ignore_empty_value: true
 - set:
-    field: os.platform
+    field: host.os.platform
     copy_from: jamf_pro.inventory.general.platform
     ignore_empty_value: true
 - set:
@@ -224,6 +231,26 @@ processors:
     field: user.full_name
     copy_from: jamf_pro.inventory.user_and_location.realname
     ignore_empty_value: true
+- foreach:
+    field: jamf_pro.inventory.group_memberships
+    if: ctx.jamf_pro.inventory?.group_memberships != null
+    processor:
+      append:
+        field: user.group.name
+        value: '{{{_ingest._value.group_name}}}'
+        allow_duplicates: false
+    ignore_missing: true
+    ignore_failure: true
+- foreach:
+    field: jamf_pro.inventory.group_memberships
+    if: ctx.jamf_pro.inventory?.group_memberships != null
+    processor:
+      append:
+        field: user.group.id
+        value: '{{{_ingest._value.group_id}}}'
+        allow_duplicates: false
+    ignore_missing: true
+    ignore_failure: true
 - append:
     field: related.user
     value: '{{{user.email}}}'

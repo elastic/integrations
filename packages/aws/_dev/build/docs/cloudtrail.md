@@ -43,6 +43,37 @@ For step-by-step instructions on how to set up an integration, see the
 
 ### Advanced options
 
+#### IAM Roles Anywhere
+
+If your Elastic Agent runs outside AWS (for example, on on-premises servers), you can use [AWS IAM Roles Anywhere](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/introduction.html) to authenticate the integration without long-term access keys. IAM Roles Anywhere issues temporary AWS credentials based on an X.509 certificate from a trusted Certificate Authority.
+
+**Prerequisites:** complete the [IAM Roles Anywhere setup](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/getting-started.html) in your AWS account — create a Trust Anchor, a Profile, and an IAM role with the necessary CloudTrail permissions.
+
+**Steps:**
+
+1. [Download and install `aws_signing_helper`](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html) on the host running Elastic Agent.
+
+2. Add a profile to the AWS shared config file (`~/.aws/config` on Linux/macOS, `%USERPROFILE%\.aws\config` on Windows) that uses the helper as a [`credential_process`](https://docs.aws.amazon.com/sdkref/latest/guide/feature-process-credentials.html):
+
+    ```ini
+    [profile elastic-agent]
+    credential_process = /path/to/aws_signing_helper credential-process \
+        --certificate /path/to/certificate.pem \
+        --private-key /path/to/private-key.pem \
+        --trust-anchor-arn arn:aws:rolesanywhere:region:account:trust-anchor/TA_ID \
+        --profile-arn arn:aws:rolesanywhere:region:account:profile/PROFILE_ID \
+        --role-arn arn:aws:iam::account:role/role-name
+    region = us-east-1
+    ```
+
+    Replace `/path/to/` with the actual path to the binary on your operating system.
+
+3. In the CloudTrail integration configuration, set the **Credential Profile Name** field to the profile name you defined (for example, `elastic-agent`). If you configure the profile as `[default]`, you can leave the field blank.
+
+> **Note:** If **Shared Credential File** is set, the integration loads credentials only from that file and stops reading the default AWS shared config file; ensure the profile with the `credential_process` entry is present in whichever file you specify, or leave the field blank to use the default config file location. **Credential Profile Name** and **Shared Credential File** are integration-wide settings: any value you set here applies to all AWS data streams in this integration, not just CloudTrail.
+
+The credentials are refreshed automatically before they expire. For the full list of `aws_signing_helper` options and examples, see the [IAM Roles Anywhere credential helper documentation](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html).
+
 #### CloudWatch
 
 The CloudWatch logs input has several advanced options to fit specific use cases.

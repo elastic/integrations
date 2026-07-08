@@ -1,0 +1,48 @@
+{
+    "id": "aws_lambda_otel-high-duration-average",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when average Lambda invocation duration exceeds a configurable threshold over a 15-minute window.",
+        "name": "[AWS Lambda OTel] High average duration",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws_lambda",
+            "otel"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Average Duration\n\n### Triage Steps\n1. Check whether a recent deployment correlated with the latency increase.\n2. Review function logs for slow downstream calls (APIs, databases, SDK timeouts).\n3. Compare average duration with the tail (`Maximum`) metric — a diverging tail suggests cold starts or outliers.\n4. Profile memory allocation — under-provisioned memory increases CPU throttling and duration.\n5. Verify VPC ENI cold-start impact if the function runs inside a VPC.\n\n### Escalation\nIf duration breaches the function SLO for more than 15 minutes, investigate as a performance regression."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE Namespace == \"AWS/Lambda\"\n    AND MetricName == \"Duration\"\n    AND stat == \"Average\"\n| STATS avg_duration_ms = AVG(`metrics.amazonaws.com/AWS/Lambda/Duration`)\n  BY FunctionName, cloud.region\n// Latency threshold (ms): set per-function SLO\n| WHERE avg_duration_ms > 3000\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT avg_duration_ms DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "function_id",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

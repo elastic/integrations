@@ -1,0 +1,96 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects attempts to abuse Redis CONFIG SET commands to redirect the database save directory to a cron directory on Linux hosts. Attackers issue CONFIG SET dir to a cron path such as /etc/cron.d or /var/spool/cron, set a filename via CONFIG SET dbfilename, write a cron payload via SET, and then call BGSAVE to flush it to disk, establishing persistence for execution of an XMRig cryptominer.",
+        "from": "now-9m",
+        "index": [
+            "logs-network_traffic.redis*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Redis CONFIG SET Cron Directory Persistence (RedisRaider)",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Redis CONFIG SET Cron Directory Persistence (RedisRaider)\n\nRedis's CONFIG SET command allows runtime reconfiguration of the server, including the working directory (`dir`) and database filename (`dbfilename`). Attackers exploit this to redirect Redis's BGSAVE output into system directories such as `/etc/cron.d` or `/var/spool/cron`, writing attacker-controlled content as a cron job. The RedisRaider campaign used this technique to deploy XMRig cryptominers at scale by mass-scanning IPv4 blocks for unauthenticated Redis instances.\n\nA related variant (not specific to RedisRaider) targets SSH key injection using `CONFIG SET dir /root/.ssh` and `CONFIG SET dbfilename authorized_keys`. Consider a companion rule for that pattern if your Redis instances are internet-exposed.\n\n### Possible investigation steps\n\n- Identify the source IP and determine whether it is an expected Redis client or an external/unknown address. Internet-sourced CONFIG SET to a cron path is almost certainly malicious.\n- Check whether the destination Redis instance requires authentication (`requirepass` or ACL). Unauthenticated instances are the primary target of RedisRaider-style campaigns.\n- Review subsequent Redis commands from the same source IP for `SET` (cron payload write) and `BGSAVE` (flush to disk), which complete the persistence chain.\n- Examine the Redis host for new or modified files under `/etc/cron.d`, `/etc/cron.daily`, `/etc/cron.hourly`, `/var/spool/cron`, or `/var/spool/cron/crontabs` at or after the alert time.\n- Check for XMRig or other cryptominer process execution and unexplained CPU spikes on the host.\n- Review outbound network connections from the Redis host for connections to known mining pools or C2 infrastructure.\n\n### False positive analysis\n\n- `CONFIG SET dir` is a legitimate administrative command used during backup configuration, data migration, or operational changes. Verify whether the directory is a known backup or data path rather than a system directory.\n- Legitimate Redis usage will never set `dir` to `/etc/cron.d`, `/var/spool/cron`, or any other system cron directory. A match on this pattern has an extremely low false positive rate.\n- Automated deployment or configuration management tools (Ansible, Chef, Puppet) may issue CONFIG SET as part of Redis setup \u2014 verify the source IP and timing against known deployment windows.\n\n### Response and remediation\n\n- Immediately check the target cron directories for newly created files written by the Redis process (owner: redis, unusual content).\n- If a cron file was written, delete it and terminate any spawned miner processes before remediating.\n- Require authentication on all Redis instances (`requirepass` or ACL). Unauthenticated Redis exposed to any network is the root cause of this attack class.\n- Restrict `CONFIG SET` permissions using Redis ACLs: `ACL SETUSER <user> -config`.\n- Block inbound access to Redis port 6379 from untrusted networks at the host firewall or perimeter.\n- Consider enabling Redis's protected mode, which rejects connections from non-loopback addresses when no authentication is configured.\n",
+        "query": "network where data_stream.dataset == \"network_traffic.redis\" and\n  network_traffic.redis.query like~ \"*CONFIG SET dir*\" and\n  (\n    network_traffic.redis.query like~ \"*/etc/cron*\" or\n    network_traffic.redis.query like~ \"*/var/spool/cron*\"\n  )\n",
+        "references": [
+            "https://securitylabs.datadoghq.com/articles/redisraider-mining-campaign/",
+            "https://attack.mitre.org/techniques/T1053/003/",
+            "https://attack.mitre.org/techniques/T1496/"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "network_traffic.redis.query",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "29e57265-d358-420a-b1cd-845e8a1fd70d",
+        "setup": "## Setup\n\nThis rule requires the Elastic **network_traffic** integration (Packetbeat via Elastic Agent) with the Redis\nprotocol module enabled.\n\n### Enabling the Redis module\n\nIn the Elastic Agent `network_traffic` integration policy:\n1. Add or confirm **Redis** in the protocols list with `enabled: true`.\n2. Set **ports** to include `6379` (or the custom port your Redis instances listen on).\n3. Deploy the sensor on the Redis host, on a SPAN/mirror port, or on a gateway that receives Redis traffic.\n\n### TLS limitation\n\nThis rule requires unencrypted Redis traffic. Redis uses plaintext by default (port 6379). If TLS is configured,\nPacketbeat cannot inspect the payload without TLS decryption.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Network",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Impact",
+            "Data Source: Network Packet Capture",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1053",
+                        "name": "Scheduled Task/Job",
+                        "reference": "https://attack.mitre.org/techniques/T1053/",
+                        "subtechnique": [
+                            {
+                                "id": "T1053.003",
+                                "name": "Cron",
+                                "reference": "https://attack.mitre.org/techniques/T1053/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1496",
+                        "name": "Resource Hijacking",
+                        "reference": "https://attack.mitre.org/techniques/T1496/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "29e57265-d358-420a-b1cd-845e8a1fd70d_1",
+    "type": "security-rule"
+}

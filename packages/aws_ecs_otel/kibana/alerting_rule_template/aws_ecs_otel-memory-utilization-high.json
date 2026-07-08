@@ -1,0 +1,48 @@
+{
+  "id": "aws_ecs_otel-memory-utilization-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when average memory utilization of reserved task memory exceeds a threshold. Sustained high memory risks OOM kills and task churn.",
+    "name": "[AWS ECS OTel] Memory utilization high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_ecs",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Memory Utilization High\n\n`MemoryUtilization` is the percentage of the task's reserved memory in use. Approaching 100% triggers OOM kills — a hard failure mode prioritized above CPU saturation.\n\n### Triage Steps\n1. Check whether `RunningTaskCount < DesiredTaskCount` — OOM kills cause task churn.\n2. Review container memory limits in the task definition vs actual workload.\n3. Inspect application logs for memory leaks or unusually large heap usage.\n4. Compare with `MemoryUtilized` / `MemoryReserved` from Container Insights for absolute MB context.\n5. Check recent deployments or traffic spikes that increased memory footprint.\n\n### Customisation\n- Default threshold is 90% of reserved memory — tune per service (default task sizes vary widely).\n- Duplicate this rule with `stat == \"Maximum\"` for spike-oriented OOM proximity detection."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.ecs.otel-*\n| WHERE Namespace == \"AWS/ECS\"\n    AND MetricName == \"MemoryUtilization\"\n    AND stat == \"Average\"\n| STATS avg_mem_util = AVG(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`)\n    BY ClusterName, ServiceName, cloud.region\n// Percent of reserved memory — tune threshold (default: 90%)\n| WHERE avg_mem_util > 90.0\n| EVAL ecs_service = CONCAT(ClusterName, \"/\", ServiceName, \" (\", cloud.region, \")\")\n| SORT avg_mem_util DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "ecs_service",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

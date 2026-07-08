@@ -1,6 +1,5 @@
 - name: cloudflare_logpush.gateway_http
   type: group
-  description: Integration for parsing Cloudflare Logpush Gateway HTTP logs.
   fields:
     - name: account_id
       type: keyword
@@ -8,6 +7,9 @@
     - name: action
       type: keyword
       description: Action performed by gateway on the HTTP request.
+    - name: app_control_info
+      type: flattened
+      description: Information about application control operations, APIs, and groups that matched the HTTP request.
     - name: application
       type: group
       fields:
@@ -17,6 +19,9 @@
         - name: names
           type: keyword
           description: Names of the applications that matched the session parameters.
+        - name: statuses
+          type: keyword
+          description: Statuses of the applications that matched the HTTP request parameters.
     - name: blocked_file
       type: group
       fields:
@@ -110,6 +115,12 @@
     - name: quarantined
       type: keyword
       description: If the request content was quarantined.
+    - name: redirect_target_uri
+      type: keyword
+      description: Custom URI to which the user was redirected, if any.
+    - name: registration_id
+      type: keyword
+      description: The UUID of the device registration from which the HTTP request originated.
     - name: request
       type: group
       fields:

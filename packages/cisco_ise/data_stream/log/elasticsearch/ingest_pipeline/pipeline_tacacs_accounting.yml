@@ -62,7 +62,7 @@ processors:
       tag: kv_cisco_ise_log_log_details_raw_to_cisco_ise_log_log_details_dd59a8ac
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
-      field_split: ', '
+      field_split: ', (?=[^,=]+=)'
       value_split: =
       ignore_failure: true
   - foreach:
@@ -230,14 +230,31 @@ processors:
       target_field: cisco_ise.log.authen_method
       ignore_failure: true
       ignore_missing: true
+  - script:
+      tag: script_normalize_cisco_ise_log_avpair_time_fields_18d7aae2
+      description: >-
+        Normalize start_time and stop_time to a millisecond epoch regardless of source unit
+        (s / ms / µs / ns). TACACS+ accounting emits nanoseconds. "0" means unset and is skipped.
+      lang: painless
+      if: ctx.cisco_ise?.log?.avpair != null
+      source: |
+        def avpair = ctx.cisco_ise.log.avpair;
+        for (def field : ['start_time', 'stop_time']) {
+          def s = avpair[field];
+          if (!(s instanceof String) || s == "0" || !(s ==~ /^\d+$/)) { continue; }
+          long v = Long.parseLong(s);
+          if      (v >= 1000000000000000000L) { v /= 1000000L; } // ns -> ms
+          else if (v >= 1000000000000000L)    { v /= 1000L; }    // µs -> ms
+          else if (v <  10000000000L)         { v *= 1000L; }    // s  -> ms
+          avpair[field] = v;
+        }
   - date:
       tag: date_cisco_ise_log_avpair_start_time_to_cisco_ise_log_avpair_start_time_14a86abc
       field: cisco_ise.log.avpair.start_time
       target_field: cisco_ise.log.avpair.start_time
-      if: ctx.cisco_ise?.log?.avpair?.start_time != "0"
-      ignore_failure: true
+      if: ctx.cisco_ise?.log?.avpair?.start_time != null && ctx.cisco_ise.log.avpair.start_time != "0"
       formats:
-        - UNIX
+        - UNIX_MS
       on_failure:
         - append:
             tag: append_error_message_336d8edf
@@ -324,9 +341,9 @@ processors:
       tag: date_cisco_ise_log_avpair_stop_time_to_cisco_ise_log_avpair_stop_time_56ddb9d2
       field: cisco_ise.log.avpair.stop_time
       target_field: cisco_ise.log.avpair.stop_time
-      if: ctx.cisco_ise?.log?.avpair?.stop_time != null
+      if: ctx.cisco_ise?.log?.avpair?.stop_time != null && ctx.cisco_ise.log.avpair.stop_time != "0"
       formats:
-        - UNIX
+        - UNIX_MS
       on_failure:
         - append:
             tag: append_error_message_b41ead5f

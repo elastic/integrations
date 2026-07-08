@@ -25,7 +25,7 @@ Connectivity to Oracle can be facilitated in two ways: by using official Oracle 
 To get connected with the Oracle Database, you must set the following environment variables: `ORACLE_SID`, `ORACLE_BASE`, `ORACLE_HOME`.
 
 For example, let’s consider Oracle Database 21c installation using RPM manually by following the [Oracle Installation instructions](https://docs.oracle.com/en/database/oracle/oracle-database/21/ladbi/running-rpm-packages-to-install-oracle-database.html). The environment variables should be set as follows:
-    
+
 - `ORACLE_SID=ORCLCDB`
 - `ORACLE_BASE=/opt/oracle/oradata`
 - `ORACLE_HOME=/opt/oracle/product/21c/dbhome_1`
@@ -59,9 +59,9 @@ Make sure that you have administrative privileges to modify the Elastic Agent sy
    `systemctl status elastic-agent.service`
    Take note of the path to the `elastic-agent.service` file, which is typically located in the systemd service directory. Example path: `/etc/systemd/system/elastic-agent.service`
 
-2. Open the `elastic-agent.service` file in your preferred text editor, find the `EnvironmentFile` key (commonly found at `/etc/sysconfig/elastic-agent`), and verify its contents, as these configurations are essential for the elastic-agent's runtime environment initialization. If the EnvironmentFile is absent, create it and set the necessary permissions to ensure the elastic-agent has full access.  
+2. Open the `elastic-agent.service` file in your preferred text editor, find the `EnvironmentFile` key (commonly found at `/etc/sysconfig/elastic-agent`), and verify its contents, as these configurations are essential for the elastic-agent's runtime environment initialization. If the EnvironmentFile is absent, create it and set the necessary permissions to ensure the elastic-agent has full access.
 
-3. Add the `LD_LIBRARY_PATH` environment variable to the configured `EnvironmentFile`. Set it to the directory where libraries (`libclntsh.so`) are located. For example, if your libraries are in the `/opt/oracle/instantclient_21_1 directory`, add the following line to the `EnvironmentFile` (i.e. `/etc/systemd/system/elastic-agent.service`)
+3. Add the `LD_LIBRARY_PATH` environment variable to the configured `EnvironmentFile`. Set it to the directory where libraries (`libclntsh.so`) are located. For example, if your libraries are in the `/opt/oracle/instantclient_21_1 directory`, add the following line to the `EnvironmentFile` (for example, `/etc/systemd/system/elastic-agent.service`)
 
       `LD_LIBRARY_PATH=/opt/oracle/instantclient_21_1`
 
@@ -77,7 +77,7 @@ Make sure that you replace `/opt/oracle/instantclient_21_1` with the actual path
 
 ####  Enable Listener
 
-The Oracle listener is a service that runs on the database host and receives requests from Oracle clients. Make sure that [Listener](https://docs.oracle.com/cd/B19306_01/network.102/b14213/lsnrctl.htm) is running by using this command: 
+The Oracle listener is a service that runs on the database host and receives requests from Oracle clients. Make sure that [Listener](https://docs.oracle.com/cd/B19306_01/network.102/b14213/lsnrctl.htm) is running by using this command:
 
 `lsnrctl STATUS`
 
@@ -305,12 +305,13 @@ Tablespace metrics describes the tablespace usage metrics of all types of tables
 Tablespace metrics also describes [extended space](https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/DBA_TABLESPACE_USAGE_METRICS.html#:~:text=unexpired%20undo%20segments.-,TABLESPACE_SIZE,-NUMBER) of all type of tablepaces.
 
 To collect the Tablespace metrics, Oracle integration relies on a specific set of views. Make sure that the user configured within the Oracle DSN configuration has `READ` access permissions to the following views:
- 
+
 - `SYS.DBA_DATA_FILES`
 - `SYS.DBA_TEMP_FILES`
 - `DBA_FREE_SPACE`
 - `DBA_TABLESPACE_USAGE_METRICS`
 - `DBA_TABLESPACES`
+- `DBA_TEMP_FREE_SPACE`
 
 **ECS Field Reference**
 
@@ -433,7 +434,7 @@ An example event for `tablespace` looks as following:
 }
 ```
 
-### Sysmetrics 
+### Sysmetrics
 
 The system metrics value captured for the most current time interval for the long duration (60-seconds) are listed in the following table. 
 
@@ -878,7 +879,7 @@ An example event for `sysmetric` looks as following:
 }
 ```
 
-### Memory Metrics 
+### Memory Metrics
 
 A Program Global Area (PGA) is a memory region that contains data and control information for a server process. It is nonshared memory created by Oracle Database when a server process is started. Access to the PGA is exclusive to the server process. Metrics concerning Program Global Area (PGA) memory are mentioned below.
 
@@ -1028,7 +1029,7 @@ An example event for `memory` looks as following:
 }
 ```
 
-### System Statistics Metrics 
+### System Statistics Metrics
 
 The System Global Area (SGA) is a group of shared memory structures that contain data and control information for one Oracle Database instance. Metrics concerning System Global Area (SGA) memory are mentioned below.
 

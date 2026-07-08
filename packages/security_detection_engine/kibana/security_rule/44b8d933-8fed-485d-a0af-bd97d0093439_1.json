@@ -1,0 +1,86 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies two or more distinct DHCP servers sending an OFFER or ACK for the same transaction ID (xid) within a short window, indicating a rogue DHCP server racing the legitimate one to win the client's handshake. This is the rogue-DHCP / adversary-in-the-middle precondition (T1557.003) and is operating-system agnostic, since it keys only on server behavior observed on the wire. Winning the race lets an attacker intercept traffic via a hostile gateway/DNS, bypass a VPN (TunnelVision), or deliver a malformed response that exploits the client's DHCP parser for code execution.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Multiple DHCP Servers Responding to the Same Transaction",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Multiple DHCP Servers Responding to the Same Transaction\n\nDHCP is plaintext UDP and fully visible to any sensor on the broadcast segment. A rogue server (or an injected response\non the victim's L2 broadcast domain) that answers a transaction the legitimate server already owns is the defining\nprecondition for DHCP-based adversary-in-the-middle and for malformed-option client exploits. This rule flags exactly\nthat: two or more distinct server source IPs producing an OFFER/ACK for one transaction ID inside the same 30-second\nwindow, and is operating-system agnostic, since it keys only on server behavior observed on the wire.\n\n### Possible investigation steps\n\n- Identify the server source IPs in `Esql.values_server_ips` and `Esql.values_server_identifiers`. Determine which is\n  the sanctioned DHCP server and which is unexpected.\n- Locate the rogue server on the segment (switch CAM/ARP tables, port, VLAN). It is on the same broadcast domain as the\n  victim by definition.\n- Inspect the rogue OFFER/ACK options for an oversized or malformed payload (the overflow trigger) and for hostile\n  configuration such as an attacker-controlled default gateway (option 3), DNS server (option 6), WPAD/proxy\n  auto-config (option 252), or classless static routes (option 121, TunnelVision-style VPN bypass).\n- Identify the client(s) acquiring leases on the segment (any OS, including Windows, Linux, macOS, iOS, IoT) and review their\n  endpoint telemetry for DHCP client service crashes, unexpected route/DNS/gateway changes, or follow-on code execution.\n  Where the target OS and DHCP client are known, check whether they are unpatched for the relevant CVE (e.g.\n  CVE-2026-44815 on Windows, CVE-2018-5732 on ISC dhclient).\n\n### False positive analysis\n\n- DHCP failover pairs (Microsoft or ISC) are designed so that, for a given transaction, only one peer answers; two\n  peers answering the same xid within 30 seconds is not normal failover behavior. If a known active-active or\n  load-balancing architecture genuinely does this, add its server IPs to an exception.\n- DHCP relay agents forward responses but the relayed source is the relay, and a single server still owns each\n  transaction. Anycast/VIP DHCP designs that present multiple real backend IPs on the wire are rare and would be a known\n  architectural fact, which can be excepted by those IPs.\n\n### Response and remediation\n\n- Remove the rogue DHCP server from the segment, then patch the affected client DHCP stacks (e.g. June 2026 Patch\n  Tuesday for CVE-2026-44815 on Windows, or the fixed ISC dhclient for CVE-2018-5732 on Linux/Unix).\n- Enable DHCP snooping on managed switches and restrict DHCP server responses to authorized server ports/MACs as a\n  compensating control, which protects clients of every OS and also mitigates TunnelVision-style route injection.\n",
+        "query": "from logs-network_traffic.dhcpv4-*, packetbeat-*\n| eval\n    message_type = TO_LOWER(COALESCE(network_traffic.dhcpv4.option.message_type, dhcpv4.option.message_type)),\n    Esql.transaction_id = COALESCE(network_traffic.dhcpv4.transaction_id, dhcpv4.transaction_id),\n    server_identifier = COALESCE(network_traffic.dhcpv4.option.server_identifier, dhcpv4.option.server_identifier)\n| where message_type in (\"offer\", \"ack\") and Esql.transaction_id is not null and source.ip is not null\n| eval Esql.time_window = DATE_TRUNC(30 seconds, @timestamp)\n| stats\n    Esql.count_distinct_servers = COUNT_DISTINCT(source.ip),\n    Esql.values_server_ips = VALUES(source.ip),\n    Esql.values_server_identifiers = VALUES(server_identifier),\n    Esql.count_replies = COUNT(*)\n  by Esql.time_window, Esql.transaction_id\n| where Esql.count_distinct_servers >= 2\n| keep Esql.transaction_id, Esql.time_window, Esql.count_distinct_servers, Esql.values_server_ips, Esql.values_server_identifiers, Esql.count_replies\n",
+        "references": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-44815",
+            "https://nvd.nist.gov/vuln/detail/CVE-2024-3661",
+            "https://www.leviathansecurity.com/blog/tunnelvision",
+            "https://nvd.nist.gov/vuln/detail/CVE-2018-5732",
+            "https://msrc.microsoft.com/update-guide"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "44b8d933-8fed-485d-a0af-bd97d0093439",
+        "setup": "## Setup\n\nThis rule requires the Elastic network_traffic (Packetbeat) integration capturing DHCP (UDP 67/68) on the broadcast\nsegment where clients acquire/renew leases, either Packetbeat running on the segment or a SPAN/mirror feeding it. A\nsensor not on the same L2 broadcast domain (or not behind the relevant DHCP relay) will not observe competing OFFER/ACK\npackets.\n\nZeek is intentionally not supported: the zeek.dhcp data stream does not expose a transaction ID and aggregates a full\nDORA exchange into one record, so the per-transaction server-count comparison cannot be expressed on it.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Network",
+            "Domain: Endpoint",
+            "Use Case: Threat Detection",
+            "Use Case: Vulnerability",
+            "Use Case: Network Security Monitoring",
+            "Tactic: Credential Access",
+            "Tactic: Execution",
+            "Data Source: Network Traffic",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1557",
+                        "name": "Adversary-in-the-Middle",
+                        "reference": "https://attack.mitre.org/techniques/T1557/",
+                        "subtechnique": [
+                            {
+                                "id": "T1557.003",
+                                "name": "DHCP Spoofing",
+                                "reference": "https://attack.mitre.org/techniques/T1557/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1203",
+                        "name": "Exploitation for Client Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1203/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "44b8d933-8fed-485d-a0af-bd97d0093439_1",
+    "type": "security-rule"
+}
