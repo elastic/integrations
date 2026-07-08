@@ -29,7 +29,7 @@ By default, the last year of data of billing data is collected upon first execut
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can run this integration against Elastic Cloud Hosted, Elastic Cloud Serverless, or a self-managed cluster.
+This integration collects data at the organization level, so no need to target individual deployments or projects.
 
 You will need the identifier of your Elastic Cloud **organization** (not a single deployment or project), which can be seen on the [cloud organization page](https://cloud.elastic.co/account/members).
 
