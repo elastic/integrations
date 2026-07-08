@@ -85,6 +85,10 @@ processors:
   - date:
       field: _tmp.timestamp
       tag: default-tmp-timestamp parsing
+      description: >-
+        Avoid processing if _tmp.timestamp is unset, preventing a "field [_tmp]
+        not present" error on top of the grok_time_details failure.
+      if: ctx._tmp?.timestamp != null
       formats:
         - MMM [ ]d[d] HH:mm:ss[.SSSSSS][.SSS]
         - ISO8601
@@ -98,7 +102,7 @@ processors:
             field: error.message
             value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
   - date:
-      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      if: ctx._tmp?.timestamp != null && ctx.event?.timezone != null && ctx.event.timezone != ''
       field: _tmp.timestamp
       timezone: '{{{event.timezone}}}'
       tag: default-tmp-timestamp-with timezone parsing
