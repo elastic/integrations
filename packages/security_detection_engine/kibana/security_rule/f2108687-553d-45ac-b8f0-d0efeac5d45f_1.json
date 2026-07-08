@@ -1,0 +1,108 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects GKE pod create, update, or patch events that enable host PID namespace sharing. HostPID exposes host processes and can support privilege escalation, especially with ptrace or privileged containers. System identities and controller-owned workloads are excluded.",
+        "false_positives": [
+            "Debug pods may legitimately use hostPID. Exclude trusted admin workflows after baselining."
+        ],
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Pod Created With HostPID",
+        "note": "## Triage and analysis\n\n### Investigating GKE Pod Created With HostPID\n\nHostPID visibility into host processes is high risk. Confirm whether the pod spec change was authorized.\n\n### Investigation steps\n\n- Review actor (`user.email`), target pod, and images in the audit request.\n- Correlate with exec, secret access, or RBAC changes from the same identity.\n\n### False positives\n\n- Break-glass troubleshooting; tune by user or namespace.",
+        "query": "data_stream.dataset:gcp.audit and\nevent.action:(\"io.k8s.core.v1.pods.create\" or \"io.k8s.core.v1.pods.update\" or \"io.k8s.core.v1.pods.patch\") and\ngcp.audit.request.spec.hostPID:true and not user.email:system\\:* and\nnot gcp.audit.request.metadata.ownerReferences.kind:(\"ReplicaSet\" or \"DaemonSet\" or \"StatefulSet\")\n",
+        "references": [
+            "https://kubernetes.io/docs/concepts/security/pod-security-standards/",
+            "https://bishopfox.com/blog/kubernetes-pod-privilege-escalation"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.request.metadata.ownerReferences.kind",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.request.spec.hostPID",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "f2108687-553d-45ac-b8f0-d0efeac5d45f",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1611",
+                        "name": "Escape to Host",
+                        "reference": "https://attack.mitre.org/techniques/T1611/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1610",
+                        "name": "Deploy Container",
+                        "reference": "https://attack.mitre.org/techniques/T1610/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "f2108687-553d-45ac-b8f0-d0efeac5d45f_1",
+    "type": "security-rule"
+}
