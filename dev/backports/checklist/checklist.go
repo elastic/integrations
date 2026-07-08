@@ -47,10 +47,12 @@ func ParseCheckedBranches(body string) map[string]bool {
 	return checked
 }
 
-// BuildComment renders the full checklist comment body starting with marker.
-// Branches present in checked are rendered as ticked (- [x]). Packages that
-// have no active branches are omitted, so stale sections disappear automatically
-// on recompute without any special removal logic.
+// BuildComment renders the full comment body starting with marker.
+// Packages that have no active branches are omitted, so stale sections disappear
+// automatically on recompute without any special removal logic.
+// The checked parameter is accepted for forward-compatibility but currently has no
+// effect on the output — branches are rendered as plain list items until #19214
+// (auto-backport PR creation) is implemented, at which point checkboxes will be restored.
 //
 // Returns "" when no package has any active branch; callers should skip posting.
 func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
@@ -61,11 +63,11 @@ func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
 	var b strings.Builder
 
 	fmt.Fprintln(&b, marker)
-	fmt.Fprintln(&b, "## Backport checklist")
+	fmt.Fprintln(&b, "## Backport branches")
 	fmt.Fprintln(&b)
 	fmt.Fprintln(&b, "Only branches for packages touched by this PR's current diff are shown.")
 	fmt.Fprintln(&b)
-	fmt.Fprintln(&b, "Check the branches to backport this change to.")
+	fmt.Fprintln(&b, "Consider backporting this change to the branches listed below.")
 
 	for _, p := range pkgs {
 		if len(p.Branches) == 0 {
@@ -77,11 +79,7 @@ func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
 		fmt.Fprintln(&b)
 		fmt.Fprintf(&b, "**%s**\n", p.Package)
 		for _, r := range p.Branches {
-			state := " "
-			if checked[r.Branch] {
-				state = "x"
-			}
-			line := fmt.Sprintf("- [%s] `%s`", state, r.Branch)
+			line := fmt.Sprintf("- `%s`", r.Branch)
 			if r.MaintainedUntil != nil {
 				line += fmt.Sprintf(" (maintained until %s)", *r.MaintainedUntil)
 			}
@@ -93,7 +91,7 @@ func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
 	fmt.Fprintln(&b, "---")
 	fmt.Fprintln(&b)
 	fmt.Fprintln(&b, "> [!TIP]")
-	fmt.Fprintln(&b, "> If a branch above is no longer required, set `archived: true` in its entry in `.backports.yml` to stop it appearing in future checklists.")
+	fmt.Fprintln(&b, "> If a branch above is no longer required, set `archived: true` in its entry in `.backports.yml` to stop it appearing here.")
 	fmt.Fprintln(&b, `> If the branch has a known end-of-life date, prefer `+"`"+`maintained_until: "YYYY-MM-DD"`+"`"+` — it will be excluded automatically once that date passes.`)
 
 	return b.String()
