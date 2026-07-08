@@ -309,6 +309,119 @@ func TestSetManifestVersion(t *testing.T) {
 	}
 }
 
+func TestSetManifestOwner(t *testing.T) {
+	tests := []struct {
+		name        string
+		content     string
+		newOwner    string
+		wantContent string
+		wantErr     bool
+	}{
+		{
+			name:        "basic replace",
+			content:     "name: aws\nversion: 6.14.2\nowner:\n  github: elastic/obs-old-team\n",
+			newOwner:    "elastic/obs-new-team",
+			wantContent: "name: aws\nversion: 6.14.2\nowner:\n  github: elastic/obs-new-team\n",
+		},
+		{
+			// The whole point of a targeted line rewrite (mirroring
+			// setManifestVersion) is that every other field — before the
+			// owner block, and the sibling "type:" field inside it — must
+			// survive byte-for-byte, not just "look similar".
+			name: "preserves rest of file, including sibling owner.type field",
+			content: "format_version: \"3.0.0\"\nname: aws\ntype: integration\nversion: 6.14.2\n" +
+				"owner:\n  github: elastic/obs-old-team\n  type: elastic\ndescription: An integration.\n",
+			newOwner: "elastic/obs-new-team",
+			wantContent: "format_version: \"3.0.0\"\nname: aws\ntype: integration\nversion: 6.14.2\n" +
+				"owner:\n  github: elastic/obs-new-team\n  type: elastic\ndescription: An integration.\n",
+		},
+		{
+			name:    "missing owner block",
+			content: "name: aws\nversion: 6.14.2\n",
+			wantErr: true,
+		},
+		{
+			name:    "owner block without a github field",
+			content: "name: aws\nversion: 6.14.2\nowner:\n  type: elastic\n",
+			wantErr: true,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "manifest.yml")
+			require.NoError(t, os.WriteFile(path, []byte(tc.content), 0o644))
+
+			err := setManifestOwner(path, tc.newOwner)
+			if tc.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			updated, err := os.ReadFile(path)
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantContent, string(updated))
+		})
+	}
+}
+
+func TestApplyCodeownersUpdates(t *testing.T) {
+	tests := []struct {
+		name        string
+		content     string
+		updates     map[string][]string
+		packagePath string
+		wantContent string
+	}{
+		{
+			name:        "updates an existing line in place, preserving unrelated lines",
+			content:     "/packages/aws @elastic/obs-old-team\n/packages/other @elastic/other-team\n",
+			updates:     map[string][]string{"/packages/aws": {"@elastic/obs-new-team"}},
+			packagePath: "/packages/aws",
+			wantContent: "/packages/aws @elastic/obs-new-team\n/packages/other @elastic/other-team\n",
+		},
+		{
+			name:    "inserts a new data-stream line right after the package's own line",
+			content: "/packages/aws @elastic/obs-team\n/packages/other @elastic/other-team\n",
+			updates: map[string][]string{
+				"/packages/aws/data_stream/cloudtrail": {"@elastic/security-team"},
+			},
+			packagePath: "/packages/aws",
+			wantContent: "/packages/aws @elastic/obs-team\n/packages/aws/data_stream/cloudtrail @elastic/security-team\n" +
+				"/packages/other @elastic/other-team\n",
+		},
+		{
+			name:        "appends at end of file when the package line isn't found",
+			content:     "/packages/other @elastic/other-team\n",
+			updates:     map[string][]string{"/packages/aws": {"@elastic/obs-team"}},
+			packagePath: "/packages/aws",
+			wantContent: "/packages/other @elastic/other-team\n/packages/aws @elastic/obs-team\n",
+		},
+		{
+			// Comments and exclusion-only rules must survive untouched.
+			name: "preserves comments and unrelated rules",
+			content: "# top-level comment\n/packages/aws @elastic/obs-old-team\n" +
+				"/packages/aws/README.md\n/packages/other @elastic/other-team\n",
+			updates:     map[string][]string{"/packages/aws": {"@elastic/obs-new-team"}},
+			packagePath: "/packages/aws",
+			wantContent: "# top-level comment\n/packages/aws @elastic/obs-new-team\n" +
+				"/packages/aws/README.md\n/packages/other @elastic/other-team\n",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "CODEOWNERS")
+			require.NoError(t, os.WriteFile(path, []byte(tc.content), 0o644))
+
+			require.NoError(t, applyCodeownersUpdates(path, tc.updates, tc.packagePath))
+
+			updated, err := os.ReadFile(path)
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantContent, string(updated))
+		})
+	}
+}
+
 func TestParseEntryFields(t *testing.T) {
 	tests := []struct {
 		name  string

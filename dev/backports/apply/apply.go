@@ -8,10 +8,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
+	"sort"
 	"strings"
 	"time"
 
@@ -22,6 +24,7 @@ import (
 	"github.com/elastic/integrations/dev/backports"
 	"github.com/elastic/integrations/dev/backports/changelog"
 	"github.com/elastic/integrations/dev/backports/gitutil"
+	"github.com/elastic/integrations/dev/backports/owners"
 	"github.com/elastic/integrations/dev/citools"
 )
 
@@ -155,6 +158,8 @@ func Apply(opts Options) (*Result, error) {
 	if err := a.commitChanges(pkgDir, opts.SHA, newVersion); err != nil {
 		return nil, err
 	}
+
+	a.syncOwners(remote, opts.Package, pkgDir)
 
 	if opts.DryRun {
 		success = true
@@ -546,6 +551,268 @@ func (a applier) commitChanges(pkgDir, sha, newVersion string) error {
 	}
 	if err := a.git.Run("commit", "-m", commitMsg); err != nil {
 		return fmt.Errorf("committing: %w", err)
+	}
+	return nil
+}
+
+const codeownersRelPath = ".github/CODEOWNERS"
+
+// syncOwners brings pkgDir's manifest.yml owner and CODEOWNERS entries in
+// line with remote/main, as its own commit on top of the cherry-pick. It is
+// best-effort: any failure reading or parsing main's state (fetch failure,
+// unparsable manifest, missing CODEOWNERS) is logged as a warning rather than
+// failing the whole backport. The CI check on PRs targeting backport-*
+// branches (elastic/integrations#19686) is the actual enforcement mechanism;
+// this is a convenience that keeps most backport PRs correct without it.
+func (a applier) syncOwners(remote, pkg, pkgDir string) {
+	plan, pkgPath, err := a.computeOwnerSyncPlan(remote, pkgDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "warning: skipping owner sync for %s: %v\n", pkg, err)
+		return
+	}
+	if plan.Empty() {
+		return
+	}
+
+	if err := writeOwnerSyncPlan(a.workDir, pkgDir, pkgPath, plan); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: skipping owner sync for %s: %v\n", pkg, err)
+		return
+	}
+	if err := a.commitOwnerSync(pkg, pkgDir); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: committing owner sync for %s: %v\n", pkg, err)
+	}
+}
+
+// computeOwnerSyncPlan fetches remote/main and compares pkgDir's current
+// CODEOWNERS/manifest.yml owner against main's, returning the changes needed
+// (if any) and pkgDir's CODEOWNERS path (e.g. "/packages/aws"). A found-false
+// result from owners.Plan (e.g. the package no longer exists on main) is
+// reported as an empty, no-error plan: it's a normal skip, not a failure.
+func (a applier) computeOwnerSyncPlan(remote, pkgDir string) (plan owners.SyncPlan, pkgPath string, err error) {
+	if err := a.git.Run("fetch", remote, "main"); err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("fetching main: %w", err)
+	}
+
+	currentCodeownersData, err := os.ReadFile(filepath.Join(a.workDir, codeownersRelPath))
+	if err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("reading %s: %w", codeownersRelPath, err)
+	}
+	mainCodeownersData, err := a.git.Output("show", remote+"/main:"+codeownersRelPath)
+	if err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("reading main %s: %w", codeownersRelPath, err)
+	}
+	currentCodeowners, err := owners.ParseOwners(string(currentCodeownersData))
+	if err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("parsing %s: %w", codeownersRelPath, err)
+	}
+	mainCodeowners, err := owners.ParseOwners(mainCodeownersData)
+	if err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("parsing main %s: %w", codeownersRelPath, err)
+	}
+
+	relPkgDir, err := filepath.Rel(a.workDir, pkgDir)
+	if err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("resolving package path: %w", err)
+	}
+	relPkgDir = filepath.ToSlash(relPkgDir)
+	pkgPath = "/" + relPkgDir
+
+	currentManifestData, err := os.ReadFile(filepath.Join(pkgDir, "manifest.yml"))
+	if err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("reading manifest.yml: %w", err)
+	}
+	mainManifestData, err := a.git.Output("show", remote+"/main:"+relPkgDir+"/manifest.yml")
+	if err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("reading main manifest.yml: %w", err)
+	}
+	currentManifestOwner, err := owners.ManifestOwner(currentManifestData)
+	if err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("reading manifest owner: %w", err)
+	}
+	mainManifestOwner, err := owners.ManifestOwner([]byte(mainManifestData))
+	if err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("reading main manifest owner: %w", err)
+	}
+
+	dataStreamNames, err := listDataStreams(pkgDir)
+	if err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("listing data streams: %w", err)
+	}
+
+	syncPlan, found := owners.Plan(pkgPath, dataStreamNames, currentCodeowners, mainCodeowners, currentManifestOwner, mainManifestOwner)
+	if !found {
+		return owners.SyncPlan{}, pkgPath, nil
+	}
+	return syncPlan, pkgPath, nil
+}
+
+// listDataStreams returns the data stream names present in pkgDir's
+// checkout, or nil if the package has no data_stream directory at all.
+func listDataStreams(pkgDir string) ([]string, error) {
+	entries, err := os.ReadDir(filepath.Join(pkgDir, "data_stream"))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	names := make([]string, 0, len(entries))
+	for _, e := range entries {
+		if e.IsDir() {
+			names = append(names, e.Name())
+		}
+	}
+	return names, nil
+}
+
+// writeOwnerSyncPlan applies plan's changes to pkgDir/manifest.yml and
+// workDir/.github/CODEOWNERS.
+func writeOwnerSyncPlan(workDir, pkgDir, pkgPath string, plan owners.SyncPlan) error {
+	if plan.ManifestOwner != "" {
+		if err := setManifestOwner(filepath.Join(pkgDir, "manifest.yml"), plan.ManifestOwner); err != nil {
+			return fmt.Errorf("updating manifest owner: %w", err)
+		}
+	}
+
+	updates := make(map[string][]string, len(plan.DataStreams)+1)
+	if plan.PackageOwner != nil {
+		updates[pkgPath] = plan.PackageOwner
+	}
+	for ds, owner := range plan.DataStreams {
+		updates[pkgPath+"/data_stream/"+ds] = owner
+	}
+	if len(updates) == 0 {
+		return nil
+	}
+	if err := applyCodeownersUpdates(filepath.Join(workDir, codeownersRelPath), updates, pkgPath); err != nil {
+		return fmt.Errorf("updating CODEOWNERS: %w", err)
+	}
+	return nil
+}
+
+// setManifestOwner rewrites the "github:" line inside manifest.yml's "owner:"
+// block to newOwner, preserving the rest of the file's formatting.
+func setManifestOwner(manifestPath, newOwner string) error {
+	data, err := os.ReadFile(manifestPath)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", manifestPath, err)
+	}
+	info, err := os.Stat(manifestPath)
+	if err != nil {
+		return err
+	}
+
+	lines := bytes.Split(data, []byte("\n"))
+	ownerIdx := slices.IndexFunc(lines, func(l []byte) bool {
+		return bytes.HasPrefix(l, []byte("owner:"))
+	})
+	if ownerIdx == -1 {
+		return fmt.Errorf("owner block not found in %s", manifestPath)
+	}
+
+	githubIdx := -1
+	for i := ownerIdx + 1; i < len(lines); i++ {
+		if len(lines[i]) > 0 && lines[i][0] != ' ' && lines[i][0] != '\t' {
+			break // left the owner block
+		}
+		if bytes.Contains(lines[i], []byte("github:")) {
+			githubIdx = i
+			break
+		}
+	}
+	if githubIdx == -1 {
+		return fmt.Errorf("owner.github line not found in %s", manifestPath)
+	}
+
+	prefixEnd := bytes.Index(lines[githubIdx], []byte("github:")) + len("github:")
+	lines[githubIdx] = append(append([]byte{}, lines[githubIdx][:prefixEnd]...), []byte(" "+newOwner)...)
+
+	updated := bytes.Join(lines, []byte("\n"))
+	return os.WriteFile(manifestPath, updated, info.Mode())
+}
+
+// applyCodeownersUpdates rewrites codeownersPath so that each path in
+// updates resolves to its given owners — updating an existing line in place,
+// or inserting a new one (immediately after packagePath's own line, if
+// found; otherwise at the end of the file) when none exists yet.
+func applyCodeownersUpdates(codeownersPath string, updates map[string][]string, packagePath string) error {
+	data, err := os.ReadFile(codeownersPath)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", codeownersPath, err)
+	}
+	info, err := os.Stat(codeownersPath)
+	if err != nil {
+		return err
+	}
+
+	remaining := make(map[string][]string, len(updates))
+	maps.Copy(remaining, updates)
+
+	lines := bytes.Split(data, []byte("\n"))
+	packageLineIdx := -1
+	for i, line := range lines {
+		trimmed := bytes.TrimSpace(line)
+		if len(trimmed) == 0 || bytes.HasPrefix(trimmed, []byte("#")) {
+			continue
+		}
+		fields := bytes.Fields(trimmed)
+		if len(fields) < 2 {
+			continue
+		}
+		linePath := strings.TrimSuffix(string(fields[0]), "/")
+		if linePath == packagePath {
+			packageLineIdx = i
+		}
+		if newOwners, ok := remaining[linePath]; ok {
+			lines[i] = []byte(linePath + " " + strings.Join(newOwners, " "))
+			delete(remaining, linePath)
+		}
+	}
+
+	if len(remaining) > 0 {
+		insertAt := len(lines)
+		if packageLineIdx != -1 {
+			insertAt = packageLineIdx + 1
+		} else if len(lines) > 0 && len(lines[len(lines)-1]) == 0 {
+			// The file ends with a trailing newline, which bytes.Split
+			// represents as a final empty element. Insert before it so the
+			// appended lines land before that trailing newline instead of
+			// after it — otherwise this would leave a spurious blank line
+			// and drop the file's final newline.
+			insertAt = len(lines) - 1
+		}
+		remainingPaths := make([]string, 0, len(remaining))
+		for path := range remaining {
+			remainingPaths = append(remainingPaths, path)
+		}
+		sort.Strings(remainingPaths)
+
+		newLines := make([][]byte, 0, len(remainingPaths))
+		for _, path := range remainingPaths {
+			newLines = append(newLines, []byte(path+" "+strings.Join(remaining[path], " ")))
+		}
+		combined := make([][]byte, 0, len(lines)+len(newLines))
+		combined = append(combined, lines[:insertAt]...)
+		combined = append(combined, newLines...)
+		combined = append(combined, lines[insertAt:]...)
+		lines = combined
+	}
+
+	updated := bytes.Join(lines, []byte("\n"))
+	return os.WriteFile(codeownersPath, updated, info.Mode())
+}
+
+// commitOwnerSync stages the owner-sync changes to pkgDir and CODEOWNERS and
+// commits them separately from the cherry-pick commit.
+func (a applier) commitOwnerSync(pkg, pkgDir string) error {
+	if err := a.git.Run("add", pkgDir); err != nil {
+		return fmt.Errorf("staging package changes: %w", err)
+	}
+	if err := a.git.Run("add", filepath.Join(a.workDir, codeownersRelPath)); err != nil {
+		return fmt.Errorf("staging CODEOWNERS: %w", err)
+	}
+	if err := a.git.Run("commit", "-m", fmt.Sprintf("Sync %s package owners from main", pkg)); err != nil {
+		return fmt.Errorf("committing owner sync: %w", err)
 	}
 	return nil
 }
