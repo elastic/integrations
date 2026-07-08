@@ -56,8 +56,14 @@ docker run \
   --env FLEET_ENROLL=1  --env FLEET_INSECURE=true \
   --env FLEET_URL=https://fleet-server:8220 \
   --env FLEET_ENROLLMENT_TOKEN="${FLEET_ENROLLMENT_TOKEN}" \
-  -p 14317:4317 \
+  -p 4317:4317 \
   docker.elastic.co/elastic-agent/elastic-agent:9.4.2
+```
+
+Tunnel
+
+```bash
+gcloud compute ssh --zone "us-east1-d" "biscout42-d4c-build" --tunnel-through-iap --project "elastic-security-dev" -- -NR 4317:localhost:4317  -o ServerAliveInterval=30 -o ServerAliveCountMax=3
 ```
 
 ### Using a custom Elastic Agent image
