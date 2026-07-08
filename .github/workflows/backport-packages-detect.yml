@@ -17,10 +17,12 @@ jobs:
     # No permissions — this job runs in the restricted pull_request context
     # and must be fork-safe. Write permissions live in post-backport-checklist.yml
     # which is triggered via workflow_run and runs in the base repository context.
-    permissions: {}
+    permissions:
+      contents: read
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout repository
+        uses: actions/checkout@v7
         with:
           # Full history is required so that git diff can resolve both the PR
           # base SHA and the head SHA, which may not be present in a shallow clone.
