@@ -19,17 +19,26 @@ processors:
         ctx.winlog != null &&
         ctx.winlog.provider_name == 'Microsoft-Windows-Security-Auditing' &&
         ctx.event != null &&
-        ctx.winlog.event_data instanceof Map &&
+        ctx.winlog._tmp?.scheduled_task instanceof Map &&
         (
           (
-            ['4698', '4700', '4701'].contains(ctx.event.code) &&
-            ctx.winlog.event_data.TaskContent instanceof String
+            ['4698', '4699', '4700', '4701'].contains(ctx.event.code) &&
+            ctx.winlog._tmp.scheduled_task.task_content instanceof Map
           ) ||
           (
             ctx.event.code == '4702' &&
-            ctx.winlog.event_data.TaskContentNew instanceof String
+            ctx.winlog._tmp.scheduled_task.task_content_new instanceof Map
           )
         )
+  - remove:
+      field: winlog._tmp.scheduled_task
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: winlog._tmp
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.winlog?._tmp instanceof Map && ctx.winlog._tmp.size() == 0
   - set:
       field: winlog.scheduled_task.name
       copy_from: winlog.event_data.TaskName

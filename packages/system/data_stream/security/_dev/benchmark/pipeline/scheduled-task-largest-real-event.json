@@ -12,7 +12,91 @@
           "SubjectUserSid": "S-1-5-18"
         },
         "event_id": "4702",
-        "provider_name": "Microsoft-Windows-Security-Auditing"
+        "provider_name": "Microsoft-Windows-Security-Auditing",
+        "_tmp": {
+          "scheduled_task": {
+            "task_content_new": {
+              "task": {
+                "xmlns": "http://schemas.microsoft.com/windows/2004/02/mit/task",
+                "registrationinfo": {
+                  "source": "$(@%systemRoot%\\system32\\usocore.dll,-104)",
+                  "author": "$(@%systemRoot%\\system32\\usocore.dll,-103)",
+                  "version": "1.0",
+                  "description": "$(@%systemRoot%\\system32\\usocore.dll,-105)",
+                  "uri": "\\Microsoft\\Windows\\UpdateOrchestrator\\Schedule Scan",
+                  "securitydescriptor": "D:(A;;FA;;;SY)(A;;FRFX;;;LS)(A;;FA;;;BA)"
+                },
+                "triggers": {
+                  "timetrigger": {
+                    "repetition": {
+                      "interval": "PT22H",
+                      "stopatdurationend": "false"
+                    },
+                    "startboundary": "2025-12-19T13:45:43.715Z",
+                    "enabled": "true",
+                    "randomdelay": "PT4H"
+                  },
+                  "wnfstatechangetrigger": [
+                    {
+                      "enabled": "true",
+                      "delay": "PT2H5M",
+                      "statename": "750CBCA3290B9641",
+                      "data": "01",
+                      "dataoffset": "0"
+                    },
+                    {
+                      "enabled": "true",
+                      "delay": "PT5M",
+                      "statename": "7524BCA33E06830D",
+                      "data": "01",
+                      "dataoffset": "0"
+                    }
+                  ],
+                  "eventtrigger": {
+                    "enabled": "true",
+                    "subscription": "<QueryList><Query Id=\"0\" Path=\"System\"><Select Path=\"System\">*[System[EventID=8202]]</Select></Query></QueryList>"
+                  }
+                },
+                "principals": {
+                  "principal": {
+                    "userid": "S-1-5-18",
+                    "runlevel": "LeastPrivilege",
+                    "id": "LocalSystem"
+                  }
+                },
+                "settings": {
+                  "multipleinstancespolicy": "IgnoreNew",
+                  "disallowstartifonbatteries": "false",
+                  "stopifgoingonbatteries": "false",
+                  "allowhardterminate": "true",
+                  "startwhenavailable": "true",
+                  "runonlyifnetworkavailable": "true",
+                  "idlesettings": {
+                    "stoponidleend": "false",
+                    "restartonidle": "false"
+                  },
+                  "allowstartondemand": "true",
+                  "enabled": "true",
+                  "hidden": "false",
+                  "runonlyifidle": "false",
+                  "disallowstartonremoteappsession": "false",
+                  "useunifiedschedulingengine": "true",
+                  "waketorun": "false",
+                  "executiontimelimit": "PT72H",
+                  "priority": "7"
+                },
+                "actions": {
+                  "exec": {
+                    "command": "%systemroot%\\system32\\usoclient.exe",
+                    "arguments": "StartScan"
+                  },
+                  "context": "LocalSystem"
+                },
+                "version": "1.5"
+              }
+            }
+          }
+        }
       },
       "@timestamp": "2025-12-19T13:45:43.778Z",
       "host": {
