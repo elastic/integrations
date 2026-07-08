@@ -159,7 +159,7 @@ func Apply(opts Options) (*Result, error) {
 		return nil, err
 	}
 
-	a.syncOwners(remote, opts.Package, pkgDir)
+	a.syncOwners(remote, "main", opts.Package, pkgDir)
 
 	if opts.DryRun {
 		success = true
@@ -559,14 +559,15 @@ func (a applier) commitChanges(pkgDir, sha, newVersion string) error {
 const codeownersRelPath = ".github/CODEOWNERS"
 
 // syncOwners brings pkgDir's manifest.yml owner and CODEOWNERS entries in
-// line with remote/main, as its own commit on top of the cherry-pick. It is
-// best-effort: any failure reading or parsing main's state (fetch failure,
-// unparsable manifest, missing CODEOWNERS) is logged as a warning rather than
-// failing the whole backport. The CI check on PRs targeting backport-*
-// branches (elastic/integrations#19686) is the actual enforcement mechanism;
-// this is a convenience that keeps most backport PRs correct without it.
-func (a applier) syncOwners(remote, pkg, pkgDir string) {
-	plan, pkgPath, err := a.computeOwnerSyncPlan(remote, pkgDir)
+// line with sourceBranch's, as its own commit on top of the cherry-pick. It is
+// best-effort: any failure reading or parsing sourceBranch's state (fetch
+// failure, unparsable manifest, missing CODEOWNERS) is logged as a warning
+// rather than failing the whole backport. The CI check on PRs targeting
+// backport-* branches (elastic/integrations#19686) is the actual enforcement
+// mechanism; this is a convenience that keeps most backport PRs correct
+// without it.
+func (a applier) syncOwners(remote, sourceBranch, pkg, pkgDir string) {
+	plan, pkgPath, err := a.computeOwnerSyncPlan(remote, sourceBranch, pkgDir)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "warning: skipping owner sync for %s: %v\n", pkg, err)
 		return
@@ -584,31 +585,21 @@ func (a applier) syncOwners(remote, pkg, pkgDir string) {
 	}
 }
 
-// computeOwnerSyncPlan fetches remote/main and compares pkgDir's current
-// CODEOWNERS/manifest.yml owner against main's, returning the changes needed
-// (if any) and pkgDir's CODEOWNERS path (e.g. "/packages/aws"). A found-false
-// result from owners.Plan (e.g. the package no longer exists on main) is
-// reported as an empty, no-error plan: it's a normal skip, not a failure.
-func (a applier) computeOwnerSyncPlan(remote, pkgDir string) (plan owners.SyncPlan, pkgPath string, err error) {
-	if err := a.git.Run("fetch", remote, "main"); err != nil {
-		return owners.SyncPlan{}, "", fmt.Errorf("fetching main: %w", err)
+// computeOwnerSyncPlan fetches remote/sourceBranch and compares pkgDir's
+// current CODEOWNERS/manifest.yml owner against sourceBranch's, returning the
+// changes needed (if any) and pkgDir's CODEOWNERS path (e.g.
+// "/packages/aws"). A found-false result from owners.Plan (e.g. the package
+// no longer exists on sourceBranch) is reported as an empty, no-error plan:
+// it's a normal skip, not a failure.
+func (a applier) computeOwnerSyncPlan(remote, sourceBranch, pkgDir string) (plan owners.SyncPlan, pkgPath string, err error) {
+	if err := a.git.Run("fetch", remote, sourceBranch); err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("fetching %s: %w", sourceBranch, err)
 	}
+	remoteRef := remote + "/" + sourceBranch
 
-	currentCodeownersData, err := os.ReadFile(filepath.Join(a.workDir, codeownersRelPath))
+	currentCodeowners, sourceCodeowners, err := a.readCodeowners(remoteRef)
 	if err != nil {
-		return owners.SyncPlan{}, "", fmt.Errorf("reading %s: %w", codeownersRelPath, err)
-	}
-	mainCodeownersData, err := a.git.Output("show", remote+"/main:"+codeownersRelPath)
-	if err != nil {
-		return owners.SyncPlan{}, "", fmt.Errorf("reading main %s: %w", codeownersRelPath, err)
-	}
-	currentCodeowners, err := owners.ParseOwners(string(currentCodeownersData))
-	if err != nil {
-		return owners.SyncPlan{}, "", fmt.Errorf("parsing %s: %w", codeownersRelPath, err)
-	}
-	mainCodeowners, err := owners.ParseOwners(mainCodeownersData)
-	if err != nil {
-		return owners.SyncPlan{}, "", fmt.Errorf("parsing main %s: %w", codeownersRelPath, err)
+		return owners.SyncPlan{}, "", err
 	}
 
 	relPkgDir, err := filepath.Rel(a.workDir, pkgDir)
@@ -618,21 +609,9 @@ func (a applier) computeOwnerSyncPlan(remote, pkgDir string) (plan owners.SyncPl
 	relPkgDir = filepath.ToSlash(relPkgDir)
 	pkgPath = "/" + relPkgDir
 
-	currentManifestData, err := os.ReadFile(filepath.Join(pkgDir, "manifest.yml"))
+	currentManifestOwner, sourceManifestOwner, err := a.readManifestOwners(remoteRef, pkgDir, relPkgDir)
 	if err != nil {
-		return owners.SyncPlan{}, "", fmt.Errorf("reading manifest.yml: %w", err)
-	}
-	mainManifestData, err := a.git.Output("show", remote+"/main:"+relPkgDir+"/manifest.yml")
-	if err != nil {
-		return owners.SyncPlan{}, "", fmt.Errorf("reading main manifest.yml: %w", err)
-	}
-	currentManifestOwner, err := owners.ManifestOwner(currentManifestData)
-	if err != nil {
-		return owners.SyncPlan{}, "", fmt.Errorf("reading manifest owner: %w", err)
-	}
-	mainManifestOwner, err := owners.ManifestOwner([]byte(mainManifestData))
-	if err != nil {
-		return owners.SyncPlan{}, "", fmt.Errorf("reading main manifest owner: %w", err)
+		return owners.SyncPlan{}, "", err
 	}
 
 	dataStreamNames, err := listDataStreams(pkgDir)
@@ -640,11 +619,58 @@ func (a applier) computeOwnerSyncPlan(remote, pkgDir string) (plan owners.SyncPl
 		return owners.SyncPlan{}, "", fmt.Errorf("listing data streams: %w", err)
 	}
 
-	syncPlan, found := owners.Plan(pkgPath, dataStreamNames, currentCodeowners, mainCodeowners, currentManifestOwner, mainManifestOwner)
+	syncPlan, found := owners.Plan(pkgPath, dataStreamNames, currentCodeowners, sourceCodeowners, currentManifestOwner, sourceManifestOwner)
 	if !found {
 		return owners.SyncPlan{}, pkgPath, nil
 	}
 	return syncPlan, pkgPath, nil
+}
+
+// readCodeowners reads and parses the current worktree's CODEOWNERS file and
+// remoteRef's version of it (e.g. "origin/main").
+func (a applier) readCodeowners(remoteRef string) (current, source *owners.Owners, err error) {
+	currentData, err := os.ReadFile(filepath.Join(a.workDir, codeownersRelPath))
+	if err != nil {
+		return nil, nil, fmt.Errorf("reading %s: %w", codeownersRelPath, err)
+	}
+	sourceData, err := a.git.Output("show", remoteRef+":"+codeownersRelPath)
+	if err != nil {
+		return nil, nil, fmt.Errorf("reading %s %s: %w", remoteRef, codeownersRelPath, err)
+	}
+
+	current, err = owners.ParseOwners(string(currentData))
+	if err != nil {
+		return nil, nil, fmt.Errorf("parsing %s: %w", codeownersRelPath, err)
+	}
+	source, err = owners.ParseOwners(sourceData)
+	if err != nil {
+		return nil, nil, fmt.Errorf("parsing %s %s: %w", remoteRef, codeownersRelPath, err)
+	}
+	return current, source, nil
+}
+
+// readManifestOwners reads and extracts the owner.github field from
+// pkgDir/manifest.yml and from remoteRef's version of it, found at
+// relPkgDir (pkgDir relative to the repo root, slash-separated).
+func (a applier) readManifestOwners(remoteRef, pkgDir, relPkgDir string) (current, source string, err error) {
+	currentData, err := os.ReadFile(filepath.Join(pkgDir, "manifest.yml"))
+	if err != nil {
+		return "", "", fmt.Errorf("reading manifest.yml: %w", err)
+	}
+	sourceData, err := a.git.Output("show", remoteRef+":"+relPkgDir+"/manifest.yml")
+	if err != nil {
+		return "", "", fmt.Errorf("reading %s manifest.yml: %w", remoteRef, err)
+	}
+
+	current, err = owners.ManifestOwner(currentData)
+	if err != nil {
+		return "", "", fmt.Errorf("reading manifest owner: %w", err)
+	}
+	source, err = owners.ManifestOwner([]byte(sourceData))
+	if err != nil {
+		return "", "", fmt.Errorf("reading %s manifest owner: %w", remoteRef, err)
+	}
+	return current, source, nil
 }
 
 // listDataStreams returns the data stream names present in pkgDir's
