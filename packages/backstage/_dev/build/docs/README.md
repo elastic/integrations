@@ -73,6 +73,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 - **No events collected**: Confirm the Backstage backend is emitting audit events (not every plugin calls the `auditor` service for every operation) and that the configured **Paths** match the actual log file location.
 - **Multi-line JSON not parsed**: If your Backstage deployment pretty-prints JSON log lines across multiple lines, enable the `multiline` parser under **Parsers**. Otherwise, partial lines are dropped by the pipeline's `isAuditEvent` check.
 - **Events silently dropped**: The ingest pipeline drops any line that doesn't contain an `isAuditEvent` key, so non-audit application logs mixed into the same file are expected to be filtered out.
+- **Permission denied reading the log file**: Elastic Agent needs read access to the Backstage audit log file(s). If your environment writes them with restrictive ownership/permissions, deploy Elastic Agent as `root` (or a user with equivalent read access) on that host or container. This is a deployment-time decision, not a setting configurable through this integration.
 
 ## Scaling
 

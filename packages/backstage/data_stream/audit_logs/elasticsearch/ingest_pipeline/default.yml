@@ -31,7 +31,8 @@ processors:
       if: ctx.json?.isAuditEvent == null
       tag: drop_if_not_audit_event
       description: >-
-        Drops messages that do not contain the isAuditEvent key
+        Drops messages that do not contain the isAuditEvent: true key/value pair
+        Non-audit logs do not contain that key at all and we want to avoid processing them altogether for performance and compatibility reasons
   - set:
       tag: set_event_kind
       field: event.kind
