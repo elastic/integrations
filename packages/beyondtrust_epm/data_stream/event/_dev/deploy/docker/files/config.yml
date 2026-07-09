@@ -1,0 +1,413 @@
+# The BeyondTrust EPM API uses dot-notation query parameter keys (e.g.
+# "Pagination.PageSize", "Sorts[0].order").  The stream mock server parses its
+# config with ucfg.PathSep("."), which interprets dots as nested-path separators,
+# so these keys cannot be used in query_params matching rules.
+#
+# To exercise pagination despite this, the Details rule omits query_params and
+# instead uses response cycling: the stream server rotates through the responses
+# list on successive requests to the same path (response index = request_count %
+# len(responses)).  Page 1 returns pageCount > pageNumber, causing the CEL
+# program to set want_more=true and request the next page.  Page 2 returns
+# pageNumber == pageCount, ending pagination.
+
+rules:
+  - path: /oauth/connect/token
+    methods: ['POST']
+    query_params:
+      grant_type: client_credentials
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"access_token":"xxxx","expires_in":600,"token_type":"Bearer", "scope":"urn:management:api"}
+
+  # Events search - Page 1
+  - path: /management-api/v3/Events/search
+    methods: ["GET"]
+    request_headers:
+      Authorization: "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "pageNumber": 1,
+            "pageSize": 1,
+            "pageCount": 2,
+            "totalRecordCount": 2,
+            "events": [
+              {
+                "@timestamp": "2026-04-15T06:49:55.541Z",
+                "client": {
+                  "address": "198.51.100.100",
+                  "ip": "81.2.69.144",
+                  "port": 443,
+                  "mac": "00:00:5E:00:53:23",
+                  "domain": "foo.example.com",
+                  "registered_domain": "example.com",
+                  "top_level_domain": "co.uk",
+                  "subdomain": "east",
+                  "bytes": 184,
+                  "packets": 12,
+                  "nat": {
+                    "ip": "81.2.69.144",
+                    "port": 443
+                  },
+                  "Name": "DESKTOP-ACME-01",
+                  "as": {
+                    "number": 15169,
+                    "organization": {
+                      "name": "Google LLC"
+                    }
+                  },
+                  "geo": {
+                    "location": {
+                      "lon": -122,
+                      "lat": 37
+                    },
+                    "continent_code": "NA",
+                    "continent_name": "North America",
+                    "country_name": "Canada",
+                    "region_name": "Quebec",
+                    "city_name": "Montreal",
+                    "country_iso_code": "CA",
+                    "postal_code": "94040",
+                    "region_iso_code": "CA-QC",
+                    "timezone": "America/Argentina/Buenos_Aires",
+                    "name": "boston-dc",
+                    "TimezoneOffset": -480
+                  },
+                  "user": {
+                    "id": "S-1-5-21-202424912787-2692429404-2351956786-1000",
+                    "name": "a.einstein",
+                    "full_name": "Albert Einstein",
+                    "email": "alice",
+                    "hash": "alice",
+                    "domain": "alice",
+                    "roles": [
+                      "kibana_admin",
+                      "reporting_user"
+                    ],
+                    "DomainIdentifier": "alice",
+                    "DomainNetBIOSName": "alice",
+                    "DefaultTimezoneOffset": -480,
+                    "LocalIdentifier": 10001,
+                    "group": {
+                      "id": "S-1-5-21-3623811015-3361044348-30300820-513",
+                      "name": "DESKTOP-ACME-01",
+                      "domain": "corp.example.com"
+                    },
+                    "target": {
+                      "id": "S-1-5-21-3623811015-3361044348-30300820-1013",
+                      "name": "DESKTOP-ACME-01",
+                      "full_name": "Alice Williams",
+                      "email": "alice.williams@example.com",
+                      "hash": "b1946ac92492d2347c6235b4d2611184",
+                      "domain": "corp.example.com",
+                      "roles": [
+                        "admin"
+                      ],
+                      "DomainIdentifier": "corp.example.com",
+                      "DomainNetBIOSName": "corp.example.com",
+                      "DefaultTimezoneOffset": -480,
+                      "LocalIdentifier": 10001,
+                      "group": {
+                        "id": "S-1-5-21-3623811015-3361044348-30300820-513",
+                        "name": "DESKTOP-ACME-01",
+                        "domain": "corp.example.com"
+                      }
+                    },
+                    "effective": {
+                      "id": "S-1-5-21-3623811015-3361044348-30300820-1013",
+                      "name": "DESKTOP-ACME-01",
+                      "full_name": "Alice Williams",
+                      "email": "alice.williams@example.com",
+                      "hash": "b1946ac92492d2347c6235b4d2611184",
+                      "domain": "corp.example.com",
+                      "roles": [
+                        "admin"
+                      ],
+                      "DomainIdentifier": "corp.example.com",
+                      "DomainNetBIOSName": "corp.example.com",
+                      "DefaultTimezoneOffset": -480,
+                      "LocalIdentifier": 10001,
+                      "group": {
+                        "id": "S-1-5-21-3623811015-3361044348-30300820-513",
+                        "name": "DESKTOP-ACME-01",
+                        "domain": "corp.example.com"
+                      }
+                    },
+                    "changes": {
+                      "id": "S-1-5-21-3623811015-3361044348-30300820-1013",
+                      "name": "DESKTOP-ACME-01",
+                      "full_name": "Alice Williams",
+                      "email": "alice.williams@example.com",
+                      "hash": "b1946ac92492d2347c6235b4d2611184",
+                      "domain": "corp.example.com",
+                      "roles": [
+                        "admin"
+                      ],
+                      "DomainIdentifier": "corp.example.com",
+                      "DomainNetBIOSName": "corp.example.com",
+                      "DefaultTimezoneOffset": -480,
+                      "LocalIdentifier": 10001,
+                      "group": {
+                        "id": "S-1-5-21-3623811015-3361044348-30300820-513",
+                        "name": "DESKTOP-ACME-01",
+                        "domain": "corp.example.com"
+                      }
+                    }
+                  }
+                },
+                "cloud": {
+                  "provider": "aws",
+                  "availability_zone": "us-east-1c",
+                  "region": "us-east-1",
+                  "instance": {
+                    "id": "i-1234567890abcdef0",
+                    "name": "sample-resource"
+                  },
+                  "machine": {
+                    "type": "t2.medium"
+                  },
+                  "account": {
+                    "id": "666777888999",
+                    "name": "elastic-dev"
+                  },
+                  "service": {
+                    "name": "lambda"
+                  },
+                  "project": {
+                    "id": "my-project",
+                    "name": "my project"
+                  },
+                  "origin": {
+                    "provider": "aws",
+                    "availability_zone": "us-east-1c",
+                    "region": "us-east-1",
+                    "instance": {
+                      "id": "i-1234567890abcdef0",
+                      "name": "sample-resource"
+                    },
+                    "machine": {
+                      "type": "t2.medium"
+                    },
+                    "account": {
+                      "id": "666777888999",
+                      "name": "elastic-dev"
+                    },
+                    "service": {
+                      "name": "lambda"
+                    },
+                    "project": {
+                      "id": "my-project",
+                      "name": "my project"
+                    }
+                  },
+                  "target": {
+                    "provider": "aws",
+                    "availability_zone": "us-east-1c",
+                    "region": "us-east-1",
+                    "instance": {
+                      "id": "i-1234567890abcdef0",
+                      "name": "sample-resource"
+                    },
+                    "machine": {
+                      "type": "t2.medium"
+                    },
+                    "account": {
+                      "id": "666777888999",
+                      "name": "elastic-dev"
+                    },
+                    "service": {
+                      "name": "lambda"
+                    },
+                    "project": {
+                      "id": "my-project",
+                      "name": "my project"
+                    }
+                  }
+                },
+                "container": {
+                  "cpu": {
+                    "usage": 1
+                  },
+                  "disk": {
+                    "read": {
+                      "bytes": 42
+                    },
+                    "write": {
+                      "bytes": 42
+                    }
+                  },
+                  "id": "sample-id",
+                  "image": {
+                    "name": "sample-resource",
+                    "tag": [
+                      "item-0"
+                    ],
+                    "hash": {
+                      "all": [
+                        "sha256:f8fefc80e3273dc756f288a63945820d6476ad64883892c771b5e2ece6bf1b26"
+                      ]
+                    }
+                  },
+                  "labels": "sample-environment",
+                  "memory": {
+                    "usage": 1
+                  },
+                  "name": "sample-resource",
+                  "network": {
+                    "ingress": {
+                      "bytes": 42
+                    },
+                    "egress": {
+                      "bytes": 42
+                    }
+                  },
+                  "runtime": "docker"
+                },
+                "email": {
+                  "attachments": [
+                    {
+                      "file": {
+                        "extension": "sample-extension",
+                        "mime_type": "sample-mime-type",
+                        "name": "sample.bin",
+                        "hash": {
+                          "md5": "d41d8cd98f00b204e9800998ecf8427e",
+                          "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+                          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                          "sha384": "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b",
+                          "sha512": "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
+                          "ssdeep": "3::",
+                          "tlsh": "T100000000000000000000000000000000000000000000000000000000000000000000"
+                        }
+                      }
+                    }
+                  ],
+                  "bcc": {
+                    "address": [
+                      "bcc.user1@example.com"
+                    ]
+                  },
+                  "cc": {
+                    "address": [
+                      "cc.user1@example.com"
+                    ]
+                  },
+                  "content_type": "text/plain",
+                  "delivery_timestamp": "2026-04-15T06:49:55.541Z",
+                  "direction": "inbound",
+                  "from": {
+                    "address": [
+                      "sender@example.com"
+                    ]
+                  },
+                  "local_id": "c26dbea0-80d5-463b-b93c-4e8b708219ce",
+                  "message_id": "81ce15$8r2j59@mail01.example.com",
+                  "origination_timestamp": "2026-04-15T06:49:55.541Z",
+                  "reply_to": {
+                    "address": [
+                      "reply.here@example.com"
+                    ]
+                  },
+                  "sender": {
+                    "address": "198.51.100.100"
+                  },
+                  "subject": "Please see this important message.",
+                  "to": {
+                    "address": [
+                      "user1@example.com"
+                    ]
+                  },
+                  "x_mailer": "Spambot v2.5"
+                },
+                "event": {
+                  "id": "8a4f5002",
+                  "action": "user-password-change",
+                  "outcome": "success",
+                  "type": [
+                    "item-0"
+                  ],
+                  "provider": "kernel",
+                  "severity": 7,
+                  "original": "Sep 19 08:26:10 host CEF:0&#124;Security&#124; threatmanager&#124;1.0&#124;100&#124; worm successfully stopped&#124;10&#124;src=10.0.0.1 dst=2.1.2.2spt=1232",
+                  "hash": "123456789012345678901234567890ABCD",
+                  "duration": 42,
+                  "sequence": 42,
+                  "timezone": "America/Los_Angeles",
+                  "created": "2026-04-15T06:49:55.541Z",
+                  "start": "2026-04-15T06:49:55.541Z",
+                  "end": "2026-04-15T06:49:55.541Z",
+                  "risk_score": 1,
+                  "risk_score_norm": 1,
+                  "ingested": "2026-04-15T06:49:55.541Z",
+                  "reference": "https://system.example.com/event/#0001234",
+                  "url": "https://mysystem.example.com/alert/5271dedb-f5b0-4218-87f0-4ac4870a38fe",
+                  "reason": "Terminated an unexpected process",
+                  "agent_id_status": "verified",
+                  "ReceivedAt": "2026-04-15T06:49:55.541Z"
+                }
+              }
+            ]
+          }
+          `}}
+
+      # Events search - Page 2
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "pageNumber": 2,
+            "pageSize": 1,
+            "pageCount": 2,
+            "totalRecordCount": 2,
+            "events": [
+              {
+                "@timestamp": "2026-04-22T18:21:23.442Z",
+                "event": {
+                  "id": "8a4f500d",
+                  "code": "4648",
+                  "kind": "alert",
+                  "category": [
+                    "authentication"
+                  ],
+                  "action": "user-password-change",
+                  "outcome": "success",
+                  "type": [
+                    "item-0"
+                  ],
+                  "module": "beyondtrust_epm",
+                  "dataset": "beyondtrust_epm.event",
+                  "provider": "kernel",
+                  "severity": 7,
+                  "original": "Sep 19 08:26:10 host CEF:0&#124;Security&#124; threatmanager&#124;1.0&#124;100&#124; worm successfully stopped&#124;10&#124;src=10.0.0.1 dst=2.1.2.2spt=1232",
+                  "hash": "123456789012345678901234567890ABCD",
+                  "duration": 42,
+                  "sequence": 42,
+                  "timezone": "America/Los_Angeles",
+                  "created": "2026-04-15T06:49:55.541Z",
+                  "start": "2026-04-15T06:49:55.541Z",
+                  "end": "2026-04-15T06:49:55.541Z",
+                  "risk_score": 1,
+                  "risk_score_norm": 1,
+                  "ingested": "2026-04-15T06:49:55.541Z",
+                  "reference": "https://system.example.com/event/#0001234",
+                  "url": "https://mysystem.example.com/alert/5271dedb-f5b0-4218-87f0-4ac4870a38fe",
+                  "reason": "Terminated an unexpected process",
+                  "agent_id_status": "verified",
+                  "ReceivedAt": "2026-04-15T06:49:55.541Z"
+                }
+              }
+            ]
+          }
+          `}}
