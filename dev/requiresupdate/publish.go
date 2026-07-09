@@ -155,16 +155,24 @@ func createOrUpdatePR(branch, title, body string, codeowners []string) (string, 
 
 // fixupChangelogLinks replaces the pull/REPLACE_ME placeholder in this
 // package's changelog file with the real PR number, in a follow-up commit,
-// once the PR number is known.
+// once the PR number is known. s.files is only populated (and this function
+// only called) when a changelog.yml was written, so a missing file or a
+// missing placeholder both indicate elastic-package produced unexpected
+// output rather than a normal no-op.
 func fixupChangelogLinks(s packageSummary, branch, prNumber string) error {
 	if prNumber == "" {
 		return nil
 	}
 	git := gitutil.Git{}
-	var changed bool
+	var found bool
 	for _, f := range s.files {
 		if !strings.HasSuffix(f, "changelog.yml") {
 			continue
+		}
+		found = true
+		info, err := os.Stat(f)
+		if err != nil {
+			return fmt.Errorf("stat %s: %w", f, err)
 		}
 		data, err := os.ReadFile(f)
 		if err != nil {
@@ -172,18 +180,18 @@ func fixupChangelogLinks(s packageSummary, branch, prNumber string) error {
 		}
 		fixed := strings.ReplaceAll(string(data), "pull/REPLACE_ME", "pull/"+prNumber)
 		if fixed == string(data) {
-			continue
+			return fmt.Errorf("pull/REPLACE_ME placeholder not found in %s: elastic-package may have changed its changelog output format", f)
 		}
-		if err := os.WriteFile(f, []byte(fixed), 0644); err != nil {
+		if err := os.WriteFile(f, []byte(fixed), info.Mode()); err != nil {
 			return fmt.Errorf("writing %s: %w", f, err)
 		}
 		if err := git.Run("add", "--", f); err != nil {
 			return err
 		}
-		changed = true
+		break
 	}
-	if !changed {
-		return nil
+	if !found {
+		return fmt.Errorf("no changelog.yml found among %s's written files to fix up PR links", s.name)
 	}
 	if err := git.Run("commit", "-m", "Fix changelog PR links"); err != nil {
 		return fmt.Errorf("committing changelog fixup: %w", err)
