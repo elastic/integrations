@@ -187,10 +187,10 @@ processors:
       description: Maps the Backstage actor identifier to `user.id`. In Backstage, `actorId` is the unique identity of the principal who triggered the audit event (e.g., a user ref or service account).
   - append:
       field: related.user
-      copy_from: user.id
-      ignore_empty_values: true
+      value: "{{{user.id}}}"
       tag: append_actor_id_related_user
       description: Appends the Backstage actor identifier to `related.user` to support correlation across all user-related fields.
+      if: ctx.user?.id != null
   - user_agent:
       field: user_agent.original
       tag: actor_user_agent
@@ -205,10 +205,10 @@ processors:
       description: Maps the HTTP method of the inbound Backstage API request (e.g., `GET`, `POST`) to the ECS `http.request.method` field.
   - append:
       field: related.hosts
-      copy_from: json.actor.hostname
-      ignore_empty_values: true
+      value: "{{{json.actor.hostname}}}"
       description: Append the hostname of the actor who initiated the request to backstage to the related hostnames array
       tag: append_request_hostname_ecs_related
+      if: ctx.json?.actor?.hostname != null
   - rename:
       field: json.actor.ip
       target_field: source.ip
@@ -217,10 +217,10 @@ processors:
       description: Maps the IP address of the actor that made the audited API call to the ECS `source.ip` field.
   - append:
       field: related.ip
-      copy_from: source.ip
-      ignore_empty_values: true
+      value: "{{{source.ip}}}"
       description: Appends the actor's IP address to the `related.ip` array for cross-field correlation.
       tag: append_related_ip_8c67e2b0
+      if: ctx.source?.ip != null
   - foreach:
       field: json.meta.query.filter
       if: ctx.json?.meta?.query?.filter instanceof List
