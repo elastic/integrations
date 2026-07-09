@@ -5,6 +5,7 @@
 package requiresupdate
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -15,6 +16,25 @@ import (
 
 	"github.com/elastic/integrations/dev/gitutil"
 )
+
+// ghExec runs the gh CLI and folds stderr into the result: on failure it's
+// appended to the returned error, since gh's exit error alone typically
+// doesn't carry the human-readable reason; on success a non-empty stderr is
+// printed as a warning, since gh can report partial problems (e.g. a
+// reviewer it couldn't request) without a non-zero exit.
+func ghExec(args ...string) (bytes.Buffer, error) {
+	stdout, stderr, err := gh.Exec(args...)
+	if err != nil {
+		if msg := strings.TrimSpace(stderr.String()); msg != "" {
+			return stdout, fmt.Errorf("%w: %s", err, msg)
+		}
+		return stdout, err
+	}
+	if msg := strings.TrimSpace(stderr.String()); msg != "" {
+		fmt.Printf("gh %s warning: %s\n", strings.Join(args, " "), msg)
+	}
+	return stdout, nil
+}
 
 // Publish opens one PR per package with applied changes — creating or
 // updating a stable per-package branch — and one GitHub issue per package
@@ -60,13 +80,13 @@ func publishIssue(s packageSummary, preview bool) error {
 		return fmt.Errorf("listing existing issues: %w", err)
 	}
 	if number != "" {
-		if _, _, err := gh.Exec("issue", "edit", number, "--body", body); err != nil {
+		if _, err := ghExec("issue", "edit", number, "--body", body); err != nil {
 			return fmt.Errorf("updating issue #%s: %w", number, err)
 		}
 		fmt.Printf("Updated existing issue #%s for %s.\n", number, s.name)
 		return nil
 	}
-	if _, _, err := gh.Exec("issue", "create", "--title", title, "--label", "automation", "--body", body); err != nil {
+	if _, err := ghExec("issue", "create", "--title", title, "--label", "automation", "--body", body); err != nil {
 		return fmt.Errorf("creating issue: %w", err)
 	}
 	fmt.Printf("Created issue for %s.\n", s.name)
@@ -116,7 +136,7 @@ func publishPR(s packageSummary, preview bool) error {
 // in codeowners, or updates the body of an existing open one, and returns the
 // PR number for changelog link fixup.
 func createOrUpdatePR(branch, title, body string, codeowners []string) (string, error) {
-	stdout, _, err := gh.Exec("pr", "list", "--head", branch, "--state", "open", "--json", "number,url")
+	stdout, err := ghExec("pr", "list", "--head", branch, "--state", "open", "--json", "number,url")
 	if err != nil {
 		return "", err
 	}
@@ -128,7 +148,7 @@ func createOrUpdatePR(branch, title, body string, codeowners []string) (string, 
 		return "", fmt.Errorf("parsing PR list: %w", err)
 	}
 	if len(prs) > 0 {
-		if _, _, err := gh.Exec("pr", "edit", prs[0].URL, "--body", body); err != nil {
+		if _, err := ghExec("pr", "edit", prs[0].URL, "--body", body); err != nil {
 			return "", fmt.Errorf("updating PR: %w", err)
 		}
 		return fmt.Sprintf("%d", prs[0].Number), nil
@@ -145,7 +165,7 @@ func createOrUpdatePR(branch, title, body string, codeowners []string) (string, 
 	for _, owner := range codeowners {
 		args = append(args, "--reviewer", "@"+owner)
 	}
-	stdout, _, err = gh.Exec(args...)
+	stdout, err = ghExec(args...)
 	if err != nil {
 		return "", fmt.Errorf("creating PR: %w", err)
 	}
@@ -200,7 +220,7 @@ func fixupChangelogLinks(s packageSummary, branch, prNumber string) error {
 }
 
 func findOpenIssue(title string) (string, error) {
-	stdout, _, err := gh.Exec("issue", "list",
+	stdout, err := ghExec("issue", "list",
 		"--state", "open",
 		"--search", fmt.Sprintf("%s in:title", title),
 		"--json", "number,title",
