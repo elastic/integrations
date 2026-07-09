@@ -108,6 +108,7 @@ The following event types are supported for CrowdStrike Event Streams (whether y
 - IDP Incidents
 - IDP Summary events
 - Mobile Detection events
+- OverwatchGenericDetectionSummaryEvent
 - Recon Notification events
 - XDR Detection events
 - Scheduled Report Notification events
@@ -1311,6 +1312,7 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.DetectName | Name of the detection. | keyword |
 | crowdstrike.event.DetectionType |  | keyword |
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
+| crowdstrike.event.DisplayName | The user-friendly detection name. | keyword |
 | crowdstrike.event.DnsRequests | Detected DNS requests done by a process. | nested |
 | crowdstrike.event.DocumentsAccessed | Detected documents accessed by a process. | nested |
 | crowdstrike.event.DomainName |  | keyword |
