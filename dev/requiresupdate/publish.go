@@ -124,7 +124,7 @@ func publishPR(s packageSummary, preview bool) error {
 		return fmt.Errorf("pushing failed: %w", err)
 	}
 
-	prNumber, err := createOrUpdatePR(branch, title, body, s.codeowners)
+	prNumber, err := createOrUpdatePR(branch, title, body)
 	if err != nil {
 		return fmt.Errorf("creating/updating PR failed: %w", err)
 	}
@@ -132,10 +132,11 @@ func publishPR(s packageSummary, preview bool) error {
 	return fixupChangelogLinks(s, branch, prNumber)
 }
 
-// createOrUpdatePR opens a PR for branch, requesting a review from every team
-// in codeowners, or updates the body of an existing open one, and returns the
-// PR number for changelog link fixup.
-func createOrUpdatePR(branch, title, body string, codeowners []string) (string, error) {
+// createOrUpdatePR opens a PR for branch, or updates the body of an existing
+// open one, and returns the PR number for changelog link fixup. Reviewers are
+// left to GitHub's automatic CODEOWNERS review request rather than requested
+// explicitly here.
+func createOrUpdatePR(branch, title, body string) (string, error) {
 	stdout, err := ghExec("pr", "list", "--head", branch, "--state", "open", "--json", "number,url")
 	if err != nil {
 		return "", err
@@ -161,9 +162,6 @@ func createOrUpdatePR(branch, title, body string, codeowners []string) (string, 
 		"--title", title,
 		"--label", "automation",
 		"--body", body,
-	}
-	for _, owner := range codeowners {
-		args = append(args, "--reviewer", "@"+owner)
 	}
 	stdout, err = ghExec(args...)
 	if err != nil {
