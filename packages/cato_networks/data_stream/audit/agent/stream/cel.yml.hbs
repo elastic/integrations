@@ -1,0 +1,155 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+state:
+  account_ids:
+  {{#each account_ids as |account_id|}}
+    - !!str {{account_id}}
+  {{/each}}
+  api_key: {{api_key}}
+  initial_interval: {{initial_interval}}
+  query: >-
+    query AuditFeed($timeFrame: TimeFrame! $accountIDs: [ID!] $marker: String) {
+      auditFeed(timeFrame: $timeFrame accountIDs: $accountIDs marker: $marker) {
+        from
+        to
+        fetchedCount
+        hasMore
+        marker
+        accounts {
+          records {
+            fieldsMap
+          }
+        }
+      }
+    }
+redact:
+  fields:
+    - api_key
+program: |
+  // window_from: previous response's "to" stored in cursor, or initial lookback (capped at 90 days)
+  state.?cursor.last_timestamp.orValue(
+    (
+      (duration(state.initial_interval) > duration("2160h")) ?
+        now - duration("2160h")
+      :
+        now - duration(state.initial_interval)
+    ).format("2006-01-02/15:04:05")
+  ).as(window_from,
+    // window_to: frozen in cursor during mid-window pagination, else current time
+    state.?cursor.window_to.orValue(now.format("2006-01-02/15:04:05")).as(window_to,
+      state.with(
+        request(
+          "POST",
+          state.url.trim_right("/") + "/api/v1/graphql2"
+        ).with(
+          {
+            "Header": {
+              "Content-Type": ["application/json"],
+              "x-api-key": [state.api_key],
+            },
+            "Body": {
+              "query": state.query,
+              "variables": {
+                "timeFrame": "utc.{" + window_from + "--" + window_to + "}",
+                "accountIDs": state.account_ids,
+                ?"marker": state.?cursor.marker,
+              },
+            }.encode_json(),
+          }
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            // StatusCode 200 with null auditFeed indicates rate limit or invalid API key
+            (body.?data.auditFeed.orValue(null) != null) ?
+              {
+                "events": (body.data.auditFeed.?accounts.orValue(null) != null) ?
+                  body.data.auditFeed.accounts.map(account, account.?records.orValue(null) != null,
+                    account.records.map(record,
+                      {
+                        "message": record.fieldsMap.encode_json(),
+                      }
+                    )
+                  ).flatten()
+                :
+                  [],
+                // hasMore=true: freeze window boundaries and advance marker for next page
+                // hasMore=false: advance last_timestamp to response "to", clear paging state via clobber
+                "cursor": body.data.auditFeed.?hasMore.orValue(false) ?
+                  {
+                    ?"marker": body.data.auditFeed.?marker,
+                    "last_timestamp": window_from,
+                    "window_to": window_to,
+                  }
+                :
+                  {
+                    // auditFeed.to may echo back the non-RFC3339 request layout, so guard the
+                    // parse and fall back to window_to instead of aborting the final page.
+                    "last_timestamp": body.data.auditFeed.?to.optMap(v,
+                      try(timestamp(v), "error").as(t, !has(t.error) ?
+                        t.format("2006-01-02/15:04:05")
+                      :
+                        window_to
+                      )
+                    ).orValue(window_to),
+                  },
+                "want_more": body.data.auditFeed.?hasMore.orValue(false),
+              }
+            :
+              {
+                "events": {
+                  "error": {
+                    "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + body.?errors[0].message.orValue("unknown error"),
+                  },
+                },
+                "want_more": false,
+              }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
