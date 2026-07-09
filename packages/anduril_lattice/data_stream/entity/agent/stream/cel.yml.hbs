@@ -25,46 +25,52 @@ redact:
     - client_secret
     - sandbox_token
 program: |-
-  (
+  state.with(
     (state.?client_id.orValue("") != "") ?
-      request(
-        "POST",
-        state.url.trim_right("/") + "/api/v1/oauth/token"
-      ).with(
-        {
-          "Header": {"Content-Type": ["application/json"]},
-          "Body": {
-            "client_id": state.client_id,
-            "client_secret": state.client_secret,
-          }.encode_json(),
-        }
-      ).do_request().as(tok_resp,
-        (tok_resp.StatusCode == 200) ?
-          {"ok": true, "token": string(tok_resp.Body.decode_json().access_token)}
+      (
+        has(state.?next.expiry) && timestamp(state.next.expiry) > now ?
+          {"token": state.next.token, "next": state.next}
         :
-          {
-            "ok": false,
-            "code": string(tok_resp.StatusCode),
-            "status": string(tok_resp.Status),
-            "body": string(tok_resp.Body),
-          }
+          request(
+            "POST",
+            state.url.trim_right("/") + "/api/v1/oauth/token"
+          ).with(
+            {
+              "Header": {"Content-Type": ["application/json"]},
+              "Body": {
+                "client_id": state.client_id,
+                "client_secret": state.client_secret,
+              }.encode_json(),
+            }
+          ).do_request().as(tok_resp,
+            (tok_resp.StatusCode == 200) ?
+              tok_resp.Body.decode_json().as(tok_body,
+                {
+                  "token": string(tok_body.access_token),
+                  "next": {
+                    "token": string(tok_body.access_token),
+                    "expiry": string(now + duration("29m")),
+                  },
+                }
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(tok_resp.StatusCode),
+                    "id": string(tok_resp.Status),
+                    "message": "POST /api/v1/oauth/token: " + string(tok_resp.Body),
+                  },
+                },
+                "want_more": false,
+              }
+          )
       )
     :
-      {"ok": true, "token": state.?token.orValue("")}
-  ).as(auth,
-    !auth.ok ?
-      state.with(
-        {
-          "events": {
-            "error": {
-              "code": auth.code,
-              "id": auth.status,
-              "message": "POST /api/v1/oauth/token: " + auth.body,
-            },
-          },
-          "want_more": false,
-        }
-      )
+      {"token": state.?token.orValue("")}
+  ).as(state,
+    has(state.?events.error) ?
+      state
     :
       state.with(
         request(
@@ -74,8 +80,8 @@ program: |-
           {
             "Header": {
               "Content-Type": ["application/json"],
-              ?"Authorization": (auth.token != "") ?
-                optional.of(["Bearer " + auth.token])
+              ?"Authorization": (state.token != "") ?
+                optional.of(["Bearer " + state.token])
               :
                 optional.none(),
               ?"Anduril-Sandbox-Authorization": (state.?sandbox_token.orValue("") != "") ?
