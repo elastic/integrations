@@ -1,0 +1,117 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{url}}/oauth/connect/token
+  endpoint_params:
+    grant_type: client_credentials
+state:
+  initial_interval: {{initial_interval}}
+  page_size: {{page_size}}
+  page_number: 1
+  operating_system: {{operating_system}}
+redact:
+  fields: ~
+program: |-
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with(
+        {
+          "start_time": state.?cursor.last_timestamp.orValue(
+            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+          ),
+          "end_time": now.format(time_layout.RFC3339),
+        }
+      )
+  ).as(state,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_suffix("/") + "/management-api/v3/Events/search?" + {
+          "Pagination.PageSize": [string(state.page_size)],
+          "Pagination.PageNumber": [string(state.page_number)],
+          "TimePeriod.StartDate": [state.start_time],
+          "TimePeriod.EndDate": [state.end_time],
+          "OperatingSystem": [state.operating_system],
+        }.format_query()
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          bytes(resp.Body).decode_json().as(body,
+            {
+              "events": has(body.events) ?
+                body.events.map(e, {"message": e.encode_json()})
+              :
+                [],
+              "page_number": (has(body.pageCount) && int(state.page_number) < body.pageCount) ? (int(state.page_number) + 1) : 1,
+              "want_more": has(body.pageCount) && int(state.page_number) < body.pageCount,
+              "cursor": {
+                ?"last_timestamp": (has(body.events) && size(body.events) > 0) ?
+                  (has(state.?cursor.last_timestamp) ?
+                    optional.of(
+                      max(
+                        state.cursor.last_timestamp,
+                        body.events[0].event.ingested
+                      )
+                    )
+                  :
+                    optional.of(body.events[0].event.ingested)
+                  )
+                :
+                  state.?cursor.last_timestamp,
+              },
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_suffix("/") + "/management-api/v3/Events/search: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+            "page_number": 1,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
