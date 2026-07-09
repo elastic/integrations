@@ -66,13 +66,10 @@ type packageSummary struct {
 // if every proposal was skipped, one issue) per package via Publish, and
 // prints a summary grouped by codeowner.
 //
-// Set DRY_RUN=true to see proposals without applying (this also skips
-// publishing, since no files were written). Set PREVIEW=true to print what
-// Publish would do without touching git or GitHub.
-func Run() error {
-	dryRun := os.Getenv("DRY_RUN") == "true"
-	preview := os.Getenv("PREVIEW") == "true"
-
+// Set dryRun to see proposals without applying (this also skips publishing,
+// since no files were written). Set preview to print what publish would do
+// without touching git or GitHub.
+func Run(dryRun, preview bool) error {
 	paths, err := citools.ListPackages(packagesDir)
 	if err != nil {
 		return fmt.Errorf("listing packages: %w", err)
@@ -114,7 +111,7 @@ func Run() error {
 	printScanStats(len(paths), eligible, len(summaries), len(errs))
 
 	if dryRun {
-		fmt.Println("DRY_RUN=true — skipping PR/issue creation.")
+		fmt.Println("dry run — skipping PR/issue creation.")
 	} else if err := publish(summaries, preview); err != nil {
 		errs = append(errs, fmt.Sprintf("publishing: %v", err))
 	}

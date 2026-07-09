@@ -573,9 +573,13 @@ func writeGitHubOutputs(outputs map[string]string) error {
 
 // RequiresUpdate updates required package versions for all integration packages,
 // adds a changelog entry per modified package, and opens one PR (or issue) per
-// package. Set DRY_RUN=true to preview without applying changes (also skips
-// publishing); set PREVIEW=true to print what would be published without
-// touching git or GitHub.
-func RequiresUpdate() error {
-	return requiresupdate.Run()
+// package.
+//
+// Usage: mage RequiresUpdate [-dryRun] [-preview]
+//
+// Pass -dryRun to preview proposals without applying changes (also skips
+// publishing, since no files would be written); pass -preview to print what
+// would be published without touching git or GitHub.
+func RequiresUpdate(dryRun, preview *bool) error {
+	return requiresupdate.Run(dryRun != nil && *dryRun, preview != nil && *preview)
 }
