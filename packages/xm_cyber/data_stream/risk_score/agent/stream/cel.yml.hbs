@@ -1,0 +1,194 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+state:
+  initial_interval: {{initial_interval}}
+  resolution: 1
+  api_key: {{api_key}}
+redact:
+  fields:
+    - api_key
+    - access_token
+    - refresh_token
+program: |
+  state.url.trim_right("/").as(base,
+    state.with(
+      (
+        (
+          !has(state.?cursor.access_token) || !has(state.?cursor.refresh_token) || state.?cursor.need_reauth.orValue(false)
+        ) ?
+          post_request(base + "/api/auth", "application/json", "{}").with(
+            {
+              "Header": {
+                "X-Api-Key": [state.api_key],
+                "Content-Type": ["application/json"],
+              },
+            }
+          ).do_request().as(authResp,
+            (authResp.StatusCode == 200) ?
+              authResp.Body.decode_json().as(ao,
+                {
+                  "access": ao.accessToken,
+                  "refresh": ao.refreshToken,
+                }
+              )
+            :
+              {
+                "err_code": string(authResp.StatusCode),
+                "err_status": authResp.Status,
+                "err_body": (size(authResp.Body) != 0) ? string(authResp.Body) : authResp.Status,
+              }
+          )
+        :
+          {
+            ?"access": state.?cursor.access_token,
+            ?"refresh": state.?cursor.refresh_token,
+          }
+      ).as(tok,
+        !has(tok.access) ?
+          {
+            "events": {
+              "error": {
+                "code": tok.err_code,
+                "id": tok.err_status,
+                "message": "POST " + base +
+                  "/api/auth: " + tok.err_body,
+              },
+            },
+            "cursor": {
+              "need_reauth": true,
+            },
+            "want_more": false,
+          }
+        :
+          ("timeAgo_days_" + string(state.initial_interval)).as(time_id,
+            // Phase 2: Fetch the risk score report — called exactly once per run.
+            // Token expiry is handled by refreshing/re-authing and re-running via want_more.
+            request(
+              "GET",
+              base + "/api/scenarios/v2/scenarios/riskScore?" + {
+                "timeId": [time_id],
+                "resolution": [string(state.resolution)],
+              }.format_query()
+            ).with(
+              {
+                "Header": {
+                  "Authorization": ["Bearer " + tok.access],
+                  "Content-Type": ["application/json"],
+                },
+              }
+            ).do_request().as(scoreResp,
+              (scoreResp.StatusCode == 200) ?
+                scoreResp.Body.decode_json().as(body,
+                  {
+                    "events": body.?data.?scenarios.orValue([]).map(s,
+                      s.?graphData.orValue([]).map(gd,
+                        {
+                          "message": {
+                            ?"stats": body.?data.?stats,
+                            ?"avgGraphData": body.?data.?avgGraphData,
+                            ?"resolution": body.?data.?resolution,
+                            ?"timeId": body.?data.?timeId,
+                            "graphData": gd,
+                            "scenario": {
+                              ?"id": s.?id,
+                              ?"name": s.?name,
+                              ?"grade": s.?grade,
+                              ?"score": s.?score,
+                            },
+                          }.encode_json(),
+                        }
+                      )
+                    ).flatten(),
+                    "cursor": {
+                      "access_token": tok.access,
+                      "refresh_token": tok.refresh,
+                      "need_reauth": false,
+                    },
+                    "want_more": false,
+                  }
+                )
+              : (scoreResp.StatusCode == 401 || scoreResp.StatusCode == 419) ?
+                // Access token expired — attempt a refresh.
+                // On success, store the new tokens and immediately re-run (want_more: true)
+                // so Phase 1 picks them up and Phase 2 retries without duplicating this call.
+                post_request(
+                  base + "/api/refresh-token",
+                  "application/json",
+                  {"refreshToken": tok.refresh}.encode_json()
+                ).with(
+                  {
+                    "Header": {"Content-Type": ["application/json"]},
+                  }
+                ).do_request().as(refResp,
+                  refResp.Body.decode_json().as(ro,
+                    {
+                      "events": [{"message": "retry"}],
+                      "cursor": (refResp.StatusCode == 200) ?
+                        {
+                          "access_token": ro.accessToken,
+                          "refresh_token": ro.refreshToken,
+                          "need_reauth": false,
+                        }
+                      :
+                        {
+                          "need_reauth": true,
+                        },
+                      "want_more": true,
+                    }
+                  )
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(scoreResp.StatusCode),
+                      "id": scoreResp.Status,
+                      "message": "GET " + base +
+                        "/api/scenarios/v2/scenarios/riskScore: " + (
+                          (size(scoreResp.Body) != 0) ? string(scoreResp.Body) : (scoreResp.Status)
+                        ),
+                    },
+                  },
+                  "cursor": {
+                    "access_token": tok.access,
+                    "refresh_token": tok.refresh,
+                    "need_reauth": false,
+                  },
+                  "want_more": false,
+                }
+            )
+          )
+      )
+    )
+  )
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

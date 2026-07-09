@@ -1,0 +1,148 @@
+title: Identity Detection
+type: logs
+streams:
+  - input: cel
+    enabled: false
+    template_path: cel.yml.hbs
+    title: Identity detections
+    description: Collect identity exposure detections from Recorded Future's [Identity Detections API](https://docs.recordedfuture.com/reference/identity-detections).
+    vars:
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+        description: How far back to pull the Recorded Future identity detections from the API. Supported units for this parameter are h/m/s.
+      - name: interval
+        type: text
+        title: Interval
+        description: >-
+          Duration between requests to the API. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 1h
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        multi: false
+        required: true
+        show_user: false
+        description: Maximum number of detections to request per API call.
+        default: 500
+      - name: organization_id
+        type: text
+        title: Organization IDs
+        multi: true
+        required: false
+        show_user: true
+        description: Scope the detections query to specific organization IDs (uhash format, e.g. `uhash:a1b2c3d4`). Leave empty to use the default organization scope.
+      - name: include_enterprise_level
+        type: bool
+        title: Include Enterprise-Level Detections
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: Include enterprise-level detections across all organizations.
+      - name: novel_only
+        type: bool
+        title: Novel Detections Only
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: Only ingest newly discovered (novel) exposures.
+      - name: detection_types
+        type: text
+        title: Detection Types
+        multi: true
+        required: false
+        show_user: true
+        description: Filter by detection type. Supported values are `Workforce`, `External`, and `Vip`. Leave empty to ingest all detection types.
+      - name: source_types
+        type: text
+        title: Source Types
+        multi: true
+        required: false
+        show_user: true
+        description: Filter by source type. Supported values are `MalwareLogs`, `DatabaseDumps`, `MalwareCombolists`, and `DatabaseCombolists`. Leave empty to ingest all source types.
+      - name: domains
+        type: text
+        title: Domains
+        multi: true
+        required: false
+        show_user: true
+        description: Filter detections by target domain. Leave empty to ingest detections for all domains.
+      - name: hash_password
+        type: bool
+        title: Hash Password Cleartext
+        multi: false
+        required: false
+        show_user: true
+        secret: false
+        default: false
+        description: >-
+          When enabled, the leaked password cleartext value is replaced with a keyed hash (HMAC-SHA256) by the agent before the data reaches Elasticsearch. When disabled, the cleartext value is ingested as-is. Requires `Hashing Key` to be set.
+      - name: hash_cookies
+        type: bool
+        title: Hash Cookie Values
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: >-
+          When enabled, stolen cookie values are replaced with a keyed hash (HMAC-SHA256) by the agent before the data reaches Elasticsearch. When disabled, the cookie values are ingested as-is. Requires `Hashing Key` to be set.
+      - name: hashing_key
+        type: password
+        title: Hashing Key
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+        description: >-
+          Secret key used to compute the HMAC-SHA256 hash for password and cookie values when hashing is enabled. The same key is applied to both. Keep this value secret and stable; a consistent key produces consistent hashes, allowing correlation of the same leaked credential across detections.
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: http_client_timeout
+        type: text
+        title: Http Client Timeout
+        description: Duration of the time limit on HTTP requests. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 120s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - recordedfuture-identity_detection
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed.

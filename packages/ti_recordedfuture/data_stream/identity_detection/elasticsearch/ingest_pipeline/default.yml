@@ -1,0 +1,516 @@
+---
+description: Pipeline for processing Identity Detections.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+
+  # parse the event JSON
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: recordedfuture.identity_detection
+      if: ctx.event?.original != null
+  
+  - fingerprint:
+      fields:
+        - event.original
+      target_field: _id
+      tag: fingerprint_event_original
+      ignore_missing: true
+
+  # normalize recordedfuture.identity_detection.* fields
+  - script:
+      lang: painless
+      tag: script_flatten_password_hashes
+      description: >-
+        Flatten the `password.hashes` array of `{algorithm, hash|hash_prefix}` objects into an
+        object keyed by the lowercase algorithm name. A full `hash` is stored under `<algorithm>`,
+        while a `hash_prefix` is stored under `<algorithm>_prefix`.
+      if: ctx.recordedfuture?.identity_detection?.password?.hashes instanceof List
+      source: |-
+        def flat = [:];
+        ctx.related = ctx.related ?: [:];
+        ctx.related.hash = ctx.related.hash ?: [];
+        for (h in ctx.recordedfuture.identity_detection.password.hashes) {
+          if (h.algorithm != null) {
+            def algorithm = h.algorithm.toLowerCase();
+            if (h.hash != null) {
+              flat[algorithm] = h.hash;
+              ctx.related.hash.add(h.hash);
+            } else if (h.hash_prefix != null) {
+              flat[algorithm + '_prefix'] = h.hash_prefix;
+            }
+          }
+        }
+        if (flat.size() > 0) {
+          ctx.recordedfuture.identity_detection.password.hashes = flat;
+        } else {
+          ctx.recordedfuture.identity_detection.password.remove('hashes');
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: recordedfuture.identity_detection.type
+      tag: rename_type_to_detection_type
+      target_field: recordedfuture.identity_detection.detection_type
+      ignore_missing: true
+  - date:
+      field: recordedfuture.identity_detection.created
+      tag: date_created
+      target_field: recordedfuture.identity_detection.created
+      formats:
+        - ISO8601
+      if: ctx.recordedfuture?.identity_detection?.created != null && ctx.recordedfuture.identity_detection.created != ''
+      on_failure:
+        - remove:
+            field: recordedfuture.identity_detection.created
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: recordedfuture.identity_detection.dump.compromise.exfiltration_date
+      tag: date_dump_compromise_exfiltration_date
+      target_field: recordedfuture.identity_detection.exfiltration_date
+      formats:
+        - ISO8601
+      if: ctx.recordedfuture?.identity_detection?.dump?.compromise?.exfiltration_date != null && ctx.recordedfuture.identity_detection.dump.compromise.exfiltration_date != ''
+      on_failure:
+        - remove:
+            field: recordedfuture.identity_detection.dump.compromise.exfiltration_date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: recordedfuture.identity_detection.cookies
+      if: ctx.recordedfuture?.identity_detection?.cookies instanceof List
+      tag: foreach_cookies_expiration
+      processor:
+        date:
+          field: _ingest._value.expiration
+          tag: date_cookie_expiration
+          target_field: _ingest._value.expiration
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.expiration
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: recordedfuture.identity_detection.dump.downloaded
+      tag: date_dump_downloaded
+      target_field: recordedfuture.identity_detection.dump.downloaded
+      formats:
+        - ISO8601
+      if: ctx.recordedfuture?.identity_detection?.dump?.downloaded != null && ctx.recordedfuture.identity_detection.dump.downloaded != ''
+      on_failure:
+        - remove:
+            field: recordedfuture.identity_detection.dump.downloaded
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: recordedfuture.identity_detection.dump.breaches
+      if: ctx.recordedfuture?.identity_detection?.dump?.breaches instanceof List
+      tag: foreach_dump_breaches_start
+      processor:
+        date:
+          field: _ingest._value.start
+          tag: date_dump_breach_start
+          target_field: _ingest._value.start
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.start
+                ignore_missing: true
+  - foreach:
+      field: recordedfuture.identity_detection.dump.breaches
+      if: ctx.recordedfuture?.identity_detection?.dump?.breaches instanceof List
+      tag: foreach_dump_breaches_stop
+      processor:
+        date:
+          field: _ingest._value.stop
+          tag: date_dump_breach_stop
+          target_field: _ingest._value.stop
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.stop
+                ignore_missing: true
+  - foreach:
+      field: recordedfuture.identity_detection.dump.breaches
+      if: ctx.recordedfuture?.identity_detection?.dump?.breaches instanceof List
+      tag: foreach_dump_breaches_breached
+      processor:
+        date:
+          field: _ingest._value.breached
+          tag: date_dump_breach_breached
+          target_field: _ingest._value.breached
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.breached
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: recordedfuture.identity_detection.cookies
+      if: ctx.recordedfuture?.identity_detection?.cookies instanceof List
+      tag: foreach_cookies_http
+      processor:
+        convert:
+          field: _ingest._value.http
+          tag: convert_cookie_http_to_boolean
+          type: boolean
+          on_failure:
+            - remove:
+                field: _ingest._value.http
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: recordedfuture.identity_detection.cookies
+      if: ctx.recordedfuture?.identity_detection?.cookies instanceof List
+      tag: foreach_cookies_secure
+      processor:
+        convert:
+          field: _ingest._value.secure
+          tag: convert_cookie_secure_to_boolean
+          type: boolean
+          on_failure:
+            - remove:
+                field: _ingest._value.secure
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: recordedfuture.identity_detection.novel
+      tag: convert_novel_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: recordedfuture.identity_detection.novel
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: recordedfuture.identity_detection.dump.infrastructure.ip
+      tag: convert_dump_infrastructure_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.recordedfuture?.identity_detection?.dump?.infrastructure?.ip != null && ctx.recordedfuture.identity_detection.dump.infrastructure.ip != ''
+      on_failure:
+        - remove:
+            field: recordedfuture.identity_detection.dump.infrastructure.ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # populate ECS fields
+
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_identity_detection_created
+      copy_from: recordedfuture.identity_detection.created
+      ignore_empty_value: true
+
+  # event.*
+  - set:
+      field: event.created
+      tag: set_event_created_from_identity_detection_created
+      copy_from: recordedfuture.identity_detection.created
+      ignore_empty_value: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_identity_detection_id
+      copy_from: recordedfuture.identity_detection.id
+      ignore_empty_value: true
+  - set:
+      field: event.kind
+      tag: set_event_to_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_threat_into_event_category
+      value: threat
+      allow_duplicates: false
+  - append:
+      field: event.category
+      tag: append_malware_into_event_category
+      value: malware
+      allow_duplicates: false
+      if: ctx.recordedfuture?.identity_detection?.source_type != null && ctx.recordedfuture.identity_detection.source_type.toLowerCase().contains('malware')
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type
+      value: indicator
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      allow_duplicates: false
+      if: ctx.event?.category != null && ctx.event.category.contains('malware')
+
+  # host.*
+  - set:
+      field: host.os.full
+      tag: set_host_os_full_from_dump_compromise_os
+      copy_from: recordedfuture.identity_detection.dump.compromise.os
+      ignore_empty_value: true
+  - script:
+      description: Dynamically set host.os.type values.
+      tag: script_map_host_os_type
+      lang: painless
+      if: ctx.recordedfuture?.identity_detection?.dump?.compromise?.os != null
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        ctx.host = ctx.host ?: [:];
+        ctx.host.os = ctx.host.os ?: [:];
+        String os = ctx.recordedfuture.identity_detection.dump.compromise.os.toLowerCase();
+        for (String os_type: params.os_type) {
+          if (os.contains(os_type)) {
+            ctx.host.os.put('type', os_type);
+            return;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.name
+      tag: set_host_name_from_dump_compromise_computer_name
+      copy_from: recordedfuture.identity_detection.dump.compromise.computer_name
+      ignore_empty_value: true
+
+  # source.*
+  - set:
+      field: source.geo.country_iso_code
+      tag: set_source_geo_country_iso_code_from_dump_location_country_alpha2Code
+      copy_from: recordedfuture.identity_detection.dump.location.country.alpha2Code
+      ignore_empty_value: true
+  - set:
+      field: source.geo.country_name
+      tag: set_source_geo_country_name_from_dump_location_country_displayName
+      copy_from: recordedfuture.identity_detection.dump.location.country.displayName
+      ignore_empty_value: true
+  - set:
+      field: source.geo.country_name
+      tag: set_source_geo_country_name_from_dump_location_country_name
+      copy_from: recordedfuture.identity_detection.dump.location.country.name
+      ignore_empty_value: true
+      if: ctx.source?.geo?.country_name == null || ctx.source.geo.country_name == ''
+  - set:
+      field: source.geo.city_name
+      tag: set_source_geo_city_name_from_dump_location_city
+      copy_from: recordedfuture.identity_detection.dump.location.city
+      ignore_empty_value: true
+  - set:
+      field: source.geo.postal_code
+      tag: set_source_geo_postal_code_from_dump_location_postal_code
+      copy_from: recordedfuture.identity_detection.dump.location.postal_code
+      ignore_empty_value: true
+
+  # threat.*
+  - set:
+      field: threat.software.name
+      tag: set_threat_software_name_from_malware_family_name
+      copy_from: recordedfuture.identity_detection.malware_family.name
+      ignore_empty_value: true
+  - set:
+      field: threat.software.id
+      tag: set_threat_software_id_from_malware_family_id
+      copy_from: recordedfuture.identity_detection.malware_family.id
+      ignore_empty_value: true
+
+  # url.*
+  - set:
+      field: url.full
+      tag: set_url_full_from_authorization_service_url
+      copy_from: recordedfuture.identity_detection.authorization_service.url
+      ignore_empty_value: true
+  - uri_parts:
+      field: url.full
+      tag: uri_parts_authorization_service_url
+      ignore_missing: true
+      if: ctx.url?.full != null && ctx.url.full != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: url.domain
+      tag: set_url_domain_from_authorization_service_domain
+      copy_from: recordedfuture.identity_detection.authorization_service.domain
+      ignore_empty_value: true
+      if: ctx.url?.domain == null || ctx.url.domain == ''
+
+  # user.*
+  - set:
+      field: user.name
+      tag: set_user_name_from_identity_detection_subject
+      copy_from: recordedfuture.identity_detection.subject
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_identity_detection_subject
+      copy_from: recordedfuture.identity_detection.subject
+      ignore_empty_value: true
+      if: ctx.recordedfuture?.identity_detection?.subject != null && ctx.recordedfuture.identity_detection.subject.contains('@')
+
+  # related.*
+  - append:
+      field: related.user
+      tag: append_subject_into_related_user
+      value: '{{{recordedfuture.identity_detection.subject}}}'
+      allow_duplicates: false
+      if: ctx.recordedfuture?.identity_detection?.subject != null
+  - append:
+      field: related.hosts
+      tag: append_authorization_service_domain_into_related_hosts
+      value: '{{{recordedfuture.identity_detection.authorization_service.domain}}}'
+      allow_duplicates: false
+      if: ctx.recordedfuture?.identity_detection?.authorization_service?.domain != null
+  - append:
+      field: related.hosts
+      tag: append_authorization_service_fqdn_into_related_hosts
+      value: '{{{recordedfuture.identity_detection.authorization_service.fqdn}}}'
+      allow_duplicates: false
+      if: ctx.recordedfuture?.identity_detection?.authorization_service?.fqdn != null
+  - append:
+      field: related.hosts
+      tag: append_dump_compromise_computer_name_into_related_hosts
+      value: '{{{recordedfuture.identity_detection.dump.compromise.computer_name}}}'
+      allow_duplicates: false
+      if: ctx.recordedfuture?.identity_detection?.dump?.compromise?.computer_name != null
+  - append:
+      field: related.user
+      tag: append_os_username_into_related_user
+      value: '{{{recordedfuture.identity_detection.dump.compromise.os_username}}}'
+      allow_duplicates: false
+      if: ctx.recordedfuture?.identity_detection?.dump?.compromise?.os_username != null
+  - append:
+      field: related.ip
+      tag: append_dump_infrastructure_ip_into_related_ip
+      value: '{{{recordedfuture.identity_detection.dump.infrastructure.ip}}}'
+      allow_duplicates: false
+      if: ctx.recordedfuture?.identity_detection?.dump?.infrastructure?.ip != null
+
+  # Cleanup
+  - remove:
+      field:
+        - recordedfuture.identity_detection.id
+        - recordedfuture.identity_detection.created
+        - recordedfuture.identity_detection.subject
+        - recordedfuture.identity_detection.authorization_service.url
+        - recordedfuture.identity_detection.malware_family.id
+        - recordedfuture.identity_detection.malware_family.name
+        - recordedfuture.identity_detection.dump.compromise.os
+        - recordedfuture.identity_detection.dump.compromise.computer_name
+        - recordedfuture.identity_detection.dump.compromise.exfiltration_date
+        - recordedfuture.identity_detection.dump.location.country.alpha2Code
+        - recordedfuture.identity_detection.dump.location.country.displayName
+        - recordedfuture.identity_detection.dump.location.city
+        - recordedfuture.identity_detection.dump.location.postal_code
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
