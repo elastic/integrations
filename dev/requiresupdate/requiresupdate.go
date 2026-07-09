@@ -162,7 +162,11 @@ func processPackage(pkgPath, pkgName string, dryRun bool, owners *codeowners.Own
 		return nil, nil
 	}
 
-	res := resolveOwner(owners, pkgName, result.Codeowner)
+	// codeowners.PackageOwners treats its packageName argument as the
+	// package folder's basename (used elsewhere for xUnit-based ownership
+	// lookups), not the manifest's declared name — the two usually agree
+	// but aren't guaranteed to, e.g. under nested category directories.
+	res := resolveOwner(owners, filepath.Base(pkgPath), result.Codeowner)
 
 	var writtenFiles []string
 	if result.NewVersion != "" {
