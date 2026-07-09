@@ -20,7 +20,7 @@ jobs:
       pull-requests: write
       issues: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up Go
         uses: actions/setup-go@v6
@@ -42,9 +42,10 @@ jobs:
           echo "ELASTIC_PACKAGE_BIN=$(go env GOPATH)/bin/elastic-package" >> $GITHUB_ENV
 
       - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+        uses: elastic/oblt-actions/git/setup@v1
+        with:
+          username: 'github-actions[bot]'
+          email: 'github-actions[bot]@users.noreply.github.com'
 
       - name: Fetch remote branch states
         run: git fetch origin
