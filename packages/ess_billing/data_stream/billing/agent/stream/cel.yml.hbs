@@ -93,32 +93,34 @@ program: |-
               { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
             ).do_request().as(resp, (resp.StatusCode == 200) ?
               bytes(resp.Body).decode_json().as(body, (has(body.instances) && body.instances != null && size(body.instances) > 0) ?
-                {
-                  "events": body.instances.map(instance,
-                    instance.product_line_items.map(line_item,
-                      {
-                        "ess": {
-                          "billing": line_item.with(
-                            {
-                              "deployment_name": instance.name,
-                              "deployment_id": instance.id,
-                              "deployment_type": instance.type,
-                              "deployment_tags": tags[?instance.id].orValue([]).map(t,
-                                t.key + ":" + t.value
-                              ),
-                              "organization_id": state.organization_id,
-                              "from": req.from.format(time_layout.RFC3339),
-                              "to": req.to.format(time_layout.RFC3339),
-                              "quantities": null
-                            }
-                          ),
-                        },
-                      }
-                    )
-                  ).flatten(),
-                  "cursor": { "last_to": req.to },
-                  "want_more": req.to < now - duration("24h"),
-                }
+                body.instances.map(instance,
+                  instance.product_line_items.map(line_item,
+                    {
+                      "ess": {
+                        "billing": line_item.with(
+                          {
+                            "deployment_name": instance.name,
+                            "deployment_id": instance.id,
+                            "deployment_type": instance.type,
+                            "deployment_tags": tags[?instance.id].orValue([]).map(t,
+                              t.key + ":" + t.value
+                            ),
+                            "organization_id": state.organization_id,
+                            "from": req.from.format(time_layout.RFC3339),
+                            "to": req.to.format(time_layout.RFC3339),
+                            "quantities": null
+                          }
+                        ),
+                      },
+                    }
+                  )
+                ).flatten().as(events,
+                  {
+                    "events": (size(events) > 0) ? events : [ { "fake": true } ],
+                    "cursor": { "last_to": req.to },
+                    "want_more": req.to < now - duration("24h"),
+                  }
+                )
               :
                 {
                   "events": [ { "fake": true } ],
@@ -176,32 +178,38 @@ program: |-
           }
         ).do_request().as(resp, (resp.StatusCode == 200) ?
           bytes(resp.Body).decode_json().as(body, (has(body.instances) && body.instances != null && size(body.instances) > 0) ?
-            {
-              "events": body.instances.map(instance,
-                instance.product_line_items.map(line_item,
+            body.instances.map(instance,
+              instance.product_line_items.map(line_item,
+                {
+                  "ess": {
+                    "billing": line_item.with(
+                      {
+                        "deployment_name": instance.name,
+                        "deployment_id": instance.id,
+                        "deployment_type": instance.type,
+                        "organization_id": state.organization_id,
+                        "from": req.from.format(time_layout.RFC3339),
+                        "to": req.to.format(time_layout.RFC3339),
+                        "quantities": null,
+                        "deployment_tags": [],
+                      }
+                    ),
+                  },
+                }
+              )
+            ).flatten().as(events,
+              {
+                "events": (size(events) > 0) ? events : [
                   {
-                    "ess": {
-                      "billing": line_item.with(
-                        {
-                          "deployment_name": instance.name,
-                          "deployment_id": instance.id,
-                          "deployment_type": instance.type,
-                          "organization_id": state.organization_id,
-                          "from": req.from.format(time_layout.RFC3339),
-                          "to": req.to.format(time_layout.RFC3339),
-                          "quantities": null,
-                          "deployment_tags": [],
-                        }
-                      ),
-                    },
-                  }
-                )
-              ).flatten(),
-              "cursor": {
-                "last_to": req.to,
-              },
-              "want_more": req.to < now - duration("24h"),
-            }
+                    "fake": true,
+                  },
+                ],
+                "cursor": {
+                  "last_to": req.to,
+                },
+                "want_more": req.to < now - duration("24h"),
+              }
+            )
           :
             {
               "events": [
