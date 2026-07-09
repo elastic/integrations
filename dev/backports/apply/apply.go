@@ -21,7 +21,7 @@ import (
 
 	"github.com/elastic/integrations/dev/backports"
 	"github.com/elastic/integrations/dev/backports/changelog"
-	"github.com/elastic/integrations/dev/backports/gitutil"
+	"github.com/elastic/integrations/dev/gitutil"
 	"github.com/elastic/integrations/dev/citools"
 )
 

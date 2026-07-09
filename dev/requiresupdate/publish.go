@@ -8,11 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"sort"
 	"strings"
 
 	"github.com/cli/go-gh/v2"
+
+	"github.com/elastic/integrations/dev/gitutil"
 )
 
 // Publish opens one PR per package with applied changes — creating or
@@ -85,19 +86,21 @@ func publishPR(s packageSummary, preview bool) error {
 		return nil
 	}
 
+	git := gitutil.Git{}
+
 	// Reset HEAD to main without discarding the dirty working tree.
 	// "checkout -B" moves HEAD but does not touch untracked/modified files,
 	// so other packages' pending changes survive subsequent calls.
-	if err := gitExec("checkout", "-B", branch, "origin/main"); err != nil {
+	if err := git.Run("checkout", "-B", branch, "origin/main"); err != nil {
 		return fmt.Errorf("creating branch: %w", err)
 	}
-	if err := gitExec(append([]string{"add", "--"}, s.files...)...); err != nil {
+	if err := git.Run(append([]string{"add", "--"}, s.files...)...); err != nil {
 		return fmt.Errorf("staging files: %w", err)
 	}
-	if err := gitExec("commit", "-m", fmt.Sprintf("[automation] Update required package versions for %s", s.name)); err != nil {
+	if err := git.Run("commit", "-m", fmt.Sprintf("[automation] Update required package versions for %s", s.name)); err != nil {
 		return fmt.Errorf("committing: %w", err)
 	}
-	if err := gitExec("push", "--force-with-lease", "origin", branch); err != nil {
+	if err := git.Run("push", "--force-with-lease", "origin", branch); err != nil {
 		return fmt.Errorf("pushing: %w", err)
 	}
 
@@ -157,6 +160,7 @@ func fixupChangelogLinks(s packageSummary, branch, prNumber string) error {
 	if prNumber == "" {
 		return nil
 	}
+	git := gitutil.Git{}
 	var changed bool
 	for _, f := range s.files {
 		if !strings.HasSuffix(f, "changelog.yml") {
@@ -173,7 +177,7 @@ func fixupChangelogLinks(s packageSummary, branch, prNumber string) error {
 		if err := os.WriteFile(f, []byte(fixed), 0644); err != nil {
 			return fmt.Errorf("writing %s: %w", f, err)
 		}
-		if err := gitExec("add", "--", f); err != nil {
+		if err := git.Run("add", "--", f); err != nil {
 			return err
 		}
 		changed = true
@@ -181,10 +185,10 @@ func fixupChangelogLinks(s packageSummary, branch, prNumber string) error {
 	if !changed {
 		return nil
 	}
-	if err := gitExec("commit", "-m", "Fix changelog PR links"); err != nil {
+	if err := git.Run("commit", "-m", "Fix changelog PR links"); err != nil {
 		return fmt.Errorf("committing changelog fixup: %w", err)
 	}
-	return gitExec("push", "origin", branch)
+	return git.Run("push", "origin", branch)
 }
 
 func findOpenIssue(title string) (string, error) {
@@ -255,11 +259,4 @@ func prBody(s packageSummary) string {
 		fmt.Fprintf(&b, "\n> **Note:** codeowner mismatch — %s\n", s.ownerMismatch)
 	}
 	return b.String()
-}
-
-func gitExec(args ...string) error {
-	cmd := exec.Command("git", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
 }
