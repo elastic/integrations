@@ -259,49 +259,6 @@ processors:
       tag: rename_meta_query_type
       description: Maps the Backstage catalog `json.meta.queryType` to `backstage.query.type`, indicating the type of catalog query performed (e.g., entity lookup, batch fetch).
   - remove:
-      field: json.timestamp
-      ignore_missing: true
-      tag: remove_json_timestamp
-      description: Removes `json.timestamp` after it has been parsed into `@timestamp`.
-  - remove:
-      field: json.isAuditEvent
-      ignore_missing: true
-      tag: remove_json_isauditevent
-      description: Removes the `json.isAuditEvent` gate field now that it has served its purpose of filtering non-audit log entries.
-  - remove:
-      field: json.request.url
-      ignore_missing: true
-      tag: remove_json_request
-      description: Removes `json.request.url` after it has been parsed into structured `url.*` ECS fields.
-  - remove:
-      field: json.request
-      ignore_missing: true
-      tag: remove_empty_json_request
-      description: Removes the now-empty `json.request` container after all its sub-fields have been extracted.
-  - remove:
-      field: json.actor.hostname
-      ignore_missing: true
-      tag: remove_json_actor_hostname
-      description: Removes `json.actor.hostname` after it has been appended to `related.hosts`.
-  - remove:
-      field: json.actor
-      ignore_missing: true
-      tag: remove_json_empty_actor
-      description: Removes the `json.actor` container once all actor fields have been extracted and it is empty.
-      if: ctx.json?.actor?.size() == 0
-  - remove:
-      field: json.service
-      ignore_missing: true
-      tag: remove_json_service
-      description: >-
-        This field should have been removed at the filebeat level
-        because of OTEL conventions.
-  - remove:
-      field: json.status
-      ignore_missing: true
-      tag: remove_json_status
-      description: Removes `json.status` after it has been incorporated into `event.action`. In Backstage, `status` indicates the outcome of the audited operation (e.g., `initiated`, `succeeded`, `failed`).
-  - remove:
       field: json.meta.query
       ignore_missing: true
       if: ctx.json?.meta?.query == null || ctx.json.meta.query.isEmpty()
@@ -315,22 +272,10 @@ processors:
       tag: rename_meta_catchall
       description: Moves any remaining `json.meta` fields into `backstage.meta` to preserve plugin-specific metadata that was not explicitly mapped to an ECS field.
   - remove:
-      field: json.meta
+      field: [_tmp, json]
       ignore_missing: true
-      tag: remove_empty_json_meta
-      description: Removes the now-empty `json.meta` container after all its fields have been moved to `backstage.meta`.
-  - remove:
-      field: _tmp
-      ignore_missing: true
-      tag: remove_empty_tmp
-      description: Removes the empty temporary pipeline container.
-      if: ctx._tmp != null && ctx._tmp.isEmpty()
-  - remove:
-      field: json
-      ignore_missing: true
-      tag: remove_empty_json
-      description: Removes the empty parsed JSON container.
-      if: ctx.json != null && ctx.json.isEmpty()
+      tag: remove_temporary_fields
+      description: Removes the temporary `_tmp` and parsed `json` containers now that all fields have been extracted.
 on_failure:
   - append:
       tag: append_pipeline_error_message
