@@ -115,7 +115,7 @@ func Run() error {
 
 	if dryRun {
 		fmt.Println("DRY_RUN=true — skipping PR/issue creation.")
-	} else if err := Publish(summaries, preview); err != nil {
+	} else if err := publish(summaries, preview); err != nil {
 		errs = append(errs, fmt.Sprintf("publishing: %v", err))
 	}
 

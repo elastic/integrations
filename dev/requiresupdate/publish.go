@@ -36,7 +36,7 @@ func ghExec(args ...string) (bytes.Buffer, error) {
 	return stdout, nil
 }
 
-// Publish opens one PR per package with applied changes — creating or
+// publish opens one PR per package with applied changes — creating or
 // updating a stable per-package branch — and one GitHub issue per package
 // whose proposals were entirely skipped. Deliberately kept simple while
 // adoption of `requires:` is low; revisit batching by codeowner once weekly
@@ -44,7 +44,7 @@ func ghExec(args ...string) (bytes.Buffer, error) {
 //
 // In preview mode nothing is written to git or GitHub; actions are only
 // printed.
-func Publish(summaries []packageSummary, preview bool) error {
+func publish(summaries []packageSummary, preview bool) error {
 	sorted := make([]packageSummary, len(summaries))
 	copy(sorted, summaries)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i].name < sorted[j].name })
@@ -112,21 +112,21 @@ func publishPR(s packageSummary, preview bool) error {
 	// "checkout -B" moves HEAD but does not touch untracked/modified files,
 	// so other packages' pending changes survive subsequent calls.
 	if err := git.Run("checkout", "-B", branch, "origin/main"); err != nil {
-		return fmt.Errorf("creating branch: %w", err)
+		return fmt.Errorf("creating branch failed: %w", err)
 	}
 	if err := git.Run(append([]string{"add", "--"}, s.files...)...); err != nil {
-		return fmt.Errorf("staging files: %w", err)
+		return fmt.Errorf("staging files failed: %w", err)
 	}
 	if err := git.Run("commit", "-m", fmt.Sprintf("[automation] Update required package versions for %s", s.name)); err != nil {
-		return fmt.Errorf("committing: %w", err)
+		return fmt.Errorf("committing failed: %w", err)
 	}
 	if err := git.Run("push", "--force-with-lease", "origin", branch); err != nil {
-		return fmt.Errorf("pushing: %w", err)
+		return fmt.Errorf("pushing failed: %w", err)
 	}
 
 	prNumber, err := createOrUpdatePR(branch, title, body, s.codeowners)
 	if err != nil {
-		return fmt.Errorf("creating/updating PR: %w", err)
+		return fmt.Errorf("creating/updating PR failed: %w", err)
 	}
 
 	return fixupChangelogLinks(s, branch, prNumber)
