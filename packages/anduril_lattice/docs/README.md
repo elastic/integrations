@@ -95,7 +95,7 @@ After deploying the integration, verify data is flowing:
 
 ## Performance and scaling
 
-The Lattice long-poll API returns all entities in the environment with no server-side filtering. In large environments with many active entities, the initial snapshot may produce thousands of events across multiple polling cycles. Tune `Batch Size` (default 100, max 2000) and `Interval` (default 5s) for your environment's entity density.
+The Lattice long-poll API returns all entities in the environment with no server-side filtering. In large environments with many active entities, the initial snapshot might produce thousands of events across multiple polling cycles. Tune `Batch Size` (default 100, max 2000) and `Interval` (default 5s) for your environment's entity density.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
