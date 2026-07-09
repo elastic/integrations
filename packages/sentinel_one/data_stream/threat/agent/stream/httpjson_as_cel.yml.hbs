@@ -26,7 +26,7 @@ cel.redact:
     - api_token
 cel.program: |-
   (
-    state.?cursor.?worklist.data[0].hasValue() ?
+    state.?cursor.worklist.data[0].hasValue() ?
       state
     :
       (
@@ -35,7 +35,11 @@ cel.program: |-
         :
           state.with(
             {
-              "list_updated_at_gte": state.?cursor.?last_update_at.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+              "cursor": state.?cursor.orValue({}).with(
+                {
+                  "list_updated_at_gte": state.?cursor.?last_update_at.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+                }
+              ),
             }
           )
       ).as(state,
@@ -46,7 +50,7 @@ cel.program: |-
               "limit": [string(state.page_size)],
               "sortBy": ["updatedAt"],
               "sortOrder": ["asc"],
-              "updatedAt__gte": [state.list_updated_at_gte],
+              "updatedAt__gte": [state.cursor.list_updated_at_gte],
               ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
               ?"cursor": state.?cursor.?next_page.token.optMap(v, [v]),
             }.format_query()
@@ -62,13 +66,13 @@ cel.program: |-
                 {
                   "cursor": {
                     ?"last_update_at": state.?cursor.?last_update_at,
+                    ?"list_updated_at_gte": has_more_list ? optional.of(state.cursor.list_updated_at_gte) : optional.none(),
                     "worklist": body,
                     "next_page": {
                       ?"token": has_more_list ? optional.of(body.pagination.nextCursor) : optional.none(),
                     },
                     "has_more_timeline": false,
                   },
-                  ?"list_updated_at_gte": has_more_list ? optional.of(state.list_updated_at_gte) : optional.none(),
                 }
               )
             )
@@ -97,7 +101,7 @@ cel.program: |-
         state
       : !has(state.?cursor.worklist) ?
         state
-      : state.?cursor.?worklist.data[0].hasValue() ?
+      : state.?cursor.worklist.data[0].hasValue() ?
         state.cursor.worklist.data[0].as(threat,
           (state.enable_star_rule_enrichment && has(threat.id)) ?
             request(
