@@ -11,8 +11,10 @@ package owners
 import (
 	"bufio"
 	"fmt"
+	"maps"
 	"path"
 	"slices"
+	"sort"
 	"strings"
 
 	"github.com/elastic/integrations/dev/citools"
@@ -33,24 +35,34 @@ func ParseOwners(content string) (*Owners, error) {
 
 	scanner := bufio.NewScanner(strings.NewReader(content))
 	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" || strings.HasPrefix(line, "#") {
+		p, owners, ok := parseEntryLine(scanner.Text())
+		if !ok {
 			continue
 		}
-
-		fields := strings.Fields(line)
-		if len(fields) < 2 {
-			continue
-		}
-
-		p := strings.TrimSuffix(fields[0], "/")
-		o.entries[p] = fields[1:]
+		o.entries[p] = owners
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, fmt.Errorf("scanning CODEOWNERS content: %w", err)
 	}
 
 	return o, nil
+}
+
+// parseEntryLine parses a single CODEOWNERS line, the same rule ParseOwners
+// and ApplyUpdates both use to recognize a real entry: not blank, not a
+// comment, and not a single-field exclusion rule (no owners).
+func parseEntryLine(line string) (path string, owners []string, ok bool) {
+	line = strings.TrimSpace(line)
+	if line == "" || strings.HasPrefix(line, "#") {
+		return "", nil, false
+	}
+
+	fields := strings.Fields(line)
+	if len(fields) < 2 {
+		return "", nil, false
+	}
+
+	return strings.TrimSuffix(fields[0], "/"), fields[1:], true
 }
 
 // ResolveOwner returns the owners that apply to p, walking up parent
@@ -204,4 +216,61 @@ func Plan(pkgPath string, existingSubPaths []string, current, main *Owners, curr
 	}
 
 	return plan, true
+}
+
+// ApplyUpdates rewrites CODEOWNERS content so each path in updates resolves
+// to its given owners — updating an existing line in place, or inserting a
+// new one (immediately after packagePath's own line, if found; otherwise at
+// the end of the file) when none exists yet. It shares parseEntryLine with
+// ParseOwners, so a line ApplyUpdates would leave alone is always a line
+// ParseOwners would also skip, and vice versa.
+func ApplyUpdates(content string, updates map[string][]string, packagePath string) string {
+	if len(updates) == 0 {
+		return content
+	}
+
+	remaining := make(map[string][]string, len(updates))
+	maps.Copy(remaining, updates)
+
+	lines := strings.Split(content, "\n")
+	packageLineIdx := -1
+	for i, line := range lines {
+		p, _, ok := parseEntryLine(line)
+		if !ok {
+			continue
+		}
+		if p == packagePath {
+			packageLineIdx = i
+		}
+		if newOwners, found := remaining[p]; found {
+			lines[i] = p + " " + strings.Join(newOwners, " ")
+			delete(remaining, p)
+		}
+	}
+
+	if len(remaining) > 0 {
+		insertAt := len(lines)
+		if packageLineIdx != -1 {
+			insertAt = packageLineIdx + 1
+		} else if len(lines) > 0 && lines[len(lines)-1] == "" {
+			// content ends with a trailing newline, represented by a final
+			// empty element — insert before it so appended lines land before
+			// that newline instead of after it.
+			insertAt = len(lines) - 1
+		}
+
+		remainingPaths := make([]string, 0, len(remaining))
+		for path := range remaining {
+			remainingPaths = append(remainingPaths, path)
+		}
+		sort.Strings(remainingPaths)
+
+		newLines := make([]string, 0, len(remainingPaths))
+		for _, path := range remainingPaths {
+			newLines = append(newLines, path+" "+strings.Join(remaining[path], " "))
+		}
+		lines = slices.Insert(lines, insertAt, newLines...)
+	}
+
+	return strings.Join(lines, "\n")
 }

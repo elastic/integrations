@@ -11,6 +11,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/elastic/integrations/dev/backports/owners"
 )
 
 func TestResolveBranchName(t *testing.T) {
@@ -365,61 +367,56 @@ func TestSetManifestOwner(t *testing.T) {
 	}
 }
 
-func TestApplyCodeownersUpdates(t *testing.T) {
-	tests := []struct {
-		name        string
-		content     string
-		updates     map[string][]string
-		packagePath string
-		wantContent string
-	}{
-		{
-			name:        "updates an existing line in place, preserving unrelated lines",
-			content:     "/packages/aws @elastic/obs-old-team\n/packages/other @elastic/other-team\n",
-			updates:     map[string][]string{"/packages/aws": {"@elastic/obs-new-team"}},
-			packagePath: "/packages/aws",
-			wantContent: "/packages/aws @elastic/obs-new-team\n/packages/other @elastic/other-team\n",
-		},
-		{
-			name:    "inserts a new data-stream line right after the package's own line",
-			content: "/packages/aws @elastic/obs-team\n/packages/other @elastic/other-team\n",
-			updates: map[string][]string{
-				"/packages/aws/data_stream/cloudtrail": {"@elastic/security-team"},
-			},
-			packagePath: "/packages/aws",
-			wantContent: "/packages/aws @elastic/obs-team\n/packages/aws/data_stream/cloudtrail @elastic/security-team\n" +
-				"/packages/other @elastic/other-team\n",
-		},
-		{
-			name:        "appends at end of file when the package line isn't found",
-			content:     "/packages/other @elastic/other-team\n",
-			updates:     map[string][]string{"/packages/aws": {"@elastic/obs-team"}},
-			packagePath: "/packages/aws",
-			wantContent: "/packages/other @elastic/other-team\n/packages/aws @elastic/obs-team\n",
-		},
-		{
-			// Comments and exclusion-only rules must survive untouched.
-			name: "preserves comments and unrelated rules",
-			content: "# top-level comment\n/packages/aws @elastic/obs-old-team\n" +
-				"/packages/aws/README.md\n/packages/other @elastic/other-team\n",
-			updates:     map[string][]string{"/packages/aws": {"@elastic/obs-new-team"}},
-			packagePath: "/packages/aws",
-			wantContent: "# top-level comment\n/packages/aws @elastic/obs-new-team\n" +
-				"/packages/aws/README.md\n/packages/other @elastic/other-team\n",
+// The CODEOWNERS-rewriting logic itself is tested directly in
+// dev/backports/owners (owners.ApplyUpdates) — writeOwnerSyncPlan is a thin
+// file-I/O wrapper around it plus setManifestOwner, tested here.
+func TestWriteOwnerSyncPlan(t *testing.T) {
+	workDir := t.TempDir()
+	pkgDir := filepath.Join(workDir, "packages", "aws")
+	require.NoError(t, os.MkdirAll(filepath.Join(workDir, ".github"), 0o755))
+	require.NoError(t, os.MkdirAll(pkgDir, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(workDir, ".github", "CODEOWNERS"),
+		[]byte("/packages/aws @elastic/obs-old-team\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(pkgDir, "manifest.yml"),
+		[]byte("name: aws\nowner:\n  github: elastic/obs-old-team\n"), 0o644))
+
+	plan := owners.SyncPlan{
+		ManifestOwner: "elastic/obs-new-team",
+		PackageOwner:  []string{"@elastic/obs-new-team"},
+		SubPaths: map[string][]string{
+			"/packages/aws/data_stream/cloudtrail": {"@elastic/security-team"},
 		},
 	}
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			path := filepath.Join(t.TempDir(), "CODEOWNERS")
-			require.NoError(t, os.WriteFile(path, []byte(tc.content), 0o644))
 
-			require.NoError(t, applyCodeownersUpdates(path, tc.updates, tc.packagePath))
+	require.NoError(t, writeOwnerSyncPlan(workDir, pkgDir, "/packages/aws", plan))
 
-			updated, err := os.ReadFile(path)
-			require.NoError(t, err)
-			assert.Equal(t, tc.wantContent, string(updated))
-		})
-	}
+	manifestData, err := os.ReadFile(filepath.Join(pkgDir, "manifest.yml"))
+	require.NoError(t, err)
+	assert.Contains(t, string(manifestData), "github: elastic/obs-new-team")
+
+	codeownersData, err := os.ReadFile(filepath.Join(workDir, ".github", "CODEOWNERS"))
+	require.NoError(t, err)
+	assert.Equal(t,
+		"/packages/aws @elastic/obs-new-team\n/packages/aws/data_stream/cloudtrail @elastic/security-team\n",
+		string(codeownersData))
+}
+
+func TestWriteOwnerSyncPlan_SkipsCodeownersWhenPlanHasNoCodeownersChanges(t *testing.T) {
+	workDir := t.TempDir()
+	pkgDir := filepath.Join(workDir, "packages", "aws")
+	require.NoError(t, os.MkdirAll(pkgDir, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(pkgDir, "manifest.yml"),
+		[]byte("name: aws\nowner:\n  github: elastic/obs-old-team\n"), 0o644))
+
+	// No .github/CODEOWNERS file exists at all — writeOwnerSyncPlan must not
+	// try to read/write it when the plan has no PackageOwner/SubPaths changes.
+	plan := owners.SyncPlan{ManifestOwner: "elastic/obs-new-team"}
+
+	require.NoError(t, writeOwnerSyncPlan(workDir, pkgDir, "/packages/aws", plan))
+
+	manifestData, err := os.ReadFile(filepath.Join(pkgDir, "manifest.yml"))
+	require.NoError(t, err)
+	assert.Contains(t, string(manifestData), "github: elastic/obs-new-team")
 }
 
 func TestParseEntryFields(t *testing.T) {

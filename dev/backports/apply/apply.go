@@ -13,7 +13,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
-	"sort"
 	"strings"
 	"time"
 
@@ -713,8 +712,20 @@ func writeOwnerSyncPlan(workDir, pkgDir, pkgPath string, plan owners.SyncPlan) e
 	if len(updates) == 0 {
 		return nil
 	}
-	if err := applyCodeownersUpdates(filepath.Join(workDir, codeownersRelPath), updates, pkgPath); err != nil {
-		return fmt.Errorf("updating CODEOWNERS: %w", err)
+
+	codeownersPath := filepath.Join(workDir, codeownersRelPath)
+	data, err := os.ReadFile(codeownersPath)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", codeownersRelPath, err)
+	}
+	info, err := os.Stat(codeownersPath)
+	if err != nil {
+		return err
+	}
+
+	updated := owners.ApplyUpdates(string(data), updates, pkgPath)
+	if err := os.WriteFile(codeownersPath, []byte(updated), info.Mode()); err != nil {
+		return fmt.Errorf("writing %s: %w", codeownersRelPath, err)
 	}
 	return nil
 }
@@ -758,77 +769,6 @@ func setManifestOwner(manifestPath, newOwner string) error {
 
 	updated := bytes.Join(lines, []byte("\n"))
 	return os.WriteFile(manifestPath, updated, info.Mode())
-}
-
-// applyCodeownersUpdates rewrites codeownersPath so that each path in
-// updates resolves to its given owners — updating an existing line in place,
-// or inserting a new one (immediately after packagePath's own line, if
-// found; otherwise at the end of the file) when none exists yet.
-func applyCodeownersUpdates(codeownersPath string, updates map[string][]string, packagePath string) error {
-	data, err := os.ReadFile(codeownersPath)
-	if err != nil {
-		return fmt.Errorf("reading %s: %w", codeownersPath, err)
-	}
-	info, err := os.Stat(codeownersPath)
-	if err != nil {
-		return err
-	}
-
-	remaining := make(map[string][]string, len(updates))
-	maps.Copy(remaining, updates)
-
-	lines := bytes.Split(data, []byte("\n"))
-	packageLineIdx := -1
-	for i, line := range lines {
-		trimmed := bytes.TrimSpace(line)
-		if len(trimmed) == 0 || bytes.HasPrefix(trimmed, []byte("#")) {
-			continue
-		}
-		fields := bytes.Fields(trimmed)
-		if len(fields) < 2 {
-			continue
-		}
-		linePath := strings.TrimSuffix(string(fields[0]), "/")
-		if linePath == packagePath {
-			packageLineIdx = i
-		}
-		if newOwners, ok := remaining[linePath]; ok {
-			lines[i] = []byte(linePath + " " + strings.Join(newOwners, " "))
-			delete(remaining, linePath)
-		}
-	}
-
-	if len(remaining) > 0 {
-		insertAt := len(lines)
-		if packageLineIdx != -1 {
-			insertAt = packageLineIdx + 1
-		} else if len(lines) > 0 && len(lines[len(lines)-1]) == 0 {
-			// The file ends with a trailing newline, which bytes.Split
-			// represents as a final empty element. Insert before it so the
-			// appended lines land before that trailing newline instead of
-			// after it — otherwise this would leave a spurious blank line
-			// and drop the file's final newline.
-			insertAt = len(lines) - 1
-		}
-		remainingPaths := make([]string, 0, len(remaining))
-		for path := range remaining {
-			remainingPaths = append(remainingPaths, path)
-		}
-		sort.Strings(remainingPaths)
-
-		newLines := make([][]byte, 0, len(remainingPaths))
-		for _, path := range remainingPaths {
-			newLines = append(newLines, []byte(path+" "+strings.Join(remaining[path], " ")))
-		}
-		combined := make([][]byte, 0, len(lines)+len(newLines))
-		combined = append(combined, lines[:insertAt]...)
-		combined = append(combined, newLines...)
-		combined = append(combined, lines[insertAt:]...)
-		lines = combined
-	}
-
-	updated := bytes.Join(lines, []byte("\n"))
-	return os.WriteFile(codeownersPath, updated, info.Mode())
 }
 
 // commitOwnerSync stages the owner-sync changes to pkgDir and CODEOWNERS and

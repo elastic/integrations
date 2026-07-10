@@ -266,3 +266,61 @@ func TestEntriesUnder(t *testing.T) {
 		"/packages/aws/kibana",
 	}, got)
 }
+
+func TestApplyUpdates(t *testing.T) {
+	tests := []struct {
+		name        string
+		content     string
+		updates     map[string][]string
+		packagePath string
+		wantContent string
+	}{
+		{
+			name:        "no-op when there are no updates",
+			content:     "/packages/aws @elastic/obs-team\n",
+			updates:     nil,
+			packagePath: "/packages/aws",
+			wantContent: "/packages/aws @elastic/obs-team\n",
+		},
+		{
+			name:        "updates an existing line in place, preserving unrelated lines",
+			content:     "/packages/aws @elastic/obs-old-team\n/packages/other @elastic/other-team\n",
+			updates:     map[string][]string{"/packages/aws": {"@elastic/obs-new-team"}},
+			packagePath: "/packages/aws",
+			wantContent: "/packages/aws @elastic/obs-new-team\n/packages/other @elastic/other-team\n",
+		},
+		{
+			name:    "inserts a new data-stream line right after the package's own line",
+			content: "/packages/aws @elastic/obs-team\n/packages/other @elastic/other-team\n",
+			updates: map[string][]string{
+				"/packages/aws/data_stream/cloudtrail": {"@elastic/security-team"},
+			},
+			packagePath: "/packages/aws",
+			wantContent: "/packages/aws @elastic/obs-team\n/packages/aws/data_stream/cloudtrail @elastic/security-team\n" +
+				"/packages/other @elastic/other-team\n",
+		},
+		{
+			name:        "appends at end of file when the package line isn't found",
+			content:     "/packages/other @elastic/other-team\n",
+			updates:     map[string][]string{"/packages/aws": {"@elastic/obs-team"}},
+			packagePath: "/packages/aws",
+			wantContent: "/packages/other @elastic/other-team\n/packages/aws @elastic/obs-team\n",
+		},
+		{
+			// Comments and exclusion-only rules must survive untouched.
+			name: "preserves comments and unrelated rules",
+			content: "# top-level comment\n/packages/aws @elastic/obs-old-team\n" +
+				"/packages/aws/README.md\n/packages/other @elastic/other-team\n",
+			updates:     map[string][]string{"/packages/aws": {"@elastic/obs-new-team"}},
+			packagePath: "/packages/aws",
+			wantContent: "# top-level comment\n/packages/aws @elastic/obs-new-team\n" +
+				"/packages/aws/README.md\n/packages/other @elastic/other-team\n",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := ApplyUpdates(tc.content, tc.updates, tc.packagePath)
+			assert.Equal(t, tc.wantContent, got)
+		})
+	}
+}
