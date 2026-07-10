@@ -237,6 +237,8 @@ Each log family (identified by the `logtype` field) is mapped to the ECS categor
 
 For the families that carry a rule action, `event.type` additionally receives `allowed` when the action is `pass` and `denied` when the action is `block` (matched case-insensitively). An empty action field corresponds to a rule set to Log, and no modifier is added. Unknown log families fall back to `event.kind: event` without `event.category` or `event.type`, so a family missing from the table is visible instead of being mislabeled.
 
+For the `auth`, `server` and `xvpn` families, `event.outcome` is derived from the vendor `error` field: `success` when the error code is `0`, `failure` otherwise.
+
 For alarm logs, `event.code` carries the Stormshield alarm identifier, `event.risk_score` the `risk` field (1-100), and `event.severity` the vendor alarm level from `pri`, where 1 is a major alarm and 4 a minor alarm. This scale is specific to the alarm family. In most other families, the appliance hardcodes the `pri` field to 5.
 
 `network.direction` is computed from the source and destination IP addresses, treating private (RFC 1918) address ranges as internal networks.

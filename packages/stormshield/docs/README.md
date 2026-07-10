@@ -300,6 +300,8 @@ Each log family (identified by the `logtype` field) is mapped to the ECS categor
 
 For the families that carry a rule action, `event.type` additionally receives `allowed` when the action is `pass` and `denied` when the action is `block` (matched case-insensitively). An empty action field corresponds to a rule set to Log, and no modifier is added. Unknown log families fall back to `event.kind: event` without `event.category` or `event.type`, so a family missing from the table is visible instead of being mislabeled.
 
+For the `auth`, `server` and `xvpn` families, `event.outcome` is derived from the vendor `error` field: `success` when the error code is `0`, `failure` otherwise.
+
 For alarm logs, `event.code` carries the Stormshield alarm identifier, `event.risk_score` the `risk` field (1-100), and `event.severity` the vendor alarm level from `pri`, where 1 is a major alarm and 4 a minor alarm. This scale is specific to the alarm family. In most other families, the appliance hardcodes the `pri` field to 5.
 
 `network.direction` is computed from the source and destination IP addresses, treating private (RFC 1918) address ranges as internal networks.
@@ -340,9 +342,12 @@ You'll find a list of all exported fields in the following table:
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
+| http.response.status_code | HTTP response status code. | long |
 | input.type | Type of input. | keyword |
 | log.source.address | Source address for the log. | keyword |
 | log.syslog.appname | The device or application that originated the Syslog message, if available. | keyword |
@@ -409,6 +414,8 @@ You'll find a list of all exported fields in the following table:
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.group.name | Name of the group. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 
