@@ -45,6 +45,19 @@ For Rest API, this module has been tested against the **2.0** API version.
 4. Add all the required integration configuration parameters: URL, Username and Password.
 5. Save the integration.
 
+### Query-time asset enrichment (LOOKUP JOIN)
+
+When the integration is installed, a transform maintains the latest asset inventory per host in a lookup index (`logs-qualys_gav_latest.asset`). You can enrich other Qualys or security data with GAV asset metadata at query time using ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join) on `host.id`.
+
+Example enriching Qualys VMDR vulnerability data with GAV asset inventory:
+
+```esql
+FROM security_solution-qualys_vmdr.vulnerability_latest
+| LOOKUP JOIN logs-qualys_gav_latest.asset ON host.id
+```
+
+**Elasticsearch 9.1+** is required for `LOOKUP JOIN` against a lookup index. On releases before 9.1, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the Qualys GAV latest asset transform, and use the **destination_index** name shown there (that name can change with the integration version).
+
 ## Logs reference
 
 ### Asset
