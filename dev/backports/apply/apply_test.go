@@ -347,6 +347,15 @@ func TestSetManifestOwner(t *testing.T) {
 			content: "name: aws\nversion: 6.14.2\nowner:\n  type: elastic\n",
 			wantErr: true,
 		},
+		{
+			// A comment mentioning "github:" ahead of the real field must not
+			// be mistaken for it — the match has to be anchored to the key,
+			// not just look for the substring anywhere on the line.
+			name:        "ignores a comment mentioning github: before the real field",
+			content:     "name: aws\nversion: 6.14.2\nowner:\n  # see github: https://example.com/teams\n  github: elastic/obs-old-team\n",
+			newOwner:    "elastic/obs-new-team",
+			wantContent: "name: aws\nversion: 6.14.2\nowner:\n  # see github: https://example.com/teams\n  github: elastic/obs-new-team\n",
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {

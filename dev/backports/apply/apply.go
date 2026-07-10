@@ -755,7 +755,9 @@ func setManifestOwner(manifestPath, newOwner string) error {
 		if len(lines[i]) > 0 && lines[i][0] != ' ' && lines[i][0] != '\t' {
 			break // left the owner block
 		}
-		if bytes.Contains(lines[i], []byte("github:")) {
+		// TrimLeft drops the indentation so the prefix check matches the key
+		// itself, not a comment mentioning "github:" further into the line.
+		if bytes.HasPrefix(bytes.TrimLeft(lines[i], " \t"), []byte("github:")) {
 			githubIdx = i
 			break
 		}
