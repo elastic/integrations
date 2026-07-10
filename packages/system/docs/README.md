@@ -928,7 +928,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.scheduled_task.principals.user.identifier | User identifier from Principal/UserId in the task XML. | keyword |
 | winlog.scheduled_task.settings.enabled | Enabled value from task Settings in the XML. This describes the task definition setting, not the lifecycle event action. | boolean |
 | winlog.scheduled_task.settings.hidden | Hidden value from task Settings in the XML. A value of true indicates the task is hidden from default Task Scheduler GUI views. | boolean |
-| winlog.scheduled_task.triggers.enabled | Enabled value from the trigger XML, when present. | boolean |
+| winlog.scheduled_task.triggers.enabled | Effective enabled state of the trigger. This defaults to true when the Enabled element is omitted, as defined by the Task Scheduler schema. | boolean |
 | winlog.scheduled_task.triggers.repetition.duration | Repetition duration from the trigger XML, represented as the original Task Scheduler duration string. | keyword |
 | winlog.scheduled_task.triggers.repetition.interval | Repetition interval from the trigger XML, represented as the original Task Scheduler duration string. | keyword |
 | winlog.scheduled_task.triggers.repetition.stop_at_duration_end | StopAtDurationEnd value from the trigger repetition XML, when present. | boolean |

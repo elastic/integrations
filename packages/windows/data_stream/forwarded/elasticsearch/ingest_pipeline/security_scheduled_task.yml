@@ -73,10 +73,10 @@ processors:
             return null;
           }
           String v = s.toLowerCase();
-          if (v.equals("true")) {
+          if (v.equals("true") || v.equals("1")) {
             return true;
           }
-          if (v.equals("false")) {
+          if (v.equals("false") || v.equals("0")) {
             return false;
           }
           return null;
@@ -94,6 +94,17 @@ processors:
 
         void putBool(HashMap target, String field, def source, String key) {
           if (!(source instanceof Map)) {
+            return;
+          }
+          def value = boolValue(source.get(key));
+          if (value != null) {
+            target.put(field, value);
+          }
+        }
+
+        void putBoolDefault(HashMap target, String field, def source, String key, boolean defaultValue) {
+          if (!(source instanceof Map) || !source.containsKey(key)) {
+            target.put(field, defaultValue);
             return;
           }
           def value = boolValue(source.get(key));
@@ -191,21 +202,29 @@ processors:
               String type = params.trigger_types.get(triggerKey);
               for (def triggerValue : asList(triggersBlock.get(triggerKey))) {
                 def triggerBlock = asMap(triggerValue);
-                if (triggerBlock == null) {
+                // Empty XML trigger elements decode as empty scalar strings. Ignore
+                // non-empty scalars because they cannot represent a valid trigger.
+                if (triggerBlock == null && text(triggerValue) != null) {
                   continue;
                 }
                 HashMap trigger = new HashMap();
                 trigger.put("type", type);
-                putBool(trigger, "enabled", triggerBlock, "enabled");
+                // Task Scheduler defaults an omitted trigger Enabled element to true.
+                putBoolDefault(trigger, "enabled", triggerBlock, "enabled", true);
 
-                def repetitionBlock = asMap(triggerBlock.get("repetition"));
-                if (repetitionBlock != null) {
-                  HashMap repetition = new HashMap();
-                  putText(repetition, "interval", repetitionBlock, "interval");
-                  putText(repetition, "duration", repetitionBlock, "duration");
-                  putBool(repetition, "stop_at_duration_end", repetitionBlock, "stopatdurationend");
-                  if (repetition.size() > 0) {
-                    trigger.put("repetition", repetition);
+                // decode_xml represents empty elements (for example, <BootTrigger />)
+                // as scalar strings. Their presence still defines a trigger, even when
+                // there are no optional fields to extract from a map.
+                if (triggerBlock != null) {
+                  def repetitionBlock = asMap(triggerBlock.get("repetition"));
+                  if (repetitionBlock != null) {
+                    HashMap repetition = new HashMap();
+                    putText(repetition, "interval", repetitionBlock, "interval");
+                    putText(repetition, "duration", repetitionBlock, "duration");
+                    putBool(repetition, "stop_at_duration_end", repetitionBlock, "stopatdurationend");
+                    if (repetition.size() > 0) {
+                      trigger.put("repetition", repetition);
+                    }
                   }
                 }
                 triggers.add(trigger);
