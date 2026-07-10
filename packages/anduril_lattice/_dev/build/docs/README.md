@@ -53,7 +53,7 @@ Elastic Agent polls the Lattice long-poll API and ships events to Elastic, where
 
 1. Log in to the Lattice admin console for your environment.
 2. Navigate to **Integrations** and create a new integration to generate OAuth2 credentials (`client_id` and `client_secret`), or obtain a static bearer token from your Lattice administrator.
-3. Note your Lattice API base URL (e.g., `https://lattice.yourdomain.com`).
+3. Note your Lattice API base URL (for example, `https://lattice.yourdomain.com`).
 4. For sandbox environments, also obtain the `Anduril-Sandbox-Authorization` token from the [Lattice sandbox documentation](https://developer.anduril.com/guides/developer-tools/sandboxes).
 5. Ensure the Elastic Agent host has HTTPS/443 access to the Lattice server.
 
@@ -66,9 +66,9 @@ Elastic Agent polls the Lattice long-poll API and ships events to Elastic, where
 
 ### Set up steps in Kibana
 
-1. In Kibana, navigate to **Fleet** > **Integrations** and search for **Anduril Lattice**.
+1. In Kibana, navigate to **Fleet** → **Integrations** and search for **Anduril Lattice**.
 2. Click **Add Anduril Lattice** and configure the integration:
-   - **Lattice API URL** — the base URL of your Lattice environment (e.g., `https://lattice.example.com`).
+   - **Lattice API URL** — the base URL of your Lattice environment (for example, `https://lattice.example.com`).
    - **Authentication** — provide either a static **Bearer Token**, or an **OAuth2 Client ID** and **Client Secret** for automatic token management.
    - **Sandbox Token** — leave empty for production; provide the sandbox token for developer environments.
    - **Interval** — how often to poll for new events (default: `5s`).
@@ -78,7 +78,7 @@ Elastic Agent polls the Lattice long-poll API and ships events to Elastic, where
 
 After deploying the integration, verify data is flowing:
 
-1. Open **Kibana** > **Discover**.
+1. Open **Kibana** → **Discover**.
 2. Select the `logs-anduril_lattice.entity-*` index pattern.
 3. Check that events appear with `event.dataset: anduril_lattice.entity`.
 4. Confirm entity fields such as `anduril_lattice.entity.entity_id`, `anduril_lattice.entity.ontology.template`, and `anduril_lattice.entity.mil_view.disposition` are populated.

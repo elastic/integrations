@@ -54,7 +54,7 @@ Elastic Agent polls the Lattice long-poll API and ships events to Elastic, where
 
 1. Log in to the Lattice admin console for your environment.
 2. Navigate to **Integrations** and create a new integration to generate OAuth2 credentials (`client_id` and `client_secret`), or obtain a static bearer token from your Lattice administrator.
-3. Note your Lattice API base URL (e.g., `https://lattice.yourdomain.com`).
+3. Note your Lattice API base URL (for example, `https://lattice.yourdomain.com`).
 4. For sandbox environments, also obtain the `Anduril-Sandbox-Authorization` token from the [Lattice sandbox documentation](https://developer.anduril.com/guides/developer-tools/sandboxes).
 5. Ensure the Elastic Agent host has HTTPS/443 access to the Lattice server.
 
@@ -67,9 +67,9 @@ Elastic Agent polls the Lattice long-poll API and ships events to Elastic, where
 
 ### Set up steps in Kibana
 
-1. In Kibana, navigate to **Fleet** > **Integrations** and search for **Anduril Lattice**.
+1. In Kibana, navigate to **Fleet** → **Integrations** and search for **Anduril Lattice**.
 2. Click **Add Anduril Lattice** and configure the integration:
-   - **Lattice API URL** — the base URL of your Lattice environment (e.g., `https://lattice.example.com`).
+   - **Lattice API URL** — the base URL of your Lattice environment (for example, `https://lattice.example.com`).
    - **Authentication** — provide either a static **Bearer Token**, or an **OAuth2 Client ID** and **Client Secret** for automatic token management.
    - **Sandbox Token** — leave empty for production; provide the sandbox token for developer environments.
    - **Interval** — how often to poll for new events (default: `5s`).
@@ -79,7 +79,7 @@ Elastic Agent polls the Lattice long-poll API and ships events to Elastic, where
 
 After deploying the integration, verify data is flowing:
 
-1. Open **Kibana** > **Discover**.
+1. Open **Kibana** → **Discover**.
 2. Select the `logs-anduril_lattice.entity-*` index pattern.
 3. Check that events appear with `event.dataset: anduril_lattice.entity`.
 4. Confirm entity fields such as `anduril_lattice.entity.entity_id`, `anduril_lattice.entity.ontology.template`, and `anduril_lattice.entity.mil_view.disposition` are populated.
@@ -169,7 +169,7 @@ Entity sub-types (distinguished by `anduril_lattice.entity.ontology.template`):
 | anduril_lattice.entity.correlation.primary_secondary_entity_ids | Secondary entity IDs associated with this primary entity. | keyword |
 | anduril_lattice.entity.correlation.secondary_primary_entity_id | Primary entity ID that this secondary entity is correlated to. | keyword |
 | anduril_lattice.entity.data_classification.caveats | Classification caveats or handling instructions. | keyword |
-| anduril_lattice.entity.data_classification.level | Classification level (e.g. UNCLASSIFIED, SECRET). | keyword |
+| anduril_lattice.entity.data_classification.level | Classification level (for example, UNCLASSIFIED, SECRET). | keyword |
 | anduril_lattice.entity.dimensions.length_m | Length of the entity in meters. | float |
 | anduril_lattice.entity.entity_id | Unique identifier for the entity. | keyword |
 | anduril_lattice.entity.event_type | Type of entity lifecycle event. One of: EVENT_TYPE_CREATED, EVENT_TYPE_UPDATE, EVENT_TYPE_PREEXISTING, EVENT_TYPE_DELETED, EVENT_TYPE_POST_EXPIRY_OVERRIDE. | keyword |
@@ -179,7 +179,7 @@ Entity sub-types (distinguished by `anduril_lattice.entity.ontology.template`):
 | anduril_lattice.entity.geo_details.type | Geo entity type. | keyword |
 | anduril_lattice.entity.geo_shape | Entity declared geometry as a GeoJSON shape derived from geoShape (point, line, or polygon). | geo_shape |
 | anduril_lattice.entity.geo_shape.coordinates | Coordinates of the geo_shape geometry. | object |
-| anduril_lattice.entity.geo_shape.type | GeoJSON geometry type (e.g. "Polygon", "MultiPolygon"). | keyword |
+| anduril_lattice.entity.geo_shape.type | GeoJSON geometry type (for example, "Polygon," "MultiPolygon.") | keyword |
 | anduril_lattice.entity.geo_shape_ellipse.height_m | Height of the ellipse in meters. | float |
 | anduril_lattice.entity.geo_shape_ellipse.orientation_d | Orientation of the ellipse semi-major axis in degrees from North. | float |
 | anduril_lattice.entity.geo_shape_ellipse.semi_major_axis_m | Semi-major axis of the ellipse in meters. | float |
@@ -187,7 +187,7 @@ Entity sub-types (distinguished by `anduril_lattice.entity.ontology.template`):
 | anduril_lattice.entity.geo_shape_ellipsoid.forward_axis_m | Forward (x) semi-axis of the ellipsoid in meters. | float |
 | anduril_lattice.entity.geo_shape_ellipsoid.side_axis_m | Side (y) semi-axis of the ellipsoid in meters. | float |
 | anduril_lattice.entity.geo_shape_ellipsoid.up_axis_m | Up (z) semi-axis of the ellipsoid in meters. | float |
-| anduril_lattice.entity.group_details.army_echelon | Army echelon designation (e.g. ARMY_ECHELON_PLATOON). | keyword |
+| anduril_lattice.entity.group_details.army_echelon | Army echelon designation (for example, ARMY_ECHELON_PLATOON). | keyword |
 | anduril_lattice.entity.health.active_alerts.activated_time | ISO8601 timestamps when each alert was activated (stored as keyword). | keyword |
 | anduril_lattice.entity.health.active_alerts.alert_code | Alert code identifiers. | keyword |
 | anduril_lattice.entity.health.active_alerts.description | Alert descriptions. | keyword |
@@ -238,7 +238,7 @@ Entity sub-types (distinguished by `anduril_lattice.entity.ontology.template`):
 | anduril_lattice.entity.location_uncertainty.velocity_enu_cov.mzz | Velocity covariance mzz. | float |
 | anduril_lattice.entity.media.item_identifier | Media item identifiers. | keyword |
 | anduril_lattice.entity.media.relative_path | Relative paths to media items. | keyword |
-| anduril_lattice.entity.media.type | Media types (e.g. IMAGE, VIDEO). | keyword |
+| anduril_lattice.entity.media.type | Media types (for example, IMAGE, VIDEO). | keyword |
 | anduril_lattice.entity.mil_view.disposition | Military disposition of the entity. Examples: DISPOSITION_FRIENDLY, DISPOSITION_ASSUMED_FRIENDLY, DISPOSITION_HOSTILE, DISPOSITION_NEUTRAL, DISPOSITION_SUSPECT, DISPOSITION_UNKNOWN. | keyword |
 | anduril_lattice.entity.mil_view.environment | Operational environment. Examples: ENVIRONMENT_SURFACE, ENVIRONMENT_LAND, ENVIRONMENT_AIR, ENVIRONMENT_SUBSURFACE, ENVIRONMENT_SPACE. | keyword |
 | anduril_lattice.entity.mil_view.nationality | Nationality code of the entity. | keyword |
@@ -270,7 +270,7 @@ Entity sub-types (distinguished by `anduril_lattice.entity.ontology.template`):
 | anduril_lattice.entity.route_details.estimated_arrival_time | Estimated time of arrival at the destination. | date |
 | anduril_lattice.entity.sensors.fields_of_view.geo | Sensor field-of-view footprint polygons derived from projectedFrustum corners. Stored as an array of GeoJSON Polygon objects. | geo_shape |
 | anduril_lattice.entity.sensors.fields_of_view.geo.coordinates | Coordinates of the geo_shape geometry. | object |
-| anduril_lattice.entity.sensors.fields_of_view.geo.type | GeoJSON geometry type (e.g. "Polygon", "MultiPolygon"). | keyword |
+| anduril_lattice.entity.sensors.fields_of_view.geo.type | GeoJSON geometry type (for example, "Polygon," "MultiPolygon.") | keyword |
 | anduril_lattice.entity.sensors.last_detection_timestamp | ISO8601 timestamps of the last detection per sensor (stored as keyword). | keyword |
 | anduril_lattice.entity.sensors.operational_state | Sensor operational states. | keyword |
 | anduril_lattice.entity.sensors.sensor_description | Sensor descriptions. | keyword |
@@ -348,9 +348,9 @@ An example event for `entity` looks as following:
 {
     "@timestamp": "2025-12-17T15:30:00.000Z",
     "agent": {
-        "ephemeral_id": "6346d432-7766-400d-af9b-7a3ada749f59",
-        "id": "007d4d99-f8d0-4479-94df-850ba6cfa787",
-        "name": "elastic-agent-73744",
+        "ephemeral_id": "f7b5c7cb-12fc-48c8-95d4-26127cebee89",
+        "id": "f819c1fc-36c0-4432-848b-9aeb48f482d2",
+        "name": "elastic-agent-44681",
         "type": "filebeat",
         "version": "9.4.1"
     },
@@ -476,14 +476,14 @@ An example event for `entity` looks as following:
     },
     "data_stream": {
         "dataset": "anduril_lattice.entity",
-        "namespace": "36141",
+        "namespace": "93766",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "007d4d99-f8d0-4479-94df-850ba6cfa787",
+        "id": "f819c1fc-36c0-4432-848b-9aeb48f482d2",
         "snapshot": false,
         "version": "9.4.1"
     },
@@ -494,7 +494,7 @@ An example event for `entity` looks as following:
         ],
         "created": "2025-12-17T15:30:00.000Z",
         "dataset": "anduril_lattice.entity",
-        "ingested": "2026-07-07T18:46:45Z",
+        "ingested": "2026-07-10T18:12:09Z",
         "kind": "event",
         "module": "anduril_lattice",
         "original": "{\"entity\":{\"aliases\":{\"name\":\"Tower 45d9bf21\"},\"createdTime\":\"2025-12-17T10:00:00Z\",\"entityId\":\"tower-45d9bf21-0001-0001-0001-000000000001\",\"geoShape\":{\"polygon\":{\"rings\":[{\"positions\":[{\"heightM\":0,\"position\":{\"latitudeDegrees\":34.053,\"longitudeDegrees\":-118.245}},{\"heightM\":0,\"position\":{\"latitudeDegrees\":34.053,\"longitudeDegrees\":-118.242}},{\"heightM\":0,\"position\":{\"latitudeDegrees\":34.051,\"longitudeDegrees\":-118.242}},{\"heightM\":0,\"position\":{\"latitudeDegrees\":34.051,\"longitudeDegrees\":-118.245}}]}]}},\"health\":{\"activeAlerts\":[{\"activatedTime\":\"2025-12-17T15:00:00Z\",\"alertCode\":\"ALERT_LOW_STORAGE\",\"description\":\"Storage capacity below 15 percent\",\"level\":\"ALERT_LEVEL_WARNING\"}],\"connectionStatus\":\"CONNECTION_STATUS_ONLINE\",\"healthStatus\":\"HEALTH_STATUS_HEALTHY\",\"updateTime\":\"2025-12-17T15:30:00Z\"},\"indicators\":{\"simulated\":true},\"isLive\":true,\"location\":{\"position\":{\"altitudeHaeMeters\":85,\"latitudeDegrees\":34.05223,\"longitudeDegrees\":-118.24368}},\"milView\":{\"disposition\":\"DISPOSITION_FRIENDLY\",\"environment\":\"ENVIRONMENT_LAND\"},\"ontology\":{\"platformType\":\"FIXED_SENSOR\",\"template\":\"TEMPLATE_ASSET\"},\"powerState\":{\"sourceIdToState\":{\"Battery\":{\"powerLevel\":{\"percentRemaining\":87.5,\"voltage\":31.84},\"powerStatus\":\"POWER_STATUS_DISCHARGING\",\"powerType\":\"POWER_TYPE_BATTERY\"}}},\"provenance\":{\"dataType\":\"anduril\",\"integrationName\":\"anduril_tower\",\"sourceUpdateTime\":\"2025-12-17T15:30:00Z\"},\"sensors\":{\"sensors\":[{\"fieldsOfView\":[{\"projectedFrustum\":{\"bottomLeft\":{\"latitudeDegrees\":34.05,\"longitudeDegrees\":-118.252},\"bottomRight\":{\"latitudeDegrees\":34.05,\"longitudeDegrees\":-118.237},\"upperLeft\":{\"latitudeDegrees\":34.06,\"longitudeDegrees\":-118.252},\"upperRight\":{\"latitudeDegrees\":34.06,\"longitudeDegrees\":-118.237}}}],\"lastDetectionTimestamp\":\"2025-12-17T15:29:55Z\",\"operationalState\":\"OPERATIONAL_STATE_OPERATIONAL\",\"sensorDescription\":\"Electro-optical camera\",\"sensorId\":\"sensor-001\",\"sensorType\":\"SENSOR_TYPE_EO\"}]}},\"eventType\":\"EVENT_TYPE_UPDATE\",\"time\":\"2025-12-17T15:30:00Z\"}",

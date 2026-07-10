@@ -26,29 +26,25 @@ redact:
     - sandbox_token
 program: |-
   state.with(
-    (state.?client_id.orValue("") != "") ?
+    has(state.client_id) ?
       (
         has(state.?next.expiry) && timestamp(state.next.expiry) > now ?
           {"token": state.next.token, "next": state.next}
         :
-          request(
-            "POST",
-            state.url.trim_right("/") + "/api/v1/oauth/token"
-          ).with(
+          post_request(
+            state.url.trim_right("/") + "/api/v1/oauth/token",
+            "application/json",
             {
-              "Header": {"Content-Type": ["application/json"]},
-              "Body": {
-                "client_id": state.client_id,
-                "client_secret": state.client_secret,
-              }.encode_json(),
-            }
+              "client_id": state.client_id,
+              "client_secret": state.client_secret,
+            }.encode_json()
           ).do_request().as(tok_resp,
             (tok_resp.StatusCode == 200) ?
               tok_resp.Body.decode_json().as(tok_body,
                 {
-                  "token": string(tok_body.access_token),
+                  "token": tok_body.access_token,
                   "next": {
-                    "token": string(tok_body.access_token),
+                    "token": tok_body.access_token,
                     "expiry": string(now + duration("29m")),
                   },
                 }
@@ -67,7 +63,7 @@ program: |-
           )
       )
     :
-      {"token": state.?token.orValue("")}
+      {?"token": state.?token}
   ).as(state,
     has(state.?events.error) ?
       state
@@ -80,14 +76,11 @@ program: |-
           {
             "Header": {
               "Content-Type": ["application/json"],
-              ?"Authorization": (state.token != "") ?
+              ?"Authorization": (state.?token.orValue("") != "") ?
                 optional.of(["Bearer " + state.token])
               :
                 optional.none(),
-              ?"Anduril-Sandbox-Authorization": (state.?sandbox_token.orValue("") != "") ?
-                optional.of(["Bearer " + state.sandbox_token])
-              :
-                optional.none(),
+              ?"Anduril-Sandbox-Authorization": state.?sandbox_token.optMap(t, ["Bearer " + t]),
             },
             "Body": {
               "sessionToken": state.?cursor.session_token.orValue(""),
