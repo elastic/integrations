@@ -911,29 +911,29 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |
 | winlog.record_id | The record ID of the event log record. The first record written to an event log is record number 1, and other records are numbered sequentially. If the record number reaches the maximum value (2^32^ for the Event Logging API and 2^64^ for the Windows Event Log API), the next record number will be 0. | keyword |
 | winlog.related_activity_id | A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier. | keyword |
-| winlog.scheduled_task.actions.arguments | Arguments value from an Exec action in the task XML. | wildcard |
+| winlog.scheduled_task.actions.arguments | Command-line arguments configured for the `exec` action command. The value may contain environment variables. | wildcard |
 | winlog.scheduled_task.actions.arguments.text | Multi-field of `winlog.scheduled_task.actions.arguments`. | match_only_text |
-| winlog.scheduled_task.actions.class_id | COM class ID from a ComHandler action in the task XML. This identifies the configured COM component, not a file path, and typically requires CLSID registry correlation during investigation. | keyword |
-| winlog.scheduled_task.actions.command | Command value from an Exec action in the task XML. This value can be a bare command or executable name, full executable path, environment-variable path, or quoted command string. | wildcard |
+| winlog.scheduled_task.actions.class_id | COM class identifier (CLSID) invoked by a `com_handler` action. This identifies the configured COM component, not a file or observed process. | keyword |
+| winlog.scheduled_task.actions.command | Executable file or document configured for an `exec` action. The value may contain environment variables; command-line arguments are stored separately in `winlog.scheduled_task.actions.arguments`. | wildcard |
 | winlog.scheduled_task.actions.command.text | Multi-field of `winlog.scheduled_task.actions.command`. | match_only_text |
-| winlog.scheduled_task.actions.context | Principal reference from the Actions Context attribute in the task XML. This value corresponds to a principals.id entry and indicates which principal the action is configured to run under. | keyword |
-| winlog.scheduled_task.actions.type | Action type parsed from the task XML, such as `exec` or `com_handler`. | keyword |
-| winlog.scheduled_task.actions.working_directory | WorkingDirectory value from an Exec action in the task XML. | wildcard |
+| winlog.scheduled_task.actions.context | Task-local principal identifier whose security context applies to this action. It references `winlog.scheduled_task.principals.id` and is not a Windows account identifier. | keyword |
+| winlog.scheduled_task.actions.type | Normalized action type: `exec` runs a command-line operation; `com_handler` invokes a COM handler. | keyword |
+| winlog.scheduled_task.actions.working_directory | Working directory configured for the `exec` action. The value may contain environment variables. | wildcard |
 | winlog.scheduled_task.actions.working_directory.text | Multi-field of `winlog.scheduled_task.actions.working_directory`. | match_only_text |
-| winlog.scheduled_task.name | Task name from winlog.event_data.TaskName. This is the full Windows task path, including folder components such as \Microsoft\Windows. | keyword |
-| winlog.scheduled_task.principals.group.identifier | Group identifier from Principal/GroupId in the task XML. | keyword |
-| winlog.scheduled_task.principals.id | Principal id attribute from the task XML. | keyword |
-| winlog.scheduled_task.principals.logon.type | Logon type from Principal/LogonType in the task XML. This field is only set when the XML contains an explicit LogonType. | keyword |
-| winlog.scheduled_task.principals.run_level | Run level from Principal/RunLevel in the task XML, such as LeastPrivilege or HighestAvailable. | keyword |
-| winlog.scheduled_task.principals.user.identifier | User identifier from Principal/UserId in the task XML. | keyword |
-| winlog.scheduled_task.settings.enabled | Enabled value from task Settings in the XML. This describes the task definition setting, not the lifecycle event action. | boolean |
-| winlog.scheduled_task.settings.hidden | Hidden value from task Settings in the XML. A value of true indicates the task is hidden from default Task Scheduler GUI views. | boolean |
-| winlog.scheduled_task.triggers.enabled | Effective enabled state of the trigger. This defaults to true when the Enabled element is omitted, as defined by the Task Scheduler schema. | boolean |
-| winlog.scheduled_task.triggers.repetition.duration | Repetition duration from the trigger XML, represented as the original Task Scheduler duration string. | keyword |
-| winlog.scheduled_task.triggers.repetition.interval | Repetition interval from the trigger XML, represented as the original Task Scheduler duration string. | keyword |
-| winlog.scheduled_task.triggers.repetition.stop_at_duration_end | StopAtDurationEnd value from the trigger repetition XML, when present. | boolean |
-| winlog.scheduled_task.triggers.type | Trigger type parsed from the trigger element name, such as `time`, `calendar`, `boot`, `logon`, `registration`, `event`, `idle`, `wnf_state_change`, or `session_state_change`. | keyword |
-| winlog.scheduled_task.uri | Task URI from RegistrationInfo/URI in the scheduled task XML. This can complement winlog.event_data.TaskName when investigating masquerading or unusual task paths. | keyword |
+| winlog.scheduled_task.name | Full task path from `winlog.event_data.TaskName`, in `\folder\task` form. | keyword |
+| winlog.scheduled_task.principals.group.identifier | User-group identifier from `Principal/GroupId` required to run task actions associated with this principal. | keyword |
+| winlog.scheduled_task.principals.id | Task-local identifier for this principal. `winlog.scheduled_task.actions.context` can reference this value; it is not a Windows account identifier. | keyword |
+| winlog.scheduled_task.principals.logon.type | Method Task Scheduler uses to establish the principal's security context, such as `Password`, `S4U`, `InteractiveToken`, or `ServiceAccount`. This field is populated only when `Principal/LogonType` exists in the XML. | keyword |
+| winlog.scheduled_task.principals.run_level | Requested privilege level for task execution, such as `LeastPrivilege` or `HighestAvailable`. This setting does not prove that an execution was elevated. | keyword |
+| winlog.scheduled_task.principals.user.identifier | User identifier from `Principal/UserId` required to run task actions associated with this principal. | keyword |
+| winlog.scheduled_task.settings.enabled | Whether the task definition is enabled. This field is populated only when the XML contains `Settings/Enabled`; otherwise Task Scheduler defaults the setting to `true`. It is separate from `event.action`, which identifies the audited lifecycle operation. | boolean |
+| winlog.scheduled_task.settings.hidden | Whether the task is hidden from default Task Scheduler views. This field is populated only when the XML contains `Settings/Hidden`; otherwise Task Scheduler defaults the setting to `false`. Hidden tasks remain registered and can still run. | boolean |
+| winlog.scheduled_task.triggers.enabled | Whether the trigger is effectively enabled. If the trigger XML has no `Enabled` element, Task Scheduler treats the trigger as enabled. | boolean |
+| winlog.scheduled_task.triggers.repetition.duration | How long the repetition pattern remains active, represented as an XML duration such as `PT1H` for one hour. If `Duration` is absent, the pattern repeats indefinitely. | keyword |
+| winlog.scheduled_task.triggers.repetition.interval | Time between repeated task starts, represented as an XML duration such as `PT5M` for five minutes. | keyword |
+| winlog.scheduled_task.triggers.repetition.stop_at_duration_end | Whether Task Scheduler stops a running task instance when the repetition duration ends. This field is populated only when the XML contains `StopAtDurationEnd`; otherwise Task Scheduler defaults the setting to `false`. | boolean |
+| winlog.scheduled_task.triggers.type | Normalized trigger type: `boot`, `wnf_state_change`, `time`, `calendar`, `logon`, `registration`, `session_state_change`, `event`, or `idle`. | keyword |
+| winlog.scheduled_task.uri | URI from `RegistrationInfo/URI` in the task XML. Compare it with `winlog.scheduled_task.name` when investigating inconsistent task identity. | keyword |
 | winlog.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
 | winlog.time_created | Time event was created | date |
 | winlog.trustAttribute |  | keyword |
