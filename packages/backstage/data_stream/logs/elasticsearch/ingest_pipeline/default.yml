@@ -1,0 +1,49 @@
+---
+description: Pipeline for backstage logs
+processors:
+  - json:
+      field: message
+      target_field: json
+      tag: parse_message_json
+      if: ctx.message != null
+      description: >-
+        Parses the raw log line just enough to read isAuditEvent for the drop/dispatch
+        decision below. Field shaping (ecs.version, event.original, ...) is deferred to
+        the audit pipeline so it isn't wasted on lines this pipeline drops.
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_event_original_json
+      if: ctx.json == null && ctx.event?.original != null
+      description: >-
+        Falls back to parsing `event.original` when the agent already moved the raw
+        line there (e.g. via the `preserve_original_event` tag) instead of `message`.
+  - drop:
+      if: ctx.json?.isAuditEvent == null
+      tag: drop_if_not_audit_event
+      description: >-
+        Drops messages that do not contain the isAuditEvent: true key/value pair
+        Non-audit logs do not contain that key at all and are not currently supported
+  - pipeline:
+      name: '{{ IngestPipeline "audit" }}'
+      if: ctx.json?.isAuditEvent == true
+      tag: execute_audit_pipeline
+      description: >-
+        Triggers the audit ingest pipeline for messages that contain isAuditEvent: true
+on_failure:
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Pipeline '{{{ _ingest.pipeline }}}' failed at processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -61,7 +61,7 @@ After the configuration is complete, follow these steps to verify data is flowin
 1. Trigger an audit event in Backstage — for example, browse the Software Catalog to trigger a `catalog.entity-fetch` event.
 2. In Kibana, navigate to **Analytics → Discover**.
 3. Select the `logs-*` data view.
-4. In the search bar, enter the filter: `data_stream.dataset: "backstage.audit_logs"`.
+4. In the search bar, enter the filter: `data_stream.dataset: "backstage.logs"`.
 5. Verify that events appear with a non-null `event.action` field, and that `event.provider` reflects the Backstage plugin that generated the event (for example, `catalog`).
 
 ## Troubleshooting
@@ -104,11 +104,11 @@ To collect logs via Filestream, select **Collect logs via Filestream** and confi
 
 ### Data streams
 
-#### audit_logs
+#### logs
 
-The `audit_logs` data stream provides audit events from Backstage's `auditor` service, including catalog operations, user activity, and other plugin-specific audit events.
+The `logs` data stream provides audit events from Backstage's `auditor` service, including catalog operations, user activity, and other plugin-specific audit events. Non-audit application logs are currently dropped; see [Common configuration issues](#common-configuration-issues).
 
-##### audit_logs fields
+##### logs fields
 
 **Exported fields**
 
@@ -157,9 +157,9 @@ The `audit_logs` data stream provides audit events from Backstage's `auditor` se
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 
 
-##### audit_logs sample event
+##### logs sample event
 
-An example event for `audit` looks as following:
+An example event for `logs` looks as following:
 
 ```json
 {
@@ -189,7 +189,7 @@ An example event for `audit` looks as following:
         "severity_level": "low"
     },
     "data_stream": {
-        "dataset": "backstage.audit_logs",
+        "dataset": "backstage.logs",
         "namespace": "34846",
         "type": "logs"
     },
@@ -208,7 +208,7 @@ An example event for `audit` looks as following:
             "api"
         ],
         "code": "entity-fetch",
-        "dataset": "backstage.audit_logs",
+        "dataset": "backstage.logs",
         "ingested": "2026-07-09T14:49:59Z",
         "kind": "event",
         "module": "backstage",

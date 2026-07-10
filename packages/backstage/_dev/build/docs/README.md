@@ -61,7 +61,7 @@ After the configuration is complete, follow these steps to verify data is flowin
 1. Trigger an audit event in Backstage — for example, browse the Software Catalog to trigger a `catalog.entity-fetch` event.
 2. In Kibana, navigate to **Analytics → Discover**.
 3. Select the `logs-*` data view.
-4. In the search bar, enter the filter: `data_stream.dataset: "backstage.audit_logs"`.
+4. In the search bar, enter the filter: `data_stream.dataset: "backstage.logs"`.
 5. Verify that events appear with a non-null `event.action` field, and that `event.provider` reflects the Backstage plugin that generated the event (for example, `catalog`).
 
 ## Troubleshooting
@@ -89,17 +89,17 @@ The following inputs are used by this integration:
 
 ### Data streams
 
-#### audit_logs
+#### logs
 
-The `audit_logs` data stream provides audit events from Backstage's `auditor` service, including catalog operations, user activity, and other plugin-specific audit events.
+The `logs` data stream provides audit events from Backstage's `auditor` service, including catalog operations, user activity, and other plugin-specific audit events. Non-audit application logs are currently dropped; see [Common configuration issues](#common-configuration-issues).
 
-##### audit_logs fields
+##### logs fields
 
-{{ fields "audit_logs" }}
+{{ fields "logs" }}
 
-##### audit_logs sample event
+##### logs sample event
 
-{{ event "audit_logs" }}
+{{ event "logs" }}
 
 ### Vendor documentation links
 

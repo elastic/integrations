@@ -21,18 +21,6 @@ processors:
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
-  - json:
-      field: event.original
-      target_field: json
-      tag: parse_event_original_json
-      description: Parses the JSON-encoded `event.original` into the temporary `json` object for field extraction.
-      if: ctx.event?.original != null
-  - drop:
-      if: ctx.json?.isAuditEvent == null
-      tag: drop_if_not_audit_event
-      description: >-
-        Drops messages that do not contain the isAuditEvent: true key/value pair
-        Non-audit logs do not contain that key at all and we want to avoid processing them altogether for performance and compatibility reasons
   - set:
       tag: set_event_kind
       field: event.kind
