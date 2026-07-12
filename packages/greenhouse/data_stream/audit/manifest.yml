@@ -53,7 +53,16 @@ streams:
         show_user: true
         default: false
         description: >-
-          When an audit event records an Application being moved to the "rejected" status, look up the rejection reason and rejection notes/comments from the Harvest API and add them to the event. This requires the OAuth client to also have read access to the Harvest "Applications" and "Activity Feed" endpoints, and results in up to two additional API calls per rejection event.
+          When an audit event records a candidate or prospect being rejected, look up the rejection reason and rejection notes/comments from the Harvest API and add them to the event. Since this audit event does not include an application ID, the matching Application is found by correlating its rejected_at time to the audit event's timestamp (see "Rejection Match Window"); if that correlation is not exact, the event is emitted with an error instead of a guess. This requires the OAuth client to also have read access to the Harvest "Applications" and "Activity Feed" endpoints, and results in up to two additional API calls per rejection event.
+      - name: rejection_match_window
+        type: text
+        title: Rejection Match Window
+        description: >-
+          Only used when "Enrich rejected application events" is enabled. Time window, centered on the audit event's timestamp, used to find the matching rejected Application via the Harvest API. Valid time units are s, m, h. Widen this if enrichment often reports no match found; narrow it if it often reports an ambiguous match.
+        multi: false
+        required: false
+        show_user: true
+        default: 5m
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing

@@ -57,17 +57,24 @@ To find a user's ID:
    - **Performer IDs Filter**: Filter by specific user IDs
    - **Event Types Filter**: Filter by event type (data_change_update, data_change_create, data_change_destroy, harvest_access, action)
    - **Enrich rejected application events**: When enabled, look up the rejection reason and rejection notes/comments from the Harvest API and add them to the event (default: disabled)
+   - **Rejection Match Window**: Time window used to correlate a rejection event to its Application (default: 5m, only used when enrichment is enabled)
 
 ### Enabling rejection enrichment (optional)
 
-Audit log events only record that an Application's status changed to `rejected` — they do not include the rejection reason or the notes/comments entered at rejection time. Enabling **Enrich rejected application events** adds a lookup against the Harvest API for these details.
+When a candidate or prospect is rejected, Greenhouse audits it as an `action` event with `event.target_type` set to the literal string `Candidate or Prospect rejected` — this event does **not** include an application or candidate ID, and does not include the rejection reason or notes/comments entered at rejection time. Enabling **Enrich rejected application events** looks these up from the Harvest API and correlates them back to the audit event.
 
 1. On the same Harvest V3 (OAuth) API credential used for audit log access, add read scopes for the **Applications** and **Activity Feed** endpoints.
 2. Enable the **Enrich rejected application events** setting on the integration.
 
-When an audit event records an Application moving to `rejected`, the integration performs up to two additional Harvest API calls (`GET /v3/applications/{id}` and `GET /v3/applications/{id}/activity_feed`) to fetch the rejection reason and the rejection notes, and adds them to the event under `greenhouse.audit.event.rejection`. If either lookup fails, the underlying audit event is still indexed, with `greenhouse.audit.event.rejection.error` describing the failure and the tag `greenhouse-rejection-enrichment-failed` added.
+Because the audit event has no application ID, the integration looks up Applications whose rejection time falls within **Rejection Match Window** of the audit event's timestamp:
 
-Because this issues extra API requests per rejection on top of the audit log polling, be mindful of Greenhouse's rate limits (50 general requests per 10 seconds) if your organization rejects applications in bulk.
+- **Exactly one match**: the rejection reason and notes are fetched and added to the event under `greenhouse.audit.event.rejection` (`application_id`, `candidate_id`, `reason.id`/`reason.name`/`reason.type`, `notes`, `rejected_at`). The notes are also copied to `event.reason`.
+- **No match**: the audit event is still indexed, with `greenhouse.audit.event.rejection.error` explaining that no matching Application was found. Consider widening **Rejection Match Window**.
+- **More than one match** (for example, several rejections processed in the same window): the integration does not guess. The audit event is indexed with `greenhouse.audit.event.rejection.error` and `greenhouse.audit.event.rejection.ambiguous_application_ids` listing the candidates, for manual follow-up. Consider narrowing **Rejection Match Window** if this happens often.
+
+Any of the error cases above also adds the tag `greenhouse-rejection-enrichment-failed`, and the underlying rejection audit event is never dropped.
+
+Because this issues up to two extra API requests per rejection on top of the audit log polling, be mindful of Greenhouse's rate limits (50 general requests per 10 seconds) if your organization rejects applications in bulk.
 
 ## Logs
 
@@ -126,6 +133,9 @@ If rejection events are tagged with `greenhouse-rejection-enrichment-failed` and
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | greenhouse.audit.event.meta | The before and after values from data change events, or other relevant data for the event. | flattened |
+| greenhouse.audit.event.rejection.ambiguous_application_ids | When timestamp correlation matches more than one rejected Application, the IDs of all matching candidates. No reason or notes are attached in this case. | keyword |
+| greenhouse.audit.event.rejection.application_id | The ID of the Application matched to this rejection event by timestamp correlation. | keyword |
+| greenhouse.audit.event.rejection.candidate_id | The ID of the candidate whose application was rejected. | keyword |
 | greenhouse.audit.event.rejection.error | Error message if the rejection enrichment lookup against the Harvest API failed. | keyword |
 | greenhouse.audit.event.rejection.notes | The rejection notes/comments entered when the application was rejected, sourced from the Harvest API activity feed. | match_only_text |
 | greenhouse.audit.event.rejection.reason.id | The ID of the rejection reason. | keyword |
@@ -229,20 +239,16 @@ An example event for `audit` looks as following:
 }
 ```
 
-When **Enrich rejected application events** is enabled, an audit event recording an Application's rejection is enriched with a `greenhouse.audit.event.rejection` object:
+When **Enrich rejected application events** is enabled, a `Candidate or Prospect rejected` audit event is enriched with a `greenhouse.audit.event.rejection` object, correlated to its Application by timestamp:
 
 ```json
 {
     "greenhouse": {
         "audit": {
             "event": {
-                "meta": {
-                    "status": [
-                        "active",
-                        "rejected"
-                    ]
-                },
                 "rejection": {
+                    "application_id": "987654",
+                    "candidate_id": "123123",
                     "notes": "Candidate lacked required experience with distributed systems.",
                     "reason": {
                         "id": "555",
@@ -251,14 +257,41 @@ When **Enrich rejected application events** is enabled, an audit event recording
                     },
                     "rejected_at": "2023-06-05T09:00:00.000Z"
                 },
-                "target_id": "654321",
-                "target_type": "Application",
-                "type": "data_change_update"
+                "target_type": "Candidate or Prospect rejected",
+                "type": "action"
             }
         }
     },
     "event": {
         "reason": "Candidate lacked required experience with distributed systems."
     }
+}
+```
+
+If the correlation is inconclusive, `greenhouse.audit.event.rejection` instead contains an `error` (and, for an ambiguous match, `ambiguous_application_ids`) with no `reason`/`notes` attached:
+
+```json
+{
+    "greenhouse": {
+        "audit": {
+            "event": {
+                "rejection": {
+                    "ambiguous_application_ids": [
+                        "111111",
+                        "222222"
+                    ],
+                    "error": "ambiguous match: 2 rejected applications found within 5m of the audit event timestamp"
+                },
+                "target_type": "Candidate or Prospect rejected",
+                "type": "action"
+            }
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "greenhouse-audit",
+        "greenhouse-rejection-enrichment-failed"
+    ]
 }
 ```
