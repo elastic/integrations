@@ -56,6 +56,18 @@ To find a user's ID:
    - **Batch Size**: Number of events per API request (100-500, default: 500)
    - **Performer IDs Filter**: Filter by specific user IDs
    - **Event Types Filter**: Filter by event type (data_change_update, data_change_create, data_change_destroy, harvest_access, action)
+   - **Enrich rejected application events**: When enabled, look up the rejection reason and rejection notes/comments from the Harvest API and add them to the event (default: disabled)
+
+### Enabling rejection enrichment (optional)
+
+Audit log events only record that an Application's status changed to `rejected` — they do not include the rejection reason or the notes/comments entered at rejection time. Enabling **Enrich rejected application events** adds a lookup against the Harvest API for these details.
+
+1. On the same Harvest V3 (OAuth) API credential used for audit log access, add read scopes for the **Applications** and **Activity Feed** endpoints.
+2. Enable the **Enrich rejected application events** setting on the integration.
+
+When an audit event records an Application moving to `rejected`, the integration performs up to two additional Harvest API calls (`GET /v3/applications/{id}` and `GET /v3/applications/{id}/activity_feed`) to fetch the rejection reason and the rejection notes, and adds them to the event under `greenhouse.audit.event.rejection`. If either lookup fails, the underlying audit event is still indexed, with `greenhouse.audit.event.rejection.error` describing the failure and the tag `greenhouse-rejection-enrichment-failed` added.
+
+Because this issues extra API requests per rejection on top of the audit log polling, be mindful of Greenhouse's rate limits (50 general requests per 10 seconds) if your organization rejects applications in bulk.
 
 ## Logs
 
@@ -92,6 +104,12 @@ If no events are being collected:
 1. Verify your Greenhouse subscription includes the Audit Log add-on
 2. Check that there have been events in the last 30 days
 3. Review any filter settings that might be excluding events
+
+### Rejection Enrichment Errors
+
+If rejection events are tagged with `greenhouse-rejection-enrichment-failed` and `greenhouse.audit.event.rejection.error` is populated:
+1. Verify the OAuth credential has read scopes for the Harvest **Applications** and **Activity Feed** endpoints
+2. Check that the authorizing user has permission to view the affected application
 
 ## Logs reference
 
