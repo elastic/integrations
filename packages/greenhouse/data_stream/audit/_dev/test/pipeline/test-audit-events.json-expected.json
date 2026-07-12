@@ -344,29 +344,24 @@
                 "version": "8.11.0"
             },
             "event": {
-                "action": "data_change_update",
+                "action": "action",
                 "category": [
-                    "configuration",
                     "iam"
                 ],
                 "id": "7890dID",
                 "kind": "event",
-                "original": "{\"request\":{\"id\":\"7890dID\",\"type\":\"applications#update\"},\"performer\":{\"meta\":{\"name\":\"Recruiter One\",\"username\":\"recruiter.one@omniva-corp.com\"},\"id\":22222,\"ip_address\":\"198.51.100.5\",\"type\":\"user\"},\"organization_id\":123,\"event\":{\"meta\":{\"status\":[\"active\",\"rejected\"]},\"target_type\":\"Application\",\"target_id\":654321,\"type\":\"data_change_update\",\"rejection\":{\"reason\":{\"id\":\"555\",\"name\":\"Not a fit\",\"type\":\"We rejected them\"},\"notes\":\"Candidate lacked required experience with distributed systems.\",\"rejected_at\":\"2023-06-05T09:00:00.000Z\"}},\"event_time\":\"2023-06-05T09:00:00.000Z\"}",
+                "original": "{\"request\":{\"id\":\"7890dID\",\"type\":\"people#change_application_state\"},\"performer\":{\"meta\":{\"name\":\"Recruiter One\",\"username\":\"recruiter.one@omniva-corp.com\"},\"id\":22222,\"ip_address\":\"198.51.100.5\",\"type\":\"user\"},\"organization_id\":123,\"event\":{\"meta\":null,\"target_type\":\"Candidate or Prospect rejected\",\"type\":\"action\",\"rejection\":{\"application_id\":\"987654\",\"candidate_id\":\"123123\",\"reason\":{\"id\":\"555\",\"name\":\"Not a fit\",\"type\":\"We rejected them\"},\"notes\":\"Candidate lacked required experience with distributed systems.\",\"rejected_at\":\"2023-06-05T09:00:00.000Z\"}},\"event_time\":\"2023-06-05T09:00:00.000Z\"}",
                 "reason": "Candidate lacked required experience with distributed systems.",
                 "type": [
-                    "change"
+                    "info"
                 ]
             },
             "greenhouse": {
                 "audit": {
                     "event": {
-                        "meta": {
-                            "status": [
-                                "active",
-                                "rejected"
-                            ]
-                        },
                         "rejection": {
+                            "application_id": "987654",
+                            "candidate_id": "123123",
                             "notes": "Candidate lacked required experience with distributed systems.",
                             "reason": {
                                 "id": "555",
@@ -375,9 +370,8 @@
                             },
                             "rejected_at": "2023-06-05T09:00:00.000Z"
                         },
-                        "target_id": "654321",
-                        "target_type": "Application",
-                        "type": "data_change_update"
+                        "target_type": "Candidate or Prospect rejected",
+                        "type": "action"
                     },
                     "performer": {
                         "meta": {},
@@ -385,7 +379,7 @@
                     },
                     "request": {
                         "id": "7890dID",
-                        "type": "applications#update"
+                        "type": "people#change_application_state"
                     }
                 }
             },
@@ -413,6 +407,73 @@
                 "email": "recruiter.one@omniva-corp.com",
                 "full_name": "Recruiter One",
                 "id": "22222"
+            }
+        },
+        {
+            "@timestamp": "2023-06-05T09:05:00.000Z",
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "action",
+                "category": [
+                    "iam"
+                ],
+                "id": "7891eID",
+                "kind": "event",
+                "original": "{\"request\":{\"id\":\"7891eID\",\"type\":\"people#change_application_state\"},\"performer\":{\"meta\":{\"name\":\"Recruiter Two\",\"username\":\"recruiter.two@omniva-corp.com\"},\"id\":33333,\"ip_address\":\"198.51.100.6\",\"type\":\"user\"},\"organization_id\":123,\"event\":{\"meta\":null,\"target_type\":\"Candidate or Prospect rejected\",\"type\":\"action\",\"rejection\":{\"error\":\"ambiguous match: 2 rejected applications found within 5m of the audit event timestamp\",\"ambiguous_application_ids\":[\"111111\",\"222222\"]}},\"event_time\":\"2023-06-05T09:05:00.000Z\"}",
+                "type": [
+                    "info"
+                ]
+            },
+            "greenhouse": {
+                "audit": {
+                    "event": {
+                        "rejection": {
+                            "ambiguous_application_ids": [
+                                "111111",
+                                "222222"
+                            ],
+                            "error": "ambiguous match: 2 rejected applications found within 5m of the audit event timestamp"
+                        },
+                        "target_type": "Candidate or Prospect rejected",
+                        "type": "action"
+                    },
+                    "performer": {
+                        "meta": {},
+                        "type": "user"
+                    },
+                    "request": {
+                        "id": "7891eID",
+                        "type": "people#change_application_state"
+                    }
+                }
+            },
+            "organization": {
+                "id": "123"
+            },
+            "related": {
+                "ip": [
+                    "198.51.100.6"
+                ],
+                "user": [
+                    "33333",
+                    "recruiter.two@omniva-corp.com"
+                ]
+            },
+            "source": {
+                "ip": "198.51.100.6"
+            },
+            "tags": [
+                "preserve_original_event",
+                "forwarded",
+                "greenhouse-audit",
+                "greenhouse-rejection-enrichment-failed"
+            ],
+            "user": {
+                "email": "recruiter.two@omniva-corp.com",
+                "full_name": "Recruiter Two",
+                "id": "33333"
             }
         }
     ]
