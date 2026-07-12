@@ -71,3 +71,37 @@
           type: flattened
           description: >
             The before and after values from data change events, or other relevant data for the event.
+        - name: rejection
+          type: group
+          description: >
+            Rejection details looked up from the Harvest API when an Application's status changes to "rejected". Only populated when the `enrich_rejections` setting is enabled.
+          fields:
+            - name: reason
+              type: group
+              description: >
+                The rejection reason selected in Greenhouse.
+              fields:
+                - name: id
+                  type: keyword
+                  description: >
+                    The ID of the rejection reason.
+                - name: name
+                  type: keyword
+                  description: >
+                    The name of the rejection reason.
+                - name: type
+                  type: keyword
+                  description: >
+                    The category of the rejection reason, for example "We rejected them" or "They rejected us".
+            - name: notes
+              type: match_only_text
+              description: >
+                The rejection notes/comments entered when the application was rejected, sourced from the Harvest API activity feed.
+            - name: rejected_at
+              type: date
+              description: >
+                The timestamp when the application was rejected, as reported by the Harvest API.
+            - name: error
+              type: keyword
+              description: >
+                Error message if the rejection enrichment lookup against the Harvest API failed.
