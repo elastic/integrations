@@ -56,6 +56,18 @@ To find a user's ID:
    - **Batch Size**: Number of events per API request (100-500, default: 500)
    - **Performer IDs Filter**: Filter by specific user IDs
    - **Event Types Filter**: Filter by event type (data_change_update, data_change_create, data_change_destroy, harvest_access, action)
+   - **Enrich rejected application events**: When enabled, look up the rejection reason and rejection notes/comments from the Harvest API and add them to the event (default: disabled)
+
+### Enabling rejection enrichment (optional)
+
+Audit log events only record that an Application's status changed to `rejected` — they do not include the rejection reason or the notes/comments entered at rejection time. Enabling **Enrich rejected application events** adds a lookup against the Harvest API for these details.
+
+1. On the same Harvest V3 (OAuth) API credential used for audit log access, add read scopes for the **Applications** and **Activity Feed** endpoints.
+2. Enable the **Enrich rejected application events** setting on the integration.
+
+When an audit event records an Application moving to `rejected`, the integration performs up to two additional Harvest API calls (`GET /v3/applications/{id}` and `GET /v3/applications/{id}/activity_feed`) to fetch the rejection reason and the rejection notes, and adds them to the event under `greenhouse.audit.event.rejection`. If either lookup fails, the underlying audit event is still indexed, with `greenhouse.audit.event.rejection.error` describing the failure and the tag `greenhouse-rejection-enrichment-failed` added.
+
+Because this issues extra API requests per rejection on top of the audit log polling, be mindful of Greenhouse's rate limits (50 general requests per 10 seconds) if your organization rejects applications in bulk.
 
 ## Logs
 
@@ -93,6 +105,12 @@ If no events are being collected:
 2. Check that there have been events in the last 30 days
 3. Review any filter settings that might be excluding events
 
+### Rejection Enrichment Errors
+
+If rejection events are tagged with `greenhouse-rejection-enrichment-failed` and `greenhouse.audit.event.rejection.error` is populated:
+1. Verify the OAuth credential has read scopes for the Harvest **Applications** and **Activity Feed** endpoints
+2. Check that the authorizing user has permission to view the affected application
+
 ## Logs reference
 
 ### audit
@@ -108,6 +126,12 @@ If no events are being collected:
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | greenhouse.audit.event.meta | The before and after values from data change events, or other relevant data for the event. | flattened |
+| greenhouse.audit.event.rejection.error | Error message if the rejection enrichment lookup against the Harvest API failed. | keyword |
+| greenhouse.audit.event.rejection.notes | The rejection notes/comments entered when the application was rejected, sourced from the Harvest API activity feed. | match_only_text |
+| greenhouse.audit.event.rejection.reason.id | The ID of the rejection reason. | keyword |
+| greenhouse.audit.event.rejection.reason.name | The name of the rejection reason. | keyword |
+| greenhouse.audit.event.rejection.reason.type | The category of the rejection reason, for example "We rejected them" or "They rejected us". | keyword |
+| greenhouse.audit.event.rejection.rejected_at | The timestamp when the application was rejected, as reported by the Harvest API. | date |
 | greenhouse.audit.event.target_id | The ID of the element that was edited or accessed. | keyword |
 | greenhouse.audit.event.target_type | The resource name for data changes, Harvest access, or the event action type for other actions. | keyword |
 | greenhouse.audit.event.type | The type of event: data_change_update, data_change_create, data_change_destroy, harvest_access, or action. | keyword |
@@ -201,6 +225,40 @@ An example event for `audit` looks as following:
         "email": "allison.j@omniva-corp.com",
         "full_name": "Allison Jamie",
         "id": "12345"
+    }
+}
+```
+
+When **Enrich rejected application events** is enabled, an audit event recording an Application's rejection is enriched with a `greenhouse.audit.event.rejection` object:
+
+```json
+{
+    "greenhouse": {
+        "audit": {
+            "event": {
+                "meta": {
+                    "status": [
+                        "active",
+                        "rejected"
+                    ]
+                },
+                "rejection": {
+                    "notes": "Candidate lacked required experience with distributed systems.",
+                    "reason": {
+                        "id": "555",
+                        "name": "Not a fit",
+                        "type": "We rejected them"
+                    },
+                    "rejected_at": "2023-06-05T09:00:00.000Z"
+                },
+                "target_id": "654321",
+                "target_type": "Application",
+                "type": "data_change_update"
+            }
+        }
+    },
+    "event": {
+        "reason": "Candidate lacked required experience with distributed systems."
     }
 }
 ```

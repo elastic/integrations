@@ -16,8 +16,10 @@ resource.url: {{url}}
 state:
   initial_interval: {{initial_interval}}
   token_url: {{token_url}}
+  harvest_url: {{harvest_url}}
   client_id: {{client_id}}
   client_secret: {{client_secret}}
+  enrich_rejections: {{enrich_rejections}}
 {{#if user_id}}
   user_id: "{{user_id}}"
 {{/if}}
@@ -50,6 +52,26 @@ Endpoints:
       Pit-Id + Search-After (for page 2+)
     - Response: {paging: {pit_id, next_search_after}, results: [...]}
     - next_search_after is null on the last page.
+
+Rejection enrichment (optional, enrich_rejections):
+
+  Audit events only record that an Application's status changed to
+  "rejected" (event.meta.status == [<old>, "rejected"]); the rejection
+  reason and notes/comments are not part of the audit log payload, so
+  they are looked up from the Harvest API and merged into the event as
+  event.rejection before it is emitted. This reuses the same bearer
+  token as the audit log request, so the OAuth client must also be
+  granted read access to these Harvest V3 endpoints.
+
+  GET https://harvest.greenhouse.io/v3/applications/{id}
+    - Provides rejection_reason {id, name, type} and rejected_at.
+
+  GET https://harvest.greenhouse.io/v3/applications/{id}/activity_feed
+    - Provides the "Candidate Rejected" activity, whose body holds the
+      rejection notes/comments entered at rejection time.
+
+  A failed lookup does not drop the underlying audit event: it is
+  emitted with event.rejection.error describing the failure instead.
 
 State:
   auth_token — shallow-replaced object holding token and expires.
@@ -168,7 +190,80 @@ program: |-
                               ).as(next_max_event_time,
                                 {
                                   "auth_token": auth.auth_token,
-                                  "events": results.map(e, {"message": e.encode_json()}),
+                                  "events": results.map(e,
+                                    (
+                                      state.enrich_rejections &&
+                                      e.?event.type.orValue("") == "data_change_update" &&
+                                      e.?event.target_type.orValue("") == "Application" &&
+                                      e.?event.meta.status.orValue([]).size() == 2 &&
+                                      e.event.meta.status[1] == "rejected"
+                                    ).as(is_rejection,
+                                      {"message": (
+                                        is_rejection ?
+                                          request(
+                                            "GET",
+                                            state.harvest_url.trim_right("/") + "/v3/applications/" + string(e.event.target_id)
+                                          ).with(
+                                            {"Header": {"Authorization": ["Bearer " + auth.auth_token.token]}}
+                                          ).do_request().as(app_resp,
+                                            (app_resp.StatusCode == 200) ?
+                                              app_resp.Body.decode_json().as(app,
+                                                request(
+                                                  "GET",
+                                                  state.harvest_url.trim_right("/") + "/v3/applications/" + string(e.event.target_id) + "/activity_feed"
+                                                ).with(
+                                                  {"Header": {"Authorization": ["Bearer " + auth.auth_token.token]}}
+                                                ).do_request().as(feed_resp,
+                                                  (feed_resp.StatusCode == 200) ?
+                                                    feed_resp.Body.decode_json().as(feed,
+                                                      feed.?activities.orValue([]).filter(a,
+                                                        a.?subject.orValue("") == "Candidate Rejected"
+                                                      ).as(rejection_activities,
+                                                        e.with({
+                                                          "event": e.event.with({
+                                                            "rejection": {
+                                                              ?"reason": (app.?rejection_reason.orValue(null) == null) ?
+                                                                optional.none()
+                                                              :
+                                                                optional.of({
+                                                                  "id": string(app.rejection_reason.id),
+                                                                  "name": app.rejection_reason.name,
+                                                                  "type": app.rejection_reason.?type.name.orValue(""),
+                                                                }),
+                                                              ?"notes": (size(rejection_activities) > 0) ?
+                                                                rejection_activities[0].?body
+                                                              :
+                                                                optional.none(),
+                                                              ?"rejected_at": app.?rejected_at,
+                                                            },
+                                                          }),
+                                                        })
+                                                      )
+                                                    )
+                                                  :
+                                                    e.with({
+                                                      "event": e.event.with({
+                                                        "rejection": {
+                                                          "error": "activity_feed fetch failed: " + string(feed_resp.StatusCode),
+                                                        },
+                                                      }),
+                                                    })
+                                                )
+                                              )
+                                            :
+                                              e.with({
+                                                "event": e.event.with({
+                                                  "rejection": {
+                                                    "error": "application fetch failed: " + string(app_resp.StatusCode),
+                                                  },
+                                                }),
+                                              })
+                                          )
+                                        :
+                                          e
+                                      ).encode_json()}
+                                    )
+                                  ),
                                   "cursor": {
                                     // Keep window_start_time fixed until the final
                                     // page succeeds so the whole window can be
