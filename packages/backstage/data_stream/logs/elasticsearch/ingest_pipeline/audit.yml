@@ -138,6 +138,30 @@ processors:
         Maps the Backstage logger `json.level` (e.g., `info`, `warn`, `error`) to the ECS `log.level` field.
         This reflects the Winston log level at which the audit event was emitted, distinct from `backstage.severity_level`.
       if: ctx.json?.level != null
+  - rename:
+      field: json.trace_id
+      target_field: trace.id
+      ignore_missing: true
+      tag: rename_trace_id
+      description: Maps the OpenTelemetry trace identifier emitted by Backstage's instrumented logger to the ECS `trace.id` field.
+  - rename:
+      field: json.span_id
+      target_field: span.id
+      ignore_missing: true
+      tag: rename_span_id
+      description: Maps the OpenTelemetry span identifier emitted by Backstage's instrumented logger to the ECS `span.id` field.
+  - rename:
+      field: json.name
+      target_field: error.type
+      ignore_missing: true
+      tag: rename_error_type
+      description: Maps the error class name present on failed Backstage operations (e.g. `NotFoundError`) to the ECS `error.type` field.
+  - rename:
+      field: json.stack
+      target_field: error.stack_trace
+      ignore_missing: true
+      tag: rename_error_stack_trace
+      description: Maps the stack trace present on failed Backstage operations to the ECS `error.stack_trace` field.
   - set:
       field: _tmp.request_url
       value: "http://localhost{{{json.request.url}}}"
@@ -210,30 +234,14 @@ processors:
       description: Appends the actor's IP address to the `related.ip` array for cross-field correlation.
       tag: append_related_ip_8c67e2b0
       if: ctx.source?.ip != null
-  - foreach:
+  - rename:
       field: json.meta.query.filter
-      if: ctx.json?.meta?.query?.filter instanceof List
+      target_field: backstage.query.filter
       ignore_missing: true
-      tag: foreach_meta_query_filter
+      tag: rename_meta_query_filter
       description: >-
-        Iterates over each filter string in the Backstage catalog query and splits `key=value` pairs
-        into structured fields under `backstage.query.filter`. Backstage catalog filters follow the
-        format `kind=Component,metadata.name=foo`.
-      processor:
-        kv:
-          field: _ingest._value
-          target_field: backstage.query.filter
-          field_split: ","
-          value_split: "="
-          on_failure:
-            - append:
-                field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
-  - remove:
-      field: json.meta.query.filter
-      ignore_missing: true
-      tag: remove_meta_query_filter_source
-      description: Removes the raw `json.meta.query.filter` array after its entries have been parsed into `backstage.query.filter`.
+        Maps the Backstage catalog query's raw `key=value` filter condition(s) verbatim to
+        `backstage.query.filter` (stored as text, not parsed into structured sub-fields).
   - rename:
       field: json.meta.query.fields
       target_field: backstage.query.fields
@@ -253,12 +261,106 @@ processors:
       tag: remove_empty_meta_query
       description: Removes the `json.meta.query` container when it is null or empty after all query sub-fields have been extracted into `backstage.query.*`.
   - rename:
-      field: json.meta
-      target_field: backstage.meta
+      field: json.meta.actionType
+      target_field: backstage.action_type
       ignore_missing: true
+      tag: rename_meta_action_type
+      description: Maps the Backstage catalog action type (e.g. "get", "ancestry", "create") to `backstage.action_type`.
+  - rename:
+      field: json.meta.entityRef
+      target_field: backstage.entity.ref
+      ignore_missing: true
+      tag: rename_meta_entity_ref
+      description: Maps the Backstage catalog entity reference operated on to `backstage.entity.ref`.
+  - rename:
+      field: json.meta.entityRefs
+      target_field: backstage.entity.refs
+      ignore_missing: true
+      tag: rename_meta_entity_refs
+      description: Maps the Backstage catalog entity references returned by a batch lookup to `backstage.entity.refs`.
+  - rename:
+      field: json.meta.rootEntityRef
+      target_field: backstage.entity.root_ref
+      ignore_missing: true
+      tag: rename_meta_root_entity_ref
+      description: Maps the root entity reference of a Backstage catalog ancestry lookup to `backstage.entity.root_ref`.
+  - rename:
+      field: json.meta.totalItems
+      target_field: backstage.total_items
+      ignore_missing: true
+      tag: rename_meta_total_items
+      description: Maps the total item count of a paginated Backstage catalog query to `backstage.total_items`.
+  - convert:
+      field: backstage.total_items
+      type: long
+      ignore_missing: true
+      tag: convert_total_items_to_long
+      description: Ensures `backstage.total_items` is indexed as a long.
+  - rename:
+      field: json.meta.ancestry
+      target_field: backstage.ancestry
+      ignore_missing: true
+      tag: rename_meta_ancestry
+      description: >-
+        Maps the Backstage catalog ancestry chain (array of `{entityRef, parentEntityRefs}`) to
+        `backstage.ancestry`, preserving Backstage's native field casing.
+  - rename:
+      field: json.meta.createdBy
+      target_field: backstage.task.created_by
+      ignore_missing: true
+      tag: rename_meta_created_by
+      description: Maps the Backstage identity that created a scaffolder task to `backstage.task.created_by`.
+  - append:
+      field: related.user
+      value: "{{{backstage.task.created_by}}}"
+      tag: append_created_by_related_user
+      description: Appends the scaffolder task creator to `related.user` to support correlation across all user-related fields.
+      if: ctx.backstage?.task?.created_by != null
+  - rename:
+      field: json.meta.taskId
+      target_field: backstage.task.id
+      ignore_missing: true
+      tag: rename_meta_task_id
+      description: Maps the Backstage scaffolder task identifier to `backstage.task.id`.
+  - rename:
+      field: json.meta.templateRef
+      target_field: backstage.template.ref
+      ignore_missing: true
+      tag: rename_meta_template_ref
+      description: Maps the Backstage scaffolder template reference to `backstage.template.ref`.
+  - script:
+      tag: serialize_task_parameters
+      lang: painless
+      if: ctx.json?.meta?.taskParameters != null
+      description: >-
+        Serializes the scaffolder task's input parameters to text under `backstage.task.parameters`.
+        Shape varies per Backstage software template (user-defined), so it is not mapped to structured
+        fields.
+      source: |
+        ctx.backstage = ctx.backstage == null ? new HashMap() : ctx.backstage;
+        ctx.backstage.task = ctx.backstage.task == null ? new HashMap() : ctx.backstage.task;
+        ctx.backstage.task.parameters = ctx.json.meta.taskParameters.toString();
+  - remove:
+      field: json.meta.taskParameters
+      ignore_missing: true
+      tag: remove_meta_task_parameters_source
+      description: Removes the raw `json.meta.taskParameters` now that it has been serialized into `backstage.task.parameters`.
+  - remove:
+      field: json.meta.pageInfo
+      ignore_missing: true
+      tag: remove_meta_page_info
+      description: Drops the opaque, base64-encoded pagination cursor. High-cardinality and not analytically useful.
+  - script:
+      tag: serialize_meta_residual
+      lang: painless
       if: ctx.json?.meta != null && !ctx.json.meta.isEmpty()
-      tag: rename_meta_catchall
-      description: Moves any remaining `json.meta` fields into `backstage.meta` to preserve plugin-specific metadata that was not explicitly mapped to an ECS field.
+      description: >-
+        Serializes any remaining, not-yet-explicitly-mapped `json.meta` keys to text under `backstage.meta`.
+        Empty for all currently-known Backstage event shapes; exists only as a forward-compatible safety net
+        should Backstage add new plugin metadata keys in the future.
+      source: |
+        ctx.backstage = ctx.backstage == null ? new HashMap() : ctx.backstage;
+        ctx.backstage.meta = ctx.json.meta.toString();
   - remove:
       field: [_tmp, json]
       ignore_missing: true

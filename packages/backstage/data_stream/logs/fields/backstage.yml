@@ -4,10 +4,63 @@
     - name: severity_level
       type: keyword
       description: The severity level of the audit log registered by Backstage.
+    - name: action_type
+      type: keyword
+      description: The Backstage catalog action type for the event (e.g. "get", "ancestry", "create", "execution", "stream").
     - name: meta
-      type: flattened
+      type: text
       description: >-
-        Event-specific metadata emitted by the Backstage plugin. Shape varies per event type; stored as `flattened` to preserve arbitrary keys without mapping explosion. Well-known catalog-query keys are promoted to `backstage.query.*`.
+        Serialized dump of any Backstage plugin metadata that did not match a known, explicitly-mapped field.
+        Empty for all currently-known event shapes; exists only as a forward-compatible safety net for future
+        Backstage plugin metadata. Well-known keys are promoted to explicit `backstage.*` fields instead of
+        living here.
+    - name: entity
+      type: group
+      fields:
+        - name: ref
+          type: keyword
+          description: The Backstage catalog entity reference the audit event operated on.
+        - name: refs
+          type: keyword
+          description: The Backstage catalog entity references returned by a batch entity lookup.
+        - name: root_ref
+          type: keyword
+          description: The root entity reference for a Backstage catalog ancestry lookup.
+    - name: total_items
+      type: long
+      description: The total number of items available for a paginated Backstage catalog query.
+    - name: ancestry
+      type: group
+      description: >-
+        The Backstage catalog ancestry chain, preserving Backstage's native field casing
+        (`entityRef`/`parentEntityRefs`) rather than this package's usual snake_case convention.
+      fields:
+        - name: entityRef
+          type: keyword
+          description: The entity reference for one node in a Backstage catalog ancestry chain.
+        - name: parentEntityRefs
+          type: keyword
+          description: The parent entity references for one node in a Backstage catalog ancestry chain.
+    - name: task
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The identifier of the Backstage scaffolder task.
+        - name: created_by
+          type: keyword
+          description: The Backstage identity that created the scaffolder task.
+        - name: parameters
+          type: text
+          description: >-
+            The scaffolder task's input parameters, serialized as text. Shape varies per Backstage software
+            template and is not mapped to structured fields.
+    - name: template
+      type: group
+      fields:
+        - name: ref
+          type: keyword
+          description: The Backstage scaffolder template reference associated with the task.
     - name: query
       type: group
       fields:
@@ -18,6 +71,10 @@
           type: keyword
           description: The type of catalog query that was issued (e.g. "all").
         - name: filter
-          type: flattened
+          type: text
           description: >-
-            The catalog query filter conditions as key/value pairs.
+            The raw catalog query filter condition(s), as Backstage's `key=value` comma-separated filter
+            syntax (e.g. "kind=Resource,spec.type=github-repository"). Stored verbatim rather than parsed
+            into structured sub-fields; there is no confirmed customer need yet for querying/aggregating on
+            individual filter keys. Revisit with structured `backstage.query.filter.*` sub-fields if that
+            need materializes.
