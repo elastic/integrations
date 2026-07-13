@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "description": "Shadow AI tools detected across your fleet. Organized by analyst workflow: triage metrics, then drill into processes, network exposure, software, files, persistence, and MCP infrastructure.",
+        "description": "Shadow AI inventory across your fleet. Triage metrics, then drill into processes, network exposure, installed software, model files, persistence, and MCP infrastructure. Assign the three Shadow AI Discovery packs (ai-asset-discovery-windows, ai-asset-discovery-macos, ai-asset-discovery-linux) to your Osquery Manager policy in Fleet. Panels filter event.action to osquery.ai_* and osquery.mcp_* only. Outbound API connections (ai_network_connections) are separate from AI-process socket summaries (ai_process_network_summary). macOS/Linux sensitive-file access (ai_sensitive_file_access) uses open-file evidence; Windows colocation (ai_sensitive_file_colocation) is uid co-occurrence inventory, not access proof.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -130,8 +130,16 @@
                                     "query": {
                                         "bool": {
                                             "should": [
-                                                { "wildcard": { "event.action": "osquery.ai_*" } },
-                                                { "wildcard": { "event.action": "osquery.mcp_*" } }
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.ai_*"
+                                                    }
+                                                },
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.mcp_*"
+                                                    }
+                                                }
                                             ],
                                             "minimum_should_match": 1
                                         }
@@ -220,8 +228,16 @@
                                     "query": {
                                         "bool": {
                                             "should": [
-                                                { "wildcard": { "event.action": "osquery.ai_*" } },
-                                                { "wildcard": { "event.action": "osquery.mcp_*" } }
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.ai_*"
+                                                    }
+                                                },
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.mcp_*"
+                                                    }
+                                                }
                                             ],
                                             "minimum_should_match": 1
                                         }
@@ -310,8 +326,16 @@
                                     "query": {
                                         "bool": {
                                             "should": [
-                                                { "wildcard": { "event.action": "osquery.ai_*" } },
-                                                { "wildcard": { "event.action": "osquery.mcp_*" } }
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.ai_*"
+                                                    }
+                                                },
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.mcp_*"
+                                                    }
+                                                }
                                             ],
                                             "minimum_should_match": 1
                                         }
@@ -359,7 +383,34 @@
                         ],
                         "state": {
                             "adHocDataViews": {},
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "meta": {
+                                        "alias": "AI Discovery Only",
+                                        "disabled": false,
+                                        "key": "event.action",
+                                        "negate": false,
+                                        "type": "custom"
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "should": [
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.ai_*"
+                                                    }
+                                                },
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.mcp_*"
+                                                    }
+                                                }
+                                            ],
+                                            "minimum_should_match": 1
+                                        }
+                                    }
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -483,7 +534,34 @@
                         ],
                         "state": {
                             "adHocDataViews": {},
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "meta": {
+                                        "alias": "AI Discovery Only",
+                                        "disabled": false,
+                                        "key": "event.action",
+                                        "negate": false,
+                                        "type": "custom"
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "should": [
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.ai_*"
+                                                    }
+                                                },
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.mcp_*"
+                                                    }
+                                                }
+                                            ],
+                                            "minimum_should_match": 1
+                                        }
+                                    }
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -567,12 +645,151 @@
                 "gridData": {
                     "h": 14,
                     "i": "d1",
-                    "w": 16,
+                    "w": 12,
                     "x": 0,
                     "y": 13
                 },
                 "panelIndex": "d1",
                 "title": "Findings by Category",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "title": "Findings by Platform",
+                        "visualizationType": "lnsPie",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-l_plat1",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "filter-l_plat1",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "filters": [
+                                {
+                                    "meta": {
+                                        "alias": "AI Discovery Only",
+                                        "disabled": false,
+                                        "key": "event.action",
+                                        "negate": false,
+                                        "type": "custom"
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "should": [
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.ai_*"
+                                                    }
+                                                },
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.mcp_*"
+                                                    }
+                                                }
+                                            ],
+                                            "minimum_should_match": 1
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "internalReferences": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "l_plat1": {
+                                            "columnOrder": [
+                                                "plat1_g",
+                                                "plat1_c"
+                                            ],
+                                            "columns": {
+                                                "plat1_g": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Platform",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "size": 5,
+                                                        "orderBy": {
+                                                            "columnId": "plat1_c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "host.os.type"
+                                                },
+                                                "plat1_c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Hosts",
+                                                    "operationType": "unique_count",
+                                                    "sourceField": "host.hostname",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "emptySizeRatio": 0.4,
+                                        "layerId": "l_plat1",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendPosition": "right",
+                                        "metrics": [
+                                            "plat1_c"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "plat1_g"
+                                        ],
+                                        "showValuesInLegend": true
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        }
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "plat1",
+                    "w": 12,
+                    "x": 12,
+                    "y": 13
+                },
+                "panelIndex": "plat1",
+                "title": "Findings by Platform",
                 "type": "lens"
             },
             {
@@ -595,7 +812,34 @@
                         ],
                         "state": {
                             "adHocDataViews": {},
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "meta": {
+                                        "alias": "AI Discovery Only",
+                                        "disabled": false,
+                                        "key": "event.action",
+                                        "negate": false,
+                                        "type": "custom"
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "should": [
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.ai_*"
+                                                    }
+                                                },
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.mcp_*"
+                                                    }
+                                                }
+                                            ],
+                                            "minimum_should_match": 1
+                                        }
+                                    }
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -702,7 +946,7 @@
                     "h": 14,
                     "i": "tm1",
                     "w": 24,
-                    "x": 16,
+                    "x": 24,
                     "y": 13
                 },
                 "panelIndex": "tm1",
@@ -1147,7 +1391,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 14,
-                            "markdown": "**Network-Exposed AI \u2014 What's accessible from the network?**",
+                            "markdown": "**Network-Exposed AI** \u2014 Listening ports, SSH tunnels, and containers. Outbound API connections and AI-process socket summaries are shown separately.",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -1278,7 +1522,6 @@
                                                         "include": [
                                                             "osquery.ai_listening_ports",
                                                             "osquery.ai_listening_ports_local",
-                                                            "osquery.ai_outbound_connections",
                                                             "osquery.ai_ssh_tunnels",
                                                             "osquery.ai_docker_containers"
                                                         ],
@@ -1325,7 +1568,7 @@
                 "gridData": {
                     "h": 14,
                     "i": "top_net",
-                    "w": 12,
+                    "w": 16,
                     "x": 0,
                     "y": 63
                 },
@@ -1336,7 +1579,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "title": "Network Details",
+                        "title": "Outbound API Connections",
                         "visualizationType": "lnsDatatable",
                         "type": "lens",
                         "references": [
@@ -1366,6 +1609,7 @@
                                             "columnOrder": [
                                                 "net_detail_port",
                                                 "net_detail_addr",
+                                                "net_detail_ip",
                                                 "net_detail_proc",
                                                 "net_detail_exe",
                                                 "net_detail_action_filter",
@@ -1377,7 +1621,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Port",
+                                                    "label": "Remote Port",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "size": 15,
@@ -1393,13 +1637,13 @@
                                                         }
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "server.port"
+                                                    "sourceField": "destination.port"
                                                 },
                                                 "net_detail_addr": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Address",
+                                                    "label": "Remote Host",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "size": 30,
@@ -1414,7 +1658,28 @@
                                                         }
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "server.address"
+                                                    "sourceField": "destination.address"
+                                                },
+                                                "net_detail_ip": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Remote IP",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "size": 30,
+                                                        "orderBy": {
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "destination.ip"
                                                 },
                                                 "net_detail_proc": {
                                                     "customLabel": true,
@@ -1510,11 +1775,7 @@
                                                             "id": "terms"
                                                         },
                                                         "include": [
-                                                            "osquery.ai_listening_ports",
-                                                            "osquery.ai_listening_ports_local",
-                                                            "osquery.ai_outbound_connections",
-                                                            "osquery.ai_ssh_tunnels",
-                                                            "osquery.ai_docker_containers"
+                                                            "osquery.ai_network_connections"
                                                         ],
                                                         "includeIsRegex": false
                                                     },
@@ -1534,6 +1795,9 @@
                                     },
                                     {
                                         "columnId": "net_detail_addr"
+                                    },
+                                    {
+                                        "columnId": "net_detail_ip"
                                     },
                                     {
                                         "columnId": "net_detail_proc"
@@ -1568,12 +1832,276 @@
                 "gridData": {
                     "h": 14,
                     "i": "net_detail",
-                    "w": 36,
-                    "x": 12,
+                    "w": 16,
+                    "x": 16,
                     "y": 63
                 },
                 "panelIndex": "net_detail",
-                "title": "Network Details",
+                "title": "Outbound API Connections",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "title": "AI Process Network Summary",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-l_net_summary",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "filter-l_net_summary",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "internalReferences": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "l_net_summary": {
+                                            "columnOrder": [
+                                                "net_detail_port",
+                                                "net_detail_addr",
+                                                "net_detail_ip",
+                                                "net_detail_proc",
+                                                "net_detail_exe",
+                                                "net_detail_action_filter",
+                                                "net_detail_host",
+                                                "net_detail_cnt"
+                                            ],
+                                            "columns": {
+                                                "net_detail_port": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Remote Port",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "size": 15,
+                                                        "orderBy": {
+                                                            "columnId": "net_detail_cnt",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "destination.port"
+                                                },
+                                                "net_detail_addr": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Remote Host",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "size": 30,
+                                                        "orderBy": {
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "destination.address"
+                                                },
+                                                "net_detail_ip": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Remote IP",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "size": 30,
+                                                        "orderBy": {
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "destination.ip"
+                                                },
+                                                "net_detail_proc": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Process",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "size": 50,
+                                                        "orderBy": {
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "process.name"
+                                                },
+                                                "net_detail_exe": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Executable",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "size": 50,
+                                                        "orderBy": {
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "process.executable"
+                                                },
+                                                "net_detail_host": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Host",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "size": 50,
+                                                        "orderBy": {
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "host.hostname"
+                                                },
+                                                "net_detail_cnt": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "net_detail_action_filter": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Category",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "size": 50,
+                                                        "orderBy": {
+                                                            "columnId": "net_detail_cnt",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [
+                                                            "osquery.ai_process_network_summary"
+                                                        ],
+                                                        "includeIsRegex": false
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.action"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "net_detail_port"
+                                    },
+                                    {
+                                        "columnId": "net_detail_addr"
+                                    },
+                                    {
+                                        "columnId": "net_detail_ip"
+                                    },
+                                    {
+                                        "columnId": "net_detail_proc"
+                                    },
+                                    {
+                                        "columnId": "net_detail_exe"
+                                    },
+                                    {
+                                        "columnId": "net_detail_action_filter"
+                                    },
+                                    {
+                                        "columnId": "net_detail_host"
+                                    },
+                                    {
+                                        "columnId": "net_detail_cnt"
+                                    }
+                                ],
+                                "layerId": "l_net_summary",
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "headerRowHeight": "single",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
+                            }
+                        }
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "net_summary",
+                    "w": 16,
+                    "x": 32,
+                    "y": 63
+                },
+                "panelIndex": "net_summary",
+                "title": "AI Process Network Summary",
                 "type": "lens"
             },
             {
@@ -1593,7 +2121,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 14,
-                            "markdown": "**Installed AI Software & Extensions**",
+                            "markdown": "**Installed AI Software & Extensions** \u2014 Platform packages, Python deps, GPU inventory (Windows/Linux), and Apple Silicon inference hosts (macOS).",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -1614,7 +2142,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "title": "Applications & Packages",
+                        "title": "Applications & Packages (incl. GPU inventory)",
                         "visualizationType": "lnsDatatable",
                         "type": "lens",
                         "references": [
@@ -1801,7 +2329,131 @@
                     "y": 80
                 },
                 "panelIndex": "tbl_sw",
-                "title": "Applications & Packages",
+                "title": "Applications & Packages (incl. GPU inventory)",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "title": "Apple Silicon Inference (macOS)",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-l_apple",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "filter-l_apple",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "filters": [
+                                {
+                                    "meta": {
+                                        "alias": "Apple Silicon Inference",
+                                        "disabled": false,
+                                        "key": "event.action",
+                                        "negate": false,
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.action": "osquery.ai_apple_silicon_inference"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "internalReferences": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "l_apple": {
+                                            "columnOrder": [
+                                                "apple_host",
+                                                "apple_cnt"
+                                            ],
+                                            "columns": {
+                                                "apple_host": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Host",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "size": 50,
+                                                        "orderBy": {
+                                                            "columnId": "apple_cnt",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "host.hostname"
+                                                },
+                                                "apple_cnt": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "apple_host"
+                                    },
+                                    {
+                                        "columnId": "apple_cnt"
+                                    }
+                                ],
+                                "layerId": "l_apple",
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "headerRowHeight": "single",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
+                            }
+                        }
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "apple_silicon",
+                    "w": 24,
+                    "x": 24,
+                    "y": 80
+                },
+                "panelIndex": "apple_silicon",
+                "title": "Apple Silicon Inference (macOS)",
                 "type": "lens"
             },
             {
@@ -1940,7 +2592,8 @@
                                                             "osquery.ai_chrome_extensions",
                                                             "osquery.ai_firefox_extensions",
                                                             "osquery.ai_safari_extensions",
-                                                            "osquery.ai_vscode_extensions"
+                                                            "osquery.ai_vscode_extensions",
+                                                            "osquery.ai_vscode_extensions_windows"
                                                         ],
                                                         "includeIsRegex": false
                                                     },
@@ -1988,9 +2641,9 @@
                 "gridData": {
                     "h": 14,
                     "i": "tbl_ext",
-                    "w": 24,
-                    "x": 24,
-                    "y": 80
+                    "w": 48,
+                    "x": 0,
+                    "y": 94
                 },
                 "panelIndex": "tbl_ext",
                 "title": "Browser & VS Code Extensions",
@@ -2026,7 +2679,7 @@
                     "i": "hdr_files",
                     "w": 48,
                     "x": 0,
-                    "y": 94
+                    "y": 108
                 },
                 "panelIndex": "hdr_files",
                 "type": "visualization"
@@ -2063,6 +2716,8 @@
                                         "l_tbl_models": {
                                             "columnOrder": [
                                                 "tbl_models_path",
+                                                "tbl_models_size",
+                                                "tbl_models_mtime",
                                                 "tbl_models_cat",
                                                 "tbl_models_host",
                                                 "tbl_models_cnt"
@@ -2089,6 +2744,48 @@
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "file.path"
+                                                },
+                                                "tbl_models_size": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": true,
+                                                    "label": "Size",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "size": 5,
+                                                        "orderBy": {
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "file.size"
+                                                },
+                                                "tbl_models_mtime": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "Modified",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "size": 5,
+                                                        "orderBy": {
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "file.mtime"
                                                 },
                                                 "tbl_models_cat": {
                                                     "customLabel": true,
@@ -2118,7 +2815,9 @@
                                                             "osquery.ai_model_cache_size_windows",
                                                             "osquery.ai_model_cache_size_macos",
                                                             "osquery.ai_config_directories_linux",
-                                                            "osquery.ai_config_directories_macos"
+                                                            "osquery.ai_config_directories_macos",
+                                                            "osquery.ai_config_directories_windows",
+                                                            "osquery.ai_config_file_changes"
                                                         ],
                                                         "includeIsRegex": false
                                                     },
@@ -2170,6 +2869,12 @@
                                         "columnId": "tbl_models_path"
                                     },
                                     {
+                                        "columnId": "tbl_models_size"
+                                    },
+                                    {
+                                        "columnId": "tbl_models_mtime"
+                                    },
+                                    {
                                         "columnId": "tbl_models_cat"
                                     },
                                     {
@@ -2198,7 +2903,7 @@
                     "i": "tbl_models",
                     "w": 24,
                     "x": 0,
-                    "y": 97
+                    "y": 111
                 },
                 "panelIndex": "tbl_models",
                 "title": "AI Model & Config Files",
@@ -2207,7 +2912,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "title": "Credential Exposure",
+                        "title": "Credential & Sensitive File Risk Context",
                         "visualizationType": "lnsDatatable",
                         "type": "lens",
                         "references": [
@@ -2283,7 +2988,9 @@
                                                         "include": [
                                                             "osquery.ai_credential_files_linux",
                                                             "osquery.ai_credential_files_macos",
-                                                            "osquery.ai_credential_files_windows"
+                                                            "osquery.ai_credential_files_windows",
+                                                            "osquery.ai_sensitive_file_access",
+                                                            "osquery.ai_sensitive_file_colocation"
                                                         ],
                                                         "includeIsRegex": false
                                                     },
@@ -2363,10 +3070,10 @@
                     "i": "tbl_creds",
                     "w": 24,
                     "x": 24,
-                    "y": 97
+                    "y": 111
                 },
                 "panelIndex": "tbl_creds",
-                "title": "Credential Exposure",
+                "title": "Credential & Sensitive File Risk Context",
                 "type": "lens"
             },
             {
@@ -2399,7 +3106,7 @@
                     "i": "hdr_persist",
                     "w": 48,
                     "x": 0,
-                    "y": 111
+                    "y": 125
                 },
                 "panelIndex": "hdr_persist",
                 "type": "visualization"
@@ -2506,7 +3213,9 @@
                                                             "osquery.ai_windows_services",
                                                             "osquery.ai_launchd_services",
                                                             "osquery.ai_systemd_services",
-                                                            "osquery.ai_crontab_linux"
+                                                            "osquery.ai_crontab_linux",
+                                                            "osquery.ai_scheduled_tasks_windows",
+                                                            "osquery.ai_dns_cache_windows"
                                                         ],
                                                         "includeIsRegex": false
                                                     },
@@ -2589,7 +3298,7 @@
                     "i": "tbl_svc",
                     "w": 48,
                     "x": 0,
-                    "y": 114
+                    "y": 128
                 },
                 "panelIndex": "tbl_svc",
                 "title": "Auto-Start Services & Tasks",
@@ -2625,7 +3334,7 @@
                     "i": "hdr_mcp",
                     "w": 48,
                     "x": 0,
-                    "y": 128
+                    "y": 142
                 },
                 "panelIndex": "hdr_mcp",
                 "type": "visualization"
@@ -2838,7 +3547,7 @@
                     "i": "tbl_mcp_proc",
                     "w": 24,
                     "x": 0,
-                    "y": 131
+                    "y": 145
                 },
                 "panelIndex": "tbl_mcp_proc",
                 "title": "Running MCP Servers",
@@ -2924,9 +3633,6 @@
                                                             "osquery.mcp_config_files_linux",
                                                             "osquery.mcp_config_files_windows",
                                                             "osquery.mcp_config_files_macos",
-                                                            "osquery.mcp_config_content_linux",
-                                                            "osquery.mcp_config_content_macos",
-                                                            "osquery.mcp_config_content_windows",
                                                             "osquery.mcp_npm_packages"
                                                         ],
                                                         "includeIsRegex": false
@@ -3007,7 +3713,7 @@
                     "i": "tbl_mcp_cfg",
                     "w": 24,
                     "x": 24,
-                    "y": 131
+                    "y": 145
                 },
                 "panelIndex": "tbl_mcp_cfg",
                 "title": "MCP Configs & Packages",
@@ -3033,7 +3739,34 @@
                         ],
                         "state": {
                             "adHocDataViews": {},
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "meta": {
+                                        "alias": "AI Discovery Only",
+                                        "disabled": false,
+                                        "key": "event.action",
+                                        "negate": false,
+                                        "type": "custom"
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "should": [
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.ai_*"
+                                                    }
+                                                },
+                                                {
+                                                    "wildcard": {
+                                                        "event.action": "osquery.mcp_*"
+                                                    }
+                                                }
+                                            ],
+                                            "minimum_should_match": 1
+                                        }
+                                    }
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -3159,7 +3892,7 @@
             }
         ],
         "timeRestore": false,
-        "title": "[Osquery] Shadow AI Discovery",
+        "title": "[Osquery] AI Asset Discovery Overview",
         "version": 1
     },
     "coreMigrationVersion": "9.3.0",
@@ -3214,6 +3947,16 @@
         {
             "id": "logs-*",
             "name": "d1:filter-l_d1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "plat1:indexpattern-datasource-layer-l_plat1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "plat1:filter-l_plat1",
             "type": "index-pattern"
         },
         {
@@ -3344,6 +4087,26 @@
         {
             "id": "logs-*",
             "name": "heatmap:filter-l_heatmap",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "net_summary:indexpattern-datasource-layer-l_net_summary",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "net_summary:filter-l_net_summary",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "apple:indexpattern-datasource-layer-l_apple",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "apple:filter-l_apple",
             "type": "index-pattern"
         }
     ],

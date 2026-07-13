@@ -20,203 +20,6 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "attributes": {
-                        "title": "OSSEC Rootkits [Osquery Manager]",
-                        "visualizationType": "lnsDatatable",
-                        "type": "lens",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-rootkit-table",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "rootkit-filter-index",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "rootkit-table": {
-                                            "columnOrder": [
-                                                "col-timestamp",
-                                                "col-action-id",
-                                                "col-path",
-                                                "col-agent-name"
-                                            ],
-                                            "columns": {
-                                                "col-timestamp": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "interval": "auto",
-                                                        "includeEmptyRows": false
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "col-action-id": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Action ID",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "size": 50,
-                                                        "orderBy": {
-                                                            "type": "alphabetical"
-                                                        },
-                                                        "orderDirection": "asc",
-                                                        "otherBucket": false,
-                                                        "missingBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        }
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "action_id"
-                                                },
-                                                "col-path": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Path",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "size": 50,
-                                                        "orderBy": {
-                                                            "type": "alphabetical"
-                                                        },
-                                                        "orderDirection": "asc",
-                                                        "otherBucket": false,
-                                                        "missingBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        }
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "osquery.path"
-                                                },
-                                                "col-agent-name": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Agent",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "size": 50,
-                                                        "orderBy": {
-                                                            "type": "alphabetical"
-                                                        },
-                                                        "orderDirection": "asc",
-                                                        "otherBucket": false,
-                                                        "missingBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        }
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "agent.name"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "rootkit-filter-index",
-                                        "negate": false,
-                                        "params": [
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "event.module",
-                                                    "index": "logs-*",
-                                                    "key": "event.module",
-                                                    "negate": false,
-                                                    "params": {
-                                                        "query": "osquery_manager"
-                                                    },
-                                                    "type": "phrase"
-                                                },
-                                                "query": {
-                                                    "match_phrase": {
-                                                        "event.module": "osquery_manager"
-                                                    }
-                                                }
-                                            },
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "action_id",
-                                                    "index": "logs-*",
-                                                    "key": "action_id",
-                                                    "negate": false,
-                                                    "params": {
-                                                        "query": "pack_ossec-rootkit"
-                                                    },
-                                                    "type": "phrase"
-                                                },
-                                                "query": {
-                                                    "match_phrase": {
-                                                        "action_id": "pack_ossec-rootkit"
-                                                    }
-                                                }
-                                            }
-                                        ],
-                                        "relation": "AND",
-                                        "type": "combined"
-                                    },
-                                    "query": {}
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "col-timestamp"
-                                    },
-                                    {
-                                        "columnId": "col-action-id"
-                                    },
-                                    {
-                                        "columnId": "col-path"
-                                    },
-                                    {
-                                        "columnId": "col-agent-name"
-                                    }
-                                ],
-                                "layerId": "rootkit-table",
-                                "layerType": "data",
-                                "rowHeight": "single",
-                                "headerRowHeight": "single",
-                                "paging": {
-                                    "enabled": true,
-                                    "size": 10
-                                }
-                            }
-                        }
-                    },
                     "enhancements": {}
                 },
                 "gridData": {
@@ -227,8 +30,9 @@
                     "y": 5
                 },
                 "panelIndex": "5",
-                "title": "OSSEC Rootkits [Osquery Manager]",
-                "type": "lens"
+                "panelRefName": "panel_5",
+                "type": "search",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -247,7 +51,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 10,
-                            "markdown": "[Compliance](#/dashboard/osquery_manager-69f5ae20-eb02-11e7-8f04-51231daa5b05) | **[OSSEC Rootkit]**(#/dashboard/osquery_manager-c0a7ce90-f4aa-11e7-8647-534bb4c21040) | [Shadow AI Discovery](#/dashboard/osquery_manager-e7a1b2c3-ai-discovery-dashboard)",
+                            "markdown": "[Compliance](#/dashboard/osquery_manager-69f5ae20-eb02-11e7-8f04-51231daa5b05) | **[OSSEC Rootkit](#/dashboard/osquery_manager-c0a7ce90-f4aa-11e7-8647-534bb4c21040)** | [Shadow AI Discovery](#/dashboard/osquery_manager-e7a1b2c3-ai-discovery-dashboard)",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -258,13 +62,14 @@
                 "gridData": {
                     "h": 5,
                     "i": "eb1abbec-3005-42e6-a903-de5492f4c6d6",
-                    "w": 30,
+                    "w": 8,
                     "x": 0,
                     "y": 0
                 },
                 "panelIndex": "eb1abbec-3005-42e6-a903-de5492f4c6d6",
-                "title": "Navigation [Osquery Manager]",
-                "type": "visualization"
+                "title": "Navigation [OSquery Manager]",
+                "type": "visualization",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -300,7 +105,8 @@
                 },
                 "panelIndex": "8b185e72-9a3d-4fa3-98ca-e9649569790c",
                 "title": "Info OSSEC rootkit [Osquery Manager]",
-                "type": "visualization"
+                "type": "visualization",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -386,6 +192,9 @@
                                             "incompleteColumns": {}
                                         }
                                     }
+                                },
+                                "textBased": {
+                                    "layers": {}
                                 }
                             },
                             "filters": [
@@ -465,7 +274,7 @@
                                 "metricAccessor": "8bd4a2cb-ecb9-43ec-8dee-ce0edd425f51"
                             }
                         },
-                        "title": "Number of hosts infected [Osquery Manager]",
+                        "title": "Number of hosts infected [Osquery Manager] (converted)",
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
@@ -481,7 +290,8 @@
                 },
                 "panelIndex": "f3777bb8-bb13-4fec-86c4-cd517c5756fc",
                 "title": "Number of hosts infected [Osquery Manager]",
-                "type": "lens"
+                "type": "lens",
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -567,6 +377,9 @@
                                             "incompleteColumns": {}
                                         }
                                     }
+                                },
+                                "textBased": {
+                                    "layers": {}
                                 }
                             },
                             "filters": [
@@ -646,7 +459,7 @@
                                 "metricAccessor": "a4fc4087-3051-4d05-b7bf-661a8fc5bcdf"
                             }
                         },
-                        "title": "Number of rootkits found [Osquery Manager]",
+                        "title": "Number of rootkits found [Osquery Manager] (converted)",
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
@@ -662,16 +475,46 @@
                 },
                 "panelIndex": "164f132e-38d8-43b7-9757-61987c93827f",
                 "title": "Number of rootkits found [Osquery Manager]",
-                "type": "lens"
+                "type": "lens",
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
         "title": "[Osquery Manager] OSSEC rootkit pack",
         "version": 1
     },
-    "coreMigrationVersion": "9.3.0",
+    "coreMigrationVersion": "8.7.1",
     "created_at": "2023-07-06T06:29:36.383Z",
     "id": "osquery_manager-c0a7ce90-f4aa-11e7-8647-534bb4c21040",
-    "references": [],
+    "migrationVersion": {
+        "dashboard": "8.7.0"
+    },
+    "references": [
+        {
+            "id": "osquery_manager-0fe5dc00-f49b-11e7-8647-534bb4c21040",
+            "name": "5:panel_5",
+            "type": "search"
+        },
+        {
+            "id": "logs-*",
+            "name": "f3777bb8-bb13-4fec-86c4-cd517c5756fc:indexpattern-datasource-layer-65394593-a1dd-49b2-b7b6-6fe4a9c16c8e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f3777bb8-bb13-4fec-86c4-cd517c5756fc:637711a3-592b-4415-a27c-ff82348d89cf",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "164f132e-38d8-43b7-9757-61987c93827f:indexpattern-datasource-layer-289d280f-f6c0-4295-9dd8-d74d35b57c3a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "164f132e-38d8-43b7-9757-61987c93827f:c6062c0d-9a70-4cd8-8d12-82276581db93",
+            "type": "index-pattern"
+        }
+    ],
     "type": "dashboard"
 }
