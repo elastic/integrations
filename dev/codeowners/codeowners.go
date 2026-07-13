@@ -35,9 +35,11 @@ func Check() error {
 // dataStream is set, the more specific data-stream-level owner when one is
 // defined) from the CODEOWNERS file at codeownersPath.
 //
-// packageName is the package directory basename under packages/, not the
-// manifest.yml name field. Prefer PackageOwnersByPath when the full package
-// path is known (e.g. nested category layouts).
+// packageName is the package directory basename under packages/ (for example
+// "nginx" for packages/nginx or packages/observability/nginx), not the
+// manifest.yml name field. Those values can differ for nested-directory
+// packages; see https://github.com/elastic/elastic-package/issues/3586.
+// Prefer PackageOwnersByPath when the full package path is known.
 func PackageOwners(packageName, dataStream, codeownersPath string) ([]string, error) {
 	owners, err := LoadOwners(codeownersPath)
 	if err != nil {
@@ -99,9 +101,11 @@ func LoadOwners(codeownersPath string) (*Owners, error) {
 // dataStream is set, the more specific data-stream-level owner when one is
 // defined), from the CODEOWNERS file this Owners was loaded from.
 //
-// packageName is the package directory basename under packages/, not the
-// manifest.yml name field. Prefer PackageOwnersByPath when the full package
-// path is known (e.g. nested category layouts).
+// packageName is the package directory basename under packages/ (for example
+// "nginx" for packages/nginx or packages/observability/nginx), not the
+// manifest.yml name field. Those values can differ for nested-directory
+// packages; see https://github.com/elastic/elastic-package/issues/3586.
+// Prefer PackageOwnersByPath when the full package path is known.
 func (o *Owners) PackageOwners(packageName, dataStream string) ([]string, error) {
 	// look for the path of the package taking into account nested directories
 	packagePath := ""
@@ -129,8 +133,11 @@ func (o *Owners) PackageOwners(packageName, dataStream string) ([]string, error)
 }
 
 // PackageOwnersByPath returns the owning team(s) for the package at pkgPath
-// (relative to the repo root) and, when dataStream is set, the more specific
-// data-stream-level owner when one is defined.
+// (relative to the repo root, e.g. packages/observability/nginx) and, when
+// dataStream is set, the more specific data-stream-level owner when one is
+// defined. Use this instead of PackageOwners when the manifest name field
+// may differ from the directory basename; see
+// https://github.com/elastic/elastic-package/issues/3586.
 func (o *Owners) PackageOwnersByPath(pkgPath, dataStream string) ([]string, error) {
 	manifestPath := filepath.Join(pkgPath, citools.ManifestFileName)
 	teams, found := o.findOwnerForFile(manifestPath)
