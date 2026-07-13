@@ -158,28 +158,34 @@ processors:
         - azure.frontdoor.health_probe.time
         - azure.frontdoor.health_probe.properties
       ignore_missing: true
-  - convert:
-      description: Convert destination.address to ip type, if it contains a port, extract the IP part
-      tag: convert_destination_address
+  - grok:
+      tag: grok_destination_address
       field: destination.address
+      if: ctx.destination?.address != null
+      patterns:
+        - "^%{IPV4:destination.ip}$"
+        - "^%{IPV4:destination.ip}:%{PORT:destination.port:long}$"
+        - "^\\[%{IPV6:destination.ip}\\]:%{PORT:destination.port:long}$"
+        - "^%{IPV6NOCOMPRESS:destination.ip}:%{PORT:destination.port:long}$"
+        - "^%{IPV6:destination.ip}%{IPV6PORTSEP}%{PORT:destination.port:long}$"
+        - "^%{IPV6NOCOMPRESS:destination.ip}$"
+        - "^%{IPV6:destination.ip}$"
+      pattern_definitions:
+        IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+        IPV6PORTSEP: '(?: port |[p#.])'
+        PORT: '[0-9]+'
+  - convert:
+      tag: convert_destination_ip
+      field: destination.ip
       target_field: destination.ip
       type: ip
-      if: ctx.destination?.address != null
+      if: ctx.destination?.ip != null
       on_failure:
-        - grok:
-            description: Extract destination.port from destination.address if it contains a port
-            tag: grok_destination_port
-            field: destination.address
-            patterns:
-                - '%{IPV4:destination.ip}:%{NUMBER:destination.port:long}'
-                - '\[%{IPV6:destination.ip}\]:%{NUMBER:destination.port:long}'
-            ignore_missing: true
-            if: ctx.destination?.address != null && ctx.destination.address.contains(':')
-            on_failure:
-                - append:
-                    tag: append_error_message_1e8f0b9e
-                    field: error.message
-                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: destination.ip
   - geoip:
       field: destination.ip
       target_field: destination.geo
