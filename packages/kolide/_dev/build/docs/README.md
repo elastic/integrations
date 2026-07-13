@@ -78,7 +78,7 @@ Before you set up the Kolide integration, you must have the following:
   - Access your Google Cloud Storage (GCS) bucket.
 
 If you're collecting data using the REST API or the Log Pipeline, you must also configure the following resources:
-- A Kolide API key with the form `k2sk_v1_` created in your Kolide console under Settings > Developers > API Keys.
+- A Kolide API key with the form `k2sk_v1_` created in your Kolide console under Settings → Developers → API Keys.
 - An AWS Identity and Access Management (IAM) role or credentials with permissions to read from your AWS S3 bucket or SQS queue, if you use AWS.
 - A Google Cloud Platform (GCP) service account JSON key with the Storage Object Viewer role to read from your GCS bucket, if you use GCP.
 
@@ -158,53 +158,53 @@ To set up the Kolide integration in Kibana, complete the following steps:
 
 Configure the following settings to receive webhook events:
 
-| Setting | Description |
-| --- | --- |
-| Listen Address | Bind address for the HTTP listener. Use `0.0.0.0` to listen on all interfaces. |
-| Listen Port | Bind port for the HTTP listener, such as `9550`. |
-| URL Path | The URL path to accept Kolide webhook requests on, such as `/kolide/webhook`. |
-| Webhook Signing Secret | The signing secret copied from the Kolide webhook settings. Used to verify HMAC signatures. |
-| Webhook Identifier | The webhook endpoint identifier value from the Kolide webhook settings. |
+| Setting                 | Description                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| Listen Address          | Bind address for the HTTP listener. Use `0.0.0.0` to listen on all interfaces.                |
+| Listen Port             | Bind port for the HTTP listener, such as `9550`.                                              |
+| URL Path                | The URL path to accept Kolide webhook requests on, such as `/kolide/webhook`.                 |
+| Webhook Signing Secret  | The signing secret copied from the Kolide webhook settings. Used to verify HMAC signatures.   |
+| Webhook Identifier      | The webhook endpoint identifier value from the Kolide webhook settings.                       |
 | Preserve Original Event | Check this option to preserve a raw copy of the original event in the `event.original` field. |
 
 #### REST API configuration
 
 Configure the following settings to pull logs from the Kolide REST API:
 
-| Setting | Description |
-| --- | --- |
-| URL | The base URL of the Kolide REST API. The default is `https://api.kolide.com`. |
-| API Key | The Kolide API key used as a Bearer token. This key has the form `k2sk_v1_`. |
-| Interval | How often the Kolide REST API is polled, such as `5m` (5 minutes). |
-| Initial Interval | How far back to look the first time the integration runs, such as `24h` (24 hours). |
+| Setting                 | Description                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| URL                     | The base URL of the Kolide REST API. The default is `https://api.kolide.com`.                 |
+| API Key                 | The Kolide API key used as a Bearer token. This key has the form `k2sk_v1_`.                  |
+| Interval                | How often the Kolide REST API is polled, such as `5m` (5 minutes).                            |
+| Initial Interval        | How far back to look the first time the integration runs, such as `24h` (24 hours).           |
 | Preserve Original Event | Check this option to preserve a raw copy of the original event in the `event.original` field. |
 
 #### AWS S3 log pipeline configuration
 
 Configure the following settings to collect logs from AWS S3:
 
-| Setting | Description |
-| --- | --- |
-| Access Key ID | The AWS access key ID the Elastic Agent uses to read from the bucket or queue. |
-| Secret Access Key | The AWS secret access key the Elastic Agent uses to read from the bucket or queue. |
-| Session Token | The AWS session token for temporary credentials, if using STS. |
-| SQS Queue URL | URL of the SQS queue receiving S3 object-created notifications. |
-| S3 Bucket ARN | ARN of the S3 bucket to poll directly if not using SQS notifications, such as `arn:aws:s3:::kolide-bucket`. |
-| Bucket List Prefix | Prefix used to list objects in the bucket, such as `kolide/audit_logs/`. |
-| Number of Workers | Number of workers that process the S3 objects or SQS messages. |
-| Preserve Original Event | Check this option to preserve a raw copy of the original event in the `event.original` field. |
+| Setting                 | Description                                                                                                 |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Access Key ID           | The AWS access key ID the Elastic Agent uses to read from the bucket or queue.                              |
+| Secret Access Key       | The AWS secret access key the Elastic Agent uses to read from the bucket or queue.                          |
+| Session Token           | The AWS session token for temporary credentials, if using STS.                                              |
+| SQS Queue URL           | URL of the SQS queue receiving S3 object-created notifications.                                             |
+| S3 Bucket ARN           | ARN of the S3 bucket to poll directly if not using SQS notifications, such as `arn:aws:s3:::kolide-bucket`. |
+| Bucket List Prefix      | Prefix used to list objects in the bucket, such as `kolide/audit_logs/`.                                    |
+| Number of Workers       | Number of workers that process the S3 objects or SQS messages.                                              |
+| Preserve Original Event | Check this option to preserve a raw copy of the original event in the `event.original` field.               |
 
 #### Google Cloud Storage log pipeline configuration
 
 Configure the following settings to collect logs from Google Cloud Storage:
 
-| Setting | Description |
-| --- | --- |
-| Project ID | The GCP project ID that the GCS bucket belongs to. |
-| Service Account Key | The GCP service account JSON key contents with Storage Object Viewer read access. |
-| GCS Buckets | The list of GCS buckets to poll in YAML format, specifying the bucket name. |
-| File Selectors | A list of regular expression patterns to filter which object keys are processed. |
-| Number of Workers | Number of workers that process the GCS objects. |
+| Setting                 | Description                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| Project ID              | The GCP project ID that the GCS bucket belongs to.                                            |
+| Service Account Key     | The GCP service account JSON key contents with Storage Object Viewer read access.             |
+| GCS Buckets             | The list of GCS buckets to poll in YAML format, specifying the bucket name.                   |
+| File Selectors          | A list of regular expression patterns to filter which object keys are processed.              |
+| Number of Workers       | Number of workers that process the GCS objects.                                               |
 | Preserve Original Event | Check this option to preserve a raw copy of the original event in the `event.original` field. |
 
 ### Validation
