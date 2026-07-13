@@ -263,7 +263,7 @@ rules:
         body: |-
           {"contentType":"Audit.General","status":"enabled","webhook":null}
 
-  # List content for Audit.SharePoint (includes original + new content).
+  # List content for Audit.SharePoint (only new content post-upgrade).
   - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
     methods: [GET]
     query_params:
@@ -280,9 +280,9 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          [{"contentType":"Audit.SharePoint","contentId":"sp-content-1","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-1","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"},{"contentType":"Audit.SharePoint","contentId":"sp-content-2","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-2","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"}]
+          [{"contentType":"Audit.SharePoint","contentId":"sp-content-2","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-2","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"}]
 
-  # List content for Audit.General (includes original + new content).
+  # List content for Audit.General (only new content post-upgrade).
   - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
     methods: [GET]
     query_params:
@@ -299,21 +299,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          [{"contentType":"Audit.General","contentId":"gen-content-1","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-1","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"},{"contentType":"Audit.General","contentId":"gen-content-2","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-2","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"}]
-
-  # Fetch SharePoint content (original).
-  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-1
-    methods: [GET]
-    request_headers:
-      Authorization:
-        - "Bearer test-token"
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          [{"Id":"sp-event-001","CreationTime":"2020-02-07T16:43:53","Workload":"SharePoint","Operation":"PageViewed","RecordType":4,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1"}]
+          [{"contentType":"Audit.General","contentId":"gen-content-2","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-2","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"}]
 
   # Fetch SharePoint content (new, post-upgrade).
   - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-2
@@ -328,20 +314,6 @@ rules:
             - "application/json"
         body: |-
           [{"Id":"sp-event-002","CreationTime":"2020-02-07T17:10:22","Workload":"SharePoint","Operation":"FileUploaded","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1"}]
-
-  # Fetch General content (original).
-  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-1
-    methods: [GET]
-    request_headers:
-      Authorization:
-        - "Bearer test-token"
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          [{"Id":"gen-event-001","CreationTime":"2020-02-28T09:42:45","Workload":"Yammer","Operation":"GroupCreation","RecordType":22,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.2"}]
 
   # Fetch General content (new, post-upgrade).
   - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-2

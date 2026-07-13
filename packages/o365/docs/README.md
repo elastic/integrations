@@ -526,7 +526,8 @@ An example event for `audit` looks as following:
 | o365.audit.ResultStatus |  | keyword |
 | o365.audit.RunningTime |  | keyword |
 | o365.audit.SecurityComplianceCenterEventType |  | keyword |
-| o365.audit.Sender |  | object |
+| o365.audit.Sender |  | keyword |
+| o365.audit.SenderEntity |  | object |
 | o365.audit.SenderIP |  | keyword |
 | o365.audit.SenderIp |  | keyword |
 | o365.audit.SensitiveInfoDetectionIsIncluded |  | boolean |

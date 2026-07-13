@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -67,17 +66,56 @@ type ActiveResult struct {
 	MaintainedUntil *string `json:"maintained_until"`
 }
 
+// loadInventory reads and unmarshals the YAML inventory file at path.
+func loadInventory(path string) (inventory, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return inventory{}, fmt.Errorf("reading inventory: %w", err)
+	}
+	var inv inventory
+	if err := yaml.Unmarshal(data, &inv); err != nil {
+		return inventory{}, fmt.Errorf("parsing inventory: %w", err)
+	}
+	return inv, nil
+}
+
+// ListAllActiveBackportBranches returns the active backport branches for each
+// package in packages, parsing the inventory at path exactly once.
+// The returned map has one entry per name in packages; packages with no active
+// branches (or not present in the inventory) have an empty, non-nil slice.
+func ListAllActiveBackportBranches(path string, packages []string, now time.Time) (map[string][]ActiveResult, error) {
+	inv, err := loadInventory(path)
+	if err != nil {
+		return nil, err
+	}
+
+	want := make(map[string]struct{}, len(packages))
+	for _, p := range packages {
+		want[p] = struct{}{}
+	}
+
+	result := make(map[string][]ActiveResult, len(packages))
+	for _, p := range packages {
+		result[p] = []ActiveResult{}
+	}
+	for _, e := range inv.Backports {
+		if _, ok := want[e.Package]; !ok {
+			continue
+		}
+		if r := e.activeResult(now); r.Active {
+			result[e.Package] = append(result[e.Package], r)
+		}
+	}
+	return result, nil
+}
+
 // CheckActive looks up branch in the inventory at path and reports whether it
 // is currently active. now is injected so callers can test with a fixed date.
 // Returns an error if the inventory cannot be read, parsed, or the branch is not found.
 func CheckActive(path, branch string, now time.Time) (ActiveResult, error) {
-	data, err := os.ReadFile(path)
+	inv, err := loadInventory(path)
 	if err != nil {
-		return ActiveResult{}, fmt.Errorf("reading inventory: %w", err)
-	}
-	var inv inventory
-	if err := yaml.Unmarshal(data, &inv); err != nil {
-		return ActiveResult{}, fmt.Errorf("parsing inventory: %w", err)
+		return ActiveResult{}, err
 	}
 	for _, e := range inv.Backports {
 		if e.Branch == branch {
@@ -107,6 +145,10 @@ func (e entry) activeResult(now time.Time) ActiveResult {
 	if e.MaintainedUntil != nil {
 		t, err := time.Parse(maintainedUntilLayout, *e.MaintainedUntil)
 		today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+		// On parse error the branch stays active (fail-open): better to show a branch
+		// that might be expired than to silently hide one that is still required.
+		// ValidateInventory enforces date format, so this path is only reachable via
+		// a direct unvalidated edit.
 		if err == nil && t.Before(today) {
 			result.Active = false
 		}
@@ -283,14 +325,9 @@ func newEntryNode(pkg, branch, baseVersion, baseCommit string) *yaml.Node {
 // entry's package field names a real package. Pass an empty string to skip
 // this check (useful in unit tests that do not have a full checkout).
 func ValidateInventory(path, packagesDir string) error {
-	data, err := os.ReadFile(path)
+	inv, err := loadInventory(path)
 	if err != nil {
-		return fmt.Errorf("reading inventory: %w", err)
-	}
-
-	var inv inventory
-	if err := yaml.Unmarshal(data, &inv); err != nil {
-		return fmt.Errorf("parsing inventory: %w", err)
+		return err
 	}
 
 	knownPackages, err := buildKnownPackages(packagesDir)
@@ -406,17 +443,13 @@ func buildKnownPackages(packagesDir string) (map[string]struct{}, error) {
 	if packagesDir == "" {
 		return nil, nil
 	}
-	paths, err := citools.ListPackages(packagesDir)
+	pkgs, err := citools.ListPackagesWithNames(packagesDir)
 	if err != nil {
 		return nil, err
 	}
-	known := make(map[string]struct{}, len(paths))
-	for _, p := range paths {
-		manifest, err := citools.ReadPackageManifest(filepath.Join(p, citools.ManifestFileName))
-		if err != nil {
-			return nil, fmt.Errorf("reading manifest at %s: %w", p, err)
-		}
-		known[manifest.Name] = struct{}{}
+	known := make(map[string]struct{}, len(pkgs))
+	for _, p := range pkgs {
+		known[p.Name] = struct{}{}
 	}
 	return known, nil
 }

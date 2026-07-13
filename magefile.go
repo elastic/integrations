@@ -25,6 +25,8 @@ import (
 	"github.com/elastic/integrations/dev/backports"
 	"github.com/elastic/integrations/dev/backports/apply"
 	"github.com/elastic/integrations/dev/backports/changelog"
+	bpchecklist "github.com/elastic/integrations/dev/backports/checklist"
+	bppackages "github.com/elastic/integrations/dev/backports/packages"
 	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
@@ -383,6 +385,89 @@ func CheckBackportBranchActive(branch string, asJSON *bool) error {
 
 	if !result.Active {
 		os.Exit(1)
+	}
+	return nil
+}
+
+// DetectBackportPackages lists the packages touched by commits between before and after.
+// Runs git diff --name-only before..after and maps the changed files to package names
+// using the packages/ directory as the root.
+// Plain output: one package name per line. Pass -asJSON for a JSON array.
+func DetectBackportPackages(before, after string, asJSON *bool) error {
+	out, err := sh.Output("git", "diff", "--name-only", before+".."+after)
+	if err != nil {
+		return fmt.Errorf("running git diff: %w", err)
+	}
+
+	var files []string
+	for _, line := range strings.Split(out, "\n") {
+		if line = strings.TrimSpace(line); line != "" {
+			files = append(files, line)
+		}
+	}
+
+	pkgs, err := bppackages.DetectPackages(files, "packages")
+	if err != nil {
+		return err
+	}
+
+	if asJSON != nil && *asJSON {
+		data, err := json.Marshal(pkgs)
+		if err != nil {
+			return fmt.Errorf("marshalling packages: %w", err)
+		}
+		fmt.Println(string(data))
+	} else {
+		for _, p := range pkgs {
+			fmt.Println(p)
+		}
+	}
+	return nil
+}
+
+// RenderBackportChecklist prints the backport-checklist comment body for a PR.
+// It reads the list of packages from artifactPath (a JSON file with shape
+// {"pr_number": N, "packages": [...]}) and the existing comment body (if any) from
+// stdin. Active branches for each package are looked up in .backports.yml using the
+// current UTC time. Previously checked boxes are preserved: any branch that appeared
+// as "- [x] `branch`" in the existing body is rendered ticked in the new body.
+// Prints nothing when no package has any active branch; callers should skip posting.
+func RenderBackportChecklist(artifactPath string) error {
+	data, err := os.ReadFile(artifactPath)
+	if err != nil {
+		return fmt.Errorf("reading artifact: %w", err)
+	}
+
+	var artifact struct {
+		Packages []string `json:"packages"`
+	}
+	if err := json.Unmarshal(data, &artifact); err != nil {
+		return fmt.Errorf("parsing artifact: %w", err)
+	}
+
+	existingBody, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		return fmt.Errorf("reading stdin: %w", err)
+	}
+
+	checked := bpchecklist.ParseCheckedBranches(string(existingBody))
+
+	branchesByPkg, err := backports.ListAllActiveBackportBranches(".backports.yml", artifact.Packages, time.Now().UTC())
+	if err != nil {
+		return fmt.Errorf("listing active backport branches: %w", err)
+	}
+
+	pkgs := make([]bpchecklist.PackageBranches, 0, len(artifact.Packages))
+	for _, pkg := range artifact.Packages {
+		pkgs = append(pkgs, bpchecklist.PackageBranches{
+			Package:  pkg,
+			Branches: branchesByPkg[pkg],
+		})
+	}
+
+	body := bpchecklist.BuildComment(pkgs, checked)
+	if body != "" {
+		fmt.Print(body)
 	}
 	return nil
 }
