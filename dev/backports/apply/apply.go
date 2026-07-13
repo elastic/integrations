@@ -555,8 +555,6 @@ func (a applier) commitChanges(pkgDir, sha, newVersion string) error {
 	return nil
 }
 
-const codeownersRelPath = ".github/CODEOWNERS"
-
 // syncOwners brings pkgDir's manifest.yml owner and CODEOWNERS entries in
 // line with sourceBranch's, as its own commit on top of the cherry-pick. It is
 // best-effort: any failure reading or parsing sourceBranch's state (fetch
@@ -598,11 +596,6 @@ func (a applier) computeOwnerSyncPlan(remote, sourceBranch, pkgDir string) (plan
 	// remoteRef := remote + "/" + sourceBranch
 	remoteRef := sourceBranch
 
-	currentCodeowners, sourceCodeowners, err := a.readCodeowners(remoteRef)
-	if err != nil {
-		return owners.SyncPlan{}, "", err
-	}
-
 	relPkgDir, err := filepath.Rel(a.workDir, pkgDir)
 	if err != nil {
 		return owners.SyncPlan{}, "", fmt.Errorf("resolving package path: %w", err)
@@ -610,89 +603,14 @@ func (a applier) computeOwnerSyncPlan(remote, sourceBranch, pkgDir string) (plan
 	relPkgDir = filepath.ToSlash(relPkgDir)
 	pkgPath = "/" + relPkgDir
 
-	currentManifestOwner, sourceManifestOwner, err := a.readManifestOwners(remoteRef, pkgDir, relPkgDir)
+	syncPlan, found, err := owners.Compare(a.git, a.workDir, pkgDir, relPkgDir, remoteRef)
 	if err != nil {
 		return owners.SyncPlan{}, "", err
 	}
-
-	subPaths := existingSubPaths(a.workDir, pkgPath, currentCodeowners, sourceCodeowners)
-
-	syncPlan, found := owners.Plan(pkgPath, subPaths, currentCodeowners, sourceCodeowners, currentManifestOwner, sourceManifestOwner)
 	if !found {
 		return owners.SyncPlan{}, pkgPath, nil
 	}
 	return syncPlan, pkgPath, nil
-}
-
-// readCodeowners reads and parses the current worktree's CODEOWNERS file and
-// remoteRef's version of it (e.g. "origin/main").
-func (a applier) readCodeowners(remoteRef string) (current, source *owners.Owners, err error) {
-	currentData, err := os.ReadFile(filepath.Join(a.workDir, codeownersRelPath))
-	if err != nil {
-		return nil, nil, fmt.Errorf("reading %s: %w", codeownersRelPath, err)
-	}
-	sourceData, err := a.git.Output("show", remoteRef+":"+codeownersRelPath)
-	if err != nil {
-		return nil, nil, fmt.Errorf("reading %s %s: %w", remoteRef, codeownersRelPath, err)
-	}
-
-	current, err = owners.ParseOwners(string(currentData))
-	if err != nil {
-		return nil, nil, fmt.Errorf("parsing %s: %w", codeownersRelPath, err)
-	}
-	source, err = owners.ParseOwners(sourceData)
-	if err != nil {
-		return nil, nil, fmt.Errorf("parsing %s %s: %w", remoteRef, codeownersRelPath, err)
-	}
-	return current, source, nil
-}
-
-// readManifestOwners reads and extracts the owner.github field from
-// pkgDir/manifest.yml and from remoteRef's version of it, found at
-// relPkgDir (pkgDir relative to the repo root, slash-separated).
-func (a applier) readManifestOwners(remoteRef, pkgDir, relPkgDir string) (current, source string, err error) {
-	currentData, err := os.ReadFile(filepath.Join(pkgDir, "manifest.yml"))
-	if err != nil {
-		return "", "", fmt.Errorf("reading manifest.yml: %w", err)
-	}
-	sourceData, err := a.git.Output("show", remoteRef+":"+relPkgDir+"/manifest.yml")
-	if err != nil {
-		return "", "", fmt.Errorf("reading %s manifest.yml: %w", remoteRef, err)
-	}
-
-	current, err = owners.ManifestOwner(currentData)
-	if err != nil {
-		return "", "", fmt.Errorf("reading manifest owner: %w", err)
-	}
-	source, err = owners.ManifestOwner([]byte(sourceData))
-	if err != nil {
-		return "", "", fmt.Errorf("reading %s manifest owner: %w", remoteRef, err)
-	}
-	return current, source, nil
-}
-
-// existingSubPaths returns the full CODEOWNERS paths nested under pkgPath
-// that actually exist in the current worktree checkout — the union of every
-// explicit entry current and source declare under pkgPath (data streams, a
-// kibana/ directory, or anything else), filtered down to the ones present on
-// disk. owners.Plan never touches a sub-path outside this set, since it may
-// not exist in this backport branch's version of the package.
-func existingSubPaths(workDir, pkgPath string, current, source *owners.Owners) []string {
-	candidates := make(map[string]bool)
-	for _, p := range current.EntriesUnder(pkgPath) {
-		candidates[p] = true
-	}
-	for _, p := range source.EntriesUnder(pkgPath) {
-		candidates[p] = true
-	}
-
-	paths := make([]string, 0, len(candidates))
-	for p := range candidates {
-		if _, err := os.Stat(filepath.Join(workDir, strings.TrimPrefix(p, "/"))); err == nil {
-			paths = append(paths, p)
-		}
-	}
-	return paths
 }
 
 // writeOwnerSyncPlan applies plan's changes to pkgDir/manifest.yml and
@@ -713,10 +631,10 @@ func writeOwnerSyncPlan(workDir, pkgDir, pkgPath string, plan owners.SyncPlan) e
 		return nil
 	}
 
-	codeownersPath := filepath.Join(workDir, codeownersRelPath)
+	codeownersPath := filepath.Join(workDir, owners.CodeownersRelPath)
 	data, err := os.ReadFile(codeownersPath)
 	if err != nil {
-		return fmt.Errorf("reading %s: %w", codeownersRelPath, err)
+		return fmt.Errorf("reading %s: %w", owners.CodeownersRelPath, err)
 	}
 	info, err := os.Stat(codeownersPath)
 	if err != nil {
@@ -725,7 +643,7 @@ func writeOwnerSyncPlan(workDir, pkgDir, pkgPath string, plan owners.SyncPlan) e
 
 	updated := owners.ApplyUpdates(string(data), updates, pkgPath)
 	if err := os.WriteFile(codeownersPath, []byte(updated), info.Mode()); err != nil {
-		return fmt.Errorf("writing %s: %w", codeownersRelPath, err)
+		return fmt.Errorf("writing %s: %w", owners.CodeownersRelPath, err)
 	}
 	return nil
 }
@@ -779,7 +697,7 @@ func (a applier) commitOwnerSync(pkg, pkgDir string) error {
 	if err := a.git.Run("add", pkgDir); err != nil {
 		return fmt.Errorf("staging package changes: %w", err)
 	}
-	if err := a.git.Run("add", filepath.Join(a.workDir, codeownersRelPath)); err != nil {
+	if err := a.git.Run("add", filepath.Join(a.workDir, owners.CodeownersRelPath)); err != nil {
 		return fmt.Errorf("staging CODEOWNERS: %w", err)
 	}
 	if err := a.git.Run("commit", "-m", fmt.Sprintf("Sync %s package owners from main", pkg)); err != nil {

@@ -26,6 +26,8 @@ import (
 	"github.com/elastic/integrations/dev/backports/apply"
 	"github.com/elastic/integrations/dev/backports/changelog"
 	bpchecklist "github.com/elastic/integrations/dev/backports/checklist"
+	"github.com/elastic/integrations/dev/backports/gitutil"
+	bpowners "github.com/elastic/integrations/dev/backports/owners"
 	bppackages "github.com/elastic/integrations/dev/backports/packages"
 	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
@@ -422,6 +424,66 @@ func DetectBackportPackages(before, after string, asJSON *bool) error {
 			fmt.Println(p)
 		}
 	}
+	return nil
+}
+
+// CheckBackportOwners reports package owner mismatches between the current
+// worktree and remote/sourceBranch (the ownership source of truth, normally
+// "main"), for every package changed between before and after — before..after,
+// following DetectBackportPackages's convention: before is normally the PR's
+// merge-base with sourceBranch, after is the PR's own commit.
+// Prints a JSON array to stdout; see check_backport_owners.sh's
+// build_owner_check_comment for the exact shape it expects. A package fully
+// in sync, or no longer present on sourceBranch, is omitted entirely.
+func CheckBackportOwners(remote, sourceBranch, before, after string) error {
+	if err := sh.Run("git", "fetch", remote, sourceBranch); err != nil {
+		return fmt.Errorf("fetching %s: %w", sourceBranch, err)
+	}
+	remoteRef := remote + "/" + sourceBranch
+
+	out, err := sh.Output("git", "diff", "--name-only", before+".."+after)
+	if err != nil {
+		return fmt.Errorf("running git diff: %w", err)
+	}
+
+	var files []string
+	for _, line := range strings.Split(out, "\n") {
+		if line = strings.TrimSpace(line); line != "" {
+			files = append(files, line)
+		}
+	}
+
+	pkgs, err := bppackages.DetectPackages(files, "packages")
+	if err != nil {
+		return fmt.Errorf("detecting packages: %w", err)
+	}
+
+	pkgIndex, err := changelog.BuildPackageIndex("packages")
+	if err != nil {
+		return fmt.Errorf("building package index: %w", err)
+	}
+
+	mismatches := bpowners.CheckPackages(gitutil.Git{}, "", remoteRef, pkgs, pkgIndex)
+
+	type mismatchJSON struct {
+		Package string   `json:"package"`
+		Teams   []string `json:"teams,omitempty"`
+		Error   string   `json:"error,omitempty"`
+	}
+	results := make([]mismatchJSON, 0, len(mismatches))
+	for _, m := range mismatches {
+		entry := mismatchJSON{Package: m.Package, Teams: m.Teams}
+		if m.Err != nil {
+			entry.Error = m.Err.Error()
+		}
+		results = append(results, entry)
+	}
+
+	data, err := json.Marshal(results)
+	if err != nil {
+		return fmt.Errorf("marshalling results: %w", err)
+	}
+	fmt.Println(string(data))
 	return nil
 }
 
