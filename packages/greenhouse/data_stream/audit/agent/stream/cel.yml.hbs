@@ -20,7 +20,6 @@ state:
   client_id: {{client_id}}
   client_secret: {{client_secret}}
   enrich_rejections: {{enrich_rejections}}
-  rejection_match_window: {{rejection_match_window}}
 {{#if user_id}}
   user_id: "{{user_id}}"
 {{/if}}
@@ -58,37 +57,40 @@ Rejection enrichment (optional, enrich_rejections):
 
   A candidate/prospect rejection is audited as an "action" event with
   event.target_type == "Candidate or Prospect rejected" and
-  event.meta == null — Greenhouse does NOT include an application or
-  candidate ID on this event, so the rejected Application cannot be
-  looked up directly by ID. Instead, the rejection reason and notes are
-  correlated by time: the Harvest API is queried for Applications whose
-  last_activity/rejected_at falls within rejection_match_window of the
-  audit event's event_time, and the result is merged into the event as
-  event.rejection before it is emitted. This reuses the same bearer
-  token as the audit log request, so the OAuth client must also be
-  granted read access to these Harvest V3 endpoints.
+  event.meta == null — this event carries no application or candidate
+  ID. However, the same API request also audits a second, separate
+  event with event.target_type == "RejectionDetails" and
+  event.type == "data_change_create", whose event.meta.application_id
+  gives the Application ID. Both events share the same request.id, so
+  within a single page of audit results, a rejection event is
+  correlated to its RejectionDetails sibling by matching request.id,
+  and the resulting application_id is used to look up the rejection
+  reason and notes from the Harvest API. The result is merged into the
+  rejection event as event.rejection before it is emitted. This reuses
+  the same bearer token as the audit log request, so the OAuth client
+  must also be granted read access to these Harvest V3 endpoints.
 
-  GET https://harvest.greenhouse.io/v3/applications
-    ?last_activity_after=<event_time - window>
-    &last_activity_before=<event_time + window>
-    - Assumed to return a bare JSON array of Application objects (as
-      other Harvest list endpoints do), each optionally carrying
-      rejection_reason {id, name, type}, rejected_at, and candidate_id.
-      Results are filtered client-side to status == "rejected" and
-      rejected_at inside the window.
-    - Exactly one match: proceed to fetch its activity feed below.
-    - Zero matches: event.rejection.error notes no match was found;
-      widen rejection_match_window if this happens often.
-    - More than one match (e.g. several rejections in the same
-      window): no attempt is made to guess which one is correct.
-      event.rejection.error records the ambiguity and
-      event.rejection.ambiguous_application_ids lists the candidates
-      for manual follow-up.
+  Correlation by request.id:
+    - Exactly one RejectionDetails event shares the rejection event's
+      request.id: proceed to the Harvest API lookups below.
+    - None found: event.rejection.error records that no matching
+      RejectionDetails event was found for that request.id. This can
+      happen if the two events land on different audit-log pages;
+      increasing batch_size reduces how often pages split a request.
+    - More than one found (a bulk-reject action can audit multiple
+      "Candidate or Prospect rejected" and "RejectionDetails" events
+      under the same shared request.id, with no way to tell which
+      pairs with which): no attempt is made to guess. event.rejection
+      .error records the ambiguity and
+      event.rejection.ambiguous_application_ids lists the candidates.
 
-  GET https://harvest.greenhouse.io/v3/applications/{id}/activity_feed
-    - Only called for a single, unambiguous match. Provides the
-      "Candidate Rejected" activity, whose body holds the rejection
-      notes/comments entered at rejection time.
+  GET https://harvest.greenhouse.io/v3/applications/{application_id}
+    - Provides rejection_reason {id, name, type}, candidate_id, and
+      rejected_at.
+
+  GET https://harvest.greenhouse.io/v3/applications/{application_id}/activity_feed
+    - Provides the "Candidate Rejected" activity, whose body holds the
+      rejection notes/comments entered at rejection time.
 
   A failed or inconclusive lookup does not drop the underlying audit
   event: it is emitted with event.rejection.error describing why no
@@ -211,125 +213,122 @@ program: |-
                               ).as(next_max_event_time,
                                 {
                                   "auth_token": auth.auth_token,
-                                  "events": results.map(e,
-                                    (
-                                      state.enrich_rejections &&
-                                      e.?event.type.orValue("") == "action" &&
-                                      e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
-                                    ).as(is_rejection,
-                                      {"message": (
-                                        is_rejection ?
-                                          timestamp(e.event_time).as(event_ts,
-                                            duration(state.rejection_match_window).as(window,
-                                              request(
-                                                "GET",
-                                                state.harvest_url.trim_right("/") + "/v3/applications?" + {
-                                                  "last_activity_after": [(event_ts - window).format(time_layout.RFC3339)],
-                                                  "last_activity_before": [(event_ts + window).format(time_layout.RFC3339)],
-                                                }.format_query()
-                                              ).with(
-                                                {"Header": {"Authorization": ["Bearer " + auth.auth_token.token]}}
-                                              ).do_request().as(list_resp,
-                                                (list_resp.StatusCode == 200) ?
-                                                  list_resp.Body.decode_json().as(apps,
-                                                    apps.filter(a,
-                                                      a.?status.orValue("") == "rejected" &&
-                                                      a.?rejected_at.hasValue() &&
-                                                      timestamp(a.rejected_at) >= event_ts - window &&
-                                                      timestamp(a.rejected_at) <= event_ts + window
-                                                    ).as(candidates,
-                                                      (candidates.size() == 1) ?
-                                                        candidates[0].as(app,
-                                                          request(
-                                                            "GET",
-                                                            state.harvest_url.trim_right("/") + "/v3/applications/" + string(app.id) + "/activity_feed"
-                                                          ).with(
-                                                            {"Header": {"Authorization": ["Bearer " + auth.auth_token.token]}}
-                                                          ).do_request().as(feed_resp,
-                                                            (feed_resp.StatusCode == 200) ?
-                                                              feed_resp.Body.decode_json().as(feed,
-                                                                feed.?activities.orValue([]).filter(a2,
-                                                                  a2.?subject.orValue("") == "Candidate Rejected"
-                                                                ).as(rejection_activities,
-                                                                  e.with({
-                                                                    "event": e.event.with({
-                                                                      "rejection": {
-                                                                        "application_id": string(app.id),
-                                                                        ?"candidate_id": (app.?candidate_id.orValue(null) == null) ?
-                                                                          optional.none()
-                                                                        :
-                                                                          optional.of(string(app.candidate_id)),
-                                                                        ?"reason": (app.?rejection_reason.orValue(null) == null) ?
-                                                                          optional.none()
-                                                                        :
-                                                                          optional.of({
-                                                                            "id": string(app.rejection_reason.id),
-                                                                            "name": app.rejection_reason.name,
-                                                                            "type": app.rejection_reason.?type.name.orValue(""),
-                                                                          }),
-                                                                        ?"notes": (size(rejection_activities) > 0) ?
-                                                                          rejection_activities[0].?body
-                                                                        :
-                                                                          optional.none(),
-                                                                        ?"rejected_at": app.?rejected_at,
-                                                                      },
-                                                                    }),
-                                                                  })
-                                                                )
+                                  "events": results.filter(rd,
+                                    rd.?event.target_type.orValue("") == "RejectionDetails" &&
+                                    rd.?event.type.orValue("") == "data_change_create" &&
+                                    rd.?event.meta.application_id.hasValue()
+                                  ).as(rejection_details_events,
+                                    results.map(e,
+                                      (
+                                        state.enrich_rejections &&
+                                        e.?event.type.orValue("") == "action" &&
+                                        e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
+                                      ).as(is_rejection,
+                                        {"message": (
+                                          is_rejection ?
+                                            rejection_details_events.filter(rde,
+                                              rde.?request.id.orValue("") == e.?request.id.orValue("")
+                                            ).as(matches,
+                                              (matches.size() == 1) ?
+                                                string(matches[0].event.meta.application_id).as(application_id,
+                                                  request(
+                                                    "GET",
+                                                    state.harvest_url.trim_right("/") + "/v3/applications/" + application_id
+                                                  ).with(
+                                                    {"Header": {"Authorization": ["Bearer " + auth.auth_token.token]}}
+                                                  ).do_request().as(app_resp,
+                                                    (app_resp.StatusCode == 200) ?
+                                                      app_resp.Body.decode_json().as(app,
+                                                        request(
+                                                          "GET",
+                                                          state.harvest_url.trim_right("/") + "/v3/applications/" + application_id + "/activity_feed"
+                                                        ).with(
+                                                          {"Header": {"Authorization": ["Bearer " + auth.auth_token.token]}}
+                                                        ).do_request().as(feed_resp,
+                                                          (feed_resp.StatusCode == 200) ?
+                                                            feed_resp.Body.decode_json().as(feed,
+                                                              feed.?activities.orValue([]).filter(a,
+                                                                a.?subject.orValue("") == "Candidate Rejected"
+                                                              ).as(rejection_activities,
+                                                                e.with({
+                                                                  "event": e.event.with({
+                                                                    "rejection": {
+                                                                      "application_id": application_id,
+                                                                      ?"candidate_id": (app.?candidate_id.orValue(null) == null) ?
+                                                                        optional.none()
+                                                                      :
+                                                                        optional.of(string(app.candidate_id)),
+                                                                      ?"reason": (app.?rejection_reason.orValue(null) == null) ?
+                                                                        optional.none()
+                                                                      :
+                                                                        optional.of({
+                                                                          "id": string(app.rejection_reason.id),
+                                                                          "name": app.rejection_reason.name,
+                                                                          "type": app.rejection_reason.?type.name.orValue(""),
+                                                                        }),
+                                                                      ?"notes": (size(rejection_activities) > 0) ?
+                                                                        rejection_activities[0].?body
+                                                                      :
+                                                                        optional.none(),
+                                                                      ?"rejected_at": app.?rejected_at,
+                                                                    },
+                                                                  }),
+                                                                })
                                                               )
-                                                            :
-                                                              e.with({
-                                                                "event": e.event.with({
-                                                                  "rejection": {
-                                                                    "application_id": string(app.id),
-                                                                    ?"reason": (app.?rejection_reason.orValue(null) == null) ?
-                                                                      optional.none()
-                                                                    :
-                                                                      optional.of({
-                                                                        "id": string(app.rejection_reason.id),
-                                                                        "name": app.rejection_reason.name,
-                                                                        "type": app.rejection_reason.?type.name.orValue(""),
-                                                                      }),
-                                                                    ?"rejected_at": app.?rejected_at,
-                                                                    "error": "activity_feed fetch failed: " + string(feed_resp.StatusCode),
-                                                                  },
-                                                                }),
-                                                              })
-                                                          )
+                                                            )
+                                                          :
+                                                            e.with({
+                                                              "event": e.event.with({
+                                                                "rejection": {
+                                                                  "application_id": application_id,
+                                                                  ?"reason": (app.?rejection_reason.orValue(null) == null) ?
+                                                                    optional.none()
+                                                                  :
+                                                                    optional.of({
+                                                                      "id": string(app.rejection_reason.id),
+                                                                      "name": app.rejection_reason.name,
+                                                                      "type": app.rejection_reason.?type.name.orValue(""),
+                                                                    }),
+                                                                  ?"rejected_at": app.?rejected_at,
+                                                                  "error": "activity_feed fetch failed: " + string(feed_resp.StatusCode),
+                                                                },
+                                                              }),
+                                                            })
                                                         )
-                                                      : (candidates.size() == 0) ?
-                                                        e.with({
-                                                          "event": e.event.with({
-                                                            "rejection": {
-                                                              "error": "no rejected application found within " + state.rejection_match_window + " of the audit event timestamp",
-                                                            },
-                                                          }),
-                                                        })
-                                                      :
-                                                        e.with({
-                                                          "event": e.event.with({
-                                                            "rejection": {
-                                                              "error": "ambiguous match: " + string(candidates.size()) + " rejected applications found within " + state.rejection_match_window + " of the audit event timestamp",
-                                                              "ambiguous_application_ids": candidates.map(a3, string(a3.id)),
-                                                            },
-                                                          }),
-                                                        })
-                                                    )
+                                                      )
+                                                    :
+                                                      e.with({
+                                                        "event": e.event.with({
+                                                          "rejection": {
+                                                            "application_id": application_id,
+                                                            "error": "application fetch failed: " + string(app_resp.StatusCode),
+                                                          },
+                                                        }),
+                                                      })
                                                   )
-                                                :
-                                                  e.with({
-                                                    "event": e.event.with({
-                                                      "rejection": {
-                                                        "error": "applications lookup failed: " + string(list_resp.StatusCode),
-                                                      },
-                                                    }),
-                                                  })
-                                              )
+                                                )
+                                              : (matches.size() == 0) ?
+                                                e.with({
+                                                  "event": e.event.with({
+                                                    "rejection": {
+                                                      "error": "no RejectionDetails audit event found sharing request.id " + e.?request.id.orValue(""),
+                                                    },
+                                                  }),
+                                                })
+                                              :
+                                                e.with({
+                                                  "event": e.event.with({
+                                                    "rejection": {
+                                                      "error": "ambiguous: " + string(matches.size()) + " RejectionDetails events share request.id " + e.?request.id.orValue("") + " (likely a bulk rejection)",
+                                                      "ambiguous_application_ids": matches.map(m, string(m.event.meta.application_id)),
+                                                    },
+                                                  }),
+                                                })
                                             )
-                                          )
-                                        :
-                                          e
-                                      ).encode_json()}
+                                          :
+                                            e
+                                        ).encode_json()}
+                                      )
                                     )
                                   ),
                                   "cursor": {

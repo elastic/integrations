@@ -74,12 +74,12 @@
         - name: rejection
           type: group
           description: >
-            Rejection details looked up from the Harvest API for a "Candidate or Prospect rejected" audit event, correlated by timestamp since the audit event does not include an application ID. Only populated when the `enrich_rejections` setting is enabled.
+            Rejection details looked up from the Harvest API for a "Candidate or Prospect rejected" audit event. This audit event does not include an application ID; it is obtained by correlating a sibling "RejectionDetails" audit event that shares the same request.id. Only populated when the `enrich_rejections` setting is enabled.
           fields:
             - name: application_id
               type: keyword
               description: >
-                The ID of the Application matched to this rejection event by timestamp correlation.
+                The ID of the Application matched to this rejection event via its sibling "RejectionDetails" audit event.
             - name: candidate_id
               type: keyword
               description: >
@@ -87,7 +87,7 @@
             - name: ambiguous_application_ids
               type: keyword
               description: >
-                When timestamp correlation matches more than one rejected Application, the IDs of all matching candidates. No reason or notes are attached in this case.
+                When more than one "RejectionDetails" audit event shares the rejection event's request.id (for example, a bulk rejection), the Application IDs of all of them. No reason or notes are attached in this case, since it is not possible to tell which one corresponds to this rejection event.
             - name: reason
               type: group
               description: >
