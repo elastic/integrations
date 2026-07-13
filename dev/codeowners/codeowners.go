@@ -34,6 +34,10 @@ func Check() error {
 // PackageOwners returns the owning team(s) for packageName (and, if
 // dataStream is set, the more specific data-stream-level owner when one is
 // defined) from the CODEOWNERS file at codeownersPath.
+//
+// packageName is the package directory basename under packages/, not the
+// manifest.yml name field. Prefer PackageOwnersByPath when the full package
+// path is known (e.g. nested category layouts).
 func PackageOwners(packageName, dataStream, codeownersPath string) ([]string, error) {
 	owners, err := LoadOwners(codeownersPath)
 	if err != nil {
@@ -94,6 +98,10 @@ func LoadOwners(codeownersPath string) (*Owners, error) {
 // PackageOwners returns the owning team(s) for packageName (and, if
 // dataStream is set, the more specific data-stream-level owner when one is
 // defined), from the CODEOWNERS file this Owners was loaded from.
+//
+// packageName is the package directory basename under packages/, not the
+// manifest.yml name field. Prefer PackageOwnersByPath when the full package
+// path is known (e.g. nested category layouts).
 func (o *Owners) PackageOwners(packageName, dataStream string) ([]string, error) {
 	// look for the path of the package taking into account nested directories
 	packagePath := ""
@@ -114,19 +122,30 @@ func (o *Owners) PackageOwners(packageName, dataStream string) ([]string, error)
 			break
 		}
 	}
-	packageTeams, found := o.owners[packagePath]
-	if !found {
+	if packagePath == "" {
 		return nil, fmt.Errorf("no owner found for package %s", packageName)
 	}
+	return o.PackageOwnersByPath(strings.TrimPrefix(packagePath, "/"), dataStream)
+}
 
+// PackageOwnersByPath returns the owning team(s) for the package at pkgPath
+// (relative to the repo root) and, when dataStream is set, the more specific
+// data-stream-level owner when one is defined.
+func (o *Owners) PackageOwnersByPath(pkgPath, dataStream string) ([]string, error) {
+	manifestPath := filepath.Join(pkgPath, citools.ManifestFileName)
+	teams, found := o.findOwnerForFile(manifestPath)
+	if !found {
+		return nil, fmt.Errorf("no owner found for package path %q", pkgPath)
+	}
 	if dataStream == "" {
-		return packageTeams, nil
+		return teams, nil
 	}
 
-	dataStreamPath := fmt.Sprintf("/packages/%s/data_stream/%s", packageName, dataStream)
+	dataStreamDir := filepath.Join(pkgPath, "data_stream", dataStream)
+	dataStreamPath := "/" + filepath.ToSlash(dataStreamDir)
 	dataStreamTeams, found := o.owners[dataStreamPath]
 	if !found {
-		return packageTeams, nil
+		return teams, nil
 	}
 	return dataStreamTeams, nil
 }

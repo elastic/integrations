@@ -70,7 +70,7 @@ type packageSummary struct {
 // since no files were written). Set preview to print what publish would do
 // without touching git or GitHub.
 func Run(dryRun, preview bool) error {
-	paths, err := citools.ListPackages(packagesDir)
+	pkgs, err := citools.ListPackagesWithNames(packagesDir)
 	if err != nil {
 		return fmt.Errorf("listing packages: %w", err)
 	}
@@ -84,22 +84,15 @@ func Run(dryRun, preview bool) error {
 	var errs []string
 	eligible := 0
 
-	for _, pkgPath := range paths {
-		manifest, err := citools.ReadPackageManifest(filepath.Join(pkgPath, citools.ManifestFileName))
-		if err != nil {
-			return fmt.Errorf("reading manifest %s: %w", pkgPath, err)
-		}
-		if manifest.Type != "integration" {
-			continue
-		}
-		if !manifest.HasRequires() {
+	for _, pkg := range pkgs {
+		if pkg.Type != "integration" || !pkg.HasRequires {
 			continue
 		}
 		eligible++
 
-		summary, err := processPackage(pkgPath, manifest.Name, dryRun, owners)
+		summary, err := processPackage(pkg.Path, pkg.Name, dryRun, owners)
 		if err != nil {
-			errs = append(errs, fmt.Sprintf("%s: %v", manifest.Name, err))
+			errs = append(errs, fmt.Sprintf("%s: %v", pkg.Name, err))
 			continue
 		}
 		if summary != nil {
@@ -108,7 +101,7 @@ func Run(dryRun, preview bool) error {
 	}
 
 	printSummary(summaries, dryRun)
-	printScanStats(len(paths), eligible, len(summaries), len(errs))
+	printScanStats(len(pkgs), eligible, len(summaries), len(errs))
 
 	if dryRun {
 		fmt.Println("dry run — skipping PR/issue creation.")
@@ -159,11 +152,7 @@ func processPackage(pkgPath, pkgName string, dryRun bool, owners *codeowners.Own
 		return nil, nil
 	}
 
-	// codeowners.PackageOwners treats its packageName argument as the
-	// package folder's basename (used elsewhere for xUnit-based ownership
-	// lookups), not the manifest's declared name — the two usually agree
-	// but aren't guaranteed to, e.g. under nested category directories.
-	res := resolveOwner(owners, filepath.Base(pkgPath), result.Codeowner)
+	res := resolveOwner(owners, pkgPath, result.Codeowner)
 
 	var writtenFiles []string
 	if result.NewVersion != "" {
@@ -196,9 +185,9 @@ type ownerResolution struct {
 // (sourced from the package manifest's owner.github, which only ever names
 // one team). Falls back to defaultOwner when neither source resolves one, so
 // a proposal never gets dropped for lack of somewhere to send it.
-func resolveOwner(owners *codeowners.Owners, pkgName, fallback string) ownerResolution {
-	teams, err := owners.PackageOwners(pkgName, "")
-	if err != nil || len(teams) == 0 {
+func resolveOwner(owners *codeowners.Owners, pkgPath, fallback string) ownerResolution {
+	teams, err := owners.PackageOwnersByPath(pkgPath, "")
+	if err != nil {
 		owner := fallback
 		if owner == "" {
 			owner = defaultOwner
