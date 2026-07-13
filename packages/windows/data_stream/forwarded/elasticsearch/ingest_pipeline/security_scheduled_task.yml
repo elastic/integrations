@@ -35,6 +35,19 @@ processors:
           - sessionstatechangetrigger
           - eventtrigger
           - idletrigger
+        action_definition_keys:
+          - type
+          - context
+          - command
+          - arguments
+          - working_directory
+          - class_id
+        trigger_definition_keys:
+          - type
+          - enabled
+          - interval
+          - duration
+          - stop_at_duration_end
       source: |
         def asMap(def value) {
           return value instanceof Map ? value : null;
@@ -116,6 +129,45 @@ processors:
           }
         }
 
+        String escapeDefinitionValue(String value) {
+          String hex = "0123456789ABCDEF";
+          StringBuilder escaped = new StringBuilder();
+          for (int i = 0; i < value.length(); i++) {
+            int code = value.charAt(i);
+            // Escape %, |, =, C0 control characters, and DEL.
+            if (code == 37 || code == 124 || code == 61 || code < 32 || code == 127) {
+              escaped.append("%");
+              escaped.append(hex.charAt((code >> 4) & 15));
+              escaped.append(hex.charAt(code & 15));
+            } else {
+              escaped.append(value.charAt(i));
+            }
+          }
+          return escaped.toString();
+        }
+
+        String canonicalDefinition(HashMap values, def keys) {
+          StringBuilder definition = new StringBuilder("v=1");
+          for (def keyValue : keys) {
+            String key = keyValue.toString();
+            definition.append("|");
+            definition.append(key);
+            definition.append("=");
+            if (!values.containsKey(key) || values.get(key) == null) {
+              definition.append("n");
+              continue;
+            }
+            def value = values.get(key);
+            if (value instanceof Boolean) {
+              definition.append(value ? "b:true" : "b:false");
+            } else {
+              definition.append("s:");
+              definition.append(escapeDefinitionValue(value.toString()));
+            }
+          }
+          return definition.toString();
+        }
+
         ArrayList normalizePrincipals(def task) {
           def principalsBlock = asMap(task.get("principals"));
           if (principalsBlock == null) {
@@ -173,7 +225,7 @@ processors:
           return settings;
         }
 
-        ArrayList normalizeTriggers(def task, def triggerKeys, def triggerTypes) {
+        ArrayList normalizeTriggers(def task, def triggerKeys, def triggerTypes, def definitionKeys) {
           def triggersBlock = asMap(task.get("triggers"));
           if (triggersBlock == null) {
             return null;
@@ -212,13 +264,25 @@ processors:
                   }
                 }
               }
+              HashMap definitionValues = new HashMap();
+              definitionValues.put("type", trigger.get("type"));
+              definitionValues.put("enabled", trigger.get("enabled"));
+              def repetition = asMap(trigger.get("repetition"));
+              if (repetition != null) {
+                for (def key : ["interval", "duration", "stop_at_duration_end"]) {
+                  if (repetition.containsKey(key)) {
+                    definitionValues.put(key, repetition.get(key));
+                  }
+                }
+              }
+              trigger.put("definition", canonicalDefinition(definitionValues, definitionKeys));
               triggers.add(trigger);
             }
           }
           return triggers;
         }
 
-        ArrayList normalizeActions(def task, def actionKeys, def actionTypes) {
+        ArrayList normalizeActions(def task, def actionKeys, def actionTypes, def definitionKeys) {
           def actionsBlock = asMap(task.get("actions"));
           if (actionsBlock == null) {
             return null;
@@ -249,6 +313,7 @@ processors:
               } else if (type.equals("com_handler")) {
                 putText(action, "class_id", actionBlock, "classid");
               }
+              action.put("definition", canonicalDefinition(action, definitionKeys));
               actions.add(action);
             }
           }
@@ -295,7 +360,8 @@ processors:
         ArrayList triggers = normalizeTriggers(
           task,
           params.trigger_keys,
-          params.trigger_types
+          params.trigger_types,
+          params.trigger_definition_keys
         );
         if (triggers != null && triggers.size() > 0) {
           normalized.put("triggers", triggers);
@@ -304,7 +370,8 @@ processors:
         ArrayList actions = normalizeActions(
           task,
           params.action_keys,
-          params.action_types
+          params.action_types,
+          params.action_definition_keys
         );
         if (actions != null && actions.size() > 0) {
           normalized.put("actions", actions);
