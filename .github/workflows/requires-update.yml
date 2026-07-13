@@ -62,13 +62,17 @@ jobs:
       - name: Run RequiresUpdate
         # Scans packages, applies proposals, and opens one PR (or issue) per
         # package — see dev/requiresupdate.
+        # Scheduled runs (when cron is enabled) always use dryRun=false and
+        # preview=false; workflow_dispatch inputs are only read for manual runs.
         id: requires_update
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || 'false' }}
+          PREVIEW: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preview || 'false' }}
         run: >-
           mage RequiresUpdate
-          -dryRun=${{ github.event.inputs.dry_run || 'false' }}
-          -preview=${{ github.event.inputs.preview || 'false' }}
+          -dryRun=${{ env.DRY_RUN }}
+          -preview=${{ env.PREVIEW }}
         continue-on-error: true
 
       - name: Fail if RequiresUpdate reported errors
