@@ -39,7 +39,8 @@ func ParseCheckedBranches(body string) map[string]bool {
 	if !strings.Contains(body, marker) {
 		return checked
 	}
-	for line := range strings.SplitSeq(body, "\n") {
+	// strings.SplitSeq requires go1.23; go.mod pins go1.22 for backport compatibility with older base commits.
+	for _, line := range strings.Split(body, "\n") {
 		if m := checkedLineRe.FindStringSubmatch(strings.TrimRight(line, "\r")); m != nil {
 			checked[m[1]] = true
 		}
