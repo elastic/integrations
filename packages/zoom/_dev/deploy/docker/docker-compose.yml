@@ -10,6 +10,19 @@ services:
       - STREAM_ADDR=http://elastic-agent:9080/zoom
       - STREAM_WEBHOOK_HEADER=Authorization=abc123
     command: log --start-signal=SIGHUP --delay=5s /sample_logs/account-ndjson.log
+  zoom-meeting-activity:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: zoom-meeting-activity
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-meeting_activity.yml
   zoom-operation:
     image: docker.elastic.co/observability/stream:v0.20.0
     hostname: zoom-operation
