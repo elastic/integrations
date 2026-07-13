@@ -1,0 +1,150 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the default Mimikatz MemSSP credential log file, mimilsa.log. This file is created after the misc::memssp module injects a malicious Security Support Provider into LSASS and can contain credentials from subsequent logons to the host.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.file-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-m365_defender.event-*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.executable",
+                "process.command_line",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.code_signature.trusted",
+                "process.Ext.token.integrity_level_name",
+                "file.path",
+                "file.Ext.original.path",
+                "file.name",
+                "file.size"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Mimikatz Memssp Log File Detected",
+        "note": "## Triage and analysis\n\n### Investigating Mimikatz Memssp Log File Detected\n\n#### Possible investigation steps\n\n- Is the alert-local event the default MemSSP credential log?\n  - Focus: `file.name`, `file.path`, `file.size`, `process.name`, and `process.executable`.\n  - Implication: escalate when \"lsass.exe\" creates \"mimilsa.log\", especially at \"C:\\Windows\\System32\\mimilsa.log\" or a staging path; lower suspicion only when the same host, path, and process evidence align with an authorized red-team, responder, malware-analysis, or isolated lab run.\n\n- Was the log handled like credential material after creation?\n  - Focus: file events on the same `host.id` around `file.path`, including `file.Ext.original.path`, `file.extension`, and the acting `process.executable`.\n  - Implication: escalate when \"mimilsa.log\" is copied, renamed, archived, deleted, or paired with DLL/archive artifacts such as \"mimilib.dll\"; absence of follow-on file handling does not clear the alert because the log creation itself can mean credential capture.\n  - Hint: pivot first on the exact `file.path` and rename source path, then on companion \"mimilib.dll\" file events on the same host. !{investigate{\"description\":\"\",\"label\":\"MemSSP log and companion file events\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"file.path\",\"queryType\":\"phrase\",\"value\":\"{{file.path}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"file.Ext.original.path\",\"queryType\":\"phrase\",\"value\":\"{{file.path}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"file.name\",\"queryType\":\"phrase\",\"value\":\"mimilib.dll\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n\n- Which process activity likely enabled MemSSP before LSASS wrote the log?\n  - Focus: process starts on the same `host.id`: `process.command_line`, `process.executable`, `process.parent.executable`, `process.code_signature.trusted`, and `process.Ext.token.integrity_level_name`.\n  - Implication: escalate when \"misc::memssp\", Mimikatz/Invoke-Mimikatz, \"mimilib.dll\", PowerShell, rundll32, regsvr32, unsigned helpers, or high-integrity/system tooling appear before the write; a clean process search narrows the launcher only if collection covers that window.\n  - Hint: search backward from alert `@timestamp` for process starts containing \"memssp\", \"mimikatz\", \"mimilib\", or script/LOLBIN launchers on the same `host.id`. !{investigate{\"description\":\"\",\"label\":\"MemSSP-related process starts\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.command_line\",\"queryType\":\"phrase\",\"value\":\"*memssp*\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.command_line\",\"queryType\":\"phrase\",\"value\":\"*mimikatz*\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.command_line\",\"queryType\":\"phrase\",\"value\":\"*mimilib*\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n\n- Which accounts may have been exposed after the log appeared?\n  - Why: MemSSP records credentials from successful authentications after injection, so exposure depends on who logged on or unlocked the host after the write.\n  - Focus: if Windows Security authentication logs are available, correlate same-`host.id` events after `@timestamp` with `winlog.event_id`, `winlog.event_data.TargetUserName`, `winlog.logon.type`, `source.ip`, and `winlog.event_data.AuthenticationPackageName`. !{investigate{\"description\":\"\",\"label\":\"Authentication events after MemSSP log creation\",\"providers\":[[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4624\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4776\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when privileged, service, machine, remote, or unexpected NTLM logons appear after creation; if policy permits secure collection, accounts visible in \"mimilsa.log\" are direct exposure evidence. Missing Windows Security telemetry or uncollected log content is unresolved, not benign.\n\n- Does the host show default in-memory MemSSP only, or a persistent SSP setup?\n  - Why: persistent SSP changes survive a single process-memory event and widen eradication scope beyond the observed log file.\n  - Focus: companion DLL file events (`file.path`, `file.extension`) and, when registry telemetry is available, LSA Security Packages changes in `registry.path` and `registry.data.strings`. !{investigate{\"description\":\"\",\"label\":\"MemSSP persistence file and registry evidence\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"file.name\",\"queryType\":\"phrase\",\"value\":\"mimilib.dll\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"registry\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"registry.path\",\"queryType\":\"phrase\",\"value\":\"*\\\\Control\\\\Lsa\\\\Security Packages*\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"registry\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"registry.data.strings\",\"queryType\":\"phrase\",\"value\":\"*mimilib*\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate persistence scope when \"mimilib.dll\" or an unfamiliar SSP DLL is placed for loading, or when LSA Security Packages registry data names it; if registry telemetry is unavailable, persistence is unresolved and must not be used to close.\n\n- If local evidence is suspicious or unresolved, what related alert activity changes scope?\n  - Focus: related alerts for the same `host.id` in the last 48 hours covering delivery, privilege escalation, LSASS access, persistence, lateral movement, or additional credential access. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: use the `user.id` alert pivot only when a non-SYSTEM account from process or authentication evidence becomes part of scope. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden response when related alerts explain precursor access or follow-on use of captured credentials; keep scope local only when artifact, lineage, exposure, and persistence evidence remain bounded and no contradictory alerts appear.\n\n- Escalate when alert-local artifact, file handling, enabling process, credential exposure, persistence, or related alerts point to hostile MemSSP use; close only when telemetry and outside confirmation align with one authorized lab, red-team, or responder workflow; preserve and escalate when evidence is mixed, missing, or credential exposure cannot be scoped.\n\n### False positive analysis\n\n- Normal Windows operation should not create \"mimilsa.log\". Authorized red-team, responder, malware-analysis, or isolated lab validation is the narrow benign path. Confirm by verifying alert-local `file.path`/`process.executable`, enabling `process.command_line`/`process.parent.executable`, file handling, asset identity, and any credential-exposure evidence all align with the same case; if any dimension contradicts it, do not close as benign.\n- If exercise or case records are unavailable, do not exception a first occurrence; require a previously confirmed exercise or responder case plus the same stable pattern (`host.id`, `file.path`, `process.executable`, enabling `process.command_line`, and file-handling behavior) across prior alerts. Avoid exceptions on `file.name`, `process.name`, or host alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse containment and document the exact exercise or responder case with `host.id`, `file.path`, `process.executable`, enabling command/parent, and file-handling evidence. Create an exception only for the recurring same pattern.\n- If suspicious but unconfirmed, preserve evidence before containment: export the alert, surrounding process/file events, related alerts, any available authentication events, and securely collect \"mimilsa.log\" as credential material if policy permits. Capture volatile LSASS state or memory through approved IR tooling before rebooting because restart can remove in-memory evidence.\n- Then apply reversible containment based on scope: restrict network access for the affected `host.id`, heighten monitoring, and scrutinize accounts identified in \"mimilsa.log\" or post-write logons. Avoid deleting the log, terminating suspected tooling, or rebooting until preservation is complete.\n- If confirmed malicious, isolate or rebuild the host as host criticality allows; remove \"mimilsa.log\", companion DLLs, archives, and any persistent SSP configuration discovered; terminate tooling only after evidence capture; then reboot or rebuild to clear injected SSP state.\n- Reset or rotate credentials for privileged, service, machine, and lateral-movement-relevant accounts shown in the log content or post-write authentication evidence; review related hosts/accounts before broad resets when exposure is uncertain.\n- Post-incident hardening: reduce interactive logons to high-value hosts, restrict debug and LSASS access, review LSA protection and allowed SSP configuration where compatible, monitor for \"mimilsa.log\" and \"mimilib.dll\", and document telemetry gaps that limited credential-exposure or persistence scoping.\n",
+        "query": "file where host.os.type == \"windows\" and file.name : \"mimilsa.log\" and process.name : \"lsass.exe\"\n",
+        "references": [
+            "https://www.elastic.co/security-labs/detect-credential-access"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "ebb200e8-adf0-43f8-a0bb-4ee5b5d852c6",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 11 - File Create](https://ela.st/sysmon-event-11-setup)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/"
+                    },
+                    {
+                        "id": "T1556",
+                        "name": "Modify Authentication Process",
+                        "reference": "https://attack.mitre.org/techniques/T1556/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/",
+                        "subtechnique": [
+                            {
+                                "id": "T1547.005",
+                                "name": "Security Support Provider",
+                                "reference": "https://attack.mitre.org/techniques/T1547/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 418
+    },
+    "id": "ebb200e8-adf0-43f8-a0bb-4ee5b5d852c6_418",
+    "type": "security-rule"
+}

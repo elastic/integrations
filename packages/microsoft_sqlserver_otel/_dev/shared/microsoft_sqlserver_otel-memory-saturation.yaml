@@ -1,0 +1,365 @@
+# SQL Server OTel Memory & Saturation — buffer pool, TempDB, memory grants
+# Deep-dive: Is memory healthy? TempDB pressure?
+
+dashboards:
+- id: microsoft_sqlserver_otel-memory-saturation
+  name: '[SQL Server OTel] Memory & saturation'
+  description: Buffer pool health, memory usage, TempDB space, and memory grant pressure.
+
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+
+  controls:
+  - type: options
+    label: Instance
+    data_view: metrics-*
+    field: resource.attributes.service.instance.id
+
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: microsoft_sqlserver_otel-overview
+      - label: Memory & saturation
+        dashboard: microsoft_sqlserver_otel-memory-saturation
+      - label: Concurrency & errors
+        dashboard: microsoft_sqlserver_otel-concurrency-errors
+      - label: Database I/O
+        dashboard: microsoft_sqlserver_otel-database-io
+      - label: Query performance
+        dashboard: microsoft_sqlserver_otel-query-performance
+
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [SQL Server OTel] Memory & saturation
+
+        This dashboard tracks memory and saturation metrics:
+        - Page life expectancy (target > 300s)
+        - Buffer cache hit ratio (target > 95%)
+        - Memory usage and memory grants pending
+        - TempDB space and version store size
+        - Free list stalls (extreme memory pressure)
+
+  - title: Page life expectancy
+    hide_title: true
+    size: {w: 6, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.page.life_expectancy IS NOT NULL
+      - STATS ple = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.page.life_expectancy)))
+      primary:
+        field: ple
+        label: PLE (s)
+        format:
+          type: number
+          decimals: 0
+
+  - title: Buffer cache hit ratio
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.page.buffer_cache.hit_ratio IS NOT NULL
+      - STATS hit_ratio = AVG(metrics.sqlserver.page.buffer_cache.hit_ratio)
+      primary:
+        field: hit_ratio
+        label: Cache hit %
+        format:
+          type: number
+          decimals: 1
+          suffix: '%'
+
+  - title: Total memory in use
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.memory.usage IS NOT NULL
+      - STATS mem_kb = MAX(LAST_OVER_TIME(metrics.sqlserver.memory.usage))
+      - EVAL mem_bytes = mem_kb * 1024
+      primary:
+        field: mem_bytes
+        label: Memory in use
+        format:
+          type: bytes
+          decimals: 1
+
+  - title: Memory grants pending
+    hide_title: true
+    size: {w: 6, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.memory.grants.pending.count IS NOT NULL
+      - STATS pending = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.memory.grants.pending.count)))
+      primary:
+        field: pending
+        label: Grants pending
+        format:
+          type: number
+          decimals: 0
+
+  - title: TempDB free space
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.tempdb.space IS NOT NULL AND COALESCE(attributes.tempdb.state, tempdb.state) == "free"
+      - STATS free_kb = SUM(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.database.tempdb.space)))
+      - EVAL free_bytes = free_kb * 1024
+      primary:
+        field: free_bytes
+        label: TempDB free
+        format:
+          type: bytes
+          decimals: 1
+
+  - title: Free list stalls/s
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.page.buffer_cache.free_list.stalls.rate IS NOT NULL
+      - STATS stalls = AVG(TO_LONG(metrics.sqlserver.page.buffer_cache.free_list.stalls.rate))
+      primary:
+        field: stalls
+        label: Free list stalls/s
+        format:
+          type: number
+          decimals: 0
+
+  - title: Page life expectancy over time
+    size: {w: 32, h: 8}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.page.life_expectancy IS NOT NULL
+      - STATS ple = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.page.life_expectancy))) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, 
+        ?_tend), instance = COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: ple
+        label: PLE (s)
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: Buffer cache hit ratio over time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.page.buffer_cache.hit_ratio IS NOT NULL
+      - STATS hit_ratio = AVG(metrics.sqlserver.page.buffer_cache.hit_ratio) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        instance = COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: hit_ratio
+        label: Cache hit %
+        format:
+          type: number
+          decimals: 0
+          suffix: '%'
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+  - title: Memory usage over time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.memory.usage IS NOT NULL
+      - STATS mem_kb = MAX(LAST_OVER_TIME(metrics.sqlserver.memory.usage)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        instance = COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: mem_kb
+        label: Memory (KB)
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: Memory grants pending over time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.memory.grants.pending.count IS NOT NULL
+      - STATS pending = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.memory.grants.pending.count))) BY time_bucket = BUCKET(@timestamp, 20, 
+        ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: pending
+        label: Grants pending
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: TempDB space by state over time
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.tempdb.space IS NOT NULL
+      - STATS space_kb = SUM(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.database.tempdb.space))) BY time_bucket = BUCKET(@timestamp, 20, 
+        ?_tstart, ?_tend), state = COALESCE(attributes.tempdb.state, tempdb.state, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: space_kb
+        label: TempDB (KB)
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: state
+      legend:
+        visible: show
+        position: right
+
+  - title: TempDB version store size over time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.tempdb.version_store.size IS NOT NULL
+      - STATS version_store_kb = MAX(LAST_OVER_TIME(metrics.sqlserver.database.tempdb.version_store.size)) BY time_bucket = 
+        BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: version_store_kb
+        label: Version store (KB)
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: Page lookup rate over time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.page.lookup.rate IS NOT NULL
+      - STATS lookup_rate = AVG(metrics.sqlserver.page.lookup.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = 
+        COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: lookup_rate
+        label: Page lookups/s
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: Free list stalls over time
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.page.buffer_cache.free_list.stalls.rate IS NOT NULL
+      - STATS stalls = AVG(TO_LONG(metrics.sqlserver.page.buffer_cache.free_list.stalls.rate)) BY time_bucket = BUCKET(@timestamp, 20, 
+        ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: stalls
+        label: Free list stalls/s
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right

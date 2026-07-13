@@ -1,0 +1,563 @@
+dashboards:
+  - id: apache_tomcat_otel-jvm-os-resources
+    name: '[Tomcat OTel] JVM & OS Resources'
+    description: >-
+      JVM threading, CPU utilization, file descriptors, operating system
+      resource monitoring, and web resource cache performance for the Apache Tomcat JVM process.
+
+    filters:
+      - field: data_stream.dataset
+        equals: tomcat.otel
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: resource.attributes.host.name
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: apache_tomcat_otel-overview
+            - label: Request Processing
+              dashboard: apache_tomcat_otel-request-processing
+            - label: Thread Pool & Connections
+              dashboard: apache_tomcat_otel-thread-pool-connections
+            - label: JVM Memory & GC
+              dashboard: apache_tomcat_otel-jvm-memory-gc
+            - label: Sessions & Applications
+              dashboard: apache_tomcat_otel-sessions-servlets
+            - label: JVM & OS Resources
+              dashboard: apache_tomcat_otel-jvm-os-resources
+
+      # ─── Dashboard Overview + KPIs ─────────────────────────────────────
+      - hide_title: true
+        size: {w: 12, h: 8}
+        markdown:
+          content: |
+            ## [Tomcat OTel] JVM & OS Resources
+
+            This dashboard monitors JVM and operating system resource consumption:
+            - Process and system-wide CPU utilization
+            - System load average
+            - File descriptor usage and limits
+            - JVM thread counts (total, daemon, peak)
+            - Physical memory and swap usage
+            - Web resource cache hit/miss ratio and utilization
+
+      # KPI Row 1 (w:9 × 4 = 36)
+      - title: Process CPU
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_OperatingSystem_ProcessCpuLoad IS NOT NULL
+            - STATS proc_cpu = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_ProcessCpuLoad))
+          primary:
+            field: proc_cpu
+            label: Process CPU
+            format:
+              type: percent
+              decimals: 1
+
+      - title: System CPU
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_OperatingSystem_CpuLoad IS NOT NULL
+            - STATS sys_cpu = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_CpuLoad))
+          primary:
+            field: sys_cpu
+            label: System CPU
+            format:
+              type: percent
+              decimals: 1
+
+      - title: System Load Avg
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_OperatingSystem_SystemLoadAverage IS NOT NULL
+            - STATS load_avg = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_SystemLoadAverage))
+          primary:
+            field: load_avg
+            label: Load Average (1m)
+            format:
+              type: number
+              decimals: 2
+
+      - title: Available CPUs
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_OperatingSystem_AvailableProcessors IS NOT NULL
+            - STATS cpus = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_AvailableProcessors))
+          primary:
+            field: cpus
+            label: Available CPUs
+            format:
+              type: number
+              decimals: 0
+
+      # KPI Row 2 (w:9 × 4 = 36)
+      - title: Open File Descriptors
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_OperatingSystem_OpenFileDescriptorCount IS NOT NULL
+            - STATS open_fds = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_OpenFileDescriptorCount))
+          primary:
+            field: open_fds
+            label: Open FDs
+            format:
+              type: number
+              decimals: 0
+
+      - title: FD Utilization
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_OperatingSystem_OpenFileDescriptorCount IS NOT NULL
+            - STATS open_fds = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_OpenFileDescriptorCount)), max_fds = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_MaxFileDescriptorCount))
+            - EVAL fd_util = CASE(max_fds > 0, open_fds / max_fds, 0)
+          primary:
+            field: fd_util
+            label: FD Utilization
+            format:
+              type: percent
+              decimals: 1
+
+      - title: JVM Threads
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Threading_ThreadCount IS NOT NULL
+            - STATS thread_count = MAX(LAST_OVER_TIME(java_lang_Threading_ThreadCount))
+          primary:
+            field: thread_count
+            label: JVM Threads
+            format:
+              type: number
+              decimals: 0
+
+      - title: Peak Threads
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Threading_PeakThreadCount IS NOT NULL
+            - STATS peak = MAX(LAST_OVER_TIME(java_lang_Threading_PeakThreadCount))
+          primary:
+            field: peak
+            label: Peak Threads
+            format:
+              type: number
+              decimals: 0
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## CPU Utilization'
+
+      - title: CPU Load Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_OperatingSystem_CpuLoad IS NOT NULL
+            - STATS system_cpu = MAX(AVG_OVER_TIME(java_lang_OperatingSystem_CpuLoad)), process_cpu = MAX(AVG_OVER_TIME(java_lang_OperatingSystem_ProcessCpuLoad)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL system_pct = ROUND(system_cpu * 100, 1)
+            - EVAL process_pct = ROUND(process_cpu * 100, 1)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: system_pct
+              label: System CPU %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: process_pct
+              label: Process CPU %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          legend:
+            visible: show
+            position: right
+
+      - title: System Load Average Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_OperatingSystem_SystemLoadAverage IS NOT NULL
+            - STATS load_avg = MAX(AVG_OVER_TIME(java_lang_OperatingSystem_SystemLoadAverage)), cpus = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_AvailableProcessors)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: load_avg
+              label: Load Average (1m)
+              format:
+                type: number
+                decimals: 2
+            - field: cpus
+              label: Available CPUs
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## File Descriptors'
+
+      - title: File Descriptor Usage Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_OperatingSystem_OpenFileDescriptorCount IS NOT NULL
+            - STATS open_fds = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_OpenFileDescriptorCount)), max_fds = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_MaxFileDescriptorCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: open_fds
+              label: Open FDs
+              format:
+                type: number
+                decimals: 0
+            - field: max_fds
+              label: Max FDs
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      - title: File Descriptor Utilization
+        size: {w: 24, h: 12}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_OperatingSystem_OpenFileDescriptorCount IS NOT NULL
+            - STATS open_fds = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_OpenFileDescriptorCount)), max_fds = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_MaxFileDescriptorCount))
+            - EVAL fd_util = CASE(max_fds > 0, ROUND(open_fds / max_fds * 100, 1), 0)
+            - EVAL gauge_min = 0
+            - EVAL gauge_max = 100
+            - EVAL gauge_goal = 80
+          metric:
+            field: fd_util
+            label: FD Utilization
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: gauge_min
+          maximum:
+            field: gauge_max
+          goal:
+            field: gauge_goal
+          color:
+            range_type: number
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 50
+                color: '#54b399'
+              - up_to: 80
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#cc5642'
+          appearance:
+            shape: arc
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## JVM Threads'
+
+      - title: JVM Thread Count Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: unstacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Threading_ThreadCount IS NOT NULL
+            - STATS total = MAX(LAST_OVER_TIME(java_lang_Threading_ThreadCount)), daemon = MAX(LAST_OVER_TIME(java_lang_Threading_DaemonThreadCount)), peak = MAX(LAST_OVER_TIME(java_lang_Threading_PeakThreadCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: total
+              label: Total
+              format:
+                type: number
+                decimals: 0
+            - field: daemon
+              label: Daemon
+              format:
+                type: number
+                decimals: 0
+            - field: peak
+              label: Peak
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      - title: New Threads Started Over Time
+        description: Delta of cumulative TotalStartedThreadCount per time bucket.
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Threading_TotalStartedThreadCount IS NOT NULL
+            - STATS new_threads = SUM(DELTA(java_lang_Threading_TotalStartedThreadCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: new_threads
+              label: New Threads
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## System Memory'
+
+      - title: System Memory Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: unstacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_OperatingSystem_FreeMemorySize IS NOT NULL
+            - STATS free_mem = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_FreeMemorySize)), total_mem = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_TotalMemorySize)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: free_mem
+              label: Free Memory
+              format:
+                type: bytes
+            - field: total_mem
+              label: Total Memory
+              format:
+                type: bytes
+          legend:
+            visible: show
+            position: right
+
+      - title: Swap Space Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: unstacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_OperatingSystem_FreeSwapSpaceSize IS NOT NULL
+            - STATS free_swap = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_FreeSwapSpaceSize)), total_swap = MAX(LAST_OVER_TIME(java_lang_OperatingSystem_TotalSwapSpaceSize)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: free_swap
+              label: Free Swap
+              format:
+                type: bytes
+            - field: total_swap
+              label: Total Swap
+              format:
+                type: bytes
+          legend:
+            visible: show
+            position: right
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Resource Cache'
+
+      - title: Cache Hit / Miss Ratio Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_WebResourceRoot_hitCount IS NOT NULL
+            - STATS hits = MAX(LAST_OVER_TIME(Catalina_WebResourceRoot_hitCount)), lookups = MAX(LAST_OVER_TIME(Catalina_WebResourceRoot_lookupCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL hit_pct = CASE(lookups > 0, ROUND(hits / lookups * 100, 1), 0)
+            - EVAL miss_pct = CASE(lookups > 0, ROUND((lookups - hits) / lookups * 100, 1), 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: hit_pct
+              label: Hit %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: miss_pct
+              label: Miss %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          legend:
+            visible: show
+            position: right
+
+      - title: Cache Size vs Max Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_WebResourceRoot_size IS NOT NULL
+            - STATS cache_size = MAX(LAST_OVER_TIME(Catalina_WebResourceRoot_size)), max_size = MAX(LAST_OVER_TIME(Catalina_WebResourceRoot_maxSize)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: cache_size
+              label: Current Size
+              format:
+                type: number
+                decimals: 0
+            - field: max_size
+              label: Max Size
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      - title: Cache Lookup Rate Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_WebResourceRoot_lookupCount IS NOT NULL
+            - STATS lookups = SUM(DELTA(Catalina_WebResourceRoot_lookupCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: lookups
+              label: Lookups
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      - title: Cache Hit Ratio
+        hide_title: true
+        size: {w: 24, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_WebResourceRoot_hitCount IS NOT NULL
+            - STATS hits = MAX(LAST_OVER_TIME(Catalina_WebResourceRoot_hitCount)), lookups = MAX(LAST_OVER_TIME(Catalina_WebResourceRoot_lookupCount))
+            - EVAL hit_ratio = CASE(lookups > 0, ROUND(hits / lookups * 100, 1), 0)
+          primary:
+            field: hit_ratio
+            label: Hit Ratio
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+
+      - title: Cache Entries
+        hide_title: true
+        size: {w: 24, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_WebResourceRoot_size IS NOT NULL
+            - STATS entries = MAX(LAST_OVER_TIME(Catalina_WebResourceRoot_size))
+          primary:
+            field: entries
+            label: Entries
+            format:
+              type: number
+              decimals: 0

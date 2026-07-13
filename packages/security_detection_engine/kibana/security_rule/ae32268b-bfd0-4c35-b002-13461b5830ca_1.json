@@ -1,0 +1,128 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects successful `AssumeRoleWithWebIdentity` where the caller identity is a Kubernetes service account and the source autonomous system organization is present but not `Amazon.com, Inc.` EKS workloads that obtain IAM credentials via IAM Roles for Service Accounts (IRSA) normally reach STS from AWS-managed or AWS-associated networks; the same identity from a clearly external ASN can indicate a stolen or misused projected service-account token being exchanged for IAM credentials off-cluster.",
+        "false_positives": [
+            "Traffic may leave the cluster via corporate proxies, VPNs, or non-AWS NAT providers that populate a non-Amazon ASN organization name while still being legitimate. AWS IP ranges are also labeled with other organization strings (for example `AMAZON-02`); this rule only excludes `Amazon.com, Inc.` per the match condition\u2014tune with additional approved ASNs, CIDRs, or known automation identities if needed."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "interval": "5m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "source.geo.city_name",
+                "source.geo.country_name",
+                "source.as.organization.name",
+                "source.as.number",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "aws.cloudtrail.resources.arn",
+                "aws.cloudtrail.resources.type",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS AssumeRoleWithWebIdentity from Kubernetes SA and External ASN",
+        "note": "## Triage and analysis\n\n### Investigating AWS AssumeRoleWithWebIdentity from Kubernetes SA and External ASN\n\nIRSA maps a Kubernetes service account to an IAM role via OIDC. CloudTrail records `AssumeRoleWithWebIdentity` with\n`user.name` like `system:serviceaccount:<namespace>:<sa>`. If geolocation/ASN enrichment shows a non-Amazon source\norganization while the identity is still a cluster service account, validate whether the token could have been used\noutside the cluster (exfiltrated JWT, misrouted traffic, or operator tooling).\n\n### Possible investigation steps\n\n- Confirm `event.action`, `event.provider`, and `event.outcome` for a successful STS assume.\n- Review `user.name`, `aws.cloudtrail.user_identity.arn`, role trust (`aws.cloudtrail.resources`, request parameters for\n  `roleArn` / `roleSessionName`), and OIDC `sub` / `aud` if present in CloudTrail.\n- Compare `source.ip`, `source.geo.*`, and `source.as.organization.name` to known cluster egress, NAT gateways, and\n  approved operator networks.\n- In Kubernetes: map the service account to workloads and audit activity around the event time (exec, secret access,\n  new deployments).\n\n### False positive analysis\n\n- Egress through third-party security stacks or multi-cloud connectors can change how ASN organization is attributed.\n- Expand exclusions for known `source.as.organization.name` values used by your egress path.\n\n### Response and remediation\n\n- If unauthorized: revoke the role session, rotate IRSA trust where appropriate, investigate token exposure, and reduce\n  service account and role permissions.\n\n### Additional information\n\n- [AssumeRoleWithWebIdentity](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html)\n- [EKS IAM roles for service accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html)\n",
+        "query": "data_stream.dataset:aws.cloudtrail and \n event.provider:sts.amazonaws.com and \n event.action:AssumeRoleWithWebIdentity and \n event.outcome:success and user.name:system\\:serviceaccount\\:* and \n source.as.organization.name:(* and not (Amazon* or AMAZON*))\n",
+        "references": [
+            "https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html",
+            "https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.organization.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "ae32268b-bfd0-4c35-b002-13461b5830ca",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS CloudTrail",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "ae32268b-bfd0-4c35-b002-13461b5830ca_1",
+    "type": "security-rule"
+}

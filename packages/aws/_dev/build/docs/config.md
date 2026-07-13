@@ -18,10 +18,10 @@ See more details in the [Logs reference](#logs-reference).
 
 ## What do I need to use this integration?
 
-### Agentless Enabled Integration
+### Elastic Managed Enabled Integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent Based Installation
 
@@ -58,9 +58,20 @@ Use this integration if you only need to collect data from the AWS Config servic
 5. Add all the required integration configuration parameters, including the aws_region to enable data collection.
 6. Select "Save and continue" to save the integration.
 
+::::{important}
+The AWS Config data stream uses the CEL input with manual AWS SigV4 request signing
+rather than the AWS SDK. This means it **only** supports static credentials
+(`Access Key ID` + `Secret Access Key`, and optionally `Session Token` for temporary
+credentials).
+
+**Role ARN, IAM instance profiles, shared credential files, and environment-based
+credentials are not supported.** If you attempt to use this data stream without
+providing static credentials, you will see an error indicating that `access_key_id`
+and `secret_access_key` are required.
+::::
+
 **Note**
-1. For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
-2. The AWS Config integration performs a full ingestion of all findings during each interval.
+1. The AWS Config integration performs a full ingestion of all findings during each interval.
 
 ## Troubleshooting
 

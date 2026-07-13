@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when a node registers any liveness heartbeat failures (`liveness_heartbeatfailures` increases). Liveness is how CockroachDB decides a node is alive; any failure is an early signal of instability or a network/gossip problem.",
     "name": "[CockroachDB OTel] Liveness heartbeat failures",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cockroachdb_otel-overview"
+        },
+        {
+          "id": "cockroachdb_otel-replication"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## CockroachDB liveness heartbeat failures\n\n### What fired\nThe counter `liveness_heartbeatfailures` increased on at least one node over the evaluation window.\n\n### Why it matters\nNode liveness is the foundation of CockroachDB's availability model. A node that misses heartbeats loses its leases and its ranges are temporarily unavailable until another replica takes over. Repeated failures usually indicate network partitioning, severe CPU/disk saturation, or clock skew.\n\n### Triage\n1. Check whether the node is still in the cluster (`liveness_livenodes` gauge across the cluster).\n2. Inspect correlated signals on the affected node: `rpc_connection_unhealthy`, `rpc_connection_failures`, `clock_offset_meannanos`.\n3. Look for resource starvation: `sys_cpu_combined_percent_normalized`, `sys_runnable_goroutines_per_cpu`, `sys_host_disk_iopsinprogress`.\n4. Verify NTP/chrony health on the host \u2014 clock skew above `cluster.max_offset` will push a node out of the liveness quorum.\n\n### Remediation\n- Fix the underlying resource pressure or network path.\n- Confirm NTP is running and offsets are sub-millisecond.\n- If the node is isolated, check firewall/security group rules between nodes.\n\n### Tuning\n- This rule fires on *any* increase, intentionally \u2014 a 1-minute evaluation with a 5-minute window catches brief incidents without being too noisy.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND liveness_heartbeatfailures IS NOT NULL\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n// INCREASE for counter: any increase indicates heartbeat failures\n| STATS increase = SUM(INCREASE(liveness_heartbeatfailures)) BY attributes.node_id, host.name\n| WHERE increase > 0\n| SORT increase DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

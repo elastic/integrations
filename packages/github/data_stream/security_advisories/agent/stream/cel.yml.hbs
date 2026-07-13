@@ -6,12 +6,19 @@ resource.tracer:
   maxbackups: 5
 resource.url: {{api_url}}
 state:
+{{#if api_key}}
   api_key: {{api_key}}
+{{/if}}
   advisory_type: {{advisory_type}}
   batch_size: {{batch_size}}
+{{#if api_key}}
 redact:
   fields:
     - api_key
+{{else}}
+redact:
+  fields: ~
+{{/if}}
 regexp:
   github_link_next: '<([^>]+)>; rel="next"'
 max_executions: 5000
@@ -29,7 +36,7 @@ program: |-
     "Header": {
         "Accept": ["application/vnd.github+json"],
         "X-GitHub-Api-Version": ["2022-11-28"],
-        "Authorization": ["Bearer " + state.api_key],
+        ?"Authorization": has(state.api_key) && state.api_key != "" ? optional.ofNonZeroValue(["Bearer " + state.api_key]) : optional.ofNonZeroValue([]),
     },
   }).do_request().as(resp, (resp.StatusCode != 200) ?
     {
@@ -50,7 +57,7 @@ program: |-
   :
     bytes(resp.Body).decode_json().as(body,
       {
-        "api_key": state.api_key,
+        ?"api_key": state.?api_key,
         "advisory_type": state.advisory_type,
         "batch_size": state.batch_size,
         "cursor": {

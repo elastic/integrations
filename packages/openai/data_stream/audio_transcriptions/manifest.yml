@@ -38,6 +38,14 @@ streams:
         show_user: false
         description: Bucket width to decide the width of each bucket in response from the OpenAI API. Defaults to 1m. Supported values for this parameter are 1m, 1h and 1d only.
         default: 1m
+      - name: finalization_grace
+        type: text
+        title: Finalization grace period
+        multi: false
+        required: true
+        show_user: true
+        description: How long to wait before treating a usage bucket as final. OpenAI finalizes per-minute buckets with a multi-minute delay; a bucket's token and request counts keep climbing for several minutes after its end time. Buckets whose end time is younger than this grace period are skipped and re-fetched on a later poll, so only finalized counts are ingested. Defaults to 0s, which ingests each bucket as soon as its minute closes with no added delay; this is the least disruptive setting but may undercount usage during heavy bursts, because a bucket is read before OpenAI finishes revising it and is not re-read once ingested, so later upward revisions are never reflected. If accurate counts matter more than freshness, set this to 15m so every bucket has time to finalize before it is read. The trade-off is that usage data is then delayed by up to the grace period. Supported units are h/m/s.
+        default: 0s
       - name: tags
         type: text
         title: Tags

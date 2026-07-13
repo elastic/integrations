@@ -8169,12 +8169,16 @@ processors:
 on_failure:
   - set:
       tag: set_event_pipeline_02eca99d
-      field: event.pipeline
+      field: event.kind
       value: pipeline_error
   - append:
       tag: append_event_message_4ce9afa8
-      field: event.message
-      value: Processor '{{{ _ingest.on_failure_processor_type }}}' {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}' {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
       tag: append_tags_d762b9c5
       field: tags

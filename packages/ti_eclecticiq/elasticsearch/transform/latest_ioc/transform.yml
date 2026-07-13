@@ -8,9 +8,11 @@ source:
 # us that ability in order to prevent having duplicate IoC data and prevent query
 # time field type conflicts.
 dest:
-  index: "logs-ti_eclecticiq_latest.threat-5"
+  index: "logs-ti_eclecticiq_latest.threat-6"
 latest:
   unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
     - event.dataset
     - eclecticiq.threat.observable_id
   sort: "@timestamp"
@@ -28,6 +30,6 @@ _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.5.0
+  fleet_transform_version: 0.7.0
 settings:
-  unattended: true
+  num_failure_retries: -1

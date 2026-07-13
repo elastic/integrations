@@ -1,0 +1,19 @@
+# System test: CEL report collection against stream mock (pagination + cursor resume).
+# Interval is short so multiple polling cycles finish within wait_for_data_timeout (1m is required).
+wait_for_data_timeout: 1m
+input: cel
+service: hackerone-report-mock
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}
+    api_token_identifier: test-id
+    api_token_value: test-secret
+    program_handles:
+      - acme
+    interval: 2s
+    initial_interval: 24h
+    page_size: 100
+    enable_request_tracer: false
+    preserve_original_event: true
+assert:
+  hit_count: 4

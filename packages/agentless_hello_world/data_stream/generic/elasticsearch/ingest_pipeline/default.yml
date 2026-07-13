@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing Agentless Hello World generic logs.
+description: Pipeline for processing Elastic Managed Hello World generic logs.
 processors:
   - set:
       field: ecs.version
@@ -13,7 +13,29 @@ processors:
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       tag: remove_agentless_tags
       description: >-
-        Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+        Removes the fields added by Elastic Managed Integration as metadata, as they can collide with ECS fields.
+  - json:
+      tag: parse_message_json
+      field: message
+      target_field: _parsed
+      if: ctx.message instanceof String && ctx.message.trim().startsWith('{')
+      ignore_failure: true
+  - set:
+      tag: extract_cursor_from_message
+      if: ctx._parsed?.cursor != null
+      field: cursor
+      copy_from: _parsed.cursor
+  - set:
+      tag: extract_http_from_message
+      if: ctx._parsed?.http != null
+      field: http
+      copy_from: _parsed.http
+  - remove:
+      tag: cleanup_parsed
+      field:
+        - _parsed
+        - message
+      ignore_missing: true
   - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null

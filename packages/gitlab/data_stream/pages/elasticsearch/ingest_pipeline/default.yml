@@ -46,6 +46,7 @@ processors:
       if: ctx.gitlab?.pages?.time != null
   - remove:
       field: gitlab.pages.time
+      ignore_missing: true
   - lowercase:
       field: gitlab.pages.level
       ignore_missing: true
@@ -116,9 +117,220 @@ processors:
       field: user.id
       type: string
       ignore_missing: true
+  - set:
+      field: http.request.mime_type
+      tag: set_http_request_mime_type_from_pages_content_type
+      copy_from: gitlab.pages.content_type
+      ignore_empty_value: true
+  - convert:
+      field: gitlab.pages.duration_ms
+      tag: convert_duration_ms_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.pages.duration_ms
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.name
+      tag: set_host_name_from_pages_host
+      copy_from: gitlab.pages.host
+      ignore_empty_value: true
+  - rename:
+      field: gitlab.pages.in-place
+      tag: rename_in_place
+      target_field: gitlab.pages.in_place
+      ignore_missing: true
+  - convert:
+      field: gitlab.pages.in-place
+      tag: convert_in-place_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.pages.in_place
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: gitlab.pages.listen_addr.IP
+      tag: rename_listen_addr_IP
+      target_field: gitlab.pages.listen_addr.ip
+      ignore_missing: true
+  - convert:
+      field: gitlab.pages.listen_addr.ip
+      tag: convert_listen_addr_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.gitlab?.pages?.listen_addr?.ip != ''
+      on_failure:
+        - remove:
+            field: gitlab.pages.listen_addr.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.ip
+      tag: set_server_ip_from_pages_listen_addr_ip
+      copy_from: gitlab.pages.listen_addr.ip
+      ignore_empty_value: true
+  - rename:
+      field: gitlab.pages.listen_addr.Port
+      tag: rename_listen_addr_Port
+      target_field: gitlab.pages.listen_addr.port
+      ignore_missing: true
+  - convert:
+      field: gitlab.pages.listen_addr.port
+      tag: convert_listen_addr_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.pages.listen_addr.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.port
+      tag: set_server_port_from_pages_listen_addr_port
+      copy_from: gitlab.pages.listen_addr.port
+      ignore_empty_value: true
+  - set:
+      field: http.request.method
+      tag: set_http_request_method_from_pages_msg
+      copy_from: gitlab.pages.method
+      ignore_empty_value: true
+  - convert:
+      field: gitlab.pages.pages_https
+      tag: convert_pages_https_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.pages.pages_https
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - dissect:
+      field: gitlab.pages.proto
+      tag: dissect_pages_proto
+      pattern: "%{}/%{http.version}"
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gitlab.pages.read_bytes
+      tag: convert_read_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.pages.read_bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.bytes
+      tag: set_server_bytes_from_pages_read_bytes
+      copy_from: gitlab.pages.read_bytes
+      ignore_empty_value: true
+  - set:
+      field: http.request.referrer
+      tag: set_http_request_referrer_from_pages_referrer
+      copy_from: gitlab.pages.referrer
+      ignore_empty_value: true
+  - dissect:
+      field: remote_addr
+      tag: dissect_remote_addr
+      pattern: '%{}:%{POSTINT:source.port}'
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.address
+      tag: set_source_address_from_pages_remote_addr
+      copy_from: gitlab.pages.remote_addr
+      ignore_empty_value: true
+  - convert:
+      field: gitlab.pages.remote_ip
+      tag: convert_remote_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.gitlab?.pages?.remote_ip != ''
+      on_failure:
+        - remove:
+            field: gitlab.pages.remote_ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_pages_remote_ip
+      copy_from: gitlab.pages.remote_ip
+      ignore_empty_value: true
+  - convert:
+      field: gitlab.pages.status
+      tag: convert_status_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.pages.status
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code_from_pages_status
+      copy_from: gitlab.pages.status
+      ignore_empty_value: true
+  - convert:
+      field: gitlab.pages.ttfb_ms
+      tag: convert_ttfb_ms_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.pages.ttfb_ms
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gitlab.pages.written_bytes
+      tag: convert_written_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.pages.written_bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.bytes
+      tag: set_client_bytes_from_pages_written_bytes
+      copy_from: gitlab.pages.written_bytes
+      ignore_empty_value: true
   - rename: 
       field: gitlab.pages.msg
       target_field: message
+      ignore_missing: true
   - append:
       field: related.user
       value: '{{{user.id}}}'

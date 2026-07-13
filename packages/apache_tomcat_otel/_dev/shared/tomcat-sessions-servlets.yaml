@@ -1,0 +1,540 @@
+dashboards:
+  - id: apache_tomcat_otel-sessions-servlets
+    name: '[Tomcat OTel] Sessions & Applications'
+    description: >-
+      HTTP session lifecycle, per-application performance monitoring, servlet detail,
+      and authentication failure tracking for Apache Tomcat web applications.
+
+    filters:
+      - field: data_stream.dataset
+        equals: tomcat.otel
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: resource.attributes.host.name
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: apache_tomcat_otel-overview
+            - label: Request Processing
+              dashboard: apache_tomcat_otel-request-processing
+            - label: Thread Pool & Connections
+              dashboard: apache_tomcat_otel-thread-pool-connections
+            - label: JVM Memory & GC
+              dashboard: apache_tomcat_otel-jvm-memory-gc
+            - label: Sessions & Applications
+              dashboard: apache_tomcat_otel-sessions-servlets
+            - label: JVM & OS Resources
+              dashboard: apache_tomcat_otel-jvm-os-resources
+
+      # ─── Dashboard Overview + KPIs ─────────────────────────────────────
+      - hide_title: true
+        size: {w: 12, h: 8}
+        markdown:
+          content: |
+            ## [Tomcat OTel] Sessions & Applications
+
+            This dashboard monitors HTTP session lifecycle and per-application health:
+            - Active, created, expired, and rejected session counts
+            - Session creation and expiration rates
+            - Per-context session management details
+            - Servlet-level request processing and error breakdown
+            - Authentication failure tracking
+
+      # KPI Row 1 (w:9 × 4 = 36)
+      - title: Active Sessions
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_activeSessions IS NOT NULL
+            - STATS active_sessions = SUM(LAST_OVER_TIME(Catalina_Manager_activeSessions))
+          primary:
+            field: active_sessions
+            label: Active Sessions
+            format:
+              type: number
+              compact: true
+
+      - title: Total Created
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_sessionCounter IS NOT NULL
+            - STATS sessions_created = SUM(LAST_OVER_TIME(Catalina_Manager_sessionCounter))
+          primary:
+            field: sessions_created
+            label: Total Created
+            format:
+              type: number
+              compact: true
+
+      - title: Expired Sessions
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_expiredSessions IS NOT NULL
+            - STATS expired = SUM(LAST_OVER_TIME(Catalina_Manager_expiredSessions))
+          primary:
+            field: expired
+            label: Expired Sessions
+            format:
+              type: number
+              compact: true
+
+      - title: Rejected Sessions
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_rejectedSessions IS NOT NULL
+            - STATS rejected = SUM(LAST_OVER_TIME(Catalina_Manager_rejectedSessions))
+          primary:
+            field: rejected
+            label: Rejected Sessions
+            format:
+              type: number
+              compact: true
+
+      # KPI Row 2 (w:9 × 4 = 36)
+      - title: Session Create Rate
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_sessionCreateRate IS NOT NULL
+            - STATS create_rate = MAX(LAST_OVER_TIME(Catalina_Manager_sessionCreateRate))
+          primary:
+            field: create_rate
+            label: Create Rate
+            format:
+              type: number
+              decimals: 1
+              suffix: "/s"
+
+      - title: Avg Session Lifetime
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_sessionAverageAliveTime IS NOT NULL
+            - STATS avg_lifetime = MAX(LAST_OVER_TIME(Catalina_Manager_sessionAverageAliveTime))
+          primary:
+            field: avg_lifetime
+            label: Avg Lifetime
+            format:
+              type: number
+              decimals: 0
+              suffix: " s"
+
+      - title: Max Session Lifetime
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_sessionMaxAliveTime IS NOT NULL
+            - STATS max_lifetime = MAX(LAST_OVER_TIME(Catalina_Manager_sessionMaxAliveTime))
+          primary:
+            field: max_lifetime
+            label: Max Lifetime
+            format:
+              type: number
+              decimals: 0
+              suffix: " s"
+
+      - title: Peak Active Sessions
+        hide_title: true
+        size: {w: 9, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_maxActive IS NOT NULL
+            - STATS peak_active = MAX(LAST_OVER_TIME(Catalina_Manager_maxActive))
+          primary:
+            field: peak_active
+            label: Peak Active
+            format:
+              type: number
+              compact: true
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Session Lifecycle'
+
+      - title: Active Sessions Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_activeSessions IS NOT NULL
+            - STATS active = MAX(LAST_OVER_TIME(Catalina_Manager_activeSessions)), peak = MAX(LAST_OVER_TIME(Catalina_Manager_maxActive)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: active
+              label: Active Sessions
+              format:
+                type: number
+                decimals: 0
+            - field: peak
+              label: Peak Active
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      - title: Session Create & Expire Rate Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_sessionCreateRate IS NOT NULL
+            - STATS create_rate = MAX(LAST_OVER_TIME(Catalina_Manager_sessionCreateRate)), expire_rate = MAX(LAST_OVER_TIME(Catalina_Manager_sessionExpireRate)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: create_rate
+              label: Create Rate (/s)
+              format:
+                type: number
+                decimals: 2
+            - field: expire_rate
+              label: Expire Rate (/s)
+              format:
+                type: number
+                decimals: 2
+          legend:
+            visible: show
+            position: right
+
+      - title: Session Events Over Time
+        description: New sessions created, expired, and rejected per time bucket.
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_sessionCounter IS NOT NULL
+            - STATS created = SUM(DELTA(Catalina_Manager_sessionCounter)), expired = SUM(DELTA(Catalina_Manager_expiredSessions)), rejected = SUM(DELTA(Catalina_Manager_rejectedSessions)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: created
+              label: Created
+              format:
+                type: number
+                decimals: 0
+            - field: expired
+              label: Expired
+              format:
+                type: number
+                decimals: 0
+            - field: rejected
+              label: Rejected
+              format:
+                type: number
+                decimals: 0
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: Rejected
+                color: '#cc5642'
+          legend:
+            visible: show
+            position: right
+
+      - title: Avg Session Lifetime Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_sessionAverageAliveTime IS NOT NULL
+            - STATS avg_alive = MAX(LAST_OVER_TIME(Catalina_Manager_sessionAverageAliveTime)), max_alive = MAX(LAST_OVER_TIME(Catalina_Manager_sessionMaxAliveTime)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: avg_alive
+              label: Avg Lifetime (s)
+              format:
+                type: number
+                decimals: 0
+                suffix: " s"
+            - field: max_alive
+              label: Max Lifetime (s)
+              format:
+                type: number
+                decimals: 0
+                suffix: " s"
+          legend:
+            visible: show
+            position: right
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Per-Application Detail'
+
+      - title: Application Session Summary
+        size: {w: 48, h: 13}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_activeSessions IS NOT NULL
+            - STATS active = MAX(LAST_OVER_TIME(Catalina_Manager_activeSessions)), created = MAX(LAST_OVER_TIME(Catalina_Manager_sessionCounter)), expired = MAX(LAST_OVER_TIME(Catalina_Manager_expiredSessions)), rejected = MAX(LAST_OVER_TIME(Catalina_Manager_rejectedSessions)), peak = MAX(LAST_OVER_TIME(Catalina_Manager_maxActive)), avg_alive = MAX(LAST_OVER_TIME(Catalina_Manager_sessionAverageAliveTime)), max_alive = MAX(LAST_OVER_TIME(Catalina_Manager_sessionMaxAliveTime)) BY attributes.context, attributes.host
+            - SORT active DESC
+          breakdowns:
+            - field: attributes.context
+              label: Context
+            - field: attributes.host
+              label: Host
+          metrics:
+            - field: active
+              label: Active
+              format:
+                type: number
+            - field: created
+              label: Created
+              format:
+                type: number
+            - field: expired
+              label: Expired
+              format:
+                type: number
+            - field: rejected
+              label: Rejected
+              format:
+                type: number
+            - field: peak
+              label: Peak
+              format:
+                type: number
+            - field: avg_alive
+              label: Avg Lifetime (s)
+              format:
+                type: number
+                decimals: 0
+            - field: max_alive
+              label: Max Lifetime (s)
+              format:
+                type: number
+                decimals: 0
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Servlet Performance'
+
+      - title: Servlet Request Count Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Servlet_requestCount IS NOT NULL
+            - STATS requests = SUM(DELTA(Catalina_Servlet_requestCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: requests
+              label: Requests
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.name
+          legend:
+            visible: show
+            position: right
+
+      - title: Servlet Error Count Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Servlet_errorCount IS NOT NULL
+            - STATS errors = SUM(DELTA(Catalina_Servlet_errorCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: errors
+              label: Errors
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.name
+          legend:
+            visible: show
+            position: right
+
+      - title: Servlet Performance Detail
+        size: {w: 48, h: 13}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Servlet_requestCount IS NOT NULL
+            - STATS requests = MAX(LAST_OVER_TIME(Catalina_Servlet_requestCount)), errors = MAX(LAST_OVER_TIME(Catalina_Servlet_errorCount)), proc_time = MAX(LAST_OVER_TIME(Catalina_Servlet_processingTime)), max_time = MAX(LAST_OVER_TIME(Catalina_Servlet_maxTime)), min_time = MAX(LAST_OVER_TIME(Catalina_Servlet_minTime)), load_time = MAX(LAST_OVER_TIME(Catalina_Servlet_loadTime)), allocated = MAX(LAST_OVER_TIME(Catalina_Servlet_countAllocated)) BY attributes.name, attributes.WebModule
+            - EVAL min_display = CASE(min_time > 9.0E18, null, min_time)
+            - EVAL avg_latency = CASE(requests > 0, ROUND(proc_time / requests, 1), 0)
+            - EVAL error_pct = CASE(requests > 0, ROUND(errors / requests * 100, 2), 0)
+            - SORT requests DESC
+          breakdowns:
+            - field: attributes.name
+              label: Servlet
+            - field: attributes.WebModule
+              label: Web Module
+          metrics:
+            - field: requests
+              label: Requests
+              format:
+                type: number
+            - field: errors
+              label: Errors
+              format:
+                type: number
+            - field: error_pct
+              label: Error %
+              format:
+                type: number
+                decimals: 2
+                suffix: "%"
+            - field: avg_latency
+              label: Avg Latency (ms)
+              format:
+                type: number
+                decimals: 1
+            - field: max_time
+              label: Max (ms)
+              format:
+                type: number
+                decimals: 0
+            - field: min_display
+              label: Min (ms)
+              format:
+                type: number
+                decimals: 0
+            - field: load_time
+              label: Load Time (ms)
+              format:
+                type: number
+                decimals: 0
+            - field: allocated
+              label: Allocated
+              format:
+                type: number
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Authentication'
+
+      - title: Auth Failures
+        hide_title: true
+        size: {w: 24, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Realm_failureCount IS NOT NULL
+            - STATS failures = SUM(LAST_OVER_TIME(Catalina_Realm_failureCount))
+          primary:
+            field: failures
+            label: Auth Failures
+            format:
+              type: number
+              decimals: 0
+
+      - title: Auth Failure Rate
+        hide_title: true
+        size: {w: 24, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Realm_failureCount IS NOT NULL
+            - STATS failure_rate = SUM(DELTA(Catalina_Realm_failureCount))
+          primary:
+            field: failure_rate
+            label: New Failures
+            format:
+              type: number
+              decimals: 0
+
+      - title: Authentication Failures Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Realm_failureCount IS NOT NULL
+            - STATS failures = SUM(DELTA(Catalina_Realm_failureCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: failures
+              label: Auth Failures
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right

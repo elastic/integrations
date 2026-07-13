@@ -1,0 +1,343 @@
+---
+# Oracle Database OTel - Query Performance & Plans
+# Dashboard 6 of 6 - Historical top-N query analysis
+# Data source: logs-oracledbreceiver.otel-* WHERE event_name == "db.server.top_query"
+#
+# Requires db.server.top_query events enabled in oracledbreceiver configuration.
+dashboards:
+  - id: oracle_otel-query-performance
+    minimum_kibana_version: '8.14.0'
+    name: '[Logs Oracle] Query Performance & Plans'
+    description: Historical top-N query analysis. What has been most expensive? Where is CPU time going?
+    controls:
+      - type: options
+        label: Oracle Instance
+        data_view: logs-*
+        field: oracledb.instance.name
+    filters:
+      - field: data_stream.dataset
+        equals: oracledbreceiver.otel
+      - field: event_name
+        equals: "db.server.top_query"
+    panels:
+      - title: Navigation Links
+        description: Links to all Oracle Database OTel dashboards.
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: oracle_otel-overview
+            - label: Resource Capacity, Sessions & Locking
+              dashboard: oracle_otel-resource-capacity
+            - label: SQL Execution, I/O & Cache Performance
+              dashboard: oracle_otel-sql-execution
+            - label: Transaction Health & Storage Management
+              dashboard: oracle_otel-transaction-health
+            - label: Active Query Analysis
+              dashboard: oracle_otel-active-query-analysis
+            - label: Query Performance & Plans
+              dashboard: oracle_otel-query-performance
+
+      - title: Dashboard Introduction
+        size: {w: 48, h: 6}
+        description: Requires db.server.top_query events enabled in oracledbreceiver. Requires Oracle grants for V_$SQL, V_$SQLAREA, V_$SQL_PLAN, etc.
+        markdown:
+          content: |
+            ## Query Performance & Plans
+
+            This dashboard offers an AWR-equivalent historical view of SQL workload, including
+
+            - Distinct SQL ID count, peak single-query CPU time, and total accumulated CPU across all queries
+            - Top queries ranked by CPU time and elapsed time with execution count, buffer gets, and disk reads
+            - Wait time breakdown per query showing CPU, User I/O, Concurrency, Application, and Cluster wait components
+            - Buffer gets versus disk reads comparison to identify queries bypassing the cache
+            - Total CPU time trend over time to spot workload shifts
+            - I/O intensive queries ranked by total physical read and write bytes with request counts
+            - Top queries by execution frequency and rows processed per execution for efficiency analysis
+            - Queries with the highest concurrency wait percentage to pinpoint locking and contention hotspots
+
+
+      - title: Distinct SQL IDs
+        hide_title: true
+        description: Number of unique SQL IDs (oracledb.sql_id) observed in db.server.top_query events during the selected time range.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            FROM logs-oracledbreceiver.otel-*
+            | WHERE event_name == "db.server.top_query" AND oracledb.sql_id IS NOT NULL
+            | STATS distinct_sql = COUNT_DISTINCT(oracledb.sql_id)
+          primary:
+            field: distinct_sql
+            label: Distinct SQL IDs
+            format:
+              type: number
+              decimals: 0
+
+      - title: Top Query CPU Time
+        description: Highest CPU time in seconds (MAX of oracledb.cpu_time) consumed by a single query in the selected time range.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            FROM logs-oracledbreceiver.otel-*
+            | WHERE event_name == "db.server.top_query" AND oracledb.cpu_time IS NOT NULL
+            | STATS max_cpu = MAX(oracledb.cpu_time)
+          primary:
+            field: max_cpu
+            label: Max CPU (sec)
+            format:
+              type: number
+              decimals: 2
+
+      - title: Total CPU Time
+        description: Sum of CPU time in seconds (SUM of oracledb.cpu_time) consumed across all top queries in the selected time range.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            FROM logs-oracledbreceiver.otel-*
+            | WHERE event_name == "db.server.top_query" AND oracledb.cpu_time IS NOT NULL
+            | STATS total_cpu = SUM(oracledb.cpu_time)
+          primary:
+            field: total_cpu
+            label: Total CPU (sec)
+            format:
+              type: number
+              decimals: 1
+
+      - title: Top Queries by CPU Time
+        description: Top 20 queries ranked by total CPU time, showing SQL ID, SQL text, CPU time, elapsed time, execution count, buffer gets, and disk reads.
+        size: {w: 48, h: 12}
+        esql:
+          type: datatable
+          query: |
+            FROM logs-oracledbreceiver.otel-*
+            | WHERE event_name == "db.server.top_query"
+            | STATS cpu_time = SUM(oracledb.cpu_time), elapsed_time = SUM(oracledb.elapsed_time), executions = SUM(oracledb.executions), buffer_gets = SUM(oracledb.buffer_gets), disk_reads = SUM(oracledb.disk_reads) BY sql_id = oracledb.sql_id, query_text = db.query.text
+            | SORT cpu_time DESC
+            | LIMIT 20
+          breakdowns:
+            - field: sql_id
+              label: SQL ID
+            - field: query_text
+              label: SQL Text
+          metrics:
+            - field: cpu_time
+              label: CPU (sec)
+              format:
+                type: number
+                decimals: 2
+            - field: elapsed_time
+              label: Elapsed (sec)
+              format:
+                type: number
+                decimals: 2
+            - field: executions
+              label: Executions
+              format:
+                type: number
+                decimals: 0
+            - field: buffer_gets
+              label: Buffer Gets
+              format:
+                type: number
+                decimals: 0
+            - field: disk_reads
+              label: Disk Reads
+              format:
+                type: number
+                decimals: 0
+
+      - title: Top Queries by Elapsed Time
+        description: Top 15 queries ranked by total elapsed time, showing SQL ID, SQL text, elapsed time, CPU time, and execution count.
+        size: {w: 48, h: 10}
+        esql:
+          type: datatable
+          query: |
+            FROM logs-oracledbreceiver.otel-*
+            | WHERE event_name == "db.server.top_query"
+            | STATS elapsed_time = SUM(oracledb.elapsed_time), cpu_time = SUM(oracledb.cpu_time), executions = SUM(oracledb.executions) BY sql_id = oracledb.sql_id, query_text = db.query.text
+            | SORT elapsed_time DESC
+            | LIMIT 15
+          breakdowns:
+            - field: sql_id
+              label: SQL ID
+            - field: query_text
+              label: SQL Text
+          metrics:
+            - field: elapsed_time
+              label: Elapsed (sec)
+            - field: cpu_time
+              label: CPU (sec)
+            - field: executions
+              label: Executions
+
+      - title: Wait Time Breakdown for Top Queries
+        description: Per-query breakdown of elapsed time into CPU, User I/O Wait, Concurrency Wait, Application Wait, and Cluster Wait components. Top 10 queries by CPU time.
+        size: {w: 48, h: 10}
+        esql:
+          type: bar
+          mode: stacked
+          query: |
+            FROM logs-oracledbreceiver.otel-*
+            | WHERE event_name == "db.server.top_query"
+            | STATS cpu_time = SUM(oracledb.cpu_time), user_io_wait = SUM(oracledb.user_io_wait_time), concurrency_wait = SUM(oracledb.concurrency_wait_time), application_wait = SUM(oracledb.application_wait_time), cluster_wait = SUM(oracledb.cluster_wait_time) BY sql_id = oracledb.sql_id
+            | SORT cpu_time DESC
+            | LIMIT 10
+          dimension:
+            field: sql_id
+            label: SQL ID
+          metrics:
+            - field: cpu_time
+              label: CPU
+            - field: user_io_wait
+              label: User I/O Wait
+            - field: concurrency_wait
+              label: Concurrency Wait
+            - field: application_wait
+              label: Application Wait
+            - field: cluster_wait
+              label: Cluster Wait
+
+      - title: Buffer Gets vs Disk Reads
+        description: Comparison of logical reads (buffer gets) versus physical reads (disk reads) per query. Top 10 queries by buffer gets.
+        size: {w: 24, h: 8}
+        esql:
+          type: bar
+          mode: unstacked
+          query: |
+            FROM logs-oracledbreceiver.otel-*
+            | WHERE event_name == "db.server.top_query"
+            | STATS buffer_gets = SUM(oracledb.buffer_gets), disk_reads = SUM(oracledb.disk_reads) BY sql_id = oracledb.sql_id
+            | SORT buffer_gets DESC
+            | LIMIT 10
+          dimension:
+            field: sql_id
+            label: SQL ID
+          metrics:
+            - field: buffer_gets
+              label: Buffer Gets
+            - field: disk_reads
+              label: Disk Reads
+
+      - title: Total CPU Time Over Time
+        description: Aggregate CPU time consumed by top queries per time bucket. Shows the trend of query CPU cost over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            FROM logs-oracledbreceiver.otel-*
+            | WHERE event_name == "db.server.top_query" AND oracledb.cpu_time IS NOT NULL
+            | STATS total_cpu = SUM(oracledb.cpu_time) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: total_cpu
+              label: Total CPU (sec)
+
+      - title: I/O Intensive Queries
+        description: Top 15 queries ranked by total I/O bytes, showing SQL ID, SQL text, physical read bytes, physical write bytes, and I/O request counts.
+        size: {w: 48, h: 10}
+        esql:
+          type: datatable
+          query: |
+            FROM logs-oracledbreceiver.otel-*
+            | WHERE event_name == "db.server.top_query"
+            | STATS physical_read_bytes = SUM(oracledb.physical_read_bytes), physical_write_bytes = SUM(oracledb.physical_write_bytes), physical_read_reqs = SUM(oracledb.physical_read_requests), physical_write_reqs = SUM(oracledb.physical_write_requests) BY sql_id = oracledb.sql_id, query_text = db.query.text
+            | EVAL total_io_bytes = physical_read_bytes + physical_write_bytes
+            | SORT total_io_bytes DESC
+            | LIMIT 15
+          breakdowns:
+            - field: sql_id
+              label: SQL ID
+            - field: query_text
+              label: SQL Text
+          metrics:
+            - field: physical_read_bytes
+              label: Read Bytes
+              format:
+                type: bytes
+            - field: physical_write_bytes
+              label: Write Bytes
+              format:
+                type: bytes
+            - field: physical_read_reqs
+              label: Read Reqs
+            - field: physical_write_reqs
+              label: Write Reqs
+
+      - title: Top Queries by Execution Count
+        description: Top 10 queries ranked by total execution count (oracledb.executions). Shows the most frequently executed SQL statements.
+        size: {w: 24, h: 8}
+        esql:
+          type: bar
+          mode: stacked
+          query: |
+            FROM logs-oracledbreceiver.otel-*
+            | WHERE event_name == "db.server.top_query" AND oracledb.executions IS NOT NULL
+            | STATS exec_count = SUM(oracledb.executions) BY sql_id = oracledb.sql_id
+            | SORT exec_count DESC
+            | LIMIT 10
+          dimension:
+            field: sql_id
+            label: SQL ID
+          metrics:
+            - field: exec_count
+              label: Executions
+
+      - title: Rows Processed per Execution
+        description: Top 15 queries ranked by rows processed per execution, showing SQL ID, SQL text, total rows processed, execution count, and the derived ratio.
+        size: {w: 24, h: 10}
+        esql:
+          type: datatable
+          query: |
+            FROM logs-oracledbreceiver.otel-*
+            | WHERE event_name == "db.server.top_query" AND oracledb.executions IS NOT NULL AND oracledb.executions > 0
+            | STATS rows_processed = SUM(oracledb.rows_processed), executions = SUM(oracledb.executions) BY sql_id = oracledb.sql_id, query_text = db.query.text
+            | EVAL rows_per_exec = ROUND(rows_processed / executions, 1)
+            | SORT rows_per_exec DESC
+            | LIMIT 15
+          breakdowns:
+            - field: sql_id
+              label: SQL ID
+            - field: query_text
+              label: SQL Text
+          metrics:
+            - field: rows_processed
+              label: Rows Processed
+            - field: executions
+              label: Executions
+            - field: rows_per_exec
+              label: Rows/Exec
+
+      - title: Queries with Highest Concurrency Wait
+        description: Top 15 queries ranked by concurrency wait percentage of elapsed time. Shows SQL ID, SQL text, concurrency wait time, elapsed time, and the derived ratio.
+        size: {w: 48, h: 10}
+        esql:
+          type: datatable
+          query: |
+            FROM logs-oracledbreceiver.otel-*
+            | WHERE event_name == "db.server.top_query" AND oracledb.elapsed_time IS NOT NULL AND oracledb.elapsed_time > 0
+            | STATS concurrency_wait = SUM(oracledb.concurrency_wait_time), elapsed = SUM(oracledb.elapsed_time) BY sql_id = oracledb.sql_id, query_text = db.query.text
+            | EVAL concurrency_pct = ROUND(concurrency_wait / elapsed, 3)
+            | SORT concurrency_pct DESC
+            | LIMIT 15
+          breakdowns:
+            - field: sql_id
+              label: SQL ID
+            - field: query_text
+              label: SQL Text
+          metrics:
+            - field: concurrency_wait
+              label: Concurrency Wait (sec)
+            - field: elapsed
+              label: Elapsed (sec)
+            - field: concurrency_pct
+              label: Concurrency %
+              format:
+                type: percent

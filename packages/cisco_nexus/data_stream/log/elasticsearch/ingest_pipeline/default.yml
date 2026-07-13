@@ -220,6 +220,16 @@ processors:
       copy_from: cisco_nexus.log.switch_name
       tag: "set_observer_name"
       ignore_empty_value: true
+  - set:
+      field: host.hostname
+      copy_from: cisco_nexus.log.switch_name
+      tag: "set_host_hostname"
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: "{{{host.hostname}}}"
+      allow_duplicates: false
+      if: ctx.host?.hostname != null
   - append:
       field: observer.ip
       value: "{{{cisco_nexus.log.ip_address}}}"
@@ -301,7 +311,7 @@ processors:
       ignore_empty_value: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_extract_message" }}'
-      if: ctx.event?.code != null && ['IF_DOWN_ADMIN_DOWN','IF_ADMIN_UP','SPEED','IF_DUPLEX','IF_RX_FLOW_CONTROL','IF_TX_FLOW_CONTROL','IF_UP','IF_XCVR_WARNING','VSHD_SYSLOG_CONFIG_I','DETECT_MULTIPLE_PEERS','SYSTEM_MSG','UPDOWN','CFGWRITE_STARTED','CFGWRITE_DONE','INVAL_IP','L2FM_MAC_MOVE2','DUPLEX_MISMATCH','NATIVE_VLAN_MISMATCH','LOGIN_SUCCESS','LOGOUT','LOGOUT_C6K','L3_VPC_UNEQUAL_WEIGHT','AAA_ACCOUNTING_MESSAGE','TACACS_WARNING','DUP_HOSTS','NF_PARITY_ERROR','EXCESSIVE_PARITY_ERROR','LINEPROTO','THRESHOLD_VIOLATION'].contains(ctx.event.code.toUpperCase())
+      if: ctx.event?.code != null && ['IF_DOWN_ADMIN_DOWN','IF_ADMIN_UP','SPEED','IF_DUPLEX','IF_RX_FLOW_CONTROL','IF_TX_FLOW_CONTROL','IF_UP','IF_XCVR_WARNING','VSHD_SYSLOG_CONFIG_I','DETECT_MULTIPLE_PEERS','SYSTEM_MSG','UPDOWN','CFGWRITE_STARTED','CFGWRITE_DONE','INVAL_IP','L2FM_MAC_MOVE2','DUPLEX_MISMATCH','NATIVE_VLAN_MISMATCH','LOGIN_SUCCESS','LOGOUT','LOGOUT_C6K','L3_VPC_UNEQUAL_WEIGHT','AAA_ACCOUNTING_MESSAGE','TACACS_WARNING','DUP_HOSTS','NF_PARITY_ERROR','EXCESSIVE_PARITY_ERROR','LINEPROTO','THRESHOLD_VIOLATION','SYSLOG_SL_MSG_WARNING'].contains(ctx.event.code.toUpperCase())
       tag: "pipeline_extract_message"
   - set:
       field: network.protocol

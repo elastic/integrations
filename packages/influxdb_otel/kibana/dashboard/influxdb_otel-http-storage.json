@@ -1,0 +1,2114 @@
+{
+    "attributes": {
+        "title": "[InfluxDB OTel] HTTP & Storage",
+        "description": "HTTP API traffic, write/query throughput, storage health (WAL, cache, compaction), and writer metrics.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "734931e1-659a-f39c-bfed-a19d5d609f46",
+                                "order": 1,
+                                "label": "HTTP & Storage",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_734931e1-659a-f39c-bfed-a19d5d609f46_dashboard"
+                            },
+                            {
+                                "id": "c816241d-9b77-8f80-2947-cd86f857dd82",
+                                "order": 2,
+                                "label": "Query & Tasks",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_c816241d-9b77-8f80-2947-cd86f857dd82_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [InfluxDB OTel] HTTP & Storage\n\nThis dashboard focuses on the write path and storage:\n- HTTP API requests by endpoint and status\n- Write and query throughput (bytes, counts)\n- WAL, cache, and TSM disk usage\n- Compaction queue and duration\n- Storage writer (points written, dropped, errors)\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "cb558a02-4342-ea59-ae28-acd1cff564dc",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "cb558a02-4342-ea59-ae28-acd1cff564dc"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Write Requests",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "e6753dbb-7bdb-ff3a-f827-9edee4b15c3f",
+                                "layerType": "data",
+                                "metricAccessor": "fc3ca95d-0644-d271-02c3-5f6584969a41",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE http_write_request_count IS NOT NULL\n| STATS requests = MAX(http_write_request_count)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "e6753dbb-7bdb-ff3a-f827-9edee4b15c3f": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE http_write_request_count IS NOT NULL\n| STATS requests = MAX(http_write_request_count)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "fc3ca95d-0644-d271-02c3-5f6584969a41",
+                                                    "label": "Write Reqs",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "fc3ca95d-0644-d271-02c3-5f6584969a41",
+                                                    "label": "Write Reqs",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "14c6c268-ddcf-6027-5d23-a5302d18beb6",
+                "gridData": {
+                    "x": 24,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "14c6c268-ddcf-6027-5d23-a5302d18beb6"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Query Requests",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "52e8183f-4cee-ccc8-7e13-dd15830518e5",
+                                "layerType": "data",
+                                "metricAccessor": "b5a91e79-170b-6a16-366d-7a6e1a293518",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE http_query_request_count IS NOT NULL\n| STATS requests = MAX(http_query_request_count)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "52e8183f-4cee-ccc8-7e13-dd15830518e5": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE http_query_request_count IS NOT NULL\n| STATS requests = MAX(http_query_request_count)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "b5a91e79-170b-6a16-366d-7a6e1a293518",
+                                                    "label": "Query Reqs",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "b5a91e79-170b-6a16-366d-7a6e1a293518",
+                                                    "label": "Query Reqs",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "31c81b65-72ab-f354-d108-67571da811b5",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "31c81b65-72ab-f354-d108-67571da811b5"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "WAL Size",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "cc1059a3-e3af-76a3-6dab-61028f0d4f85",
+                                "layerType": "data",
+                                "metricAccessor": "a87f1080-accf-3343-99c7-8b8e223ff755",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_wal_size IS NOT NULL\n| STATS wal_bytes = MAX(storage_wal_size)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "cc1059a3-e3af-76a3-6dab-61028f0d4f85": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_wal_size IS NOT NULL\n| STATS wal_bytes = MAX(storage_wal_size)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "wal_bytes",
+                                                    "columnId": "a87f1080-accf-3343-99c7-8b8e223ff755",
+                                                    "label": "WAL",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "wal_bytes",
+                                                    "columnId": "a87f1080-accf-3343-99c7-8b8e223ff755",
+                                                    "label": "WAL",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "3f981a34-c663-21d9-a271-dce6cacc6ee0",
+                "gridData": {
+                    "x": 40,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "3f981a34-c663-21d9-a271-dce6cacc6ee0"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Cache Dropped",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "6fa2a200-aa22-8991-5033-7fe3d090e51c",
+                                "layerType": "data",
+                                "metricAccessor": "7f7243c6-d305-671b-4115-99d53c990452",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_cache_writes_dropped IS NOT NULL\n| STATS total_dropped = MAX(storage_cache_writes_dropped)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "6fa2a200-aa22-8991-5033-7fe3d090e51c": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_cache_writes_dropped IS NOT NULL\n| STATS total_dropped = MAX(storage_cache_writes_dropped)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_dropped",
+                                                    "columnId": "7f7243c6-d305-671b-4115-99d53c990452",
+                                                    "label": "Cache Dropped",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_dropped",
+                                                    "columnId": "7f7243c6-d305-671b-4115-99d53c990452",
+                                                    "label": "Cache Dropped",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "490e04b8-509e-5a41-74ae-8ea0c4fb34e6",
+                "gridData": {
+                    "x": 16,
+                    "y": 6,
+                    "w": 8,
+                    "h": 4,
+                    "i": "490e04b8-509e-5a41-74ae-8ea0c4fb34e6"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Compactions Queued",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "8daf2872-1dab-40e8-c5ce-e35d25b23d7c",
+                                "layerType": "data",
+                                "metricAccessor": "cbfb9c47-a48a-9576-a48d-7f8074101172",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_compactions_queued IS NOT NULL\n| STATS queued = MAX(storage_compactions_queued)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8daf2872-1dab-40e8-c5ce-e35d25b23d7c": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_compactions_queued IS NOT NULL\n| STATS queued = MAX(storage_compactions_queued)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "queued",
+                                                    "columnId": "cbfb9c47-a48a-9576-a48d-7f8074101172",
+                                                    "label": "Queued",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "queued",
+                                                    "columnId": "cbfb9c47-a48a-9576-a48d-7f8074101172",
+                                                    "label": "Queued",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "aa73934b-8059-a943-04e1-b29118dd3f2b",
+                "gridData": {
+                    "x": 24,
+                    "y": 6,
+                    "w": 8,
+                    "h": 4,
+                    "i": "aa73934b-8059-a943-04e1-b29118dd3f2b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Write Errors",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "248d5b42-c86e-e147-908f-134af86f9df9",
+                                "layerType": "data",
+                                "metricAccessor": "83f85e7b-6149-72a5-ea3e-475a78438b16",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_shard_write_err_count IS NOT NULL\n| STATS total_errs = MAX(storage_shard_write_err_count)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "248d5b42-c86e-e147-908f-134af86f9df9": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_shard_write_err_count IS NOT NULL\n| STATS total_errs = MAX(storage_shard_write_err_count)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_errs",
+                                                    "columnId": "83f85e7b-6149-72a5-ea3e-475a78438b16",
+                                                    "label": "Write Errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_errs",
+                                                    "columnId": "83f85e7b-6149-72a5-ea3e-475a78438b16",
+                                                    "label": "Write Errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "1aac3fd5-2371-4c91-8a1a-40ac6b80f745",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 48,
+                    "h": 12,
+                    "i": "1aac3fd5-2371-4c91-8a1a-40ac6b80f745"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Write Throughput by Endpoint",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "d24c60e3-0f67-3d01-7a43-a64e0d2f8baf",
+                                        "accessors": [
+                                            "334e83ad-3051-e9fa-28c0-e40866706860"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "efaf503f-e7e8-8676-2fdd-5d5e1977b279",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE http_write_request_count IS NOT NULL\n| STATS requests = MAX(http_write_request_count) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), endpoint\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "d24c60e3-0f67-3d01-7a43-a64e0d2f8baf": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE http_write_request_count IS NOT NULL\n| STATS requests = MAX(http_write_request_count) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), endpoint\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "334e83ad-3051-e9fa-28c0-e40866706860",
+                                                    "label": "Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "endpoint",
+                                                    "columnId": "efaf503f-e7e8-8676-2fdd-5d5e1977b279",
+                                                    "label": "endpoint",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "334e83ad-3051-e9fa-28c0-e40866706860",
+                                                    "label": "Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "endpoint",
+                                                    "columnId": "efaf503f-e7e8-8676-2fdd-5d5e1977b279",
+                                                    "label": "endpoint",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "f34b53d6-fb29-b339-dafa-9e6c51610b42",
+                "gridData": {
+                    "x": 0,
+                    "y": 26,
+                    "w": 24,
+                    "h": 12,
+                    "i": "f34b53d6-fb29-b339-dafa-9e6c51610b42"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Write Bytes Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "11f85996-0574-3ea6-57f9-602cd8b95561",
+                                        "accessors": [
+                                            "aa90177e-4800-3d9b-fdea-2d2dcbc78f5f"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE http_write_request_bytes IS NOT NULL\n| STATS bytes = MAX(http_write_request_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "11f85996-0574-3ea6-57f9-602cd8b95561": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE http_write_request_bytes IS NOT NULL\n| STATS bytes = MAX(http_write_request_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "bytes",
+                                                    "columnId": "aa90177e-4800-3d9b-fdea-2d2dcbc78f5f",
+                                                    "label": "Bytes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "bytes",
+                                                    "columnId": "aa90177e-4800-3d9b-fdea-2d2dcbc78f5f",
+                                                    "label": "Bytes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "2f0df3c5-c270-5c3b-f30d-702e1a580312",
+                "gridData": {
+                    "x": 24,
+                    "y": 26,
+                    "w": 24,
+                    "h": 12,
+                    "i": "2f0df3c5-c270-5c3b-f30d-702e1a580312"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Query Bytes Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "b36b46ac-2951-3ffa-60ae-62865c8f9540",
+                                        "accessors": [
+                                            "0de3911c-3e7b-a962-3b72-2b3a47b3474b"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE http_query_response_bytes IS NOT NULL\n| STATS bytes = MAX(http_query_response_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "b36b46ac-2951-3ffa-60ae-62865c8f9540": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE http_query_response_bytes IS NOT NULL\n| STATS bytes = MAX(http_query_response_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "bytes",
+                                                    "columnId": "0de3911c-3e7b-a962-3b72-2b3a47b3474b",
+                                                    "label": "Response Bytes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "bytes",
+                                                    "columnId": "0de3911c-3e7b-a962-3b72-2b3a47b3474b",
+                                                    "label": "Response Bytes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "873deb55-6667-78e5-55e5-4d755edcab00",
+                "gridData": {
+                    "x": 0,
+                    "y": 38,
+                    "w": 24,
+                    "h": 12,
+                    "i": "873deb55-6667-78e5-55e5-4d755edcab00"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Storage Disk by Component",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "9bd7da4f-0b8f-2ae4-08e0-e13afa87bdcf",
+                                        "accessors": [
+                                            "5045b327-6f3f-2187-95f2-382e9e76b43d",
+                                            "cec076f5-2bdd-065c-2167-1a2ddf560672",
+                                            "d42ce19c-81b4-2974-bdea-033212cdbe3f"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Bytes",
+                                "yLeftTitle": "Bytes",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_wal_size IS NOT NULL OR storage_tsm_files_disk_bytes IS NOT NULL OR storage_cache_disk_bytes IS NOT NULL\n| STATS wal = MAX(storage_wal_size), tsm = MAX(storage_tsm_files_disk_bytes), cache_disk = MAX(storage_cache_disk_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "9bd7da4f-0b8f-2ae4-08e0-e13afa87bdcf": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_wal_size IS NOT NULL OR storage_tsm_files_disk_bytes IS NOT NULL OR storage_cache_disk_bytes IS NOT NULL\n| STATS wal = MAX(storage_wal_size), tsm = MAX(storage_tsm_files_disk_bytes), cache_disk = MAX(storage_cache_disk_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "wal",
+                                                    "columnId": "5045b327-6f3f-2187-95f2-382e9e76b43d",
+                                                    "label": "WAL",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "tsm",
+                                                    "columnId": "cec076f5-2bdd-065c-2167-1a2ddf560672",
+                                                    "label": "TSM",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "cache_disk",
+                                                    "columnId": "d42ce19c-81b4-2974-bdea-033212cdbe3f",
+                                                    "label": "Cache (disk)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "wal",
+                                                    "columnId": "5045b327-6f3f-2187-95f2-382e9e76b43d",
+                                                    "label": "WAL",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "tsm",
+                                                    "columnId": "cec076f5-2bdd-065c-2167-1a2ddf560672",
+                                                    "label": "TSM",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "cache_disk",
+                                                    "columnId": "d42ce19c-81b4-2974-bdea-033212cdbe3f",
+                                                    "label": "Cache (disk)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "d0b5662a-ecd9-7a55-0346-c18cbe4e08b8",
+                "gridData": {
+                    "x": 24,
+                    "y": 38,
+                    "w": 24,
+                    "h": 12,
+                    "i": "d0b5662a-ecd9-7a55-0346-c18cbe4e08b8"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Compaction Queue by Level",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "f5d4ec41-6831-a389-cfea-b4b51e95c738",
+                                        "accessors": [
+                                            "d4b28cd4-1d48-3aad-91b1-f0859c7ccb4b"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "1046e1a5-00df-8d0d-9767-cd64d1061f8c",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_compactions_queued IS NOT NULL\n| STATS queued = MAX(storage_compactions_queued) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), level\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f5d4ec41-6831-a389-cfea-b4b51e95c738": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_compactions_queued IS NOT NULL\n| STATS queued = MAX(storage_compactions_queued) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), level\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "queued",
+                                                    "columnId": "d4b28cd4-1d48-3aad-91b1-f0859c7ccb4b",
+                                                    "label": "Queued",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "level",
+                                                    "columnId": "1046e1a5-00df-8d0d-9767-cd64d1061f8c",
+                                                    "label": "level",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "queued",
+                                                    "columnId": "d4b28cd4-1d48-3aad-91b1-f0859c7ccb4b",
+                                                    "label": "Queued",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "level",
+                                                    "columnId": "1046e1a5-00df-8d0d-9767-cd64d1061f8c",
+                                                    "label": "level",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "821911fa-578d-d4ae-5991-4af670201770",
+                "gridData": {
+                    "x": 0,
+                    "y": 50,
+                    "w": 48,
+                    "h": 12,
+                    "i": "821911fa-578d-d4ae-5991-4af670201770"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Shard Write Points vs Dropped",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "a41e949f-31d8-d63a-8efb-ee9a3154bbc7",
+                                        "accessors": [
+                                            "012016d2-ffc0-c097-3dfe-cf17d886895c",
+                                            "b8b52c9d-5807-96b4-c92d-5a9a31c34d73"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Points",
+                                "yLeftTitle": "Points",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_shard_write_sum IS NOT NULL OR storage_shard_write_dropped_sum IS NOT NULL\n| STATS written = MAX(storage_shard_write_sum), dropped = MAX(storage_shard_write_dropped_sum) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "a41e949f-31d8-d63a-8efb-ee9a3154bbc7": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_shard_write_sum IS NOT NULL OR storage_shard_write_dropped_sum IS NOT NULL\n| STATS written = MAX(storage_shard_write_sum), dropped = MAX(storage_shard_write_dropped_sum) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "written",
+                                                    "columnId": "012016d2-ffc0-c097-3dfe-cf17d886895c",
+                                                    "label": "Written",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dropped",
+                                                    "columnId": "b8b52c9d-5807-96b4-c92d-5a9a31c34d73",
+                                                    "label": "Dropped",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "written",
+                                                    "columnId": "012016d2-ffc0-c097-3dfe-cf17d886895c",
+                                                    "label": "Written",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dropped",
+                                                    "columnId": "b8b52c9d-5807-96b4-c92d-5a9a31c34d73",
+                                                    "label": "Dropped",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "36593c5c-d712-5cbc-b6bc-33119daf05df",
+                "gridData": {
+                    "x": 0,
+                    "y": 62,
+                    "w": 24,
+                    "h": 12,
+                    "i": "36593c5c-d712-5cbc-b6bc-33119daf05df"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Write Status by Endpoint",
+                        "visualizationType": "lnsPie",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "81f4e091-0108-9729-05e7-f5e9aa0c5380",
+                                        "layerType": "data",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        },
+                                        "primaryGroups": [
+                                            "f25cd8d6-46ee-e073-9e86-1f0b45263c49"
+                                        ],
+                                        "metrics": [
+                                            "e43af042-3fa3-61be-f3d7-62e1baefc7e7"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "categoryDisplay": "default",
+                                        "legendDisplay": "show",
+                                        "nestedLegend": false,
+                                        "emptySizeRatio": 0.5
+                                    }
+                                ],
+                                "shape": "donut"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE http_write_request_count IS NOT NULL\n| STATS total = MAX(http_write_request_count) BY status\n| SORT total DESC\n| LIMIT 8"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "81f4e091-0108-9729-05e7-f5e9aa0c5380": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE http_write_request_count IS NOT NULL\n| STATS total = MAX(http_write_request_count) BY status\n| SORT total DESC\n| LIMIT 8"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "e43af042-3fa3-61be-f3d7-62e1baefc7e7",
+                                                    "label": "total",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "status",
+                                                    "columnId": "f25cd8d6-46ee-e073-9e86-1f0b45263c49",
+                                                    "label": "Status",
+                                                    "customLabel": true
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "e43af042-3fa3-61be-f3d7-62e1baefc7e7",
+                                                    "label": "total",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "status",
+                                                    "columnId": "f25cd8d6-46ee-e073-9e86-1f0b45263c49",
+                                                    "label": "Status",
+                                                    "customLabel": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6936c960-71f0-789b-c746-ed3dc0cc1af5",
+                "gridData": {
+                    "x": 32,
+                    "y": 6,
+                    "w": 8,
+                    "h": 4,
+                    "i": "6936c960-71f0-789b-c746-ed3dc0cc1af5"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "WAL Write Errors",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "ab15df7e-7cf6-efc0-f63a-1e87dd37369c",
+                                "layerType": "data",
+                                "metricAccessor": "6c06802f-5358-399c-0521-25278029710f",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_wal_writes_err IS NOT NULL\n| STATS total_errs = MAX(storage_wal_writes_err)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ab15df7e-7cf6-efc0-f63a-1e87dd37369c": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE storage_wal_writes_err IS NOT NULL\n| STATS total_errs = MAX(storage_wal_writes_err)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_errs",
+                                                    "columnId": "6c06802f-5358-399c-0521-25278029710f",
+                                                    "label": "WAL Errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_errs",
+                                                    "columnId": "6c06802f-5358-399c-0521-25278029710f",
+                                                    "label": "WAL Errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "influxdb.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "influxdb.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": false,
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "fe98772b-264a-3eea-cada-9bdcfb1bffa9": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "fe98772b-264a-3eea-cada-9bdcfb1bffa9",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "host.name",
+                        "title": "Host",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "influxdb_otel-http-storage",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "influxdb_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "influxdb_otel-http-storage",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_734931e1-659a-f39c-bfed-a19d5d609f46_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "influxdb_otel-query-tasks",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_c816241d-9b77-8f80-2947-cd86f857dd82_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_fe98772b-264a-3eea-cada-9bdcfb1bffa9:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

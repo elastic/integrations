@@ -75,24 +75,24 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2020-07-20T18:21:53.615Z",
     "agent": {
-        "ephemeral_id": "1f99a68e-1086-4cef-9e7a-659e0093c11b",
-        "id": "f2e9b2a3-b798-45a5-a2e9-a344eebc95c7",
-        "name": "elastic-agent-80495",
+        "ephemeral_id": "43726a61-c883-40f9-81a1-59fcf5aa2d49",
+        "id": "6f410ffc-7532-4b54-8887-0d39af7ca4a4",
+        "name": "elastic-agent-94778",
         "type": "filebeat",
-        "version": "8.17.0"
+        "version": "8.19.10"
     },
     "data_stream": {
         "dataset": "microsoft_sentinel.alert",
-        "namespace": "89284",
+        "namespace": "54212",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f2e9b2a3-b798-45a5-a2e9-a344eebc95c7",
+        "id": "6f410ffc-7532-4b54-8887-0d39af7ca4a4",
         "snapshot": false,
-        "version": "8.17.0"
+        "version": "8.19.10"
     },
     "event": {
         "agent_id_status": "verified",
@@ -100,7 +100,8 @@ An example event for `alert` looks as following:
         "duration": 86400000000000,
         "end": "2020-07-21T18:21:53.615Z",
         "id": "/subscriptions/abcdef1-111111-4647-9105-6339bfdb4e6a/resourceGroups/myRG/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/Entities/abcdef-6fde-4ab7-a093-d09f7b75c58c",
-        "ingested": "2025-03-31T10:57:29Z",
+        "ingested": "2026-03-31T09:01:06Z",
+        "kind": "alert",
         "original": "{\"id\":\"/subscriptions/abcdef1-111111-4647-9105-6339bfdb4e6a/resourceGroups/myRG/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/Entities/abcdef-6fde-4ab7-a093-d09f7b75c58c\",\"kind\":\"SecurityAlert\",\"name\":\"abcdef-6fde-4ab7-a093-d09f7b75c58c\",\"properties\":{\"additionalData\":{\"AlertMessageEnqueueTime\":\"2020-07-20T18:21:57.304Z\"},\"alertDisplayName\":\"myAlert\",\"alertType\":\"myAlert\",\"confidenceLevel\":\"Unknown\",\"endTimeUtc\":\"2020-07-21T18:21:53.6158361Z\",\"friendlyName\":\"myAlert\",\"processingEndTime\":\"2020-07-20T18:21:53.6158361Z\",\"productName\":\"AzureSecurityCenter\",\"resourceIdentifiers\":[{\"resourceGroup\":\"myRG\",\"subscriptionId\":\"a123456-4d29-4647-9105-6339bfdb4e6a\",\"type\":\"LogAnalytics\",\"workspaceId\":\"abcdefg-985d-4e4e-8e91-fb3466cd0e5b\"}],\"severity\":\"Low\",\"startTimeUtc\":\"2020-07-20T18:21:53.6158361Z\",\"status\":\"New\",\"systemAlertId\":\"abcdef-6fde-4ab7-a093-d09f7b75c58c\",\"tactics\":[\"abc\"],\"timeGenerated\":\"2020-07-20T18:21:53.6158361Z\",\"vendorName\":\"Microsoft\"},\"systemData\":{\"createdAt\":\"2020-07-20T18:21:57.304Z\",\"createdBy\":\"admin\",\"createdByType\":\"new\",\"lastModifiedAt\":\"2020-07-20T18:21:57.304Z\"},\"type\":\"Microsoft.SecurityInsights/Entities\"}",
         "provider": "AzureSecurityCenter",
         "severity": 21,
@@ -187,7 +188,7 @@ An example event for `alert` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
-| event.kind |  | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
@@ -249,7 +250,7 @@ This is the `Event` dataset.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
-| event.kind |  | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
@@ -304,31 +305,32 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2024-10-23T13:15:30.000Z",
     "agent": {
-        "ephemeral_id": "f2937dba-f98d-44e6-a1e2-161b5d5a8ea7",
-        "id": "648b0051-77fb-49c2-a0ab-952d43da9d7f",
-        "name": "elastic-agent-18094",
+        "ephemeral_id": "7f776865-943f-4de9-b24d-71ba1af66c30",
+        "id": "8934f226-4b75-4d8d-a372-c099d4b05dd2",
+        "name": "elastic-agent-79439",
         "type": "filebeat",
-        "version": "8.14.0"
+        "version": "8.19.10"
     },
     "data_stream": {
         "dataset": "microsoft_sentinel.incident",
-        "namespace": "18260",
+        "namespace": "85060",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "648b0051-77fb-49c2-a0ab-952d43da9d7f",
+        "id": "8934f226-4b75-4d8d-a372-c099d4b05dd2",
         "snapshot": false,
-        "version": "8.14.0"
+        "version": "8.19.10"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2019-01-01T13:15:30.000Z",
         "dataset": "microsoft_sentinel.incident",
         "id": "/subscriptions/d0cfe6b2-9ac0-4464-9919-dccaee2e48c0/resourceGroups/myRg/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/incidents/aaaaaa-5cd7-4139-a149-9f2736ff2ab5",
-        "ingested": "2024-11-12T06:19:52Z",
+        "ingested": "2026-03-31T09:02:05Z",
+        "kind": "alert",
         "original": "{\"etag\":\"\\\"bbbbbbbb-0000-0000-0000-5c37296e0000\\\"\",\"id\":\"/subscriptions/d0cfe6b2-9ac0-4464-9919-dccaee2e48c0/resourceGroups/myRg/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/incidents/aaaaaa-5cd7-4139-a149-9f2736ff2ab5\",\"name\":\"aaaaaaa-5cd7-4139-a149-9f2736ff2ab5\",\"properties\":{\"additionalData\":{\"alertProductNames\":[],\"alertsCount\":0,\"bookmarksCount\":0,\"commentsCount\":3,\"tactics\":[\"InitialAccess\",\"Persistence\"]},\"classification\":\"FalsePositive\",\"classificationComment\":\"Notamaliciousactivity\",\"classificationReason\":\"InaccurateData\",\"createdTimeUtc\":\"2019-01-01T13:15:30Z\",\"description\":\"Thisisademoincident\",\"firstActivityTimeUtc\":\"2019-01-01T13:00:30Z\",\"incidentNumber\":3177,\"incidentUrl\":\"https://portal.azure.com/#asset/Microsoft_Azure_Security_Insights/Incident/subscriptions/d0cfe6b2-9ac0-4464-9919-dccaee2e48c0/resourceGroups/myRg/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/incidents/73e01a99-5cd7-4139-a149-9f2736ff2ab5\",\"labels\":[],\"lastActivityTimeUtc\":\"2019-01-01T13:05:30Z\",\"lastModifiedTimeUtc\":\"2024-10-23T13:15:30Z\",\"owner\":{\"assignedTo\":\"johndoe\",\"email\":\"john.doe@example.com\",\"objectId\":\"abcdefghij-040d-4a46-9e2b-91c2941bfa70\",\"userPrincipalName\":\"john@example.com\"},\"providerIncidentId\":\"3177\",\"providerName\":\"AzureSentinel\",\"relatedAnalyticRuleIds\":[\"/subscriptions/abc12345678-9ac0-4464-9919-dccaee2e48c0/resourceGroups/myRg/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/alertRules/fab3d2d4-747f-46a7-8ef0-9c0be8112bf7\"],\"severity\":\"High\",\"status\":\"Closed\",\"title\":\"Myincident\"},\"type\":\"Microsoft.SecurityInsights/incidents\"}",
         "severity": 3,
         "url": "https://portal.azure.com/#asset/Microsoft_Azure_Security_Insights/Incident/subscriptions/d0cfe6b2-9ac0-4464-9919-dccaee2e48c0/resourceGroups/myRg/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/incidents/73e01a99-5cd7-4139-a149-9f2736ff2ab5"
@@ -429,7 +431,7 @@ An example event for `incident` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
-| event.kind |  | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |

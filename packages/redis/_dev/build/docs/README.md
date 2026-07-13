@@ -7,8 +7,9 @@ This integration periodically fetches logs and metrics from [Redis](https://redi
 The `log` and `slowlog` datasets were tested with logs from Redis versions 1.2.6, 2.4.6, and 3.0.2, so we expect
 compatibility with any version 1.x, 2.x, or 3.x.
 
-The `info`, `key` and `keyspace` datasets were tested with Redis 3.2.12, 4.0.11 and 5.0-rc4, and are expected to work
-with all versions `>= 3.0`.
+The `info`, `key` and `keyspace` datasets were tested with Redis 6.2.6, 7.4.7, and 8.2.3, and are expected to work
+with all versions `>= 3.0`. Fields specific to Redis 7.0+ (such as `commandstats`, script/function memory metrics, and
+client-side caching tracking stats) and Redis 8.x are collected automatically when the server reports them.
 
 ## Logs
 

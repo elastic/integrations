@@ -1,0 +1,3181 @@
+{
+    "attributes": {
+        "title": "[Tomcat OTel] JVM Memory & GC",
+        "description": "JVM memory management and garbage collection monitoring for Apache Tomcat, including heap/non-heap usage, G1 memory pools, and GC activity.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "5909ede8-2eec-8644-b2c1-c28c00240a56",
+                                "order": 1,
+                                "label": "Request Processing",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_5909ede8-2eec-8644-b2c1-c28c00240a56_dashboard"
+                            },
+                            {
+                                "id": "9dfd6ff5-60a6-d609-8f72-50cec07261e9",
+                                "order": 2,
+                                "label": "Thread Pool & Connections",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_9dfd6ff5-60a6-d609-8f72-50cec07261e9_dashboard"
+                            },
+                            {
+                                "id": "6632c321-6dab-2198-f8fe-27c3e8abc5da",
+                                "order": 3,
+                                "label": "JVM Memory & GC",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_6632c321-6dab-2198-f8fe-27c3e8abc5da_dashboard"
+                            },
+                            {
+                                "id": "82660977-7ef5-2f6d-e57c-f38685be84e1",
+                                "order": 4,
+                                "label": "Sessions & Applications",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_82660977-7ef5-2f6d-e57c-f38685be84e1_dashboard"
+                            },
+                            {
+                                "id": "2d7fbb7d-cfa4-5417-4c1b-cbcecf53130f",
+                                "order": 5,
+                                "label": "JVM & OS Resources",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_2d7fbb7d-cfa4-5417-4c1b-cbcecf53130f_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [Tomcat OTel] JVM Memory & GC\n\nThis dashboard monitors JVM memory management and garbage collection:\n- Heap and non-heap memory usage, committed and max\n- G1 memory pool breakdown (Eden, Survivor, Old Gen)\n- Young and Old GC collection counts and pause times\n- Memory leak detection via Old Gen usage trends\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "b1ea5fbd-44ff-9dfe-9205-dd1d10b62f9a",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "b1ea5fbd-44ff-9dfe-9205-dd1d10b62f9a"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Heap Used",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "5c70fb75-4b0b-ce59-fa09-fead4d159bfa",
+                                "layerType": "data",
+                                "metricAccessor": "f6d5c74c-a352-263c-58f1-11b1fcecebb1",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL\n| STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "5c70fb75-4b0b-ce59-fa09-fead4d159bfa": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL\n| STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "heap_used",
+                                                    "columnId": "f6d5c74c-a352-263c-58f1-11b1fcecebb1",
+                                                    "label": "Heap Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "heap_used",
+                                                    "columnId": "f6d5c74c-a352-263c-58f1-11b1fcecebb1",
+                                                    "label": "Heap Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "15f34f9e-306b-129a-5a81-a10c62b8484e",
+                "gridData": {
+                    "x": 24,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "15f34f9e-306b-129a-5a81-a10c62b8484e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Heap Max",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "5ae9bc18-4cc6-4bec-2628-b316ad64605f",
+                                "layerType": "data",
+                                "metricAccessor": "4ddbf955-c6ac-e3c7-c840-783fed04f61d",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_HeapMemoryUsage_max IS NOT NULL\n| STATS heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "5ae9bc18-4cc6-4bec-2628-b316ad64605f": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_HeapMemoryUsage_max IS NOT NULL\n| STATS heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "heap_max",
+                                                    "columnId": "4ddbf955-c6ac-e3c7-c840-783fed04f61d",
+                                                    "label": "Heap Max",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "heap_max",
+                                                    "columnId": "4ddbf955-c6ac-e3c7-c840-783fed04f61d",
+                                                    "label": "Heap Max",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e2440dbd-3ca0-419e-6f16-c8abc2ed0b1d",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "e2440dbd-3ca0-419e-6f16-c8abc2ed0b1d"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Non-Heap Used",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "becfbb5b-526b-c43f-3ded-de34575eeb5a",
+                                "layerType": "data",
+                                "metricAccessor": "ea9bfb1f-9750-06d7-3fd8-be04840b1bb1",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_NonHeapMemoryUsage_used IS NOT NULL\n| STATS nonheap_used = MAX(LAST_OVER_TIME(java_lang_Memory_NonHeapMemoryUsage_used))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "becfbb5b-526b-c43f-3ded-de34575eeb5a": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_NonHeapMemoryUsage_used IS NOT NULL\n| STATS nonheap_used = MAX(LAST_OVER_TIME(java_lang_Memory_NonHeapMemoryUsage_used))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "nonheap_used",
+                                                    "columnId": "ea9bfb1f-9750-06d7-3fd8-be04840b1bb1",
+                                                    "label": "Non-Heap Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "nonheap_used",
+                                                    "columnId": "ea9bfb1f-9750-06d7-3fd8-be04840b1bb1",
+                                                    "label": "Non-Heap Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "98dd998b-7197-65f6-2395-6f3b86cdb1e8",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 48,
+                    "h": 3,
+                    "i": "98dd998b-7197-65f6-2395-6f3b86cdb1e8"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Memory Utilization"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "a768812c-41c6-f434-98e0-250f22a595b0",
+                "gridData": {
+                    "x": 40,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "a768812c-41c6-f434-98e0-250f22a595b0"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Heap Utilization",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "6a261722-8393-b8ba-0d0a-571df89afef1",
+                                "layerType": "data",
+                                "metricAccessor": "6558cfe1-f86b-5571-77a8-ea3b9b12de63",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL\n| STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used)), heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max))\n| EVAL heap_util = CASE(heap_max > 0, heap_used / heap_max, 0)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "6a261722-8393-b8ba-0d0a-571df89afef1": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL\n| STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used)), heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max))\n| EVAL heap_util = CASE(heap_max > 0, heap_used / heap_max, 0)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "heap_util",
+                                                    "columnId": "6558cfe1-f86b-5571-77a8-ea3b9b12de63",
+                                                    "label": "Heap Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "heap_util",
+                                                    "columnId": "6558cfe1-f86b-5571-77a8-ea3b9b12de63",
+                                                    "label": "Heap Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "028b6364-3832-96c6-1724-ada79798cbeb",
+                "gridData": {
+                    "x": 16,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "028b6364-3832-96c6-1724-ada79798cbeb"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Young GC Count",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "e14d35f3-e53e-a844-334f-4563fceb8e92",
+                                "layerType": "data",
+                                "metricAccessor": "513abb1a-fae9-09f9-aaca-1626f37dce44",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Young_Generation_CollectionCount IS NOT NULL\n| STATS young_gc = MAX(LAST_OVER_TIME(java_lang_G1_Young_Generation_CollectionCount))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "e14d35f3-e53e-a844-334f-4563fceb8e92": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Young_Generation_CollectionCount IS NOT NULL\n| STATS young_gc = MAX(LAST_OVER_TIME(java_lang_G1_Young_Generation_CollectionCount))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "young_gc",
+                                                    "columnId": "513abb1a-fae9-09f9-aaca-1626f37dce44",
+                                                    "label": "Young GC Count",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "young_gc",
+                                                    "columnId": "513abb1a-fae9-09f9-aaca-1626f37dce44",
+                                                    "label": "Young GC Count",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "79c860ba-835a-91ca-4160-3a531c3cd365",
+                "gridData": {
+                    "x": 24,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "79c860ba-835a-91ca-4160-3a531c3cd365"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Old GC Count",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "96466c36-89ad-658e-644d-821f906ea78e",
+                                "layerType": "data",
+                                "metricAccessor": "d298e1df-b9a6-97df-e64b-fe78819f1c00",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Old_Generation_CollectionCount IS NOT NULL\n| STATS old_gc = MAX(LAST_OVER_TIME(java_lang_G1_Old_Generation_CollectionCount))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "96466c36-89ad-658e-644d-821f906ea78e": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Old_Generation_CollectionCount IS NOT NULL\n| STATS old_gc = MAX(LAST_OVER_TIME(java_lang_G1_Old_Generation_CollectionCount))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "old_gc",
+                                                    "columnId": "d298e1df-b9a6-97df-e64b-fe78819f1c00",
+                                                    "label": "Old GC Count",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "old_gc",
+                                                    "columnId": "d298e1df-b9a6-97df-e64b-fe78819f1c00",
+                                                    "label": "Old GC Count",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "2f0bd208-c41a-c274-db2b-b0eda942619d",
+                "gridData": {
+                    "x": 32,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "2f0bd208-c41a-c274-db2b-b0eda942619d"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Young GC Time",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "63107ea8-1225-548d-856f-c32600f472f9",
+                                "layerType": "data",
+                                "metricAccessor": "44f553eb-a09e-4878-0e7c-24a21d2cf454",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Young_Generation_CollectionTime IS NOT NULL\n| STATS young_gc_time = MAX(LAST_OVER_TIME(java_lang_G1_Young_Generation_CollectionTime))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "63107ea8-1225-548d-856f-c32600f472f9": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Young_Generation_CollectionTime IS NOT NULL\n| STATS young_gc_time = MAX(LAST_OVER_TIME(java_lang_G1_Young_Generation_CollectionTime))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "young_gc_time",
+                                                    "columnId": "44f553eb-a09e-4878-0e7c-24a21d2cf454",
+                                                    "label": "Young GC Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "young_gc_time",
+                                                    "columnId": "44f553eb-a09e-4878-0e7c-24a21d2cf454",
+                                                    "label": "Young GC Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "a25c017b-f1a2-50f7-2e2a-04a26d8ba1a7",
+                "gridData": {
+                    "x": 40,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "a25c017b-f1a2-50f7-2e2a-04a26d8ba1a7"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Last GC Duration",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "82085c94-2a56-c04a-d9d4-6ba8ad8ee731",
+                                "layerType": "data",
+                                "metricAccessor": "7f452ed8-c495-b40a-0010-4adc12a19e6c",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Young_Generation_LastGcInfo_duration IS NOT NULL\n| STATS last_gc = MAX(LAST_OVER_TIME(java_lang_G1_Young_Generation_LastGcInfo_duration))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "82085c94-2a56-c04a-d9d4-6ba8ad8ee731": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Young_Generation_LastGcInfo_duration IS NOT NULL\n| STATS last_gc = MAX(LAST_OVER_TIME(java_lang_G1_Young_Generation_LastGcInfo_duration))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "last_gc",
+                                                    "columnId": "7f452ed8-c495-b40a-0010-4adc12a19e6c",
+                                                    "label": "Last GC Duration",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "last_gc",
+                                                    "columnId": "7f452ed8-c495-b40a-0010-4adc12a19e6c",
+                                                    "label": "Last GC Duration",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "5495ee20-03fd-5c0a-f097-4339b72409db",
+                "gridData": {
+                    "x": 0,
+                    "y": 17,
+                    "w": 48,
+                    "h": 3,
+                    "i": "5495ee20-03fd-5c0a-f097-4339b72409db"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Heap Memory"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "7ad96807-fc72-608e-be2c-ec55ce299455",
+                "gridData": {
+                    "x": 0,
+                    "y": 20,
+                    "w": 24,
+                    "h": 12,
+                    "i": "7ad96807-fc72-608e-be2c-ec55ce299455"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Heap Memory Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "f0d9ecde-6012-17e7-9365-b158efe98961",
+                                        "accessors": [
+                                            "0e34f4a0-6622-5b1a-a0ac-2108768d4d32",
+                                            "63400a19-f455-9069-592c-7feb0ada6fc6",
+                                            "9a771b13-ea72-7ba4-ab31-fc6c4598ff1d"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area_unstacked",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area_unstacked",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL\n| STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used)), heap_committed = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_committed)), heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f0d9ecde-6012-17e7-9365-b158efe98961": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL\n| STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used)), heap_committed = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_committed)), heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "heap_used",
+                                                    "columnId": "0e34f4a0-6622-5b1a-a0ac-2108768d4d32",
+                                                    "label": "Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "heap_committed",
+                                                    "columnId": "63400a19-f455-9069-592c-7feb0ada6fc6",
+                                                    "label": "Committed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "heap_max",
+                                                    "columnId": "9a771b13-ea72-7ba4-ab31-fc6c4598ff1d",
+                                                    "label": "Max",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "heap_used",
+                                                    "columnId": "0e34f4a0-6622-5b1a-a0ac-2108768d4d32",
+                                                    "label": "Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "heap_committed",
+                                                    "columnId": "63400a19-f455-9069-592c-7feb0ada6fc6",
+                                                    "label": "Committed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "heap_max",
+                                                    "columnId": "9a771b13-ea72-7ba4-ab31-fc6c4598ff1d",
+                                                    "label": "Max",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "0a85b374-4669-98cd-9eb9-6414ea28a741",
+                "gridData": {
+                    "x": 24,
+                    "y": 20,
+                    "w": 24,
+                    "h": 12,
+                    "i": "0a85b374-4669-98cd-9eb9-6414ea28a741"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Non-Heap Memory Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "0d589d42-0ddb-d4b6-91b6-165cc2e2cccc",
+                                        "accessors": [
+                                            "245736fe-3e6d-c16d-4413-e0530f124792",
+                                            "3f22d802-75fc-bddd-3656-6c905c5e9384"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area_unstacked",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area_unstacked",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_NonHeapMemoryUsage_used IS NOT NULL\n| STATS nonheap_used = MAX(LAST_OVER_TIME(java_lang_Memory_NonHeapMemoryUsage_used)), nonheap_committed = MAX(LAST_OVER_TIME(java_lang_Memory_NonHeapMemoryUsage_committed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "0d589d42-0ddb-d4b6-91b6-165cc2e2cccc": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_NonHeapMemoryUsage_used IS NOT NULL\n| STATS nonheap_used = MAX(LAST_OVER_TIME(java_lang_Memory_NonHeapMemoryUsage_used)), nonheap_committed = MAX(LAST_OVER_TIME(java_lang_Memory_NonHeapMemoryUsage_committed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "nonheap_used",
+                                                    "columnId": "245736fe-3e6d-c16d-4413-e0530f124792",
+                                                    "label": "Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "nonheap_committed",
+                                                    "columnId": "3f22d802-75fc-bddd-3656-6c905c5e9384",
+                                                    "label": "Committed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "nonheap_used",
+                                                    "columnId": "245736fe-3e6d-c16d-4413-e0530f124792",
+                                                    "label": "Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "nonheap_committed",
+                                                    "columnId": "3f22d802-75fc-bddd-3656-6c905c5e9384",
+                                                    "label": "Committed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "48141f74-9ebe-290b-7219-ea32cdc9f1e1",
+                "gridData": {
+                    "x": 0,
+                    "y": 32,
+                    "w": 48,
+                    "h": 3,
+                    "i": "48141f74-9ebe-290b-7219-ea32cdc9f1e1"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Garbage Collection"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "52b94f18-72ca-bfc9-a231-87cf26faa361",
+                "gridData": {
+                    "x": 0,
+                    "y": 35,
+                    "w": 24,
+                    "h": 12,
+                    "i": "52b94f18-72ca-bfc9-a231-87cf26faa361"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "GC Collection Count Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "242f5019-a0e4-4d05-c848-b6f97722297a",
+                                        "accessors": [
+                                            "4ada1f47-7a37-ab8a-920d-ebac28a0f1b6",
+                                            "98d56803-bee3-a6b9-936d-3da68a72591f",
+                                            "3f31b773-6712-59ab-0315-cdc2f10c275f"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "Old GC"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#cc5642"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "bar_stacked",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Young_Generation_CollectionCount IS NOT NULL\n| STATS young_gc = SUM(DELTA(java_lang_G1_Young_Generation_CollectionCount)), old_gc = SUM(DELTA(java_lang_G1_Old_Generation_CollectionCount)), concurrent_gc = SUM(DELTA(java_lang_G1_Concurrent_GC_CollectionCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "242f5019-a0e4-4d05-c848-b6f97722297a": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Young_Generation_CollectionCount IS NOT NULL\n| STATS young_gc = SUM(DELTA(java_lang_G1_Young_Generation_CollectionCount)), old_gc = SUM(DELTA(java_lang_G1_Old_Generation_CollectionCount)), concurrent_gc = SUM(DELTA(java_lang_G1_Concurrent_GC_CollectionCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "young_gc",
+                                                    "columnId": "4ada1f47-7a37-ab8a-920d-ebac28a0f1b6",
+                                                    "label": "Young GC",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "old_gc",
+                                                    "columnId": "98d56803-bee3-a6b9-936d-3da68a72591f",
+                                                    "label": "Old GC",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "concurrent_gc",
+                                                    "columnId": "3f31b773-6712-59ab-0315-cdc2f10c275f",
+                                                    "label": "Concurrent GC",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "young_gc",
+                                                    "columnId": "4ada1f47-7a37-ab8a-920d-ebac28a0f1b6",
+                                                    "label": "Young GC",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "old_gc",
+                                                    "columnId": "98d56803-bee3-a6b9-936d-3da68a72591f",
+                                                    "label": "Old GC",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "concurrent_gc",
+                                                    "columnId": "3f31b773-6712-59ab-0315-cdc2f10c275f",
+                                                    "label": "Concurrent GC",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "979563fc-4f40-f4d1-579a-e1d9ce44c887",
+                "gridData": {
+                    "x": 24,
+                    "y": 35,
+                    "w": 24,
+                    "h": 12,
+                    "i": "979563fc-4f40-f4d1-579a-e1d9ce44c887"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "GC Cumulative Time Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "0aabdb2c-7b32-4923-3ffc-41f288cfb109",
+                                        "accessors": [
+                                            "efa0e4e4-913f-db4f-051b-68f1601c263d",
+                                            "c9c956cb-e298-f782-d76e-43afbaa9c702",
+                                            "0c1cfc29-c1a6-0bb5-04f0-3ed0942aa6d3"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "Old GC Time (ms)"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#cc5642"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Young_Generation_CollectionTime IS NOT NULL\n| STATS young_time = SUM(DELTA(java_lang_G1_Young_Generation_CollectionTime)), old_time = SUM(DELTA(java_lang_G1_Old_Generation_CollectionTime)), concurrent_time = SUM(DELTA(java_lang_G1_Concurrent_GC_CollectionTime)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "0aabdb2c-7b32-4923-3ffc-41f288cfb109": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Young_Generation_CollectionTime IS NOT NULL\n| STATS young_time = SUM(DELTA(java_lang_G1_Young_Generation_CollectionTime)), old_time = SUM(DELTA(java_lang_G1_Old_Generation_CollectionTime)), concurrent_time = SUM(DELTA(java_lang_G1_Concurrent_GC_CollectionTime)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "young_time",
+                                                    "columnId": "efa0e4e4-913f-db4f-051b-68f1601c263d",
+                                                    "label": "Young GC Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "old_time",
+                                                    "columnId": "c9c956cb-e298-f782-d76e-43afbaa9c702",
+                                                    "label": "Old GC Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "concurrent_time",
+                                                    "columnId": "0c1cfc29-c1a6-0bb5-04f0-3ed0942aa6d3",
+                                                    "label": "Concurrent GC Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "young_time",
+                                                    "columnId": "efa0e4e4-913f-db4f-051b-68f1601c263d",
+                                                    "label": "Young GC Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "old_time",
+                                                    "columnId": "c9c956cb-e298-f782-d76e-43afbaa9c702",
+                                                    "label": "Old GC Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "concurrent_time",
+                                                    "columnId": "0c1cfc29-c1a6-0bb5-04f0-3ed0942aa6d3",
+                                                    "label": "Concurrent GC Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "631d3b45-b342-63d6-22a1-723eae2cce50",
+                "gridData": {
+                    "x": 0,
+                    "y": 47,
+                    "w": 48,
+                    "h": 3,
+                    "i": "631d3b45-b342-63d6-22a1-723eae2cce50"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## G1 Memory Pools"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "ecbff138-305d-0c82-24d9-87c5e0b4c7c6",
+                "gridData": {
+                    "x": 0,
+                    "y": 50,
+                    "w": 16,
+                    "h": 12,
+                    "i": "ecbff138-305d-0c82-24d9-87c5e0b4c7c6"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Eden Space Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "1af0960a-f116-2f2d-b9cd-0dd29aec3ae6",
+                                        "accessors": [
+                                            "4a82aaf0-1f52-0362-4a9f-fef276e0094a",
+                                            "fa7267f6-06dc-213f-c740-5dbe81d2c142"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area_unstacked",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area_unstacked",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Eden_Space_Usage_used IS NOT NULL\n| STATS eden_used = MAX(LAST_OVER_TIME(java_lang_G1_Eden_Space_Usage_used)), eden_committed = MAX(LAST_OVER_TIME(java_lang_G1_Eden_Space_Usage_committed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "1af0960a-f116-2f2d-b9cd-0dd29aec3ae6": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Eden_Space_Usage_used IS NOT NULL\n| STATS eden_used = MAX(LAST_OVER_TIME(java_lang_G1_Eden_Space_Usage_used)), eden_committed = MAX(LAST_OVER_TIME(java_lang_G1_Eden_Space_Usage_committed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "eden_used",
+                                                    "columnId": "4a82aaf0-1f52-0362-4a9f-fef276e0094a",
+                                                    "label": "Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "eden_committed",
+                                                    "columnId": "fa7267f6-06dc-213f-c740-5dbe81d2c142",
+                                                    "label": "Committed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "eden_used",
+                                                    "columnId": "4a82aaf0-1f52-0362-4a9f-fef276e0094a",
+                                                    "label": "Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "eden_committed",
+                                                    "columnId": "fa7267f6-06dc-213f-c740-5dbe81d2c142",
+                                                    "label": "Committed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6916a285-9c69-146a-2cd8-b2fec2b05c0e",
+                "gridData": {
+                    "x": 16,
+                    "y": 50,
+                    "w": 16,
+                    "h": 12,
+                    "i": "6916a285-9c69-146a-2cd8-b2fec2b05c0e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Survivor Space Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "94da83fd-50c4-0c4b-4368-2dbeace6f342",
+                                        "accessors": [
+                                            "49be82cb-fa60-0152-55e2-e070cbfe1287",
+                                            "caf722cb-470f-5f82-2edb-0bbab087194f"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area_unstacked",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area_unstacked",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Survivor_Space_Usage_used IS NOT NULL\n| STATS survivor_used = MAX(LAST_OVER_TIME(java_lang_G1_Survivor_Space_Usage_used)), survivor_committed = MAX(LAST_OVER_TIME(java_lang_G1_Survivor_Space_Usage_committed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "94da83fd-50c4-0c4b-4368-2dbeace6f342": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Survivor_Space_Usage_used IS NOT NULL\n| STATS survivor_used = MAX(LAST_OVER_TIME(java_lang_G1_Survivor_Space_Usage_used)), survivor_committed = MAX(LAST_OVER_TIME(java_lang_G1_Survivor_Space_Usage_committed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "survivor_used",
+                                                    "columnId": "49be82cb-fa60-0152-55e2-e070cbfe1287",
+                                                    "label": "Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "survivor_committed",
+                                                    "columnId": "caf722cb-470f-5f82-2edb-0bbab087194f",
+                                                    "label": "Committed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "survivor_used",
+                                                    "columnId": "49be82cb-fa60-0152-55e2-e070cbfe1287",
+                                                    "label": "Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "survivor_committed",
+                                                    "columnId": "caf722cb-470f-5f82-2edb-0bbab087194f",
+                                                    "label": "Committed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e8243766-4e06-99dd-2cb1-3f6e109344c9",
+                "gridData": {
+                    "x": 32,
+                    "y": 50,
+                    "w": 16,
+                    "h": 12,
+                    "i": "e8243766-4e06-99dd-2cb1-3f6e109344c9"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Old Generation Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "c5c53960-cba2-ad0e-a4e0-2d674234a6ed",
+                                        "accessors": [
+                                            "eb35efe6-a25c-b54c-162a-8fa0c380018e",
+                                            "bb4008df-7765-f459-17e0-6ed2fe251afb"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area_unstacked",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area_unstacked",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Old_Gen_Usage_used IS NOT NULL\n| STATS old_used = MAX(LAST_OVER_TIME(java_lang_G1_Old_Gen_Usage_used)), old_committed = MAX(LAST_OVER_TIME(java_lang_G1_Old_Gen_Usage_committed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "c5c53960-cba2-ad0e-a4e0-2d674234a6ed": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Old_Gen_Usage_used IS NOT NULL\n| STATS old_used = MAX(LAST_OVER_TIME(java_lang_G1_Old_Gen_Usage_used)), old_committed = MAX(LAST_OVER_TIME(java_lang_G1_Old_Gen_Usage_committed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "old_used",
+                                                    "columnId": "eb35efe6-a25c-b54c-162a-8fa0c380018e",
+                                                    "label": "Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "old_committed",
+                                                    "columnId": "bb4008df-7765-f459-17e0-6ed2fe251afb",
+                                                    "label": "Committed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "old_used",
+                                                    "columnId": "eb35efe6-a25c-b54c-162a-8fa0c380018e",
+                                                    "label": "Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "old_committed",
+                                                    "columnId": "bb4008df-7765-f459-17e0-6ed2fe251afb",
+                                                    "label": "Committed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "ead107c6-b5f2-b249-6f01-c42a2cd095e0",
+                "gridData": {
+                    "x": 0,
+                    "y": 62,
+                    "w": 48,
+                    "h": 3,
+                    "i": "ead107c6-b5f2-b249-6f01-c42a2cd095e0"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Memory Utilization"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "71b82a60-ec39-ae32-f32d-81c5dc922d47",
+                "gridData": {
+                    "x": 0,
+                    "y": 65,
+                    "w": 24,
+                    "h": 10,
+                    "i": "71b82a60-ec39-ae32-f32d-81c5dc922d47"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Heap Utilization",
+                        "visualizationType": "lnsGauge",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "60bdb82c-4134-8954-af16-c502b958b74c",
+                                "layerType": "data",
+                                "metricAccessor": "22d0d535-813b-e7e1-86f5-33db12e4a4bf",
+                                "minAccessor": "94c8b873-aebf-1c7b-bef9-5da61f7d990e",
+                                "maxAccessor": "5ab04406-6615-1dfd-11b5-f485d68ae5ee",
+                                "goalAccessor": "a7813011-1876-53f4-1cfa-9302ca95d0f1",
+                                "shape": "arc",
+                                "ticksPosition": "auto",
+                                "labelMajorMode": "auto",
+                                "colorMode": "palette",
+                                "palette": {
+                                    "name": "custom",
+                                    "type": "palette",
+                                    "params": {
+                                        "steps": 3,
+                                        "name": "custom",
+                                        "reverse": false,
+                                        "rangeType": "number",
+                                        "rangeMin": 0.0,
+                                        "rangeMax": 100.0,
+                                        "progression": "fixed",
+                                        "stops": [
+                                            {
+                                                "color": "#54b399",
+                                                "stop": 70.0
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 85.0
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 100.0
+                                            }
+                                        ],
+                                        "colorStops": [
+                                            {
+                                                "color": "#54b399",
+                                                "stop": 0.0
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 70.0
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 85.0
+                                            }
+                                        ],
+                                        "continuity": "above",
+                                        "maxSteps": 3
+                                    }
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL\n| STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used)), heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max))\n| EVAL heap_util = CASE(heap_max > 0, ROUND(heap_used / heap_max * 100, 1), 0)\n| EVAL gauge_min = 0\n| EVAL gauge_max = 100\n| EVAL gauge_goal = 85"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "60bdb82c-4134-8954-af16-c502b958b74c": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL\n| STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used)), heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max))\n| EVAL heap_util = CASE(heap_max > 0, ROUND(heap_used / heap_max * 100, 1), 0)\n| EVAL gauge_min = 0\n| EVAL gauge_max = 100\n| EVAL gauge_goal = 85"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "heap_util",
+                                                    "columnId": "22d0d535-813b-e7e1-86f5-33db12e4a4bf",
+                                                    "label": "Heap Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "gauge_min",
+                                                    "columnId": "94c8b873-aebf-1c7b-bef9-5da61f7d990e",
+                                                    "label": "gauge_min",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_max",
+                                                    "columnId": "5ab04406-6615-1dfd-11b5-f485d68ae5ee",
+                                                    "label": "gauge_max",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_goal",
+                                                    "columnId": "a7813011-1876-53f4-1cfa-9302ca95d0f1",
+                                                    "label": "gauge_goal",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "heap_util",
+                                                    "columnId": "22d0d535-813b-e7e1-86f5-33db12e4a4bf",
+                                                    "label": "Heap Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "gauge_min",
+                                                    "columnId": "94c8b873-aebf-1c7b-bef9-5da61f7d990e",
+                                                    "label": "gauge_min",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_max",
+                                                    "columnId": "5ab04406-6615-1dfd-11b5-f485d68ae5ee",
+                                                    "label": "gauge_max",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_goal",
+                                                    "columnId": "a7813011-1876-53f4-1cfa-9302ca95d0f1",
+                                                    "label": "gauge_goal",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "dc413ffe-76b9-dd46-879b-a441c093f598",
+                "gridData": {
+                    "x": 24,
+                    "y": 65,
+                    "w": 24,
+                    "h": 10,
+                    "i": "dc413ffe-76b9-dd46-879b-a441c093f598"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Old Generation Utilization",
+                        "visualizationType": "lnsGauge",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "aa9f8a37-b3dc-7331-fe8f-11b3024e450a",
+                                "layerType": "data",
+                                "metricAccessor": "c77a1338-fdfc-ffd6-8049-f8cf766d5600",
+                                "minAccessor": "94c8b873-aebf-1c7b-bef9-5da61f7d990e",
+                                "maxAccessor": "5ab04406-6615-1dfd-11b5-f485d68ae5ee",
+                                "goalAccessor": "a7813011-1876-53f4-1cfa-9302ca95d0f1",
+                                "shape": "arc",
+                                "ticksPosition": "auto",
+                                "labelMajorMode": "auto",
+                                "colorMode": "palette",
+                                "palette": {
+                                    "name": "custom",
+                                    "type": "palette",
+                                    "params": {
+                                        "steps": 3,
+                                        "name": "custom",
+                                        "reverse": false,
+                                        "rangeType": "number",
+                                        "rangeMin": 0.0,
+                                        "rangeMax": 100.0,
+                                        "progression": "fixed",
+                                        "stops": [
+                                            {
+                                                "color": "#54b399",
+                                                "stop": 60.0
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 80.0
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 100.0
+                                            }
+                                        ],
+                                        "colorStops": [
+                                            {
+                                                "color": "#54b399",
+                                                "stop": 0.0
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 60.0
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 80.0
+                                            }
+                                        ],
+                                        "continuity": "above",
+                                        "maxSteps": 3
+                                    }
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Old_Gen_Usage_used IS NOT NULL\n| STATS old_used = MAX(LAST_OVER_TIME(java_lang_G1_Old_Gen_Usage_used)), old_max = MAX(LAST_OVER_TIME(java_lang_G1_Old_Gen_Usage_max))\n| EVAL old_util = CASE(old_max > 0, ROUND(old_used / old_max * 100, 1), 0)\n| EVAL gauge_min = 0\n| EVAL gauge_max = 100\n| EVAL gauge_goal = 80"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "aa9f8a37-b3dc-7331-fe8f-11b3024e450a": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE java_lang_G1_Old_Gen_Usage_used IS NOT NULL\n| STATS old_used = MAX(LAST_OVER_TIME(java_lang_G1_Old_Gen_Usage_used)), old_max = MAX(LAST_OVER_TIME(java_lang_G1_Old_Gen_Usage_max))\n| EVAL old_util = CASE(old_max > 0, ROUND(old_used / old_max * 100, 1), 0)\n| EVAL gauge_min = 0\n| EVAL gauge_max = 100\n| EVAL gauge_goal = 80"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "old_util",
+                                                    "columnId": "c77a1338-fdfc-ffd6-8049-f8cf766d5600",
+                                                    "label": "Old Gen Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "gauge_min",
+                                                    "columnId": "94c8b873-aebf-1c7b-bef9-5da61f7d990e",
+                                                    "label": "gauge_min",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_max",
+                                                    "columnId": "5ab04406-6615-1dfd-11b5-f485d68ae5ee",
+                                                    "label": "gauge_max",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_goal",
+                                                    "columnId": "a7813011-1876-53f4-1cfa-9302ca95d0f1",
+                                                    "label": "gauge_goal",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "old_util",
+                                                    "columnId": "c77a1338-fdfc-ffd6-8049-f8cf766d5600",
+                                                    "label": "Old Gen Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "gauge_min",
+                                                    "columnId": "94c8b873-aebf-1c7b-bef9-5da61f7d990e",
+                                                    "label": "gauge_min",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_max",
+                                                    "columnId": "5ab04406-6615-1dfd-11b5-f485d68ae5ee",
+                                                    "label": "gauge_max",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_goal",
+                                                    "columnId": "a7813011-1876-53f4-1cfa-9302ca95d0f1",
+                                                    "label": "gauge_goal",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "tomcat.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "tomcat.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": false,
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "a18657f3-9386-7419-0c1e-db380f1b3b06": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "a18657f3-9386-7419-0c1e-db380f1b3b06",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "resource.attributes.host.name",
+                        "title": "Host",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "apache_tomcat_otel-jvm-memory-gc",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-request-processing",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_5909ede8-2eec-8644-b2c1-c28c00240a56_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-thread-pool-connections",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_9dfd6ff5-60a6-d609-8f72-50cec07261e9_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-jvm-memory-gc",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_6632c321-6dab-2198-f8fe-27c3e8abc5da_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-sessions-servlets",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_82660977-7ef5-2f6d-e57c-f38685be84e1_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-jvm-os-resources",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_2d7fbb7d-cfa4-5417-4c1b-cbcecf53130f_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_a18657f3-9386-7419-0c1e-db380f1b3b06:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

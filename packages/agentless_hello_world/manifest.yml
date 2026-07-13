@@ -1,8 +1,8 @@
 format_version: 3.3.2
 name: agentless_hello_world
-title: Agentless Hello World
-version: "0.1.0"
-description: A sample integration to exercise the Agentless infrastructure by fetching https://epr.elastic.co every minute.
+title: Elastic Managed Hello World
+version: "0.5.0"
+description: A sample integration to exercise the Elastic Managed infrastructure by fetching https://epr.elastic.co every minute. Optionally includes a counter data stream for high-rate mock metric ingestion testing.
 type: integration
 categories:
   - observability
@@ -13,12 +13,12 @@ conditions:
     subscription: "basic"
 icons:
   - src: /img/icon.svg
-    title: Agentless Hello World
+    title: Elastic Managed Hello World
     size: 32x32
     type: image/svg+xml
 policy_templates:
   - name: agentless_hello_world
-    title: Agentless Hello World
+    title: Elastic Managed Hello World
     description: Collect data from EPR endpoint every minute.
     deployment_modes:
       default:
@@ -26,13 +26,18 @@ policy_templates:
       agentless:
         enabled: true
         is_default: true
+        release: beta
         organization: observability
         division: engineering
         team: ingest-managed-jobs
     inputs:
       - type: cel
-        title: Collect data from EPR endpoint
-        description: Fetches https://epr.elastic.co every minute.
+        title: Collect data from EPR endpoint (CEL)
+        description: Fetches https://epr.elastic.co every 20s using CEL input.
+        vars: []
+      - type: httpjson
+        title: Collect data from EPR endpoint (HTTPJSON)
+        description: Fetches https://epr.elastic.co every 20s using HTTPJSON input.
         vars: []
 owner:
   github: elastic/ingest-managed-jobs

@@ -1,0 +1,55 @@
+connectors:
+    forward: {}
+exporters:
+    elasticsearch/componentid-0:
+        auth:
+            authenticator: beatsauth/default
+        endpoints:
+            - https://elasticsearch:9200
+extensions:
+    beatsauth/componentid-0:
+        ssl:
+            ca_trusted_fingerprint: A43E5AA9469D7A7AD376FD2441216644044B5CF9AD0061625801605A351F8308
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - profiles-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    transform/componentid-0:
+        profile_statements:
+            - context: profile
+              statements:
+                - set(attributes["data_stream.type"], "profiles")
+                - set(attributes["data_stream.dataset"], "profilingreceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    profiling/componentid-0:
+        samples_per_second: 73
+secret_references: []
+service:
+    extensions:
+        - beatsauth/componentid-0
+    pipelines:
+        profiles:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        profiles/componentid-0:
+            exporters:
+                - forward
+            processors:
+                - transform/componentid-0
+            receivers:
+                - profiling/componentid-0

@@ -376,7 +376,7 @@ processors:
       tag: append_device_user_into_related_user
       value: '{{{google_workspace.chrome.device_user}}}'
       allow_duplicates: false
-      if: ctx.google_workspace?.chrome?.device_user != null
+      if: ctx.google_workspace?.chrome?.device_user != null && !ctx.google_workspace.chrome.device_user.contains('\\')
   - append:
       field: related.user
       tag: append_profile_user_name_into_related_user
@@ -441,21 +441,25 @@ processors:
       tag: set_host_os_full_from_chrome_device_platform
       copy_from: google_workspace.chrome.device_platform
       ignore_empty_value: true
-  - dissect:
+  - grok:
       field: google_workspace.chrome.device_user
-      tag: dissect_device_user
-      if: ctx.google_workspace?.chrome?.device_user != null && ctx.google_workspace.chrome.device_user.contains('@')
-      pattern: '%{user.name}@%{user.domain}'
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: user.name
-      tag: set_user_name_from_device_user
-      copy_from: google_workspace.chrome.device_user
-      if: ctx.user?.name == null
-      ignore_empty_value: true
+      tag: grok_device_user
+      patterns:
+        - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+        - '%{DATA:user.domain}\\%{GREEDYDATA:user.name}'
+        - '%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+        - '%{GREEDYDATA:user.name}'
+      ignore_missing: true
+  - remove:
+      field: _tmp
+      tag: remove_tmp
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
   - set:
       field: event.reason
       tag: set_event_reason_from_chrome_event_reason

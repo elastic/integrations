@@ -1,0 +1,2035 @@
+{
+    "attributes": {
+        "title": "[InfluxDB OTel] Query & Tasks",
+        "description": "Query controller load, memory budget, stage durations, task scheduler execution, and task executor saturation.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "734931e1-659a-f39c-bfed-a19d5d609f46",
+                                "order": 1,
+                                "label": "HTTP & Storage",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_734931e1-659a-f39c-bfed-a19d5d609f46_dashboard"
+                            },
+                            {
+                                "id": "c816241d-9b77-8f80-2947-cd86f857dd82",
+                                "order": 2,
+                                "label": "Query & Tasks",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_c816241d-9b77-8f80-2947-cd86f857dd82_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [InfluxDB OTel] Query & Tasks\n\nThis dashboard focuses on query execution and task scheduling:\n- Query controller: active queries by stage, memory budget\n- Query throughput and stage durations\n- Task scheduler: execution count, failures, schedule delay\n- Task executor: busy workers, promise queue usage\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "cabe1d10-6b45-8885-6608-82197f443077",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "cabe1d10-6b45-8885-6608-82197f443077"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Active Queries",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "44c3aaee-bc6f-cfea-d918-4552e1a03381",
+                                "layerType": "data",
+                                "metricAccessor": "4cd755ac-cfdc-e407-d144-6fb750fba199",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE qc_all_active IS NOT NULL\n| STATS active = MAX(LAST_OVER_TIME(qc_all_active))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "44c3aaee-bc6f-cfea-d918-4552e1a03381": {
+                                            "query": {
+                                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE qc_all_active IS NOT NULL\n| STATS active = MAX(LAST_OVER_TIME(qc_all_active))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "active",
+                                                    "columnId": "4cd755ac-cfdc-e407-d144-6fb750fba199",
+                                                    "label": "Active",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "active",
+                                                    "columnId": "4cd755ac-cfdc-e407-d144-6fb750fba199",
+                                                    "label": "Active",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "366dcea0-f5ec-db35-f57f-8f21ce326ab8",
+                "gridData": {
+                    "x": 24,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "366dcea0-f5ec-db35-f57f-8f21ce326ab8"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Memory Unused",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "46c86b6f-d4cc-f6c9-0cb4-9ec49a857f0a",
+                                "layerType": "data",
+                                "metricAccessor": "f8847255-2483-e483-3370-cb6e486fc8ea",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE qc_memory_unused_bytes IS NOT NULL\n| STATS unused = MAX(LAST_OVER_TIME(qc_memory_unused_bytes))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "46c86b6f-d4cc-f6c9-0cb4-9ec49a857f0a": {
+                                            "query": {
+                                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE qc_memory_unused_bytes IS NOT NULL\n| STATS unused = MAX(LAST_OVER_TIME(qc_memory_unused_bytes))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "unused",
+                                                    "columnId": "f8847255-2483-e483-3370-cb6e486fc8ea",
+                                                    "label": "QC Memory Free",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "unused",
+                                                    "columnId": "f8847255-2483-e483-3370-cb6e486fc8ea",
+                                                    "label": "QC Memory Free",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c2d470ae-bf6c-1102-5f90-3bc14be5335b",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "c2d470ae-bf6c-1102-5f90-3bc14be5335b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Query Controller Requests",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "6e0afa35-635a-14cf-6498-5ec93d5788dd",
+                                "layerType": "data",
+                                "metricAccessor": "2d8c5745-b730-9750-a657-90c020ab7e34",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE qc_requests_total IS NOT NULL\n| STATS requests = MAX(qc_requests_total)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "6e0afa35-635a-14cf-6498-5ec93d5788dd": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE qc_requests_total IS NOT NULL\n| STATS requests = MAX(qc_requests_total)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "2d8c5745-b730-9750-a657-90c020ab7e34",
+                                                    "label": "QC Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "2d8c5745-b730-9750-a657-90c020ab7e34",
+                                                    "label": "QC Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "da65c70b-7de6-1549-0e1e-a2e84a29ab08",
+                "gridData": {
+                    "x": 40,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "da65c70b-7de6-1549-0e1e-a2e84a29ab08"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Task Executions",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "4c03b6d7-0ff0-e8c4-27a0-f0cad55ce671",
+                                "layerType": "data",
+                                "metricAccessor": "18f4260e-4f28-521f-72f1-085e5aa1c6fe",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE task_scheduler_total_execution_calls IS NOT NULL\n| STATS executions = MAX(task_scheduler_total_execution_calls)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "4c03b6d7-0ff0-e8c4-27a0-f0cad55ce671": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE task_scheduler_total_execution_calls IS NOT NULL\n| STATS executions = MAX(task_scheduler_total_execution_calls)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "executions",
+                                                    "columnId": "18f4260e-4f28-521f-72f1-085e5aa1c6fe",
+                                                    "label": "Executions",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "executions",
+                                                    "columnId": "18f4260e-4f28-521f-72f1-085e5aa1c6fe",
+                                                    "label": "Executions",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "4f41e594-a96b-75df-8c23-0d1cf44a907e",
+                "gridData": {
+                    "x": 16,
+                    "y": 6,
+                    "w": 8,
+                    "h": 4,
+                    "i": "4f41e594-a96b-75df-8c23-0d1cf44a907e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Task Failures",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "489c2b51-f533-acf2-a087-f3931552454c",
+                                "layerType": "data",
+                                "metricAccessor": "ba4071ca-23c0-3849-29c0-727285bfac63",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE task_scheduler_total_execute_failure IS NOT NULL\n| STATS failures = MAX(task_scheduler_total_execute_failure)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "489c2b51-f533-acf2-a087-f3931552454c": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE task_scheduler_total_execute_failure IS NOT NULL\n| STATS failures = MAX(task_scheduler_total_execute_failure)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "failures",
+                                                    "columnId": "ba4071ca-23c0-3849-29c0-727285bfac63",
+                                                    "label": "Failures",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "failures",
+                                                    "columnId": "ba4071ca-23c0-3849-29c0-727285bfac63",
+                                                    "label": "Failures",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "d320456a-d987-66d8-6d42-67b9e72136e3",
+                "gridData": {
+                    "x": 24,
+                    "y": 6,
+                    "w": 8,
+                    "h": 4,
+                    "i": "d320456a-d987-66d8-6d42-67b9e72136e3"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Workers Busy",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "b7d0665c-174e-dc02-32f4-a8e2c8246600",
+                                "layerType": "data",
+                                "metricAccessor": "de7364b3-07f1-77ae-3c36-289c11be0e79",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE task_executor_workers_busy IS NOT NULL\n| STATS busy = MAX(LAST_OVER_TIME(task_executor_workers_busy))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "b7d0665c-174e-dc02-32f4-a8e2c8246600": {
+                                            "query": {
+                                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE task_executor_workers_busy IS NOT NULL\n| STATS busy = MAX(LAST_OVER_TIME(task_executor_workers_busy))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "busy",
+                                                    "columnId": "de7364b3-07f1-77ae-3c36-289c11be0e79",
+                                                    "label": "Workers Busy",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "busy",
+                                                    "columnId": "de7364b3-07f1-77ae-3c36-289c11be0e79",
+                                                    "label": "Workers Busy",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "04597290-f0b5-f290-ba8f-1bc939d5a895",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 48,
+                    "h": 12,
+                    "i": "04597290-f0b5-f290-ba8f-1bc939d5a895"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Query Controller Active by Stage",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "5c45bb59-2aba-9969-230c-80b9bbb4c940",
+                                        "accessors": [
+                                            "489bcce5-4d8f-add3-d46c-d6eb4ea452f9",
+                                            "aa8dcfd6-43af-889e-0011-434152ad7174",
+                                            "f454deb9-ec07-a022-e9e9-80d974b75777"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Active Queries",
+                                "yLeftTitle": "Active Queries",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE qc_compiling_active IS NOT NULL OR qc_queueing_active IS NOT NULL OR qc_executing_active IS NOT NULL\n| STATS compiling = MAX(LAST_OVER_TIME(qc_compiling_active)), queueing = MAX(LAST_OVER_TIME(qc_queueing_active)), executing = MAX(LAST_OVER_TIME(qc_executing_active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "5c45bb59-2aba-9969-230c-80b9bbb4c940": {
+                                            "query": {
+                                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE qc_compiling_active IS NOT NULL OR qc_queueing_active IS NOT NULL OR qc_executing_active IS NOT NULL\n| STATS compiling = MAX(LAST_OVER_TIME(qc_compiling_active)), queueing = MAX(LAST_OVER_TIME(qc_queueing_active)), executing = MAX(LAST_OVER_TIME(qc_executing_active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "compiling",
+                                                    "columnId": "489bcce5-4d8f-add3-d46c-d6eb4ea452f9",
+                                                    "label": "Compiling",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "queueing",
+                                                    "columnId": "aa8dcfd6-43af-889e-0011-434152ad7174",
+                                                    "label": "Queueing",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "executing",
+                                                    "columnId": "f454deb9-ec07-a022-e9e9-80d974b75777",
+                                                    "label": "Executing",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "compiling",
+                                                    "columnId": "489bcce5-4d8f-add3-d46c-d6eb4ea452f9",
+                                                    "label": "Compiling",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "queueing",
+                                                    "columnId": "aa8dcfd6-43af-889e-0011-434152ad7174",
+                                                    "label": "Queueing",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "executing",
+                                                    "columnId": "f454deb9-ec07-a022-e9e9-80d974b75777",
+                                                    "label": "Executing",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "7452e071-9709-68fd-a401-2373ccb3081b",
+                "gridData": {
+                    "x": 0,
+                    "y": 26,
+                    "w": 24,
+                    "h": 12,
+                    "i": "7452e071-9709-68fd-a401-2373ccb3081b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Query Controller Memory Budget",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "40450a16-7da2-5e35-faf3-3a9831ada530",
+                                        "accessors": [
+                                            "0774006e-d5f6-4c26-845b-a215d31f431a"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE qc_memory_unused_bytes IS NOT NULL\n| STATS unused = MAX(LAST_OVER_TIME(qc_memory_unused_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "40450a16-7da2-5e35-faf3-3a9831ada530": {
+                                            "query": {
+                                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE qc_memory_unused_bytes IS NOT NULL\n| STATS unused = MAX(LAST_OVER_TIME(qc_memory_unused_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "unused",
+                                                    "columnId": "0774006e-d5f6-4c26-845b-a215d31f431a",
+                                                    "label": "Unused Bytes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "unused",
+                                                    "columnId": "0774006e-d5f6-4c26-845b-a215d31f431a",
+                                                    "label": "Unused Bytes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c10ca562-82a6-56b5-1e89-b4d0b43bc6d2",
+                "gridData": {
+                    "x": 24,
+                    "y": 26,
+                    "w": 24,
+                    "h": 12,
+                    "i": "c10ca562-82a6-56b5-1e89-b4d0b43bc6d2"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Task Executor Saturation",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "0be7bd4a-68da-3f4e-ea77-8070da01e5d4",
+                                        "accessors": [
+                                            "e2abd60b-ef18-3c48-4f01-c8fd36283013",
+                                            "95543208-9ac0-7c81-5ff7-de22839c26da",
+                                            "d03d5d5f-bee3-30f2-e2ac-e65a8081fb05"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Count",
+                                "yLeftTitle": "Count",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE task_executor_workers_busy IS NOT NULL OR task_executor_promise_queue_usage IS NOT NULL OR task_executor_total_runs_active IS NOT NULL\n| STATS workers_busy = MAX(LAST_OVER_TIME(task_executor_workers_busy)), queue_usage = MAX(LAST_OVER_TIME(task_executor_promise_queue_usage)), runs_active = MAX(LAST_OVER_TIME(task_executor_total_runs_active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "0be7bd4a-68da-3f4e-ea77-8070da01e5d4": {
+                                            "query": {
+                                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE task_executor_workers_busy IS NOT NULL OR task_executor_promise_queue_usage IS NOT NULL OR task_executor_total_runs_active IS NOT NULL\n| STATS workers_busy = MAX(LAST_OVER_TIME(task_executor_workers_busy)), queue_usage = MAX(LAST_OVER_TIME(task_executor_promise_queue_usage)), runs_active = MAX(LAST_OVER_TIME(task_executor_total_runs_active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "workers_busy",
+                                                    "columnId": "e2abd60b-ef18-3c48-4f01-c8fd36283013",
+                                                    "label": "Workers Busy",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "queue_usage",
+                                                    "columnId": "95543208-9ac0-7c81-5ff7-de22839c26da",
+                                                    "label": "Promise Queue",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "runs_active",
+                                                    "columnId": "d03d5d5f-bee3-30f2-e2ac-e65a8081fb05",
+                                                    "label": "Active Runs",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "workers_busy",
+                                                    "columnId": "e2abd60b-ef18-3c48-4f01-c8fd36283013",
+                                                    "label": "Workers Busy",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "queue_usage",
+                                                    "columnId": "95543208-9ac0-7c81-5ff7-de22839c26da",
+                                                    "label": "Promise Queue",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "runs_active",
+                                                    "columnId": "d03d5d5f-bee3-30f2-e2ac-e65a8081fb05",
+                                                    "label": "Active Runs",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "5ee3a1be-4146-6021-3b12-58797b064d36",
+                "gridData": {
+                    "x": 0,
+                    "y": 38,
+                    "w": 48,
+                    "h": 12,
+                    "i": "5ee3a1be-4146-6021-3b12-58797b064d36"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Task Executions vs Failures",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "c95db8b1-391a-f759-8217-9531f1ca975f",
+                                        "accessors": [
+                                            "8dbffc1b-b618-ef0a-f1b2-7127bcd138f6",
+                                            "c3c662b3-2755-3b89-e995-02f574a8c823"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Count",
+                                "yLeftTitle": "Count",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE task_scheduler_total_execution_calls IS NOT NULL OR task_scheduler_total_execute_failure IS NOT NULL\n| STATS executions = MAX(task_scheduler_total_execution_calls), failures = MAX(task_scheduler_total_execute_failure) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "c95db8b1-391a-f759-8217-9531f1ca975f": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE task_scheduler_total_execution_calls IS NOT NULL OR task_scheduler_total_execute_failure IS NOT NULL\n| STATS executions = MAX(task_scheduler_total_execution_calls), failures = MAX(task_scheduler_total_execute_failure) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "executions",
+                                                    "columnId": "8dbffc1b-b618-ef0a-f1b2-7127bcd138f6",
+                                                    "label": "Executions",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "failures",
+                                                    "columnId": "c3c662b3-2755-3b89-e995-02f574a8c823",
+                                                    "label": "Failures",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "executions",
+                                                    "columnId": "8dbffc1b-b618-ef0a-f1b2-7127bcd138f6",
+                                                    "label": "Executions",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "failures",
+                                                    "columnId": "c3c662b3-2755-3b89-e995-02f574a8c823",
+                                                    "label": "Failures",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "40461db4-f5b6-4c9f-6d58-10bb4ec1eab4",
+                "gridData": {
+                    "x": 0,
+                    "y": 50,
+                    "w": 24,
+                    "h": 12,
+                    "i": "40461db4-f5b6-4c9f-6d58-10bb4ec1eab4"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "BoltDB Operations",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "2c8b126c-1638-a11d-2753-307acd95a0a0",
+                                        "accessors": [
+                                            "04c1a43e-041a-319d-7228-a5a705e170ad",
+                                            "cb8a4c7d-ff28-21df-b99d-8584471e8eef"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Operations",
+                                "yLeftTitle": "Operations",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE boltdb_reads_total IS NOT NULL OR boltdb_writes_total IS NOT NULL\n| STATS reads = MAX(boltdb_reads_total), writes = MAX(boltdb_writes_total) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "2c8b126c-1638-a11d-2753-307acd95a0a0": {
+                                            "query": {
+                                                "esql": "FROM metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| WHERE boltdb_reads_total IS NOT NULL OR boltdb_writes_total IS NOT NULL\n| STATS reads = MAX(boltdb_reads_total), writes = MAX(boltdb_writes_total) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "reads",
+                                                    "columnId": "04c1a43e-041a-319d-7228-a5a705e170ad",
+                                                    "label": "Reads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "writes",
+                                                    "columnId": "cb8a4c7d-ff28-21df-b99d-8584471e8eef",
+                                                    "label": "Writes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "reads",
+                                                    "columnId": "04c1a43e-041a-319d-7228-a5a705e170ad",
+                                                    "label": "Reads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "writes",
+                                                    "columnId": "cb8a4c7d-ff28-21df-b99d-8584471e8eef",
+                                                    "label": "Writes",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "d2398fda-5bf6-698b-95a2-71e8ed9b7455",
+                "gridData": {
+                    "x": 24,
+                    "y": 50,
+                    "w": 24,
+                    "h": 12,
+                    "i": "d2398fda-5bf6-698b-95a2-71e8ed9b7455"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Go Runtime Heap",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "8d8d52f6-f05e-fc87-8e74-0d8c4dcc69de",
+                                        "accessors": [
+                                            "ea080111-0620-5dff-5b89-5c09c8510f2e",
+                                            "763ddeb4-6322-1369-449e-3befc831baa9"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Bytes",
+                                "yLeftTitle": "Bytes",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE go_memstats_heap_inuse_bytes IS NOT NULL OR go_memstats_heap_sys_bytes IS NOT NULL\n| STATS heap_inuse = MAX(LAST_OVER_TIME(go_memstats_heap_inuse_bytes)), heap_sys = MAX(LAST_OVER_TIME(go_memstats_heap_sys_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8d8d52f6-f05e-fc87-8e74-0d8c4dcc69de": {
+                                            "query": {
+                                                "esql": "TS metrics-influxdb.otel-*\n| WHERE data_stream.dataset == \"influxdb.otel\"\n| WHERE go_memstats_heap_inuse_bytes IS NOT NULL OR go_memstats_heap_sys_bytes IS NOT NULL\n| STATS heap_inuse = MAX(LAST_OVER_TIME(go_memstats_heap_inuse_bytes)), heap_sys = MAX(LAST_OVER_TIME(go_memstats_heap_sys_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "heap_inuse",
+                                                    "columnId": "ea080111-0620-5dff-5b89-5c09c8510f2e",
+                                                    "label": "Heap In-Use",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "heap_sys",
+                                                    "columnId": "763ddeb4-6322-1369-449e-3befc831baa9",
+                                                    "label": "Heap Sys",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "heap_inuse",
+                                                    "columnId": "ea080111-0620-5dff-5b89-5c09c8510f2e",
+                                                    "label": "Heap In-Use",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "heap_sys",
+                                                    "columnId": "763ddeb4-6322-1369-449e-3befc831baa9",
+                                                    "label": "Heap Sys",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "influxdb.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "influxdb.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": false,
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "fe98772b-264a-3eea-cada-9bdcfb1bffa9": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "fe98772b-264a-3eea-cada-9bdcfb1bffa9",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "host.name",
+                        "title": "Host",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "influxdb_otel-query-tasks",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "influxdb_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "influxdb_otel-http-storage",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_734931e1-659a-f39c-bfed-a19d5d609f46_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "influxdb_otel-query-tasks",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_c816241d-9b77-8f80-2947-cd86f857dd82_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_fe98772b-264a-3eea-cada-9bdcfb1bffa9:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

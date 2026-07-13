@@ -89,7 +89,7 @@ The order of action items on the checklist is advised to prevent the contributor
 
 3. Improve/correct spelling product names.
 
-    The correct spelling of product names simply makes better impression. The `import-beats` scripts uses the `fields.yml` file as the source of the correct spelling (`title` property), e.g. Mysql - MySQL, Nginx - NGINX, Aws - AWS.
+    The correct spelling of product names simply makes better impression. The `import-beats` scripts use the `fields.yml` file as the source of the correct spelling (`title` property), e.g. Mysql - MySQL, Nginx - NGINX, Aws - AWS.
 
     Keep in mind that this step requires reimporting package contents.
 

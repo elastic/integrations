@@ -1,0 +1,109 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects Kubernetes API requests where a user is impersonating a privileged cluster identity such as system:kube-controller-manager, system:admin, system:anonymous, or a member of the system:masters group. These identities have broad cluster-wide permissions including unrestricted access to all secrets, the ability to create tokens for any service account, schedule pods on any node, and modify RBAC policies. An attacker impersonating system:masters gains full cluster-admin equivalent access, while impersonating system:kube-controller-manager grants access to every secret in every namespace and the ability to mint service account tokens for lateral movement.",
+        "false_positives": [
+            "Break-glass admin tooling, security scanners, or approved controllers that legitimately use impersonation with privileged targets may match if not covered by exclusions. Map expected callers and expand `not user.name` filters as needed for your environment."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-kubernetes.audit_logs-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Kubernetes API Request Impersonating Privileged Identity",
+        "note": "## Triage and analysis\n\n### Investigating Kubernetes API Request Impersonating Privileged Identity\n\nCompare the real actor (user.name, groups, source.ip, user_agent.original) with impersonated\nfields (kubernetes.audit.impersonatedUser.username, kubernetes.audit.impersonatedUser.groups). Confirm whether\nimpersonation is authorized for that principal and target identity.\n\n### Possible investigation steps\n\n- Review kubernetes.audit.requestURI, kubernetes.audit.verb, and kubernetes.audit.objectRef for the scope of the\n  operation performed while impersonating.\n- Determine whether the real user or service account should have impersonate rights against the impersonated user\n  or group; inspect RBAC impersonate verb bindings and any recent changes.\n- Correlate with adjacent audit activity (secrets, tokens, RBAC writes, CSR approval) from the same source identity.\n- Hunt for repeated impersonation across namespaces or rapid pivoting after the event.\n\n### Response and remediation\n\n- Revoke or tighten impersonate permissions for unexpected identities; rotate credentials for any account that may\n  have abused impersonation.\n- If unauthorized, treat as cluster-wide credential risk: review secrets exposure, issued tokens, and RBAC drift;\n  engage incident response per policy.\n",
+        "query": "data_stream.dataset:kubernetes.audit_logs and \nkubernetes.audit.impersonatedUser.username:(* and not (\"eks-event-service:event-controller\" or eks\\:*)) and \nkubernetes.audit.annotations.authorization_k8s_io/decision:allow and \nkubernetes.audit.verb:(create or delete or get or list or patch or update) and \n(kubernetes.audit.impersonatedUser.username:(admin or cluster-admin or kubernetes-admin or \"system:admin\" or \"system:anonymous\" or \"system:apiserver\" or \"system:kube-controller-manager\" or \"system:kube-proxy\" or \"system:kube-scheduler\" or \"system:volume-scheduler\" or system\\:node\\:* or system\\:serviceaccount\\:kube-system\\:*) or kubernetes.audit.impersonatedUser.groups:(cluster-admin or \"system:cluster-admins\" or \"system:masters\")) and \nnot user.name:(acsService or aksService or masterclient or nodeclient or \"system:kube-controller-manager\" or \"system:kube-scheduler\" or arn\\:aws\\:iam\\:*\\:role/aws-service-role* or arn\\:aws\\:sts\\:*\\:assumed-role/AWSServiceRoleForAmazonEKS* or arn\\:aws\\:sts\\:*\\:assumed-role/AWSServiceRoleForAmazonEKSNodegroup* or eks\\:* or system\\:node\\:* or system\\:serviceaccount\\:kube-system\\:*)\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/access-authn-authz/authentication/#user-impersonation"
+        ],
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.80.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.annotations.authorization_k8s_io/decision",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.impersonatedUser.groups",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.impersonatedUser.username",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "abb7bc31-b865-4318-80a9-b9ee4edd57b6",
+        "severity": "high",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Domain: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1134",
+                        "name": "Access Token Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1134/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1134",
+                        "name": "Access Token Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1134/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "abb7bc31-b865-4318-80a9-b9ee4edd57b6_1",
+    "type": "security-rule"
+}

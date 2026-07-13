@@ -4,6 +4,8 @@
     - name: production
       type: group
       fields:
+        - name: action
+          type: keyword
         - name: redis_calls
           type: long
         - name: db_write_count
@@ -26,6 +28,25 @@
           type: long
         - name: mem_objects
           type: long
+        - name: meta
+          type: group
+          fields:
+            - name: user
+              type: keyword
+            - name: feature_category
+              type: keyword
+            - name: client_id
+              type: keyword
+            - name: organization_id
+              type: keyword
+            - name: caller_id
+              type: keyword
+            - name: remote_ip
+              type: ip
+            - name: user_id
+              type: long
+            - name: search.page
+              type: keyword
         - name: db_txn_count
           type: long
         - name: mem_total_bytes
@@ -41,6 +62,8 @@
         - name: db_ci_duration_s
           type: float
         - name: db_main_replica_wal_count
+          type: long
+        - name: db_main_replica_write_count
           type: long
         - name: db_primary_wal_count
           type: long
@@ -60,6 +83,10 @@
           type: long
         - name: db_ci_replica_cached_count
           type: long
+        - name: db_ci_replica_txn_max_duration_s
+          type: double
+        - name: db_ci_replica_write_count
+          type: long
         - name: format
           type: keyword
         - name: worker_id
@@ -67,6 +94,8 @@
         - name: db_ci_wal_cached_count
           type: long
         - name: db_main_replica_wal_cached_count
+          type: long
+        - name: db_main_write_count
           type: long
         - name: db_main_wal_cached_count
           type: long
@@ -84,6 +113,8 @@
           type: long
         - name: db_ci_txn_count
           type: long
+        - name: db_ci_txn_max_duration_s
+          type: double
         - name: db_primary_cached_count
           type: long
         - name: db_main_replica_txn_duration_s
@@ -92,8 +123,12 @@
           type: float
         - name: db_main_replica_count
           type: long
+        - name: db_main_replica_txn_max_duration_s
+          type: double
         - name: db_replica_duration_s
           type: float
+        - name: db_replica_txn_max_duration_s
+          type: double
         - name: db_replica_wal_cached_count
           type: long
         - name: db_count
@@ -112,7 +147,13 @@
           type: long
         - name: db_primary_txn_count
           type: long
+        - name: db_primary_txn_max_duration_s
+          type: double
+        - name: db_primary_write_count
+          type: long
         - name: controller
+          type: keyword
+        - name: correlation_id
           type: keyword
         - name: redis_feature_flag_duration_s
           type: float
@@ -122,30 +163,42 @@
           type: long
         - name: db_main_txn_duration_s
           type: float
+        - name: db_main_txn_max_duration_s
+          type: double
         - name: db_replica_txn_duration_s
           type: float
+        - name: db_replica_write_count
+          type: long
         - name: db_ci_replica_duration_s
           type: float
         - name: db_ci_wal_count
           type: long
+        - name: db_ci_write_count
+          type: long
+        - name: duration_s
+          type: double
+          description: Total time to retrieve the request.
         - name: time
           type: keyword
+        - name: exception
+          type: group
+          fields:
+            - name: backtrace
+              type: text
+            - name: class
+              type: keyword
+            - name: message
+              type: text
         - name: db_ci_txn_duration_s
           type: float
         - name: db_main_duration_s
           type: float
-        - name: meta.user
-          type: keyword
-        - name: meta.feature_category
-          type: keyword
         - name: redis_sessions_calls
           type: long
         - name: remote_ip
           type: ip
         - name: redis_db_load_balancing_duration_s
           type: float
-        - name: meta.client_id
-          type: keyword
         - name: queue_duration_s
           type: float
         - name: redis_sessions_allowed_cross_slot_calls
@@ -193,6 +246,20 @@
                   type: keyword
                 - name: last_name
                   type: keyword
+            - name: user
+              type: group
+              fields:
+                - name: login
+                  type: keyword
+                - name: password
+                  type: keyword
+        - name: path
+          type: keyword
+        - name: path_traversal_check_duration_s
+          type: double
+        - name: pid
+          type: keyword
+          description: The worker’s Linux process ID.
         - name: redis_sessions_duration_s
           type: float
         - name: redis_sessions_write_bytes
@@ -203,13 +270,7 @@
           type: long
         - name: target_duration_s
           type: float
-        - name: meta.caller_id
-          type: keyword
         - name: redis_allowed_cross_slot_calls
-          type: long
-        - name: meta.remote_ip
-          type: ip
-        - name: meta.user_id
           type: long
         - name: redis_db_load_balancing_calls
           type: long
@@ -231,16 +292,16 @@
             - name: used_fields
               type: keyword
         - name: redis_cache_duration_s
-          type: float
+          type: double
         - name: redis_cache_write_bytes
           type: long
         - name: redis_cache_read_bytes
           type: long
         - name: redis_cache_calls
           type: long
-        - name: location
+        - name: ua
           type: keyword
-        - name: meta.search.page
+        - name: location
           type: keyword
         - name: rate_limiting_gates
           type: keyword

@@ -1,0 +1,49 @@
+{
+  "id": "mongodb_otel-global-lock-contention",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "description": "Alerts when the global lock is held more than 500 ms/sec on average. High lock time severely limits throughput.",
+    "name": "[MongoDB OTel] Global lock contention",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "mongodb"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mongodb_otel-operations"
+        },
+        {
+          "id": "mongodb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## MongoDB global lock contention\n\n### What fired\n`RATE(mongodb.global_lock.time) > 500 ms/sec` during the window.\n\n### Why it matters\nMongoDB uses reader-writer locks at various scopes. Sustained high global lock time means operations are queued behind each other \u2014 throughput collapses.\n\n### Triage\n1. Look at write-heavy collections.\n2. Check WT cache pressure.\n\n### Remediation\n- Shard to spread locking.\n- Reduce write contention in hot collections.\n\n### Tuning\n- 500 ms/sec threshold; tune to workload.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "TS metrics-mongodbreceiver.otel-default\n// Scope to MongoDB OTel metrics\n| WHERE data_stream.dataset == \"mongodbreceiver.otel\"\n| WHERE metrics.mongodb.global_lock.time IS NOT NULL\n// Rate of global lock time held (ms/sec); high rate indicates contention\n| STATS lock_time_rate = SUM(RATE(metrics.mongodb.global_lock.time)) BY resource.attributes.server.address\n// Alert when lock held >500ms/sec on average (adjust for your workload)\n| WHERE lock_time_rate > 500\n| SORT lock_time_rate DESC\n| LIMIT 20"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

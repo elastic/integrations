@@ -229,12 +229,16 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: json.destination.session_owner
-      tag: convert_destination_session_owner_to_string
-      target_field: beyondtrust_pra.access_session.destination.session_owner
-      type: string
-      ignore_missing: true
+  - set:
+      field: beyondtrust_pra.access_session.destination.session_owner
+      tag: set_destination_session_owner_true
+      value: true
+      if: ctx.json?.destination?.session_owner == 1
+  - set:
+      field: beyondtrust_pra.access_session.destination.session_owner
+      tag: set_destination_session_owner_false
+      value: false
+      if: ctx.json?.destination?.session_owner == 0
   - rename:
       field: json.destination.type
       tag: rename_destination_type
@@ -672,12 +676,16 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: json.performed_by.session_owner
-      tag: convert_performed_by_session_owner_to_string
-      target_field: beyondtrust_pra.access_session.performed_by.session_owner
-      type: string
-      ignore_missing: true
+  - set:
+      field: beyondtrust_pra.access_session.performed_by.session_owner
+      tag: set_performed_by_session_owner_true
+      value: true
+      if: ctx.json?.performed_by?.session_owner == 1
+  - set:
+      field: beyondtrust_pra.access_session.performed_by.session_owner
+      tag: set_performed_by_session_owner_false
+      value: false
+      if: ctx.json?.performed_by?.session_owner == 0
   - rename:
       field: json.performed_by.type
       tag: rename_performed_by_type
@@ -759,6 +767,16 @@ processors:
       field: json.session.file_transfer_count
       tag: convert_session_file_transfer_count_to_long
       target_field: beyondtrust_pra.access_session.session.file_transfer_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.session.file_delete_count
+      tag: convert_session_file_delete_count_to_long
+      target_field: beyondtrust_pra.access_session.session.file_delete_count
       type: long
       ignore_missing: true
       on_failure:
@@ -1022,24 +1040,6 @@ processors:
       field: json
       tag: remove_json
       ignore_missing: true
-  - script:
-      tag: script_to_drop_null_values
-      lang: painless
-      description: Drops null/empty values recursively.
-      source: |-
-        boolean drop(Object object) {
-          if (object == null || object == '') {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(v -> drop(v));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(v -> drop(v));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        drop(ctx);
   - set:
       field: event.kind
       tag: set_pipeline_error_into_event_kind

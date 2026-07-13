@@ -23,7 +23,7 @@ The **Stormshield SNS logs** integration collects a variety of security and syst
 
 This integration is compatible with the following third-party vendor systems:
 - **Stormshield Network Security (SNS)** firewalls running the unified firmware base.
-- **SNS v4.x** is the primarily documented and tested version for these log formats.
+- **SNS 4.x and SNS 5.x**, which share the same WELF key-value audit log format.
 
 ## Scaling and Performance
 
@@ -57,19 +57,19 @@ To configure Stormshield Network Security (SNS) to forward logs to the Elastic A
 
 1. Log in to the Stormshield Network Security web administration interface.
 2. Navigate to the **CONFIGURATION** tab on the left sidebar.
-3. Go to **NOTIFICATIONS > LOGS - SYSLOG - IPFIX**.
+3. Go to **NOTIFICATIONS → LOGS - SYSLOG - IPFIX**.
 4. In the **Syslog** section, ensure the service is enabled by switching the status to **ON**.
 5. Select a **Profile** slot to edit (e.g., Profile 1).
 6. In the **Syslog server** field, select or create a host object corresponding to the Elastic Agent host.
 7. Enter the **Port** number matching your Elastic Agent configuration (e.g., `514` for UDP or `601` for TCP).
 8. Select the **Protocol** (**UDP** or **TCP**) that matches your integration input.
-9. Choose the **Format**: **RFC5424** is recommended for modern logging, though **Legacy** (BSD) is also supported.
+9. Set the **Format** to **RFC5424**. The integration expects RFC5424 messages; the **Legacy** and **Legacy long** formats are not supported at this time.
 10. In the **Advanced properties** section, enable the specific log families you wish to send. Ensure **Filter Policy**, **Administration**, **System**, and **Alarms** are active.
 11. Click **Apply** to save the syslog configuration.
 
 ### Enabling Traffic Logs for Specific Rules:
 
-1. Navigate to **Configuration > Security policy > Filter - NAT**.
+1. Navigate to **Configuration → Security policy → Filter - NAT**.
 2. Identify the security rules for which you want to collect logs.
 3. Double-click a rule to open its properties.
 4. Go to the **Action** menu or the General tab.
@@ -84,7 +84,7 @@ To configure Stormshield Network Security (SNS) to forward logs to the Elastic A
 
 ## Kibana set up steps
 
-1. In Kibana, navigate to **Management > Integrations**.
+1. In Kibana, navigate to **Management → Integrations**.
 2. Search for and select **StormShield SNS**.
 3. Click **Add StormShield SNS**.
 4. Configure the inputs based on your SNS configuration:
@@ -122,15 +122,15 @@ After configuration is complete, verify that data is flowing correctly.
 - **Trigger Alarm:** If a test environment is available, attempt a restricted access pattern (such as an Nmap scan) to trigger an intrusion detection alarm.
 
 ### 2. Check Data in Kibana:
-1. Navigate to **Analytics > Discover**.
+1. Navigate to **Analytics → Discover**.
 2. Select the `logs-*` data view.
 3. Enter the KQL filter: `data_stream.dataset : "stormshield.log"`
 4. Verify logs appear. Expand a log entry and confirm these fields:
    - `event.dataset` (should be `stormshield.log`)
-   - `source.ip` and/or `destination.ip`
-   - `event.action` or `event.outcome`
+   - `source.ip`, `destination.ip`, or both
+   - `event.action`
    - `message` (the raw log payload)
-5. Navigate to **Analytics > Dashboards** and search for "StormShield SNS" to view pre-built visualizations.
+5. Navigate to **Analytics → Dashboards** and search for "StormShield SNS" to view pre-built visualizations.
 
 # Troubleshooting
 

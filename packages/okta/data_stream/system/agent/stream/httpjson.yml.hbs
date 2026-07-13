@@ -29,8 +29,7 @@ request.timeout: {{http_client_timeout}}
 request.proxy_url: {{proxy_url}}
 {{/if}}
 
-{{! oin flow auth.oauth2 section}}
-{{#if oin_app}}
+{{! OIN app flow: api_key is used as the OAuth2 client secret alongside domain/client credentials}}
 {{#if api_key}}
 {{#if okta_domain_url}}
 {{#if client_id}}
@@ -45,9 +44,8 @@ auth.oauth2.scopes:
 {{/if}}
 {{/if}}
 {{/if}}
-{{/if}}
 
-{{! conditional auth.oauth2 section}}
+{{! OAuth2 flow: no api_key, uses JWK/PEM credentials}}
 {{#unless api_key}}
 {{#if okta_domain_url}}
 {{#if client_id}}
@@ -76,17 +74,13 @@ auth.oauth2.okta.jwk_pem: {{escape_string key_pem}}
 
 {{! API Reference: https://developer.okta.com/docs/api/openapi/okta-management/management/tag/SystemLog/#tag/SystemLog }}
 request.transforms:
-{{#unless oin_app}}
-{{#unless client_id}}
+{{#if api_key}}
 {{#unless okta_domain_url}}
-{{#if api_key }}
   - set:
       target: header.Authorization
       value: "SSWS {{api_key}}"
+{{/unless}}
 {{/if}}
-{{/unless}}
-{{/unless}}
-{{/unless}}
   - set:
       target: url.params.limit
       value: '{{limit}}'

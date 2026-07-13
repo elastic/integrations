@@ -1,0 +1,179 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to dump Wireless saved access keys in clear text using the Windows built-in utility Netsh.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.args",
+                "process.pe.original_file_name",
+                "process.parent.entity_id",
+                "process.parent.pid",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Wireless Credential Dumping using Netsh Command",
+        "note": "## Triage and analysis\n\n### Investigating Wireless Credential Dumping using Netsh Command\n\n#### Possible investigation steps\n\n- What did the alert-local netsh command expose or export?\n  - Focus: `process.command_line`, `process.executable`, `process.pe.original_file_name`, `process.code_signature.subject_name`.\n  - Implication: escalate when `key=clear` appears with bulk profile listing, `export profile`, omitted profile name, remote `-r`, script-file `-f`, or redirection; lower concern only when one local profile display fits recognized support or recovery. A signed Microsoft binary does not clear credential exposure.\n\n- Does the launcher, session, and user context explain why this account retrieved a wireless key on this host?\n  - Focus: `process.parent.executable`, `process.parent.command_line`, `process.Ext.session_info.logon_type`, `user.id`, `host.id`.\n  - Implication: escalate when the parent is a shell, script host, remote-admin chain, document-spawned process, unexpected service identity, or unusual device-support user; lower concern when an interactive support shell or endpoint-management parent on the same host explains the exact command.\n\n- Did the same launcher fan out from one display command into broader wireless-profile collection?\n  - Why: attackers often enumerate profile names with `wlan show profiles`, then display or export cleartext secrets; same-launcher enumeration without `key=clear` is precursor discovery.\n  - Focus: related process starts on `host.id` and `process.parent.entity_id`, using `process.executable` and `process.command_line`. !{investigate{\"description\":\"\",\"label\":\"Process starts from the same parent\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the parent also runs profile enumeration, repeated `show profile`, `export profile`, or export without `name=`; keep review local when activity stays isolated to one profile display.\n  - Hint: If `process.parent.entity_id` is absent, pivot with `host.id`, `process.parent.pid`, and the alert window.\n\n- Did the launcher or siblings stage recovered wireless material?\n  - Focus: same-parent process starts on `host.id`, using `process.executable` and `process.command_line`; file events from `host.id` plus `process.entity_id` or weaker `process.pid`, reviewing `file.path`, `file.extension`, and `file.size`. !{investigate{\"description\":\"\",\"label\":\"File activity for the alerting process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when XML, redirected text, ZIP files, copied profiles, archive tools, copy utilities, cloud-sync clients, shell redirection, or script wrappers stage material for later use or transfer; missing file telemetry is unresolved, not benign. A clean file view lowers concern only when command and lineage also stay limited.\n\n- If local evidence remains suspicious or unresolved, do related alerts change scope or urgency?\n  - Focus: related alerts for `user.id`, especially credential-access, lateral-movement, staging, remote-access, or persistence findings. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden response when the same user or host also shows dumping, staging, remote access, or persistence; keep scope local when related alerts are absent and local evidence supports one bounded workflow.\n  - Hint: If the user view is sparse or the host is shared, review alerts for the same `host.id`. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n\n- Escalate when command intent, lineage, same-launcher collection, staging, file artifacts, or related alerts show bulk credential access or broader compromise; close only when binary identity, command scope, parent workflow, user-host context, and recovery records bind to one recognized support or recovery action; preserve artifacts and escalate when evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Helpdesk, field-support, device-recovery, imaging, hardware replacement, or Wi-Fi profile migration can retrieve one saved wireless key. Confirm signed netsh identity, one local profile display or expected export in `process.command_line`, support-tooling parentage, and no bulk enumeration, archive staging, or transfer; use asset or ticket records only to corroborate that exact action, otherwise require the same executable, parent, command pattern, `user.id`, `host.id`, and quiet surrounding activity across prior alerts from this rule.\n- Before creating an exception, validate recurrence of the same `process.executable`, `process.parent.executable`, `process.command_line` pattern, `user.id`, and `host.id` with the same limited scope. Avoid exceptions on `process.name`, `key=clear` alone, the host alone, or all netsh wireless activity.\n\n### Response and remediation\n\n- If confirmed benign, reverse any temporary containment and document which evidence matched the support or recovery workflow: command scope, binary identity, parent workflow, `user.id`, `host.id`, and absence of collection or staging. Create an exception only after the same limited pattern recurs.\n- If suspicious but unconfirmed, preserve the alert record, case export, volatile process context, `process.entity_id`, `process.command_line`, `process.parent.command_line`, sibling process starts, staged artifacts when recovered, and affected `user.id` and `host.id`. Start with reversible containment such as temporary wireless or network restrictions; use host isolation only if staging, export, transfer, or broader compromise is evident.\n- If confirmed malicious, isolate the endpoint or terminate the offending process through endpoint-response tooling after recording `process.entity_id`, `process.command_line`, parent context, exposed profile names, staged artifacts, and related-alert evidence. If tooling is unavailable, escalate with the preserved evidence set.\n- Reset or rotate credentials exposed by the dumped wireless profile. For PSK environments, rotate the affected SSID key; for 802.1X environments, revoke or reissue affected certificates, reset cached credentials, and verify whether the exposed profile could grant broader network access.\n- Before deleting artifacts, review other hosts and users for the same `process.command_line`, parent pattern, or exported profile artifacts so scoping finishes before evidence is destroyed.\n- Eradicate only scripts, batch files, XML exports, archives, and persistence mechanisms found during the investigation, then remediate the initial access path that allowed the key retrieval.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n (process.name : \"netsh.exe\" or ?process.pe.original_file_name == \"netsh.exe\") and\n  process.args : \"wlan\" and process.args : \"key*clear\"\n",
+        "references": [
+            "https://learn.microsoft.com/en-us/windows-server/networking/technologies/netsh/netsh-contexts",
+            "https://www.geeksforgeeks.org/how-to-find-the-wi-fi-password-using-cmd-in-windows/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "2de87d72-ee0c-43e2-b975-5f0b029ac600",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Discovery",
+            "Data Source: Elastic Endgame",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/"
+                    },
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.001",
+                                "name": "Credentials In Files",
+                                "reference": "https://attack.mitre.org/techniques/T1552/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1555",
+                        "name": "Credentials from Password Stores",
+                        "reference": "https://attack.mitre.org/techniques/T1555/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1016",
+                        "name": "System Network Configuration Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1016/"
+                    },
+                    {
+                        "id": "T1082",
+                        "name": "System Information Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1082/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 217
+    },
+    "id": "2de87d72-ee0c-43e2-b975-5f0b029ac600_217",
+    "type": "security-rule"
+}

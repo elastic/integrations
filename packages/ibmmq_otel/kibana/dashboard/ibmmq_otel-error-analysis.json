@@ -1,0 +1,2614 @@
+{
+    "attributes": {
+        "title": "[IBM MQ OTel] Error Analysis",
+        "description": "Comprehensive error monitoring for IBM MQ queue managers covering all failed API operations, transaction rollbacks, expired messages, and FDC file generation.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "d16d89a9-684e-0340-d3b9-d6235eafdcda",
+                                "order": 1,
+                                "label": "Message Traffic",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_d16d89a9-684e-0340-d3b9-d6235eafdcda_dashboard"
+                            },
+                            {
+                                "id": "34ac4a25-a459-0027-aab9-c29ed2019add",
+                                "order": 2,
+                                "label": "Error Analysis",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_34ac4a25-a459-0027-aab9-c29ed2019add_dashboard"
+                            },
+                            {
+                                "id": "efecfd2b-d524-b83b-c3cd-35d5623b9342",
+                                "order": 3,
+                                "label": "Resources & Performance",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_efecfd2b-d524-b83b-c3cd-35d5623b9342_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [IBM MQ OTel] Error Analysis\n\nThis dashboard monitors all IBM MQ error signals:\n- Core messaging failures (put, get, browse)\n- Connection and object access failures\n- Pub/sub and subscription errors\n- Administrative operation failures\n- Transaction rollback rates vs commits\n- Expired messages and FDC file generation\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "8c4cbbaa-2650-60ed-1bda-be7906f4829c",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "8c4cbbaa-2650-60ed-1bda-be7906f4829c"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Failed Put Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "96e0bea8-4834-8b90-16fd-b6d4164580f9",
+                                "layerType": "data",
+                                "metricAccessor": "94fff297-56b2-d8dc-69d4-d915d63a7a08",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| STATS f_put = SUM(RATE(ibmmq_qmgr_failed_mqput_total)), f_put1 = SUM(RATE(ibmmq_qmgr_failed_mqput1_total))\n| EVAL failed_put_rate = COALESCE(f_put, 0) + COALESCE(f_put1, 0)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "96e0bea8-4834-8b90-16fd-b6d4164580f9": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| STATS f_put = SUM(RATE(ibmmq_qmgr_failed_mqput_total)), f_put1 = SUM(RATE(ibmmq_qmgr_failed_mqput1_total))\n| EVAL failed_put_rate = COALESCE(f_put, 0) + COALESCE(f_put1, 0)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "failed_put_rate",
+                                                    "columnId": "94fff297-56b2-d8dc-69d4-d915d63a7a08",
+                                                    "label": "Failed Puts",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "failed_put_rate",
+                                                    "columnId": "94fff297-56b2-d8dc-69d4-d915d63a7a08",
+                                                    "label": "Failed Puts",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "a7793b9f-20e8-ee45-9b6d-adad203f2337",
+                "gridData": {
+                    "x": 24,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "a7793b9f-20e8-ee45-9b6d-adad203f2337"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Failed Get Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "e6ac1411-22ae-9590-b713-f834d8a81c36",
+                                "layerType": "data",
+                                "metricAccessor": "5c583779-86b2-9980-b69d-3bfe6664e377",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| STATS f_get = SUM(RATE(ibmmq_qmgr_failed_mqget_total)), f_browse = SUM(RATE(ibmmq_qmgr_failed_browse_total))\n| EVAL failed_get_rate = COALESCE(f_get, 0) + COALESCE(f_browse, 0)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "e6ac1411-22ae-9590-b713-f834d8a81c36": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| STATS f_get = SUM(RATE(ibmmq_qmgr_failed_mqget_total)), f_browse = SUM(RATE(ibmmq_qmgr_failed_browse_total))\n| EVAL failed_get_rate = COALESCE(f_get, 0) + COALESCE(f_browse, 0)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "failed_get_rate",
+                                                    "columnId": "5c583779-86b2-9980-b69d-3bfe6664e377",
+                                                    "label": "Failed Gets",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "failed_get_rate",
+                                                    "columnId": "5c583779-86b2-9980-b69d-3bfe6664e377",
+                                                    "label": "Failed Gets",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "4dc8c2d8-f97e-3f8a-3844-49b313cda832",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "4dc8c2d8-f97e-3f8a-3844-49b313cda832"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Failed Connection Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "48040175-13ec-9139-6d80-8b04117d3626",
+                                "layerType": "data",
+                                "metricAccessor": "e736b6bb-748e-b8d5-0272-82b7a3f03f82",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| WHERE ibmmq_qmgr_failed_mqconn_mqconnx_total IS NOT NULL\n| STATS failed_conn = SUM(RATE(ibmmq_qmgr_failed_mqconn_mqconnx_total))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "48040175-13ec-9139-6d80-8b04117d3626": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| WHERE ibmmq_qmgr_failed_mqconn_mqconnx_total IS NOT NULL\n| STATS failed_conn = SUM(RATE(ibmmq_qmgr_failed_mqconn_mqconnx_total))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "failed_conn",
+                                                    "columnId": "e736b6bb-748e-b8d5-0272-82b7a3f03f82",
+                                                    "label": "Failed Connects",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "failed_conn",
+                                                    "columnId": "e736b6bb-748e-b8d5-0272-82b7a3f03f82",
+                                                    "label": "Failed Connects",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "8c95de0b-8d1e-2dd6-87eb-3c0253e6a5fc",
+                "gridData": {
+                    "x": 40,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "8c95de0b-8d1e-2dd6-87eb-3c0253e6a5fc"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Rollback Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "75e00e5c-2f0a-731c-5011-155a5de5921a",
+                                "layerType": "data",
+                                "metricAccessor": "fb86ba8f-23df-d25e-d3bc-c4fac2b0143a",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| WHERE ibmmq_qmgr_rollback_total IS NOT NULL\n| STATS rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "75e00e5c-2f0a-731c-5011-155a5de5921a": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| WHERE ibmmq_qmgr_rollback_total IS NOT NULL\n| STATS rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rollback_rate",
+                                                    "columnId": "fb86ba8f-23df-d25e-d3bc-c4fac2b0143a",
+                                                    "label": "Rollbacks",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rollback_rate",
+                                                    "columnId": "fb86ba8f-23df-d25e-d3bc-c4fac2b0143a",
+                                                    "label": "Rollbacks",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "02738750-8801-1529-8dc5-761c62703c5b",
+                "gridData": {
+                    "x": 16,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "02738750-8801-1529-8dc5-761c62703c5b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Expired Messages Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "c5c867fa-751c-d43f-ec0e-d2eaaba592c2",
+                                "layerType": "data",
+                                "metricAccessor": "b1e249f7-1385-4050-79ad-038d7d4dd270",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| WHERE ibmmq_qmgr_expired_message_total IS NOT NULL\n| STATS expired_rate = SUM(RATE(ibmmq_qmgr_expired_message_total))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "c5c867fa-751c-d43f-ec0e-d2eaaba592c2": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| WHERE ibmmq_qmgr_expired_message_total IS NOT NULL\n| STATS expired_rate = SUM(RATE(ibmmq_qmgr_expired_message_total))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "expired_rate",
+                                                    "columnId": "b1e249f7-1385-4050-79ad-038d7d4dd270",
+                                                    "label": "Expired Msgs",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "expired_rate",
+                                                    "columnId": "b1e249f7-1385-4050-79ad-038d7d4dd270",
+                                                    "label": "Expired Msgs",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "9313adce-7373-9685-ed2f-5327d15c8379",
+                "gridData": {
+                    "x": 24,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "9313adce-7373-9685-ed2f-5327d15c8379"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "FDC Files",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "28fdf49b-daa6-ab01-2a61-433dfe5b428c",
+                                "layerType": "data",
+                                "metricAccessor": "fee27a07-9aa2-fc10-10a5-3ab0853d9e80",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| WHERE ibmmq_qmgr_fdc_files IS NOT NULL\n| STATS fdc_count = SUM(LAST_OVER_TIME(ibmmq_qmgr_fdc_files))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "28fdf49b-daa6-ab01-2a61-433dfe5b428c": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| WHERE ibmmq_qmgr_fdc_files IS NOT NULL\n| STATS fdc_count = SUM(LAST_OVER_TIME(ibmmq_qmgr_fdc_files))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "fdc_count",
+                                                    "columnId": "fee27a07-9aa2-fc10-10a5-3ab0853d9e80",
+                                                    "label": "FDC Files",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "fdc_count",
+                                                    "columnId": "fee27a07-9aa2-fc10-10a5-3ab0853d9e80",
+                                                    "label": "FDC Files",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c0d88a2d-9aad-1108-c5cc-df184d660275",
+                "gridData": {
+                    "x": 32,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "c0d88a2d-9aad-1108-c5cc-df184d660275"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Failed Open Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "f93cdacb-6827-7078-25d6-7fd7dbc3d6e4",
+                                "layerType": "data",
+                                "metricAccessor": "7afc702d-2981-3a68-40cf-b60405aa2daa",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| WHERE ibmmq_qmgr_failed_mqopen_total IS NOT NULL\n| STATS failed_open = SUM(RATE(ibmmq_qmgr_failed_mqopen_total))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f93cdacb-6827-7078-25d6-7fd7dbc3d6e4": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| WHERE ibmmq_qmgr_failed_mqopen_total IS NOT NULL\n| STATS failed_open = SUM(RATE(ibmmq_qmgr_failed_mqopen_total))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "failed_open",
+                                                    "columnId": "7afc702d-2981-3a68-40cf-b60405aa2daa",
+                                                    "label": "Failed Opens",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "failed_open",
+                                                    "columnId": "7afc702d-2981-3a68-40cf-b60405aa2daa",
+                                                    "label": "Failed Opens",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "bf2c3dde-3d19-a494-781e-ac29a0fad9f4",
+                "gridData": {
+                    "x": 40,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "bf2c3dde-3d19-a494-781e-ac29a0fad9f4"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Failed Topic Puts",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "684a7c61-fbf6-b83f-9db9-8527a4eb41a4",
+                                "layerType": "data",
+                                "metricAccessor": "02fedb7c-eafa-641b-8d1f-c167efc52a75",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| WHERE ibmmq_qmgr_failed_topic_mqput_mqput1_total IS NOT NULL\n| STATS failed_topic = SUM(RATE(ibmmq_qmgr_failed_topic_mqput_mqput1_total))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "684a7c61-fbf6-b83f-9db9-8527a4eb41a4": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| WHERE ibmmq_qmgr_failed_topic_mqput_mqput1_total IS NOT NULL\n| STATS failed_topic = SUM(RATE(ibmmq_qmgr_failed_topic_mqput_mqput1_total))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "failed_topic",
+                                                    "columnId": "02fedb7c-eafa-641b-8d1f-c167efc52a75",
+                                                    "label": "Failed Topic Puts",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "failed_topic",
+                                                    "columnId": "02fedb7c-eafa-641b-8d1f-c167efc52a75",
+                                                    "label": "Failed Topic Puts",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s",
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "435b6e7d-7991-5d7d-99df-153d6dcc8f89",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 24,
+                    "h": 12,
+                    "i": "435b6e7d-7991-5d7d-99df-153d6dcc8f89"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Core Messaging Failures Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "c1207fc7-da87-a189-cafa-cd5ac9d8a264",
+                                        "accessors": [
+                                            "9b2e1bbe-3d27-d076-be21-c7c425e07382",
+                                            "d1e6026d-44a4-d2af-10a5-753ca96469ec",
+                                            "ab02f7c7-6eb8-303d-dc2b-87e05feaacfc",
+                                            "9f69baee-f7e9-6cd4-0693-9e50fe68adb7"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| STATS failed_put = SUM(RATE(ibmmq_qmgr_failed_mqput_total)), failed_put1 = SUM(RATE(ibmmq_qmgr_failed_mqput1_total)), failed_get = SUM(RATE(ibmmq_qmgr_failed_mqget_total)), failed_browse = SUM(RATE(ibmmq_qmgr_failed_browse_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "c1207fc7-da87-a189-cafa-cd5ac9d8a264": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| STATS failed_put = SUM(RATE(ibmmq_qmgr_failed_mqput_total)), failed_put1 = SUM(RATE(ibmmq_qmgr_failed_mqput1_total)), failed_get = SUM(RATE(ibmmq_qmgr_failed_mqget_total)), failed_browse = SUM(RATE(ibmmq_qmgr_failed_browse_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "failed_put",
+                                                    "columnId": "9b2e1bbe-3d27-d076-be21-c7c425e07382",
+                                                    "label": "Failed MQPUT",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_put1",
+                                                    "columnId": "d1e6026d-44a4-d2af-10a5-753ca96469ec",
+                                                    "label": "Failed MQPUT1",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_get",
+                                                    "columnId": "ab02f7c7-6eb8-303d-dc2b-87e05feaacfc",
+                                                    "label": "Failed MQGET",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_browse",
+                                                    "columnId": "9f69baee-f7e9-6cd4-0693-9e50fe68adb7",
+                                                    "label": "Failed Browse",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "failed_put",
+                                                    "columnId": "9b2e1bbe-3d27-d076-be21-c7c425e07382",
+                                                    "label": "Failed MQPUT",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_put1",
+                                                    "columnId": "d1e6026d-44a4-d2af-10a5-753ca96469ec",
+                                                    "label": "Failed MQPUT1",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_get",
+                                                    "columnId": "ab02f7c7-6eb8-303d-dc2b-87e05feaacfc",
+                                                    "label": "Failed MQGET",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_browse",
+                                                    "columnId": "9f69baee-f7e9-6cd4-0693-9e50fe68adb7",
+                                                    "label": "Failed Browse",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e6c67eb0-eb12-0fa3-7af4-aade4608d421",
+                "gridData": {
+                    "x": 24,
+                    "y": 14,
+                    "w": 24,
+                    "h": 12,
+                    "i": "e6c67eb0-eb12-0fa3-7af4-aade4608d421"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Connection & Access Failures Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "be8e15ee-15c1-c9e6-43f1-03386b993bca",
+                                        "accessors": [
+                                            "b7324ed7-f686-8447-bd41-8cb817622d3a",
+                                            "31124fbb-c599-27e9-5c6a-ff41e1856445",
+                                            "bc58b4a9-d988-6ab4-72c7-21f3c627bbdc"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| STATS failed_conn = SUM(RATE(ibmmq_qmgr_failed_mqconn_mqconnx_total)), failed_open = SUM(RATE(ibmmq_qmgr_failed_mqopen_total)), failed_close = SUM(RATE(ibmmq_qmgr_failed_mqclose_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "be8e15ee-15c1-c9e6-43f1-03386b993bca": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| STATS failed_conn = SUM(RATE(ibmmq_qmgr_failed_mqconn_mqconnx_total)), failed_open = SUM(RATE(ibmmq_qmgr_failed_mqopen_total)), failed_close = SUM(RATE(ibmmq_qmgr_failed_mqclose_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "failed_conn",
+                                                    "columnId": "b7324ed7-f686-8447-bd41-8cb817622d3a",
+                                                    "label": "Failed Connect",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_open",
+                                                    "columnId": "31124fbb-c599-27e9-5c6a-ff41e1856445",
+                                                    "label": "Failed Open",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_close",
+                                                    "columnId": "bc58b4a9-d988-6ab4-72c7-21f3c627bbdc",
+                                                    "label": "Failed Close",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "failed_conn",
+                                                    "columnId": "b7324ed7-f686-8447-bd41-8cb817622d3a",
+                                                    "label": "Failed Connect",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_open",
+                                                    "columnId": "31124fbb-c599-27e9-5c6a-ff41e1856445",
+                                                    "label": "Failed Open",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_close",
+                                                    "columnId": "bc58b4a9-d988-6ab4-72c7-21f3c627bbdc",
+                                                    "label": "Failed Close",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6e21c415-39f0-ed6c-8aa0-9aad638bec4c",
+                "gridData": {
+                    "x": 0,
+                    "y": 26,
+                    "w": 24,
+                    "h": 12,
+                    "i": "6e21c415-39f0-ed6c-8aa0-9aad638bec4c"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Pub/Sub Failures Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "1350e9bf-f56e-0ffa-5b4b-c751ac082faa",
+                                        "accessors": [
+                                            "8d94108f-ca14-f27f-961c-8d9ce8d750d2",
+                                            "d7b7b03a-d38d-65da-b8d9-124581023353",
+                                            "b670f834-56eb-fb3c-37c2-b4927baa9a33"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| STATS failed_topic_put = SUM(RATE(ibmmq_qmgr_failed_topic_mqput_mqput1_total)), failed_sub_create = SUM(RATE(ibmmq_qmgr_failed_subscription_create_alter_resume_total)), failed_sub_delete = SUM(RATE(ibmmq_qmgr_failed_subscription_delete_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "1350e9bf-f56e-0ffa-5b4b-c751ac082faa": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| STATS failed_topic_put = SUM(RATE(ibmmq_qmgr_failed_topic_mqput_mqput1_total)), failed_sub_create = SUM(RATE(ibmmq_qmgr_failed_subscription_create_alter_resume_total)), failed_sub_delete = SUM(RATE(ibmmq_qmgr_failed_subscription_delete_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "failed_topic_put",
+                                                    "columnId": "8d94108f-ca14-f27f-961c-8d9ce8d750d2",
+                                                    "label": "Failed Topic Put",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_sub_create",
+                                                    "columnId": "d7b7b03a-d38d-65da-b8d9-124581023353",
+                                                    "label": "Failed Sub Create/Alter",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_sub_delete",
+                                                    "columnId": "b670f834-56eb-fb3c-37c2-b4927baa9a33",
+                                                    "label": "Failed Sub Delete",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "failed_topic_put",
+                                                    "columnId": "8d94108f-ca14-f27f-961c-8d9ce8d750d2",
+                                                    "label": "Failed Topic Put",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_sub_create",
+                                                    "columnId": "d7b7b03a-d38d-65da-b8d9-124581023353",
+                                                    "label": "Failed Sub Create/Alter",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_sub_delete",
+                                                    "columnId": "b670f834-56eb-fb3c-37c2-b4927baa9a33",
+                                                    "label": "Failed Sub Delete",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "d80aab03-5c1b-d557-f0a0-813950b2a130",
+                "gridData": {
+                    "x": 24,
+                    "y": 26,
+                    "w": 24,
+                    "h": 12,
+                    "i": "d80aab03-5c1b-d557-f0a0-813950b2a130"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Administrative Failures Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "d2cdcd67-2a3d-00cf-d222-9193b566e9ce",
+                                        "accessors": [
+                                            "b395bd4c-9fee-4726-26c9-458406170909",
+                                            "366d6416-0bd1-03d7-2ebe-a818a51e9f9c",
+                                            "eccb2c98-b939-5ee6-cd49-0bd789346369",
+                                            "7186226c-f662-7557-8f2c-4b371055c0b4"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| STATS failed_inq = SUM(RATE(ibmmq_qmgr_failed_mqinq_total)), failed_set = SUM(RATE(ibmmq_qmgr_failed_mqset_total)), failed_cb = SUM(RATE(ibmmq_qmgr_failed_mqcb_total)), failed_subrq = SUM(RATE(ibmmq_qmgr_failed_mqsubrq_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "d2cdcd67-2a3d-00cf-d222-9193b566e9ce": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| STATS failed_inq = SUM(RATE(ibmmq_qmgr_failed_mqinq_total)), failed_set = SUM(RATE(ibmmq_qmgr_failed_mqset_total)), failed_cb = SUM(RATE(ibmmq_qmgr_failed_mqcb_total)), failed_subrq = SUM(RATE(ibmmq_qmgr_failed_mqsubrq_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "failed_inq",
+                                                    "columnId": "b395bd4c-9fee-4726-26c9-458406170909",
+                                                    "label": "Failed Inquire",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_set",
+                                                    "columnId": "366d6416-0bd1-03d7-2ebe-a818a51e9f9c",
+                                                    "label": "Failed Set",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_cb",
+                                                    "columnId": "eccb2c98-b939-5ee6-cd49-0bd789346369",
+                                                    "label": "Failed Callback",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_subrq",
+                                                    "columnId": "7186226c-f662-7557-8f2c-4b371055c0b4",
+                                                    "label": "Failed SubRequest",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "failed_inq",
+                                                    "columnId": "b395bd4c-9fee-4726-26c9-458406170909",
+                                                    "label": "Failed Inquire",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_set",
+                                                    "columnId": "366d6416-0bd1-03d7-2ebe-a818a51e9f9c",
+                                                    "label": "Failed Set",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_cb",
+                                                    "columnId": "eccb2c98-b939-5ee6-cd49-0bd789346369",
+                                                    "label": "Failed Callback",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "failed_subrq",
+                                                    "columnId": "7186226c-f662-7557-8f2c-4b371055c0b4",
+                                                    "label": "Failed SubRequest",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "222bfb5a-4391-cf45-2e04-01a2b52d5453",
+                "gridData": {
+                    "x": 0,
+                    "y": 38,
+                    "w": 24,
+                    "h": 12,
+                    "i": "222bfb5a-4391-cf45-2e04-01a2b52d5453"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Commit vs Rollback Rate Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "29674102-6a61-9132-dd2f-a894cf9d2b6f",
+                                        "accessors": [
+                                            "9fcc3079-3f9a-1b6f-14a8-e548007f6ffe",
+                                            "fef52637-e5d9-5839-f705-d1cdb2f557c1"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "Commits"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#54b399"
+                                                    },
+                                                    "touched": false
+                                                },
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "Rollbacks"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#cc5642"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| STATS commit_rate = SUM(RATE(ibmmq_qmgr_commit_total)), rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "29674102-6a61-9132-dd2f-a894cf9d2b6f": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| STATS commit_rate = SUM(RATE(ibmmq_qmgr_commit_total)), rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "commit_rate",
+                                                    "columnId": "9fcc3079-3f9a-1b6f-14a8-e548007f6ffe",
+                                                    "label": "Commits",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "rollback_rate",
+                                                    "columnId": "fef52637-e5d9-5839-f705-d1cdb2f557c1",
+                                                    "label": "Rollbacks",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "commit_rate",
+                                                    "columnId": "9fcc3079-3f9a-1b6f-14a8-e548007f6ffe",
+                                                    "label": "Commits",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "rollback_rate",
+                                                    "columnId": "fef52637-e5d9-5839-f705-d1cdb2f557c1",
+                                                    "label": "Rollbacks",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "97ad3d14-e606-9dd1-fa5d-aef6d8dcc957",
+                "gridData": {
+                    "x": 24,
+                    "y": 38,
+                    "w": 24,
+                    "h": 12,
+                    "i": "97ad3d14-e606-9dd1-fa5d-aef6d8dcc957"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Expired Messages & FDC Files Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "e2514c51-e3d8-e9e2-c31e-e186645b638d",
+                                        "accessors": [
+                                            "1beb041b-54ad-3559-f5a8-12f8ca296a87",
+                                            "8f2df849-0247-bbf9-f227-5919a2d55a84"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| STATS expired = SUM(RATE(ibmmq_qmgr_expired_message_total)), fdc = MAX(LAST_OVER_TIME(ibmmq_qmgr_fdc_files)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "e2514c51-e3d8-e9e2-c31e-e186645b638d": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| STATS expired = SUM(RATE(ibmmq_qmgr_expired_message_total)), fdc = MAX(LAST_OVER_TIME(ibmmq_qmgr_fdc_files)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "expired",
+                                                    "columnId": "1beb041b-54ad-3559-f5a8-12f8ca296a87",
+                                                    "label": "Expired Messages (/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "fdc",
+                                                    "columnId": "8f2df849-0247-bbf9-f227-5919a2d55a84",
+                                                    "label": "FDC Files",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "expired",
+                                                    "columnId": "1beb041b-54ad-3559-f5a8-12f8ca296a87",
+                                                    "label": "Expired Messages (/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " /s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "fdc",
+                                                    "columnId": "8f2df849-0247-bbf9-f227-5919a2d55a84",
+                                                    "label": "FDC Files",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "bb57372c-b406-4e48-d509-28c6cf55ea1c",
+                "gridData": {
+                    "x": 0,
+                    "y": 50,
+                    "w": 48,
+                    "h": 15,
+                    "i": "bb57372c-b406-4e48-d509-28c6cf55ea1c"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Error Summary by Queue Manager",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "5518b3a8-a16c-cd51-60b5-0c734f50a629",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "c8bf0b7b-c5f3-374d-2d7d-baf1f0449f77",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "964fa356-7118-e40d-6ab1-a38875c5c86b",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "a5874841-0eaa-8cde-a477-b6613c331061",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "f168c5dd-4213-9a37-0bba-7be96fa93b58",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "af473192-3754-6672-7ec0-202fbdfc32b6",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "bd3006ba-c0da-670e-980e-6d5966839666",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "c5995863-5ff3-4568-40d1-50f773fc26eb",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "8bd3bc75-dab4-6757-2520-850e41198a28",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "TS metrics-ibmmq.otel-*\n| STATS failed_put = SUM(RATE(ibmmq_qmgr_failed_mqput_total)), failed_put1 = SUM(RATE(ibmmq_qmgr_failed_mqput1_total)), failed_get = SUM(RATE(ibmmq_qmgr_failed_mqget_total)), failed_conn = SUM(RATE(ibmmq_qmgr_failed_mqconn_mqconnx_total)), failed_open = SUM(RATE(ibmmq_qmgr_failed_mqopen_total)), rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total)), commit_rate = SUM(RATE(ibmmq_qmgr_commit_total)), expired = SUM(RATE(ibmmq_qmgr_expired_message_total)), fdc = MAX(LAST_OVER_TIME(ibmmq_qmgr_fdc_files)) BY attributes.qmgr\n| EVAL total_failures = COALESCE(failed_put, 0) + COALESCE(failed_put1, 0) + COALESCE(failed_get, 0) + COALESCE(failed_conn, 0) + COALESCE(failed_open, 0)\n| EVAL rollback_pct = ROUND(CASE( commit_rate + rollback_rate > 0, rollback_rate / (commit_rate + rollback_rate) * 100, 0), 2)\n| KEEP attributes.qmgr, total_failures, failed_put, failed_get, failed_conn, rollback_pct, expired, fdc\n| SORT total_failures DESC\n| LIMIT 50"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8bd3bc75-dab4-6757-2520-850e41198a28": {
+                                            "query": {
+                                                "esql": "TS metrics-ibmmq.otel-*\n| STATS failed_put = SUM(RATE(ibmmq_qmgr_failed_mqput_total)), failed_put1 = SUM(RATE(ibmmq_qmgr_failed_mqput1_total)), failed_get = SUM(RATE(ibmmq_qmgr_failed_mqget_total)), failed_conn = SUM(RATE(ibmmq_qmgr_failed_mqconn_mqconnx_total)), failed_open = SUM(RATE(ibmmq_qmgr_failed_mqopen_total)), rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total)), commit_rate = SUM(RATE(ibmmq_qmgr_commit_total)), expired = SUM(RATE(ibmmq_qmgr_expired_message_total)), fdc = MAX(LAST_OVER_TIME(ibmmq_qmgr_fdc_files)) BY attributes.qmgr\n| EVAL total_failures = COALESCE(failed_put, 0) + COALESCE(failed_put1, 0) + COALESCE(failed_get, 0) + COALESCE(failed_conn, 0) + COALESCE(failed_open, 0)\n| EVAL rollback_pct = ROUND(CASE( commit_rate + rollback_rate > 0, rollback_rate / (commit_rate + rollback_rate) * 100, 0), 2)\n| KEEP attributes.qmgr, total_failures, failed_put, failed_get, failed_conn, rollback_pct, expired, fdc\n| SORT total_failures DESC\n| LIMIT 50"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "attributes.qmgr",
+                                                    "columnId": "5518b3a8-a16c-cd51-60b5-0c734f50a629",
+                                                    "label": "Queue Manager",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "total_failures",
+                                                    "columnId": "c8bf0b7b-c5f3-374d-2d7d-baf1f0449f77",
+                                                    "label": "Total Failures (/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "failed_put",
+                                                    "columnId": "964fa356-7118-e40d-6ab1-a38875c5c86b",
+                                                    "label": "Failed Put (/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "failed_get",
+                                                    "columnId": "a5874841-0eaa-8cde-a477-b6613c331061",
+                                                    "label": "Failed Get (/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "failed_conn",
+                                                    "columnId": "f168c5dd-4213-9a37-0bba-7be96fa93b58",
+                                                    "label": "Failed Connect (/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "rollback_pct",
+                                                    "columnId": "af473192-3754-6672-7ec0-202fbdfc32b6",
+                                                    "label": "Rollback %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "expired",
+                                                    "columnId": "bd3006ba-c0da-670e-980e-6d5966839666",
+                                                    "label": "Expired (/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "fdc",
+                                                    "columnId": "c5995863-5ff3-4568-40d1-50f773fc26eb",
+                                                    "label": "FDC Files",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "attributes.qmgr",
+                                                    "columnId": "5518b3a8-a16c-cd51-60b5-0c734f50a629",
+                                                    "label": "Queue Manager",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "total_failures",
+                                                    "columnId": "c8bf0b7b-c5f3-374d-2d7d-baf1f0449f77",
+                                                    "label": "Total Failures (/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "failed_put",
+                                                    "columnId": "964fa356-7118-e40d-6ab1-a38875c5c86b",
+                                                    "label": "Failed Put (/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "failed_get",
+                                                    "columnId": "a5874841-0eaa-8cde-a477-b6613c331061",
+                                                    "label": "Failed Get (/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "failed_conn",
+                                                    "columnId": "f168c5dd-4213-9a37-0bba-7be96fa93b58",
+                                                    "label": "Failed Connect (/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "rollback_pct",
+                                                    "columnId": "af473192-3754-6672-7ec0-202fbdfc32b6",
+                                                    "label": "Rollback %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "expired",
+                                                    "columnId": "bd3006ba-c0da-670e-980e-6d5966839666",
+                                                    "label": "Expired (/s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "fdc",
+                                                    "columnId": "c5995863-5ff3-4568-40d1-50f773fc26eb",
+                                                    "label": "FDC Files",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "ibmmq.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "ibmmq.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": true,
+        "timeFrom": "now-1h",
+        "timeTo": "now",
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "ibmmq_otel-error-analysis",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "ibmmq_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "ibmmq_otel-message-traffic",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_d16d89a9-684e-0340-d3b9-d6235eafdcda_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "ibmmq_otel-error-analysis",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_34ac4a25-a459-0027-aab9-c29ed2019add_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "ibmmq_otel-resources",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_efecfd2b-d524-b83b-c3cd-35d5623b9342_dashboard"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

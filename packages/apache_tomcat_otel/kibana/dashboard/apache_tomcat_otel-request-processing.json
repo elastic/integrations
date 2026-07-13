@@ -1,0 +1,2897 @@
+{
+    "attributes": {
+        "title": "[Tomcat OTel] Request Processing",
+        "description": "Detailed request processing pipeline metrics including per-connector throughput, latency, error rates, and per-servlet performance.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "5909ede8-2eec-8644-b2c1-c28c00240a56",
+                                "order": 1,
+                                "label": "Request Processing",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_5909ede8-2eec-8644-b2c1-c28c00240a56_dashboard"
+                            },
+                            {
+                                "id": "9dfd6ff5-60a6-d609-8f72-50cec07261e9",
+                                "order": 2,
+                                "label": "Thread Pool & Connections",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_9dfd6ff5-60a6-d609-8f72-50cec07261e9_dashboard"
+                            },
+                            {
+                                "id": "6632c321-6dab-2198-f8fe-27c3e8abc5da",
+                                "order": 3,
+                                "label": "JVM Memory & GC",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_6632c321-6dab-2198-f8fe-27c3e8abc5da_dashboard"
+                            },
+                            {
+                                "id": "82660977-7ef5-2f6d-e57c-f38685be84e1",
+                                "order": 4,
+                                "label": "Sessions & Applications",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_82660977-7ef5-2f6d-e57c-f38685be84e1_dashboard"
+                            },
+                            {
+                                "id": "2d7fbb7d-cfa4-5417-4c1b-cbcecf53130f",
+                                "order": 5,
+                                "label": "JVM & OS Resources",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_2d7fbb7d-cfa4-5417-4c1b-cbcecf53130f_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [Tomcat OTel] Request Processing\n\nThis dashboard provides detailed request processing pipeline metrics:\n- Per-connector request rates and throughput\n- Bytes sent and received over time\n- Request latency and maximum processing time\n- Per-servlet and per-web-module performance breakdown\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "d00be7ec-c738-f775-8232-14b5aaa25458",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "d00be7ec-c738-f775-8232-14b5aaa25458"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total Requests",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "a3add44f-304e-8f9c-419d-12d64c0af768",
+                                "layerType": "data",
+                                "metricAccessor": "c8fc641c-15f5-7536-a782-5602a275c81e",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS total_requests = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_requestCount))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "a3add44f-304e-8f9c-419d-12d64c0af768": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS total_requests = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_requestCount))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_requests",
+                                                    "columnId": "c8fc641c-15f5-7536-a782-5602a275c81e",
+                                                    "label": "Total Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_requests",
+                                                    "columnId": "c8fc641c-15f5-7536-a782-5602a275c81e",
+                                                    "label": "Total Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "d21b6cd2-370e-1bbf-0c25-dce7eb336f49",
+                "gridData": {
+                    "x": 24,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "d21b6cd2-370e-1bbf-0c25-dce7eb336f49"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total Errors",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "8f6e6bb0-6eaa-cb19-db9e-c47eeee29d94",
+                                "layerType": "data",
+                                "metricAccessor": "d1f6ea87-64f7-0f11-9e7a-6e764d938c58",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_errorCount IS NOT NULL\n| STATS total_errors = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_errorCount))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8f6e6bb0-6eaa-cb19-db9e-c47eeee29d94": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_errorCount IS NOT NULL\n| STATS total_errors = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_errorCount))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_errors",
+                                                    "columnId": "d1f6ea87-64f7-0f11-9e7a-6e764d938c58",
+                                                    "label": "Total Errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_errors",
+                                                    "columnId": "d1f6ea87-64f7-0f11-9e7a-6e764d938c58",
+                                                    "label": "Total Errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "0d83e7fe-9a2d-84e9-cc47-bebf25d54a09",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "0d83e7fe-9a2d-84e9-cc47-bebf25d54a09"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Bytes Sent",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "2a843243-a171-10fb-01b2-11fbee13c73b",
+                                "layerType": "data",
+                                "metricAccessor": "68f9b3dd-f726-4452-8504-196818b5b667",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_bytesSent IS NOT NULL\n| STATS total_sent = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_bytesSent))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "2a843243-a171-10fb-01b2-11fbee13c73b": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_bytesSent IS NOT NULL\n| STATS total_sent = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_bytesSent))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_sent",
+                                                    "columnId": "68f9b3dd-f726-4452-8504-196818b5b667",
+                                                    "label": "Bytes Sent",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_sent",
+                                                    "columnId": "68f9b3dd-f726-4452-8504-196818b5b667",
+                                                    "label": "Bytes Sent",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "891a615e-311c-ea12-05ed-4c6d490df004",
+                "gridData": {
+                    "x": 40,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "891a615e-311c-ea12-05ed-4c6d490df004"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Bytes Received",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "bb69ddd5-d900-870a-d80e-103b1dbd144c",
+                                "layerType": "data",
+                                "metricAccessor": "ef695548-28ab-094b-9804-9881d807aa7e",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_bytesReceived IS NOT NULL\n| STATS total_recv = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_bytesReceived))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bb69ddd5-d900-870a-d80e-103b1dbd144c": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_bytesReceived IS NOT NULL\n| STATS total_recv = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_bytesReceived))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_recv",
+                                                    "columnId": "ef695548-28ab-094b-9804-9881d807aa7e",
+                                                    "label": "Bytes Received",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_recv",
+                                                    "columnId": "ef695548-28ab-094b-9804-9881d807aa7e",
+                                                    "label": "Bytes Received",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "3a24c211-28dc-9798-ac7e-148b6aab4fcf",
+                "gridData": {
+                    "x": 16,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "3a24c211-28dc-9798-ac7e-148b6aab4fcf"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Error Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "33757f64-a90b-340b-f653-eacf1040e265",
+                                "layerType": "data",
+                                "metricAccessor": "f8c5c3ec-f2de-fb81-d912-5cc485aaa6c7",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS requests = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_requestCount)), errors = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_errorCount))\n| EVAL error_rate = CASE(requests > 0, errors / requests, 0)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "33757f64-a90b-340b-f653-eacf1040e265": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS requests = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_requestCount)), errors = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_errorCount))\n| EVAL error_rate = CASE(requests > 0, errors / requests, 0)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "error_rate",
+                                                    "columnId": "f8c5c3ec-f2de-fb81-d912-5cc485aaa6c7",
+                                                    "label": "Error Rate",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "error_rate",
+                                                    "columnId": "f8c5c3ec-f2de-fb81-d912-5cc485aaa6c7",
+                                                    "label": "Error Rate",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "99508fba-f7d4-a62f-1a4c-bc5b68e1b749",
+                "gridData": {
+                    "x": 24,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "99508fba-f7d4-a62f-1a4c-bc5b68e1b749"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Max Processing Time",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "3e9c5d2b-988c-c8f4-ec8c-b7169e6883ec",
+                                "layerType": "data",
+                                "metricAccessor": "43e127f4-de09-55dc-d2a3-cf44fc25bca5",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_maxTime IS NOT NULL\n| STATS max_time = MAX(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_maxTime))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "3e9c5d2b-988c-c8f4-ec8c-b7169e6883ec": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_maxTime IS NOT NULL\n| STATS max_time = MAX(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_maxTime))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "max_time",
+                                                    "columnId": "43e127f4-de09-55dc-d2a3-cf44fc25bca5",
+                                                    "label": "Max Processing Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "max_time",
+                                                    "columnId": "43e127f4-de09-55dc-d2a3-cf44fc25bca5",
+                                                    "label": "Max Processing Time",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "f49359cd-a921-d144-9b46-c3c9ceabc4fa",
+                "gridData": {
+                    "x": 32,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "f49359cd-a921-d144-9b46-c3c9ceabc4fa"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Avg Latency",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "43b93f7c-f8e7-1c51-a414-85966abbe531",
+                                "layerType": "data",
+                                "metricAccessor": "e1a612eb-21c4-d592-554e-f62840ac6b99",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_processingTime IS NOT NULL\n| STATS proc_time = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_processingTime)), req_count = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_requestCount))\n| EVAL avg_latency = CASE(req_count > 0, ROUND(proc_time / req_count, 1), 0)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "43b93f7c-f8e7-1c51-a414-85966abbe531": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_processingTime IS NOT NULL\n| STATS proc_time = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_processingTime)), req_count = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_requestCount))\n| EVAL avg_latency = CASE(req_count > 0, ROUND(proc_time / req_count, 1), 0)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "avg_latency",
+                                                    "columnId": "e1a612eb-21c4-d592-554e-f62840ac6b99",
+                                                    "label": "Avg Latency",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "avg_latency",
+                                                    "columnId": "e1a612eb-21c4-d592-554e-f62840ac6b99",
+                                                    "label": "Avg Latency",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "4fee9153-2f23-5adc-16cc-45b447bdabb6",
+                "gridData": {
+                    "x": 40,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "4fee9153-2f23-5adc-16cc-45b447bdabb6"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Active Connectors",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "f73b5500-a552-bf13-9b90-e96cc1886d5d",
+                                "layerType": "data",
+                                "metricAccessor": "cbfecb4b-facd-5d0e-2d2d-a178f68d9d4b",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS active_connectors = COUNT_DISTINCT(attributes.name)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f73b5500-a552-bf13-9b90-e96cc1886d5d": {
+                                            "query": {
+                                                "esql": "FROM metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS active_connectors = COUNT_DISTINCT(attributes.name)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "active_connectors",
+                                                    "columnId": "cbfecb4b-facd-5d0e-2d2d-a178f68d9d4b",
+                                                    "label": "Active Connectors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "active_connectors",
+                                                    "columnId": "cbfecb4b-facd-5d0e-2d2d-a178f68d9d4b",
+                                                    "label": "Active Connectors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "98dd998b-7197-65f6-2395-6f3b86cdb1e8",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 48,
+                    "h": 3,
+                    "i": "98dd998b-7197-65f6-2395-6f3b86cdb1e8"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Request Throughput"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "fe67c09d-0e7a-cb15-ccca-75e2d35aba56",
+                "gridData": {
+                    "x": 0,
+                    "y": 17,
+                    "w": 24,
+                    "h": 12,
+                    "i": "fe67c09d-0e7a-cb15-ccca-75e2d35aba56"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Request Rate by Connector",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "e9800d59-f83c-7102-689e-1de6541fb15e",
+                                        "accessors": [
+                                            "334e83ad-3051-e9fa-28c0-e40866706860"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS requests = SUM(DELTA(Catalina_GlobalRequestProcessor_requestCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "e9800d59-f83c-7102-689e-1de6541fb15e": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS requests = SUM(DELTA(Catalina_GlobalRequestProcessor_requestCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "334e83ad-3051-e9fa-28c0-e40866706860",
+                                                    "label": "Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "334e83ad-3051-e9fa-28c0-e40866706860",
+                                                    "label": "Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c693173a-240d-64ed-7d4c-c5ce3fb22fdd",
+                "gridData": {
+                    "x": 24,
+                    "y": 17,
+                    "w": 24,
+                    "h": 12,
+                    "i": "c693173a-240d-64ed-7d4c-c5ce3fb22fdd"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Bytes Transferred Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "43bea42c-8e9a-164c-1cde-bae08841b697",
+                                        "accessors": [
+                                            "e5e5946c-03f6-0443-0fe1-053e9ebedf13",
+                                            "f06ae7ae-0826-9c9b-6d57-196d06a19c93"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_bytesSent IS NOT NULL\n| STATS bytes_sent = SUM(DELTA(Catalina_GlobalRequestProcessor_bytesSent)), bytes_recv = SUM(DELTA(Catalina_GlobalRequestProcessor_bytesReceived)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "43bea42c-8e9a-164c-1cde-bae08841b697": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_bytesSent IS NOT NULL\n| STATS bytes_sent = SUM(DELTA(Catalina_GlobalRequestProcessor_bytesSent)), bytes_recv = SUM(DELTA(Catalina_GlobalRequestProcessor_bytesReceived)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "bytes_sent",
+                                                    "columnId": "e5e5946c-03f6-0443-0fe1-053e9ebedf13",
+                                                    "label": "Bytes Sent",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "bytes_recv",
+                                                    "columnId": "f06ae7ae-0826-9c9b-6d57-196d06a19c93",
+                                                    "label": "Bytes Received",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "bytes_sent",
+                                                    "columnId": "e5e5946c-03f6-0443-0fe1-053e9ebedf13",
+                                                    "label": "Bytes Sent",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "bytes_recv",
+                                                    "columnId": "f06ae7ae-0826-9c9b-6d57-196d06a19c93",
+                                                    "label": "Bytes Received",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "f3c72600-acb1-c4be-af9d-1055b48a0a2a",
+                "gridData": {
+                    "x": 0,
+                    "y": 29,
+                    "w": 48,
+                    "h": 3,
+                    "i": "f3c72600-acb1-c4be-af9d-1055b48a0a2a"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Request Latency"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "961afbf1-8023-e5ca-01ae-0173971bde66",
+                "gridData": {
+                    "x": 0,
+                    "y": 32,
+                    "w": 24,
+                    "h": 12,
+                    "i": "961afbf1-8023-e5ca-01ae-0173971bde66"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Average Latency Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "3162f3cd-00fd-c7ea-74b9-218bb3ac39bd",
+                                        "accessors": [
+                                            "a7d37f74-4fbe-df3d-608e-b8aecd44e606"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_processingTime IS NOT NULL\n| STATS proc_delta = SUM(DELTA(Catalina_GlobalRequestProcessor_processingTime)), req_delta = SUM(DELTA(Catalina_GlobalRequestProcessor_requestCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| EVAL avg_latency = CASE(req_delta > 0, ROUND(proc_delta / req_delta, 1), 0)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "3162f3cd-00fd-c7ea-74b9-218bb3ac39bd": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_processingTime IS NOT NULL\n| STATS proc_delta = SUM(DELTA(Catalina_GlobalRequestProcessor_processingTime)), req_delta = SUM(DELTA(Catalina_GlobalRequestProcessor_requestCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| EVAL avg_latency = CASE(req_delta > 0, ROUND(proc_delta / req_delta, 1), 0)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "avg_latency",
+                                                    "columnId": "a7d37f74-4fbe-df3d-608e-b8aecd44e606",
+                                                    "label": "Avg Latency (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "avg_latency",
+                                                    "columnId": "a7d37f74-4fbe-df3d-608e-b8aecd44e606",
+                                                    "label": "Avg Latency (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "bdb85b4f-125f-d019-fe68-0a9c03eb49ab",
+                "gridData": {
+                    "x": 24,
+                    "y": 32,
+                    "w": 24,
+                    "h": 12,
+                    "i": "bdb85b4f-125f-d019-fe68-0a9c03eb49ab"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Max Request Processing Time Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "50d64306-bb2a-a3d2-a064-ee664b650ba3",
+                                        "accessors": [
+                                            "8fa2bb00-13fe-c628-adac-a3f8c245bcc7"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_maxTime IS NOT NULL\n| STATS max_time = MAX(MAX_OVER_TIME(Catalina_GlobalRequestProcessor_maxTime)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "50d64306-bb2a-a3d2-a064-ee664b650ba3": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_maxTime IS NOT NULL\n| STATS max_time = MAX(MAX_OVER_TIME(Catalina_GlobalRequestProcessor_maxTime)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "max_time",
+                                                    "columnId": "8fa2bb00-13fe-c628-adac-a3f8c245bcc7",
+                                                    "label": "Max Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "max_time",
+                                                    "columnId": "8fa2bb00-13fe-c628-adac-a3f8c245bcc7",
+                                                    "label": "Max Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e0e9c4a7-fe7d-308a-35cb-06988e829786",
+                "gridData": {
+                    "x": 0,
+                    "y": 44,
+                    "w": 48,
+                    "h": 3,
+                    "i": "e0e9c4a7-fe7d-308a-35cb-06988e829786"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Error Analysis"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "cbef192b-b084-4994-9bca-18cf842c2a6f",
+                "gridData": {
+                    "x": 0,
+                    "y": 47,
+                    "w": 24,
+                    "h": 12,
+                    "i": "cbef192b-b084-4994-9bca-18cf842c2a6f"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Error Count Over Time by Connector",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "313ee559-1b17-0ec9-caf5-c3e97676b11a",
+                                        "accessors": [
+                                            "5d011fcc-43e7-5e4a-2d7c-b7c367f6b876"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "bar_stacked",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_errorCount IS NOT NULL\n| STATS errors = SUM(DELTA(Catalina_GlobalRequestProcessor_errorCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "313ee559-1b17-0ec9-caf5-c3e97676b11a": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_errorCount IS NOT NULL\n| STATS errors = SUM(DELTA(Catalina_GlobalRequestProcessor_errorCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "errors",
+                                                    "columnId": "5d011fcc-43e7-5e4a-2d7c-b7c367f6b876",
+                                                    "label": "Errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "errors",
+                                                    "columnId": "5d011fcc-43e7-5e4a-2d7c-b7c367f6b876",
+                                                    "label": "Errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6692c03a-b854-064d-eb0d-c2592bc786af",
+                "gridData": {
+                    "x": 24,
+                    "y": 47,
+                    "w": 24,
+                    "h": 12,
+                    "i": "6692c03a-b854-064d-eb0d-c2592bc786af"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Error Rate % Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "a4d1b13a-79b3-f9d7-b93c-a3d1bf92d401",
+                                        "accessors": [
+                                            "f8c11630-a9d6-2b11-fd42-02416ac000c4"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS req_delta = SUM(DELTA(Catalina_GlobalRequestProcessor_requestCount)), err_delta = SUM(DELTA(Catalina_GlobalRequestProcessor_errorCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| EVAL error_pct = CASE(req_delta > 0, ROUND(err_delta / req_delta * 100, 2), 0)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "a4d1b13a-79b3-f9d7-b93c-a3d1bf92d401": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS req_delta = SUM(DELTA(Catalina_GlobalRequestProcessor_requestCount)), err_delta = SUM(DELTA(Catalina_GlobalRequestProcessor_errorCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| EVAL error_pct = CASE(req_delta > 0, ROUND(err_delta / req_delta * 100, 2), 0)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "error_pct",
+                                                    "columnId": "f8c11630-a9d6-2b11-fd42-02416ac000c4",
+                                                    "label": "Error Rate %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "error_pct",
+                                                    "columnId": "f8c11630-a9d6-2b11-fd42-02416ac000c4",
+                                                    "label": "Error Rate %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "7d3f5dbe-4194-a605-8a48-824f48b5db1c",
+                "gridData": {
+                    "x": 0,
+                    "y": 59,
+                    "w": 48,
+                    "h": 3,
+                    "i": "7d3f5dbe-4194-a605-8a48-824f48b5db1c"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Servlet & Application Detail"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "4f207131-ab46-bf82-36d6-82e78dc4e42b",
+                "gridData": {
+                    "x": 0,
+                    "y": 62,
+                    "w": 24,
+                    "h": 15,
+                    "i": "4f207131-ab46-bf82-36d6-82e78dc4e42b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Servlet Performance Summary",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "df7572fa-cf5e-4535-aa2f-e45d4afcfeb6",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "ce15cc4a-884f-360a-4348-d6e27f39e2a8",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "e7dc06ad-38a7-b936-25bf-0844497bbede",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "932ebf11-3433-c972-c74a-138b5a393467",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "024ce120-a1e7-9b6c-f386-a1b1fd3b31ef",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "c43192c5-d305-9a83-56f4-c49ac3d869c8",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "04356b0f-84fd-d8c5-1296-45cae7b11133",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "621515ca-ced2-2553-5815-8c13a469ddae",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_Servlet_requestCount IS NOT NULL\n| STATS requests = MAX(LAST_OVER_TIME(Catalina_Servlet_requestCount)), errors = MAX(LAST_OVER_TIME(Catalina_Servlet_errorCount)), proc_time = MAX(LAST_OVER_TIME(Catalina_Servlet_processingTime)), max_time = MAX(LAST_OVER_TIME(Catalina_Servlet_maxTime)), min_time = MAX(LAST_OVER_TIME(Catalina_Servlet_minTime)) BY attributes.name, attributes.WebModule\n| EVAL min_time_display = CASE(min_time > 9.0E18, null, min_time)\n| EVAL avg_latency = CASE(requests > 0, ROUND(proc_time / requests, 1), 0)\n| EVAL error_pct = CASE(requests > 0, ROUND(errors / requests * 100, 2), 0)\n| SORT requests DESC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "621515ca-ced2-2553-5815-8c13a469ddae": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_Servlet_requestCount IS NOT NULL\n| STATS requests = MAX(LAST_OVER_TIME(Catalina_Servlet_requestCount)), errors = MAX(LAST_OVER_TIME(Catalina_Servlet_errorCount)), proc_time = MAX(LAST_OVER_TIME(Catalina_Servlet_processingTime)), max_time = MAX(LAST_OVER_TIME(Catalina_Servlet_maxTime)), min_time = MAX(LAST_OVER_TIME(Catalina_Servlet_minTime)) BY attributes.name, attributes.WebModule\n| EVAL min_time_display = CASE(min_time > 9.0E18, null, min_time)\n| EVAL avg_latency = CASE(requests > 0, ROUND(proc_time / requests, 1), 0)\n| EVAL error_pct = CASE(requests > 0, ROUND(errors / requests * 100, 2), 0)\n| SORT requests DESC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "df7572fa-cf5e-4535-aa2f-e45d4afcfeb6",
+                                                    "label": "Servlet",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.WebModule",
+                                                    "columnId": "ce15cc4a-884f-360a-4348-d6e27f39e2a8",
+                                                    "label": "Web Module",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "e7dc06ad-38a7-b936-25bf-0844497bbede",
+                                                    "label": "Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "errors",
+                                                    "columnId": "932ebf11-3433-c972-c74a-138b5a393467",
+                                                    "label": "Errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "error_pct",
+                                                    "columnId": "024ce120-a1e7-9b6c-f386-a1b1fd3b31ef",
+                                                    "label": "Error %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "avg_latency",
+                                                    "columnId": "c43192c5-d305-9a83-56f4-c49ac3d869c8",
+                                                    "label": "Avg Latency (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "max_time",
+                                                    "columnId": "04356b0f-84fd-d8c5-1296-45cae7b11133",
+                                                    "label": "Max Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "df7572fa-cf5e-4535-aa2f-e45d4afcfeb6",
+                                                    "label": "Servlet",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.WebModule",
+                                                    "columnId": "ce15cc4a-884f-360a-4348-d6e27f39e2a8",
+                                                    "label": "Web Module",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "e7dc06ad-38a7-b936-25bf-0844497bbede",
+                                                    "label": "Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "errors",
+                                                    "columnId": "932ebf11-3433-c972-c74a-138b5a393467",
+                                                    "label": "Errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "error_pct",
+                                                    "columnId": "024ce120-a1e7-9b6c-f386-a1b1fd3b31ef",
+                                                    "label": "Error %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "avg_latency",
+                                                    "columnId": "c43192c5-d305-9a83-56f4-c49ac3d869c8",
+                                                    "label": "Avg Latency (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "max_time",
+                                                    "columnId": "04356b0f-84fd-d8c5-1296-45cae7b11133",
+                                                    "label": "Max Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "ca08c195-a618-46ba-e9b4-35f69fbc996d",
+                "gridData": {
+                    "x": 24,
+                    "y": 62,
+                    "w": 24,
+                    "h": 15,
+                    "i": "ca08c195-a618-46ba-e9b4-35f69fbc996d"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Web Module Performance Summary",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "775b0fb1-ac27-91a9-0878-d193f2d10b03",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "e7dc06ad-38a7-b936-25bf-0844497bbede",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "932ebf11-3433-c972-c74a-138b5a393467",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "024ce120-a1e7-9b6c-f386-a1b1fd3b31ef",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "c43192c5-d305-9a83-56f4-c49ac3d869c8",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "04356b0f-84fd-d8c5-1296-45cae7b11133",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "9362437d-076d-edb6-75e4-c2e38af72bf9",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "c23064e7-32f7-c8d2-f20d-289e73cb53d9",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_WebModule_requestCount IS NOT NULL\n| STATS requests = MAX(LAST_OVER_TIME(Catalina_WebModule_requestCount)), errors = MAX(LAST_OVER_TIME(Catalina_WebModule_errorCount)), proc_time = MAX(LAST_OVER_TIME(Catalina_WebModule_processingTime)), max_time = MAX(LAST_OVER_TIME(Catalina_WebModule_maxTime)), startup_time = MAX(LAST_OVER_TIME(Catalina_WebModule_startupTime)) BY attributes.name\n| EVAL avg_latency = CASE(requests > 0, ROUND(proc_time / requests, 1), 0)\n| EVAL error_pct = CASE(requests > 0, ROUND(errors / requests * 100, 2), 0)\n| SORT requests DESC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "c23064e7-32f7-c8d2-f20d-289e73cb53d9": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_WebModule_requestCount IS NOT NULL\n| STATS requests = MAX(LAST_OVER_TIME(Catalina_WebModule_requestCount)), errors = MAX(LAST_OVER_TIME(Catalina_WebModule_errorCount)), proc_time = MAX(LAST_OVER_TIME(Catalina_WebModule_processingTime)), max_time = MAX(LAST_OVER_TIME(Catalina_WebModule_maxTime)), startup_time = MAX(LAST_OVER_TIME(Catalina_WebModule_startupTime)) BY attributes.name\n| EVAL avg_latency = CASE(requests > 0, ROUND(proc_time / requests, 1), 0)\n| EVAL error_pct = CASE(requests > 0, ROUND(errors / requests * 100, 2), 0)\n| SORT requests DESC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "775b0fb1-ac27-91a9-0878-d193f2d10b03",
+                                                    "label": "Web Module",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "e7dc06ad-38a7-b936-25bf-0844497bbede",
+                                                    "label": "Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "errors",
+                                                    "columnId": "932ebf11-3433-c972-c74a-138b5a393467",
+                                                    "label": "Errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "error_pct",
+                                                    "columnId": "024ce120-a1e7-9b6c-f386-a1b1fd3b31ef",
+                                                    "label": "Error %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "avg_latency",
+                                                    "columnId": "c43192c5-d305-9a83-56f4-c49ac3d869c8",
+                                                    "label": "Avg Latency (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "max_time",
+                                                    "columnId": "04356b0f-84fd-d8c5-1296-45cae7b11133",
+                                                    "label": "Max Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "startup_time",
+                                                    "columnId": "9362437d-076d-edb6-75e4-c2e38af72bf9",
+                                                    "label": "Startup Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "775b0fb1-ac27-91a9-0878-d193f2d10b03",
+                                                    "label": "Web Module",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "e7dc06ad-38a7-b936-25bf-0844497bbede",
+                                                    "label": "Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "errors",
+                                                    "columnId": "932ebf11-3433-c972-c74a-138b5a393467",
+                                                    "label": "Errors",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "error_pct",
+                                                    "columnId": "024ce120-a1e7-9b6c-f386-a1b1fd3b31ef",
+                                                    "label": "Error %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "avg_latency",
+                                                    "columnId": "c43192c5-d305-9a83-56f4-c49ac3d869c8",
+                                                    "label": "Avg Latency (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "max_time",
+                                                    "columnId": "04356b0f-84fd-d8c5-1296-45cae7b11133",
+                                                    "label": "Max Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "startup_time",
+                                                    "columnId": "9362437d-076d-edb6-75e4-c2e38af72bf9",
+                                                    "label": "Startup Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "tomcat.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "tomcat.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": false,
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "a18657f3-9386-7419-0c1e-db380f1b3b06": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "a18657f3-9386-7419-0c1e-db380f1b3b06",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "resource.attributes.host.name",
+                        "title": "Host",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "apache_tomcat_otel-request-processing",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-request-processing",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_5909ede8-2eec-8644-b2c1-c28c00240a56_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-thread-pool-connections",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_9dfd6ff5-60a6-d609-8f72-50cec07261e9_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-jvm-memory-gc",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_6632c321-6dab-2198-f8fe-27c3e8abc5da_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-sessions-servlets",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_82660977-7ef5-2f6d-e57c-f38685be84e1_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-jvm-os-resources",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_2d7fbb7d-cfa4-5417-4c1b-cbcecf53130f_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_a18657f3-9386-7419-0c1e-db380f1b3b06:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

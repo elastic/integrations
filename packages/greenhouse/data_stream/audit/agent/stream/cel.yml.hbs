@@ -1,0 +1,256 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  token_url: {{token_url}}
+  client_id: {{client_id}}
+  client_secret: {{client_secret}}
+{{#if user_id}}
+  user_id: "{{user_id}}"
+{{/if}}
+  batch_size: {{batch_size}}
+{{#if performer_ids}}
+  performer_ids: "{{performer_ids}}"
+{{/if}}
+{{#if event_types}}
+  event_types: "{{event_types}}"
+{{/if}}
+  want_more: false
+redact:
+  fields:
+    - client_secret
+    - auth_token
+{{!--
+Greenhouse Audit Log API (Harvest V3 OAuth)
+
+Endpoints:
+  POST https://auth.greenhouse.io/token
+    - HTTP Basic auth with client_id:client_secret
+    - Body: grant_type=client_credentials[&sub=<user_id>]
+    - Response: {access_token, expires_at (ISO-8601), token_type}
+    - Note: expires_at is non-standard (RFC 6749 uses expires_in),
+      so auth.oauth2 cannot manage token refresh — it is done here.
+
+  GET https://auditlog.us.greenhouse.io/events
+    - Query: paging=true, after_time, performer_ids, event_types
+    - Headers: Authorization (Bearer), Size (page size 100-500),
+      Pit-Id + Search-After (for page 2+)
+    - Response: {paging: {pit_id, next_search_after}, results: [...]}
+    - next_search_after is null on the last page.
+
+State:
+  auth_token — shallow-replaced object holding token and expires.
+    Cleared to {} on 401 so the fields are absent, not sentinel-valued.
+
+Cursor:
+  window_start_time — frozen after_time used for every request in the
+    current window. Advances only when a full window completes.
+  max_event_time — newest event_time seen anywhere in the current window.
+    Cleared when the window completes; preserved when an expired PIT
+    forces a retry of the same window.
+  pit_id, search_after — pagination state; cleared between poll intervals.
+--}}
+program: |-
+  state.with(
+    (
+      !state.?auth_token.token.hasValue() || !state.?auth_token.expires.hasValue() ||
+      timestamp(state.auth_token.expires) < now-duration("30s")
+    ).as(need_token,
+      need_token ?
+        request("POST", state.token_url).with(
+          {
+            "Header": {
+              "Content-Type": ["application/x-www-form-urlencoded"],
+              "Authorization": ["Basic " + base64(state.client_id + ":" + state.client_secret)],
+            },
+            "Body": bytes(
+              {
+                "grant_type": ["client_credentials"],
+                ?"sub": state.?user_id.optFlatMap(v,
+                  (v != "") ? optional.of([v]) : optional.none()
+                ),
+              }.format_query()
+            ),
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(tok,
+              {
+                "auth_token": {
+                  "token": tok.access_token,
+                  "expires": tok.expires_at,
+                },
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "POST " + state.token_url + ": " + (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      :
+        {
+          "auth_token": state.auth_token,
+        }
+    ).as(auth,
+      has(auth.events) ?
+        auth
+      :
+        (
+          (state.?cursor.window_start_time.orValue("") != "") ?
+            state.cursor.window_start_time
+          :
+            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+        ).as(window_start_time,
+          (
+            // Query params must stay consistent across all pages in a session
+            // (per API docs). after_time is fixed to window_start_time for the
+            // entire pagination window, including retries after PIT expiry.
+            state.url.trim_right("/") + "/events?" + {
+              "paging": ["true"],
+              "after_time": [window_start_time],
+              ?"performer_ids": state.?performer_ids.optFlatMap(v,
+                (v != "") ? optional.of([v]) : optional.none()
+              ),
+              ?"event_types": state.?event_types.optFlatMap(v,
+                (v != "") ? optional.of([v]) : optional.none()
+              ),
+            }.format_query()
+          ).as(url,
+            {
+              "Authorization": ["Bearer " + auth.auth_token.token],
+              "Size": [string(int(state.batch_size))],
+              ?"Pit-Id": state.?cursor.pit_id.optFlatMap(v,
+                (v != "") ? optional.of([v]) : optional.none()
+              ),
+              ?"Search-After": state.?cursor.search_after.optFlatMap(v,
+                (v != "") ? optional.of([v]) : optional.none()
+              ),
+            }.as(headers,
+              request("GET", url).with({"Header": headers}).do_request().as(resp,
+                (resp.StatusCode == 200) ?
+                  resp.Body.decode_json().as(body,
+                    body.?results.orValue([]).as(results,
+                      (body.?paging.next_search_after.orValue(null) != null).as(has_more,
+                        (size(results) > 0).as(has_results,
+                          (has_results ? body.results[0].event_time : "").as(page_newest_event_time,
+                            (state.?cursor.max_event_time.orValue("") != "").as(has_max_event_time,
+                              (has_results ?
+                                (has_max_event_time && timestamp(state.cursor.max_event_time) > timestamp(page_newest_event_time)).as(use_existing,
+                                  use_existing ? state.cursor.max_event_time : page_newest_event_time
+                                )
+                              :
+                                (has_max_event_time ? state.cursor.max_event_time : "")
+                              ).as(next_max_event_time,
+                                {
+                                  "auth_token": auth.auth_token,
+                                  "events": results.map(e, {"message": e.encode_json()}),
+                                  "cursor": {
+                                    // Keep window_start_time fixed until the final
+                                    // page succeeds so the whole window can be
+                                    // retried safely if the PIT expires.
+                                    "window_start_time": has_more ?
+                                      window_start_time
+                                    :
+                                      (next_max_event_time != "") ?
+                                        next_max_event_time
+                                      :
+                                        window_start_time,
+                                    "max_event_time": has_more ? next_max_event_time : "",
+                                    "pit_id": has_more ? string(body.paging.pit_id) : "",
+                                    "search_after": has_more ? string(body.paging.next_search_after) : "",
+                                  },
+                                  "want_more": has_more,
+                                }
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                : (resp.StatusCode == 401) ?
+                  {
+                    "auth_token": {},
+                    "events": [],
+                    "want_more": false,
+                  }
+                : (resp.StatusCode == 429) ?
+                  {
+                    "events": [],
+                    "want_more": false,
+                  }
+                : string(resp.Body).contains("Pit_Id") ?
+                  // Pit_Id expired — clear pagination tokens but keep the
+                  // current window so the next poll retries the same range.
+                  // Emit a dummy event so the cursor reset is persisted.
+                  {
+                    "auth_token": auth.auth_token,
+                    "events": [{"retry": true}],
+                    "cursor": {
+                      "window_start_time": window_start_time,
+                      "max_event_time": state.?cursor.max_event_time.orValue(""),
+                      "pit_id": "",
+                      "search_after": "",
+                    },
+                    "want_more": false,
+                  }
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "GET /events: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                      },
+                    },
+                    "want_more": false,
+                  }
+              )
+            )
+          )
+        )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event:
+    when:
+      equals:
+        retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

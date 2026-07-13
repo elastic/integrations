@@ -44,22 +44,37 @@ This integration installs [Elastic latest transforms](https://www.elastic.co/doc
 
 ### From Cyera
 
-While collecting data through the Cyera APIs, authentication is handled using a `Client ID` and `Client Secret`, which serve as the required credentials. Any requests made without credentials will be rejected by the Cyera APIs.
+The integration authenticates to the Cyera API using a `Client ID` and `Client Secret`, which serve as the required credentials. Any requests made without valid credentials are rejected by the Cyera APIs. Generate these credentials from the Cyera platform before you configure the integration.
 
-#### Obtain `Credentials`:
+#### Prerequisites
 
-- Generate a Cyera API client, retrieve the Client ID and Client Secret.
-- Confirm your Cyera API URL, a default is loaded in the configuration.
+- Cyera **Admin** role.
+- An active Cyera **DSPM** license.
+- Access to the partner integration page in the Cyera platform.
+
+#### Obtain credentials
+
+1. In Cyera, go to **Integrations** in the navigation menu.
+2. Find the **Elastic** integration card and select it to open the details.
+3. In the **API Token Generator** section, note the pre-filled **Token Description**.
+4. Select a **Token Expiration** from the menu (1, 7, 30, 90, or 365 days).
+5. Select **Generate Token**.
+6. The **Client ID** and **Client Secret** are displayed. These credentials are shown only once, so copy each value using the copy icon, or select **Download CSV** to save both.
+7. Confirm your Cyera **API URL**; a default is loaded in the integration configuration.
+
+Use the saved **Client ID** and **Client Secret** when you configure the integration in Kibana (refer to [Setup](#setup)).
+
+**Note:** After configuration, the initial sync may take up to 24 hours.
 
 ## How do I deploy this integration?
 
-This integration supports both Elastic Agentless-based and Agent-based installations.
+This integration supports both Elastic Managed-based and Agent-based installations.
 
-### Agentless-based installation
+### Elastic Managed-based installation
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent-based installation
 

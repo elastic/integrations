@@ -1,0 +1,479 @@
+dashboards:
+  - id: apache_tomcat_otel-overview
+    name: '[Tomcat OTel] Overview'
+    description: >-
+      High-level health and performance overview for Apache Tomcat,
+      covering golden signals: latency, traffic, errors, and saturation.
+
+    filters:
+      - field: data_stream.dataset
+        equals: tomcat.otel
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: resource.attributes.host.name
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: apache_tomcat_otel-overview
+            - label: Request Processing
+              dashboard: apache_tomcat_otel-request-processing
+            - label: Thread Pool & Connections
+              dashboard: apache_tomcat_otel-thread-pool-connections
+            - label: JVM Memory & GC
+              dashboard: apache_tomcat_otel-jvm-memory-gc
+            - label: Sessions & Applications
+              dashboard: apache_tomcat_otel-sessions-servlets
+            - label: JVM & OS Resources
+              dashboard: apache_tomcat_otel-jvm-os-resources
+
+      # ─── Dashboard Overview + KPIs ─────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Tomcat OTel] Overview
+
+            This dashboard provides a high-level view of Apache Tomcat health and performance:
+            - Request throughput, error rates, and average latency
+            - Thread pool and connection utilization
+            - JVM heap memory consumption
+            - HTTP session counts and GC activity
+
+      # KPI Row 1 (w:8 × 4 = 32, beside overview)
+      - title: Total Requests
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL
+            - STATS total_requests = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_requestCount))
+          primary:
+            field: total_requests
+            label: Total Requests
+            format:
+              type: number
+              compact: true
+
+      - title: Error Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL
+            - STATS requests = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_requestCount)), errors = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_errorCount))
+            - EVAL error_rate = CASE(requests > 0, errors / requests, 0)
+          primary:
+            field: error_rate
+            label: Error Rate
+            format:
+              type: percent
+              decimals: 2
+
+      - title: Avg Latency
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_GlobalRequestProcessor_processingTime IS NOT NULL
+            - STATS proc_time = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_processingTime)), req_count = SUM(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_requestCount))
+            - EVAL avg_latency = CASE(req_count > 0, ROUND(proc_time / req_count, 1), 0)
+          primary:
+            field: avg_latency
+            label: Avg Latency (ms)
+            format:
+              type: number
+              decimals: 1
+              suffix: " ms"
+
+      - title: Active Sessions
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_Manager_activeSessions IS NOT NULL
+            - STATS active_sessions = SUM(LAST_OVER_TIME(Catalina_Manager_activeSessions))
+          primary:
+            field: active_sessions
+            label: Active Sessions
+            format:
+              type: number
+              compact: true
+
+      # KPI Row 2 (w:8 × 4 = 32, beside overview)
+      - title: Thread Utilization
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL
+            - STATS busy = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads))
+            - EVAL thread_util = CASE(max_threads > 0, busy / max_threads, 0)
+          primary:
+            field: thread_util
+            label: Thread Utilization
+            format:
+              type: percent
+              decimals: 1
+
+      - title: Heap Utilization
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL
+            - STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used)), heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max))
+            - EVAL heap_util = CASE(heap_max > 0, heap_used / heap_max, 0)
+          primary:
+            field: heap_util
+            label: Heap Utilization
+            format:
+              type: percent
+              decimals: 1
+
+      - title: Young GC Collections
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_G1_Young_Generation_CollectionCount IS NOT NULL
+            - STATS young_gc = MAX(LAST_OVER_TIME(java_lang_G1_Young_Generation_CollectionCount))
+          primary:
+            field: young_gc
+            label: Young GC Collections
+            format:
+              type: number
+              compact: true
+
+      - title: JVM Uptime
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Runtime_Uptime IS NOT NULL
+            - STATS uptime_ms = MAX(LAST_OVER_TIME(java_lang_Runtime_Uptime))
+            - EVAL uptime_s = ROUND(uptime_ms / 1000, 0)
+          primary:
+            field: uptime_s
+            label: JVM Uptime
+            format:
+              type: duration
+              decimals: 0
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Golden Signals'
+
+      - title: Request Throughput Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL
+            - STATS requests = SUM(DELTA(Catalina_GlobalRequestProcessor_requestCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: requests
+              label: Requests
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.name
+          legend:
+            visible: show
+            position: right
+
+      - title: Error Count Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_GlobalRequestProcessor_errorCount IS NOT NULL
+            - STATS errors = SUM(DELTA(Catalina_GlobalRequestProcessor_errorCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: errors
+              label: Errors
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.name
+          color:
+            palette: eui_amsterdam_color_blind
+          legend:
+            visible: show
+            position: right
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Resource Utilization'
+
+      - title: Thread Pool Utilization Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL
+            - STATS busy = MAX(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), max_threads = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name
+            - EVAL utilization = CASE(max_threads > 0, ROUND(busy / max_threads * 100, 1), 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: utilization
+              label: Utilization %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          breakdown:
+            field: attributes.name
+          legend:
+            visible: show
+            position: right
+
+      - title: Heap Memory Usage Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: unstacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL
+            - STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used)), heap_committed = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_committed)), heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: heap_used
+              label: Used
+              format:
+                type: bytes
+            - field: heap_committed
+              label: Committed
+              format:
+                type: bytes
+            - field: heap_max
+              label: Max
+              format:
+                type: bytes
+          legend:
+            visible: show
+            position: right
+
+      - title: Thread Pool Utilization
+        size: {w: 16, h: 10}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL
+            - STATS busy = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads))
+            - EVAL thread_util = CASE(max_threads > 0, ROUND(busy / max_threads * 100, 1), 0)
+            - EVAL gauge_min = 0
+            - EVAL gauge_max = 100
+            - EVAL gauge_goal = 80
+          metric:
+            field: thread_util
+            label: Thread Utilization
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: gauge_min
+          maximum:
+            field: gauge_max
+          goal:
+            field: gauge_goal
+          color:
+            range_type: number
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 60
+                color: '#54b399'
+              - up_to: 80
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#cc5642'
+          appearance:
+            shape: arc
+
+      - title: Connection Utilization
+        size: {w: 16, h: 10}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_connectionCount IS NOT NULL
+            - STATS conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), max_conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections))
+            - EVAL conn_util = CASE(max_conns > 0, ROUND(conns / max_conns * 100, 1), 0)
+            - EVAL gauge_min = 0
+            - EVAL gauge_max = 100
+            - EVAL gauge_goal = 80
+          metric:
+            field: conn_util
+            label: Connection Utilization
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: gauge_min
+          maximum:
+            field: gauge_max
+          goal:
+            field: gauge_goal
+          color:
+            range_type: number
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 50
+                color: '#54b399'
+              - up_to: 80
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#cc5642'
+          appearance:
+            shape: arc
+
+      - title: Heap Utilization
+        size: {w: 16, h: 10}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL
+            - STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used)), heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max))
+            - EVAL heap_util = CASE(heap_max > 0, ROUND(heap_used / heap_max * 100, 1), 0)
+            - EVAL gauge_min = 0
+            - EVAL gauge_max = 100
+            - EVAL gauge_goal = 85
+          metric:
+            field: heap_util
+            label: Heap Utilization
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: gauge_min
+          maximum:
+            field: gauge_max
+          goal:
+            field: gauge_goal
+          color:
+            range_type: number
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 70
+                color: '#54b399'
+              - up_to: 85
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#cc5642'
+          appearance:
+            shape: arc
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Connector Summary'
+
+      - title: Connector Performance Summary
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_GlobalRequestProcessor_requestCount IS NOT NULL
+            - STATS requests = MAX(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_requestCount)), errors = MAX(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_errorCount)), bytes_sent = MAX(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_bytesSent)), bytes_recv = MAX(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_bytesReceived)), proc_time = MAX(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_processingTime)), max_time = MAX(LAST_OVER_TIME(Catalina_GlobalRequestProcessor_maxTime)) BY attributes.name
+            - EVAL error_pct = CASE(requests > 0, ROUND(errors / requests * 100, 2), 0)
+            - EVAL avg_latency = CASE(requests > 0, ROUND(proc_time / requests, 1), 0)
+            - SORT requests DESC
+          breakdowns:
+            - field: attributes.name
+              label: Connector
+          metrics:
+            - field: requests
+              label: Requests
+              format:
+                type: number
+            - field: errors
+              label: Errors
+              format:
+                type: number
+            - field: error_pct
+              label: Error %
+              format:
+                type: number
+                decimals: 2
+                suffix: "%"
+            - field: avg_latency
+              label: Avg Latency (ms)
+              format:
+                type: number
+                decimals: 1
+            - field: max_time
+              label: Max Time (ms)
+              format:
+                type: number
+                decimals: 0
+            - field: bytes_sent
+              label: Bytes Sent
+              format:
+                type: bytes
+            - field: bytes_recv
+              label: Bytes Received
+              format:
+                type: bytes

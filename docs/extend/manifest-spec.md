@@ -156,6 +156,19 @@ spec:
               description: Kibana versions compatible with this package.
               examples:
                 - ">=7.9.0"
+        agent:
+          description: Elastic Agent conditions
+          type: object
+          additionalProperties: false
+          properties:
+            version:
+              type: string
+              description: >
+                Elastic Agent versions compatible with this package.
+                If specified, Agents incompatible with the version condition will not run the integration.
+              examples:
+                - "^8.13.0"
+                - "^9.3.0"
     description:
       description: >
         A longer description of the package. It should describe, at least all the kinds of

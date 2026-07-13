@@ -1,0 +1,118 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the creation of files in world-writable directories by an unusual process. Attackers may attempt to hide their activities by creating files in world-writable directories, which are commonly used for temporary file storage. This behavior is often associated with lateral movement and can be an indicator of an attacker attempting to move laterally within a network.",
+        "from": "now-9m",
+        "history_window_start": "now-5d",
+        "index": [
+            "endgame-*",
+            "logs-endpoint.events.file*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "File Creation in World-Writable Directory by Unusual Process",
+        "new_terms_fields": [
+            "host.id",
+            "process.executable",
+            "file.path"
+        ],
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating File Creation in World-Writable Directory by Unusual Process\n\nThis alert flags a Linux process that normally should not stage content in shared writable locations such as /tmp, /var/tmp, /run, or /dev/shm. Attackers abuse these directories because many users and services can write there, which makes payloads and helper scripts easier to hide; for example, a compromised shell may use curl or python to drop an ELF backdoor into /dev/shm and execute it from that transient path.\n\n### Possible investigation steps\n\n- Reconstruct the full process lineage and execution context around the file creation to determine whether it originated from an interactive session, scheduled task, container, service account, or a parent process already running from an unusual location.\n- Inspect the dropped file\u2019s type, permissions, ownership, hash, and contents to assess whether it is a script, ELF, archive, or disguised payload, and determine if it was later executed, renamed, or moved to a more persistent path.\n- Correlate the alert with nearby authentication, privilege escalation, and network activity on the same host to identify signs of compromise such as recent SSH access, sudo use, remote command execution, or outbound connections to untrusted infrastructure.\n- Validate whether the activity aligns with known administrative or software deployment behavior by checking package ownership, change records, automation tooling, and host or user prevalence, since one-off staging in shared writable paths is more suspicious than common fleetwide behavior.\n\n### False positive analysis\n\n- Legitimate package installation, OS update, or local maintenance script activity can use interpreters or utilities such as cp, mv, chmod, curl, or python to stage temporary files in /tmp or /var/tmp before moving them into place, so verify whether the process tree, user, and event time align with expected system change or package management activity on the host.\n- Normal service startup or deployment automation may create transient files in /run or /dev/shm for configuration generation, caching, or runtime state, so confirm the file owner, contents, and parent process match a known application or boot-time workflow and that the same behavior is regularly seen on comparable systems.\n\n### Response and remediation\n- Isolate the affected Linux host from the network while preserving forensic access, stop the malicious process and any spawned tools, and collect copies of the dropped file before cleanup.\n- Remove attacker footholds by deleting the dropped file.\n- Restore the system to a known-good state by rebuilding from a trusted image or validated backup and verifying core packages, shell configuration files, scheduled tasks, and remote access settings match the approved baseline before reconnecting it.\n- Escalate to incident response immediately if the file creation was followed by privilege escalation, credential access, outbound tool downloads, lateral movement over SSH, or the same behavior is identified on multiple hosts, and expand scoping to related accounts and systems.\n",
+        "query": "host.os.type:linux and event.category:file and event.type:creation and (\n  process.name:(\n    \"cp\" or \"mv\" or \"chmod\" or \"chown\" or \"chattr\" or \"chgrp\" or \"curl\" or \"wget\" or \"timeout\" or\n    \"env\" or \"node\" or \"deno\" or \"nodejs\" or .* or python* or perl* or ruby* or php* or lua*\n  ) or\n  process.executable:(\n    ./* or /tmp/* or /var/tmp/* or /dev/shm/* or /run/* or /var/run/* or /boot/* or /sys/* or\n    /lost+found/* or /proc/* or /var/mail/* or /var/www/*\n  )\n) and\nfile.path:(/run/* or /var/run/* or /dev/shm/* or /tmp/* or /var/tmp/*) and\nnot (\n  file.path:(\n    /var/tmp/dracut.* or /var/tmp/mkinitramfs_* or /tmp/.*-00000000.so or /run/udev/rules.d/* or\n    /tmp/new_root/* or /tmp/newroot/* or /run/user/*/.bubblewrap/newroot/* or /tmp/tmp.*/docker-scout_* or\n    /var/tmp/portage/* or /tmp/yarn--* or /run/k3s/containerd/* or /var/tmp/pamac-build-* or\n    /tmp/mkinitcpio* or /run/user/*/netns/netns-*\n  ) or\n  file.extension:(\"json\" or \"txt\")\n)\n",
+        "references": [
+            "https://www.rapid7.com/blog/post/tr-new-whitepaper-stealthy-bpfdoor-variants/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1f56f548-94ec-4678-b1ed-b1a14cca4e3a",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Data Source: Elastic Endgame",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1222",
+                        "name": "File and Directory Permissions Modification",
+                        "reference": "https://attack.mitre.org/techniques/T1222/",
+                        "subtechnique": [
+                            {
+                                "id": "T1222.002",
+                                "name": "Linux and Mac File and Directory Permissions Modification",
+                                "reference": "https://attack.mitre.org/techniques/T1222/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "1f56f548-94ec-4678-b1ed-b1a14cca4e3a_1",
+    "type": "security-rule"
+}

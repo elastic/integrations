@@ -1,0 +1,26 @@
+---
+description: Benchmark 10000 email_security_alerts events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: email_security_alerts
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/email_security_alerts
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-email-security-alerts
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./email_security_alerts-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./email_security_alerts-benchmark/config.yml
+    fields:
+      path: ./email_security_alerts-benchmark/fields.yml

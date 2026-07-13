@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the ActiveMQ broker JVM CPU usage sustains above 85% (`activemq.jvm.cpu.process.usage > 0.85`). The broker is CPU-bound and will degrade message latency and throughput.",
     "name": "[ActiveMQ OTel] High JVM CPU utilization",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -16,13 +17,28 @@
     "alertDelay": {
       "active": 2
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "activemq_otel-broker-health"
+        },
+        {
+          "id": "activemq_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## ActiveMQ high JVM CPU utilization\n\n### What fired\n`activemq.jvm.cpu.process.usage` averaged above 0.85 over the evaluation window.\n\n### Why it matters\nA CPU-bound broker cannot drain its destinations fast enough. Expect GC pressure to grow (compounded by high heap use), enqueue latency to spike, and queue depth to accumulate. Recovery without adding capacity is difficult once the broker is pegged.\n\n### Triage\n1. Broker Health dashboard: confirm which brokers and compare against system CPU (`activemq.jvm.cpu.system.usage`).\n2. Check GC activity (`activemq.jvm.gc.collections` / `activemq.jvm.gc.duration` rates) \u2014 frequent old-gen GCs waste CPU.\n3. Look at destination-level traffic \u2014 is one queue producing an outsized dispatch/forward rate?\n4. Inspect thread counts (`activemq.jvm.thread.count`) and file descriptor usage.\n\n### Remediation\n- Scale out brokers / use a network of brokers to distribute load.\n- Tune GC settings or raise heap size if GC is the dominant CPU consumer.\n- Optimise high-volume destinations (batching, compression, selector simplification).\n\n### Tuning\n- `> 0.85` over 15 minutes. Raise to 0.90 for CPU-tight clusters; lower for sensitive tiers.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "TS metrics-activemq.otel-*\n// JVM CPU is broker-level metric (ratio 0–1)\n| WHERE activemq.jvm.cpu.process.usage IS NOT NULL\n| STATS avg_cpu = MAX(AVG_OVER_TIME(activemq.jvm.cpu.process.usage)) BY activemq.broker.name, host.name\n// Alert when CPU exceeds 85%; adjust for your baseline\n| WHERE avg_cpu > 0.85\n| SORT avg_cpu DESC\n| LIMIT 10"
+        "esql": "TS metrics-activemq.otel-*\n// JVM CPU is broker-level metric (ratio 0\u20131)\n| WHERE activemq.jvm.cpu.process.usage IS NOT NULL\n| STATS avg_cpu = MAX(AVG_OVER_TIME(activemq.jvm.cpu.process.usage)) BY activemq.broker.name, host.name\n// Alert when CPU exceeds 85%; adjust for your baseline\n| WHERE avg_cpu > 0.85\n| SORT avg_cpu DESC\n| LIMIT 10"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

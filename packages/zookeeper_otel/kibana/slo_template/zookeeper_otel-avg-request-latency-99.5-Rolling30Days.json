@@ -1,0 +1,50 @@
+{
+  "attributes": {
+    "name": "[ZooKeeper OTel] Average request latency 99.5% rolling 30 days",
+    "description": "Tracks the average request processing latency of ZooKeeper nodes via OTel metrics, ensuring that 99.5% of 1-minute time intervals show average latency below 100 milliseconds over a rolling 30-day period. Sustained elevated latency risks Kafka broker session timeouts and cascading cluster instability.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"generic.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "metrics.zookeeper.latency.avg"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 100
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "zookeeper",
+      "otel"
+    ],
+    "groupBy": ""
+  },
+  "artifacts": {
+    "dashboards": [
+      {
+        "id": "zookeeper_otel-overview"
+      }
+    ]
+  },
+  "id": "zookeeper_otel-avg-request-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}

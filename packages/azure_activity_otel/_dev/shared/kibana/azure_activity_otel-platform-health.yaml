@@ -1,0 +1,349 @@
+dashboards:
+- name: '[Azure Activity Logs OTel] Platform Health'
+  id: azure_activity_otel-platform-health
+  description: 'Azure platform health signals: ServiceHealth incidents, ResourceHealth status, and Advisor recommendations. Monitor external
+    reliability factors.'
+  time_range:
+    from: now-7d
+    to: now
+  settings:
+    sync:
+      tooltips: false
+      colors: false
+  query:
+    kql: ''
+  filters:
+    - field: data_stream.dataset
+      equals: "azure.activity.otel"
+  panels:
+  - id: 91144e9b-fac7-b44d-0b1d-8339201b83cb
+    title: ''
+    size: {w: 48, h: 2}
+    position: {x: 0, y: 0}
+    links:
+      layout: horizontal
+      items:
+      - id: 3af4ba12-6f83-488a-bdc9-0c7216a22d73
+        label: Overview
+        dashboard: azure_activity_otel-overview
+      - id: 8e076427-fd85-ffef-d2a9-2d8549802ca6
+        label: Administrative Operations
+        dashboard: azure_activity_otel-administrative-operations
+      - id: d85a6f5e-c243-4bbe-6823-cd1559ff70d1
+        label: Platform Health
+        dashboard: azure_activity_otel-platform-health
+  - id: fc69666b-014e-4167-d063-22478c958b29
+    title: ''
+    hide_title: true
+    size: {w: 16, h: 12}
+    position: {x: 0, y: 2}
+    markdown:
+      content: |
+        ## [Azure Activity Logs OTel] Platform Health
+
+        This dashboard monitors Azure platform health signals:
+        - Service health incidents and maintenance events
+        - Resource health status and state transitions
+        - Active recommendations with impact and affected resources
+        - Active alerts and monitoring signals
+        - Detailed event logs for incident investigation
+      font_size: 12
+      links_in_new_tab: false
+  - id: 8c4705cc-4b84-c3f1-de94-802b227ac7c6
+    title: ''
+    hide_title: true
+    size: {w: 11, h: 6}
+    position: {x: 16, y: 2}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "ServiceHealth"
+        | WHERE azure.servicehealth.incident.type == "Incident"
+        | STATS incidents = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: incidents
+        label: Incidents
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: 177665d4-eb40-6709-839a-ae2a5a4d50f2
+    title: ''
+    hide_title: true
+    size: {w: 11, h: 6}
+    position: {x: 27, y: 2}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "ResourceHealth"
+        | WHERE azure.resourcehealth.state IN ("Unavailable", "Degraded")
+        | STATS unhealthy = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: unhealthy
+        label: Unavailable
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: ad224525-35e1-053f-2fbd-09fbdde31172
+    title: ''
+    hide_title: true
+    size: {w: 10, h: 6}
+    position: {x: 38, y: 2}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Recommendation"
+        | STATS recommendations = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: recommendations
+        label: Recommendations
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: 38ed9887-6669-458b-1cf6-69c7e3dc77ef
+    title: ''
+    hide_title: true
+    size: {w: 16, h: 6}
+    position: {x: 16, y: 8}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Alert"
+        | WHERE azure.result.type IN ("Activated", "Active")
+        | STATS alerts = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: alerts
+        label: Alerts Active
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: 702a2796-5ae5-ec5b-65b5-1d17bc2ef2a6
+    title: ''
+    hide_title: true
+    size: {w: 16, h: 6}
+    position: {x: 32, y: 8}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "ServiceHealth"
+        | WHERE azure.servicehealth.incident.type == "Maintenance"
+        | STATS maintenance = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: maintenance
+        label: Maintenance
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: 7c8e12b2-83da-4345-9ec0-bf6083d9aba9
+    title: ServiceHealth Events Over Time
+    size: {w: 48, h: 12}
+    position: {x: 0, y: 14}
+    esql:
+      type: area
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "ServiceHealth"
+        | WHERE azure.servicehealth.incident.type IS NOT NULL
+        | STATS event_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), azure.servicehealth.incident.type
+        | SORT time_bucket ASC
+      time_field: '@timestamp'
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: event_count
+        label: Events
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: azure.servicehealth.incident.type
+  - id: dc2b8102-a139-35f3-6d4c-f007fd28ec79
+    title: ResourceHealth by State
+    size: {w: 24, h: 12}
+    position: {x: 0, y: 26}
+    esql:
+      type: pie
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "ResourceHealth"
+        | WHERE azure.resourcehealth.state IS NOT NULL
+        | WHERE cloud.resource_id IS NOT NULL
+        | EVAL ts_state = CONCAT(DATE_FORMAT("yyyy-MM-dd HH:mm:ss.SSS", @timestamp), "|", azure.resourcehealth.state)
+        | STATS latest = MV_LAST(MV_SORT(VALUES(ts_state))) BY cloud.resource_id
+        | EVAL state = MV_LAST(SPLIT(latest, "|"))
+        | STATS count = COUNT(*) BY state
+        | SORT count DESC
+        | LIMIT 6
+      time_field: '@timestamp'
+      legend:
+        visible: show
+      metrics:
+      - field: count
+      breakdowns:
+      - field: state
+        label: Health State
+      appearance:
+        donut: medium
+        values:
+          format: percent
+      color:
+        assignments:
+        - value: Available
+          color: '#54B399'
+        - value: Unavailable
+          color: '#BD271E'
+        - value: Degraded
+          color: '#D6BF57'
+  - id: 96d0e535-280d-7c9e-f62e-501cde590da9
+    title: Top Impacted Services
+    size: {w: 24, h: 12}
+    position: {x: 24, y: 26}
+    esql:
+      type: pie
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "ServiceHealth"
+        | WHERE azure.servicehealth.service IS NOT NULL
+        | STATS event_count = COUNT(*) BY azure.servicehealth.service
+        | SORT event_count DESC
+        | LIMIT 10
+      time_field: '@timestamp'
+      legend:
+        visible: show
+      metrics:
+      - field: event_count
+      breakdowns:
+      - field: azure.servicehealth.service
+        label: Service
+      appearance:
+        donut: medium
+        values:
+          format: percent
+  - id: 0e925cbb-bede-2581-c3d5-4b03d5ee9fc0
+    title: Active Recommendations
+    size: {w: 24, h: 12}
+    position: {x: 0, y: 38}
+    esql:
+      type: datatable
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Recommendation"
+        | WHERE azure.recommendation.name IS NOT NULL
+        | STATS affected_resources = COUNT_DISTINCT(cloud.resource_id), last_seen = MAX(@timestamp) BY azure.recommendation.name, azure.recommendation.category, azure.recommendation.impact
+        | EVAL impact_rank = CASE(azure.recommendation.impact == "High", 1, azure.recommendation.impact == "Medium", 2, azure.recommendation.impact == "Low", 3, 4)
+        | SORT impact_rank ASC, affected_resources DESC
+        | DROP impact_rank
+        | LIMIT 50
+      time_field: '@timestamp'
+      breakdowns:
+      - field: azure.recommendation.name
+        label: Recommendation
+      - field: azure.recommendation.category
+        label: Category
+      - field: azure.recommendation.impact
+        label: Impact
+      - field: affected_resources
+        label: Affected Resources
+      - field: last_seen
+        label: Last Seen
+      paging:
+        enabled: true
+        page_size: 10
+  - id: a9bfb3cb-31b8-e1b4-0ed2-d635bc8fd9bb
+    title: ResourceHealth by Cause
+    size: {w: 24, h: 12}
+    position: {x: 24, y: 38}
+    esql:
+      type: pie
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "ResourceHealth"
+        | WHERE azure.resourcehealth.cause IS NOT NULL
+        | STATS count = COUNT(*) BY azure.resourcehealth.cause
+        | SORT count DESC
+        | LIMIT 5
+      time_field: '@timestamp'
+      legend:
+        visible: show
+      metrics:
+      - field: count
+      breakdowns:
+      - field: azure.resourcehealth.cause
+        label: Cause
+      appearance:
+        donut: medium
+        values:
+          format: percent
+  - id: 4bc1c542-4d3f-77a3-1f04-80eaa4402952
+    title: Recent ServiceHealth Events
+    size: {w: 24, h: 15}
+    position: {x: 0, y: 50}
+    esql:
+      type: datatable
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "ServiceHealth"
+        | KEEP @timestamp, azure.servicehealth.title, azure.servicehealth.incident.type, azure.servicehealth.state, azure.servicehealth.service, azure.servicehealth.region
+        | SORT @timestamp DESC
+        | LIMIT 50
+      time_field: '@timestamp'
+      breakdowns:
+      - field: '@timestamp'
+        label: Time
+      - field: azure.servicehealth.title
+        label: Title
+      - field: azure.servicehealth.incident.type
+        label: Type
+      - field: azure.servicehealth.state
+        label: State
+      - field: azure.servicehealth.service
+        label: Service
+      - field: azure.servicehealth.region
+        label: Region
+      paging:
+        enabled: true
+        page_size: 10
+  - id: dfefdbfe-3429-6a5e-cc65-b3eb6f897f5b
+    title: Recent ResourceHealth Events
+    size: {w: 24, h: 15}
+    position: {x: 24, y: 50}
+    esql:
+      type: datatable
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "ResourceHealth"
+        | KEEP @timestamp, azure.resourcehealth.state, azure.resourcehealth.previous_state, azure.resourcehealth.title, azure.resourcehealth.cause, cloud.resource_id
+        | SORT @timestamp DESC
+        | LIMIT 50
+      time_field: '@timestamp'
+      breakdowns:
+      - field: '@timestamp'
+        label: Time
+      - field: azure.resourcehealth.state
+        label: State
+      - field: azure.resourcehealth.previous_state
+        label: Previous
+      - field: azure.resourcehealth.title
+        label: Title
+      - field: azure.resourcehealth.cause
+        label: Cause
+      - field: cloud.resource_id
+        label: Resource
+      paging:
+        enabled: true
+        page_size: 10

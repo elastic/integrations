@@ -18,8 +18,8 @@ services:
       - http-server
       - --addr=:443
       - --config=/files/detection-config.yml
-      - --tls-cert=/files/detection-certificate.crt
-      - --tls-key=/files/detection-private.key
+      - --tls-cert=/files/shared-certificate.crt
+      - --tls-key=/files/shared-private.key
   eset_protect-device_task:
     image: docker.elastic.co/observability/stream:v0.18.0
     hostname: xx.automation.eset.systems
@@ -33,8 +33,40 @@ services:
       - http-server
       - --addr=:443
       - --config=/files/device_task-config.yml
-      - --tls-cert=/files/device_task-certificate.crt
-      - --tls-key=/files/device_task-private.key
+      - --tls-cert=/files/shared-certificate.crt
+      - --tls-key=/files/shared-private.key
+  eset_protect-device:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: xx.device-management.eset.systems
+    networks:
+      - elastic-package-stack_default
+    ports:
+      - 443
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: "443"
+    command:
+      - http-server
+      - --addr=:443
+      - --config=/files/device-config.yml
+      - --tls-cert=/files/shared-certificate.crt
+      - --tls-key=/files/shared-private.key
+  eset_protect-device_vulnerability:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: xx.vulnerability-management.eset.systems
+    ports:
+      - 443
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: "443"
+    command:
+      - http-server
+      - --addr=:443
+      - --config=/files/device_vulnerability-config.yml
+      - --tls-cert=/files/shared-certificate.crt
+      - --tls-key=/files/shared-private.key
   eset_protect-oauth:
     image: docker.elastic.co/observability/stream:v0.18.0
     hostname: xx.business-account.iam.eset.systems
@@ -50,8 +82,8 @@ services:
       - http-server
       - --addr=:443
       - --config=/files/oauth-config.yml
-      - --tls-cert=/files/oauth-certificate.crt
-      - --tls-key=/files/oauth-private.key
+      - --tls-cert=/files/shared-certificate.crt
+      - --tls-key=/files/shared-private.key
 networks:
   elastic-package-stack_default:
     driver: bridge

@@ -1,0 +1,76 @@
+{
+    "attributes": {
+        "created_at": "2026-03-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Amcache Driver Forensics: Enumerates driver binaries recorded in the Windows Amcache.hve registry hive. Identifies unsigned drivers, third-party kernel-mode drivers, and out-of-box drivers. Results are sorted with unsigned and kernel-mode drivers first for rapid forensic triage. Useful for detecting rootkits, vulnerable drivers (BYOVD), and unauthorized driver installations.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["driver"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.amcache_driver"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "driver_name"
+                }
+            },
+            {
+                "key": "file.code_signature.subject_name",
+                "value": {
+                    "field": "driver_company"
+                }
+            },
+            {
+                "key": "file.code_signature.signed",
+                "value": {
+                    "field": "is_signed"
+                }
+            },
+            {
+                "key": "package.name",
+                "value": {
+                    "field": "product"
+                }
+            },
+            {
+                "key": "package.version",
+                "value": {
+                    "field": "product_version"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "amcache", "forensics", "driver_analysis", "windows"]
+                }
+            }
+        ],
+        "id": "amcache_driver_forensics_windows_elastic",
+        "interval": "7200",
+        "platform": "windows",
+        "timeout": 180,
+        "query": "-- Amcache Driver Forensics: Driver binary inventory from Amcache\n-- Source: elastic_amcache_driver_binary (Root\\InventoryDriverBinary)\n-- Forensic value: Identifies unsigned, third-party, and kernel-mode drivers\n-- Use case: Rootkit detection, BYOVD (Bring Your Own Vulnerable Driver), unauthorized drivers\n\nSELECT\n  *,\n  datetime(timestamp, 'unixepoch') AS record_time,\n  CASE\n    WHEN driver_signed = '1' THEN 'true'\n    ELSE 'false'\n  END AS is_signed\nFROM elastic_amcache_driver_binary\nORDER BY\n  CASE WHEN driver_signed != '1' THEN 0 ELSE 1 END,\n  CASE WHEN driver_is_kernel_mode = '1' THEN 0 ELSE 1 END,\n  CASE WHEN driver_in_box != '1' THEN 0 ELSE 1 END,\n  timestamp DESC;",
+        "updated_at": "2026-03-27T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.4.0",
+    "id": "osquery_manager-d55fb469-b20d-43aa-902a-f0e71cf036a6",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-03-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

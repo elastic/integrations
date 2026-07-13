@@ -6,7 +6,7 @@ The Integration can collect metrics in two datastreams from HAProxy: `info` and 
 
 ## Compatibility
 
-The `log` dataset was tested with logs from HAProxy `1.8`, `1.9` and `2.0`, `2.6` running on a Debian. It is not available on Windows. 
+The `log` dataset was tested with logs from HAProxy `1.8`, `1.9` and `2.0`, `2.6`, `3.2` running on a Debian. It is not available on Windows. 
 The integration supports the following default log patterns:
 * [Default log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.1)
 * [TCP log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.2)
@@ -14,7 +14,7 @@ The integration supports the following default log patterns:
 * [HTTPS log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.4)
 * [Error log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.5)
 
-The `info` and `stat` datasets were tested with HAProxy versions from `1.6`, `1.7`, `1.8` to `2.0`. 
+The `info` and `stat` datasets were tested with HAProxy versions from `1.6`, `1.7`, `1.8` to `3.2`.
 
 ## Troubleshooting
 

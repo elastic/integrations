@@ -1,0 +1,119 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Correlates successful Azure Virtual Machine Run Command operations with endpoint process execution on the same host within minutes. Adversaries abuse Run Command to run scripts remotely as SYSTEM or root while activity logs only record the control-plane action; Elastic Defend process telemetry reveals the on-guest payload.",
+        "false_positives": [
+            "Legitimate automation that deploys configuration via Azure Run Command and launches PowerShell with unrestricted policy and numbered script files (for example `script1.ps1`) may match. Baseline known deployment pipelines, VM names, and principal IDs before tuning."
+        ],
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Azure Run Command Correlated with Process Execution",
+        "note": "## Triage and analysis\n\n### Investigating Azure Run Command Correlated with Process Execution\n\nThis ES|QL rule correlates Azure Activity Log `MICROSOFT.COMPUTE/VIRTUALMACHINES/RUNCOMMAND/ACTION` events with\nendpoint process starts, joined on host name within a two-minute bucket and a 0\u2013120 second delay between Run Command and process start.\n\nPivot into raw `logs-azure.activitylogs-*` and `logs-endpoint.events.process-*` events for full command lines and\nresource identifiers.\n\n### Possible investigation steps\n\n- Review `user.email` and `azure.activitylogs.identity.authorization.evidence.principal_id` for who invoked Run Command.\n- Inspect `Esql.process_command_line_values` for script paths and arguments beyond the matched pattern.\n- Confirm `Esql.host_name` maps to the intended VM and whether Run Command timing aligns with change windows.\n- Hunt for additional Run Command or PowerShell activity from the same principal or subscription.\n\n### Response and remediation\n\n- If unauthorized, isolate the VM, revoke credentials used for Run Command, and review role assignments on the VM and\n  subscription.\n- Collect endpoint artifacts and Azure activity logs for incident reporting.\n",
+        "query": "FROM logs-azure.activitylogs-*, logs-endpoint.events.process-* METADATA _id, _version, _index\n| WHERE \n  (\n    event.category == \"process\" AND KQL(\"event.action:start\")\n    AND process.parent.name == \"powershell.exe\"\n    AND process.parent.command_line LIKE \"powershell  -ExecutionPolicy Unrestricted -File script?.ps1\"\n    AND process.name != \"conhost.exe\"\n  ) OR\n  (\n    KQL(\"event.category:process and event.action:exec and process.parent.name:(dash or bash or sh) and process.parent.args:/var/lib/waagent/run-command/download/*/script.sh\")\n   ) OR \n  (\n    event.module == \"azure\"\n    AND event.action == \"MICROSOFT.COMPUTE/VIRTUALMACHINES/RUNCOMMAND/ACTION\"\n    AND NOT KQL(\"event.outcome:failure\")\n   )\n\n// Azure hostname comes as upper-case while Endpoint event comes as lowercase\n| EVAL Esql.host_name = COALESCE(\n    TO_LOWER(host.name),\n    TO_LOWER(azure.resource.name)\n  )\n| EVAL ts_runcommand = CASE(event.module == \"azure\", @timestamp, null)\n| EVAL ts_endpoint = CASE(event.category == \"process\", @timestamp, null)\n| EVAL is_runcommand = CASE(event.module == \"azure\", 1, null)\n| EVAL is_endpoint = CASE(event.category == \"process\", 1, null)\n| EVAL Esql.time_bucket = DATE_TRUNC(2 minutes, @timestamp)\n| STATS\n    runcommand_count = COUNT(is_runcommand),\n    endpoint_count = COUNT(is_endpoint),\n    user.email = VALUES(user.email),\n    azure.activitylogs.identity.authorization.evidence.principal_id = VALUES(azure.activitylogs.identity.authorization.evidence.principal_id),\n    azure.activitylogs.tenant_id = VALUES(azure.activitylogs.tenant_id),\n    azure.subscription_id = VALUES(azure.subscription_id),\n    source.ip = VALUES(source.ip),\n    source.geo.country_name = VALUES(source.geo.country_name),\n    source.as.number = VALUES(source.as.number),\n    Esql.process_command_line_values = VALUES(process.command_line),\n    first_runcommand = MIN(ts_runcommand),\n    first_ps_exec = MIN(ts_endpoint),\n    outcome = VALUES(event.outcome)\n  BY Esql.host_name, Esql.time_bucket\n| WHERE runcommand_count >= 1 AND endpoint_count >= 1\n| EVAL delta_ms = TO_LONG(first_ps_exec) - TO_LONG(first_runcommand)\n| EVAL delta_sec = delta_ms / 1000\n| WHERE delta_sec >= 0 AND delta_sec <= 120\n| KEEP\n    user.email,\n    azure.activitylogs.identity.authorization.evidence.principal_id,\n    source.ip,\n    source.as.number,\n    source.geo.country_name,\n    azure.activitylogs.tenant_id,\n    azure.subscription_id,\n    Esql.*\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#virtual-machine-contributor",
+            "https://posts.specterops.io/attacking-azure-azure-ad-and-introducing-powerzure-ca70b330511a",
+            "https://adsecurity.org/?p=4277"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": "^1.22.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.authorization.evidence.principal_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.tenant_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.subscription_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.number",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.country_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ebbc1959-3309-4abf-b6cb-2bee3dbc9a7b",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Endpoint",
+            "OS: Windows",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Azure",
+            "Data Source: Microsoft Azure",
+            "Data Source: Azure Activity Logs",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1651",
+                        "name": "Cloud Administration Command",
+                        "reference": "https://attack.mitre.org/techniques/T1651/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "ebbc1959-3309-4abf-b6cb-2bee3dbc9a7b_1",
+    "type": "security-rule"
+}

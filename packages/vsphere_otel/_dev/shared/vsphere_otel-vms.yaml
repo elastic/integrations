@@ -1,0 +1,487 @@
+dashboards:
+- id: vsphere_otel-vms
+  name: '[vSphere OTel] Virtual Machines'
+  description: >-
+    VM-level performance: memory pressure (ballooning, swapping), disk latency,
+    network throughput, and per-VM resource tables from the OTel vcenterreceiver.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+
+  controls:
+  - type: options
+    label: Datacenter
+    data_view: metrics-*
+    field: vcenter.datacenter.name
+  - type: options
+    label: Cluster
+    data_view: metrics-*
+    field: vcenter.cluster.name
+  - type: options
+    label: Host
+    data_view: metrics-*
+    field: vcenter.host.name
+
+  panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: vsphere_otel-overview
+      - label: Hosts
+        dashboard: vsphere_otel-hosts
+      - label: Virtual Machines
+        dashboard: vsphere_otel-vms
+      - label: Storage
+        dashboard: vsphere_otel-storage
+
+      # ─── Dashboard Overview ─────────────────────────────────────────
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [vSphere OTel] Virtual Machines
+
+        This dashboard focuses on VM-level performance health:
+        - Memory pressure: ballooning and swapping indicators
+        - VM disk I/O latency and throughput
+        - VM network throughput and packet rates
+        - Per-VM resource usage tables for investigation
+
+      # ─── KPI Row 1 (beside overview: 4 × w:8 = 32) ────────────────
+  - title: VM Count
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.memory.usage IS NOT NULL
+      - STATS vms = COUNT_DISTINCT(vcenter.vm.name)
+      primary:
+        field: vms
+        label: VMs Monitored
+        format:
+          type: number
+          decimals: 0
+
+  - title: Avg VM Memory Usage
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.memory.usage IS NOT NULL
+      - STATS mem = AVG(LAST_OVER_TIME(vcenter.vm.memory.usage))
+      primary:
+        field: mem
+        label: Avg VM Memory
+        format:
+          type: number
+          decimals: 1
+          suffix: " MiBy"
+
+  - title: VMs Ballooning
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.memory.ballooned IS NOT NULL
+      - STATS ballooned = MAX(LAST_OVER_TIME(vcenter.vm.memory.ballooned)) BY vcenter.vm.name
+      - WHERE ballooned > 0
+      - STATS vms_ballooning = COUNT(vcenter.vm.name)
+      primary:
+        field: vms_ballooning
+        label: VMs Ballooning
+        format:
+          type: number
+          decimals: 0
+
+  - title: VMs Swapping
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.memory.swapped IS NOT NULL
+      - STATS swapped = MAX(LAST_OVER_TIME(vcenter.vm.memory.swapped)) BY vcenter.vm.name
+      - WHERE swapped > 0
+      - STATS vms_swapping = COUNT(vcenter.vm.name)
+      primary:
+        field: vms_swapping
+        label: VMs Swapping
+        format:
+          type: number
+          decimals: 0
+
+      # ─── KPI Row 2 (beside overview: 4 × w:8 = 32) ────────────────
+  - title: Avg VM Disk Utilization
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.disk.utilization IS NOT NULL
+      - STATS util = AVG(LAST_OVER_TIME(vcenter.vm.disk.utilization))
+      primary:
+        field: util
+        label: Avg Disk Used %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+
+  - title: Max VM Disk Latency
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.disk.latency.max IS NOT NULL
+      - STATS lat = MAX(LAST_OVER_TIME(vcenter.vm.disk.latency.max))
+      primary:
+        field: lat
+        label: Max Disk Latency
+        format:
+          type: number
+          decimals: 1
+          suffix: " ms"
+
+  - title: Avg VM Network Usage
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.network.usage IS NOT NULL
+      - WHERE attributes.object == "*"
+      - STATS net = AVG(LAST_OVER_TIME(vcenter.vm.network.usage))
+      primary:
+        field: net
+        label: Avg Net Usage
+        format:
+          type: number
+          decimals: 1
+          suffix: " KiBy/s"
+
+  - title: Total VM Network Throughput
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.network.throughput IS NOT NULL
+      - WHERE attributes.object == "*"
+      - STATS throughput = SUM(LAST_OVER_TIME(vcenter.vm.network.throughput))
+      primary:
+        field: throughput
+        label: Total Net Throughput
+        format:
+          type: bytes
+          suffix: "/s"
+
+      # ─── Virtual Machines Overview Table ────────────────────────────
+  - title: Virtual Machines
+    size: {w: 48, h: 12}
+    esql:
+      type: datatable
+      query:
+      - FROM metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.memory.usage IS NOT NULL OR vcenter.vm.memory.ballooned IS NOT NULL OR vcenter.vm.disk.utilization IS NOT NULL
+      - STATS mem = AVG(vcenter.vm.memory.usage), ballooned = AVG(vcenter.vm.memory.ballooned), swapped = AVG(vcenter.vm.memory.swapped), 
+        disk_util = AVG(vcenter.vm.disk.utilization) BY vcenter.vm.name, vcenter.host.name, vcenter.cluster.name
+      - SORT mem DESC
+      - LIMIT 100
+      metrics:
+      - field: mem
+        label: Memory Usage
+        format:
+          type: bytes
+      - field: ballooned
+        label: Ballooned
+        format:
+          type: bytes
+      - field: swapped
+        label: Swapped
+        format:
+          type: bytes
+      - field: disk_util
+        label: Disk Utilization
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+
+      # ─── Memory Pressure Section ───────────────────────────────────
+  - title: VM Memory Usage Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.memory.usage IS NOT NULL
+      - STATS mem = MAX(AVG_OVER_TIME(vcenter.vm.memory.usage)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), vcenter.vm.name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: mem
+        label: Memory MiBy
+        format:
+          type: number
+          suffix: " MiBy"
+      breakdown:
+        field: vcenter.vm.name
+      legend:
+        visible: show
+        position: right
+
+  - title: VM Memory Ballooned Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.memory.ballooned IS NOT NULL
+      - STATS ballooned = MAX(AVG_OVER_TIME(vcenter.vm.memory.ballooned)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        vcenter.vm.name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: ballooned
+        label: Ballooned MiBy
+        format:
+          type: number
+          suffix: " MiBy"
+      breakdown:
+        field: vcenter.vm.name
+      legend:
+        visible: show
+        position: right
+
+  - title: VM Memory Swapped Over Time
+    size: {w: 48, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.memory.swapped IS NOT NULL
+      - STATS swapped = MAX(AVG_OVER_TIME(vcenter.vm.memory.swapped)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        vcenter.vm.name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: swapped
+        label: Swapped MiBy
+        format:
+          type: number
+          suffix: " MiBy"
+      breakdown:
+        field: vcenter.vm.name
+      legend:
+        visible: show
+        position: right
+
+      # ─── Disk Performance Section ──────────────────────────────────
+  - title: VM Max Disk Latency Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.disk.latency.max IS NOT NULL
+      - STATS lat = MAX(MAX_OVER_TIME(vcenter.vm.disk.latency.max)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        vcenter.vm.name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: lat
+        label: Max Latency
+        format:
+          type: number
+          decimals: 1
+          suffix: " ms"
+      breakdown:
+        field: vcenter.vm.name
+      legend:
+        visible: show
+        position: right
+
+  - title: VM Disk Throughput Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.disk.throughput IS NOT NULL
+      - WHERE attributes.object == "*"
+      - STATS throughput = AVG(AVG_OVER_TIME(vcenter.vm.disk.throughput)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        attributes.direction
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: throughput
+        label: Throughput
+        format:
+          type: number
+          suffix: " KiBy/s"
+      breakdown:
+        field: attributes.direction
+      color:
+        assignments:
+        - value: "read"
+          color: '#6092C0'
+        - value: "write"
+          color: '#D36086'
+      legend:
+        visible: show
+        position: right
+
+      # ─── Network Section ───────────────────────────────────────────
+  - title: VM Network Throughput Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.network.throughput IS NOT NULL
+      - WHERE attributes.object == "*"
+      - STATS throughput = AVG(AVG_OVER_TIME(vcenter.vm.network.throughput)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        attributes.direction
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: throughput
+        label: Throughput
+        format:
+          type: bytes
+          suffix: "/s"
+      breakdown:
+        field: attributes.direction
+      color:
+        assignments:
+        - value: "received"
+          color: '#54B399'
+        - value: "transmitted"
+          color: '#6092C0'
+      legend:
+        visible: show
+        position: right
+
+  - title: VM Network Packet Rate Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.network.packet.rate IS NOT NULL
+      - WHERE attributes.object == "*"
+      - STATS pps = AVG(AVG_OVER_TIME(vcenter.vm.network.packet.rate)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        attributes.direction
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: pps
+        label: Packets/s
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: attributes.direction
+      color:
+        assignments:
+        - value: "received"
+          color: '#54B399'
+        - value: "transmitted"
+          color: '#6092C0'
+      legend:
+        visible: show
+        position: right
+
+      # ─── Detail Tables Section ─────────────────────────────────────
+  - title: Top VMs by Memory Usage
+    size: {w: 24, h: 15}
+    esql:
+      type: datatable
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.memory.usage IS NOT NULL
+      - STATS mem = MAX(LAST_OVER_TIME(vcenter.vm.memory.usage)), ballooned = MAX(LAST_OVER_TIME(vcenter.vm.memory.ballooned)), swapped = 
+        MAX(LAST_OVER_TIME(vcenter.vm.memory.swapped)) BY vcenter.vm.name, vcenter.host.name
+      - SORT mem DESC
+      - LIMIT 20
+      metrics:
+      - field: mem
+        label: Memory (MiBy)
+        format:
+          type: number
+          decimals: 0
+      - field: ballooned
+        label: Ballooned (MiBy)
+        format:
+          type: number
+          decimals: 0
+      - field: swapped
+        label: Swapped (MiBy)
+        format:
+          type: number
+          decimals: 0
+
+  - title: Top VMs by Disk Latency
+    size: {w: 24, h: 15}
+    esql:
+      type: datatable
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.vm.disk.latency.max IS NOT NULL
+      - STATS lat = MAX(LAST_OVER_TIME(vcenter.vm.disk.latency.max)), disk_util = MAX(LAST_OVER_TIME(vcenter.vm.disk.utilization)) BY 
+        vcenter.vm.name, vcenter.host.name
+      - SORT lat DESC
+      - LIMIT 20
+      metrics:
+      - field: lat
+        label: Max Latency (ms)
+        format:
+          type: number
+          decimals: 1
+      - field: disk_util
+        label: Disk Used %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"

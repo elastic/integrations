@@ -1,0 +1,2931 @@
+{
+  "id": "aws_ec2_otel-45f45575-d519-4a70-a50c-2195c0c9f916",
+  "type": "dashboard",
+  "namespaces": [
+    "default"
+  ],
+  "updated_at": "2026-06-05T11:22:17.085Z",
+  "created_at": "2026-05-22T11:13:29.409Z",
+  "version": "Wzc3ODAsMV0=",
+  "attributes": {
+    "description": "AWS EC2 dashboard for CloudWatch metrics collected by the OpenTelemetry Collector.",
+    "title": "[AWS EC2 OTel] Metrics",
+    "pinned_panels": {
+      "panels": {
+        "ctrl-ec2-account": {
+          "order": 0,
+          "type": "options_list_control",
+          "width": "medium",
+          "grow": true,
+          "config": {
+            "use_global_filters": true,
+            "ignore_validations": false,
+            "title": "Account",
+            "field_name": "cloud.account.id",
+            "exclude": false,
+            "sort": {
+              "by": "_count",
+              "direction": "desc"
+            },
+            "exists_selected": false,
+            "run_past_timeout": false,
+            "search_technique": "wildcard",
+            "selected_options": [],
+            "single_select": false,
+            "dataViewRefName": "ctrl-ec2-account:optionsListDataView"
+          }
+        },
+        "ctrl-ec2-region": {
+          "order": 1,
+          "type": "options_list_control",
+          "width": "medium",
+          "grow": true,
+          "config": {
+            "use_global_filters": true,
+            "ignore_validations": false,
+            "title": "Region",
+            "field_name": "cloud.region",
+            "exclude": false,
+            "sort": {
+              "by": "_count",
+              "direction": "desc"
+            },
+            "exists_selected": false,
+            "run_past_timeout": false,
+            "search_technique": "wildcard",
+            "selected_options": [],
+            "single_select": false,
+            "dataViewRefName": "ctrl-ec2-region:optionsListDataView"
+          }
+        },
+        "ctrl-ec2-instance-id": {
+          "order": 2,
+          "type": "options_list_control",
+          "width": "medium",
+          "grow": true,
+          "config": {
+            "use_global_filters": true,
+            "ignore_validations": false,
+            "title": "Instance ID",
+            "field_name": "InstanceId",
+            "exclude": false,
+            "sort": {
+              "by": "_count",
+              "direction": "desc"
+            },
+            "exists_selected": false,
+            "run_past_timeout": false,
+            "search_technique": "wildcard",
+            "selected_options": [],
+            "single_select": false,
+            "dataViewRefName": "ctrl-ec2-instance-id:optionsListDataView"
+          }
+        }
+      }
+    },
+    "optionsJSON": {
+      "hidePanelTitles": false,
+      "hidePanelBorders": false,
+      "useMargins": true,
+      "autoApplyFilters": false,
+      "syncColors": false,
+      "syncCursor": true,
+      "syncTooltips": false
+    },
+    "panelsJSON": [
+      {
+        "type": "markdown",
+        "embeddableConfig": {
+          "content": "## ![Amazon EC2](data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIHdpZHRoPSIyNHB4IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCA4MCA4MCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4gICAgPHRpdGxlPkljb24tQXJjaGl0ZWN0dXJlLzY0L0FyY2hfQW1hem9uLUVDMl82NDwvdGl0bGU+ICAgIDxnIGlkPSJJY29uLUFyY2hpdGVjdHVyZS82NC9BcmNoX0FtYXpvbi1FQzJfNjQiIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPiAgICAgICAgPGcgaWQ9Ikljb24tQXJjaGl0ZWN0dXJlLUJHLzY0L0NvbXB1dGUiIGZpbGw9IiNFRDcxMDAiPiAgICAgICAgICAgIDxyZWN0IGlkPSJSZWN0YW5nbGUiIHg9IjAiIHk9IjAiIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PC9yZWN0PiAgICAgICAgPC9nPiAgICAgICAgPHBhdGggZD0iTTI3LDUzIEw1Miw1MyBMNTIsMjggTDI3LDI4IEwyNyw1MyBaIE01NCwyOCBMNTgsMjggTDU4LDMwIEw1NCwzMCBMNTQsMzQgTDU4LDM0IEw1OCwzNiBMNTQsMzYgTDU0LDM5IEw1OCwzOSBMNTgsNDEgTDU0LDQxIEw1NCw0NSBMNTgsNDUgTDU4LDQ3IEw1NCw0NyBMNTQsNTEgTDU4LDUxIEw1OCw1MyBMNTQsNTMgTDU0LDUzLjEzNiBDNTQsNTQuMTY0IDUzLjE2NCw1NSA1Mi4xMzYsNTUgTDUyLDU1IEw1Miw1OSBMNTAsNTkgTDUwLDU1IEw0Niw1NSBMNDYsNTkgTDQ0LDU5IEw0NCw1NSBMNDEsNTUgTDQxLDU5IEwzOSw1OSBMMzksNTUgTDM1LDU1IEwzNSw1OSBMMzMsNTkgTDMzLDU1IEwyOSw1NSBMMjksNTkgTDI3LDU5IEwyNyw1NSBMMjYuODY0LDU1IEMyNS44MzYsNTUgMjUsNTQuMTY0IDI1LDUzLjEzNiBMMjUsNTMgTDIyLDUzIEwyMiw1MSBMMjUsNTEgTDI1LDQ3IEwyMiw0NyBMMjIsNDUgTDI1LDQ1IEwyNSw0MSBMMjIsNDEgTDIyLDM5IEwyNSwzOSBMMjUsMzYgTDIyLDM2IEwyMiwzNCBMMjUsMzQgTDI1LDMwIEwyMiwzMCBMMjIsMjggTDI1LDI4IEwyNSwyNy44NjQgQzI1LDI2LjgzNiAyNS44MzYsMjYgMjYuODY0LDI2IEwyNywyNiBMMjcsMjIgTDI5LDIyIEwyOSwyNiBMMzMsMjYgTDMzLDIyIEwzNSwyMiBMMzUsMjYgTDM5LDI2IEwzOSwyMiBMNDEsMjIgTDQxLDI2IEw0NCwyNiBMNDQsMjIgTDQ2LDIyIEw0NiwyNiBMNTAsMjYgTDUwLDIyIEw1MiwyMiBMNTIsMjYgTDUyLjEzNiwyNiBDNTMuMTY0LDI2IDU0LDI2LjgzNiA1NCwyNy44NjQgTDU0LDI4IFogTTQxLDY1Ljg3NiBDNDEsNjUuOTQ0IDQwLjk0NCw2NiA0MC44NzYsNjYgTDE0LjEyNCw2NiBDMTQuMDU2LDY2IDE0LDY1Ljk0NCAxNCw2NS44NzYgTDE0LDM5LjEyNCBDMTQsMzkuMDU2IDE0LjA1NiwzOSAxNC4xMjQsMzkgTDIwLDM5IEwyMCwzNyBMMTQuMTI0LDM3IEMxMi45NTMsMzcgMTIsMzcuOTUzIDEyLDM5LjEyNCBMMTIsNjUuODc2IEMxMiw2Ny4wNDcgMTIuOTUzLDY4IDE0LjEyNCw2OCBMNDAuODc2LDY4IEM0Mi4wNDcsNjggNDMsNjcuMDQ3IDQzLDY1Ljg3NiBMNDMsNjEgTDQxLDYxIEw0MSw2NS44NzYgWiBNNjgsMTQuMTI0IEw2OCw0MC44NzYgQzY4LDQyLjA0NyA2Ny4wNDcsNDMgNjUuODc2LDQzIEw2MCw0MyBMNjAsNDEgTDY1Ljg3Niw0MSBDNjUuOTQ0LDQxIDY2LDQwLjk0NCA2Niw0MC44NzYgTDY2LDE0LjEyNCBDNjYsMTQuMDU2IDY1Ljk0NCwxNCA2NS44NzYsMTQgTDM5LjEyNCwxNCBDMzkuMDU2LDE0IDM5LDE0LjA1NiAzOSwxNC4xMjQgTDM5LDIwIEwzNywyMCBMMzcsMTQuMTI0IEMzNywxMi45NTMgMzcuOTUzLDEyIDM5LjEyNCwxMiBMNjUuODc2LDEyIEM2Ny4wNDcsMTIgNjgsMTIuOTUzIDY4LDE0LjEyNCBMNjgsMTQuMTI0IFoiIGlkPSJBbWF6b24tRUMyX0ljb25fNjRfU3F1aWQiIGZpbGw9IiNGRkZGRkYiPjwvcGF0aD4gICAgPC9nPjwvc3ZnPg==)&nbsp;&nbsp;AWS EC2 dashboard",
+          "description": "Monitor AWS EC2 instances across your infrastructure in real time.\nUse the filters at the top to narrow by instance, region, or account. Spot outliers instantly in the summary table — click any instance to filter the dashboard.\nTo get started, instrument your EC2 instances with the Elastic agent.",
+          "hide_border": true,
+          "hide_title": true,
+          "settings": {
+            "open_links_in_new_tab": true
+          }
+        },
+        "panelIndex": "hdr",
+        "gridData": {
+          "h": 2,
+          "w": 42,
+          "x": 0,
+          "y": 0,
+          "i": "hdr"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Total number of EC2 instances — distinct instances reporting metrics within a 5-minute freshness window.",
+          "hide_title": true,
+          "attributes": {
+            "description": "Total number of EC2 instances — distinct instances reporting metrics within a 5-minute freshness window.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [
+                    {
+                      "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "timeField": "@timestamp",
+                      "title": "metrics-aws.ec2.otel-*"
+                    }
+                  ],
+                  "layers": {
+                    "layer-kpi-total": {
+                      "columns": [
+                        {
+                          "columnId": "col-kpi-total",
+                          "customLabel": true,
+                          "fieldName": "total",
+                          "inMetricDimension": true,
+                          "label": "Total instances",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | STATS last_seen = MAX(@timestamp) BY InstanceId, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | STATS total = COUNT(*) | KEEP total"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-total",
+                  "type": "index-pattern"
+                }
+              ],
+              "needsRefresh": false,
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | STATS last_seen = MAX(@timestamp) BY InstanceId, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | STATS total = COUNT(*) | KEEP total"
+              },
+              "visualization": {
+                "applyColorTo": "background",
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "layerId": "layer-kpi-total",
+                "layerType": "data",
+                "metricAccessor": "col-kpi-total",
+                "primaryAlign": "left",
+                "primaryPosition": "top",
+                "showBar": false,
+                "titlesTextAlign": "left"
+              }
+            },
+            "title": "",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          }
+        },
+        "panelIndex": "kpi-total",
+        "gridData": {
+          "h": 6,
+          "w": 4,
+          "x": 0,
+          "y": 0,
+          "i": "kpi-total",
+          "sectionId": "636a82af-094b-46fc-a228-3759a9a926f8"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Instances by status",
+          "description": "Share of EC2 instances by latest status-check result — impaired (StatusCheckFailed > 0) vs healthy (StatusCheckFailed = 0 or absent). Uses the most recent value per instance within a 5-minute freshness window. A growing impaired slice indicates spreading status-check failures.",
+          "attributes": {
+            "title": "",
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [
+                    {
+                      "id": "86a816034a00bf8da48444f782b3e61dbda7dd831319dd52452ec6004699e2d5",
+                      "title": "metrics-aws.ec2.otel-*",
+                      "timeField": "@timestamp"
+                    }
+                  ],
+                  "layers": {
+                    "pie-layer-chart-status-donut": {
+                      "columns": [
+                        {
+                          "columnId": "ec2_state",
+                          "fieldName": "ec2_state",
+                          "meta": {
+                            "esType": "keyword",
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "instances",
+                          "fieldName": "instances",
+                          "inMetricDimension": true,
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          }
+                        }
+                      ],
+                      "index": "86a816034a00bf8da48444f782b3e61dbda7dd831319dd52452ec6004699e2d5",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-*\n| WHERE InstanceId IS NOT NULL AND InstanceId != \"\"\n  AND stat == \"Maximum\"\n| STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)),\n    last_seen = MAX(@timestamp)\n  BY InstanceId, cloud.region\n| INLINE STATS latest_global = MAX(last_seen)\n| WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5\n| EVAL ec2_state = CASE(\n    failed_recent > 0, \"impaired\",\n    failed_recent == 0, \"healthy\",\n    \"Unknown\")\n| STATS instances = COUNT(*) BY ec2_state"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-*\n| WHERE InstanceId IS NOT NULL AND InstanceId != \"\"\n  AND stat == \"Maximum\"\n| STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)),\n    last_seen = MAX(@timestamp)\n  BY InstanceId, cloud.region\n| INLINE STATS latest_global = MAX(last_seen)\n| WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5\n| EVAL ec2_state = CASE(\n    failed_recent > 0, \"impaired\",\n    failed_recent == 0, \"healthy\",\n    \"Unknown\")\n| STATS instances = COUNT(*) BY ec2_state"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "categoryDisplay": "default",
+                    "colorMapping": {
+                      "assignments": [
+                        {
+                          "color": {
+                            "colorCode": "#24C292",
+                            "type": "colorCode"
+                          },
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "healthy"
+                            }
+                          ],
+                          "touched": true
+                        },
+                        {
+                          "color": {
+                            "colorCode": "#F6726A",
+                            "type": "colorCode"
+                          },
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "impaired"
+                            }
+                          ],
+                          "touched": true
+                        },
+                        {
+                          "color": {
+                            "colorCode": "#BFDBFF",
+                            "type": "colorCode"
+                          },
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "Unknown"
+                            }
+                          ],
+                          "touched": true
+                        }
+                      ],
+                      "colorMode": {
+                        "type": "categorical"
+                      },
+                      "paletteId": "default",
+                      "specialAssignments": [
+                        {
+                          "color": {
+                            "type": "loop"
+                          },
+                          "rules": [
+                            {
+                              "type": "other"
+                            }
+                          ],
+                          "touched": false
+                        }
+                      ]
+                    },
+                    "emptySizeRatio": 0.7,
+                    "layerId": "pie-layer-chart-status-donut",
+                    "layerType": "data",
+                    "legendDisplay": "default",
+                    "legendPosition": "right",
+                    "metrics": [
+                      "instances"
+                    ],
+                    "nestedLegend": false,
+                    "numberDisplay": "percent",
+                    "percentDecimals": 1,
+                    "primaryGroups": [
+                      "ec2_state"
+                    ]
+                  }
+                ],
+                "shape": "donut"
+              },
+              "adHocDataViews": {
+                "86a816034a00bf8da48444f782b3e61dbda7dd831319dd52452ec6004699e2d5": {
+                  "id": "86a816034a00bf8da48444f782b3e61dbda7dd831319dd52452ec6004699e2d5",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "needsRefresh": false
+            },
+            "visualizationType": "lnsPie",
+            "version": 2
+          }
+        },
+        "panelIndex": "chart-status-donut",
+        "gridData": {
+          "h": 12,
+          "w": 20,
+          "x": 8,
+          "y": 0,
+          "i": "chart-status-donut",
+          "sectionId": "636a82af-094b-46fc-a228-3759a9a926f8"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "attributes": {
+            "title": "",
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [
+                    {
+                      "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "title": "metrics-aws.ec2*",
+                      "timeField": "@timestamp"
+                    }
+                  ],
+                  "layers": {
+                    "xy-layer-chart-ec2-count": {
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "esType": "date",
+                            "type": "date"
+                          }
+                        },
+                        {
+                          "columnId": "total",
+                          "customLabel": true,
+                          "fieldName": "total",
+                          "inMetricDimension": true,
+                          "label": "Total",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          }
+                        },
+                        {
+                          "columnId": "impaired",
+                          "customLabel": true,
+                          "fieldName": "impaired",
+                          "inMetricDimension": true,
+                          "label": "Impaired",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          }
+                        },
+                        {
+                          "columnId": "healthy",
+                          "customLabel": true,
+                          "fieldName": "healthy",
+                          "inMetricDimension": true,
+                          "label": "Healthy",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          }
+                        },
+                        {
+                          "columnId": "99f052c3-5696-4310-9e56-cc1df6ec25d7",
+                          "fieldName": "unknown",
+                          "meta": {
+                            "type": "number",
+                            "esType": "long",
+                            "sourceParams": {
+                              "indexPattern": "metrics-aws.ec2.otel-*",
+                              "sourceField": "unknown"
+                            },
+                            "params": {
+                              "id": "number"
+                            }
+                          },
+                          "label": "unknown",
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-*\n| WHERE InstanceId IS NOT NULL AND InstanceId != \"\"\n| STATS failed_max = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)))\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region\n| EVAL state = CASE(\n    failed_max > 0, \"impaired\",\n    failed_max == 0, \"healthy\",\n    \"Unknown\")\n| STATS total = COUNT(*),\n    impaired = COUNT(*) WHERE state == \"impaired\",\n    healthy = COUNT(*) WHERE state == \"healthy\",\n    unknown = COUNT(*) WHERE state == \"Unknown\"\n  BY timestamp\n| SORT timestamp ASC"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-*\n| WHERE InstanceId IS NOT NULL AND InstanceId != \"\"\n| STATS failed_max = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)))\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region\n| EVAL state = CASE(\n    failed_max > 0, \"impaired\",\n    failed_max == 0, \"healthy\",\n    \"Unknown\")\n| STATS total = COUNT(*),\n    impaired = COUNT(*) WHERE state == \"impaired\",\n    healthy = COUNT(*) WHERE state == \"healthy\",\n    unknown = COUNT(*) WHERE state == \"Unknown\"\n  BY timestamp\n| SORT timestamp ASC"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                },
+                "layers": [
+                  {
+                    "accessors": [
+                      "total",
+                      "impaired",
+                      "healthy",
+                      "99f052c3-5696-4310-9e56-cc1df6ec25d7"
+                    ],
+                    "layerId": "xy-layer-chart-ec2-count",
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "showGridlines": false,
+                    "xAccessor": "timestamp",
+                    "yConfig": [
+                      {
+                        "color": "#61A2FF",
+                        "forAccessor": "total"
+                      },
+                      {
+                        "color": "#F6726A",
+                        "forAccessor": "impaired"
+                      },
+                      {
+                        "color": "#24C292",
+                        "forAccessor": "healthy"
+                      },
+                      {
+                        "forAccessor": "99f052c3-5696-4310-9e56-cc1df6ec25d7",
+                        "color": "#bfdbff"
+                      }
+                    ]
+                  }
+                ],
+                "legend": {
+                  "isVisible": true,
+                  "layout": "list",
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "line",
+                "valueLabels": "hide"
+              },
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "title": "metrics-aws.ec2*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ec2*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "needsRefresh": false
+            },
+            "visualizationType": "lnsXY",
+            "version": 2
+          },
+          "title": "EC2 instance count over time",
+          "description": "Count of EC2 instances over time, classified per time bucket as impaired (StatusCheckFailed > 0), healthy (= 0), or no data (metric missing). Distinct instances are counted per bucket, so totals track how many instances reported in each interval. A rising impaired series indicates spreading failures.",
+          "drilldowns": []
+        },
+        "panelIndex": "chart-ec2-count",
+        "gridData": {
+          "h": 12,
+          "w": 20,
+          "x": 28,
+          "y": 0,
+          "i": "chart-ec2-count",
+          "sectionId": "636a82af-094b-46fc-a228-3759a9a926f8"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Number of impaired EC2 instances — distinct instances whose latest StatusCheckFailed is greater than 0, within a 5-minute freshness window. A non-zero count indicates instances failing EC2 status checks and likely unreachable.",
+          "hide_title": true,
+          "attributes": {
+            "description": "Number of impaired EC2 instances — distinct instances whose latest StatusCheckFailed is greater than 0, within a 5-minute freshness window. A non-zero count indicates instances failing EC2 status checks and likely unreachable.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [
+                    {
+                      "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "timeField": "@timestamp",
+                      "title": "metrics-aws.ec2.otel-*"
+                    }
+                  ],
+                  "layers": {
+                    "layer-kpi-impaired": {
+                      "columns": [
+                        {
+                          "columnId": "col-kpi-impaired",
+                          "customLabel": true,
+                          "fieldName": "impaired",
+                          "inMetricDimension": true,
+                          "label": "Impaired (running)",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND stat == \"Maximum\" | STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)), last_seen = MAX(@timestamp) BY InstanceId, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | STATS impaired = COUNT(*) WHERE failed_recent > 0 | KEEP impaired"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "needsRefresh": false,
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND stat == \"Maximum\" | STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)), last_seen = MAX(@timestamp) BY InstanceId, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | STATS impaired = COUNT(*) WHERE failed_recent > 0 | KEEP impaired"
+              },
+              "visualization": {
+                "applyColorTo": "value",
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "layerId": "layer-kpi-impaired",
+                "layerType": "data",
+                "metricAccessor": "col-kpi-impaired",
+                "palette": {
+                  "name": "custom",
+                  "params": {
+                    "colorStops": [
+                      {
+                        "color": "#24C292",
+                        "stop": 0
+                      },
+                      {
+                        "color": "#F6726A",
+                        "stop": 1
+                      }
+                    ],
+                    "continuity": "above",
+                    "maxSteps": 5,
+                    "name": "custom",
+                    "progression": "fixed",
+                    "rangeMax": null,
+                    "rangeMin": 0,
+                    "rangeType": "number",
+                    "reverse": false,
+                    "steps": 3,
+                    "stops": [
+                      {
+                        "color": "#24C292",
+                        "stop": 1
+                      },
+                      {
+                        "color": "#F6726A",
+                        "stop": 2
+                      }
+                    ]
+                  },
+                  "type": "palette"
+                },
+                "primaryAlign": "left",
+                "primaryPosition": "top",
+                "showBar": false,
+                "titlesTextAlign": "left"
+              }
+            },
+            "title": "",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          }
+        },
+        "panelIndex": "kpi-impaired",
+        "gridData": {
+          "h": 6,
+          "w": 4,
+          "x": 4,
+          "y": 0,
+          "i": "kpi-impaired",
+          "sectionId": "636a82af-094b-46fc-a228-3759a9a926f8"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Number of healthy EC2 instances — distinct instances whose latest StatusCheckFailed is 0 or absent, within a 5-minute freshness window. Absence of a StatusCheckFailed metric is treated as passing, matching the CloudWatch console.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [
+                    {
+                      "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "title": "metrics-aws.ec2*",
+                      "timeField": "@timestamp"
+                    }
+                  ],
+                  "layers": {
+                    "layer-kpi-running": {
+                      "columns": [
+                        {
+                          "columnId": "col-kpi-running",
+                          "customLabel": true,
+                          "fieldName": "healthy",
+                          "inMetricDimension": true,
+                          "label": "Healthy (running)",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-*\n| WHERE InstanceId IS NOT NULL AND InstanceId != \"\"\n  AND stat == \"Maximum\"\n| STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)),\n    last_seen = MAX(@timestamp)\n  BY InstanceId, cloud.region\n| INLINE STATS latest_global = MAX(last_seen)\n| WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5\n| STATS healthy = COUNT(*) WHERE failed_recent == 0\n| KEEP healthy"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-*\n| WHERE InstanceId IS NOT NULL AND InstanceId != \"\"\n  AND stat == \"Maximum\"\n| STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)),\n    last_seen = MAX(@timestamp)\n  BY InstanceId, cloud.region\n| INLINE STATS latest_global = MAX(last_seen)\n| WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5\n| STATS healthy = COUNT(*) WHERE failed_recent == 0\n| KEEP healthy"
+              },
+              "visualization": {
+                "applyColorTo": "background",
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "layerId": "layer-kpi-running",
+                "layerType": "data",
+                "metricAccessor": "col-kpi-running",
+                "primaryAlign": "left",
+                "primaryPosition": "top",
+                "showBar": false,
+                "titlesTextAlign": "left"
+              },
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "title": "metrics-aws.ec2*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ec2*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "needsRefresh": false
+            },
+            "visualizationType": "lnsMetric",
+            "version": 2
+          }
+        },
+        "panelIndex": "kpi-running",
+        "gridData": {
+          "h": 6,
+          "w": 4,
+          "x": 0,
+          "y": 6,
+          "i": "kpi-running",
+          "sectionId": "636a82af-094b-46fc-a228-3759a9a926f8"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "attributes": {
+            "title": "",
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "tbl-layer-tbl-instances": {
+                      "columns": [
+                        {
+                          "columnId": "InstanceId",
+                          "customLabel": true,
+                          "fieldName": "InstanceId",
+                          "label": "Instance ID",
+                          "meta": {
+                            "esType": "keyword",
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "c_state_sort",
+                          "customLabel": true,
+                          "fieldName": "c_state_sort",
+                          "inMetricDimension": true,
+                          "label": "State order",
+                          "meta": {
+                            "esType": "integer",
+                            "type": "number"
+                          }
+                        },
+                        {
+                          "columnId": "c_state",
+                          "customLabel": true,
+                          "fieldName": "c_state",
+                          "label": "State",
+                          "meta": {
+                            "esType": "keyword",
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "c_account",
+                          "customLabel": true,
+                          "fieldName": "c_account",
+                          "label": "Account",
+                          "meta": {
+                            "esType": "keyword",
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "c_region",
+                          "customLabel": true,
+                          "fieldName": "c_region",
+                          "label": "Region",
+                          "meta": {
+                            "esType": "keyword",
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "c_cpu",
+                          "customLabel": true,
+                          "fieldName": "c_cpu",
+                          "inMetricDimension": true,
+                          "label": "Avg CPU (%)",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "c_ebs_write_ops",
+                          "customLabel": true,
+                          "fieldName": "c_ebs_write_ops",
+                          "inMetricDimension": true,
+                          "label": "Avg EBS write ops",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "c_dr",
+                          "customLabel": true,
+                          "fieldName": "c_dr",
+                          "inMetricDimension": true,
+                          "label": "Avg EBS read bytes",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "c_dw",
+                          "customLabel": true,
+                          "fieldName": "c_dw",
+                          "inMetricDimension": true,
+                          "label": "Avg EBS write bytes",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "c_ni",
+                          "customLabel": true,
+                          "fieldName": "c_ni",
+                          "inMetricDimension": true,
+                          "label": "Avg network in bytes",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "c_no",
+                          "customLabel": true,
+                          "fieldName": "c_no",
+                          "inMetricDimension": true,
+                          "label": "Avg network out bytes",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-*\n| WHERE InstanceId IS NOT NULL AND InstanceId != \"\"\n  AND cloud.account.id IS NOT NULL\n  AND stat IN (\"Average\", \"Maximum\")\n| STATS c_failed_max = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL))),\n  c_cpu = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL))) / 100.0,\n  c_ebs_write_ops = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/EBSWriteOps`, NULL))),\n  c_dr = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/EBSReadBytes`, NULL))),\n  c_dw = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/EBSWriteBytes`, NULL))),\n  c_ni = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkIn`, NULL))),\n  c_no = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL))),\n  last_ms = MAX(TO_LONG(@timestamp))\n  BY InstanceId, c_account = cloud.account.id, c_region = cloud.region\n| INLINE STATS latest_ms = MAX(last_ms)\n| EVAL c_cpu = COALESCE(c_cpu, 0.0),\n  c_ebs_write_ops = COALESCE(c_ebs_write_ops, 0.0),\n  c_dr = COALESCE(c_dr, 0.0),\n  c_dw = COALESCE(c_dw, 0.0),\n  c_ni = COALESCE(c_ni, 0.0),\n  c_no = COALESCE(c_no, 0.0)\n| EVAL c_state_sort = CASE(c_failed_max > 0, 1, c_failed_max == 0, 2, 3),\n  c_state = CASE(c_failed_max > 0, \"impaired\", c_failed_max == 0, \"healthy\", \"Unknown\")\n| SORT c_state_sort ASC"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "title": "metrics-aws.ec2*",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-*\n| WHERE InstanceId IS NOT NULL AND InstanceId != \"\"\n  AND cloud.account.id IS NOT NULL\n  AND stat IN (\"Average\", \"Maximum\")\n| STATS c_failed_max = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL))),\n  c_cpu = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL))) / 100.0,\n  c_ebs_write_ops = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/EBSWriteOps`, NULL))),\n  c_dr = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/EBSReadBytes`, NULL))),\n  c_dw = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/EBSWriteBytes`, NULL))),\n  c_ni = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkIn`, NULL))),\n  c_no = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL))),\n  last_ms = MAX(TO_LONG(@timestamp))\n  BY InstanceId, c_account = cloud.account.id, c_region = cloud.region\n| INLINE STATS latest_ms = MAX(last_ms)\n| EVAL c_cpu = COALESCE(c_cpu, 0.0),\n  c_ebs_write_ops = COALESCE(c_ebs_write_ops, 0.0),\n  c_dr = COALESCE(c_dr, 0.0),\n  c_dw = COALESCE(c_dw, 0.0),\n  c_ni = COALESCE(c_ni, 0.0),\n  c_no = COALESCE(c_no, 0.0)\n| EVAL c_state_sort = CASE(c_failed_max > 0, 1, c_failed_max == 0, 2, 3),\n  c_state = CASE(c_failed_max > 0, \"impaired\", c_failed_max == 0, \"healthy\", \"Unknown\")\n| SORT c_state_sort ASC"
+              },
+              "visualization": {
+                "columns": [
+                  {
+                    "columnId": "InstanceId",
+                    "isMetric": false,
+                    "isTransposed": false,
+                    "oneClickFilter": true,
+                    "width": 200
+                  },
+                  {
+                    "columnId": "c_state_sort",
+                    "hidden": true,
+                    "isMetric": true,
+                    "isTransposed": false
+                  },
+                  {
+                    "colorMapping": {
+                      "assignments": [
+                        {
+                          "color": {
+                            "colorCode": "#ffc9c2",
+                            "type": "colorCode"
+                          },
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "impaired"
+                            }
+                          ],
+                          "touched": true
+                        },
+                        {
+                          "color": {
+                            "colorCode": "#AEE8D2",
+                            "type": "colorCode"
+                          },
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "healthy"
+                            }
+                          ],
+                          "touched": true
+                        },
+                        {
+                          "color": {
+                            "colorCode": "#BFDBFF",
+                            "type": "colorCode"
+                          },
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "Unknown"
+                            }
+                          ],
+                          "touched": true
+                        }
+                      ],
+                      "colorMode": {
+                        "type": "categorical"
+                      },
+                      "paletteId": "default",
+                      "specialAssignments": [
+                        {
+                          "color": {
+                            "type": "loop"
+                          },
+                          "rules": [
+                            {
+                              "type": "other"
+                            }
+                          ],
+                          "touched": false
+                        }
+                      ]
+                    },
+                    "colorMode": "badge",
+                    "columnId": "c_state",
+                    "isTransposed": false,
+                    "width": 110
+                  },
+                  {
+                    "columnId": "c_account",
+                    "isMetric": false,
+                    "isTransposed": false
+                  },
+                  {
+                    "columnId": "c_region",
+                    "isMetric": false,
+                    "isTransposed": false
+                  },
+                  {
+                    "columnId": "c_cpu",
+                    "isMetric": true,
+                    "isTransposed": false
+                  },
+                  {
+                    "columnId": "c_ebs_write_ops",
+                    "isMetric": true,
+                    "isTransposed": false
+                  },
+                  {
+                    "columnId": "c_dr",
+                    "isMetric": true,
+                    "isTransposed": false
+                  },
+                  {
+                    "columnId": "c_dw",
+                    "isMetric": true,
+                    "isTransposed": false
+                  },
+                  {
+                    "columnId": "c_ni",
+                    "isMetric": true,
+                    "isTransposed": false
+                  },
+                  {
+                    "columnId": "c_no",
+                    "isMetric": true,
+                    "isTransposed": false
+                  }
+                ],
+                "fitRowToContent": false,
+                "headerRowHeight": "single",
+                "headerRowHeightLines": 1,
+                "layerId": "tbl-layer-tbl-instances",
+                "layerType": "data",
+                "paging": {
+                  "enabled": true,
+                  "size": 25
+                },
+                "rowHeight": "single",
+                "rowHeightLines": 1,
+                "showRowNumbers": true,
+                "sorting": {
+                  "columnId": "c_state_sort",
+                  "direction": "asc"
+                }
+              },
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "title": "metrics-aws.ec2*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ec2*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "needsRefresh": false
+            },
+            "visualizationType": "lnsDatatable",
+            "version": 2
+          },
+          "title": "EC2 instances",
+          "description": "All EC2 instances, ranked impaired first (worst first). Click an instance to drill into its metrics. State reflects the latest StatusCheckFailed within a 5-minute freshness window (impaired > 0, healthy = 0, otherwise no data). Max CPU is the peak utilization (%) over the selected time range; EBS-write-ops and network/EBS byte columns are averaged per CloudWatch period over the range.",
+          "drilldowns": [
+            {
+              "encode_url": false,
+              "label": "Open this instance in the AWS console",
+              "open_in_new_tab": true,
+              "trigger": "on_click_value",
+              "type": "url_drilldown",
+              "url": "https://console.aws.amazon.com/ec2/home#InstanceDetails:instanceId={{event.value}}"
+            }
+          ]
+        },
+        "panelIndex": "tbl-instances",
+        "gridData": {
+          "x": 0,
+          "y": 15,
+          "w": 48,
+          "h": 16,
+          "i": "tbl-instances",
+          "sectionId": "33bbb9a6-a7ea-49e6-ae49-4a13d0c730b2"
+        }
+      },
+      {
+        "type": "legacy_vis",
+        "embeddableConfig": {
+          "title": "EC2 instances — hexagon map (click an hex for actions)",
+          "description": "One hexagon per EC2 instance, ordered impaired then healthy then no-data (worst first). Toggle Color by between Status, CPU utilization, or EBS writes (MB per CloudWatch period); metric views support Min, Max, Avg, and Last over the dashboard time range. Click any hexagon to filter the dashboard or open metrics for that instance.",
+          "hide_title": false,
+          "savedVis": {
+            "title": "EC2 instances — hexagon map",
+            "description": "One hexagon per EC2 instance, ordered impaired then healthy then no-data (worst first). Toggle Color by between Status, CPU utilization, or EBS writes (MB per CloudWatch period); metric views support Min, Max, Avg, and Last over the dashboard time range. Click any hexagon to filter the dashboard or open metrics for that instance.",
+            "type": "vega",
+            "params": {
+              "spec": "{\n  \"$schema\": \"https://vega.github.io/schema/vega/v5.json\",\n  \"description\": \"One hexagon per EC2 instance, ordered impaired then healthy then unknown (worst first). Toggle Color by between Status, CPU utilization, or EBS writes (MB per CloudWatch period); metric views support Min, Max, Avg, and Last over the dashboard time range. Click any hexagon to filter the dashboard or open metrics for that instance.\",\n  \"usermeta\": {\n    \"x_ec2_hexmap\": true\n  },\n  \"padding\": {\n    \"top\": 10,\n    \"left\": 10,\n    \"right\": 10,\n    \"bottom\": 15\n  },\n  \"data\": [\n    {\n      \"name\": \"ts_probe\",\n      \"url\": {\n        \"%type%\": \"esql\",\n        \"%context%\": true,\n        \"%timefield%\": \"@timestamp\",\n        \"query\": \"ROW round_key = CONCAT(TO_STRING(?_tstart), \\\"|\\\", TO_STRING(?_tend)), fetched_at = NOW()\"\n      }\n    },\n    {\n      \"name\": \"raw_all\",\n      \"url\": {\n        \"%type%\": \"esql\",\n        \"%context%\": true,\n        \"%timefield%\": \"@timestamp\",\n        \"query\": \"SET unmapped_fields = \\\"nullify\\\";\\nTS metrics-aws.ec2.otel-* | WHERE @timestamp >= ?_tstart AND @timestamp <= ?_tend\\n AND InstanceId IS NOT NULL AND InstanceId != \\\"\\\"\\n AND cloud.account.id IS NOT NULL | STATS status_max = MAX(MAX_OVER_TIME(CASE(stat == \\\"Maximum\\\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL))), cpu_min = MIN(MIN_OVER_TIME(CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL))), cpu_max = MAX(MAX_OVER_TIME(CASE(stat == \\\"Maximum\\\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL))), cpu_avg = AVG(AVG_OVER_TIME(CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL))), cpu_last = MAX(LAST_OVER_TIME(CASE(stat == \\\"Maximum\\\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL))), ebs_w_min = MIN(MIN_OVER_TIME(CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/EC2/EBSWriteBytes`, NULL))), ebs_w_max = MAX(MAX_OVER_TIME(CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/EC2/EBSWriteBytes`, NULL))), ebs_w_avg = AVG(AVG_OVER_TIME(CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/EC2/EBSWriteBytes`, NULL))), ebs_w_last = MAX(LAST_OVER_TIME(CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/EC2/EBSWriteBytes`, NULL))), last_seen = MAX(@timestamp) BY instance_id = InstanceId\\n, cloud.region | INLINE STATS latest_global = MAX(last_seen) | EVAL status_num = CASE(status_max > 0, 1, status_max == 0, 0, 2),\\n status_label = CASE(status_max > 0, \\\"impaired\\\", status_max == 0, \\\"healthy\\\", \\\"Unknown\\\"),\\n severity_rank = CASE(status_max > 0, 0, status_max == 0, 1, 2),\\n ebs_w_min = ebs_w_min / 1048576,\\n ebs_w_max = ebs_w_max / 1048576,\\n ebs_w_avg = ebs_w_avg / 1048576,\\n ebs_w_last = ebs_w_last / 1048576,\\n round_key = CONCAT(TO_STRING(?_tstart), \\\"|\\\", TO_STRING(?_tend)),\\n fetched_at = NOW() | KEEP instance_id, status_num, status_label, severity_rank,\\n cpu_min, cpu_max, cpu_avg, cpu_last,\\n ebs_w_min, ebs_w_max, ebs_w_avg, ebs_w_last,\\n round_key, fetched_at | LIMIT 10000\"\n      }\n    },\n    {\n      \"name\": \"ranked_status\",\n      \"source\": \"raw_all\",\n      \"transform\": [\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": [\n              \"severity_rank\",\n              \"instance_id\"\n            ],\n            \"order\": [\n              \"ascending\",\n              \"ascending\"\n            ]\n          }\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"active_rank\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"ranked_cpu_min\",\n      \"source\": \"raw_all\",\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"as\": \"sort_key\",\n          \"expr\": \"datum.cpu_min == null ? 1e12 : -datum.cpu_min * 1000000\"\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": [\n              \"sort_key\",\n              \"instance_id\"\n            ],\n            \"order\": [\n              \"ascending\",\n              \"ascending\"\n            ]\n          }\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"active_rank\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"ranked_cpu_max\",\n      \"source\": \"raw_all\",\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"as\": \"sort_key\",\n          \"expr\": \"datum.cpu_max == null ? 1e12 : -datum.cpu_max * 1000000\"\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": [\n              \"sort_key\",\n              \"instance_id\"\n            ],\n            \"order\": [\n              \"ascending\",\n              \"ascending\"\n            ]\n          }\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"active_rank\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"ranked_cpu_avg\",\n      \"source\": \"raw_all\",\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"as\": \"sort_key\",\n          \"expr\": \"datum.cpu_avg == null ? 1e12 : -datum.cpu_avg * 1000000\"\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": [\n              \"sort_key\",\n              \"instance_id\"\n            ],\n            \"order\": [\n              \"ascending\",\n              \"ascending\"\n            ]\n          }\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"active_rank\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"ranked_cpu_last\",\n      \"source\": \"raw_all\",\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"as\": \"sort_key\",\n          \"expr\": \"datum.cpu_last == null ? 1e12 : -datum.cpu_last * 1000000\"\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": [\n              \"sort_key\",\n              \"instance_id\"\n            ],\n            \"order\": [\n              \"ascending\",\n              \"ascending\"\n            ]\n          }\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"active_rank\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"ranked_ebs_w_min\",\n      \"source\": \"raw_all\",\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"as\": \"sort_key\",\n          \"expr\": \"datum.ebs_w_min == null ? 1e12 : -datum.ebs_w_min * 1000000\"\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": [\n              \"sort_key\",\n              \"instance_id\"\n            ],\n            \"order\": [\n              \"ascending\",\n              \"ascending\"\n            ]\n          }\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"active_rank\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"ranked_ebs_w_max\",\n      \"source\": \"raw_all\",\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"as\": \"sort_key\",\n          \"expr\": \"datum.ebs_w_max == null ? 1e12 : -datum.ebs_w_max * 1000000\"\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": [\n              \"sort_key\",\n              \"instance_id\"\n            ],\n            \"order\": [\n              \"ascending\",\n              \"ascending\"\n            ]\n          }\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"active_rank\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"ranked_ebs_w_avg\",\n      \"source\": \"raw_all\",\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"as\": \"sort_key\",\n          \"expr\": \"datum.ebs_w_avg == null ? 1e12 : -datum.ebs_w_avg * 1000000\"\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": [\n              \"sort_key\",\n              \"instance_id\"\n            ],\n            \"order\": [\n              \"ascending\",\n              \"ascending\"\n            ]\n          }\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"active_rank\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"ranked_ebs_w_last\",\n      \"source\": \"raw_all\",\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"as\": \"sort_key\",\n          \"expr\": \"datum.ebs_w_last == null ? 1e12 : -datum.ebs_w_last * 1000000\"\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": [\n              \"sort_key\",\n              \"instance_id\"\n            ],\n            \"order\": [\n              \"ascending\",\n              \"ascending\"\n            ]\n          }\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"active_rank\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"active\",\n      \"values\": [],\n      \"on\": [\n        {\n          \"trigger\": \"ts_round !== '' && active_round !== '' && active_round !== ts_round\",\n          \"remove\": \"true\"\n        },\n        {\n          \"trigger\": \"metric === 'status' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\",\n          \"remove\": \"true\",\n          \"insert\": \"data('ranked_status')\"\n        },\n        {\n          \"trigger\": \"metric === 'cpu' && agg === 'min' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\",\n          \"remove\": \"true\",\n          \"insert\": \"data('ranked_cpu_min')\"\n        },\n        {\n          \"trigger\": \"metric === 'cpu' && agg === 'max' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\",\n          \"remove\": \"true\",\n          \"insert\": \"data('ranked_cpu_max')\"\n        },\n        {\n          \"trigger\": \"metric === 'cpu' && agg === 'avg' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\",\n          \"remove\": \"true\",\n          \"insert\": \"data('ranked_cpu_avg')\"\n        },\n        {\n          \"trigger\": \"metric === 'cpu' && agg === 'last' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\",\n          \"remove\": \"true\",\n          \"insert\": \"data('ranked_cpu_last')\"\n        },\n        {\n          \"trigger\": \"metric === 'ebs_w' && agg === 'min' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\",\n          \"remove\": \"true\",\n          \"insert\": \"data('ranked_ebs_w_min')\"\n        },\n        {\n          \"trigger\": \"metric === 'ebs_w' && agg === 'max' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\",\n          \"remove\": \"true\",\n          \"insert\": \"data('ranked_ebs_w_max')\"\n        },\n        {\n          \"trigger\": \"metric === 'ebs_w' && agg === 'avg' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\",\n          \"remove\": \"true\",\n          \"insert\": \"data('ranked_ebs_w_avg')\"\n        },\n        {\n          \"trigger\": \"metric === 'ebs_w' && agg === 'last' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\",\n          \"remove\": \"true\",\n          \"insert\": \"data('ranked_ebs_w_last')\"\n        }\n      ]\n    },\n    {\n      \"name\": \"instances\",\n      \"source\": \"active\",\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"as\": \"active_val\",\n          \"expr\": \"metric=='status' ? null : (metric=='cpu'   ? (agg=='min' ? datum.cpu_min : agg=='max' ? datum.cpu_max : agg=='avg' ? datum.cpu_avg : datum.cpu_last)   : (agg=='min' ? datum.ebs_w_min : agg=='max' ? datum.ebs_w_max : agg=='avg' ? datum.ebs_w_avg : datum.ebs_w_last))\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"index0\",\n          \"expr\": \"datum.active_rank - 1\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"col\",\n          \"expr\": \"datum.index0 % gridCols\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"row\",\n          \"expr\": \"floor(datum.index0 / gridCols)\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"x\",\n          \"expr\": \"datum.col * gapX + (datum.row % 2 == 1 ? gapX / 2 : 0) + hexR + 5\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"y\",\n          \"expr\": \"datum.row * gapY + hexR + 5 + hexOffsetY\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"hexSize\",\n          \"expr\": \"hexR * hexR * 3.46\"\n        }\n      ]\n    },\n    {\n      \"name\": \"status_counts\",\n      \"source\": \"raw_all\",\n      \"transform\": [\n        {\n          \"type\": \"aggregate\",\n          \"groupby\": [\n            \"status_num\"\n          ],\n          \"ops\": [\n            \"count\"\n          ],\n          \"as\": [\n            \"count\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"status_legend\",\n      \"values\": [\n        {\n          \"label\": \"Impaired\",\n          \"val\": 1\n        },\n        {\n          \"label\": \"Healthy\",\n          \"val\": 0\n        },\n        {\n          \"label\": \"Unknown\",\n          \"val\": 2\n        }\n      ],\n      \"transform\": [\n        {\n          \"type\": \"lookup\",\n          \"from\": \"status_counts\",\n          \"key\": \"status_num\",\n          \"fields\": [\n            \"val\"\n          ],\n          \"values\": [\n            \"count\"\n          ],\n          \"as\": [\n            \"count\"\n          ],\n          \"default\": 0\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"idx\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"util_counts\",\n      \"source\": \"raw_all\",\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"as\": \"v\",\n          \"expr\": \"agg == 'min' ? datum.cpu_min : agg == 'max' ? datum.cpu_max : agg == 'avg' ? datum.cpu_avg : datum.cpu_last\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"bucket\",\n          \"expr\": \"datum.v == null ? 3 : (datum.v >= 85 ? 2 : datum.v >= 60 ? 1 : 0)\"\n        },\n        {\n          \"type\": \"aggregate\",\n          \"groupby\": [\n            \"bucket\"\n          ],\n          \"ops\": [\n            \"count\"\n          ],\n          \"as\": [\n            \"count\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"util_legend_stops\",\n      \"values\": [\n        {\n          \"label\": \"≥ 85%\",\n          \"val\": 90,\n          \"bucket\": 2,\n          \"is_nodata\": false\n        },\n        {\n          \"label\": \"60 – 84%\",\n          \"val\": 70,\n          \"bucket\": 1,\n          \"is_nodata\": false\n        },\n        {\n          \"label\": \"< 60%\",\n          \"val\": 0,\n          \"bucket\": 0,\n          \"is_nodata\": false\n        },\n        {\n          \"label\": \"Unknown\",\n          \"val\": null,\n          \"bucket\": 3,\n          \"is_nodata\": true\n        }\n      ],\n      \"transform\": [\n        {\n          \"type\": \"lookup\",\n          \"from\": \"util_counts\",\n          \"key\": \"bucket\",\n          \"fields\": [\n            \"bucket\"\n          ],\n          \"values\": [\n            \"count\"\n          ],\n          \"as\": [\n            \"count\"\n          ],\n          \"default\": 0\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"idx\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"vol_counts\",\n      \"source\": \"raw_all\",\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"as\": \"v\",\n          \"expr\": \"agg == 'min' ? datum.ebs_w_min : agg == 'max' ? datum.ebs_w_max : agg == 'avg' ? datum.ebs_w_avg : datum.ebs_w_last\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"bucket\",\n          \"expr\": \"datum.v == null ? 3 : (datum.v >= 500 ? 2 : datum.v >= 50 ? 1 : 0)\"\n        },\n        {\n          \"type\": \"aggregate\",\n          \"groupby\": [\n            \"bucket\"\n          ],\n          \"ops\": [\n            \"count\"\n          ],\n          \"as\": [\n            \"count\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"vol_legend_stops\",\n      \"values\": [\n        {\n          \"label\": \"≥ 500 MB\",\n          \"val\": 1000,\n          \"bucket\": 2,\n          \"is_nodata\": false\n        },\n        {\n          \"label\": \"50 – 500 MB\",\n          \"val\": 100,\n          \"bucket\": 1,\n          \"is_nodata\": false\n        },\n        {\n          \"label\": \"< 50 MB\",\n          \"val\": 0,\n          \"bucket\": 0,\n          \"is_nodata\": false\n        },\n        {\n          \"label\": \"Unknown\",\n          \"val\": null,\n          \"bucket\": 3,\n          \"is_nodata\": true\n        }\n      ],\n      \"transform\": [\n        {\n          \"type\": \"lookup\",\n          \"from\": \"vol_counts\",\n          \"key\": \"bucket\",\n          \"fields\": [\n            \"bucket\"\n          ],\n          \"values\": [\n            \"count\"\n          ],\n          \"as\": [\n            \"count\"\n          ],\n          \"default\": 0\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"idx\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"spinner_dots\",\n      \"values\": [\n        {\n          \"i\": 0\n        },\n        {\n          \"i\": 1\n        },\n        {\n          \"i\": 2\n        },\n        {\n          \"i\": 3\n        },\n        {\n          \"i\": 4\n        },\n        {\n          \"i\": 5\n        },\n        {\n          \"i\": 6\n        },\n        {\n          \"i\": 7\n        }\n      ]\n    },\n    {\n      \"name\": \"pills\",\n      \"values\": [\n        {\n          \"id\": \"status\",\n          \"label\": \"Status\",\n          \"group\": \"metric\",\n          \"x\": 69,\n          \"w\": 48\n        },\n        {\n          \"id\": \"cpu\",\n          \"label\": \"CPU %\",\n          \"group\": \"metric\",\n          \"x\": 125,\n          \"w\": 58\n        },\n        {\n          \"id\": \"ebs_w\",\n          \"label\": \"EBS Writes (MB)\",\n          \"group\": \"metric\",\n          \"x\": 191,\n          \"w\": 124\n        },\n        {\n          \"id\": \"min\",\n          \"label\": \"Min\",\n          \"group\": \"agg\",\n          \"x\": 425,\n          \"w\": 36\n        },\n        {\n          \"id\": \"max\",\n          \"label\": \"Max\",\n          \"group\": \"agg\",\n          \"x\": 465,\n          \"w\": 36\n        },\n        {\n          \"id\": \"avg\",\n          \"label\": \"Avg\",\n          \"group\": \"agg\",\n          \"x\": 505,\n          \"w\": 36\n        },\n        {\n          \"id\": \"last\",\n          \"label\": \"Last\",\n          \"group\": \"agg\",\n          \"x\": 545,\n          \"w\": 40\n        }\n      ]\n    },\n    {\n      \"name\": \"menu_items_data\",\n      \"values\": [\n        {\n          \"id\": \"filter\",\n          \"label\": \"Filter dashboard by this instance\",\n          \"idx\": 0\n        },\n        {\n          \"id\": \"metrics\",\n          \"label\": \"View instance metrics in Discover\",\n          \"idx\": 1\n        }\n      ]\n    },\n    {\n      \"name\": \"menu_visible\",\n      \"values\": [\n        {\n          \"_\": 0\n        }\n      ],\n      \"transform\": [\n        {\n          \"type\": \"filter\",\n          \"expr\": \"selected_instance != null\"\n        }\n      ]\n    },\n    {\n      \"name\": \"menu_items_visible\",\n      \"source\": \"menu_items_data\",\n      \"transform\": [\n        {\n          \"type\": \"filter\",\n          \"expr\": \"selected_instance != null\"\n        }\n      ]\n    }\n  ],\n  \"signals\": [\n    {\n      \"name\": \"metric\",\n      \"value\": \"status\",\n      \"on\": [\n        {\n          \"events\": \"@pill_bg:click\",\n          \"update\": \"datum.group === 'metric' ? datum.id : metric\"\n        }\n      ]\n    },\n    {\n      \"name\": \"agg\",\n      \"value\": \"last\",\n      \"on\": [\n        {\n          \"events\": \"@pill_bg:click\",\n          \"update\": \"(datum.group === 'agg' && !(metric === 'status')) ? datum.id : agg\"\n        }\n      ]\n    },\n    {\n      \"name\": \"groupHeaderH\",\n      \"value\": 20\n    },\n    {\n      \"name\": \"groupGap\",\n      \"value\": 10\n    },\n    {\n      \"name\": \"group_by\",\n      \"value\": \"none\"\n    },\n    {\n      \"name\": \"len_raw\",\n      \"update\": \"length(data('raw_all'))\"\n    },\n    {\n      \"name\": \"len_active\",\n      \"update\": \"length(data('active'))\"\n    },\n    {\n      \"name\": \"ts_round\",\n      \"update\": \"data('ts_probe')[0] ? data('ts_probe')[0].round_key : ''\"\n    },\n    {\n      \"name\": \"time_from\",\n      \"update\": \"ts_round !== '' && indexof(ts_round, '|') > 0 ? slice(ts_round, 0, indexof(ts_round, '|')) : ''\"\n    },\n    {\n      \"name\": \"time_to\",\n      \"update\": \"ts_round !== '' && indexof(ts_round, '|') > 0 ? slice(ts_round, indexof(ts_round, '|') + 1) : ''\"\n    },\n    {\n      \"name\": \"g_param\",\n      \"update\": \"time_from !== '' && time_to !== '' ? '_g=(time:(from:%27' + time_from + '%27,to:%27' + time_to + '%27))&' : ''\"\n    },\n    {\n      \"name\": \"raw_round\",\n      \"update\": \"data('raw_all')[0] ? data('raw_all')[0].round_key : ''\"\n    },\n    {\n      \"name\": \"active_round\",\n      \"update\": \"raw_round\"\n    },\n    {\n      \"name\": \"raw_fetched_str\",\n      \"update\": \"data('raw_all')[0] ? data('raw_all')[0].fetched_at : ''\"\n    },\n    {\n      \"name\": \"active_fetched\",\n      \"update\": \"raw_fetched_str !== '' ? toDate(raw_fetched_str) : 0\"\n    },\n    {\n      \"name\": \"tick\",\n      \"value\": 0,\n      \"on\": [\n        {\n          \"events\": {\n            \"type\": \"timer\",\n            \"throttle\": 100\n          },\n          \"update\": \"now()\"\n        }\n      ]\n    },\n    {\n      \"name\": \"url_change_at\",\n      \"value\": 0,\n      \"on\": [\n        {\n          \"events\": {\n            \"source\": \"window\",\n            \"type\": \"hashchange\"\n          },\n          \"update\": \"now()\"\n        },\n        {\n          \"events\": {\n            \"source\": \"window\",\n            \"type\": \"popstate\"\n          },\n          \"update\": \"now()\"\n        }\n      ]\n    },\n    {\n      \"name\": \"fetch_tracker\",\n      \"init\": \"{seen: 0, arrived_at: 0}\",\n      \"on\": [\n        {\n          \"events\": {\n            \"signal\": \"tick\"\n          },\n          \"update\": \"active_fetched > 0 && active_fetched !== fetch_tracker.seen ? {seen: active_fetched, arrived_at: tick} : fetch_tracker\"\n        }\n      ]\n    },\n    {\n      \"name\": \"loading_raw\",\n      \"update\": \"len_active === 0 || ts_round === '' || active_round === '' || active_round !== ts_round || (url_change_at > 0 && fetch_tracker.arrived_at < url_change_at)\"\n    },\n    {\n      \"name\": \"loading_started_at\",\n      \"value\": 0,\n      \"on\": [\n        {\n          \"events\": {\n            \"signal\": \"tick\"\n          },\n          \"update\": \"loading_raw ? (loading_started_at === 0 ? tick : loading_started_at) : 0\"\n        }\n      ]\n    },\n    {\n      \"name\": \"loading_elapsed\",\n      \"update\": \"loading_started_at > 0 ? tick - loading_started_at : 0\"\n    },\n    {\n      \"name\": \"no_data\",\n      \"update\": \"loading_raw && ts_round !== '' && len_raw === 0 && loading_elapsed > 2000\"\n    },\n    {\n      \"name\": \"loading\",\n      \"update\": \"loading_raw && !no_data\"\n    },\n    {\n      \"name\": \"loading_timeout\",\n      \"update\": \"loading && loading_elapsed > 15000\"\n    },\n    {\n      \"name\": \"total_instances\",\n      \"update\": \"len_raw\"\n    },\n    {\n      \"name\": \"legendW\",\n      \"value\": 138\n    },\n    {\n      \"name\": \"buttonsH\",\n      \"value\": 34\n    },\n    {\n      \"name\": \"availW\",\n      \"update\": \"width - 20 - legendW\"\n    },\n    {\n      \"name\": \"n_groups\",\n      \"value\": 0\n    },\n    {\n      \"name\": \"availH\",\n      \"update\": \"height - 20 - buttonsH - (group_by !== 'none' ? n_groups * (groupHeaderH + groupGap) : 0)\"\n    },\n    {\n      \"name\": \"hexOffsetY\",\n      \"update\": \"buttonsH\"\n    },\n    {\n      \"name\": \"idealCols\",\n      \"update\": \"total_instances > 0 && availH > 0 ? max(1, round(sqrt(total_instances * (availW / availH)))) : 1\"\n    },\n    {\n      \"name\": \"idealRows\",\n      \"update\": \"max(1, ceil(total_instances / idealCols))\"\n    },\n    {\n      \"name\": \"hexRInitial\",\n      \"update\": \"min(availW / (idealCols * 2 + 0), availH / (idealRows * 2 + 0))\"\n    },\n    {\n      \"name\": \"maxColsAtHexR\",\n      \"update\": \"max(idealCols, floor(availW / (max(3, hexRInitial) * 2)))\"\n    },\n    {\n      \"name\": \"maxColsAtMinR\",\n      \"update\": \"max(1, floor(availW / (3 * 2)))\"\n    },\n    {\n      \"name\": \"gridCols\",\n      \"update\": \"max(1, min(total_instances, min(maxColsAtHexR, maxColsAtMinR)))\"\n    },\n    {\n      \"name\": \"gridRows\",\n      \"update\": \"group_by === 'none' ? max(1, ceil(total_instances / gridCols)) : max(1, ceil(total_instances / gridCols) + max(0, n_groups - 1))\"\n    },\n    {\n      \"name\": \"rByWidth\",\n      \"update\": \"availW / (gridCols * 1.76 + 0.88)\"\n    },\n    {\n      \"name\": \"rByHeight\",\n      \"update\": \"availH / (gridRows * 1.54 + 0.92)\"\n    },\n    {\n      \"name\": \"hexR\",\n      \"update\": \"max(3, min(90, min(rByWidth, rByHeight)))\"\n    },\n    {\n      \"name\": \"gapX\",\n      \"update\": \"hexR * 1.76\"\n    },\n    {\n      \"name\": \"gapY\",\n      \"update\": \"hexR * 1.54\"\n    },\n    {\n      \"name\": \"legendX\",\n      \"update\": \"width - legendW + 4\"\n    },\n    {\n      \"name\": \"tooltip\",\n      \"value\": {},\n      \"on\": [\n        {\n          \"events\": \"@hexagons:mouseover\",\n          \"update\": \"datum\"\n        },\n        {\n          \"events\": \"@hexagons:mouseout\",\n          \"update\": \"{}\"\n        }\n      ]\n    },\n    {\n      \"name\": \"selected_instance\",\n      \"value\": null,\n      \"on\": [\n        {\n          \"events\": \"@hexagons:click\",\n          \"update\": \"{id: datum.instance_id, x: datum.x, y: datum.y}\"\n        },\n        {\n          \"events\": \"@menu_backdrop:click\",\n          \"update\": \"null\"\n        },\n        {\n          \"events\": \"@menu_item_bg:click\",\n          \"update\": \"null\"\n        }\n      ]\n    },\n    {\n      \"name\": \"menu_x\",\n      \"update\": \"selected_instance ? ((selected_instance.x + hexR + 4 + 248 > width - legendW - 4) ? max(4, selected_instance.x - hexR - 248 - 4) : max(4, selected_instance.x + hexR + 4)) : 0\"\n    },\n    {\n      \"name\": \"menu_y\",\n      \"update\": \"selected_instance ? max(buttonsH + 4, min(selected_instance.y - 75, height - 90 - 4)) : 0\"\n    }\n  ],\n  \"scales\": [\n    {\n      \"name\": \"status_color\",\n      \"type\": \"ordinal\",\n      \"domain\": [\n        0,\n        1,\n        2\n      ],\n      \"range\": [\n        \"#24C292\",\n        \"#F6726A\",\n        \"#BFDBFF\"\n      ]\n    },\n    {\n      \"name\": \"util_color\",\n      \"type\": \"threshold\",\n      \"domain\": [\n        60,\n        85\n      ],\n      \"range\": [\n        \"#24C292\",\n        \"#D6BF57\",\n        \"#F6726A\"\n      ]\n    },\n    {\n      \"name\": \"vol_color\",\n      \"type\": \"threshold\",\n      \"domain\": [\n        50,\n        500\n      ],\n      \"range\": [\n        \"#24C292\",\n        \"#D6BF57\",\n        \"#F6726A\"\n      ]\n    }\n  ],\n  \"marks\": [\n    {\n      \"type\": \"text\",\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"value\": 5\n          },\n          \"y\": {\n            \"value\": 17\n          },\n          \"text\": {\n            \"value\": \"Color by:\"\n          },\n          \"align\": {\n            \"value\": \"left\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 11\n          },\n          \"fontWeight\": {\n            \"value\": 600\n          },\n          \"fill\": {\n            \"value\": \"#838C99\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"value\": 345\n          },\n          \"y\": {\n            \"value\": 17\n          },\n          \"text\": {\n            \"value\": \"Aggregation:\"\n          },\n          \"align\": {\n            \"value\": \"left\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 11\n          },\n          \"fontWeight\": {\n            \"value\": 600\n          },\n          \"fill\": {\n            \"value\": \"#838C99\"\n          },\n          \"opacity\": {\n            \"signal\": \"(metric === 'status') ? 0.5 : 1\"\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"pill_bg\",\n      \"type\": \"rect\",\n      \"from\": {\n        \"data\": \"pills\"\n      },\n      \"encode\": {\n        \"enter\": {},\n        \"update\": {\n          \"x\": {\n            \"field\": \"x\"\n          },\n          \"x2\": {\n            \"signal\": \"datum.x + datum.w\"\n          },\n          \"y\": {\n            \"value\": 6\n          },\n          \"y2\": {\n            \"value\": 28\n          },\n          \"cornerRadius\": {\n            \"value\": 4\n          },\n          \"fill\": {\n            \"signal\": \"((datum.group === 'metric' && datum.id === metric) || (datum.group === 'agg' && datum.id === (metric === 'status' ? 'last' : agg))) ? '#0077CC' : 'transparent'\"\n          },\n          \"stroke\": {\n            \"signal\": \"((datum.group === 'metric' && datum.id === metric) || (datum.group === 'agg' && datum.id === (metric === 'status' ? 'last' : agg))) ? '#0064B0' : '#838C99'\"\n          },\n          \"strokeWidth\": {\n            \"value\": 1\n          },\n          \"opacity\": {\n            \"signal\": \"(datum.group === 'agg' && (metric === 'status')) ? 0.5 : 1\"\n          },\n          \"cursor\": {\n            \"signal\": \"(datum.group === 'agg' && (metric === 'status')) ? 'default' : 'pointer'\"\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"pill_label\",\n      \"type\": \"text\",\n      \"interactive\": false,\n      \"from\": {\n        \"data\": \"pills\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"datum.x + datum.w / 2\"\n          },\n          \"y\": {\n            \"value\": 17\n          },\n          \"text\": {\n            \"field\": \"label\"\n          },\n          \"align\": {\n            \"value\": \"center\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 11\n          },\n          \"fontWeight\": {\n            \"value\": 500\n          },\n          \"fill\": {\n            \"signal\": \"((datum.group === 'metric' && datum.id === metric) || (datum.group === 'agg' && datum.id === (metric === 'status' ? 'last' : agg))) ? '#FFFFFF' : '#838C99'\"\n          },\n          \"opacity\": {\n            \"signal\": \"(datum.group === 'agg' && (metric === 'status')) ? 0.5 : 1\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width - legendW - 4\"\n          },\n          \"y\": {\n            \"value\": 17\n          },\n          \"text\": {\n            \"signal\": \"total_instances === 0 ? '' : (total_instances < 10000 ? 'Showing ' + total_instances + ' instances' : 'Showing top 10,000 instances (limit reached)')\"\n          },\n          \"align\": {\n            \"value\": \"right\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 11\n          },\n          \"fill\": {\n            \"value\": \"#838C99\"\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"hexagons\",\n      \"type\": \"symbol\",\n      \"from\": {\n        \"data\": \"instances\"\n      },\n      \"encode\": {\n        \"enter\": {\n          \"cursor\": {\n            \"value\": \"pointer\"\n          }\n        },\n        \"update\": {\n          \"x\": {\n            \"field\": \"x\"\n          },\n          \"y\": {\n            \"field\": \"y\"\n          },\n          \"size\": {\n            \"field\": \"hexSize\"\n          },\n          \"fill\": [\n            {\n              \"test\": \"metric == 'status'\",\n              \"scale\": \"status_color\",\n              \"field\": \"status_num\"\n            },\n            {\n              \"test\": \"datum.active_val == null\",\n              \"value\": \"#BFDBFF\"\n            },\n            {\n              \"test\": \"metric == 'cpu'\",\n              \"scale\": \"util_color\",\n              \"field\": \"active_val\"\n            },\n            {\n              \"test\": \"metric == 'ebs_w'\",\n              \"scale\": \"vol_color\",\n              \"field\": \"active_val\"\n            },\n            {\n              \"value\": \"#BFDBFF\"\n            }\n          ],\n          \"fillOpacity\": {\n            \"value\": 0.92\n          },\n          \"shape\": {\n            \"value\": \"M0,-1L0.866,-0.5L0.866,0.5L0,1L-0.866,0.5L-0.866,-0.5Z\"\n          },\n          \"strokeWidth\": [\n            {\n              \"test\": \"selected_instance && selected_instance.id === datum.instance_id\",\n              \"value\": 3.5\n            },\n            {\n              \"test\": \"tooltip.instance_id === datum.instance_id\",\n              \"value\": 3\n            },\n            {\n              \"value\": 1\n            }\n          ],\n          \"stroke\": [\n            {\n              \"test\": \"selected_instance && selected_instance.id === datum.instance_id\",\n              \"value\": \"#0077CC\"\n            },\n            {\n              \"test\": \"tooltip.instance_id === datum.instance_id\",\n              \"value\": \"#222\"\n            },\n            {\n              \"value\": \"#FFFFFF\"\n            }\n          ],\n          \"strokeOpacity\": [\n            {\n              \"test\": \"selected_instance && selected_instance.id === datum.instance_id\",\n              \"value\": 1\n            },\n            {\n              \"test\": \"tooltip.instance_id === datum.instance_id\",\n              \"value\": 1\n            },\n            {\n              \"value\": 0.3\n            }\n          ]\n        }\n      }\n    },\n    {\n      \"type\": \"group\",\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"legendX\"\n          },\n          \"y\": {\n            \"signal\": \"buttonsH + 8\"\n          }\n        }\n      },\n      \"marks\": [\n        {\n          \"type\": \"text\",\n          \"encode\": {\n            \"enter\": {\n              \"x\": {\n                \"value\": 0\n              },\n              \"y\": {\n                \"value\": 0\n              },\n              \"text\": {\n                \"value\": \"Status\"\n              },\n              \"align\": {\n                \"value\": \"left\"\n              },\n              \"baseline\": {\n                \"value\": \"top\"\n              },\n              \"fontSize\": {\n                \"value\": 11\n              },\n              \"fontWeight\": {\n                \"value\": \"bold\"\n              },\n              \"fill\": {\n                \"value\": \"#838C99\"\n              }\n            },\n            \"update\": {\n              \"opacity\": [\n                {\n                  \"test\": \"metric == 'status'\",\n                  \"value\": 1\n                },\n                {\n                  \"value\": 0\n                }\n              ]\n            }\n          }\n        },\n        {\n          \"type\": \"symbol\",\n          \"from\": {\n            \"data\": \"status_legend\"\n          },\n          \"encode\": {\n            \"enter\": {\n              \"x\": {\n                \"value\": 6\n              },\n              \"y\": {\n                \"signal\": \"28 + (datum.idx - 1) * 22\"\n              },\n              \"size\": {\n                \"value\": 110\n              },\n              \"shape\": {\n                \"value\": \"circle\"\n              },\n              \"fill\": {\n                \"scale\": \"status_color\",\n                \"field\": \"val\"\n              }\n            },\n            \"update\": {\n              \"opacity\": [\n                {\n                  \"test\": \"metric == 'status'\",\n                  \"value\": 1\n                },\n                {\n                  \"value\": 0\n                }\n              ]\n            }\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"from\": {\n            \"data\": \"status_legend\"\n          },\n          \"encode\": {\n            \"enter\": {\n              \"x\": {\n                \"value\": 18\n              },\n              \"y\": {\n                \"signal\": \"28 + (datum.idx - 1) * 22\"\n              },\n              \"align\": {\n                \"value\": \"left\"\n              },\n              \"baseline\": {\n                \"value\": \"middle\"\n              },\n              \"fontSize\": {\n                \"value\": 11\n              },\n              \"fill\": {\n                \"value\": \"#838C99\"\n              }\n            },\n            \"update\": {\n              \"text\": {\n                \"signal\": \"datum.label + ' (' + datum.count + ')'\"\n              },\n              \"opacity\": [\n                {\n                  \"test\": \"metric == 'status'\",\n                  \"value\": 1\n                },\n                {\n                  \"value\": 0\n                }\n              ]\n            }\n          }\n        }\n      ]\n    },\n    {\n      \"type\": \"group\",\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"legendX\"\n          },\n          \"y\": {\n            \"signal\": \"buttonsH + 8\"\n          }\n        }\n      },\n      \"marks\": [\n        {\n          \"type\": \"text\",\n          \"encode\": {\n            \"enter\": {\n              \"x\": {\n                \"value\": 0\n              },\n              \"y\": {\n                \"value\": 0\n              },\n              \"align\": {\n                \"value\": \"left\"\n              },\n              \"baseline\": {\n                \"value\": \"top\"\n              },\n              \"fontSize\": {\n                \"value\": 11\n              },\n              \"fontWeight\": {\n                \"value\": \"bold\"\n              },\n              \"fill\": {\n                \"value\": \"#838C99\"\n              }\n            },\n            \"update\": {\n              \"text\": {\n                \"signal\": \"'CPU% (' + agg + ')'\"\n              },\n              \"opacity\": [\n                {\n                  \"test\": \"metric == 'cpu'\",\n                  \"value\": 1\n                },\n                {\n                  \"value\": 0\n                }\n              ]\n            }\n          }\n        },\n        {\n          \"type\": \"symbol\",\n          \"from\": {\n            \"data\": \"util_legend_stops\"\n          },\n          \"encode\": {\n            \"enter\": {\n              \"x\": {\n                \"value\": 6\n              },\n              \"y\": {\n                \"signal\": \"28 + (datum.idx - 1) * 22\"\n              },\n              \"size\": {\n                \"value\": 110\n              },\n              \"shape\": {\n                \"value\": \"circle\"\n              }\n            },\n            \"update\": {\n              \"fill\": [\n                {\n                  \"test\": \"datum.is_nodata\",\n                  \"value\": \"#BFDBFF\"\n                },\n                {\n                  \"scale\": \"util_color\",\n                  \"field\": \"val\"\n                }\n              ],\n              \"opacity\": [\n                {\n                  \"test\": \"metric == 'cpu'\",\n                  \"value\": 1\n                },\n                {\n                  \"value\": 0\n                }\n              ]\n            }\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"from\": {\n            \"data\": \"util_legend_stops\"\n          },\n          \"encode\": {\n            \"enter\": {\n              \"x\": {\n                \"value\": 18\n              },\n              \"y\": {\n                \"signal\": \"28 + (datum.idx - 1) * 22\"\n              },\n              \"align\": {\n                \"value\": \"left\"\n              },\n              \"baseline\": {\n                \"value\": \"middle\"\n              },\n              \"fontSize\": {\n                \"value\": 11\n              },\n              \"fill\": {\n                \"value\": \"#838C99\"\n              }\n            },\n            \"update\": {\n              \"text\": {\n                \"signal\": \"datum.label + ' (' + datum.count + ')'\"\n              },\n              \"opacity\": [\n                {\n                  \"test\": \"metric == 'cpu'\",\n                  \"value\": 1\n                },\n                {\n                  \"value\": 0\n                }\n              ]\n            }\n          }\n        }\n      ]\n    },\n    {\n      \"type\": \"group\",\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"legendX\"\n          },\n          \"y\": {\n            \"signal\": \"buttonsH + 8\"\n          }\n        }\n      },\n      \"marks\": [\n        {\n          \"type\": \"text\",\n          \"encode\": {\n            \"enter\": {\n              \"x\": {\n                \"value\": 0\n              },\n              \"y\": {\n                \"value\": 0\n              },\n              \"align\": {\n                \"value\": \"left\"\n              },\n              \"baseline\": {\n                \"value\": \"top\"\n              },\n              \"fontSize\": {\n                \"value\": 11\n              },\n              \"fontWeight\": {\n                \"value\": \"bold\"\n              },\n              \"fill\": {\n                \"value\": \"#838C99\"\n              }\n            },\n            \"update\": {\n              \"text\": {\n                \"signal\": \"'EBS Writes (' + agg + ')'\"\n              },\n              \"opacity\": [\n                {\n                  \"test\": \"metric == 'ebs_w'\",\n                  \"value\": 1\n                },\n                {\n                  \"value\": 0\n                }\n              ]\n            }\n          }\n        },\n        {\n          \"type\": \"symbol\",\n          \"from\": {\n            \"data\": \"vol_legend_stops\"\n          },\n          \"encode\": {\n            \"enter\": {\n              \"x\": {\n                \"value\": 6\n              },\n              \"y\": {\n                \"signal\": \"28 + (datum.idx - 1) * 22\"\n              },\n              \"size\": {\n                \"value\": 110\n              },\n              \"shape\": {\n                \"value\": \"circle\"\n              }\n            },\n            \"update\": {\n              \"fill\": [\n                {\n                  \"test\": \"datum.is_nodata\",\n                  \"value\": \"#BFDBFF\"\n                },\n                {\n                  \"scale\": \"vol_color\",\n                  \"field\": \"val\"\n                }\n              ],\n              \"opacity\": [\n                {\n                  \"test\": \"metric == 'ebs_w'\",\n                  \"value\": 1\n                },\n                {\n                  \"value\": 0\n                }\n              ]\n            }\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"from\": {\n            \"data\": \"vol_legend_stops\"\n          },\n          \"encode\": {\n            \"enter\": {\n              \"x\": {\n                \"value\": 18\n              },\n              \"y\": {\n                \"signal\": \"28 + (datum.idx - 1) * 22\"\n              },\n              \"align\": {\n                \"value\": \"left\"\n              },\n              \"baseline\": {\n                \"value\": \"middle\"\n              },\n              \"fontSize\": {\n                \"value\": 11\n              },\n              \"fill\": {\n                \"value\": \"#838C99\"\n              }\n            },\n            \"update\": {\n              \"text\": {\n                \"signal\": \"datum.label + ' (' + datum.count + ')'\"\n              },\n              \"opacity\": [\n                {\n                  \"test\": \"metric == 'ebs_w'\",\n                  \"value\": 1\n                },\n                {\n                  \"value\": 0\n                }\n              ]\n            }\n          }\n        }\n      ]\n    },\n    {\n      \"type\": \"group\",\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"tooltip.x + 18 + 290 > width - legendW - 10 ? max(tooltip.x - 18 - 290, 5) : tooltip.x + 18\"\n          },\n          \"y\": {\n            \"signal\": \"max(tooltip.y - 30, 5)\"\n          },\n          \"width\": {\n            \"value\": 290\n          },\n          \"height\": {\n            \"signal\": \"tooltip.instance_id ? (length(tooltip.instance_id) <= 36 ? 110 : 124) : 110\"\n          },\n          \"opacity\": [\n            {\n              \"test\": \"tooltip.instance_id\",\n              \"value\": 1\n            },\n            {\n              \"value\": 0\n            }\n          ],\n          \"fill\": {\n            \"value\": \"#0E1728\"\n          },\n          \"stroke\": {\n            \"value\": \"#2A3144\"\n          },\n          \"strokeWidth\": {\n            \"value\": 1\n          },\n          \"cornerRadius\": {\n            \"value\": 8\n          }\n        }\n      },\n      \"marks\": [\n        {\n          \"type\": \"text\",\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"x\": {\n                \"value\": 12\n              },\n              \"y\": {\n                \"value\": 12\n              },\n              \"text\": {\n                \"signal\": \"tooltip.instance_id ? (length(tooltip.instance_id) <= 36 ? [tooltip.instance_id] : [slice(tooltip.instance_id, 0, 36), slice(tooltip.instance_id, 36)]) : ['']\"\n              },\n              \"fontSize\": {\n                \"value\": 11\n              },\n              \"lineHeight\": {\n                \"value\": 14\n              },\n              \"baseline\": {\n                \"value\": \"top\"\n              },\n              \"fontWeight\": {\n                \"value\": \"bold\"\n              },\n              \"fill\": {\n                \"value\": \"#fff\"\n              }\n            }\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"x\": {\n                \"value\": 12\n              },\n              \"y\": {\n                \"signal\": \"tooltip.instance_id ? (length(tooltip.instance_id) <= 36 ? 36 : 50) : 36\"\n              },\n              \"text\": {\n                \"signal\": \"tooltip.instance_id ? 'Status: ' + tooltip.status_label : ''\"\n              },\n              \"fontSize\": {\n                \"value\": 10\n              },\n              \"fontWeight\": [\n                {\n                  \"test\": \"metric == 'status'\",\n                  \"value\": \"bold\"\n                },\n                {\n                  \"value\": \"normal\"\n                }\n              ],\n              \"baseline\": {\n                \"value\": \"top\"\n              },\n              \"fill\": {\n                \"signal\": \"metric == 'status' ? (tooltip.status_num == 1 ? '#F6726A' : tooltip.status_num == 2 ? '#BFDBFF' : '#24C292') : '#9da4b3'\"\n              }\n            }\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"x\": {\n                \"value\": 12\n              },\n              \"y\": {\n                \"signal\": \"tooltip.instance_id ? (length(tooltip.instance_id) <= 36 ? 50 : 64) : 50\"\n              },\n              \"text\": {\n                \"signal\": \"tooltip.instance_id ? 'CPU% (' + agg + '): ' + (tooltip['cpu_' + agg] != null ? format(tooltip['cpu_' + agg], '.1f') + '%' : 'no data') : ''\"\n              },\n              \"fontSize\": {\n                \"value\": 10\n              },\n              \"fontWeight\": [\n                {\n                  \"test\": \"metric == 'cpu'\",\n                  \"value\": \"bold\"\n                },\n                {\n                  \"value\": \"normal\"\n                }\n              ],\n              \"baseline\": {\n                \"value\": \"top\"\n              },\n              \"fill\": {\n                \"signal\": \"metric == 'cpu' ? (tooltip['cpu_' + agg] == null ? '#9da4b3' : tooltip['cpu_' + agg] >= 85 ? '#F6726A' : tooltip['cpu_' + agg] >= 60 ? '#D6BF57' : '#24C292') : '#9da4b3'\"\n              }\n            }\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"x\": {\n                \"value\": 12\n              },\n              \"y\": {\n                \"signal\": \"tooltip.instance_id ? (length(tooltip.instance_id) <= 36 ? 64 : 78) : 64\"\n              },\n              \"text\": {\n                \"signal\": \"tooltip.instance_id ? 'EBS Writes (' + agg + '): ' + (tooltip['ebs_w_' + agg] != null ? format(tooltip['ebs_w_' + agg], '.1f') + ' MB' : 'no data') : ''\"\n              },\n              \"fontSize\": {\n                \"value\": 10\n              },\n              \"fontWeight\": [\n                {\n                  \"test\": \"metric == 'ebs_w'\",\n                  \"value\": \"bold\"\n                },\n                {\n                  \"value\": \"normal\"\n                }\n              ],\n              \"baseline\": {\n                \"value\": \"top\"\n              },\n              \"fill\": {\n                \"signal\": \"metric == 'ebs_w' ? (tooltip['ebs_w_' + agg] == null ? '#9da4b3' : tooltip['ebs_w_' + agg] >= 500 ? '#F6726A' : tooltip['ebs_w_' + agg] >= 50  ? '#D6BF57' : '#24C292') : '#9da4b3'\"\n              }\n            }\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"x\": {\n                \"value\": 12\n              },\n              \"y\": {\n                \"signal\": \"tooltip.instance_id ? (length(tooltip.instance_id) <= 36 ? 82 : 96) : 82\"\n              },\n              \"text\": {\n                \"signal\": \"tooltip.instance_id ? '› Click for actions' : ''\"\n              },\n              \"fontSize\": {\n                \"value\": 9\n              },\n              \"fontStyle\": {\n                \"value\": \"italic\"\n              },\n              \"baseline\": {\n                \"value\": \"top\"\n              },\n              \"fill\": {\n                \"value\": \"#9da4b3\"\n              }\n            }\n          }\n        }\n      ]\n    },\n    {\n      \"type\": \"rect\",\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"(width - legendW) / 2 - 120\"\n          },\n          \"x2\": {\n            \"signal\": \"(width - legendW) / 2 + 120\"\n          },\n          \"y\": {\n            \"signal\": \"buttonsH + (height - buttonsH) / 2 - 45\"\n          },\n          \"y2\": {\n            \"signal\": \"buttonsH + (height - buttonsH) / 2 + 45\"\n          },\n          \"fill\": {\n            \"value\": \"#1A1C21\"\n          },\n          \"fillOpacity\": {\n            \"signal\": \"(loading || loading_timeout) ? 0.92 : 0\"\n          },\n          \"stroke\": {\n            \"value\": \"#838C99\"\n          },\n          \"strokeOpacity\": {\n            \"signal\": \"(loading || loading_timeout) ? 0.4 : 0\"\n          },\n          \"strokeWidth\": {\n            \"value\": 1\n          },\n          \"cornerRadius\": {\n            \"value\": 12\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"symbol\",\n      \"interactive\": false,\n      \"from\": {\n        \"data\": \"spinner_dots\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"(width - legendW) / 2 + 18 * cos(datum.i * PI / 4 - PI / 2)\"\n          },\n          \"y\": {\n            \"signal\": \"buttonsH + (height - buttonsH) / 2 - 8 + 18 * sin(datum.i * PI / 4 - PI / 2)\"\n          },\n          \"size\": {\n            \"value\": 70\n          },\n          \"shape\": {\n            \"value\": \"circle\"\n          },\n          \"fill\": {\n            \"value\": \"#0077CC\"\n          },\n          \"opacity\": {\n            \"signal\": \"loading ? 0.15 + 0.85 * (1 - (((floor(tick / 100) % 8) - datum.i + 8) % 8) / 7) : 0\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"(width - legendW) / 2\"\n          },\n          \"y\": {\n            \"signal\": \"buttonsH + (height - buttonsH) / 2 + 28\"\n          },\n          \"text\": {\n            \"value\": \"Loading data…\"\n          },\n          \"align\": {\n            \"value\": \"center\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": 500\n          },\n          \"fill\": {\n            \"value\": \"#FFFFFF\"\n          },\n          \"opacity\": {\n            \"signal\": \"loading && !loading_timeout ? 1 : 0\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"(width - legendW) / 2\"\n          },\n          \"y\": {\n            \"signal\": \"buttonsH + (height - buttonsH) / 2 + 28\"\n          },\n          \"text\": {\n            \"value\": \"Still loading… (taking longer than usual)\"\n          },\n          \"align\": {\n            \"value\": \"center\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": 500\n          },\n          \"fill\": {\n            \"value\": \"#FFFFFF\"\n          },\n          \"opacity\": {\n            \"signal\": \"loading_timeout ? 1 : 0\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"(width - legendW) / 2\"\n          },\n          \"y\": {\n            \"signal\": \"buttonsH + (height - buttonsH) / 2\"\n          },\n          \"text\": {\n            \"value\": \"No instances for the selected time range\"\n          },\n          \"align\": {\n            \"value\": \"center\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 13\n          },\n          \"fontWeight\": {\n            \"value\": 500\n          },\n          \"fill\": {\n            \"value\": \"#838C99\"\n          },\n          \"opacity\": {\n            \"signal\": \"no_data ? 1 : 0\"\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"menu_backdrop\",\n      \"type\": \"rect\",\n      \"from\": {\n        \"data\": \"menu_visible\"\n      },\n      \"encode\": {\n        \"enter\": {\n          \"cursor\": {\n            \"value\": \"default\"\n          }\n        },\n        \"update\": {\n          \"x\": {\n            \"value\": 0\n          },\n          \"y\": {\n            \"value\": 0\n          },\n          \"x2\": {\n            \"signal\": \"width\"\n          },\n          \"y2\": {\n            \"signal\": \"height\"\n          },\n          \"fill\": {\n            \"value\": \"#000000\"\n          },\n          \"fillOpacity\": {\n            \"value\": 0\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"menu_box\",\n      \"type\": \"rect\",\n      \"from\": {\n        \"data\": \"menu_visible\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"menu_x\"\n          },\n          \"y\": {\n            \"signal\": \"menu_y\"\n          },\n          \"width\": {\n            \"value\": 248\n          },\n          \"height\": {\n            \"value\": 90\n          },\n          \"fill\": {\n            \"value\": \"#0E1728\"\n          },\n          \"stroke\": {\n            \"value\": \"#2A3144\"\n          },\n          \"strokeWidth\": {\n            \"value\": 1\n          },\n          \"cornerRadius\": {\n            \"value\": 6\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"menu_header\",\n      \"type\": \"text\",\n      \"interactive\": false,\n      \"from\": {\n        \"data\": \"menu_visible\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"menu_x + 12\"\n          },\n          \"y\": {\n            \"signal\": \"menu_y + 13.0\"\n          },\n          \"text\": {\n            \"signal\": \"selected_instance ? 'Instance: ' + (length(selected_instance.id) > 30 ? slice(selected_instance.id, 0, 28) + '…' : selected_instance.id) : ''\"\n          },\n          \"align\": {\n            \"value\": \"left\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 11\n          },\n          \"fontWeight\": {\n            \"value\": 600\n          },\n          \"fill\": {\n            \"value\": \"#98A2B3\"\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"menu_separator\",\n      \"type\": \"rule\",\n      \"from\": {\n        \"data\": \"menu_visible\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"menu_x + 8\"\n          },\n          \"x2\": {\n            \"signal\": \"menu_x + 240\"\n          },\n          \"y\": {\n            \"signal\": \"menu_y + 26\"\n          },\n          \"stroke\": {\n            \"value\": \"#2A3144\"\n          },\n          \"strokeWidth\": {\n            \"value\": 1\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"menu_item_bg\",\n      \"type\": \"rect\",\n      \"from\": {\n        \"data\": \"menu_items_visible\"\n      },\n      \"encode\": {\n        \"enter\": {\n          \"cursor\": {\n            \"value\": \"pointer\"\n          }\n        },\n        \"update\": {\n          \"x\": {\n            \"signal\": \"menu_x\"\n          },\n          \"y\": {\n            \"signal\": \"menu_y + 30 + datum.idx * 30\"\n          },\n          \"width\": {\n            \"value\": 248\n          },\n          \"height\": {\n            \"value\": 30\n          },\n          \"fill\": {\n            \"value\": \"#0E1728\"\n          },\n          \"href\": {\n            \"signal\": \"selected_instance ? (datum.id === 'filter' ? ('/app/dashboards#/view/aws_ec2_otel-45f45575-d519-4a70-a50c-2195c0c9f916?' + g_param + '_a=(filters:!((meta:(alias:!n,disabled:!f,index:%27metrics-*%27,key:InstanceId,negate:!f,params:(query:%27' + selected_instance.id + '%27),type:phrase),query:(match_phrase:(InstanceId:%27' + selected_instance.id + '%27)))),query:(language:kuery,query:%27%27))') : datum.id === 'metrics' ? ('/app/discover#/?_g=(time:(from:%27' + time_from + '%27,to:%27' + time_to + '%27))&_a=(dataSource:(dataViewId:%27metrics-*%27,type:dataView),query:(language:kuery,query:%27InstanceId:%22' + selected_instance.id + '%22%27))') : '') : ''\"\n          }\n        },\n        \"hover\": {\n          \"fill\": {\n            \"value\": \"#1A2640\"\n          }\n        }\n      }\n    },\n    {\n      \"name\": \"menu_item_label\",\n      \"type\": \"text\",\n      \"interactive\": false,\n      \"from\": {\n        \"data\": \"menu_items_visible\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"menu_x + 14\"\n          },\n          \"y\": {\n            \"signal\": \"menu_y + 30 + datum.idx * 30 + 15.0\"\n          },\n          \"text\": {\n            \"field\": \"label\"\n          },\n          \"align\": {\n            \"value\": \"left\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#DFE5EF\"\n          }\n        }\n      }\n    }\n  ],\n  \"background\": \"transparent\",\n  \"autosize\": {\n    \"type\": \"fit\",\n    \"contains\": \"padding\"\n  }\n}"
+            },
+            "uiState": {},
+            "data": {
+              "aggs": [],
+              "searchSource": {
+                "query": {
+                  "language": "kuery",
+                  "query": ""
+                },
+                "projectRouting": "_alias:*",
+                "filter": []
+              }
+            }
+          },
+          "drilldowns": []
+        },
+        "panelIndex": "87c450fb-db6d-481b-961d-3511eda18875",
+        "gridData": {
+          "x": 0,
+          "y": 0,
+          "w": 48,
+          "h": 15,
+          "i": "87c450fb-db6d-481b-961d-3511eda18875",
+          "sectionId": "33bbb9a6-a7ea-49e6-ae49-4a13d0c730b2"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Total inbound network traffic (bytes) across all EC2 instances, summed over the selected time range. Grows as the range widens.",
+          "hide_title": true,
+          "attributes": {
+            "description": "Total inbound network traffic (bytes) across all EC2 instances, summed over the selected time range. Grows as the range widens.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-net-in": {
+                      "columns": [
+                        {
+                          "columnId": "col-kpi-net-in",
+                          "customLabel": true,
+                          "fieldName": "net_in",
+                          "inMetricDimension": true,
+                          "label": "Total network in",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL | WHERE stat == \"Sum\" | STATS net_in = SUM(sum_over_time(`metrics.amazonaws.com/AWS/EC2/NetworkIn`))"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-net-in",
+                  "type": "index-pattern"
+                }
+              ],
+              "needsRefresh": false,
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL | WHERE stat == \"Sum\" | STATS net_in = SUM(sum_over_time(`metrics.amazonaws.com/AWS/EC2/NetworkIn`))"
+              },
+              "visualization": {
+                "applyColorTo": "background",
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "layerId": "layer-kpi-net-in",
+                "layerType": "data",
+                "metricAccessor": "col-kpi-net-in",
+                "primaryAlign": "left",
+                "primaryPosition": "top",
+                "showBar": false,
+                "titlesTextAlign": "left",
+                "titlesTextSize": "xs",
+                "valueFontMode": "default",
+                "valuesTextSize": "s"
+              }
+            },
+            "title": "",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          }
+        },
+        "panelIndex": "kpi-net-in",
+        "gridData": {
+          "h": 6,
+          "w": 6,
+          "x": 0,
+          "y": 24,
+          "i": "kpi-net-in",
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Total outbound network traffic (bytes) across all EC2 instances, summed over the selected time range. Grows as the range widens.",
+          "hide_title": true,
+          "attributes": {
+            "description": "Total outbound network traffic (bytes) across all EC2 instances, summed over the selected time range. Grows as the range widens.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-net-out": {
+                      "columns": [
+                        {
+                          "columnId": "col-kpi-net-out",
+                          "customLabel": true,
+                          "fieldName": "net_out",
+                          "inMetricDimension": true,
+                          "label": "Total network out",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL | WHERE stat == \"Sum\" | STATS net_out = SUM(`metrics.amazonaws.com/AWS/EC2/NetworkOut`)"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-net-out",
+                  "type": "index-pattern"
+                }
+              ],
+              "needsRefresh": false,
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL | WHERE stat == \"Sum\" | STATS net_out = SUM(`metrics.amazonaws.com/AWS/EC2/NetworkOut`)"
+              },
+              "visualization": {
+                "applyColorTo": "background",
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "layerId": "layer-kpi-net-out",
+                "layerType": "data",
+                "metricAccessor": "col-kpi-net-out",
+                "primaryAlign": "left",
+                "primaryPosition": "top",
+                "showBar": false,
+                "titlesTextAlign": "left",
+                "titlesTextSize": "xs",
+                "valueFontMode": "default",
+                "valuesTextSize": "s"
+              }
+            },
+            "title": "",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          }
+        },
+        "panelIndex": "kpi-net-out",
+        "gridData": {
+          "h": 6,
+          "w": 6,
+          "x": 0,
+          "y": 30,
+          "i": "kpi-net-out",
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 EC2 instances by CPU utilization",
+          "description": "Top 10 EC2 instances by peak CPU utilization (%) over the selected time range (maximum per instance). Reference line at 80% marks the high-CPU threshold; bars crossing it indicate sustained CPU pressure that can throttle workloads.",
+          "attributes": {
+            "description": "Top 10 EC2 instances by peak CPU utilization (%) over the selected time range (maximum per instance). Reference line at 80% marks the high-CPU threshold; bars crossing it indicate sustained CPU pressure that can throttle workloads.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-top10-cpu": {
+                      "columns": [
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "peak_cpu",
+                          "customLabel": true,
+                          "fieldName": "peak_cpu",
+                          "inMetricDimension": true,
+                          "label": "Max CPU",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Maximum\" AND `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(max_over_time(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`)) / 100.0 BY InstanceId, cloud.region | SORT peak_cpu DESC | LIMIT 10"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-top10-cpu",
+                  "type": "index-pattern"
+                }
+              ],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Maximum\" AND `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(max_over_time(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`)) / 100.0 BY InstanceId, cloud.region | SORT peak_cpu DESC | LIMIT 10"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                },
+                "layers": [
+                  {
+                    "accessors": [
+                      "peak_cpu"
+                    ],
+                    "layerId": "xy-layer-top10-cpu",
+                    "layerType": "data",
+                    "seriesType": "bar_horizontal",
+                    "showGridlines": false,
+                    "xAccessor": "InstanceId",
+                    "yConfig": []
+                  }
+                ],
+                "legend": {
+                  "isVisible": false,
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "bar_horizontal",
+                "valueLabels": "show"
+              }
+            },
+            "title": "Top 10 EC2 instances by CPU utilization",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          }
+        },
+        "panelIndex": "top10-cpu",
+        "gridData": {
+          "h": 12,
+          "w": 16,
+          "x": 0,
+          "y": 36,
+          "i": "top10-cpu",
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 EC2 instances by network in",
+          "description": "Top 10 EC2 instances by average inbound network traffic (bytes per CloudWatch period) over the selected time range. Highlights the busiest receivers.",
+          "attributes": {
+            "description": "Top 10 EC2 instances by average inbound network traffic (bytes per CloudWatch period) over the selected time range. Highlights the busiest receivers.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-top10-netin": {
+                      "columns": [
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "avg_netin_bytes",
+                          "customLabel": true,
+                          "fieldName": "avg_netin_bytes",
+                          "inMetricDimension": true,
+                          "label": "Avg network in / period",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL | STATS avg_netin_bytes = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/NetworkIn`)) BY InstanceId, cloud.region | SORT avg_netin_bytes DESC | LIMIT 10"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-top10-netin",
+                  "type": "index-pattern"
+                }
+              ],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL | STATS avg_netin_bytes = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/NetworkIn`)) BY InstanceId, cloud.region | SORT avg_netin_bytes DESC | LIMIT 10"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                },
+                "layers": [
+                  {
+                    "accessors": [
+                      "avg_netin_bytes"
+                    ],
+                    "layerId": "xy-layer-top10-netin",
+                    "layerType": "data",
+                    "seriesType": "bar_horizontal",
+                    "showGridlines": false,
+                    "xAccessor": "InstanceId"
+                  }
+                ],
+                "legend": {
+                  "isVisible": false,
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "bar_horizontal",
+                "valueLabels": "show"
+              }
+            },
+            "title": "Top 10 EC2 instances by network in",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          }
+        },
+        "panelIndex": "top10-netin",
+        "gridData": {
+          "h": 12,
+          "w": 16,
+          "x": 16,
+          "y": 36,
+          "i": "top10-netin",
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 EC2 instances by EBS write bytes",
+          "description": "Top 10 EC2 instances by total EBS write volume (bytes), summed over the selected time range. High values flag write-heavy instances that may saturate EBS throughput.",
+          "attributes": {
+            "description": "Top 10 EC2 instances by total EBS write volume (bytes), summed over the selected time range. High values flag write-heavy instances that may saturate EBS throughput.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-top10-ebswrite": {
+                      "columns": [
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "total_ebs_write_bytes",
+                          "customLabel": true,
+                          "fieldName": "total_ebs_write_bytes",
+                          "inMetricDimension": true,
+                          "label": "Total EBS write bytes",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/EC2/EBSWriteBytes` IS NOT NULL | STATS total_ebs_write_bytes = SUM(sum_over_time(`metrics.amazonaws.com/AWS/EC2/EBSWriteBytes`)) BY InstanceId, cloud.region | SORT total_ebs_write_bytes DESC | LIMIT 10"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-top10-ebswrite",
+                  "type": "index-pattern"
+                }
+              ],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/EC2/EBSWriteBytes` IS NOT NULL | STATS total_ebs_write_bytes = SUM(sum_over_time(`metrics.amazonaws.com/AWS/EC2/EBSWriteBytes`)) BY InstanceId, cloud.region | SORT total_ebs_write_bytes DESC | LIMIT 10"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                },
+                "layers": [
+                  {
+                    "accessors": [
+                      "total_ebs_write_bytes"
+                    ],
+                    "layerId": "xy-layer-top10-ebswrite",
+                    "layerType": "data",
+                    "seriesType": "bar_horizontal",
+                    "showGridlines": false,
+                    "xAccessor": "InstanceId"
+                  }
+                ],
+                "legend": {
+                  "isVisible": false,
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "bar_horizontal",
+                "valueLabels": "show"
+              }
+            },
+            "title": "Top 10 EC2 instances by EBS write bytes",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          }
+        },
+        "panelIndex": "top10-ebswrite",
+        "gridData": {
+          "h": 12,
+          "w": 16,
+          "x": 32,
+          "y": 36,
+          "i": "top10-ebswrite",
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 EC2 instances by EBS write operations",
+          "description": "EBS write operations per instance over time — average EBSWriteOps per CloudWatch period (averaged per time bucket). Top 10 instances by write ops per bucket. Rising values indicate increasing write activity to attached storage.",
+          "attributes": {
+            "description": "EBS write operations per instance over time — average EBSWriteOps per CloudWatch period (averaged per time bucket). Top 10 instances by write ops per bucket. Rising values indicate increasing write activity to attached storage.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-memory": {
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "esType": "date",
+                            "type": "date"
+                          }
+                        },
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "metric",
+                          "customLabel": true,
+                          "fieldName": "metric",
+                          "inMetricDimension": true,
+                          "label": "EBS write ops",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/EBSWriteOps` IS NOT NULL | WHERE stat == \"Sum\" | STATS metric = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/EBSWriteOps`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, metric DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-memory",
+                  "type": "index-pattern"
+                }
+              ],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/EBSWriteOps` IS NOT NULL | WHERE stat == \"Sum\" | STATS metric = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/EBSWriteOps`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, metric DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                },
+                "layers": [
+                  {
+                    "accessors": [
+                      "metric"
+                    ],
+                    "layerId": "xy-layer-chart-memory",
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "InstanceId"
+                    ],
+                    "xAccessor": "timestamp",
+                    "yConfig": []
+                  }
+                ],
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "line",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "Top 10 EC2 instances by EBS write operations",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          }
+        },
+        "panelIndex": "chart-memory",
+        "gridData": {
+          "h": 12,
+          "w": 16,
+          "x": 32,
+          "y": 0,
+          "i": "chart-memory",
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 EC2 instances by CPU utilization",
+          "description": "Peak CPU utilization (%) per instance over time — the maximum within each time bucket. Reference line at 80% marks the high-CPU threshold. Top 10 instances by peak CPU per bucket; sustained values above the line indicate CPU saturation.",
+          "attributes": {
+            "description": "Peak CPU utilization (%) per instance over time — the maximum within each time bucket. Reference line at 80% marks the high-CPU threshold. Top 10 instances by peak CPU per bucket; sustained values above the line indicate CPU saturation.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "ref-cpu-80": {
+                      "columns": [
+                        {
+                          "columnId": "alert_threshold",
+                          "customLabel": true,
+                          "fieldName": "alert_threshold",
+                          "inMetricDimension": true,
+                          "label": "High CPU (80%)",
+                          "meta": {
+                            "esType": "integer",
+                            "type": "number"
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nROW alert_threshold = 0.8"
+                      },
+                      "timeField": "@timestamp"
+                    },
+                    "xy-layer-chart-cpu": {
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "esType": "date",
+                            "type": "date"
+                          }
+                        },
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "metric",
+                          "customLabel": true,
+                          "fieldName": "metric",
+                          "inMetricDimension": true,
+                          "label": "CPU utilization",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL | WHERE stat == \"Maximum\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`)) / 100.0 BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, metric DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-cpu",
+                  "type": "index-pattern"
+                },
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-ref-cpu-80",
+                  "type": "index-pattern"
+                }
+              ],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL | WHERE stat == \"Maximum\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`)) / 100.0 BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, metric DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                },
+                "layers": [
+                  {
+                    "accessors": [
+                      "metric"
+                    ],
+                    "layerId": "xy-layer-chart-cpu",
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "InstanceId"
+                    ],
+                    "xAccessor": "timestamp",
+                    "yConfig": []
+                  },
+                  {
+                    "accessors": [
+                      "alert_threshold"
+                    ],
+                    "layerId": "ref-cpu-80",
+                    "layerType": "referenceLine",
+                    "yConfig": [
+                      {
+                        "axisMode": "left",
+                        "color": "#bd271e",
+                        "fill": "none",
+                        "forAccessor": "alert_threshold",
+                        "icon": "alert",
+                        "iconPosition": "right",
+                        "lineStyle": "dashed",
+                        "lineWidth": 2
+                      }
+                    ]
+                  }
+                ],
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "line",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "Top 10 EC2 instances by CPU utilization",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          }
+        },
+        "panelIndex": "chart-cpu",
+        "gridData": {
+          "h": 12,
+          "w": 16,
+          "x": 0,
+          "y": 0,
+          "i": "chart-cpu",
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Number of EC2 instances reporting metrics but with no StatusCheckFailed signal in the latest 5-minute window (shown as “no data”). A high count can indicate instances not emitting status-check metrics rather than truly healthy ones.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [
+                    {
+                      "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "title": "metrics-aws.ec2*",
+                      "timeField": "@timestamp"
+                    }
+                  ],
+                  "layers": {
+                    "layer-kpi-nodata": {
+                      "columns": [
+                        {
+                          "columnId": "col-kpi-nodata",
+                          "customLabel": true,
+                          "fieldName": "no_data",
+                          "inMetricDimension": true,
+                          "label": "Unknown",
+                          "meta": {
+                            "esType": "long",
+                            "type": "number"
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-*\n| WHERE InstanceId IS NOT NULL AND InstanceId != \"\"\n  AND stat == \"Maximum\"\n| STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)),\n    last_seen = MAX(@timestamp)\n  BY InstanceId, cloud.region\n| INLINE STATS latest_global = MAX(last_seen)\n| WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5\n| STATS no_data = COUNT(*) WHERE failed_recent IS NULL\n| KEEP no_data"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-*\n| WHERE InstanceId IS NOT NULL AND InstanceId != \"\"\n  AND stat == \"Maximum\"\n| STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)),\n    last_seen = MAX(@timestamp)\n  BY InstanceId, cloud.region\n| INLINE STATS latest_global = MAX(last_seen)\n| WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5\n| STATS no_data = COUNT(*) WHERE failed_recent IS NULL\n| KEEP no_data"
+              },
+              "visualization": {
+                "applyColorTo": "background",
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "layerId": "layer-kpi-nodata",
+                "layerType": "data",
+                "metricAccessor": "col-kpi-nodata",
+                "primaryAlign": "left",
+                "primaryPosition": "top",
+                "showBar": false,
+                "titlesTextAlign": "left"
+              },
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "title": "metrics-aws.ec2*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ec2*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "needsRefresh": false
+            },
+            "visualizationType": "lnsMetric",
+            "version": 2
+          }
+        },
+        "panelIndex": "kpi-nodata",
+        "gridData": {
+          "h": 6,
+          "w": 4,
+          "x": 4,
+          "y": 6,
+          "i": "kpi-nodata",
+          "sectionId": "636a82af-094b-46fc-a228-3759a9a926f8"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "description": "Navigation tile — clicking opens the Kibana Dashboards library searched for “AWS OTel” dashboards in a new browser tab, carrying the current panel time range to the destination.",
+          "hide_border": true,
+          "attributes": {
+            "description": "Navigation tile — clicking opens the Kibana Dashboards library searched for “AWS OTel” dashboards in a new browser tab, carrying the current panel time range to the destination.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "indexPatternRefs": [
+                    {
+                      "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "timeField": "@timestamp",
+                      "title": "metrics-aws.ec2*"
+                    }
+                  ],
+                  "layers": {
+                    "layer-nav-otel": {
+                      "columns": [
+                        {
+                          "columnId": "col-nav-otel",
+                          "customLabel": true,
+                          "fieldName": "value",
+                          "inMetricDimension": true,
+                          "label": "Browse other AWS OTel dashboards",
+                          "meta": {
+                            "esType": "keyword",
+                            "type": "string"
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nROW value = \"AWS-Managed-OTel\" | KEEP value"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "textBasedLanguages-datasource-layer-layer-nav-otel",
+                  "type": "index-pattern"
+                }
+              ],
+              "needsRefresh": false,
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nROW value = \"AWS-Managed-OTel\" | KEEP value"
+              },
+              "visualization": {
+                "applyColorTo": "background",
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "icon": "popout",
+                "iconAlign": "right",
+                "layerId": "layer-nav-otel",
+                "layerType": "data",
+                "metricAccessor": "col-nav-otel",
+                "primaryAlign": "left",
+                "primaryPosition": "bottom",
+                "showBar": false,
+                "titlesTextAlign": "left",
+                "titlesTextSize": "xxs",
+                "valueFontMode": "fit",
+                "valuesTextSize": "xs"
+              }
+            },
+            "title": "",
+            "version": 2,
+            "visualizationType": "lnsMetric"
+          },
+          "drilldowns": [
+            {
+              "encode_url": false,
+              "label": "Browse AWS OTel dashboards",
+              "open_in_new_tab": true,
+              "trigger": "on_click_value",
+              "type": "url_drilldown",
+              "url": "{{kibanaUrl}}/app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:{{context.panel.timeRange.from}},to:{{context.panel.timeRange.to}}))&s=AWS%20OTel"
+            }
+          ]
+        },
+        "panelIndex": "nav-otel-dashboards",
+        "gridData": {
+          "h": 2,
+          "w": 6,
+          "x": 42,
+          "y": 0,
+          "i": "nav-otel-dashboards"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 EC2 instances by EBS read operations",
+          "description": "EBS read operations per instance over time — average EBSReadOps per CloudWatch period (averaged per time bucket). Top 10 instances by read ops per bucket. Rising values indicate increasing read activity from attached storage.",
+          "attributes": {
+            "description": "EBS read operations per instance over time — average EBSReadOps per CloudWatch period (averaged per time bucket). Top 10 instances by read ops per bucket. Rising values indicate increasing read activity from attached storage.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-ebs-read-ops": {
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "esType": "date",
+                            "type": "date"
+                          }
+                        },
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "metric",
+                          "customLabel": true,
+                          "fieldName": "metric",
+                          "inMetricDimension": true,
+                          "label": "EBS read ops",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/EBSReadOps` IS NOT NULL | WHERE stat == \"Sum\" | STATS metric = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/EBSReadOps`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, metric DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-ebs-read-ops",
+                  "type": "index-pattern"
+                }
+              ],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/EBSReadOps` IS NOT NULL | WHERE stat == \"Sum\" | STATS metric = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/EBSReadOps`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, metric DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                },
+                "layers": [
+                  {
+                    "accessors": [
+                      "metric"
+                    ],
+                    "layerId": "xy-layer-chart-ebs-read-ops",
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "InstanceId"
+                    ],
+                    "xAccessor": "timestamp",
+                    "yConfig": []
+                  }
+                ],
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "line",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "Top 10 EC2 instances by EBS read operations",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          }
+        },
+        "panelIndex": "chart-ebs-read-ops",
+        "gridData": {
+          "h": 12,
+          "w": 16,
+          "x": 16,
+          "y": 0,
+          "i": "chart-ebs-read-ops",
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 EC2 instances by network in",
+          "description": "Inbound network traffic per instance over time — average NetworkIn (bytes per CloudWatch period) per bucket. Top 10 instances by inbound traffic per bucket.",
+          "attributes": {
+            "description": "Inbound network traffic per instance over time — average NetworkIn (bytes per CloudWatch period) per bucket. Top 10 instances by inbound traffic per bucket.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-net-in": {
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "esType": "date",
+                            "type": "date"
+                          }
+                        },
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_ni",
+                          "customLabel": true,
+                          "fieldName": "col_ni",
+                          "inMetricDimension": true,
+                          "label": "Network in",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL | STATS col_ni = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/NetworkIn`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_ni DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-net-in",
+                  "type": "index-pattern"
+                }
+              ],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL | STATS col_ni = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/NetworkIn`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_ni DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                },
+                "layers": [
+                  {
+                    "accessors": [
+                      "col_ni"
+                    ],
+                    "layerId": "xy-layer-chart-net-in",
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "InstanceId"
+                    ],
+                    "xAccessor": "timestamp",
+                    "yConfig": null
+                  }
+                ],
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "line",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "Top 10 EC2 instances by network in",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          }
+        },
+        "panelIndex": "chart-net-in",
+        "gridData": {
+          "h": 12,
+          "w": 21,
+          "x": 6,
+          "y": 24,
+          "i": "chart-net-in",
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 EC2 instances by network out",
+          "description": "Outbound network traffic per instance over time — average NetworkOut (bytes per CloudWatch period) per bucket. Top 10 instances by outbound traffic per bucket.",
+          "attributes": {
+            "description": "Outbound network traffic per instance over time — average NetworkOut (bytes per CloudWatch period) per bucket. Top 10 instances by outbound traffic per bucket.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-net-out": {
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "esType": "date",
+                            "type": "date"
+                          }
+                        },
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_no",
+                          "customLabel": true,
+                          "fieldName": "col_no",
+                          "inMetricDimension": true,
+                          "label": "Network out",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL | STATS col_no = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/NetworkOut`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_no DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-net-out",
+                  "type": "index-pattern"
+                }
+              ],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL | STATS col_no = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/NetworkOut`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_no DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                },
+                "layers": [
+                  {
+                    "accessors": [
+                      "col_no"
+                    ],
+                    "layerId": "xy-layer-chart-net-out",
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "InstanceId"
+                    ],
+                    "xAccessor": "timestamp",
+                    "yConfig": null
+                  }
+                ],
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "line",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "Top 10 EC2 instances by network out",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          }
+        },
+        "panelIndex": "chart-net-out",
+        "gridData": {
+          "h": 12,
+          "w": 21,
+          "x": 27,
+          "y": 24,
+          "i": "chart-net-out",
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 EC2 instances by EBS read bytes",
+          "description": "EBS read volume per instance over time — average EBSReadBytes (bytes per CloudWatch period) per bucket. Top 10 instances by read volume per bucket.",
+          "attributes": {
+            "description": "EBS read volume per instance over time — average EBSReadBytes (bytes per CloudWatch period) per bucket. Top 10 instances by read volume per bucket.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-ebs-read": {
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "esType": "date",
+                            "type": "date"
+                          }
+                        },
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_dr",
+                          "customLabel": true,
+                          "fieldName": "col_dr",
+                          "inMetricDimension": true,
+                          "label": "EBS read",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/EC2/EBSReadBytes` IS NOT NULL | STATS col_dr = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/EBSReadBytes`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_dr DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-ebs-read",
+                  "type": "index-pattern"
+                }
+              ],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/EC2/EBSReadBytes` IS NOT NULL | STATS col_dr = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/EBSReadBytes`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_dr DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                },
+                "layers": [
+                  {
+                    "accessors": [
+                      "col_dr"
+                    ],
+                    "layerId": "xy-layer-chart-ebs-read",
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "InstanceId"
+                    ],
+                    "xAccessor": "timestamp",
+                    "yConfig": null
+                  }
+                ],
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "line",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "Top 10 EC2 instances by EBS read bytes",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          }
+        },
+        "panelIndex": "chart-ebs-read",
+        "gridData": {
+          "h": 12,
+          "w": 24,
+          "x": 0,
+          "y": 12,
+          "i": "chart-ebs-read",
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 EC2 instances by EBS write bytes",
+          "description": "EBS write volume per instance over time — average EBSWriteBytes (bytes per CloudWatch period) per bucket. Top 10 instances by write volume per bucket.",
+          "attributes": {
+            "description": "EBS write volume per instance over time — average EBSWriteBytes (bytes per CloudWatch period) per bucket. Top 10 instances by write volume per bucket.",
+            "references": [],
+            "state": {
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "allowHidden": false,
+                  "allowNoIndex": true,
+                  "fieldFormats": {},
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "managed": false,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "runtimeFieldMap": {},
+                  "sourceFilters": [],
+                  "timeFieldName": "@timestamp",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "type": "esql"
+                }
+              },
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-ebs-write": {
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "esType": "date",
+                            "type": "date"
+                          }
+                        },
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_dw",
+                          "customLabel": true,
+                          "fieldName": "col_dw",
+                          "inMetricDimension": true,
+                          "label": "EBS write",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/EC2/EBSWriteBytes` IS NOT NULL | STATS col_dw = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/EBSWriteBytes`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_dw DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+                      },
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "internalReferences": [
+                {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-ebs-write",
+                  "type": "index-pattern"
+                }
+              ],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/EC2/EBSWriteBytes` IS NOT NULL | STATS col_dw = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/EBSWriteBytes`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_dw DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                },
+                "layers": [
+                  {
+                    "accessors": [
+                      "col_dw"
+                    ],
+                    "layerId": "xy-layer-chart-ebs-write",
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "InstanceId"
+                    ],
+                    "xAccessor": "timestamp",
+                    "yConfig": null
+                  }
+                ],
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "preferredSeriesType": "line",
+                "valueLabels": "hide"
+              }
+            },
+            "title": "Top 10 EC2 instances by EBS write bytes",
+            "version": 2,
+            "visualizationType": "lnsXY"
+          }
+        },
+        "panelIndex": "chart-ebs-write",
+        "gridData": {
+          "h": 12,
+          "w": 24,
+          "x": 24,
+          "y": 12,
+          "i": "chart-ebs-write",
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      }
+    ],
+    "sections": [
+      {
+        "collapsed": false,
+        "title": "Overview (Current status)",
+        "gridData": {
+          "y": 2,
+          "i": "636a82af-094b-46fc-a228-3759a9a926f8"
+        }
+      },
+      {
+        "collapsed": false,
+        "title": "List of EC2 instances in the selected time range",
+        "gridData": {
+          "y": 3,
+          "i": "33bbb9a6-a7ea-49e6-ae49-4a13d0c730b2"
+        }
+      },
+      {
+        "collapsed": false,
+        "title": "Per instance metrics",
+        "gridData": {
+          "y": 4,
+          "i": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      }
+    ],
+    "timeRestore": false,
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": {
+        "filter": [],
+        "query": {
+          "language": "kuery",
+          "query": ""
+        }
+      }
+    }
+  },
+  "references": [
+    {
+      "name": "ctrl-ec2-instance-id:optionsListDataView",
+      "type": "index-pattern",
+      "id": "metrics-*"
+    },
+    {
+      "name": "ctrl-ec2-account:optionsListDataView",
+      "type": "index-pattern",
+      "id": "metrics-*"
+    },
+    {
+      "name": "ctrl-ec2-region:optionsListDataView",
+      "type": "index-pattern",
+      "id": "metrics-*"
+    }
+  ],
+  "managed": false,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.3.0"
+}
