@@ -641,13 +641,12 @@
               description: >
                 Versioned canonical representation of one configured action, in
                 v=1|type=<value>|context=<value>|command=<value>|arguments=<value>|working_directory=<value>|class_id=<value>
-                order. A value uses the `s:` prefix for a string, `b:true` or
-                `b:false` for a boolean, and `n` when omitted or empty after
-                normalization. Percent
-                signs, pipes, equals signs, C0 controls, and DEL are escaped as
-                uppercase `%HH`; printable Unicode, backslashes, *, and ? remain
-                literal and may need query-language escaping. Put every same-action
-                condition in one predicate. For example, KQL
+                order. An empty value means the source element was omitted or empty
+                after normalization. Percent signs, pipes, equals signs, C0
+                controls, and DEL are escaped as uppercase `%HH`; printable
+                Unicode, backslashes, *, and ? remain literal and may need
+                query-language escaping. Put every same-action condition in one
+                predicate. For example, KQL
                 winlog.scheduled_task.actions.definition: *type=*exec|context=*|command=*powershell.exe|arguments=*EncodedCommand*
                 correlates the command and arguments within one action. Separate
                 predicates may match different actions. Use the component fields
@@ -717,14 +716,13 @@
               description: >
                 Versioned canonical representation of one configured trigger, in
                 v=1|type=<value>|enabled=<value>|interval=<value>|duration=<value>|stop_at_duration_end=<value>
-                order. A value uses the `s:` prefix for a string, `b:true` or
-                `b:false` for a boolean, and `n` when omitted or empty after
-                normalization. For `stop_at_duration_end`, `n` means the element
-                was omitted; when repetition applies, Task Scheduler defaults the
-                omitted value to `false`. This remains distinct from explicit
-                `b:false`. Percent signs, pipes, equals signs, C0 controls, and DEL
-                are escaped as uppercase `%HH`; printable Unicode, backslashes, *,
-                and ? remain
+                order. An empty value means the source element was omitted or empty
+                after normalization. An empty `stop_at_duration_end=` means the
+                element was omitted; when repetition applies, Task Scheduler
+                defaults the omitted value to `false`. This remains distinct from
+                explicit `stop_at_duration_end=false`. Percent signs, pipes, equals
+                signs, C0 controls, and DEL are escaped as uppercase `%HH`;
+                printable Unicode, backslashes, *, and ? remain
                 literal and may need query-language escaping. Put every same-trigger
                 condition in one predicate. For example, KQL
                 winlog.scheduled_task.triggers.definition: *type=*time|enabled=*false|interval=*PT30M|*
