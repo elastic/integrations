@@ -57,20 +57,23 @@ To find a user's ID:
    - **Performer IDs Filter**: Filter by specific user IDs
    - **Event Types Filter**: Filter by event type (data_change_update, data_change_create, data_change_destroy, harvest_access, action)
    - **Enrich rejected application events**: When enabled, look up the rejection reason and rejection notes/comments from the Harvest API and add them to the event (default: disabled)
-   - **Rejection Match Window**: Time window used to correlate a rejection event to its Application (default: 5m, only used when enrichment is enabled)
 
 ### Enabling rejection enrichment (optional)
 
 When a candidate or prospect is rejected, Greenhouse audits it as an `action` event with `event.target_type` set to the literal string `Candidate or Prospect rejected` — this event does **not** include an application or candidate ID, and does not include the rejection reason or notes/comments entered at rejection time. Enabling **Enrich rejected application events** looks these up from the Harvest API and correlates them back to the audit event.
 
-1. On the same Harvest V3 (OAuth) API credential used for audit log access, add read scopes for the **Applications** and **Activity Feed** endpoints.
+1. On the same Harvest V3 (OAuth) API credential used for audit log access, grant the following read permissions (under **Configure > Dev Center > API Credentials** on the credential):
+   - **Rejection details** → *List rejection details*
+   - **Rejection reasons** → *List rejection reasons* and *Show rejection reasons*
+   - **Applications** → read access, needed for the `GET /v3/applications/{id}` lookup this integration performs
+   - **Activity Feed** → read access, needed for the `GET /v3/applications/{id}/activity_feed` lookup this integration performs to retrieve the rejection notes
 2. Enable the **Enrich rejected application events** setting on the integration.
 
-Because the audit event has no application ID, the integration looks up Applications whose rejection time falls within **Rejection Match Window** of the audit event's timestamp:
+Because the "Candidate or Prospect rejected" audit event has no application ID, the integration correlates it to a second audit event that Greenhouse records for the same rejection — one with `event.target_type` of `RejectionDetails` — by matching the `request.id` shared by both events. That event's `event.meta.application_id` is then used to look up the rejection reason and notes:
 
-- **Exactly one match**: the rejection reason and notes are fetched and added to the event under `greenhouse.audit.event.rejection` (`application_id`, `candidate_id`, `reason.id`/`reason.name`/`reason.type`, `notes`, `rejected_at`). The notes are also copied to `event.reason`.
-- **No match**: the audit event is still indexed, with `greenhouse.audit.event.rejection.error` explaining that no matching Application was found. Consider widening **Rejection Match Window**.
-- **More than one match** (for example, several rejections processed in the same window): the integration does not guess. The audit event is indexed with `greenhouse.audit.event.rejection.error` and `greenhouse.audit.event.rejection.ambiguous_application_ids` listing the candidates, for manual follow-up. Consider narrowing **Rejection Match Window** if this happens often.
+- **Exactly one matching `RejectionDetails` event**: the rejection reason and notes are fetched and added to the event under `greenhouse.audit.event.rejection` (`application_id`, `candidate_id`, `reason.id`/`reason.name`/`reason.type`, `notes`, `rejected_at`). The notes are also copied to `event.reason`.
+- **No matching event found**: the audit event is still indexed, with `greenhouse.audit.event.rejection.error` explaining that no matching `RejectionDetails` event was found for that request. This can happen if the two events land on different pages of a poll; increasing **Batch Size** reduces how often this occurs.
+- **More than one matching event** (for example, a bulk rejection of several candidates in one action, which shares a single `request.id` across all of them): the integration does not guess which pairs with which. The audit event is indexed with `greenhouse.audit.event.rejection.error` and `greenhouse.audit.event.rejection.ambiguous_application_ids` listing the candidates, for manual follow-up.
 
 Any of the error cases above also adds the tag `greenhouse-rejection-enrichment-failed`, and the underlying rejection audit event is never dropped.
 
@@ -115,8 +118,10 @@ If no events are being collected:
 ### Rejection Enrichment Errors
 
 If rejection events are tagged with `greenhouse-rejection-enrichment-failed` and `greenhouse.audit.event.rejection.error` is populated:
-1. Verify the OAuth credential has read scopes for the Harvest **Applications** and **Activity Feed** endpoints
+1. Verify the OAuth credential has been granted **Rejection details** (*List rejection details*), **Rejection reasons** (*List rejection reasons*, *Show rejection reasons*), **Applications**, and **Activity Feed** read permissions
 2. Check that the authorizing user has permission to view the affected application
+3. If the error mentions no matching `RejectionDetails` event was found, try increasing **Batch Size** so the two related audit events are less likely to land on different pages
+4. If the error mentions an ambiguous match, the rejection was likely part of a bulk-reject action; `greenhouse.audit.event.rejection.ambiguous_application_ids` lists the candidates involved for manual follow-up
 
 ## Logs reference
 
