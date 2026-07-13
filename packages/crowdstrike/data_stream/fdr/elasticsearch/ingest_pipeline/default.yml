@@ -1575,46 +1575,51 @@ processors:
       ignore_empty_value: true
       ignore_failure: true
   - set:
-      tag: set_user_name_e3f940d5
+      tag: set_temp_is_active_directory_event
       if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory')
+      field: _temp.is_active_directory_event
+      value: true
+  - set:
+      tag: set_user_name_e3f940d5
+      if: ctx._temp?.is_active_directory_event == true
       field: user.name
       copy_from: crowdstrike.SourceAccountSamAccountName
       ignore_empty_value: true
   - set:
       tag: set_user_email_4558e3d3
       if: |-
-        ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory') &&
+        ctx._temp?.is_active_directory_event == true &&
         ctx.crowdstrike?.SourceAccountUserName instanceof String && ctx.crowdstrike.SourceAccountUserName.contains('@')
       field: user.email
       copy_from: crowdstrike.SourceAccountUserName
       ignore_empty_value: true
   - set:
       tag: set_user_id_12584d3a
-      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory')
+      if: ctx._temp?.is_active_directory_event == true
       field: user.id
       copy_from: crowdstrike.SourceEndpointAccountObjectSid
       ignore_empty_value: true
   - set:
       tag: set_user_domain_acdd7f9f
-      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory')
+      if: ctx._temp?.is_active_directory_event == true
       field: user.domain
       copy_from: crowdstrike.SourceAccountDomain
       ignore_empty_value: true
   - set:
       tag: set_user_name_0d315d08
-      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory') && ctx.user?.name == null
+      if: ctx._temp?.is_active_directory_event == true && ctx.user?.name == null
       field: user.name
       copy_from: crowdstrike.SamAccountName
       ignore_empty_value: true
   - set:
       tag: set_user_id_0da27179
-      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory') && ctx.user?.id == null
+      if: ctx._temp?.is_active_directory_event == true && ctx.user?.id == null
       field: user.id
       copy_from: crowdstrike.AccountObjectSid
       ignore_empty_value: true
   - set:
       tag: set_user_domain_bc24f2dc
-      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory') && ctx.user?.domain == null
+      if: ctx._temp?.is_active_directory_event == true && ctx.user?.domain == null
       field: user.domain
       copy_from: crowdstrike.AccountDomain
       ignore_empty_value: true
