@@ -1,0 +1,81 @@
+title: Risk Score
+type: logs
+streams:
+  - input: cel
+    title: Risk Score
+    description: Collect Risk Score logs from XM Cyber.
+    template_path: cel.yml.hbs
+    vars:
+      - name: initial_interval
+        type: select
+        title: Initial Interval
+        description: How far back to pull the initial Risk Score data from XM Cyber, in days.
+        multi: false
+        required: true
+        show_user: true
+        options:
+          - text: '7'
+            value: '7'
+          - text: '14'
+            value: '14'
+          - text: '30'
+            value: '30'
+          - text: '90'
+            value: '90'
+          - text: '180'
+            value: '180'
+        default: '30'
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the XM Cyber API. Supported time units are s, m, h.
+        required: true
+        show_user: true
+        default: 24h
+      - name: max_executions
+        type: integer
+        title: Maximum Pages Per Interval
+        description: Maximum Pages Per Interval is the maximum number of pages that can be collected at each interval. Note that this must be greater than zero.
+        multi: false
+        required: false
+        show_user: false
+        default: 1000
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before the HTTP client request times out (e.g. 60s).
+        required: true
+        show_user: false
+        default: 60s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: Log HTTP request/response traces to the agent for debugging. Do not enable in production.
+        required: false
+        show_user: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to add to every collected event.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - xm_cyber-risk_score
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Keep a copy of the raw event in `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
