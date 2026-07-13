@@ -323,7 +323,6 @@ An example event for `events` looks as following:
 | gen_ai.usage.input_tokens | Number of input tokens consumed. | long |
 | gen_ai.usage.output_tokens | Number of output tokens generated. | long |
 | organization.id | Unique identifier for the organization. | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.email | User email address. | keyword |
