@@ -1,0 +1,134 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+state:
+  account_ids:
+  {{#each account_ids as |account_id|}}
+    - !!str {{account_id}}
+  {{/each}}
+  api_key: {{api_key}}
+  {{!--
+    max_page_limit: 3000 — Cato EventsFeed API returns at most 3000 records per call.
+    want_more is true when a full page is returned, indicating more data may be available.
+  --}}
+  max_page_limit: 3000
+  query: >-
+    query EventsFeed($accountIDs: [ID!] $marker: String) {
+      eventsFeed(accountIDs: $accountIDs marker: $marker) {
+        fetchedCount
+        marker
+        accounts {
+          errorString
+          records {
+            fieldsMap
+          }
+        }
+      }
+    }
+redact:
+  fields:
+    - api_key
+program: |
+  state.with(
+    request(
+      "POST",
+      state.url.trim_right("/") + "/api/v1/graphql2"
+    ).with(
+      {
+        "Header": {
+          "Content-Type": ["application/json"],
+          "x-api-key": [state.api_key],
+        },
+        "Body": {
+          "query": state.query,
+          "variables": {
+            "accountIDs": state.account_ids,
+            ?"marker": state.?cursor.marker,
+          },
+        }.encode_json(),
+      }
+    ).do_request().as(resp,
+      (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          // in case of rate limit and wrong API key, StatusCode will be 200 and eventsFeed will be null
+          (body.?data.eventsFeed.orValue(null) != null) ?
+            {
+              "events": (body.data.eventsFeed.?accounts.orValue(null) != null) ?
+                body.data.eventsFeed.accounts.map(account, (account.?records.orValue(null) != null) ?
+                  account.records.map(record,
+                    {
+                      "message": record.fieldsMap.encode_json(),
+                    }
+                  )
+                :
+                  []
+                ).flatten()
+              :
+                [],
+              "cursor": {
+                ?"marker": body.?data.eventsFeed.marker,
+              },
+              "want_more": body.data.eventsFeed.fetchedCount >= state.max_page_limit,
+            }
+          :
+            {
+              "events": {
+                "error": {
+                  "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + (
+                    (has(body.errors) && size(body.errors) > 0) ?
+                      body.errors[0].message
+                    :
+                      "eventsFeed returned null (possible rate limit or invalid API key)"
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST " + state.url.trim_right("/") + "/api/v1/graphql2" + ": " + (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+        }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

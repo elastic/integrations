@@ -312,6 +312,8 @@ The `log` data stream provides events from Cisco Aironet Wireless LAN Controller
 | cisco.interface.type | Cisco interface type | keyword |
 | cisco.loadbalance.instance | Load balancer instance number | integer |
 | cisco.radius.server | RADIUS server address and port string | keyword |
+| cisco.radius.source | RADIUS source identifier number | short |
+| cisco.radius.status | RADIUS status (enabled/disabled) | keyword |
 | cisco.site_tag | Load balancer site tag name | keyword |
 | cisco.ssid | Cisco SSID | keyword |
 | cisco.wps.channel | Cisco WPS channel | short |
