@@ -1,8 +1,4 @@
 {
-    "accessControl": {
-        "accessMode": "default",
-        "owner": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
-    },
     "attributes": {
         "description": "Production monitoring dashboard for Anthropic API token consumption and rate limit visibility across all workspaces and models. Covers token usage (input, cache, output) and rate limit headroom (RPM, ITPM, OTPM) per model. For cost reporting see the dedicated Cost \u0026 Billing dashboard.",
         "kibanaSavedObjectMeta": {
@@ -28,7 +24,7 @@
                     "layout": "horizontal",
                     "links": [
                         {
-                            "destinationRefName": "link_2713ef6a-16f3-431d-9e31-70400fc507a7_dashboard",
+                            "destinationRefName": "link_69e5a7f9-c3e7-4020-9109-6481aea855e2_dashboard",
                             "label": "Cost \u0026 Billing",
                             "options": {
                                 "open_in_new_tab": false,
@@ -38,7 +34,7 @@
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_9bc1a738-bda0-4378-b40a-50990ef023e5_dashboard",
+                            "destinationRefName": "link_731b55ae-8050-47f8-8fa8-8f535340a0db_dashboard",
                             "label": "Usage \u0026 Rate Limit Monitor",
                             "options": {
                                 "open_in_new_tab": false,
@@ -354,7 +350,7 @@
                                             "colorMode": {
                                                 "type": "categorical"
                                             },
-                                            "paletteId": "elastic_line_optimized",
+                                            "paletteId": "default",
                                             "specialAssignments": [
                                                 {
                                                     "color": {
@@ -1110,6 +1106,13 @@
                             },
                             "datasourceStates": {
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-anthropic_metrics.usage-*-58e3c293175ce9d51d4d4d2ce3fd21224c100f97b51b3bb1490b428ce36e55e9",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-anthropic_metrics.usage-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "bar_horizontal_0": {
                                             "columns": [
@@ -1135,7 +1138,8 @@
                                             "index": "metrics-anthropic_metrics.usage-*-58e3c293175ce9d51d4d4d2ce3fd21224c100f97b51b3bb1490b428ce36e55e9",
                                             "query": {
                                                 "esql": "FROM metrics-anthropic_metrics.usage-* | STATS total_tokens = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.cache_creation_input_tokens) + SUM(anthropic.usage.output_tokens) BY anthropic.usage.workspace_id | SORT total_tokens DESC"
-                                            }
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -1152,68 +1156,50 @@
                                 "esql": "FROM metrics-anthropic_metrics.usage-* | STATS total_tokens = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.cache_creation_input_tokens) + SUM(anthropic.usage.output_tokens) BY anthropic.usage.workspace_id | SORT total_tokens DESC"
                             },
                             "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "hideEndzones": true,
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
                                 "layers": [
                                     {
-                                        "accessors": [
-                                            "bar_horizontal_y_0"
-                                        ],
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
                                         "layerId": "bar_horizontal_0",
                                         "layerType": "data",
-                                        "seriesType": "bar_horizontal",
-                                        "xAccessor": "bar_horizontal_x",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "bar_horizontal_y_0"
-                                            }
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "bar_horizontal_y_0"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "bar_horizontal_x"
                                         ]
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": false,
-                                    "maxLines": 1,
-                                    "position": "bottom"
-                                },
-                                "minBarHeight": 1,
-                                "preferredSeriesType": "bar_horizontal",
-                                "showCurrentTimeMarker": false,
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "xExtent": {
-                                    "mode": "dataBounds",
-                                    "niceValues": false
-                                },
-                                "yLeftExtent": {
-                                    "mode": "full",
-                                    "niceValues": true
-                                },
-                                "yLeftScale": "linear"
+                                "shape": "pie"
                             }
                         },
                         "title": "Total Token Usage by Workspace",
                         "version": 2,
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsPie"
                     },
+                    "drilldowns": [],
                     "title": "Total Token Usage by Workspace"
                 },
                 "gridData": {
@@ -1418,149 +1404,109 @@
                                 "metrics-anthropic_metrics.usage-*-c7225efedc0fe52d4dac5b07dc97bb29dfeb3870525ed682b1803f491ce42f6e": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
-                                    "fieldAttrs": {},
                                     "fieldFormats": {},
                                     "id": "metrics-anthropic_metrics.usage-*-c7225efedc0fe52d4dac5b07dc97bb29dfeb3870525ed682b1803f491ce42f6e",
                                     "name": "metrics-anthropic_metrics.usage-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "metrics-anthropic_metrics.usage-*",
                                     "type": "esql"
                                 }
                             },
                             "datasourceStates": {
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-anthropic_metrics.usage-*-c7225efedc0fe52d4dac5b07dc97bb29dfeb3870525ed682b1803f491ce42f6e",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-anthropic_metrics.usage-*"
+                                        }
+                                    ],
                                     "layers": {
-                                        "bar_horizontal_percentage_0": {
+                                        "be2d702e-14b8-49a1-a9f6-485d8d9ddb32": {
                                             "columns": [
                                                 {
-                                                    "columnId": "bar_horizontal_percentage_x",
-                                                    "fieldName": "Token Type",
+                                                    "columnId": "token_type",
+                                                    "customLabel": false,
+                                                    "fieldName": "token_type",
+                                                    "label": "token_type",
                                                     "meta": {
+                                                        "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "bar_horizontal_percentage_y_0",
-                                                    "customLabel": true,
-                                                    "fieldName": "Uncached Input",
-                                                    "label": "Uncached Input",
+                                                    "columnId": "tokens",
+                                                    "customLabel": false,
+                                                    "fieldName": "tokens",
+                                                    "inMetricDimension": true,
+                                                    "label": "tokens",
                                                     "meta": {
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "bar_horizontal_percentage_y_1",
-                                                    "customLabel": true,
-                                                    "fieldName": "Cached Input",
-                                                    "label": "Cached Input",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "bar_horizontal_percentage_y_2",
-                                                    "customLabel": true,
-                                                    "fieldName": "Cache Creation",
-                                                    "label": "Cache Creation",
-                                                    "meta": {
+                                                        "esType": "long",
                                                         "type": "number"
                                                     }
                                                 }
                                             ],
                                             "index": "metrics-anthropic_metrics.usage-*-c7225efedc0fe52d4dac5b07dc97bb29dfeb3870525ed682b1803f491ce42f6e",
                                             "query": {
-                                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL | STATS `Uncached Input` = SUM(anthropic.usage.uncached_input_tokens), `Cached Input` = SUM(anthropic.usage.cached_input_tokens), `Cache Creation` = SUM(anthropic.usage.cache_creation_input_tokens) | EVAL `Token Type` = \"Input Tokens\""
-                                            }
+                                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL | STATS `Uncached Input` = SUM(anthropic.usage.uncached_input_tokens), `Cached Input` = SUM(anthropic.usage.cached_input_tokens), `Cache Creation` = SUM(anthropic.usage.cache_creation_input_tokens) | FORK (EVAL token_type = \"Uncached Input\", tokens = `Uncached Input`) (EVAL token_type = \"Cached Input\", tokens = `Cached Input`) (EVAL token_type = \"Cache Creation\", tokens = `Cache Creation`) | KEEP token_type, tokens | SORT tokens DESC"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "metrics-anthropic_metrics.usage-*-c7225efedc0fe52d4dac5b07dc97bb29dfeb3870525ed682b1803f491ce42f6e",
-                                    "name": "indexpattern-datasource-layer-bar_horizontal_percentage_0",
-                                    "type": "index-pattern"
-                                }
-                            ],
+                            "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL | STATS `Uncached Input` = SUM(anthropic.usage.uncached_input_tokens), `Cached Input` = SUM(anthropic.usage.cached_input_tokens), `Cache Creation` = SUM(anthropic.usage.cache_creation_input_tokens) | EVAL `Token Type` = \"Input Tokens\""
+                                "esql": "FROM metrics-anthropic_metrics.usage-* | WHERE anthropic.usage.uncached_input_tokens IS NOT NULL | STATS `Uncached Input` = SUM(anthropic.usage.uncached_input_tokens), `Cached Input` = SUM(anthropic.usage.cached_input_tokens), `Cache Creation` = SUM(anthropic.usage.cache_creation_input_tokens) | FORK (EVAL token_type = \"Uncached Input\", tokens = `Uncached Input`) (EVAL token_type = \"Cached Input\", tokens = `Cached Input`) (EVAL token_type = \"Cache Creation\", tokens = `Cache Creation`) | KEEP token_type, tokens | SORT tokens DESC"
                             },
                             "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "gridlinesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "hideEndzones": true,
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
                                 "layers": [
                                     {
-                                        "accessors": [
-                                            "bar_horizontal_percentage_y_0",
-                                            "bar_horizontal_percentage_y_1",
-                                            "bar_horizontal_percentage_y_2"
-                                        ],
-                                        "layerId": "bar_horizontal_percentage_0",
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "be2d702e-14b8-49a1-a9f6-485d8d9ddb32",
                                         "layerType": "data",
-                                        "seriesType": "bar_horizontal_percentage_stacked",
-                                        "xAccessor": "bar_horizontal_percentage_x",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "bar_horizontal_percentage_y_0"
-                                            },
-                                            {
-                                                "axisMode": "left",
-                                                "color": "#fcd883",
-                                                "forAccessor": "bar_horizontal_percentage_y_1"
-                                            },
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "bar_horizontal_percentage_y_2"
-                                            }
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "tokens"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "token_type"
                                         ]
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "maxLines": 1,
-                                    "position": "bottom"
-                                },
-                                "minBarHeight": 1,
-                                "preferredSeriesType": "bar_horizontal_percentage_stacked",
-                                "showCurrentTimeMarker": false,
-                                "tickLabelsVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "xExtent": {
-                                    "mode": "dataBounds",
-                                    "niceValues": false
-                                },
-                                "yLeftExtent": {
-                                    "mode": "full",
-                                    "niceValues": false
-                                },
-                                "yLeftScale": "linear"
+                                "shape": "pie"
                             }
                         },
-                        "title": "Cache Efficiency Ratio",
+                        "title": "",
                         "version": 2,
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsPie"
                     },
+                    "drilldowns": [],
                     "title": "Cache Efficiency Ratio"
                 },
                 "gridData": {
@@ -2190,18 +2136,17 @@
         "title": "[Anthropic] Usage \u0026 Rate Limit Monitor"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-05-28T15:36:37.857Z",
-    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "created_at": "2026-07-10T12:15:20.246Z",
     "id": "anthropic_metrics-602de168-1b42-4dd6-a463-9c4878e5db94",
     "references": [
         {
             "id": "anthropic_metrics-2bd61c2c-4418-458f-a79e-12a74c34b2f0",
-            "name": "15025142-deb2-42ac-a47e-df1084ca0c55:link_2713ef6a-16f3-431d-9e31-70400fc507a7_dashboard",
+            "name": "15025142-deb2-42ac-a47e-df1084ca0c55:link_69e5a7f9-c3e7-4020-9109-6481aea855e2_dashboard",
             "type": "dashboard"
         },
         {
             "id": "anthropic_metrics-602de168-1b42-4dd6-a463-9c4878e5db94",
-            "name": "15025142-deb2-42ac-a47e-df1084ca0c55:link_9bc1a738-bda0-4378-b40a-50990ef023e5_dashboard",
+            "name": "15025142-deb2-42ac-a47e-df1084ca0c55:link_731b55ae-8050-47f8-8fa8-8f535340a0db_dashboard",
             "type": "dashboard"
         },
         {
@@ -2216,6 +2161,5 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.3.0",
-    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    "typeMigrationVersion": "10.3.0"
 }
