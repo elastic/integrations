@@ -145,6 +145,9 @@ func processPackage(pkgPath, pkgName string, dryRun bool, owners *codeowners.Own
 			applied = append(applied, p)
 		} else if p.Warning != "" {
 			skipped = append(skipped, p)
+		} else {
+			fmt.Printf("warning: unrecognised proposal for %s (package=%s kind=%s) — neither proposed nor warning set; skipping\n",
+				pkgName, p.Package, p.Kind)
 		}
 	}
 
