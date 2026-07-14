@@ -4,9 +4,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
 # BACKPORT_OWNERS_SOURCE_BRANCH is the ownership source of truth — main is
-# always authoritative, so this isn't expected to change, but a variable
-# keeps the value in one place rather than repeated through the script.
-BACKPORT_OWNERS_SOURCE_BRANCH="${BACKPORT_OWNERS_SOURCE_BRANCH:-"main"}"
+# always authoritative. Not meant to be overridden via the environment (that
+# would let this drift from apply.go's own hardcoded "main"); it's a plain
+# variable purely so the value lives in one place, easy to tweak here for
+# local debugging/testing.
+BACKPORT_OWNERS_SOURCE_BRANCH="main"
 
 # Renders the PR comment body for mismatches_json, the JSON array emitted by
 # `mage checkBackportOwners -asJSON` (an object per changed package that

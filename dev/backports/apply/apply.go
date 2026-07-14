@@ -27,6 +27,13 @@ import (
 	"github.com/elastic/integrations/dev/citools"
 )
 
+// ownersSourceBranch is the ownership source of truth for syncOwners — main
+// is always authoritative. A named constant (not an env var or Options
+// field) purely so the value lives in one place, easy to tweak here for
+// local debugging/testing; check_backport_owners.sh keeps its own identical
+// constant since the two run in separate processes.
+const ownersSourceBranch = "main"
+
 // Options controls the behaviour of Apply.
 type Options struct {
 	SHA         string // commit to cherry-pick (required)
@@ -158,7 +165,7 @@ func Apply(opts Options) (*Result, error) {
 		return nil, err
 	}
 
-	a.syncOwners(remote, "main", opts.Package, pkgDir)
+	a.syncOwners(remote, ownersSourceBranch, opts.Package, pkgDir)
 
 	if opts.DryRun {
 		success = true
