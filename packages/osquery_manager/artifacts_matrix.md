@@ -2,10 +2,11 @@
 
 This document tracks the coverage of forensic artifacts in Osquery.
 
-**Last Updated**: 2026-05-28
+**Last Updated**: 2026-07-14
 **Total Core Artifacts**: 57 available + 3 in progress = 60 total variants
 **Total Queries**: 79
 **Completion Rate**: 95.0% (57/60 core artifacts fully supported)
+**Shadow AI Discovery Packs**: 3 platform packs (Windows 27, macOS 29, Linux 28 queries) — see [Shadow AI Discovery Packs](#shadow-ai-discovery-packs)
 
 ---
 
@@ -129,6 +130,62 @@ listed above.
 | 26  | executables_or_drivers_in_temp_folder_vt_windows_elastic | ✅ |    Win    | [3e55](kibana/osquery_saved_query/osquery_manager-3e553650-17fd-11ed-89c6-331eb0db6d01.json) | Executables/drivers in temp folders with VirusTotal integration                                                                                                                                                                                                        |
 
 **Note**: Queries with VirusTotal integration require the VirusTotal extension configured in osquery.
+
+---
+
+## Shadow AI Discovery Packs
+
+Unlike the forensic artifacts above (which are individual `kibana/osquery_saved_query/*.json` saved objects), Shadow AI discovery ships as three canonical **osquery packs** in `kibana/osquery_pack_asset/`. Assign the pack matching each agent's OS to the Osquery Manager policy in Fleet. Packs are the sole prebuilt query source for AI asset inventory; there is no accompanying dashboard or detection rule in this package. See [`docs/README.md`](docs/README.md) for snapshot semantics and the metadata-only privacy boundary.
+
+| Pack | OS | Queries | File |
+|------|:--:|:-------:|:----:|
+| `ai-asset-discovery-windows` | Windows | 27 | [win0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-win0-4f6a-8b9c-0d1e2f3a4b5c.json) |
+| `ai-asset-discovery-macos` | macOS | 29 | [mac0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-mac0-4f6a-8b9c-0d1e2f3a4b5c.json) |
+| `ai-asset-discovery-linux` | Linux | 28 | [lin0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-lin0-4f6a-8b9c-0d1e2f3a4b5c.json) |
+
+Pack contracts (query counts, `event.action` naming, ECS mappings, cross-platform consistency, Fleet-safe SQL) are enforced by the Go validator in [`_dev/scripts/osquery-gen/validate_packs.go`](_dev/scripts/osquery-gen/validate_packs.go).
+
+### Query Coverage Matrix
+
+Interval `1h` = 3600s, `24h` = 86400s.
+
+| #  | Query (id) | Category | Interval | Win | macOS | Linux | Description |
+|:--:|------------|----------|:--------:|:--:|:-----:|:-----:|-------------|
+| 1  | `ai_llm_processes` | process | 1h | ✅ | ✅ | ✅ | Running local LLM runtimes (Ollama, LM Studio, llama.cpp, vLLM, GPT4All, …) |
+| 2  | `ai_coding_agents` | process | 1h | ✅ | ✅ | ✅ | AI coding assistants/agents (Claude Code, Cursor, Copilot, Aider, …) |
+| 3  | `ai_listening_ports` | network | 1h | ✅ | ✅ | ✅ | AI services exposed on non-loopback addresses |
+| 4  | `ai_listening_ports_local` | network | 1h | ✅ | ✅ | ✅ | AI services on all interfaces including localhost |
+| 5  | `ai_programs_windows` / `ai_apps_macos` / `ai_packages_linux` | package | 24h | ✅ | ✅ | ✅ | Installed AI desktop applications / packages |
+| 6  | `mcp_server_processes` | process | 1h | ✅ | ✅ | ✅ | Running Model Context Protocol servers |
+| 7  | `mcp_config_files_*` | file | 24h | ✅ | ✅ | ✅ | MCP configuration files (Claude Desktop, Cursor, VS Code) |
+| 8  | `ai_model_files_*` | file | 24h | ✅ | ✅ | ✅ | Large model files (>100 MiB) in known AI directories |
+| 9  | `ai_model_file_extensions_*` | file | 24h | ✅ | ✅ | ✅ | Model files by extension (.gguf, .safetensors, .llamafile, .onnx) |
+| 10 | `ai_python_packages` | package | 24h | ✅ | ✅ | ✅ | AI/ML Python packages (torch, transformers, langchain, openai, …) |
+| 11 | `ai_chrome_extensions` | package | 24h | ✅ | ✅ | ✅ | AI browser extensions (Chrome/Chromium/Edge) |
+| 12 | `ai_firefox_extensions` | package | 24h | ✅ | ✅ | ✅ | AI browser extensions (Firefox) |
+| 13 | `ai_docker_containers` | host | 1h | ✅ | ✅ | ✅ | Docker containers running AI workloads (process-table fallback on Windows) |
+| 14 | `mcp_npm_packages` | package | 24h | ✅ | ✅ | ✅ | Installed MCP npm packages |
+| 15 | `ai_credential_files_*` | file | 24h | ✅ | ✅ | ✅ | AI credential-adjacent path metadata (.env, tokens, config locations) — metadata only |
+| 16 | `ai_jupyter_servers` | process | 1h | ✅ | ✅ | ✅ | Running Jupyter Notebook/Lab servers |
+| 17 | `ai_vscode_extensions` / `ai_vscode_extensions_windows` | package | 24h | ✅ | ✅ | ✅ | AI VS Code extensions |
+| 18 | `ai_config_directories_*` | file | 24h | ✅ | ✅ | ✅ | AI tool configuration directories (historical presence) |
+| 19 | `ai_vector_databases` | process | 1h | ✅ | ✅ | ✅ | Running vector database servers (Chroma, Qdrant, Weaviate, Milvus, …) |
+| 20 | `ai_model_cache_size_*` | file | 24h | ✅ | ✅ | ✅ | AI model cache disk usage by directory (>100 MiB) |
+| 21 | `ai_config_file_changes_*` | file | 1h | ✅ | ✅ | ✅ | Recent MCP/AI config modifications (7200s lookback); emits `event.action: osquery.ai_config_file_changes` |
+| 22 | `ai_sensitive_file_proximity_*` | process, file | mac/lin 1h · win 24h | ✅ | ✅ | ✅ | AI-process proximity to sensitive paths. macOS/Linux use open-file access evidence (`osquery.ai_sensitive_file_access`); Windows is uid co-occurrence inventory, **not** access proof (`osquery.ai_sensitive_file_colocation`) |
+| 23 | `ai_process_network_summary` | network, process | 1h | ✅ | ✅ | ✅ | Broad AI-process socket inventory across remote endpoints |
+| 24 | `ai_gpu_systems` | host | 24h | ✅ | — | ✅ | GPU hardware capable of local inference (Windows `video_info`, Linux PCI) |
+| 25 | `ai_network_connections` | network | 1h | — | ✅ | ✅ | Outbound connections from AI processes to AI service endpoints |
+| 26 | `ai_ssh_tunnels` | network | 1h | — | ✅ | ✅ | SSH tunnels potentially forwarding AI service ports |
+| 27 | `ai_windows_services` | configuration | 24h | ✅ | — | — | AI auto-start Windows services |
+| 28 | `ai_scheduled_tasks_windows` | configuration | 24h | ✅ | — | — | AI scheduled tasks (Windows) |
+| 29 | `ai_dns_cache_windows` | network | 1h | ✅ | — | — | AI service DNS lookups (Windows) |
+| 30 | `ai_launchd_services` | configuration | 24h | — | ✅ | — | AI auto-start macOS launchd services |
+| 31 | `ai_safari_extensions` | package | 24h | — | ✅ | — | AI browser extensions (Safari) |
+| 32 | `ai_homebrew_packages` | package | 24h | — | ✅ | — | AI Homebrew packages (macOS) |
+| 33 | `ai_apple_silicon_inference` | host | 24h | — | ✅ | — | Apple Silicon local-inference capability (CPU brand proxy, not discrete GPU inventory) |
+| 34 | `ai_systemd_services` | configuration | 24h | — | — | ✅ | AI auto-start Linux systemd services |
+| 35 | `ai_crontab_linux` | configuration | 24h | — | — | ✅ | AI cron jobs (Linux) |
 
 ---
 
