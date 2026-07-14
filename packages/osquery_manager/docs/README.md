@@ -68,15 +68,6 @@ Correlate osquery inventory with hook or OpenTelemetry activity streams by `host
 
 Pack queries classify Copilot-related inventory into `osquery.copilot_variant` (`developer`, `productivity`, `browser`, `unknown`) where source fields support it. The field is sparse (mostly `NULL` outside Copilot hits), variant taxonomies differ by source (extensions vs programs vs processes), and not every source emits the field, so treat it as best-effort context rather than a reliable dimension.
 
-### Pack contract validation
-
-Automated pack contract tests live beside the osquery schema generator. Run:
-
-```bash
-cd packages/osquery_manager/_dev/scripts/osquery-gen
-go test ./...
-```
-
 ### Deferred follow-ups (not collected by this package)
 
 The following are tracked separately and are **out of scope** for these inventory packs:

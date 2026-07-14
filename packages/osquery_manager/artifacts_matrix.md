@@ -143,8 +143,6 @@ Unlike the forensic artifacts above (which are individual `kibana/osquery_saved_
 | `ai-asset-discovery-macos` | macOS | 29 | [mac0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-mac0-4f6a-8b9c-0d1e2f3a4b5c.json) |
 | `ai-asset-discovery-linux` | Linux | 28 | [lin0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-lin0-4f6a-8b9c-0d1e2f3a4b5c.json) |
 
-Pack contracts (query counts, `event.action` naming, ECS mappings, cross-platform consistency, Fleet-safe SQL) are enforced by the Go validator in [`_dev/scripts/osquery-gen/validate_packs.go`](_dev/scripts/osquery-gen/validate_packs.go).
-
 ### Query Coverage Matrix
 
 Interval `1h` = 3600s, `24h` = 86400s.
