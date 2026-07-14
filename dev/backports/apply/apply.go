@@ -579,11 +579,21 @@ func (a applier) syncOwners(remote, sourceBranch, pkg, pkgDir string) {
 		return
 	}
 
+	manifestPath := filepath.Join(pkgDir, "manifest.yml")
+	codeownersPath := filepath.Join(a.workDir, owners.CodeownersRelPath)
+	rollback := func() {
+		if rbErr := a.git.Run("checkout", "--", manifestPath, codeownersPath); rbErr != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not restore files after owner sync failure for %s: %v\n", pkg, rbErr)
+		}
+	}
+
 	if err := writeOwnerSyncPlan(a.workDir, pkgDir, pkgPath, plan); err != nil {
+		rollback()
 		fmt.Fprintf(os.Stderr, "warning: skipping owner sync for %s: %v\n", pkg, err)
 		return
 	}
 	if err := a.commitOwnerSync(pkg, pkgDir); err != nil {
+		rollback()
 		fmt.Fprintf(os.Stderr, "warning: committing owner sync for %s: %v\n", pkg, err)
 	}
 }
