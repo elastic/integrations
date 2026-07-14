@@ -127,7 +127,10 @@ func publishPR(s packageSummary, preview bool) error {
 	if err := git.Run("commit", "-m", fmt.Sprintf("[automation] Update required package versions for %s", s.name)); err != nil {
 		return fmt.Errorf("committing failed: %w", err)
 	}
-	if err := git.Run("push", "--force-with-lease", "origin", branch); err != nil {
+	// Force push: each run resets the branch to origin/main and commits fresh
+	// changes, so the new commit intentionally diverges from any previous run's
+	// commit on the same branch — not a fast-forward.
+	if err := git.Run("push", "--force", "origin", branch); err != nil {
 		return fmt.Errorf("pushing failed: %w", err)
 	}
 
