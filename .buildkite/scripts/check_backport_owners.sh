@@ -74,6 +74,7 @@ main() {
         add_bin_path
         with_jq         # containers do not have jq installed
         with_github_cli # to post comments in Pull Requests
+        with_mage       # to run the checkBackportOwners target
     fi
 
     local remote="origin"
