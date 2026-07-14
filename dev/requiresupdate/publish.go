@@ -170,19 +170,30 @@ func createOrUpdatePR(branch, title, body string) (string, error) {
 		"--title", title,
 		"--label", "automation",
 		"--body", body,
-		"--json", "number",
 	}
-	stdout, err = ghExec(args...)
-	if err != nil {
+	if _, err := ghExec(args...); err != nil {
 		return "", fmt.Errorf("creating PR: %w", err)
 	}
-	var created struct {
+	// gh pr create --json is not available on GitHub-hosted runners yet; pr list
+	// supports --json and is already used above for the update path.
+	return openPRNumber(branch)
+}
+
+func openPRNumber(branch string) (string, error) {
+	stdout, err := ghExec("pr", "list", "--head", branch, "--state", "open", "--json", "number")
+	if err != nil {
+		return "", err
+	}
+	var prs []struct {
 		Number int `json:"number"`
 	}
-	if err := json.Unmarshal(stdout.Bytes(), &created); err != nil {
-		return "", fmt.Errorf("parsing created PR number: %w", err)
+	if err := json.Unmarshal(stdout.Bytes(), &prs); err != nil {
+		return "", fmt.Errorf("parsing PR list: %w", err)
 	}
-	return fmt.Sprintf("%d", created.Number), nil
+	if len(prs) == 0 {
+		return "", fmt.Errorf("no open PR found for branch %q after create", branch)
+	}
+	return fmt.Sprintf("%d", prs[0].Number), nil
 }
 
 // fixupChangelogLinks replaces the pull/REPLACE_ME placeholder in this
