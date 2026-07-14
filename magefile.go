@@ -391,24 +391,29 @@ func CheckBackportBranchActive(branch string, asJSON *bool) error {
 	return nil
 }
 
-// DetectBackportPackages lists the packages touched by commits between before and after.
-// Runs git diff --name-only before..after and maps the changed files to package names
-// using the packages/ directory as the root.
-// Plain output: one package name per line. Pass -asJSON for a JSON array.
-func DetectBackportPackages(before, after string, asJSON *bool) error {
+// diffPackages runs git diff --name-only before..after and maps the changed
+// files to package names. Shared by DetectBackportPackages and
+// CheckBackportOwners so the diff-to-package logic lives in one place.
+func diffPackages(before, after string) ([]string, error) {
 	out, err := sh.Output("git", "diff", "--name-only", before+".."+after)
 	if err != nil {
-		return fmt.Errorf("running git diff: %w", err)
+		return nil, fmt.Errorf("running git diff: %w", err)
 	}
-
 	var files []string
 	for _, line := range strings.Split(out, "\n") {
 		if line = strings.TrimSpace(line); line != "" {
 			files = append(files, line)
 		}
 	}
+	return bppackages.DetectPackages(files, "packages")
+}
 
-	pkgs, err := bppackages.DetectPackages(files, "packages")
+// DetectBackportPackages lists the packages touched by commits between before and after.
+// Runs git diff --name-only before..after and maps the changed files to package names
+// using the packages/ directory as the root.
+// Plain output: one package name per line. Pass -asJSON for a JSON array.
+func DetectBackportPackages(before, after string, asJSON *bool) error {
+	pkgs, err := diffPackages(before, after)
 	if err != nil {
 		return err
 	}
@@ -441,19 +446,7 @@ func CheckBackportOwners(remote, sourceBranch, before, after string) error {
 	}
 	remoteRef := remote + "/" + sourceBranch
 
-	out, err := sh.Output("git", "diff", "--name-only", before+".."+after)
-	if err != nil {
-		return fmt.Errorf("running git diff: %w", err)
-	}
-
-	var files []string
-	for _, line := range strings.Split(out, "\n") {
-		if line = strings.TrimSpace(line); line != "" {
-			files = append(files, line)
-		}
-	}
-
-	pkgs, err := bppackages.DetectPackages(files, "packages")
+	pkgs, err := diffPackages(before, after)
 	if err != nil {
 		return fmt.Errorf("detecting packages: %w", err)
 	}
