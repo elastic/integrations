@@ -71,7 +71,6 @@ for package_path in ${PACKAGE_LIST}; do
       agents:
         provider: gcp
         image: ${IMAGE_UBUNTU_X86_64}
-        machineType: n2-standard-16
       env:
         STACK_VERSION: "${STACK_VERSION}"
         FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
