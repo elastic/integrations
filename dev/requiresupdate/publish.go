@@ -162,13 +162,19 @@ func createOrUpdatePR(branch, title, body string) (string, error) {
 		"--title", title,
 		"--label", "automation",
 		"--body", body,
+		"--json", "number",
 	}
 	stdout, err = ghExec(args...)
 	if err != nil {
 		return "", fmt.Errorf("creating PR: %w", err)
 	}
-	prURL := strings.TrimSpace(stdout.String())
-	return prURL[strings.LastIndex(prURL, "/")+1:], nil
+	var created struct {
+		Number int `json:"number"`
+	}
+	if err := json.Unmarshal(stdout.Bytes(), &created); err != nil {
+		return "", fmt.Errorf("parsing created PR number: %w", err)
+	}
+	return fmt.Sprintf("%d", created.Number), nil
 }
 
 // fixupChangelogLinks replaces the pull/REPLACE_ME placeholder in this

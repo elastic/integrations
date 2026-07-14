@@ -155,7 +155,8 @@ func processPackage(pkgPath, pkgName string, dryRun bool, owners *codeowners.Own
 	res := resolveOwner(owners, pkgPath, result.Codeowner)
 
 	var writtenFiles []string
-	if result.NewVersion != "" {
+	// written files are only populated when proposals are applied, not on dry-run
+	if len(applied) > 0 && !dryRun {
 		writtenFiles = []string{
 			filepath.Join(pkgPath, citools.ManifestFileName),
 			filepath.Join(pkgPath, "changelog.yml"),
