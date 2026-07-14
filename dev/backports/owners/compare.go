@@ -95,13 +95,24 @@ func ExistingSubPaths(workDir, pkgPath string, current, source *Owners) []string
 // from it. It's the one place apply.Apply's sync step and the
 // backport-branch CI check both call, so they can never see a different
 // answer for the same package.
+//
+// Callers checking multiple packages in one run should prefer CompareWith to
+// avoid re-reading and re-parsing CODEOWNERS on every call.
 func Compare(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string) (plan SyncPlan, found bool, err error) {
-	pkgPath := "/" + relPkgDir
-
 	current, source, err := ReadCodeowners(git, workDir, remoteRef)
 	if err != nil {
 		return SyncPlan{}, false, err
 	}
+	return CompareWith(git, workDir, pkgDir, relPkgDir, remoteRef, current, source)
+}
+
+// CompareWith is like Compare but accepts pre-parsed CODEOWNERS for both the
+// current worktree and remoteRef, avoiding a re-read when checking multiple
+// packages in the same run. The current and source owners must have been
+// produced by ReadCodeowners (or equivalent) against the same workDir and
+// remoteRef that are passed here.
+func CompareWith(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string, current, source *Owners) (plan SyncPlan, found bool, err error) {
+	pkgPath := "/" + relPkgDir
 
 	if _, ok := source.ResolveOwner(pkgPath); !ok {
 		// The package no longer resolves to an owner on remoteRef (removed

@@ -31,6 +31,18 @@ type Mismatch struct {
 // silently skipped, same as a package Compare reports as not found on
 // remoteRef.
 func CheckPackages(git gitutil.Git, workDir, remoteRef string, pkgNames []string, pkgDirs map[string]string) []Mismatch {
+	current, source, err := ReadCodeowners(git, workDir, remoteRef)
+	if err != nil {
+		// Surface as an error on every package rather than silently checking nothing.
+		var mismatches []Mismatch
+		for _, name := range pkgNames {
+			if _, ok := pkgDirs[name]; ok {
+				mismatches = append(mismatches, Mismatch{Package: name, Err: err})
+			}
+		}
+		return mismatches
+	}
+
 	var mismatches []Mismatch
 	for _, name := range pkgNames {
 		pkgDir, ok := pkgDirs[name]
@@ -45,7 +57,7 @@ func CheckPackages(git gitutil.Git, workDir, remoteRef string, pkgNames []string
 			}
 		}
 
-		plan, found, err := Compare(git, workDir, pkgDir, relPkgDir, remoteRef)
+		plan, found, err := CompareWith(git, workDir, pkgDir, relPkgDir, remoteRef, current, source)
 		if err != nil {
 			mismatches = append(mismatches, Mismatch{Package: name, Err: err})
 			continue
