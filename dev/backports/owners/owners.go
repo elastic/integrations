@@ -9,49 +9,21 @@
 package owners
 
 import (
-	"bufio"
 	"fmt"
 	"maps"
-	"path"
 	"slices"
 	"sort"
 	"strings"
 
 	"github.com/elastic/integrations/dev/citools"
+	"github.com/elastic/integrations/dev/codeowners"
 )
 
-// Owners is a parsed CODEOWNERS file, indexed by path for ownership
-// resolution. It does not validate the file, it only extracts path->owners
-// rules for use by ResolveOwner.
-type Owners struct {
-	entries map[string][]string
-}
-
-// ParseOwners parses CODEOWNERS content. Lines that are blank, comments, or
-// single-field exclusion rules (no owners) are ignored, since they carry no
-// information relevant to package/data-stream owner resolution.
-func ParseOwners(content string) (*Owners, error) {
-	o := &Owners{entries: make(map[string][]string)}
-
-	scanner := bufio.NewScanner(strings.NewReader(content))
-	for scanner.Scan() {
-		p, owners, ok := parseEntryLine(scanner.Text())
-		if !ok {
-			continue
-		}
-		o.entries[p] = owners
-	}
-	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("scanning CODEOWNERS content: %w", err)
-	}
-
-	return o, nil
-}
-
-// parseEntryLine parses a single CODEOWNERS line, the same rule ParseOwners
-// and ApplyUpdates both use to recognize a real entry: not blank, not a
-// comment, and not a single-field exclusion rule (no owners).
-func parseEntryLine(line string) (path string, owners []string, ok bool) {
+// parseEntryLine parses a single CODEOWNERS line. Returns ok=true only for
+// lines with both a path and at least one owner — blank lines, comments, and
+// single-field exclusion rules (no owners) all return ok=false. Used by
+// ApplyUpdates to identify entry lines without re-implementing the same logic.
+func parseEntryLine(line string) (p string, owners []string, ok bool) {
 	line = strings.TrimSpace(line)
 	if line == "" || strings.HasPrefix(line, "#") {
 		return "", nil, false
@@ -63,42 +35,6 @@ func parseEntryLine(line string) (path string, owners []string, ok bool) {
 	}
 
 	return strings.TrimSuffix(fields[0], "/"), fields[1:], true
-}
-
-// ResolveOwner returns the owners that apply to p, walking up parent
-// directories until an explicit entry is found (mirrors GitHub's own
-// CODEOWNERS resolution and dev/codeowners.findOwnerForFile).
-func (o *Owners) ResolveOwner(p string) ([]string, bool) {
-	p = strings.TrimSuffix(p, "/")
-	if p == "" {
-		p = "/"
-	}
-
-	for {
-		if owners, found := o.entries[p]; found {
-			return owners, true
-		}
-		if p == "/" || p == "." {
-			return nil, false
-		}
-		p = path.Dir(p)
-	}
-}
-
-// EntriesUnder returns the full paths of every explicit entry nested under
-// prefix — e.g. prefix "/packages/aws" matches
-// "/packages/aws/data_stream/cloudtrail" and "/packages/aws/kibana", but not
-// "/packages/aws" itself or an unrelated "/packages/awsome". Order is
-// unspecified.
-func (o *Owners) EntriesUnder(prefix string) []string {
-	prefix = strings.TrimSuffix(prefix, "/") + "/"
-	var paths []string
-	for p := range o.entries {
-		if strings.HasPrefix(p, prefix) {
-			paths = append(paths, p)
-		}
-	}
-	return paths
 }
 
 // ManifestOwner extracts the owner.github field from manifest.yml content,
@@ -171,8 +107,8 @@ func (p SyncPlan) Empty() bool {
 // nobody has assigned is a human judgment call, not something to guess a
 // default for — codeowners.Check() (or the backport-branch CI check)
 // surfaces that gap for a person to resolve instead.
-func Plan(pkgPath string, existingSubPaths []string, current, main *Owners, currentManifestOwner, mainManifestOwner string) (SyncPlan, bool) {
-	mainPkgOwner, found := main.ResolveOwner(pkgPath)
+func Plan(pkgPath string, existingSubPaths []string, current, main *codeowners.Owners, currentManifestOwner, mainManifestOwner string) (SyncPlan, bool) {
+	mainPkgOwner, found := main.Resolve(pkgPath)
 	if !found {
 		return SyncPlan{}, false
 	}
@@ -183,7 +119,7 @@ func Plan(pkgPath string, existingSubPaths []string, current, main *Owners, curr
 		plan.ManifestOwner = mainManifestOwner
 	}
 
-	currentPkgOwner, _ := current.ResolveOwner(pkgPath)
+	currentPkgOwner, _ := current.Resolve(pkgPath)
 	if !slices.Equal(currentPkgOwner, mainPkgOwner) {
 		plan.PackageOwner = mainPkgOwner
 	}
@@ -194,19 +130,19 @@ func Plan(pkgPath string, existingSubPaths []string, current, main *Owners, curr
 
 	subPathPlan := make(map[string][]string, len(existingSubPaths))
 	for _, subPath := range existingSubPaths {
-		if currentOwner, hasCurrentExplicit := current.entries[subPath]; hasCurrentExplicit {
-			mainOwner, _ := main.ResolveOwner(subPath)
+		if currentOwner, hasCurrentExplicit := current.ExplicitEntry(subPath); hasCurrentExplicit {
+			mainOwner, _ := main.Resolve(subPath)
 			if !slices.Equal(currentOwner, mainOwner) {
 				subPathPlan[subPath] = mainOwner
 			}
 			continue
 		}
 
-		mainOwner, hasMainExplicit := main.entries[subPath]
+		mainOwner, hasMainExplicit := main.ExplicitEntry(subPath)
 		if !hasMainExplicit {
 			continue
 		}
-		currentOwner, _ := current.ResolveOwner(subPath)
+		currentOwner, _ := current.Resolve(subPath)
 		if !slices.Equal(currentOwner, mainOwner) {
 			subPathPlan[subPath] = mainOwner
 		}
@@ -221,9 +157,7 @@ func Plan(pkgPath string, existingSubPaths []string, current, main *Owners, curr
 // ApplyUpdates rewrites CODEOWNERS content so each path in updates resolves
 // to its given owners — updating an existing line in place, or inserting a
 // new one (immediately after packagePath's own line, if found; otherwise at
-// the end of the file) when none exists yet. It shares parseEntryLine with
-// ParseOwners, so a line ApplyUpdates would leave alone is always a line
-// ParseOwners would also skip, and vice versa.
+// the end of the file) when none exists yet.
 func ApplyUpdates(content string, updates map[string][]string, packagePath string) string {
 	if len(updates) == 0 {
 		return content

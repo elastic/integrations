@@ -9,65 +9,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/elastic/integrations/dev/codeowners"
 )
-
-func TestResolveOwner(t *testing.T) {
-	const codeowners = `
-/packages/aws @elastic/obs-infraobs-integrations
-/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
-/packages/nested/foo @elastic/ecosystem
-`
-
-	cases := []struct {
-		name     string
-		path     string
-		expected []string
-		found    bool
-	}{
-		{
-			name:     "package root",
-			path:     "/packages/aws",
-			expected: []string{"@elastic/obs-infraobs-integrations"},
-			found:    true,
-		},
-		{
-			name:     "explicit data stream override",
-			path:     "/packages/aws/data_stream/cloudtrail",
-			expected: []string{"@elastic/security-service-integrations"},
-			found:    true,
-		},
-		{
-			name:     "data stream without override falls back to package owner",
-			path:     "/packages/aws/data_stream/vpcflow",
-			expected: []string{"@elastic/obs-infraobs-integrations"},
-			found:    true,
-		},
-		{
-			name:     "nested category package",
-			path:     "/packages/nested/foo",
-			expected: []string{"@elastic/ecosystem"},
-			found:    true,
-		},
-		{
-			name:  "unknown path",
-			path:  "/packages/does-not-exist",
-			found: false,
-		},
-	}
-
-	owners, err := ParseOwners(codeowners)
-	require.NoError(t, err)
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			got, found := owners.ResolveOwner(c.path)
-			assert.Equal(t, c.found, found)
-			if c.found {
-				assert.Equal(t, c.expected, got)
-			}
-		})
-	}
-}
 
 func TestManifestOwner(t *testing.T) {
 	cases := []struct {
@@ -231,9 +175,9 @@ func TestPlan(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			current, err := ParseOwners(c.current)
+			current, err := codeowners.ParseOwners(c.current)
 			require.NoError(t, err)
-			main, err := ParseOwners(c.main)
+			main, err := codeowners.ParseOwners(c.main)
 			require.NoError(t, err)
 
 			plan, found := Plan(c.pkgPath, c.existingSubPaths, current, main, c.currentManifest, c.mainManifest)
@@ -248,23 +192,6 @@ func TestSyncPlanEmpty(t *testing.T) {
 	assert.False(t, SyncPlan{ManifestOwner: "elastic/ecosystem"}.Empty())
 	assert.False(t, SyncPlan{PackageOwner: []string{"@elastic/ecosystem"}}.Empty())
 	assert.False(t, SyncPlan{SubPaths: map[string][]string{"/packages/aws/data_stream/cloudtrail": {"@elastic/ecosystem"}}}.Empty())
-}
-
-func TestEntriesUnder(t *testing.T) {
-	const codeowners = `
-/packages/aws @elastic/obs-infraobs-integrations
-/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
-/packages/aws/kibana @elastic/obs-infraobs-integrations
-/packages/awsome @elastic/unrelated-team
-`
-	owners, err := ParseOwners(codeowners)
-	require.NoError(t, err)
-
-	got := owners.EntriesUnder("/packages/aws")
-	assert.ElementsMatch(t, []string{
-		"/packages/aws/data_stream/cloudtrail",
-		"/packages/aws/kibana",
-	}, got)
 }
 
 func TestApplyUpdates(t *testing.T) {

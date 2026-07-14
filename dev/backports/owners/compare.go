@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/elastic/integrations/dev/backports/gitutil"
+	"github.com/elastic/integrations/dev/codeowners"
 )
 
 // CodeownersRelPath is .github/CODEOWNERS's path relative to the repo root.
@@ -19,7 +20,7 @@ const CodeownersRelPath = ".github/CODEOWNERS"
 // ReadCodeowners reads and parses the current worktree's CODEOWNERS file
 // (workDir/.github/CODEOWNERS) and remoteRef's version of it (e.g.
 // "origin/main"), via git show.
-func ReadCodeowners(git gitutil.Git, workDir, remoteRef string) (current, source *Owners, err error) {
+func ReadCodeowners(git gitutil.Git, workDir, remoteRef string) (current, source *codeowners.Owners, err error) {
 	currentData, err := os.ReadFile(filepath.Join(workDir, CodeownersRelPath))
 	if err != nil {
 		return nil, nil, fmt.Errorf("reading %s: %w", CodeownersRelPath, err)
@@ -29,11 +30,11 @@ func ReadCodeowners(git gitutil.Git, workDir, remoteRef string) (current, source
 		return nil, nil, fmt.Errorf("reading %s %s: %w", remoteRef, CodeownersRelPath, err)
 	}
 
-	current, err = ParseOwners(string(currentData))
+	current, err = codeowners.ParseOwners(string(currentData))
 	if err != nil {
 		return nil, nil, fmt.Errorf("parsing %s: %w", CodeownersRelPath, err)
 	}
-	source, err = ParseOwners(sourceData)
+	source, err = codeowners.ParseOwners(sourceData)
 	if err != nil {
 		return nil, nil, fmt.Errorf("parsing %s %s: %w", remoteRef, CodeownersRelPath, err)
 	}
@@ -69,7 +70,7 @@ func ReadManifestOwners(git gitutil.Git, pkgDir, remoteRef, relPkgDir string) (c
 // explicit entry current and source declare under pkgPath (data streams, a
 // kibana/ directory, or anything else), filtered down to the ones present on
 // disk. Plan never touches a sub-path outside this set.
-func ExistingSubPaths(workDir, pkgPath string, current, source *Owners) []string {
+func ExistingSubPaths(workDir, pkgPath string, current, source *codeowners.Owners) []string {
 	candidates := make(map[string]bool)
 	for _, p := range current.EntriesUnder(pkgPath) {
 		candidates[p] = true
@@ -111,10 +112,10 @@ func Compare(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string) (pla
 // packages in the same run. The current and source owners must have been
 // produced by ReadCodeowners (or equivalent) against the same workDir and
 // remoteRef that are passed here.
-func CompareWith(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string, current, source *Owners) (plan SyncPlan, found bool, err error) {
+func CompareWith(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string, current, source *codeowners.Owners) (plan SyncPlan, found bool, err error) {
 	pkgPath := "/" + relPkgDir
 
-	if _, ok := source.ResolveOwner(pkgPath); !ok {
+	if _, ok := source.Resolve(pkgPath); !ok {
 		// The package no longer resolves to an owner on remoteRef (removed
 		// or renamed) — a normal skip, not a failure. Checked before reading
 		// manifest.yml, since that file may well not exist there either, and

@@ -11,6 +11,203 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Tests for the exported Owners API (ParseOwners, LoadOwners, Resolve,
+// EntriesUnder, ExplicitEntry, PackageOwnersByPath). These mirror the
+// behaviours the dev/backports/owners package relies on, ensuring the shared
+// implementation stays consistent.
+
+func TestParseOwners(t *testing.T) {
+	t.Run("valid content parses successfully", func(t *testing.T) {
+		const content = `/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
+# a comment line is skipped
+`
+		o, err := ParseOwners(content)
+		require.NoError(t, err)
+		owners, ok := o.ExplicitEntry("/packages/aws")
+		require.True(t, ok)
+		assert.Equal(t, []string{"@elastic/obs-infraobs-integrations"}, owners)
+	})
+
+	t.Run("single-field exclusion rule that removes owners from a defined path is rejected", func(t *testing.T) {
+		// checkSingleField must reject any exclusion-only line that would strip
+		// ownership from a path already covered by an explicit entry — same
+		// validation readGithubOwners performs when reading from disk.
+		const content = `/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws/data_stream/cloudtrail
+`
+		_, err := ParseOwners(content)
+		assert.Error(t, err)
+	})
+
+	t.Run("trailing slash on path is stripped", func(t *testing.T) {
+		const content = "/packages/aws/ @elastic/obs-infraobs-integrations\n"
+		o, err := ParseOwners(content)
+		require.NoError(t, err)
+		_, ok := o.ExplicitEntry("/packages/aws")
+		assert.True(t, ok)
+	})
+}
+
+func TestResolve(t *testing.T) {
+	const content = `
+/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
+/packages/nested/foo @elastic/ecosystem
+`
+	o, err := ParseOwners(content)
+	require.NoError(t, err)
+
+	cases := []struct {
+		name     string
+		path     string
+		expected []string
+		found    bool
+	}{
+		{
+			name:     "explicit package root",
+			path:     "/packages/aws",
+			expected: []string{"@elastic/obs-infraobs-integrations"},
+			found:    true,
+		},
+		{
+			name:     "explicit data stream override",
+			path:     "/packages/aws/data_stream/cloudtrail",
+			expected: []string{"@elastic/security-service-integrations"},
+			found:    true,
+		},
+		{
+			name:     "data stream without override falls back to package owner",
+			path:     "/packages/aws/data_stream/vpcflow",
+			expected: []string{"@elastic/obs-infraobs-integrations"},
+			found:    true,
+		},
+		{
+			name:     "nested category package",
+			path:     "/packages/nested/foo",
+			expected: []string{"@elastic/ecosystem"},
+			found:    true,
+		},
+		{
+			name:  "unknown path with no ancestor entry",
+			path:  "/packages/does-not-exist",
+			found: false,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got, found := o.Resolve(c.path)
+			assert.Equal(t, c.found, found)
+			if c.found {
+				assert.Equal(t, c.expected, got)
+			}
+		})
+	}
+}
+
+func TestEntriesUnder(t *testing.T) {
+	const content = `
+/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
+/packages/aws/kibana @elastic/obs-infraobs-integrations
+/packages/awsome @elastic/unrelated-team
+`
+	o, err := ParseOwners(content)
+	require.NoError(t, err)
+
+	got := o.EntriesUnder("/packages/aws")
+	assert.ElementsMatch(t, []string{
+		"/packages/aws/data_stream/cloudtrail",
+		"/packages/aws/kibana",
+	}, got)
+}
+
+func TestExplicitEntry(t *testing.T) {
+	const content = `
+/packages/aws @elastic/obs-infraobs-integrations
+/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
+`
+	o, err := ParseOwners(content)
+	require.NoError(t, err)
+
+	t.Run("returns entry for an explicitly defined path", func(t *testing.T) {
+		got, ok := o.ExplicitEntry("/packages/aws/data_stream/cloudtrail")
+		require.True(t, ok)
+		assert.Equal(t, []string{"@elastic/security-service-integrations"}, got)
+	})
+
+	t.Run("returns false for a path that only resolves via walk-up", func(t *testing.T) {
+		_, ok := o.ExplicitEntry("/packages/aws/data_stream/vpcflow")
+		assert.False(t, ok)
+	})
+
+	t.Run("returns false for an unknown path", func(t *testing.T) {
+		_, ok := o.ExplicitEntry("/packages/other")
+		assert.False(t, ok)
+	})
+}
+
+func TestPackageOwnersByPath(t *testing.T) {
+	const content = `
+/packages/aws @elastic/obs-infraobs-integrations @elastic/obs-ds-hosted-services
+/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
+/packages/technology/p1 @elastic/ecosystem
+`
+	o, err := ParseOwners(content)
+	require.NoError(t, err)
+
+	cases := []struct {
+		name          string
+		pkgPath       string
+		dataStream    string
+		expected      []string
+		expectedError bool
+	}{
+		{
+			name:       "top-level package, no data stream",
+			pkgPath:    "packages/aws",
+			dataStream: "",
+			expected:   []string{"@elastic/obs-infraobs-integrations", "@elastic/obs-ds-hosted-services"},
+		},
+		{
+			name:       "nested (technology/package) path",
+			pkgPath:    "packages/technology/p1",
+			dataStream: "",
+			expected:   []string{"@elastic/ecosystem"},
+		},
+		{
+			name:       "data stream with explicit owner",
+			pkgPath:    "packages/aws",
+			dataStream: "cloudtrail",
+			expected:   []string{"@elastic/security-service-integrations"},
+		},
+		{
+			name:       "unknown data stream falls back to package owner",
+			pkgPath:    "packages/aws",
+			dataStream: "vpcflow",
+			expected:   []string{"@elastic/obs-infraobs-integrations", "@elastic/obs-ds-hosted-services"},
+		},
+		{
+			name:          "package path not found",
+			pkgPath:       "packages/unknown",
+			expectedError: true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got, err := o.PackageOwnersByPath(c.pkgPath, c.dataStream)
+			if c.expectedError {
+				assert.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, c.expected, got)
+		})
+	}
+}
+
 func TestCheckManifest(t *testing.T) {
 	cases := []struct {
 		codeownersPath string

@@ -7,7 +7,9 @@ package codeowners
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -72,6 +74,99 @@ func PackageOwners(packageName, dataStream, codeownersPath string) ([]string, er
 	return dataStreamTeams, nil
 }
 
+// Owners provides CODEOWNERS lookups over a pre-parsed, in-memory snapshot.
+// Use LoadOwners to read from a file on disk, or ParseOwners to parse content
+// from a string (e.g. the output of "git show <ref>:.github/CODEOWNERS").
+type Owners struct {
+	inner *githubOwners
+}
+
+// LoadOwners reads and parses CODEOWNERS from a file on disk.
+func LoadOwners(codeownersPath string) (*Owners, error) {
+	o, err := readGithubOwners(codeownersPath)
+	if err != nil {
+		return nil, err
+	}
+	return &Owners{inner: o}, nil
+}
+
+// ParseOwners parses CODEOWNERS content from a string, applying the same
+// single-field exclusion-rule validation that readGithubOwners does when
+// reading from disk. A file that passes mage check never triggers this error.
+func ParseOwners(content string) (*Owners, error) {
+	o, err := scanGithubOwners(strings.NewReader(content), "<in-memory>")
+	if err != nil {
+		return nil, err
+	}
+	return &Owners{inner: o}, nil
+}
+
+// Resolve returns the owners that apply to p, walking up parent directories
+// until an explicit CODEOWNERS entry is found. p must be a CODEOWNERS-style
+// slash-prefixed path (e.g. "/packages/aws/data_stream/cloudtrail"). Returns
+// (nil, false) when no entry exists for p or any of its ancestors.
+func (o *Owners) Resolve(p string) ([]string, bool) {
+	p = strings.TrimSuffix(p, "/")
+	if p == "" {
+		p = "/"
+	}
+	for {
+		if owners, ok := o.inner.owners[p]; ok {
+			return owners, true
+		}
+		if p == "/" || p == "." {
+			return nil, false
+		}
+		p = path.Dir(p)
+	}
+}
+
+// EntriesUnder returns the full CODEOWNERS paths of every explicit entry
+// nested under prefix (e.g. "/packages/aws" returns
+// "/packages/aws/data_stream/cloudtrail" and "/packages/aws/kibana", but not
+// "/packages/aws" itself or the unrelated "/packages/awsome"). Order is
+// unspecified.
+func (o *Owners) EntriesUnder(prefix string) []string {
+	prefix = strings.TrimSuffix(prefix, "/") + "/"
+	var paths []string
+	for p := range o.inner.owners {
+		if strings.HasPrefix(p, prefix) {
+			paths = append(paths, p)
+		}
+	}
+	return paths
+}
+
+// ExplicitEntry returns the owners explicitly defined for exactly this
+// CODEOWNERS path — no walk-up/fallback resolution. Returns (nil, false) if
+// no explicit entry exists for this exact path.
+func (o *Owners) ExplicitEntry(p string) ([]string, bool) {
+	p = strings.TrimSuffix(p, "/")
+	owners, ok := o.inner.owners[p]
+	return owners, ok
+}
+
+// PackageOwnersByPath returns owners for a package (and optionally one of its
+// data streams), identified by its full filesystem path
+// (e.g. "packages/aws" or "packages/technology/pkg"). Unlike PackageOwners,
+// no suffix search is needed — the full path is given, so the lookup is
+// unambiguous. Walk-up resolution handles category-inherited ownership where
+// the package itself has no explicit CODEOWNERS entry.
+func (o *Owners) PackageOwnersByPath(pkgPath, dataStream string) ([]string, error) {
+	packageTeams, found := o.inner.findOwnerForFile(pkgPath + "/manifest.yml")
+	if !found {
+		return nil, fmt.Errorf("no owner found for package path %s", pkgPath)
+	}
+	if dataStream == "" {
+		return packageTeams, nil
+	}
+	dsPath := "/" + filepath.ToSlash(filepath.Clean(pkgPath)) + "/data_stream/" + dataStream
+	if dsOwners, ok := o.inner.owners[dsPath]; ok {
+		return dsOwners, nil
+	}
+	return packageTeams, nil
+}
+
 type githubOwners struct {
 	owners map[string][]string
 	path   string
@@ -113,13 +208,16 @@ func readGithubOwners(codeownersPath string) (*githubOwners, error) {
 		return nil, fmt.Errorf("failed to open %q: %w", codeownersPath, err)
 	}
 	defer f.Close()
+	return scanGithubOwners(f, codeownersPath)
+}
 
+func scanGithubOwners(r io.Reader, sourcePath string) (*githubOwners, error) {
 	codeowners := githubOwners{
 		owners: make(map[string][]string),
-		path:   codeownersPath,
+		path:   sourcePath,
 	}
 
-	scanner := bufio.NewScanner(f)
+	scanner := bufio.NewScanner(r)
 	lineNumber := 0
 	for scanner.Scan() {
 		lineNumber++
@@ -131,15 +229,15 @@ func readGithubOwners(codeownersPath string) (*githubOwners, error) {
 		if len(fields) == 1 {
 			err := codeowners.checkSingleField(fields[0])
 			if err != nil {
-				return nil, fmt.Errorf("invalid line %d in %q: %w", lineNumber, codeownersPath, err)
+				return nil, fmt.Errorf("invalid line %d in %q: %w", lineNumber, sourcePath, err)
 			}
 			continue
 		}
-		path, owners := fields[0], fields[1:]
+		ownerPath, owners := fields[0], fields[1:]
 
 		// remove trailing slash from path
-		path = strings.TrimSuffix(path, "/")
-		codeowners.owners[path] = owners
+		ownerPath = strings.TrimSuffix(ownerPath, "/")
+		codeowners.owners[ownerPath] = owners
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, fmt.Errorf("scanner error: %w", err)
