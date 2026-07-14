@@ -613,6 +613,11 @@ func (a applier) syncOwners(remote, sourceBranch, pkg, pkgDir string) string {
 // "/packages/aws"). A found-false result from owners.Plan (e.g. the package
 // no longer exists on sourceBranch) is reported as an empty, no-error plan:
 // it's a normal skip, not a failure.
+//
+// This fetch is a second network round-trip on top of the backport-branch
+// fetch already done in prepareWorkingBranch. It is intentional: ownership
+// comparison requires a current view of sourceBranch — a cached remote ref
+// could be arbitrarily stale — and there is no safe way to skip it.
 func (a applier) computeOwnerSyncPlan(remote, sourceBranch, pkgDir string) (plan owners.SyncPlan, pkgPath string, err error) {
 	if err := a.git.Run("fetch", remote, sourceBranch); err != nil {
 		return owners.SyncPlan{}, "", fmt.Errorf("fetching %s: %w", sourceBranch, err)
