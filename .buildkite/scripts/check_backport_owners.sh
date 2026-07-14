@@ -37,6 +37,25 @@ build_owner_check_comment() {
         end' <<< "${mismatches_json}"
 }
 
+# Renders the PR comment body for when the check itself failed to run
+# entirely (e.g. `mage checkBackportOwners` exited non-zero — most likely its
+# own `git fetch` of main, a genuinely new network dependency this script
+# introduces rather than relying on a ref the pre-command hook already
+# fetched) rather than completing and reporting per-package results. This is
+# a distinct state from "no mismatches found" — build_owner_check_comment
+# must never be called with data from a failed run, since an empty/absent
+# result would then misrender as the in-sync confirmation.
+# Usage: build_owner_check_failure_comment <build_url>
+build_owner_check_failure_comment() {
+    local build_url="${1:-""}"
+
+    echo ":warning: The backport owner check failed to run — it could not determine whether package owners are in sync with \`main\`."
+    if [[ -n "${build_url}" ]]; then
+        echo ""
+        echo "See the [build log](${build_url}) for details."
+    fi
+}
+
 main() {
     set -euo pipefail
 
@@ -64,15 +83,17 @@ main() {
     echo "--- Checking package owners for PR #${BUILDKITE_PULL_REQUEST}"
     echo "Base branch: ${BUILDKITE_PULL_REQUEST_BASE_BRANCH}, merge-base: ${merge_base}, head: ${BUILDKITE_COMMIT}"
 
-    local mismatches_json
-    mismatches_json="$(mage checkBackportOwners "${remote}" "${BACKPORT_OWNERS_SOURCE_BRANCH}" "${merge_base}" "${BUILDKITE_COMMIT}")"
+    local mismatches_json=""
+    local mage_exit=0
+    mismatches_json="$(mage checkBackportOwners "${remote}" "${BACKPORT_OWNERS_SOURCE_BRANCH}" "${merge_base}" "${BUILDKITE_COMMIT}")" || mage_exit=$?
 
     local comment
-    comment="$(build_owner_check_comment "${mismatches_json}")"
+    if [[ "${mage_exit}" -ne 0 ]]; then
+        comment="$(build_owner_check_failure_comment "${BUILDKITE_BUILD_URL:-""}")"
+    else
+        comment="$(build_owner_check_comment "${mismatches_json}")"
+    fi
     echo "${comment}"
-
-    local mismatch_count
-    mismatch_count="$(jq 'length' <<< "${mismatches_json}")"
 
     if running_on_buildkite; then
         echo "${comment}" > backport-owner-check.txt
@@ -85,6 +106,15 @@ main() {
             echo "Failed to post GitHub PR comment"
         fi
     fi
+
+    if [[ "${mage_exit}" -ne 0 ]]; then
+        echo ""
+        echo "--- backport owner check failed to run (exit ${mage_exit})"
+        exit "${mage_exit}"
+    fi
+
+    local mismatch_count
+    mismatch_count="$(jq 'length' <<< "${mismatches_json}")"
 
     if [[ "${mismatch_count}" -gt 0 ]]; then
         echo ""

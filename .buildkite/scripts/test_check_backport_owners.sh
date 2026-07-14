@@ -44,6 +44,29 @@ assert_equals "multiple packages render one line each, in order" \
     "**Package owners are out of sync with \`main\`:**"$'\n\n'"- \`aws\` — should now be owned by @elastic/team-b"$'\n'"- \`nginx\` — could not check ownership on \`main\`: network error" \
     "$(build_owner_check_comment '[{"package":"aws","teams":["@elastic/team-b"]},{"package":"nginx","error":"network error"}]')"
 
+# ---------------------------------------------------------------------------
+# Tests: build_owner_check_failure_comment
+#
+# Rendered instead of build_owner_check_comment when the check itself failed
+# to run entirely (e.g. mage checkBackportOwners exited non-zero) — a
+# distinct state from "no mismatches found", so it must never look like the
+# in-sync confirmation.
+# ---------------------------------------------------------------------------
+echo ""
+echo "--- build_owner_check_failure_comment tests"
+
+assert_equals "with a build URL, includes a link to it" \
+    ":warning: The backport owner check failed to run — it could not determine whether package owners are in sync with \`main\`."$'\n\n'"See the [build log](https://buildkite.example/builds/123) for details." \
+    "$(build_owner_check_failure_comment "https://buildkite.example/builds/123")"
+
+assert_equals "with no build URL, omits the link section" \
+    ":warning: The backport owner check failed to run — it could not determine whether package owners are in sync with \`main\`." \
+    "$(build_owner_check_failure_comment "")"
+
+assert_equals "with no argument at all, omits the link section" \
+    ":warning: The backport owner check failed to run — it could not determine whether package owners are in sync with \`main\`." \
+    "$(build_owner_check_failure_comment)"
+
 echo ""
 echo "--- Results: ${pass} passed, ${fail} failed"
 if [[ "${fail}" -gt 0 ]]; then
