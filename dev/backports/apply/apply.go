@@ -58,6 +58,7 @@ type Result struct {
 	PRURL            string   `json:"pr_url,omitempty"`
 	ConflictingFiles []string `json:"conflicting_files,omitempty"`
 	SuggestedCommand string   `json:"suggested_command,omitempty"`
+	OwnerSyncWarning string   `json:"owner_sync_warning,omitempty"` // non-empty when owner sync was skipped
 }
 
 // branchRE matches valid backport branch names (mirrors dev/backports/inventory.go).
@@ -165,16 +166,17 @@ func Apply(opts Options) (*Result, error) {
 		return nil, err
 	}
 
-	a.syncOwners(remote, ownersSourceBranch, opts.Package, pkgDir)
+	ownerSyncWarning := a.syncOwners(remote, ownersSourceBranch, opts.Package, pkgDir)
 
 	if opts.DryRun {
 		success = true
 		return &Result{
-			Status:        "success",
-			SHA:           opts.SHA,
-			TargetBranch:  branchName,
-			NewVersion:    newVersion,
-			WorkingBranch: workingBranch,
+			Status:           "success",
+			SHA:              opts.SHA,
+			TargetBranch:     branchName,
+			NewVersion:       newVersion,
+			WorkingBranch:    workingBranch,
+			OwnerSyncWarning: ownerSyncWarning,
 		}, nil
 	}
 
@@ -189,11 +191,12 @@ func Apply(opts Options) (*Result, error) {
 
 	success = true
 	return &Result{
-		Status:       "success",
-		SHA:          opts.SHA,
-		TargetBranch: branchName,
-		NewVersion:   newVersion,
-		PRURL:        prURL,
+		Status:           "success",
+		SHA:              opts.SHA,
+		TargetBranch:     branchName,
+		NewVersion:       newVersion,
+		PRURL:            prURL,
+		OwnerSyncWarning: ownerSyncWarning,
 	}, nil
 }
 
@@ -564,19 +567,25 @@ func (a applier) commitChanges(pkgDir, sha, newVersion string) error {
 // syncOwners brings pkgDir's manifest.yml owner and CODEOWNERS entries in
 // line with sourceBranch's, as its own commit on top of the cherry-pick. It is
 // best-effort: any failure reading or parsing sourceBranch's state (fetch
-// failure, unparsable manifest, missing CODEOWNERS) is logged as a warning
-// rather than failing the whole backport. The CI check on PRs targeting
-// backport-* branches (elastic/integrations#19686) is the actual enforcement
-// mechanism; this is a convenience that keeps most backport PRs correct
-// without it.
-func (a applier) syncOwners(remote, sourceBranch, pkg, pkgDir string) {
+// failure, unparsable manifest, missing CODEOWNERS) is returned as a warning
+// string (and printed to stderr for human-mode callers) rather than failing the
+// whole backport. The CI check on PRs targeting backport-* branches
+// (elastic/integrations#19686) is the actual enforcement mechanism; this is a
+// convenience that keeps most backport PRs correct without it.
+// Returns "" on success or no-op, or a non-empty warning message when skipped.
+func (a applier) syncOwners(remote, sourceBranch, pkg, pkgDir string) string {
+	warn := func(format string, args ...any) string {
+		msg := fmt.Sprintf(format, args...)
+		fmt.Fprintf(os.Stderr, "warning: %s\n", msg)
+		return msg
+	}
+
 	plan, pkgPath, err := a.computeOwnerSyncPlan(remote, sourceBranch, pkgDir)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "warning: skipping owner sync for %s: %v\n", pkg, err)
-		return
+		return warn("skipping owner sync for %s: %v", pkg, err)
 	}
 	if plan.Empty() {
-		return
+		return ""
 	}
 
 	manifestPath := filepath.Join(pkgDir, "manifest.yml")
@@ -589,13 +598,13 @@ func (a applier) syncOwners(remote, sourceBranch, pkg, pkgDir string) {
 
 	if err := writeOwnerSyncPlan(a.workDir, pkgDir, pkgPath, plan); err != nil {
 		rollback()
-		fmt.Fprintf(os.Stderr, "warning: skipping owner sync for %s: %v\n", pkg, err)
-		return
+		return warn("skipping owner sync for %s: %v", pkg, err)
 	}
 	if err := a.commitOwnerSync(pkg, pkgDir); err != nil {
 		rollback()
-		fmt.Fprintf(os.Stderr, "warning: committing owner sync for %s: %v\n", pkg, err)
+		return warn("committing owner sync for %s: %v", pkg, err)
 	}
+	return ""
 }
 
 // computeOwnerSyncPlan fetches remote/sourceBranch and compares pkgDir's
