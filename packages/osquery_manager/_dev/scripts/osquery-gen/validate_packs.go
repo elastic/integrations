@@ -15,8 +15,7 @@ import (
 )
 
 const (
-	shadowAIPackPrefix    = "osquery_manager-e7a1b2c3-"
-	shadowAIDashboardFile = "osquery_manager-e7a1b2c3-ai-discovery-dashboard.json"
+	shadowAIPackPrefix = "osquery_manager-e7a1b2c3-"
 )
 
 var (
@@ -123,17 +122,11 @@ type sharedQueryContract struct {
 	eventTyp string
 }
 
-// ValidateShadowAIPacks enforces Shadow AI pack/dashboard contracts.
+// ValidateShadowAIPacks enforces Shadow AI pack contracts.
 func ValidateShadowAIPacks(repoRoot string) []error {
 	packs, err := loadShadowAIPacks(repoRoot)
 	if err != nil {
 		return []error{err}
-	}
-
-	dashboardPath := filepath.Join(repoRoot, "packages", "osquery_manager", "kibana", "dashboard", shadowAIDashboardFile)
-	dashboardBytes, err := os.ReadFile(dashboardPath)
-	if err != nil {
-		return []error{fmt.Errorf("read dashboard %s: %w", dashboardPath, err)}
 	}
 
 	var errs []error
@@ -143,7 +136,6 @@ func ValidateShadowAIPacks(repoRoot string) []error {
 	}
 	errs = append(errs, validateSharedQueryContracts(packs)...)
 	errs = append(errs, validateOpenClawListeningPortContracts(packs)...)
-	errs = append(errs, validateDashboardContracts(dashboardBytes, packs)...)
 
 	sort.Slice(errs, func(i, j int) bool {
 		return errs[i].Error() < errs[j].Error()
@@ -212,6 +204,7 @@ func validatePackContents(pack loadedShadowAIPack) []error {
 		errs = append(errs, validateQueryReviewMappings(ctx, query)...)
 		errs = append(errs, validateMappedColumns(ctx, query)...)
 		errs = append(errs, validateDuplicateOrPredicates(ctx, query.Query)...)
+		errs = append(errs, validateFleetSafeSQL(ctx, query.Query)...)
 
 		expectedAction := expectedEventAction(query.ID)
 		actualAction, ok := mappingStaticString(query.ECSMapping, "event.action")
@@ -227,6 +220,31 @@ func validatePackContents(pack loadedShadowAIPack) []error {
 		}
 	}
 	return errs
+}
+
+func validateFleetSafeSQL(ctx, sql string) []error {
+	if !hasSQLLineComment(sql) {
+		return nil
+	}
+	return []error{fmt.Errorf("%s: SQL line comments are not allowed because Fleet removes query newlines", ctx)}
+}
+
+func hasSQLLineComment(sql string) bool {
+	inString := false
+	for i := 0; i < len(sql); i++ {
+		if sql[i] == '\'' {
+			if inString && i+1 < len(sql) && sql[i+1] == '\'' {
+				i++
+				continue
+			}
+			inString = !inString
+			continue
+		}
+		if !inString && sql[i] == '-' && i+1 < len(sql) && sql[i+1] == '-' {
+			return true
+		}
+	}
+	return false
 }
 
 func validateQueryReviewMappings(ctx string, query packQuery) []error {
@@ -554,72 +572,6 @@ func hasGroupedAddressExclusions(normalized string) bool {
 
 func normalizeListeningPortSQL(sql string) string {
 	return strings.ToLower(strings.Join(strings.Fields(sql), " "))
-}
-
-func validateDashboardContracts(dashboardBytes []byte, packs []loadedShadowAIPack) []error {
-	dashboard := string(dashboardBytes)
-	emittedActions := collectPackActions(packs)
-	dashboardActions := collectDashboardActions(dashboard)
-
-	var errs []error
-	for action := range dashboardActions {
-		if !strings.HasPrefix(action, "osquery.ai_") && !strings.HasPrefix(action, "osquery.mcp_") {
-			errs = append(errs, fmt.Errorf("dashboard references non-Shadow-AI event.action %q", action))
-		}
-	}
-	for action := range dashboardActions {
-		if _, ok := emittedActions[action]; !ok {
-			errs = append(errs, fmt.Errorf("dashboard references stale event.action %q not emitted by Shadow AI packs", action))
-		}
-	}
-	for action := range emittedActions {
-		if _, ok := dashboardActions[action]; !ok {
-			errs = append(errs, fmt.Errorf("dashboard missing coverage for emitted event.action %q", action))
-		}
-	}
-
-	panelScopeRE := regexp.MustCompile(`"event\.action"\s*:\s*"([^"]+)"`)
-	for _, match := range panelScopeRE.FindAllStringSubmatch(dashboard, -1) {
-		if len(match) < 2 {
-			continue
-		}
-		action := match[1]
-		if strings.Contains(action, "*") {
-			if action != "osquery.ai_*" && action != "osquery.mcp_*" {
-				errs = append(errs, fmt.Errorf("dashboard panel filter uses unexpected wildcard event.action %q", action))
-			}
-			continue
-		}
-		if !strings.HasPrefix(action, "osquery.ai_") && !strings.HasPrefix(action, "osquery.mcp_") {
-			errs = append(errs, fmt.Errorf("dashboard panel filter must scope to osquery.ai_* or osquery.mcp_*, got %q", action))
-		}
-	}
-
-	return errs
-}
-
-func collectPackActions(packs []loadedShadowAIPack) map[string]struct{} {
-	out := make(map[string]struct{})
-	for _, pack := range packs {
-		for _, query := range pack.asset.Attributes.Queries {
-			if action, ok := mappingStaticString(query.ECSMapping, "event.action"); ok {
-				out[action] = struct{}{}
-			}
-		}
-	}
-	return out
-}
-
-func collectDashboardActions(dashboard string) map[string]struct{} {
-	out := make(map[string]struct{})
-	re := regexp.MustCompile(`osquery\.(?:ai|mcp)_[a-z0-9_]+`)
-	for _, match := range re.FindAllString(dashboard, -1) {
-		if strings.Contains(match, "*") {
-			continue
-		}
-		out[match] = struct{}{}
-	}
-	return out
 }
 
 func expectedEventAction(queryID string) string {

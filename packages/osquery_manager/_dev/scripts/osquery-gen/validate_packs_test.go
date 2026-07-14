@@ -21,7 +21,7 @@ func TestValidateShadowAIPacks(t *testing.T) {
 	}
 
 	var b strings.Builder
-	b.WriteString("Shadow AI pack/dashboard contract violations:\n")
+	b.WriteString("Shadow AI pack contract violations:\n")
 	for _, err := range errs {
 		b.WriteString("  - ")
 		b.WriteString(err.Error())
@@ -76,6 +76,21 @@ WHERE p.name = 'cursor'
 	}
 	if !strings.Contains(errs[0].Error(), "copilot-agent") {
 		t.Fatalf("expected actionable duplicate predicate message, got %q", errs[0].Error())
+	}
+}
+
+func TestValidateFleetSafeSQL(t *testing.T) {
+	badSQL := `SELECT name FROM processes
+-- Fleet flattens this query before delivery
+WHERE name = 'cursor'`
+	errs := validateFleetSafeSQL("test", badSQL)
+	if len(errs) != 1 || !strings.Contains(errs[0].Error(), "Fleet removes query newlines") {
+		t.Fatalf("expected Fleet line-comment violation, got %v", errs)
+	}
+
+	safeSQL := `SELECT name FROM processes WHERE cmdline LIKE '%--verbose%'`
+	if errs := validateFleetSafeSQL("test", safeSQL); len(errs) != 0 {
+		t.Fatalf("expected SQL string literal containing dashes to be valid, got %v", errs)
 	}
 }
 

@@ -19,7 +19,7 @@ For information about Osquery tables, refer to the [Osquery schema documentation
 
 ## Shadow AI Discovery
 
-The integration ships three canonical platform packs and one dashboard for endpoint AI inventory:
+The integration ships three canonical platform packs for endpoint AI inventory:
 
 | Pack | Platform | Queries |
 |------|----------|---------|
@@ -27,11 +27,11 @@ The integration ships three canonical platform packs and one dashboard for endpo
 | `ai-asset-discovery-macos` | macOS | 29 |
 | `ai-asset-discovery-linux` | Linux | 28 |
 
-Assign the pack matching each agent's OS to your Osquery Manager policy in Fleet. The **[Osquery] AI Asset Discovery Overview** dashboard (nav label **Shadow AI Discovery**) filters on `event.action: osquery.ai_*` and `osquery.mcp_*` and remains empty until scheduled pack queries run on assigned agents.
+Assign the pack matching each agent's OS to your Osquery Manager policy in Fleet. Pack queries emit `event.action: osquery.ai_*` and `osquery.mcp_*` once scheduled pack queries run on assigned agents.
 
 ### Snapshot duplicate semantics
 
-Many inventory queries use `snapshot: true`. Each scheduled run emits a full current-state row set. Osquery Manager does not deduplicate snapshot documents in this package; analysts should expect repeated rows across intervals and use latest-per-host aggregation or time-range filters in dashboards and hunts.
+Many inventory queries use `snapshot: true`. Each scheduled run emits a full current-state row set. Osquery Manager does not deduplicate snapshot documents in this package; analysts should expect repeated rows across intervals and use latest-per-host aggregation or time-range filters in their hunts and visualizations.
 
 ### Metadata-only privacy boundary
 
@@ -47,7 +47,7 @@ Some queries provide detection context rather than pure inventory:
 - `ai_network_connections` — outbound API connections from AI processes (macOS/Linux)
 - `ai_process_network_summary` — broader AI-process socket inventory across remote endpoints
 
-The dashboard separates outbound API connections from AI-process network summaries and distinguishes macOS/Linux access evidence from Windows colocation inventory.
+Outbound API connections (`ai_network_connections`) are distinct from the broader AI-process socket inventory (`ai_process_network_summary`), and macOS/Linux access evidence (`ai_sensitive_file_access`) is distinct from Windows colocation inventory (`ai_sensitive_file_colocation`).
 
 ### Platform differences
 
@@ -66,11 +66,11 @@ Correlate osquery inventory with hook or OpenTelemetry activity streams by `host
 
 ### Copilot variant classification
 
-Pack queries classify Copilot-related inventory into `osquery.copilot_variant` (`developer`, `productivity`, `browser`, `unknown`) where source fields support it. The dashboard does not include a Copilot variant breakdown panel because the field is sparse (mostly `NULL` outside Copilot hits), variant taxonomies differ by source (extensions vs programs vs processes), and not every software panel source emits the field.
+Pack queries classify Copilot-related inventory into `osquery.copilot_variant` (`developer`, `productivity`, `browser`, `unknown`) where source fields support it. The field is sparse (mostly `NULL` outside Copilot hits), variant taxonomies differ by source (extensions vs programs vs processes), and not every source emits the field, so treat it as best-effort context rather than a reliable dimension.
 
 ### Pack contract validation
 
-Future automated pack/dashboard contract tests will live beside the osquery schema generator. Run:
+Automated pack contract tests live beside the osquery schema generator. Run:
 
 ```bash
 cd packages/osquery_manager/_dev/scripts/osquery-gen
