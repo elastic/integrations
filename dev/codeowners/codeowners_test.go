@@ -61,7 +61,7 @@ func TestCheckManifest(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.codeownersPath+"_"+c.manifestPath, func(t *testing.T) {
-			owners, err := LoadOwners(c.codeownersPath)
+			owners, err := readGithubOwners(c.codeownersPath)
 			require.NoError(t, err)
 
 			err = owners.checkManifest(c.manifestPath)
@@ -124,7 +124,7 @@ func TestValidatePackages(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.codeownersPath, func(t *testing.T) {
-			owners, err := LoadOwners(c.codeownersPath)
+			owners, err := readGithubOwners(c.codeownersPath)
 			require.NoError(t, err)
 
 			err = validatePackages(owners, c.packageDir)
@@ -174,7 +174,7 @@ func TestReadGithubOwners(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.codeownersPath, func(t *testing.T) {
-			_, err := LoadOwners(c.codeownersPath)
+			_, err := readGithubOwners(c.codeownersPath)
 			if c.valid {
 				assert.NoError(t, err)
 			} else {
@@ -303,6 +303,22 @@ func TestPackageOwnersByPath(t *testing.T) {
 			pkgPath:        "testdata/nested_packages/category/package_nested_1",
 			datastream:     "stream_1",
 			expected:       []string{"@pkoutsovasilis"},
+			expectedError:  false,
+		},
+		{
+			title:          "top-level package",
+			codeownersPath: "testdata/CODEOWNERS-nested-valid",
+			pkgPath:        "testdata/nested_packages/package_top",
+			datastream:     "",
+			expected:       []string{"@elastic/integrations-developer-experience"},
+			expectedError:  false,
+		},
+		{
+			title:          "data stream not in CODEOWNERS falls back to package owner",
+			codeownersPath: "testdata/CODEOWNERS-nested-streams-valid",
+			pkgPath:        "testdata/nested_packages/category/package_nested_1",
+			datastream:     "stream_unknown",
+			expected:       []string{"@elastic/integrations-developer-experience"},
 			expectedError:  false,
 		},
 		{
