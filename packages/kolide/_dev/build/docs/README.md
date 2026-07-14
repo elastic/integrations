@@ -1,3 +1,5 @@
+{{- generatedHeader }}
+
 # Kolide Integration for Elastic
 
 ## Overview
@@ -39,7 +41,7 @@ The `auth` and `audit` data streams also support the Log Pipeline using the `aws
 
 ### Osquery result and status details
 
-The `osquery_result` and `osquery_status` data streams ingest raw osquery agent logs, unlike the other Log Pipeline streams in this integration (`auth`, `audit`, and `device_check`), which are Kolide's own structured logs. The integration populates `host.id` and `host.name` from Kolide's `kolide_decorations` block. This block is only present when the device is enrolled with Kolide's own launcher. A bare open-source osquery deployment shipping logs through the Log Pipeline only carries osquery's own `hostIdentifier` (stored in `kolide.osquery_result.host_identifier` and `kolide.osquery_status.host_identifier`), and `host.id` and `host.name` do not populate. Per-query row data (`kolide.osquery_result.columns` and `kolide.osquery_result.snapshot`) is a `flattened` field rather than a per-column mapping, since the columns are arbitrary and depend on the target osquery table or custom SQL. This keeps the mapping bounded, but means individual columns do not get native Kibana Lens numeric or date typing, or exact-match aggregations.
+The `osquery_result` and `osquery_status` data streams ingest raw osquery agent logs, unlike the other Log Pipeline streams in this integration (`auth`, `audit`, and `device_check`), which are Kolide's own structured logs. The integration populates `host.id` and `host.name` from Kolide's `kolide_decorations` block. This block is only present when the device is enrolled with Kolide's own launcher. A bare open-source osquery deployment shipping logs through the Log Pipeline only carries osquery's own `hostIdentifier` (stored in `kolide.osquery_result.host_identifier` and `kolide.osquery_status.host_identifier`), and `host.id` and `host.name` do not populate. Per-query row data (`kolide.osquery_result.added`, `kolide.osquery_result.removed`, and `kolide.osquery_result.snapshot`) is a `flattened` field rather than a per-column mapping, since the columns are arbitrary and depend on the target osquery table or custom SQL. This keeps the mapping bounded, but means individual columns do not get native Kibana Lens numeric or date typing, or exact-match aggregations.
 
 ### Event outcome for posture data
 

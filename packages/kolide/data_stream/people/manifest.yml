@@ -6,8 +6,11 @@ streams:
     description: |-
       Collect the full Kolide people inventory from the Kolide REST API (GET /people)
       on every poll. The /people endpoint exposes no modified-since cursor, so each
-      interval re-collects the complete collection; the ingest pipeline assigns a
-      person-id-based document `_id` so unchanged people are overwritten.
+      interval re-collects the complete collection; the ingest pipeline derives a
+      content-fingerprint document `_id` (excluding `last_authenticated_at`) so
+      byte-identical records are deduplicated across polls; records whose tracked
+      fields change between polls are indexed as new documents rather than
+      overwriting the prior one.
     template_path: cel.yml.hbs
     vars:
       - name: interval
