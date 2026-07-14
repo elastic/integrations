@@ -1,6 +1,6 @@
 # Recorded Future Integration
 
-The Recorded Future integration has three data streams:
+The Recorded Future integration has four data streams:
 
 * `threat`: Threat intelligence from the Recorded Future Connect
   API's [risklist endpoints](https://api.recordedfuture.com/v2/#!/Domain/Domain_Risk_Lists),
@@ -9,6 +9,22 @@ The Recorded Future integration has three data streams:
   Future's [API for Playbook Alerts](https://api.recordedfuture.com/playbook-alert).
 * `triggered_alert`: Triggered alerts data from the Recorded Future Connect
   API's [alerts endpoint](https://api.recordedfuture.com/v2/#!/Alerts/Alert_Notification_Search).
+* `identity_detection`: Identity exposure detections (compromised credentials
+  discovered in breach dumps and stealer malware logs) from Recorded Future's
+  [Identity Detections API](https://docs.recordedfuture.com/reference/identity-detections).
+
+For the `identity_detection` data stream, the `Hash Password Cleartext` and
+`Hash Cookie Values` toggles are turned off by default. With both toggles off,
+any leaked password cleartext
+(`recordedfuture.identity_detection.password.cleartext`) and stolen cookie
+values (`recordedfuture.identity_detection.cookies.value`) returned by the API
+are stored in Elasticsearch as-is. To avoid storing these raw secret values,
+turn on `Hash Password Cleartext` and/or `Hash Cookie Values` and set a
+`Hashing Key`. When a toggle is on, the Elastic Agent replaces the corresponding
+value with a keyed `HMAC-SHA256` hash before the data reaches Elasticsearch, so
+the raw value is never indexed. The same `Hashing Key` is applied to both, and a
+stable key produces stable hashes, allowing correlation of the same leaked
+credential across detections.
 
 For the `threat` data stream, you need to define the `entity` and `list` to
 fetch. The supported entities are `domain`, `hash`, `ip`, and `url`. Check the
@@ -1381,4 +1397,269 @@ An example event for `playbook_alert` looks as following:
 | recordedfuture.playbook_alert.panel_status.targets_str |  | keyword |
 | recordedfuture.playbook_alert.panel_status.updated |  | date |
 | recordedfuture.playbook_alert.playbook_alert_id |  | keyword |
+
+
+### identity_detection
+
+This is the `identity_detection` dataset.
+
+#### Example
+
+An example event for `identity_detection` looks as following:
+
+```json
+{
+    "@timestamp": "2026-06-02T15:45:19.097Z",
+    "agent": {
+        "ephemeral_id": "e22180ec-78bb-400c-808a-8619e2b36ede",
+        "id": "4e6b7fd3-6a89-458e-91af-e575de3edb62",
+        "name": "elastic-agent-94028",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "ti_recordedfuture.identity_detection",
+        "namespace": "17517",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "4e6b7fd3-6a89-458e-91af-e575de3edb62",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat",
+            "malware"
+        ],
+        "created": "2026-06-02T15:45:19.097Z",
+        "dataset": "ti_recordedfuture.identity_detection",
+        "id": "6bfef2aafe63ba8ad9752f29e7fcfbb9",
+        "ingested": "2026-07-07T07:28:41Z",
+        "kind": "event",
+        "original": "{\"authorization_service\":{\"domain\":\"norsegods.online\",\"fqdn\":\"norsegods.online\",\"protocols\":[\"https\"],\"technology\":[{\"id\":\"Ig409I\",\"name\":\"Virtual Desktop\"},{\"category\":\"Ig409I\",\"id\":\"ZNkiC2\",\"name\":\"Citrix Virtual Apps and Desktops\"}],\"url\":\"https://norsegods.online/DesktopWeb/\"},\"cookies\":[{\"dns\":\".norsegods.online\",\"expiration\":\"2026-08-25T09:57:39.000Z\",\"http\":true,\"name\":\"session_id\",\"secure\":true,\"value\":\"3a2d5f8b-9e4c-4a1d-b8f9-c6e7d8f9a0b1\"}],\"created\":\"2026-06-02T15:45:19.097Z\",\"dump\":{\"compromise\":{\"antivirus\":[\"Windows Defender\"],\"computer_name\":\"DEMO-ANNHDOFG\",\"exfiltration_date\":\"2026-06-02T12:45:00.000Z\",\"os\":\"Windows 10 Enterprise\",\"os_username\":\"demo_user_sxwxml\",\"timezone\":\"UTC+05:00\"},\"description\":\"This credential data was derived from stealer malware logs.\",\"downloaded\":\"2026-06-02T15:30:37.000Z\",\"infrastructure\":{\"ip\":\"198.51.100.137\"},\"location\":{\"country\":{\"alpha2Code\":\"FR\",\"alpha3Code\":\"FRA\",\"countryCode\":\"250\",\"displayName\":\"France\",\"name\":\"France\"}},\"name\":\"Stealer Malware Logs 2026-06-02\",\"source\":\"s3://rf-id-outbox/malware_logs/raw/2026-06-02/demo/vidar/9ab54b58.zip\"},\"id\":\"6bfef2aafe63ba8ad9752f29e7fcfbb9\",\"malware_family\":{\"id\":\"YuDlEm\",\"name\":\"Vidar\"},\"novel\":true,\"password\":{\"cleartext_hint\":\"ja\",\"hashes\":[{\"algorithm\":\"SHA256\",\"hash_prefix\":\"b82d246e\"},{\"algorithm\":\"NTLM\",\"hash\":\"0eda17a1607b2e519a7f2baf3884dfc6\"}],\"properties\":[\"Letter\",\"Number\",\"UpperCase\",\"LowerCase\",\"AtLeast12Characters\"],\"type\":\"clear\"},\"source_type\":\"MalwareLogs\",\"subject\":\"aegir.ymirsson@norsegods.online\",\"type\":\"External\"}",
+        "type": [
+            "indicator",
+            "info"
+        ]
+    },
+    "host": {
+        "name": "DEMO-ANNHDOFG",
+        "os": {
+            "full": "Windows 10 Enterprise",
+            "type": "windows"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "recordedfuture": {
+        "identity_detection": {
+            "authorization_service": {
+                "domain": "norsegods.online",
+                "fqdn": "norsegods.online",
+                "protocols": [
+                    "https"
+                ],
+                "technology": [
+                    {
+                        "id": "Ig409I",
+                        "name": "Virtual Desktop"
+                    },
+                    {
+                        "category": "Ig409I",
+                        "id": "ZNkiC2",
+                        "name": "Citrix Virtual Apps and Desktops"
+                    }
+                ]
+            },
+            "cookies": [
+                {
+                    "dns": ".norsegods.online",
+                    "expiration": "2026-08-25T09:57:39.000Z",
+                    "http": true,
+                    "name": "session_id",
+                    "secure": true,
+                    "value": "3a2d5f8b-9e4c-4a1d-b8f9-c6e7d8f9a0b1"
+                }
+            ],
+            "detection_type": "External",
+            "dump": {
+                "compromise": {
+                    "antivirus": [
+                        "Windows Defender"
+                    ],
+                    "os_username": "demo_user_sxwxml",
+                    "timezone": "UTC+05:00"
+                },
+                "description": "This credential data was derived from stealer malware logs.",
+                "downloaded": "2026-06-02T15:30:37.000Z",
+                "infrastructure": {
+                    "ip": "198.51.100.137"
+                },
+                "location": {
+                    "country": {
+                        "alpha3Code": "FRA",
+                        "countryCode": "250",
+                        "name": "France"
+                    }
+                },
+                "name": "Stealer Malware Logs 2026-06-02",
+                "source": "s3://rf-id-outbox/malware_logs/raw/2026-06-02/demo/vidar/9ab54b58.zip"
+            },
+            "exfiltration_date": "2026-06-02T12:45:00.000Z",
+            "novel": true,
+            "password": {
+                "cleartext_hint": "ja",
+                "hashes": {
+                    "ntlm": "0eda17a1607b2e519a7f2baf3884dfc6",
+                    "sha256_prefix": "b82d246e"
+                },
+                "properties": [
+                    "Letter",
+                    "Number",
+                    "UpperCase",
+                    "LowerCase",
+                    "AtLeast12Characters"
+                ],
+                "type": "clear"
+            },
+            "source_type": "MalwareLogs"
+        }
+    },
+    "related": {
+        "hash": [
+            "0eda17a1607b2e519a7f2baf3884dfc6"
+        ],
+        "hosts": [
+            "norsegods.online",
+            "DEMO-ANNHDOFG"
+        ],
+        "ip": [
+            "198.51.100.137"
+        ],
+        "user": [
+            "aegir.ymirsson@norsegods.online",
+            "demo_user_sxwxml"
+        ]
+    },
+    "source": {
+        "geo": {
+            "country_iso_code": "FR",
+            "country_name": "France"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "recordedfuture-identity_detection"
+    ],
+    "threat": {
+        "software": {
+            "id": "YuDlEm",
+            "name": "Vidar"
+        }
+    },
+    "url": {
+        "domain": "norsegods.online",
+        "original": "https://norsegods.online/DesktopWeb/",
+        "path": "/DesktopWeb/",
+        "scheme": "https"
+    },
+    "user": {
+        "email": "aegir.ymirsson@norsegods.online",
+        "name": "aegir.ymirsson@norsegods.online"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| recordedfuture.identity_detection.authorization_service.domain |  | keyword |
+| recordedfuture.identity_detection.authorization_service.fqdn |  | keyword |
+| recordedfuture.identity_detection.authorization_service.protocols |  | keyword |
+| recordedfuture.identity_detection.authorization_service.technology.category |  | keyword |
+| recordedfuture.identity_detection.authorization_service.technology.id |  | keyword |
+| recordedfuture.identity_detection.authorization_service.technology.name |  | keyword |
+| recordedfuture.identity_detection.authorization_service.url |  | keyword |
+| recordedfuture.identity_detection.authorization_technology |  | keyword |
+| recordedfuture.identity_detection.cookies.dns |  | keyword |
+| recordedfuture.identity_detection.cookies.expiration |  | date |
+| recordedfuture.identity_detection.cookies.http |  | boolean |
+| recordedfuture.identity_detection.cookies.name |  | keyword |
+| recordedfuture.identity_detection.cookies.secure |  | boolean |
+| recordedfuture.identity_detection.cookies.value |  | keyword |
+| recordedfuture.identity_detection.created |  | date |
+| recordedfuture.identity_detection.detection_type |  | keyword |
+| recordedfuture.identity_detection.dump.breaches.breached |  | date |
+| recordedfuture.identity_detection.dump.breaches.description |  | keyword |
+| recordedfuture.identity_detection.dump.breaches.domain |  | keyword |
+| recordedfuture.identity_detection.dump.breaches.name |  | keyword |
+| recordedfuture.identity_detection.dump.breaches.precision |  | keyword |
+| recordedfuture.identity_detection.dump.breaches.site_description |  | keyword |
+| recordedfuture.identity_detection.dump.breaches.start |  | date |
+| recordedfuture.identity_detection.dump.breaches.stop |  | date |
+| recordedfuture.identity_detection.dump.breaches.type |  | keyword |
+| recordedfuture.identity_detection.dump.compromise.antivirus |  | keyword |
+| recordedfuture.identity_detection.dump.compromise.computer_name |  | keyword |
+| recordedfuture.identity_detection.dump.compromise.exfiltration_date |  | date |
+| recordedfuture.identity_detection.dump.compromise.malware_file |  | keyword |
+| recordedfuture.identity_detection.dump.compromise.os |  | keyword |
+| recordedfuture.identity_detection.dump.compromise.os_username |  | keyword |
+| recordedfuture.identity_detection.dump.compromise.timezone |  | keyword |
+| recordedfuture.identity_detection.dump.compromise.uac |  | keyword |
+| recordedfuture.identity_detection.dump.description |  | keyword |
+| recordedfuture.identity_detection.dump.downloaded |  | date |
+| recordedfuture.identity_detection.dump.infrastructure.ip |  | ip |
+| recordedfuture.identity_detection.dump.location.address |  | keyword |
+| recordedfuture.identity_detection.dump.location.address1 |  | keyword |
+| recordedfuture.identity_detection.dump.location.address2 |  | keyword |
+| recordedfuture.identity_detection.dump.location.city |  | keyword |
+| recordedfuture.identity_detection.dump.location.country.alpha2Code |  | keyword |
+| recordedfuture.identity_detection.dump.location.country.alpha3Code |  | keyword |
+| recordedfuture.identity_detection.dump.location.country.countryCode |  | keyword |
+| recordedfuture.identity_detection.dump.location.country.displayName |  | keyword |
+| recordedfuture.identity_detection.dump.location.country.name |  | keyword |
+| recordedfuture.identity_detection.dump.location.postal_code |  | keyword |
+| recordedfuture.identity_detection.dump.location.state |  | keyword |
+| recordedfuture.identity_detection.dump.location.zip |  | keyword |
+| recordedfuture.identity_detection.dump.name |  | keyword |
+| recordedfuture.identity_detection.dump.source |  | keyword |
+| recordedfuture.identity_detection.dump.type |  | keyword |
+| recordedfuture.identity_detection.exfiltration_date |  | date |
+| recordedfuture.identity_detection.id |  | keyword |
+| recordedfuture.identity_detection.malware_family.id |  | keyword |
+| recordedfuture.identity_detection.malware_family.name |  | keyword |
+| recordedfuture.identity_detection.novel |  | boolean |
+| recordedfuture.identity_detection.organization_id |  | keyword |
+| recordedfuture.identity_detection.password.cleartext |  | keyword |
+| recordedfuture.identity_detection.password.cleartext_hint |  | keyword |
+| recordedfuture.identity_detection.password.hashes.md5 |  | keyword |
+| recordedfuture.identity_detection.password.hashes.md5_prefix |  | keyword |
+| recordedfuture.identity_detection.password.hashes.ntlm |  | keyword |
+| recordedfuture.identity_detection.password.hashes.ntlm_prefix |  | keyword |
+| recordedfuture.identity_detection.password.hashes.sha1 |  | keyword |
+| recordedfuture.identity_detection.password.hashes.sha1_prefix |  | keyword |
+| recordedfuture.identity_detection.password.hashes.sha256 |  | keyword |
+| recordedfuture.identity_detection.password.hashes.sha256_prefix |  | keyword |
+| recordedfuture.identity_detection.password.hashes.sha512 |  | keyword |
+| recordedfuture.identity_detection.password.hashes.sha512_prefix |  | keyword |
+| recordedfuture.identity_detection.password.properties |  | keyword |
+| recordedfuture.identity_detection.password.type |  | keyword |
+| recordedfuture.identity_detection.source_type |  | keyword |
+| recordedfuture.identity_detection.subject |  | keyword |
 

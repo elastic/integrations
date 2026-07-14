@@ -108,6 +108,7 @@ The following event types are supported for CrowdStrike Event Streams (whether y
 - IDP Incidents
 - IDP Summary events
 - Mobile Detection events
+- OverwatchGenericDetectionSummaryEvent
 - Recon Notification events
 - XDR Detection events
 - Scheduled Report Notification events

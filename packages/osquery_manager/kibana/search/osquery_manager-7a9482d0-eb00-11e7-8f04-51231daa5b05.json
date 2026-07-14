@@ -44,20 +44,40 @@
                                 },
                                 {
                                     "meta": {
-                                        "alias": null,
+                                        "alias": "it-compliance / mounts",
                                         "disabled": false,
-                                        "field": "action_id",
                                         "index": "logs-*",
-                                        "key": "action_id",
+                                        "key": "query",
                                         "negate": false,
-                                        "params": {
-                                            "query": "pack_it-compliance_mounts"
-                                        },
-                                        "type": "phrase"
+                                        "type": "custom",
+                                        "value": "{\"bool\":{\"minimum_should_match\":1,\"should\":[{\"match_phrase\":{\"action_id\":\"pack_it-compliance_mounts\"}},{\"bool\":{\"filter\":[{\"match_phrase\":{\"pack_name\":\"it-compliance\"}},{\"match_phrase\":{\"query_name\":\"mounts\"}}]}}]}}"
                                     },
                                     "query": {
-                                        "match_phrase": {
-                                            "action_id": "pack_it-compliance_mounts"
+                                        "bool": {
+                                            "minimum_should_match": 1,
+                                            "should": [
+                                                {
+                                                    "match_phrase": {
+                                                        "action_id": "pack_it-compliance_mounts"
+                                                    }
+                                                },
+                                                {
+                                                    "bool": {
+                                                        "filter": [
+                                                            {
+                                                                "match_phrase": {
+                                                                    "pack_name": "it-compliance"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "query_name": "mounts"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            ]
                                         }
                                     }
                                 }
