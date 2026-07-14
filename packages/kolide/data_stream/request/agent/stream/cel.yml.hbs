@@ -60,7 +60,12 @@ program: |-
                 "raw_events": body.?data.orValue([]).map(e, {"message": e.with({"_kolide_request_type": kind}).encode_json()}),
               }.as(page,
                 {
-                  "events": ((page.next_cursor != "" || kind == "exemption") && size(page.raw_events) == 0) ?
+                  // Any empty page must still publish a drop-marker event: the CEL
+                  // input only persists cursor state alongside published events, so
+                  // an empty page here (in particular an empty terminal registration
+                  // page) would otherwise silently discard the cursor.kind flip below
+                  // and permanently stall collection on the empty phase.
+                  "events": (size(page.raw_events) == 0) ?
                     [{"message": "{}", "retry": "true"}]
                   :
                     page.raw_events,
