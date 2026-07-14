@@ -35,7 +35,7 @@ At the start of Phase 1, read that guide from a local elastic-package checkout o
 
 ## Phase 1 — Discover the package
 
-0. Confirm `elastic-package version` succeeds. If missing, stop and point to the [elastic-package install guide](https://github.com/elastic/elastic-package#getting-started).
+0. Confirm `elastic-package version` succeeds. If missing, stop and point to the [elastic-package install guide](https://github.com/elastic/elastic-package#getting-started). Version should be minimum v0.125.1.
 
 1. Locate the integration package root (`manifest.yml`, `type: integration`).
 2. Read the legacy setup:
@@ -164,8 +164,6 @@ From the package directory:
 ```bash
 elastic-package build
 elastic-package check
-elastic-package test policy -v
-elastic-package test system
 elastic-package test
 ```
 
