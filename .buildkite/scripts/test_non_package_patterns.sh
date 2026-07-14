@@ -68,6 +68,7 @@ NON_PACKAGE_PATHS=(
     ".mergify.yml"
     "catalog-info.yaml"
     "dev/backports/some_script.sh"
+    "dev/codeowners/codeowners.go"
     "dev/scripts/foo.sh"
     "docs/extend/developer-workflow.md"
     "docs/some/nested/page.md"
