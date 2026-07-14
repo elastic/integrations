@@ -123,7 +123,7 @@ If the integration is healthy but no data appears: confirm that at least one con
 
 #### Recovering after an outage
 
-On restart, the integration resumes from its saved position and backfills the missed window. Overlapping events are de-duplicated, so a resume does not create duplicates. The API retains data for a maximum of 7 days: outages shorter than that backfill automatically, but any window older than 7 days is purged by Microsoft and cannot be recovered.
+On restart, the integration resumes from its saved position and backfills the missed window. Overlapping events are de-duplicated during ingest, so a resume does not create duplicates. The API retains data for a maximum of 7 days: outages shorter than that backfill automatically, but any window older than 7 days is purged by Microsoft and cannot be recovered.
 
 #### Rate limiting
 
