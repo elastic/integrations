@@ -17,10 +17,10 @@ import (
 // CodeownersRelPath is .github/CODEOWNERS's path relative to the repo root.
 const CodeownersRelPath = ".github/CODEOWNERS"
 
-// ReadCodeowners reads and parses the current worktree's CODEOWNERS file
+// readCodeowners reads and parses the current worktree's CODEOWNERS file
 // (workDir/.github/CODEOWNERS) and remoteRef's version of it (e.g.
 // "origin/main"), via git show.
-func ReadCodeowners(git gitutil.Git, workDir, remoteRef string) (current, source *codeowners.Owners, err error) {
+func readCodeowners(git gitutil.Git, workDir, remoteRef string) (current, source *codeowners.Owners, err error) {
 	currentData, err := os.ReadFile(filepath.Join(workDir, CodeownersRelPath))
 	if err != nil {
 		return nil, nil, fmt.Errorf("reading %s: %w", CodeownersRelPath, err)
@@ -41,10 +41,10 @@ func ReadCodeowners(git gitutil.Git, workDir, remoteRef string) (current, source
 	return current, source, nil
 }
 
-// ReadManifestOwners reads and extracts the owner.github field from
+// readManifestOwners reads and extracts the owner.github field from
 // pkgDir/manifest.yml and from remoteRef's version of it, found at
 // relPkgDir (pkgDir relative to the repo root, slash-separated).
-func ReadManifestOwners(git gitutil.Git, pkgDir, remoteRef, relPkgDir string) (current, source string, err error) {
+func readManifestOwners(git gitutil.Git, pkgDir, remoteRef, relPkgDir string) (current, source string, err error) {
 	currentData, err := os.ReadFile(filepath.Join(pkgDir, "manifest.yml"))
 	if err != nil {
 		return "", "", fmt.Errorf("reading manifest.yml: %w", err)
@@ -54,23 +54,23 @@ func ReadManifestOwners(git gitutil.Git, pkgDir, remoteRef, relPkgDir string) (c
 		return "", "", fmt.Errorf("reading %s manifest.yml: %w", remoteRef, err)
 	}
 
-	current, err = ManifestOwner(currentData)
+	current, err = manifestOwner(currentData)
 	if err != nil {
 		return "", "", fmt.Errorf("reading manifest owner: %w", err)
 	}
-	source, err = ManifestOwner([]byte(sourceData))
+	source, err = manifestOwner([]byte(sourceData))
 	if err != nil {
 		return "", "", fmt.Errorf("reading %s manifest owner: %w", remoteRef, err)
 	}
 	return current, source, nil
 }
 
-// ExistingSubPaths returns the full CODEOWNERS paths nested under pkgPath
+// existingSubPaths returns the full CODEOWNERS paths nested under pkgPath
 // that actually exist in the current worktree checkout — the union of every
 // explicit entry current and source declare under pkgPath (data streams, a
 // kibana/ directory, or anything else), filtered down to the ones present on
 // disk. Plan never touches a sub-path outside this set.
-func ExistingSubPaths(workDir, pkgPath string, current, source *codeowners.Owners) []string {
+func existingSubPaths(workDir, pkgPath string, current, source *codeowners.Owners) []string {
 	candidates := make(map[string]bool)
 	for _, p := range current.EntriesUnder(pkgPath) {
 		candidates[p] = true
@@ -97,22 +97,22 @@ func ExistingSubPaths(workDir, pkgPath string, current, source *codeowners.Owner
 // backport-branch CI check both call, so they can never see a different
 // answer for the same package.
 //
-// Callers checking multiple packages in one run should prefer CompareWith to
+// Callers checking multiple packages in one run should prefer compareWith to
 // avoid re-reading and re-parsing CODEOWNERS on every call.
 func Compare(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string) (plan SyncPlan, found bool, err error) {
-	current, source, err := ReadCodeowners(git, workDir, remoteRef)
+	current, source, err := readCodeowners(git, workDir, remoteRef)
 	if err != nil {
 		return SyncPlan{}, false, err
 	}
-	return CompareWith(git, workDir, pkgDir, relPkgDir, remoteRef, current, source)
+	return compareWith(git, workDir, pkgDir, relPkgDir, remoteRef, current, source)
 }
 
-// CompareWith is like Compare but accepts pre-parsed CODEOWNERS for both the
+// compareWith is like Compare but accepts pre-parsed CODEOWNERS for both the
 // current worktree and remoteRef, avoiding a re-read when checking multiple
 // packages in the same run. The current and source owners must have been
-// produced by ReadCodeowners (or equivalent) against the same workDir and
+// produced by readCodeowners (or equivalent) against the same workDir and
 // remoteRef that are passed here.
-func CompareWith(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string, current, source *codeowners.Owners) (plan SyncPlan, found bool, err error) {
+func compareWith(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string, current, source *codeowners.Owners) (plan SyncPlan, found bool, err error) {
 	pkgPath := "/" + relPkgDir
 
 	if _, ok := source.Resolve(pkgPath); !ok {
@@ -123,12 +123,12 @@ func CompareWith(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string, 
 		return SyncPlan{}, false, nil
 	}
 
-	currentManifestOwner, sourceManifestOwner, err := ReadManifestOwners(git, pkgDir, remoteRef, relPkgDir)
+	currentManifestOwner, sourceManifestOwner, err := readManifestOwners(git, pkgDir, remoteRef, relPkgDir)
 	if err != nil {
 		return SyncPlan{}, false, err
 	}
 
-	subPaths := ExistingSubPaths(workDir, pkgPath, current, source)
+	subPaths := existingSubPaths(workDir, pkgPath, current, source)
 
 	plan, found = Plan(pkgPath, subPaths, current, source, currentManifestOwner, sourceManifestOwner)
 	return plan, found, nil

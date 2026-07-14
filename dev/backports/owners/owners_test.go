@@ -13,7 +13,7 @@ import (
 	"github.com/elastic/integrations/dev/codeowners"
 )
 
-func TestManifestOwner(t *testing.T) {
+func TestManifestOwnerFn(t *testing.T) {
 	cases := []struct {
 		name          string
 		manifest      string
@@ -39,7 +39,7 @@ func TestManifestOwner(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got, err := ManifestOwner([]byte(c.manifest))
+			got, err := manifestOwner([]byte(c.manifest))
 			if c.expectedError {
 				assert.Error(t, err)
 				return

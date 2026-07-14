@@ -37,9 +37,9 @@ func parseEntryLine(line string) (p string, owners []string, ok bool) {
 	return strings.TrimSuffix(fields[0], "/"), fields[1:], true
 }
 
-// ManifestOwner extracts the owner.github field from manifest.yml content,
+// manifestOwner extracts the owner.github field from manifest.yml content,
 // via dev/citools' shared manifest parser.
-func ManifestOwner(manifestYAML []byte) (string, error) {
+func manifestOwner(manifestYAML []byte) (string, error) {
 	manifest, err := citools.ParsePackageManifest(manifestYAML)
 	if err != nil {
 		return "", fmt.Errorf("parsing manifest.yml: %w", err)
