@@ -78,18 +78,20 @@ main() {
     fi
 
     local remote="origin"
-    local merge_base
-    merge_base="$(git merge-base "${BUILDKITE_COMMIT}" "${remote}/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}")"
+    local merge_base=""
+    local check_exit=0
+    merge_base="$(git merge-base "${BUILDKITE_COMMIT}" "${remote}/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}")" || check_exit=$?
 
     echo "--- Checking package owners for PR #${BUILDKITE_PULL_REQUEST}"
     echo "Base branch: ${BUILDKITE_PULL_REQUEST_BASE_BRANCH}, merge-base: ${merge_base}, head: ${BUILDKITE_COMMIT}"
 
     local mismatches_json=""
-    local mage_exit=0
-    mismatches_json="$(mage checkBackportOwners "${remote}" "${BACKPORT_OWNERS_SOURCE_BRANCH}" "${merge_base}" "${BUILDKITE_COMMIT}")" || mage_exit=$?
+    if [[ "${check_exit}" -eq 0 ]]; then
+        mismatches_json="$(mage checkBackportOwners "${remote}" "${BACKPORT_OWNERS_SOURCE_BRANCH}" "${merge_base}" "${BUILDKITE_COMMIT}")" || check_exit=$?
+    fi
 
     local comment
-    if [[ "${mage_exit}" -ne 0 ]]; then
+    if [[ "${check_exit}" -ne 0 ]]; then
         comment="$(build_owner_check_failure_comment "${BUILDKITE_BUILD_URL:-""}")"
     else
         comment="$(build_owner_check_comment "${mismatches_json}")"
@@ -108,10 +110,10 @@ main() {
         fi
     fi
 
-    if [[ "${mage_exit}" -ne 0 ]]; then
+    if [[ "${check_exit}" -ne 0 ]]; then
         echo ""
-        echo "--- backport owner check failed to run (exit ${mage_exit})"
-        exit "${mage_exit}"
+        echo "--- backport owner check failed to run (exit ${check_exit})"
+        exit "${check_exit}"
     fi
 
     local mismatch_count
