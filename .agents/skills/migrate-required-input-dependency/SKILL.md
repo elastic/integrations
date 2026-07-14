@@ -125,7 +125,7 @@ Present the variable matrix (name → category → default → `show_user`) and 
 
 | Decision | Options / prompt |
 | --- | --- |
-| Field mapping fixes | Any `long` → `double` or similar fixes? (`bugfix` changelog) |
+| Field mapping fixes | Any `long` → `double` or similar type corrections? Compare integration and input package `fields/` against collector output. **Check for breaking changes** if users may already have data indexed under the old type (mapping conflicts, reindex). Changelog: `bugfix` when the prior type was wrong and never worked; `breaking-change` when the correction is incompatible with existing indices. |
 | Ingest pipeline re-test | Re-test against real collector output after input package switch? |
 | Dashboard migration | Re-export for target stack Lens version · Validate only · N/A |
 | Documentation | Manually document input dependency if `{{ inputDocs }}` is empty? |
@@ -196,7 +196,7 @@ Mark each item done or N/A:
 - [ ] Policy tests: default + overrides; expectations reviewed for dataset and `output_permissions`
 - [ ] System tests pass with realistic service traffic where needed
 - [ ] Pipeline regression tests for edge cases found during migration
-- [ ] Changelog entries: migration, stack constraint, field-mapping fixes
+- [ ] Changelog entries: migration, stack constraint, field-mapping fixes (use `breaking-change` when mapping type updates affect existing indices)
 - [ ] Docs manually updated if `{{ inputDocs }}` is empty
 - [ ] Dashboards validated on the target stack version
 
