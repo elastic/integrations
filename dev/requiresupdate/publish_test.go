@@ -5,9 +5,12 @@
 package requiresupdate
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPRBody(t *testing.T) {
@@ -100,6 +103,60 @@ func TestIssueBodyOwnerMismatch(t *testing.T) {
 	assert.Contains(t, body, "codeowner mismatch")
 	assert.Contains(t, body, "elastic/other-team")
 	assert.Contains(t, body, "/cc @elastic/some-team")
+}
+
+func TestReplaceChangelogPlaceholder(t *testing.T) {
+	t.Run("replaces placeholder with PR number", func(t *testing.T) {
+		dir := t.TempDir()
+		cl := filepath.Join(dir, "changelog.yml")
+		require.NoError(t, os.WriteFile(cl, []byte("- link: pull/REPLACE_ME\n"), 0644))
+
+		got, err := replaceChangelogPlaceholder([]string{cl}, "42")
+		require.NoError(t, err)
+		assert.Equal(t, cl, got)
+
+		data, err := os.ReadFile(cl)
+		require.NoError(t, err)
+		assert.Equal(t, "- link: pull/42\n", string(data))
+
+		info, err := os.Stat(cl)
+		require.NoError(t, err)
+		assert.Equal(t, os.FileMode(0644), info.Mode())
+	})
+
+	t.Run("error when placeholder missing", func(t *testing.T) {
+		dir := t.TempDir()
+		cl := filepath.Join(dir, "changelog.yml")
+		require.NoError(t, os.WriteFile(cl, []byte("- link: pull/12345\n"), 0644))
+
+		_, err := replaceChangelogPlaceholder([]string{cl}, "42")
+		assert.ErrorContains(t, err, "placeholder not found")
+	})
+
+	t.Run("error when no changelog.yml in list", func(t *testing.T) {
+		_, err := replaceChangelogPlaceholder([]string{"manifest.yml", "data_stream/foo/manifest.yml"}, "42")
+		assert.ErrorContains(t, err, "no changelog.yml")
+	})
+
+	t.Run("only changelog.yml is modified", func(t *testing.T) {
+		dir := t.TempDir()
+		cl := filepath.Join(dir, "changelog.yml")
+		manifest := filepath.Join(dir, "manifest.yml")
+		require.NoError(t, os.WriteFile(cl, []byte("- link: pull/REPLACE_ME\n"), 0644))
+		require.NoError(t, os.WriteFile(manifest, []byte("name: mypackage\n"), 0644))
+
+		got, err := replaceChangelogPlaceholder([]string{manifest, cl}, "99")
+		require.NoError(t, err)
+		assert.Equal(t, cl, got)
+
+		manifestData, err := os.ReadFile(manifest)
+		require.NoError(t, err)
+		assert.Equal(t, "name: mypackage\n", string(manifestData))
+
+		clData, err := os.ReadFile(cl)
+		require.NoError(t, err)
+		assert.Contains(t, string(clData), "pull/99")
+	})
 }
 
 func TestPRBodyOwnerMismatch(t *testing.T) {

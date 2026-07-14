@@ -45,11 +45,9 @@ func ghExec(args ...string) (bytes.Buffer, error) {
 // In preview mode nothing is written to git or GitHub; actions are only
 // printed.
 func publish(summaries []packageSummary, preview bool) error {
-	sorted := make([]packageSummary, len(summaries))
-	copy(sorted, summaries)
-	sort.Slice(sorted, func(i, j int) bool { return sorted[i].name < sorted[j].name })
+	sort.Slice(summaries, func(i, j int) bool { return summaries[i].name < summaries[j].name })
 
-	for _, s := range sorted {
+	for _, s := range summaries {
 		if len(s.files) == 0 {
 			if err := publishIssue(s, preview); err != nil {
 				return fmt.Errorf("%s: %w", s.name, err)
@@ -197,40 +195,46 @@ func fixupChangelogLinks(s packageSummary, branch, prNumber string) error {
 	if prNumber == "" {
 		return nil
 	}
-	git := gitutil.Git{}
-	var found bool
-	for _, f := range s.files {
-		if !strings.HasSuffix(f, "changelog.yml") {
-			continue
-		}
-		found = true
-		info, err := os.Stat(f)
-		if err != nil {
-			return fmt.Errorf("stat %s: %w", f, err)
-		}
-		data, err := os.ReadFile(f)
-		if err != nil {
-			return fmt.Errorf("reading %s: %w", f, err)
-		}
-		fixed := strings.ReplaceAll(string(data), "pull/REPLACE_ME", "pull/"+prNumber)
-		if fixed == string(data) {
-			return fmt.Errorf("pull/REPLACE_ME placeholder not found in %s: elastic-package may have changed its changelog output format", f)
-		}
-		if err := os.WriteFile(f, []byte(fixed), info.Mode()); err != nil {
-			return fmt.Errorf("writing %s: %w", f, err)
-		}
-		if err := git.Run("add", "--", f); err != nil {
-			return err
-		}
-		break
+	changedPath, err := replaceChangelogPlaceholder(s.files, prNumber)
+	if err != nil {
+		return err
 	}
-	if !found {
-		return fmt.Errorf("no changelog.yml found among %s's written files to fix up PR links", s.name)
+	git := gitutil.Git{}
+	if err := git.Run("add", "--", changedPath); err != nil {
+		return err
 	}
 	if err := git.Run("commit", "-m", "Fix changelog PR links"); err != nil {
 		return fmt.Errorf("committing changelog fixup: %w", err)
 	}
 	return git.Run("push", "origin", branch)
+}
+
+// replaceChangelogPlaceholder replaces the pull/REPLACE_ME placeholder in the
+// first changelog.yml found in files with the real PR number, preserving file
+// permissions. Returns the path of the modified file.
+func replaceChangelogPlaceholder(files []string, prNumber string) (string, error) {
+	for _, f := range files {
+		if !strings.HasSuffix(f, "changelog.yml") {
+			continue
+		}
+		info, err := os.Stat(f)
+		if err != nil {
+			return "", fmt.Errorf("stat %s: %w", f, err)
+		}
+		data, err := os.ReadFile(f)
+		if err != nil {
+			return "", fmt.Errorf("reading %s: %w", f, err)
+		}
+		fixed := strings.ReplaceAll(string(data), "pull/REPLACE_ME", "pull/"+prNumber)
+		if fixed == string(data) {
+			return "", fmt.Errorf("pull/REPLACE_ME placeholder not found in %s: elastic-package may have changed its changelog output format", f)
+		}
+		if err := os.WriteFile(f, []byte(fixed), info.Mode()); err != nil {
+			return "", fmt.Errorf("writing %s: %w", f, err)
+		}
+		return f, nil
+	}
+	return "", fmt.Errorf("no changelog.yml found among written files to fix up PR links")
 }
 
 func findOpenIssue(title string) (string, error) {
