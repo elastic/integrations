@@ -117,6 +117,13 @@ func publishPR(s packageSummary, preview bool) error {
 	if err := git.Run(append([]string{"add", "--"}, s.files...)...); err != nil {
 		return fmt.Errorf("staging files failed: %w", err)
 	}
+	staged, err := git.Output("diff", "--cached", "--name-only")
+	if err != nil {
+		return fmt.Errorf("checking staged files failed: %w", err)
+	}
+	if strings.TrimSpace(staged) == "" {
+		return fmt.Errorf("nothing staged for %s: files may already be committed or elastic-package produced no changes", s.name)
+	}
 	if err := git.Run("commit", "-m", fmt.Sprintf("[automation] Update required package versions for %s", s.name)); err != nil {
 		return fmt.Errorf("committing failed: %w", err)
 	}
