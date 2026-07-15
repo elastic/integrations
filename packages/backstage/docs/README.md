@@ -121,7 +121,7 @@ The `logs` data stream provides audit events from Backstage's `auditor` service,
 | backstage.entity.ref | The Backstage catalog entity reference the audit event operated on. | keyword |
 | backstage.entity.refs | The Backstage catalog entity references returned by a batch entity lookup. | keyword |
 | backstage.entity.root_ref | The root entity reference for a Backstage catalog ancestry lookup. | keyword |
-| backstage.meta | Serialized dump of any Backstage plugin metadata that did not match a known, explicitly-mapped field. Empty for all currently-known event shapes; exists only as a forward-compatible safety net for future Backstage plugin metadata. Well-known keys are promoted to explicit `backstage.\*` fields instead of living here. | text |
+| backstage.meta | Serialized dump of any Backstage plugin metadata that did not match a known, explicitly-mapped field. Intended to be empty for all currently-known event shapes; exists only as a forward-compatible safety net for future Backstage plugin metadata. Well-known keys are promoted to explicit `backstage.\*` fields instead of living here. | text |
 | backstage.query.fields | The entity fields requested by the catalog query. | keyword |
 | backstage.query.filter | The raw catalog query filter condition(s), as Backstage's `key=value` comma-separated filter syntax (e.g. "kind=Resource,spec.type=github-repository"). Stored verbatim rather than parsed into structured sub-fields; there is no confirmed customer need yet for querying/aggregating on individual filter keys. Revisit with structured `backstage.query.filter.\*` sub-fields if that need materializes. | text |
 | backstage.query.type | The type of catalog query that was issued (e.g. "all"). | keyword |
@@ -190,9 +190,9 @@ An example event for `logs` looks as following:
 {
     "@timestamp": "2026-05-22T20:30:05.131Z",
     "agent": {
-        "ephemeral_id": "a6024ff8-93af-4093-a415-2fb817831669",
-        "id": "a5b33dca-2a73-40bc-8306-73781e65d5b8",
-        "name": "elastic-agent-29040",
+        "ephemeral_id": "6865ea25-7808-4442-aa96-9b85652f369e",
+        "id": "96dc9143-5e60-4ff1-bed3-2c67c54293de",
+        "name": "elastic-agent-55019",
         "type": "filebeat",
         "version": "9.3.3"
     },
@@ -203,23 +203,21 @@ An example event for `logs` looks as following:
                 "kind",
                 "spec.profile"
             ],
-            "filter": [
-                "kind=group,relations.hasMember=user:default/guest"
-            ],
+            "filter": "kind=group,relations.hasMember=user:default/guest",
             "type": "all"
         },
         "severity_level": "low"
     },
     "data_stream": {
         "dataset": "backstage.logs",
-        "namespace": "34846",
+        "namespace": "75927",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "a5b33dca-2a73-40bc-8306-73781e65d5b8",
+        "id": "96dc9143-5e60-4ff1-bed3-2c67c54293de",
         "snapshot": false,
         "version": "9.3.3"
     },
@@ -231,7 +229,7 @@ An example event for `logs` looks as following:
         ],
         "code": "entity-fetch",
         "dataset": "backstage.logs",
-        "ingested": "2026-07-09T14:49:59Z",
+        "ingested": "2026-07-15T14:26:13Z",
         "kind": "event",
         "module": "backstage",
         "original": "{\"actor\":{\"hostname\":\"localhost\",\"ip\":\"127.0.0.1\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\"},\"eventId\":\"entity-fetch\",\"isAuditEvent\":true,\"level\":\"info\",\"message\":\"catalog.entity-fetch\",\"meta\":{\"query\":{\"fields\":[\"metadata\",\"kind\",\"spec.profile\"],\"filter\":[\"kind=group,relations.hasMember=user:default/guest\"]},\"queryType\":\"all\"},\"plugin\":\"catalog\",\"request\":{\"method\":\"GET\",\"url\":\"/api/catalog/entities?fields=metadata,kind,spec.profile&filter=kind%3Dgroup%2Crelations.hasMember%3Duser%3Adefault%2Fguest\"},\"service\":\"backstage\",\"severityLevel\":\"low\",\"status\":\"initiated\",\"timestamp\":\"2026-05-22T20:30:05.131Z\"}",
@@ -246,16 +244,16 @@ An example event for `logs` looks as following:
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "elastic-agent-29040",
+        "hostname": "elastic-agent-55019",
         "ip": [
             "172.21.0.2",
             "172.18.0.5"
         ],
         "mac": [
-            "06-3D-FD-39-9E-43",
-            "BE-07-79-AE-71-90"
+            "CA-6D-AC-53-6C-AB",
+            "EA-A3-55-2E-7E-99"
         ],
-        "name": "elastic-agent-29040",
+        "name": "elastic-agent-55019",
         "os": {
             "family": "",
             "kernel": "6.12.76-linuxkit",
@@ -275,8 +273,8 @@ An example event for `logs` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "44",
-            "inode": "399",
+            "device_id": "43",
+            "inode": "67",
             "path": "/tmp/service_logs/test-audit-events.log"
         },
         "level": "info",
