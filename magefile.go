@@ -473,6 +473,36 @@ func RenderBackportChecklist(artifactPath string) error {
 	return nil
 }
 
+// ParseBackportChecklist reads a checklist comment body from bodyFile and prints
+// a JSON array of ChecklistItem to stdout. Used by auto-backport.yml to enumerate
+// which branches need backport PRs created.
+func ParseBackportChecklist(bodyFile string) error {
+	data, err := os.ReadFile(bodyFile)
+	if err != nil {
+		return fmt.Errorf("reading body file: %w", err)
+	}
+	items := bpchecklist.ParseChecklistItems(string(data))
+	out, err := json.Marshal(items)
+	if err != nil {
+		return fmt.Errorf("marshalling checklist items: %w", err)
+	}
+	fmt.Println(string(out))
+	return nil
+}
+
+// UpdateChecklistBranchStatus reads a checklist comment body from bodyFile, appends
+// the given status to the line for branch, and prints the updated body to stdout.
+// If the line already carries a ✅ or ⚠️ suffix the body is printed unchanged.
+// Used by auto-backport.yml to mark each branch after its PR is processed.
+func UpdateChecklistBranchStatus(bodyFile, branch, status string) error {
+	data, err := os.ReadFile(bodyFile)
+	if err != nil {
+		return fmt.Errorf("reading body file: %w", err)
+	}
+	fmt.Print(bpchecklist.UpdateBranchStatus(string(data), branch, status))
+	return nil
+}
+
 // IsElasticPackageDependencyLessThan checks whether or not the elastic-package version set in go.mod is less than the given version
 func IsElasticPackageDependencyLessThan(version string) error {
 	foundVersion, err := citools.PackageVersionGoMod("go.mod", elasticPackageModulePath)
