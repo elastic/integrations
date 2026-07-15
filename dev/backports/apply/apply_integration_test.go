@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/elastic/integrations/dev/backports/gitutil"
+	"github.com/elastic/integrations/dev/gitutil"
 )
 
 // setupIntegrationRepo creates a bare remote and a local clone pre-populated

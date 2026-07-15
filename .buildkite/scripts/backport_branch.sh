@@ -161,43 +161,12 @@ updateBackportBranchContents() {
   fi
 
   # Update scripts used by mage
-  local MAGEFILE_SCRIPTS_FOLDER="dev/citools"
-  local TESTSREPORTER_SCRIPTS_FOLDER="dev/testsreporter"
-  local COVERAGE_SCRIPTS_FOLDER="dev/coverage"
-  local CODEOWNERS_SCRIPTS_FOLDER="dev/codeowners"
-  local PACKAGENAMES_SCRIPTS_FOLDER="dev/packagenames"
-  local BACKPORTS_SCRIPTS_FOLDER="dev/backports"
-  local DEV_SCRIPTS_FOLDER="dev/scripts"
+  local DEV_FOLDER="dev"
 
-  if git ls-tree -d --name-only main:${MAGEFILE_SCRIPTS_FOLDER} > /dev/null 2>&1 ; then
-    echo "--- Copying magefile scripts from $SOURCE_BRANCH..."
-    echo "Copying $MAGEFILE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${MAGEFILE_SCRIPTS_FOLDER}"
-    git add "${MAGEFILE_SCRIPTS_FOLDER}"
-
-    echo "Copying $TESTSREPORTER_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${TESTSREPORTER_SCRIPTS_FOLDER}"
-    git add "${TESTSREPORTER_SCRIPTS_FOLDER}"
-
-    echo "Copying $COVERAGE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${COVERAGE_SCRIPTS_FOLDER}"
-    git add "${COVERAGE_SCRIPTS_FOLDER}"
-
-    echo "Copying $CODEOWNERS_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${CODEOWNERS_SCRIPTS_FOLDER}"
-    git add "${CODEOWNERS_SCRIPTS_FOLDER}"
-
-    echo "Copying $PACKAGENAMES_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${PACKAGENAMES_SCRIPTS_FOLDER}"
-    git add "${PACKAGENAMES_SCRIPTS_FOLDER}"
-
-    echo "Copying $BACKPORTS_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${BACKPORTS_SCRIPTS_FOLDER}"
-    git add "${BACKPORTS_SCRIPTS_FOLDER}"
-
-    echo "Copying $DEV_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- "${DEV_SCRIPTS_FOLDER}"
-    git add "${DEV_SCRIPTS_FOLDER}"
+  if git ls-tree -d --name-only main:${DEV_FOLDER} > /dev/null 2>&1 ; then
+    echo "--- Copying $DEV_FOLDER from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "${DEV_FOLDER}"
+    git add "${DEV_FOLDER}"
 
     echo "Copying magefile.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "magefile.go"

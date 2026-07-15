@@ -74,20 +74,22 @@ func PackageOwners(packageName, dataStream, codeownersPath string) ([]string, er
 	return dataStreamTeams, nil
 }
 
-// Owners provides CODEOWNERS lookups over a pre-parsed, in-memory snapshot.
-// Use LoadOwners to read from a file on disk, or ParseOwners to parse content
-// from a string (e.g. the output of "git show <ref>:.github/CODEOWNERS").
+// Owners holds a parsed CODEOWNERS file for repeated lookups without re-reading disk.
+// Obtain one via LoadOwners; use PackageOwnersByPath to look up a package by its
+// filesystem path rather than its folder basename.
 type Owners struct {
 	inner *githubOwners
 }
 
-// LoadOwners reads and parses CODEOWNERS from a file on disk.
+// LoadOwners parses the CODEOWNERS file at codeownersPath once. Use the returned
+// *Owners for repeated lookups across many packages instead of calling
+// PackageOwners (which re-reads the file on every call).
 func LoadOwners(codeownersPath string) (*Owners, error) {
-	o, err := readGithubOwners(codeownersPath)
+	inner, err := readGithubOwners(codeownersPath)
 	if err != nil {
 		return nil, err
 	}
-	return &Owners{inner: o}, nil
+	return &Owners{inner: inner}, nil
 }
 
 // ParseOwners parses CODEOWNERS content from a string, applying the same
@@ -146,25 +148,28 @@ func (o *Owners) ExplicitEntry(p string) ([]string, bool) {
 	return owners, ok
 }
 
-// PackageOwnersByPath returns owners for a package (and optionally one of its
-// data streams), identified by its full filesystem path
-// (e.g. "packages/aws" or "packages/technology/pkg"). Unlike PackageOwners,
-// no suffix search is needed — the full path is given, so the lookup is
-// unambiguous. Walk-up resolution handles category-inherited ownership where
-// the package itself has no explicit CODEOWNERS entry.
+// PackageOwnersByPath returns the owning team(s) for the package at pkgPath
+// (relative to the repo root, e.g. "packages/observability/nginx") and, when
+// dataStream is set, the more-specific data-stream-level owner if one is defined.
+//
+// Prefer this over PackageOwners when the full package path is available:
+// it handles arbitrary directory nesting by walking up the tree and avoids
+// the folder-basename ambiguity in PackageOwners. See
+// https://github.com/elastic/elastic-package/issues/3586.
 func (o *Owners) PackageOwnersByPath(pkgPath, dataStream string) ([]string, error) {
-	packageTeams, found := o.inner.findOwnerForFile(pkgPath + "/manifest.yml")
+	teams, found := o.inner.findOwnerForFile(filepath.Join(pkgPath, citools.ManifestFileName))
 	if !found {
-		return nil, fmt.Errorf("no owner found for package path %s", pkgPath)
+		return nil, fmt.Errorf("no owner found for package path %q", pkgPath)
 	}
 	if dataStream == "" {
-		return packageTeams, nil
+		return teams, nil
 	}
-	dsPath := "/" + filepath.ToSlash(filepath.Clean(pkgPath)) + "/data_stream/" + dataStream
-	if dsOwners, ok := o.inner.owners[dsPath]; ok {
-		return dsOwners, nil
+	dataStreamDir := filepath.Join(pkgPath, "data_stream", dataStream)
+	dataStreamTeams, found := o.inner.owners["/"+filepath.ToSlash(dataStreamDir)]
+	if !found {
+		return teams, nil
 	}
-	return packageTeams, nil
+	return dataStreamTeams, nil
 }
 
 type githubOwners struct {

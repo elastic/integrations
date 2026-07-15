@@ -148,66 +148,6 @@ func TestExplicitEntry(t *testing.T) {
 	})
 }
 
-func TestPackageOwnersByPath(t *testing.T) {
-	const content = `
-/packages/aws @elastic/obs-infraobs-integrations @elastic/obs-ds-hosted-services
-/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
-/packages/technology/p1 @elastic/ecosystem
-`
-	o, err := ParseOwners(content)
-	require.NoError(t, err)
-
-	cases := []struct {
-		name          string
-		pkgPath       string
-		dataStream    string
-		expected      []string
-		expectedError bool
-	}{
-		{
-			name:       "top-level package, no data stream",
-			pkgPath:    "packages/aws",
-			dataStream: "",
-			expected:   []string{"@elastic/obs-infraobs-integrations", "@elastic/obs-ds-hosted-services"},
-		},
-		{
-			name:       "nested (technology/package) path",
-			pkgPath:    "packages/technology/p1",
-			dataStream: "",
-			expected:   []string{"@elastic/ecosystem"},
-		},
-		{
-			name:       "data stream with explicit owner",
-			pkgPath:    "packages/aws",
-			dataStream: "cloudtrail",
-			expected:   []string{"@elastic/security-service-integrations"},
-		},
-		{
-			name:       "unknown data stream falls back to package owner",
-			pkgPath:    "packages/aws",
-			dataStream: "vpcflow",
-			expected:   []string{"@elastic/obs-infraobs-integrations", "@elastic/obs-ds-hosted-services"},
-		},
-		{
-			name:          "package path not found",
-			pkgPath:       "packages/unknown",
-			expectedError: true,
-		},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			got, err := o.PackageOwnersByPath(c.pkgPath, c.dataStream)
-			if c.expectedError {
-				assert.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
-			assert.Equal(t, c.expected, got)
-		})
-	}
-}
-
 func TestCheckManifest(t *testing.T) {
 	cases := []struct {
 		codeownersPath string
@@ -465,6 +405,81 @@ func TestReturnPackageOwners(t *testing.T) {
 			}
 			require.NoError(t, err)
 			assert.Equal(t, c.expected, owners)
+		})
+	}
+}
+
+func TestPackageOwnersByPath(t *testing.T) {
+	cases := []struct {
+		title          string
+		codeownersPath string
+		pkgPath        string
+		datastream     string
+		expected       []string
+		expectedError  bool
+	}{
+		{
+			title:          "nested package",
+			codeownersPath: "testdata/CODEOWNERS-nested-valid",
+			pkgPath:        "testdata/nested_packages/category/package_nested_1",
+			datastream:     "",
+			expected:       []string{"@elastic/integrations-developer-experience"},
+			expectedError:  false,
+		},
+		{
+			title:          "nested package inherits category owner",
+			codeownersPath: "testdata/CODEOWNERS-nested-category-owner",
+			pkgPath:        "testdata/nested_packages/category/package_nested_2",
+			datastream:     "",
+			expected:       []string{"@elastic/integrations-developer-experience"},
+			expectedError:  false,
+		},
+		{
+			title:          "nested package data stream",
+			codeownersPath: "testdata/CODEOWNERS-nested-streams-valid",
+			pkgPath:        "testdata/nested_packages/category/package_nested_1",
+			datastream:     "stream_1",
+			expected:       []string{"@pkoutsovasilis"},
+			expectedError:  false,
+		},
+		{
+			title:          "top-level package",
+			codeownersPath: "testdata/CODEOWNERS-nested-valid",
+			pkgPath:        "testdata/nested_packages/package_top",
+			datastream:     "",
+			expected:       []string{"@elastic/integrations-developer-experience"},
+			expectedError:  false,
+		},
+		{
+			title:          "data stream not in CODEOWNERS falls back to package owner",
+			codeownersPath: "testdata/CODEOWNERS-nested-streams-valid",
+			pkgPath:        "testdata/nested_packages/category/package_nested_1",
+			datastream:     "stream_unknown",
+			expected:       []string{"@elastic/integrations-developer-experience"},
+			expectedError:  false,
+		},
+		{
+			title:          "package path not found",
+			codeownersPath: "testdata/CODEOWNERS-owners-packages-datastreams",
+			pkgPath:        "packages/other",
+			datastream:     "",
+			expected:       []string{},
+			expectedError:  true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			owners, err := LoadOwners(c.codeownersPath)
+			require.NoError(t, err)
+
+			got, err := owners.PackageOwnersByPath(c.pkgPath, c.datastream)
+			if c.expectedError {
+				assert.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, c.expected, got)
 		})
 	}
 }

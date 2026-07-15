@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/elastic/integrations/dev/backports/gitutil"
 	"github.com/elastic/integrations/dev/codeowners"
+	"github.com/elastic/integrations/dev/gitutil"
 )
 
 // CodeownersRelPath is .github/CODEOWNERS's path relative to the repo root.

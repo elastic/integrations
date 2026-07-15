@@ -69,6 +69,8 @@ NON_PACKAGE_PATHS=(
     "catalog-info.yaml"
     "dev/backports/some_script.sh"
     "dev/codeowners/codeowners.go"
+    "dev/gitutil/git.go"
+    "dev/requiresupdate/requiresupdate.go"
     "dev/scripts/foo.sh"
     "docs/extend/developer-workflow.md"
     "docs/some/nested/page.md"

@@ -22,9 +22,9 @@ import (
 
 	"github.com/elastic/integrations/dev/backports"
 	"github.com/elastic/integrations/dev/backports/changelog"
-	"github.com/elastic/integrations/dev/backports/gitutil"
 	"github.com/elastic/integrations/dev/backports/owners"
 	"github.com/elastic/integrations/dev/citools"
+	"github.com/elastic/integrations/dev/gitutil"
 )
 
 // ownersSourceBranch is the ownership source of truth for syncOwners — main
