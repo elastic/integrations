@@ -284,10 +284,20 @@ For more information on architectures that can be used for scaling this integrat
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| abusech.threatfox.comment | An optional comment from the reporter. | keyword |
 | abusech.threatfox.confidence_level | Confidence level between 0-100. | long |
+| abusech.threatfox.credits.credits_amount | The number of credits awarded. | long |
+| abusech.threatfox.credits.credits_from | The platform that awarded the credits. | keyword |
 | abusech.threatfox.deleted_at | The indicator expiration timestamp. | date |
 | abusech.threatfox.ioc_expiration_duration | The configured expiration duration. | keyword |
+| abusech.threatfox.is_compromised | Whether the shared IOC is a compromised resource. | boolean |
 | abusech.threatfox.malware | The malware associated with the IOC. | keyword |
+| abusech.threatfox.malware_samples.malware_bazaar | The community API URL to the sample on MalwareBazaar. | keyword |
+| abusech.threatfox.malware_samples.malware_bazaar_url | The URL to the sample on MalwareBazaar. | keyword |
+| abusech.threatfox.malware_samples.md5_hash | The MD5 hash of the sample. | keyword |
+| abusech.threatfox.malware_samples.sha256_hash | The SHA256 hash of the sample. | keyword |
+| abusech.threatfox.malware_samples.timestamp | The timestamp when the sample was seen. | date |
+| abusech.threatfox.sightings | The number of sightings of the IOC. | long |
 | abusech.threatfox.tags | A list of tags associated with the queried malware sample. | keyword |
 | abusech.threatfox.threat_type | The type of threat. | keyword |
 | abusech.threatfox.threat_type_desc | The threat descsription. | keyword |
