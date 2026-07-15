@@ -162,30 +162,22 @@ processors:
       ignore_missing: true
       tag: rename_error_stack_trace
       description: Maps the stack trace present on failed Backstage operations to the ECS `error.stack_trace` field.
-  - set:
-      field: _tmp.request_url
-      value: "http://localhost{{{json.request.url}}}"
-      tag: set_tmp_request_url
-      description: >-
-        Prepend a dummy scheme and host so uri_parts can parse a path-only or path with query strings URL
-        into ECS url.* fields. The artificial url.scheme and url.domain are removed afterward.
-      if: ctx.json?.request?.url != null
   - uri_parts:
-      field: _tmp.request_url
+      field: json.request.url
+      target_field: url
       tag: decode_request_uri
-      description: Decode the path for the requested URL against backstage
-      if: ctx._tmp?.request_url != null
+      description: >-
+        Decodes the path/query of the requested URL against backstage. Backstage's
+        request.url is path-only (no scheme/host), which uri_parts parses natively
+        as a relative reference, so scheme/domain are simply absent rather than needing
+        to be faked and stripped.
+      if: ctx.json?.request?.url != null
   - set:
       field: url.original
       copy_from: json.request.url
       tag: set_url_original_from_source
       description: Restores `url.original` to the unmodified path-only URL observed in the Backstage audit event.
       if: ctx.json?.request?.url != null
-  - remove:
-      field: [_tmp.request_url, url.scheme, url.domain]
-      ignore_missing: true
-      tag: remove_tmp_url_artifacts
-      description: Removes the temporary `_tmp.request_url` and the artificial `url.scheme`/`url.domain` that were prepended to allow `uri_parts` to parse a path-only URL.
   - rename:
       field: json.actor.userAgent
       target_field: user_agent.original
@@ -362,10 +354,16 @@ processors:
         ctx.backstage = ctx.backstage == null ? new HashMap() : ctx.backstage;
         ctx.backstage.meta = ctx.json.meta.toString();
   - remove:
-      field: [_tmp, json]
+      field: [json, url.extension, url.domain, url.scheme]
       ignore_missing: true
       tag: remove_temporary_fields
-      description: Removes the temporary `_tmp` and parsed `json` containers now that all fields have been extracted.
+      description: >-
+        Removes the parsed `json` container now that all fields have been extracted;
+        `url.extension`, which uri_parts sometimes infers from dotted path segments (e.g.
+        usernames like `alice.johnson`) even though this API only serves REST endpoints,
+        never files; and `url.domain`/`url.scheme`, which uri_parts always sets (to `null`
+        rather than omitting) since Backstage's request.url is path-only and never has a
+        scheme/host to parse.
 on_failure:
   - append:
       tag: append_pipeline_error_message
