@@ -73,6 +73,27 @@ func ParseChecklistItems(body string) []ChecklistItem {
 	return items
 }
 
+// UpdateBranchStatus finds the checkbox line for branch in body and appends
+// " — <status>" to it. If the line already carries a ✅ or ⚠️ suffix the body
+// is returned unchanged (defence-in-depth against workflow self-trigger loops).
+// Returns body unchanged when branch is not found.
+func UpdateBranchStatus(body, branch, status string) string {
+	lines := strings.Split(body, "\n")
+	for i, line := range lines {
+		trimmed := strings.TrimRight(line, "\r")
+		m := checklistItemRe.FindStringSubmatch(trimmed)
+		if m == nil || m[2] != branch {
+			continue
+		}
+		if strings.ContainsRune(trimmed, '✅') || strings.ContainsRune(trimmed, '⚠') {
+			return body
+		}
+		lines[i] = trimmed + " — " + status
+		return strings.Join(lines, "\n")
+	}
+	return body
+}
+
 // ParseCheckedBranches scans body for "- [x] `<branch>`" lines and returns the
 // set of branch names that are currently ticked. An empty or marker-free body
 // returns an empty (non-nil) map so callers never need a nil check.

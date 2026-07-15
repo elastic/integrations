@@ -293,3 +293,70 @@ func TestParseChecklistItems(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdateBranchStatus(t *testing.T) {
+	cases := []struct {
+		title  string
+		body   string
+		branch string
+		status string
+		want   string
+	}{
+		{
+			title:  "appends success status to matching checked branch line",
+			body:   marker + "\n**aws**\n- [x] `backport-aws-6.14`\n",
+			branch: "backport-aws-6.14",
+			status: "✅ #1234",
+			want:   marker + "\n**aws**\n- [x] `backport-aws-6.14` — ✅ #1234\n",
+		},
+		{
+			title:  "appends conflict status to matching checked branch line",
+			body:   marker + "\n**aws**\n- [x] `backport-aws-6.14`\n",
+			branch: "backport-aws-6.14",
+			status: "⚠️ conflict: please run manually",
+			want:   marker + "\n**aws**\n- [x] `backport-aws-6.14` — ⚠️ conflict: please run manually\n",
+		},
+		{
+			title:  "line already has success suffix is a no-op",
+			body:   marker + "\n**aws**\n- [x] `backport-aws-6.14` — ✅ #1234\n",
+			branch: "backport-aws-6.14",
+			status: "✅ #9999",
+			want:   marker + "\n**aws**\n- [x] `backport-aws-6.14` — ✅ #1234\n",
+		},
+		{
+			title:  "line already has conflict suffix is a no-op",
+			body:   marker + "\n**aws**\n- [x] `backport-aws-6.14` — ⚠️ conflict: please run manually\n",
+			branch: "backport-aws-6.14",
+			status: "✅ #9999",
+			want:   marker + "\n**aws**\n- [x] `backport-aws-6.14` — ⚠️ conflict: please run manually\n",
+		},
+		{
+			title:  "branch not found leaves body unchanged",
+			body:   marker + "\n**aws**\n- [x] `backport-aws-6.14`\n",
+			branch: "backport-aws-6.15",
+			status: "✅ #1234",
+			want:   marker + "\n**aws**\n- [x] `backport-aws-6.14`\n",
+		},
+		{
+			title:  "only the matching branch line is updated, others untouched",
+			body:   marker + "\n**aws**\n- [x] `backport-aws-6.14`\n- [ ] `backport-aws-6.15`\n",
+			branch: "backport-aws-6.14",
+			status: "✅ #1234",
+			want:   marker + "\n**aws**\n- [x] `backport-aws-6.14` — ✅ #1234\n- [ ] `backport-aws-6.15`\n",
+		},
+		{
+			title:  "branch with maintained_until suffix gets status appended",
+			body:   marker + "\n**aws**\n- [x] `backport-aws-6.14` (maintained until 2027-01-15)\n",
+			branch: "backport-aws-6.14",
+			status: "✅ #1234",
+			want:   marker + "\n**aws**\n- [x] `backport-aws-6.14` (maintained until 2027-01-15) — ✅ #1234\n",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.title, func(t *testing.T) {
+			got := UpdateBranchStatus(tc.body, tc.branch, tc.status)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
