@@ -31,6 +31,48 @@ type PackageBranches struct {
 // checkedLineRe matches a checked checkbox line: "- [x] `branch-name`..."
 var checkedLineRe = regexp.MustCompile("^- \\[[xX]\\] `([^`]+)`")
 
+// checklistItemRe matches any checkbox branch line (checked or unchecked).
+// Group 1: checkbox char (' ', 'x', or 'X'). Group 2: branch name.
+var checklistItemRe = regexp.MustCompile("^- \\[([xX ])\\] `([^`]+)`")
+
+// packageHeaderRe matches a bold package section header: **package-name**
+var packageHeaderRe = regexp.MustCompile(`^\*\*([^*]+)\*\*$`)
+
+// ChecklistItem represents a single branch entry parsed from a checklist comment body.
+type ChecklistItem struct {
+	Package   string
+	Branch    string
+	Checked   bool
+	Processed bool // true if the line already carries a ✅ or ⚠️ status suffix
+}
+
+// ParseChecklistItems scans body for package headers and checkbox branch lines and
+// returns one ChecklistItem per branch. An empty or marker-free body returns an
+// empty (non-nil) slice so callers never need a nil check.
+func ParseChecklistItems(body string) []ChecklistItem {
+	items := []ChecklistItem{}
+	if !strings.Contains(body, marker) {
+		return items
+	}
+	var currentPkg string
+	for _, line := range strings.Split(body, "\n") {
+		line = strings.TrimRight(line, "\r")
+		if m := packageHeaderRe.FindStringSubmatch(line); m != nil {
+			currentPkg = m[1]
+			continue
+		}
+		if m := checklistItemRe.FindStringSubmatch(line); m != nil {
+			items = append(items, ChecklistItem{
+				Package:   currentPkg,
+				Branch:    m[2],
+				Checked:   m[1] != " ",
+				Processed: strings.ContainsRune(line, '✅') || strings.ContainsRune(line, '⚠'),
+			})
+		}
+	}
+	return items
+}
+
 // ParseCheckedBranches scans body for "- [x] `<branch>`" lines and returns the
 // set of branch names that are currently ticked. An empty or marker-free body
 // returns an empty (non-nil) map so callers never need a nil check.

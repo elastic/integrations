@@ -207,3 +207,89 @@ func TestParseCheckedBranches(t *testing.T) {
 		})
 	}
 }
+
+func TestParseChecklistItems(t *testing.T) {
+	cases := []struct {
+		title string
+		body  string
+		want  []ChecklistItem
+	}{
+		{
+			title: "empty body returns empty slice",
+			body:  "",
+			want:  []ChecklistItem{},
+		},
+		{
+			title: "body without marker returns empty slice",
+			body:  "**aws**\n- [x] `backport-aws-6.14`\n",
+			want:  []ChecklistItem{},
+		},
+		{
+			title: "single unchecked branch",
+			body:  marker + "\n**aws**\n- [ ] `backport-aws-6.14`\n",
+			want: []ChecklistItem{
+				{Package: "aws", Branch: "backport-aws-6.14", Checked: false, Processed: false},
+			},
+		},
+		{
+			title: "single checked branch",
+			body:  marker + "\n**aws**\n- [x] `backport-aws-6.14`\n",
+			want: []ChecklistItem{
+				{Package: "aws", Branch: "backport-aws-6.14", Checked: true, Processed: false},
+			},
+		},
+		{
+			title: "checked branch with success status is Processed",
+			body:  marker + "\n**aws**\n- [x] `backport-aws-6.14` — ✅ #1234\n",
+			want: []ChecklistItem{
+				{Package: "aws", Branch: "backport-aws-6.14", Checked: true, Processed: true},
+			},
+		},
+		{
+			title: "checked branch with conflict status is Processed",
+			body:  marker + "\n**aws**\n- [x] `backport-aws-6.14` — ⚠️ conflict: please run manually\n",
+			want: []ChecklistItem{
+				{Package: "aws", Branch: "backport-aws-6.14", Checked: true, Processed: true},
+			},
+		},
+		{
+			title: "multiple packages with multiple branches each",
+			body: marker + "\n**aws**\n- [x] `backport-aws-6.14`\n- [ ] `backport-aws-6.15`\n\n" +
+				"**kubernetes**\n- [x] `backport-kubernetes-1.28` — ✅ #5678\n- [ ] `backport-kubernetes-1.29`\n",
+			want: []ChecklistItem{
+				{Package: "aws", Branch: "backport-aws-6.14", Checked: true, Processed: false},
+				{Package: "aws", Branch: "backport-aws-6.15", Checked: false, Processed: false},
+				{Package: "kubernetes", Branch: "backport-kubernetes-1.28", Checked: true, Processed: true},
+				{Package: "kubernetes", Branch: "backport-kubernetes-1.29", Checked: false, Processed: false},
+			},
+		},
+		{
+			title: "branch with maintained_until suffix is parsed correctly",
+			body:  marker + "\n**aws**\n- [ ] `backport-aws-6.14` (maintained until 2027-01-15)\n",
+			want: []ChecklistItem{
+				{Package: "aws", Branch: "backport-aws-6.14", Checked: false, Processed: false},
+			},
+		},
+		{
+			title: "branch with maintained_until suffix and success status is Processed",
+			body:  marker + "\n**aws**\n- [x] `backport-aws-6.14` (maintained until 2027-01-15) — ✅ #1234\n",
+			want: []ChecklistItem{
+				{Package: "aws", Branch: "backport-aws-6.14", Checked: true, Processed: true},
+			},
+		},
+		{
+			title: "branch with maintained_until suffix and conflict status is Processed",
+			body:  marker + "\n**aws**\n- [x] `backport-aws-6.14` (maintained until 2027-01-15) — ⚠️ conflict: please run manually\n",
+			want: []ChecklistItem{
+				{Package: "aws", Branch: "backport-aws-6.14", Checked: true, Processed: true},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.title, func(t *testing.T) {
+			got := ParseChecklistItems(tc.body)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
