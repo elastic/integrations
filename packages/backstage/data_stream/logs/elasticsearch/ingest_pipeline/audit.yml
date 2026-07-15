@@ -193,6 +193,7 @@ processors:
   - append:
       field: related.user
       value: "{{{user.id}}}"
+      allow_duplicates: false
       tag: append_actor_id_related_user
       description: Appends the Backstage actor identifier to `related.user` to support correlation across all user-related fields.
       if: ctx.user?.id != null
@@ -211,6 +212,7 @@ processors:
   - append:
       field: related.hosts
       value: "{{{json.actor.hostname}}}"
+      allow_duplicates: false
       description: Append the hostname of the actor who initiated the request to backstage to the related hostnames array
       tag: append_request_hostname_ecs_related
       if: ctx.json?.actor?.hostname != null
@@ -223,6 +225,7 @@ processors:
   - append:
       field: related.ip
       value: "{{{source.ip}}}"
+      allow_duplicates: false
       description: Appends the actor's IP address to the `related.ip` array for cross-field correlation.
       tag: append_related_ip_8c67e2b0
       if: ctx.source?.ip != null
@@ -305,6 +308,7 @@ processors:
   - append:
       field: related.user
       value: "{{{backstage.task.created_by}}}"
+      allow_duplicates: false
       tag: append_created_by_related_user
       description: Appends the scaffolder task creator to `related.user` to support correlation across all user-related fields.
       if: ctx.backstage?.task?.created_by != null
