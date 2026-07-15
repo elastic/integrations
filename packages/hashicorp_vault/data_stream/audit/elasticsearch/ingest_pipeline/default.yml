@@ -117,30 +117,23 @@ processors:
       type: long
       ignore_missing: true
 
-  # user_agent.original from the request's User-Agent header. The header value
-  # may be a list (as emitted by Vault) or a scalar string.
-  - script:
-      tag: script_set_user_agent_original_a1b2c3d4
-      lang: painless
-      if: ctx.hashicorp_vault?.audit?.request?.headers?.get('user-agent') != null
-      source: >-
-        def ua = ctx.hashicorp_vault.audit.request.headers['user-agent'];
-        if (ua instanceof List) {
-          if (ua.size() > 0) {
-            ua = ua.get(0);
-          } else {
-            ua = null;
-          }
-        }
-        if (ua != null && !ua.startsWith('hmac-')) {
-          if (ctx.user_agent == null) {
-            ctx.user_agent = new HashMap();
-          }
-          ctx.user_agent.original = ua;
-        }
-      ignore_failure: true
+  # user_agent.original from the request's User-Agent header. Vault emits header
+  # values as a list, so copy the first element. Skip values Vault has HMAC'd
+  # (a configurable option), since the digest is not a meaningful user agent.
+  # Note: logging request headers such as User-Agent is not Vault's default
+  # behavior; it must be explicitly enabled via the /sys/config/auditing API or
+  # the vault_audit_request_header Terraform resource, so this header is often
+  # absent.
+  - set:
+      tag: set_user_agent_original_446355f3
+      field: user_agent.original
+      copy_from: hashicorp_vault.audit.request.headers.user-agent.0
+      ignore_empty_value: true
+      if: >-
+        ctx.hashicorp_vault?.audit?.request?.headers?.get('user-agent') != null &&
+        !ctx.hashicorp_vault.audit.request.headers['user-agent'].get(0).startsWith('hmac-')
   - user_agent:
-      tag: user_agent_user_agent_original_1a5f0e6b
+      tag: user_agent_user_agent_original_c8c93c65
       field: user_agent.original
       ignore_missing: true
       if: ctx.user_agent?.original != null
