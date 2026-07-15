@@ -20,6 +20,7 @@ resource.headers:
 state:
   api_key: {{api_key}}
   batch_size: {{batch_size}}
+  enable_user_enrichment: {{enable_user_enrichment}}
 redact:
   fields:
     - api_key
@@ -51,7 +52,25 @@ program: |-
           resp.Body.decode_json().as(body,
             body.?pagination.next_cursor.orValue("").as(next_cursor,
               {
-                "events": body.?data.orValue([]).map(e, {"message": e.encode_json()}),
+                "events": body.?data.orValue([]).map(e, 
+                  e.?registered_owner_info.?link.orValue(null).as(owner_link,
+                    (state.enable_user_enrichment && owner_link != null && string(owner_link) != "") ?
+                      request("GET", string(owner_link)).with({
+                        "Header": {
+                          "Authorization": ["Bearer " + state.api_key],
+                        },
+                      }).do_request().as(owner_resp,
+                        (owner_resp.StatusCode == 200) ?
+                          owner_resp.Body.decode_json().as(owner_data,
+                            {"message": e.with({"registered_owner_info": e.registered_owner_info.with(owner_data)}).encode_json()}
+                          )
+                        :
+                          {"message": e.encode_json()}
+                      )
+                    :
+                      {"message": e.encode_json()}
+                  )
+                ),
                 "cursor": {
                   "next": next_cursor,
                 },

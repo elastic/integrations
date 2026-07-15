@@ -260,6 +260,21 @@ processors:
       ignore_missing: true
       if: ctx.json?.registered_owner_info?.link != null
 
+  # Add enriched user information to the event
+  - rename:
+      field: json.registered_owner_info.email
+      target_field: user.email
+      tag: rename_kolide_owner_email
+      ignore_missing: true
+      if: ctx.json?.registered_owner_info?.email != null
+
+  - rename:
+      field: json.registered_owner_info.name
+      target_field: user.name
+      tag: rename_kolide_owner_name
+      ignore_missing: true
+      if: ctx.json?.registered_owner_info?.name != null
+
   # auth_configuration (API) -> kolide.device group; person_groups flattened.
   - rename:
       field: json.auth_configuration.device_id
