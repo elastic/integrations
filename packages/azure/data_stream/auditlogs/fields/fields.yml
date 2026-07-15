@@ -27,6 +27,9 @@
         Result signature
     - name: result_description
       type: keyword
+      # Raise ignore_above to logsdb's 8191 default (up from the standard-mode default of
+      # 1024) so longer Azure result descriptions are not silently dropped as degraded.
+      ignore_above: 8191
       description: |
         Result description
     - name: level
@@ -45,6 +48,9 @@
             Activity display name
         - name: result_reason
           type: keyword
+          # Raise ignore_above to logsdb's 8191 default (up from the standard-mode default of
+          # 1024) so longer Azure result reasons are not silently dropped as degraded.
+          ignore_above: 8191
           description: |
             Reason for the log result
         - name: correlation_id
@@ -94,21 +100,19 @@
               type: keyword
               description: |
                 User principal name
-            - name: modified_properties.*
-              type: group
-              fields:
-                - name: new_value
-                  type: keyword
-                  description: |
-                    New value
-                - name: display_name
-                  type: keyword
-                  description: |
-                    Display value
-                - name: old_value
-                  type: keyword
-                  description: |
-                    Old value
+            # old_value / new_value carry serialized JSON of AD object state that exceeds the
+            # keyword ignore_above limit (1024 default, 8191 under logsdb), silently degrading
+            # documents. They sit under a doubly-nested wildcard path (target_resources.* ->
+            # modified_properties.*), where Fleet only generates a dynamic template for the FIRST
+            # declared leaf; a single object_type template raises the limit for every leaf at once.
+            - name: modified_properties.*.*
+              type: object
+              object_type: keyword
+              object_type_mapping_type: '*'
+              ignore_above: 8191
+              subobjects: false
+              description: |
+                Modified properties (e.g. old_value, new_value, display_name).
         - name: initiated_by
           type: group
           fields:
@@ -165,6 +169,9 @@
               description: Additional details key
             - name: value
               type: keyword
+              # Raise ignore_above to logsdb's 8191 default (up from the standard-mode default of
+              # 1024) so longer Azure additional-detail values are not silently dropped as degraded.
+              ignore_above: 8191
               description: Additional details value
         - name: authentication_protocol
           type: keyword
