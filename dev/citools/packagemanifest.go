@@ -27,17 +27,32 @@ type conditions struct {
 	Elastic elasticConditions `config:"elastic" json:"elastic" yaml:"elastic"`
 }
 
+type requiresEntry struct {
+	Package string `config:"package" json:"package" yaml:"package"`
+	Version string `config:"version" json:"version" yaml:"version"`
+}
+
+type requiresBlock struct {
+	Input   []requiresEntry `config:"input"   json:"input"   yaml:"input"`
+	Content []requiresEntry `config:"content" json:"content" yaml:"content"`
+}
+
 type packageManifest struct {
-	FormatVersion string     `config:"format_version" json:"format_version" yaml:"format_version"`
-	Name          string     `config:"name" json:"name" yaml:"name"`
-	Type          string     `config:"type" json:"type" yaml:"type"`
-	Version       string     `config:"version" json:"version" yaml:"version"`
-	License       string     `config:"license" json:"license" yaml:"license"`
-	Conditions    conditions `config:"conditions" json:"conditions" yaml:"conditions"`
+	FormatVersion string         `config:"format_version" json:"format_version"          yaml:"format_version"`
+	Name          string         `config:"name"           json:"name"                    yaml:"name"`
+	Type          string         `config:"type"           json:"type"                    yaml:"type"`
+	Version       string         `config:"version"        json:"version"                 yaml:"version"`
+	License       string         `config:"license"        json:"license"                 yaml:"license"`
+	Conditions    conditions     `config:"conditions"     json:"conditions"               yaml:"conditions"`
+	Requires      *requiresBlock `config:"requires"       json:"requires,omitempty"       yaml:"requires,omitempty"`
 }
 
 func (m *packageManifest) IsValid() bool {
 	return m.FormatVersion != "" && m.Name != "" && m.Type != "" && m.Version != ""
+}
+
+func (m *packageManifest) HasRequires() bool {
+	return m.Requires != nil && (len(m.Requires.Input) > 0 || len(m.Requires.Content) > 0)
 }
 
 func ReadPackageManifest(path string) (*packageManifest, error) {
