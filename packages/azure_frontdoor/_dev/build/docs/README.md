@@ -11,15 +11,17 @@ The Azure Frontdoor logs integration retrieves the following types of log data f
 
 - **Access Logs**: Logs categorized as `FrontDoorAccessLog`.
 - **Web Application Firewall (WAF) Logs**: Logs categorized as `FrontDoorWebApplicationFirewallLog`.
+- **Health Probe Logs**: Logs categorized as `FrontDoorHealthProbeLog`.
 
-Currently, the integration does not support **Activity Logs** or **Health Probe logs**.
+Currently, the integration does not support **Activity Logs**.
 
 ## Data streams
 
-This integration collects two types of data streams:
+This integration collects three types of data streams:
 
 - access log
 - waf logs
+- health probe logs
 
 ## Requirements
 
@@ -141,3 +143,7 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 ## WAF Logs
 
 {{fields "waf"}}
+
+## Health Probe Logs
+
+{{fields "health_probe"}}
