@@ -594,10 +594,13 @@ func TestApplyIntegration_DryRun(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, string(manifestData), "version: 1.0.1")
 
-	// Verify the changelog contains the cherry-picked change description.
+	// Verify the changelog contains the cherry-picked change description with
+	// the sentinel link — the original PR link (pull/999) must not appear.
 	changelogData, err := os.ReadFile(filepath.Join(workDir, "packages", "kubernetes", "changelog.yml"))
 	require.NoError(t, err)
 	assert.Contains(t, string(changelogData), "Fix timeout in metrics collection")
+	assert.Contains(t, string(changelogData), "pull/REPLACE_ME", "changelog must contain sentinel URL")
+	assert.NotContains(t, string(changelogData), "pull/999", "original PR link must not appear in backport changelog")
 
 	// Verify the backport commit was created with the expected message.
 	commitMsg, err := gitutil.Git{Dir: workDir}.Output("log", "--format=%B", "-n", "1")

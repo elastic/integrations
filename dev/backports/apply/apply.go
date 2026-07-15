@@ -147,6 +147,14 @@ func Apply(opts Options) (*Result, error) {
 		return nil, err
 	}
 
+	// Replace every source-commit link with a sentinel: the actual backport PR
+	// URL is not known until after the PR is opened. The post-PR step calls
+	// changelog.UpdateEntryLinks to fix the sentinel once the URL is available.
+	sentinel := sentinelURL(repository)
+	for i := range changes {
+		changes[i].Link = sentinel
+	}
+
 	newVersion, err := a.resetAndWriteChanges(manifestPath, changelogPath, changes)
 	if err != nil {
 		return nil, err
@@ -568,6 +576,15 @@ func (a applier) conflictingFiles() ([]string, error) {
 		}
 	}
 	return files, nil
+}
+
+// sentinelURL returns the placeholder link written into changelog.yml before
+// the backport PR URL is known. UpdateEntryLinks replaces it once the PR exists.
+func sentinelURL(repository string) string {
+	if repository == "" {
+		repository = "elastic/integrations"
+	}
+	return "https://github.com/" + repository + "/pull/REPLACE_ME"
 }
 
 // maybeOpenPR creates a GitHub PR if openPR is true, returning the PR URL.
