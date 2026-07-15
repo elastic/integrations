@@ -1,0 +1,241 @@
+---
+description: Pipeline for processing azure frontdoor health probe logs
+processors:
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.type
+      value: [connection]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - set:
+      field: cloud.provider
+      value: azure
+  - drop:
+      description: Drop if invalid json
+      if: ctx.event?.original != null && ctx.event.original.contains('"records"')
+  - json:
+      field: event.original
+      target_field: azure.frontdoor.health_probe
+  - script:
+      description: Drops fields with empty or N/A values recursively
+      tag: script_to_drop_invalid_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || v == 'n/a' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || v == 'n/a' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - rename:
+      field: azure.frontdoor.health_probe.resourceId
+      target_field: azure.frontdoor.resource_id
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.health_probe.operationName
+      target_field: azure.frontdoor.operation_name
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.health_probe.category
+      target_field: azure.frontdoor.category
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.health_probe.properties.healthProbeId
+      target_field: azure.frontdoor.health_probe.health_probe_id
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.health_probe.properties.pop
+      target_field: azure.frontdoor.health_probe.pop
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.health_probe.properties.httpVerb
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.health_probe.properties.result
+      target_field: azure.frontdoor.health_probe.result
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.health_probe.properties.httpStatusCode
+      target_field: http.response.status_code
+      ignore_missing: true
+  - rename:
+      field: azure.frontdoor.health_probe.properties.probeUrl
+      target_field: url.original
+      ignore_missing: true
+  - uri_parts:
+      field: url.original
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: url.full
+      copy_from: url.original
+      ignore_empty_value: true
+  - rename:
+      field: azure.frontdoor.health_probe.properties.originName
+      target_field: azure.frontdoor.health_probe.origin_name
+      ignore_missing: true
+  - convert:
+      field: azure.frontdoor.health_probe.properties.totalLatencyMilliseconds
+      target_field: azure.frontdoor.health_probe.total_latency_milliseconds
+      type: long
+      tag: convert_total_latency
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+  - remove:
+      field: azure.frontdoor.health_probe.properties.totalLatencyMilliseconds
+      ignore_missing: true
+  - convert:
+      field: azure.frontdoor.health_probe.properties.connectionLatencyMilliseconds
+      target_field: azure.frontdoor.health_probe.connection_latency_milliseconds
+      type: long
+      tag: convert_connection_latency
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+  - remove:
+      field: azure.frontdoor.health_probe.properties.connectionLatencyMilliseconds
+      ignore_missing: true
+  - convert:
+      field: azure.frontdoor.health_probe.properties.DNSLatencyMicroseconds
+      target_field: azure.frontdoor.health_probe.dns_latency_microseconds
+      type: long
+      tag: convert_dns_latency
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+  - remove:
+      field: azure.frontdoor.health_probe.properties.DNSLatencyMicroseconds
+      ignore_missing: true
+  - convert:
+      field: http.response.status_code
+      type: long
+      ignore_missing: true
+  - date:
+      field: azure.frontdoor.health_probe.time
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+  - rename:
+      field: azure.frontdoor.health_probe.properties.originIP
+      target_field: destination.address
+      ignore_missing: true
+  - remove:
+      field:
+        - azure.frontdoor.health_probe.time
+        - azure.frontdoor.health_probe.properties
+      ignore_missing: true
+  - grok:
+      tag: grok_destination_address
+      field: destination.address
+      if: ctx.destination?.address != null
+      patterns:
+        - "^%{IPV4:destination.ip}$"
+        - "^%{IPV4:destination.ip}:%{PORT:destination.port:long}$"
+        - "^\\[%{IPV6:destination.ip}\\]:%{PORT:destination.port:long}$"
+        - "^%{IPV6NOCOMPRESS:destination.ip}:%{PORT:destination.port:long}$"
+        - "^%{IPV6:destination.ip}%{IPV6PORTSEP}%{PORT:destination.port:long}$"
+        - "^%{IPV6NOCOMPRESS:destination.ip}$"
+        - "^%{IPV6:destination.ip}$"
+      pattern_definitions:
+        IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+        IPV6PORTSEP: '(?: port |[p#.])'
+        PORT: '[0-9]+'
+  - convert:
+      tag: convert_destination_ip
+      field: destination.ip
+      target_field: destination.ip
+      type: ip
+      if: ctx.destination?.ip != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: destination.ip
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+      if: ctx.destination?.ip != null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.destination?.ip != null
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

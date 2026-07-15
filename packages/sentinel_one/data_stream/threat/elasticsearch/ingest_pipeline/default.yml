@@ -1,6 +1,12 @@
 ---
 description: Pipeline for processing threat logs.
 processors:
+  - drop:
+      tag: drop_cel_retry_placeholder
+      if: ctx.retry == true && ctx.message == null && ctx.event?.original == null
+      description: >-
+        Drops the placeholder event emitted by the CEL program to continue
+        list pagination when a page carries a next-page cursor but no data.
   - remove:
       field:
         - organization
@@ -66,6 +72,16 @@ processors:
         - json.threatInfo.createdAt
         - json.threatInfo.updatedAt
         - json.id
+      target_field: _id
+      ignore_missing: true
+  - fingerprint:
+      tag: fingerprint_threat_timeline_entry
+      if: ctx.json?.timeline?.id != null
+      fields:
+        - json.id
+        - json.timeline.id
+        - json.timeline.createdAt
+        - json.timeline.updatedAt
       target_field: _id
       ignore_missing: true
   - set:
@@ -321,6 +337,18 @@ processors:
       field: json.agentDetectionInfo.groupName
       target_field: sentinel_one.threat.detection.agent.group.name
       ignore_missing: true
+  - set:
+      tag: set_group_id_from_detection_agent_group_id
+      field: group.id
+      copy_from: sentinel_one.threat.detection.agent.group.id
+      if: ctx.group?.id == null
+      ignore_empty_value: true
+  - set:
+      tag: set_group_name_from_detection_agent_group_name
+      field: group.name
+      copy_from: sentinel_one.threat.detection.agent.group.name
+      if: ctx.group?.name == null
+      ignore_empty_value: true
   - rename:
       tag: rename_json_agentDetectionInfo_siteId_to_sentinel_one_site_id_3cc55055
       field: json.agentDetectionInfo.siteId
@@ -1485,12 +1513,194 @@ processors:
       tag: set_message_9f7536a0
       field: message
       value: 'Threat Detected: {{{sentinel_one.threat.name}}} ({{{sentinel_one.threat.confidence_level}}})'
-      if: ctx.sentinel_one?.threat.name != null && ctx.sentinel_one?.threat?.confidence_level != null
+      if: ctx.sentinel_one?.threat?.name != null && ctx.sentinel_one?.threat?.confidence_level != null
   - rename:
       tag: rename_json_whiteningOptions_to_sentinel_one_threat_whitening_option_94ebf22d
       field: json.whiteningOptions
       target_field: sentinel_one.threat.whitening_option
       ignore_missing: true
+  - date:
+      tag: date_timeline_created_at
+      field: json.timeline.createdAt
+      if: ctx.json?.timeline?.createdAt != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            tag: append_error_message_timeline_created_at
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_timeline_activity_type
+      field: json.timeline.activityType
+      target_field: sentinel_one.threat.timeline.activity_type
+      ignore_missing: true
+  - rename:
+      tag: rename_timeline_primary_description
+      field: json.timeline.primaryDescription
+      target_field: sentinel_one.threat.timeline.primary_description
+      ignore_missing: true
+  - rename:
+      tag: rename_timeline_secondary_description
+      field: json.timeline.secondaryDescription
+      target_field: sentinel_one.threat.timeline.secondary_description
+      ignore_missing: true
+  - rename:
+      tag: rename_timeline_entry_id
+      field: json.timeline.id
+      target_field: sentinel_one.threat.timeline.id
+      ignore_missing: true
+  - set:
+      tag: set_message_from_timeline_primary_description
+      field: message
+      copy_from: sentinel_one.threat.timeline.primary_description
+      ignore_empty_value: true
+      if: ctx.message == null || ctx.message == ''
+  - rename:
+      tag: rename_timeline_data_ruledescription_to_rule_description
+      field: json.timeline.data.ruledescription
+      target_field: sentinel_one.threat.rule_description
+      ignore_missing: true
+  - rename:
+      tag: rename_timeline_data_ruleid_to_rule_id
+      field: json.timeline.data.ruleid
+      target_field: sentinel_one.threat.rule_id
+      ignore_missing: true
+  - rename:
+      tag: rename_timeline_data_rulename_to_rule_name
+      field: json.timeline.data.rulename
+      target_field: sentinel_one.threat.rule_name
+      ignore_missing: true
+  - rename:
+      tag: rename_timeline_data_ruleDescription_to_rule_description
+      field: json.timeline.data.ruleDescription
+      target_field: sentinel_one.threat.rule_description
+      if: ctx.sentinel_one?.threat?.rule_description == null
+      ignore_missing: true
+  - rename:
+      tag: rename_timeline_data_ruleId_to_rule_id
+      field: json.timeline.data.ruleId
+      target_field: sentinel_one.threat.rule_id
+      if: ctx.sentinel_one?.threat?.rule_id == null
+      ignore_missing: true
+  - rename:
+      tag: rename_timeline_data_ruleName_to_rule_name
+      field: json.timeline.data.ruleName
+      target_field: sentinel_one.threat.rule_name
+      if: ctx.sentinel_one?.threat?.rule_name == null
+      ignore_missing: true
+  - rename:
+      tag: rename_timeline_account_id
+      field: json.timeline.accountId
+      target_field: sentinel_one.threat.timeline.account.id
+      ignore_missing: true
+  - rename:
+      tag: rename_timeline_agent_id
+      field: json.timeline.agentId
+      target_field: sentinel_one.threat.timeline.agent.id
+      ignore_missing: true
+  - rename:
+      tag: rename_timeline_agent_updated_version
+      field: json.timeline.agentUpdatedVersion
+      target_field: sentinel_one.threat.timeline.agent_updated_version
+      ignore_missing: true
+  - date:
+      tag: date_timeline_created_at_field
+      field: json.timeline.createdAt
+      target_field: sentinel_one.threat.timeline.created_at
+      if: ctx.json?.timeline?.createdAt != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            tag: append_error_message_timeline_created_at_field
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_timeline_group_id
+      field: json.timeline.groupId
+      target_field: sentinel_one.threat.timeline.group.id
+      ignore_missing: true
+  - set:
+      tag: set_group_id_from_timeline_group_id
+      field: group.id
+      copy_from: sentinel_one.threat.timeline.group.id
+      if: ctx.group?.id == null
+      ignore_empty_value: true
+  - rename:
+      tag: rename_timeline_hash
+      field: json.timeline.hash
+      target_field: sentinel_one.threat.timeline.hash
+      ignore_missing: true
+  - append:
+      tag: append_related_hash_from_timeline_hash
+      field: related.hash
+      value: '{{{sentinel_one.threat.timeline.hash}}}'
+      if: ctx.sentinel_one?.threat?.timeline?.hash != null
+      allow_duplicates: false
+  - rename:
+      tag: rename_timeline_os_family
+      field: json.timeline.osFamily
+      target_field: sentinel_one.threat.timeline.os_family
+      ignore_missing: true
+  - set:
+      tag: set_host_os_family_from_timeline_os_family
+      field: host.os.family
+      copy_from: sentinel_one.threat.timeline.os_family
+      ignore_empty_value: true
+  - rename:
+      tag: rename_timeline_site_id
+      field: json.timeline.siteId
+      target_field: sentinel_one.threat.timeline.site.id
+      ignore_missing: true
+  - date:
+      tag: date_timeline_updated_at
+      field: json.timeline.updatedAt
+      target_field: sentinel_one.threat.timeline.updated_at
+      if: ctx.json?.timeline?.updatedAt != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            tag: append_error_message_timeline_updated_at
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_timeline_user_id
+      field: json.timeline.userId
+      target_field: sentinel_one.threat.timeline.user.id
+      ignore_missing: true
+  - set:
+      tag: set_user_id_from_timeline_user_id
+      field: user.id
+      copy_from: sentinel_one.threat.timeline.user.id
+      ignore_empty_value: true
+  - append:
+      tag: append_related_user_from_timeline_user_id
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - rename:
+      tag: rename_timeline_data
+      field: json.timeline.data
+      target_field: sentinel_one.threat.timeline.data
+      ignore_missing: true
+  - set:
+      tag: set_rule_description_from_threat_rule_description
+      field: rule.description
+      copy_from: sentinel_one.threat.rule_description
+      ignore_empty_value: true
+  - set:
+      tag: set_rule_id_from_threat_rule_id
+      field: rule.id
+      copy_from: sentinel_one.threat.rule_id
+      ignore_empty_value: true
+  - set:
+      tag: set_rule_name_from_threat_rule_name
+      field: rule.name
+      copy_from: sentinel_one.threat.rule_name
+      ignore_empty_value: true
   - remove:
       tag: remove_json_29cdffdc
       field: json

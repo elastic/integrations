@@ -13,7 +13,7 @@ import (
 
 	"github.com/cli/go-gh/v2"
 
-	"github.com/elastic/integrations/dev/backports/gitutil"
+	"github.com/elastic/integrations/dev/gitutil"
 )
 
 // SyncResult holds outputs produced by CreateSyncPR.

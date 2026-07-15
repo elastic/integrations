@@ -21,8 +21,8 @@ import (
 
 	"github.com/elastic/integrations/dev/backports"
 	"github.com/elastic/integrations/dev/backports/changelog"
-	"github.com/elastic/integrations/dev/backports/gitutil"
 	"github.com/elastic/integrations/dev/citools"
+	"github.com/elastic/integrations/dev/gitutil"
 )
 
 // Options controls the behaviour of Apply.
@@ -557,7 +557,8 @@ func (a applier) conflictingFiles() ([]string, error) {
 		return nil, err
 	}
 	var files []string
-	for line := range strings.SplitSeq(string(out), "\n") {
+	// strings.SplitSeq requires go1.23; go.mod pins go1.22 for backport compatibility with older base commits.
+	for _, line := range strings.Split(string(out), "\n") {
 		if len(line) < 3 {
 			continue
 		}

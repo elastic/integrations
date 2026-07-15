@@ -15,10 +15,12 @@ import (
 
 const ManifestFileName = "manifest.yml"
 
-// PackageInfo holds the filesystem path and manifest name of a discovered package.
+// PackageInfo holds the filesystem path and manifest fields of a discovered package.
 type PackageInfo struct {
-	Path string
-	Name string
+	Path        string
+	Name        string
+	Type        string
+	HasRequires bool
 }
 
 // ListPackagesWithNames returns the path and manifest name of every valid package
@@ -46,7 +48,12 @@ func ListPackagesWithNames(dir string) ([]PackageInfo, error) {
 		if !manifest.IsValid() {
 			return nil
 		}
-		pkgs = append(pkgs, PackageInfo{Path: path, Name: manifest.Name})
+		pkgs = append(pkgs, PackageInfo{
+			Path:        path,
+			Name:        manifest.Name,
+			Type:        manifest.Type,
+			HasRequires: manifest.HasRequires(),
+		})
 		// No need to look deeper once a package is found.
 		return filepath.SkipDir
 	})
