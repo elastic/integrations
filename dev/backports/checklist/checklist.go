@@ -51,9 +51,7 @@ func ParseCheckedBranches(body string) map[string]bool {
 // BuildComment renders the full comment body starting with marker.
 // Packages that have no active branches are omitted, so stale sections disappear
 // automatically on recompute without any special removal logic.
-// The checked parameter is accepted for forward-compatibility but currently has no
-// effect on the output — branches are rendered as plain list items until #19214
-// (auto-backport PR creation) is implemented, at which point checkboxes will be restored.
+// Branches in checked are rendered with a filled checkbox; all others are unchecked.
 //
 // Returns "" when no package has any active branch; callers should skip posting.
 func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
@@ -70,7 +68,7 @@ func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
 	fmt.Fprintln(&b, "> Only branches for packages touched by this PR's current diff are shown.")
 	fmt.Fprintln(&b, "> This comment is updated automatically on each push — manual edits will be overwritten.")
 	fmt.Fprintln(&b)
-	fmt.Fprintln(&b, "Active backport branches for the packages touched by this PR:")
+	fmt.Fprintln(&b, "Tick the branches you want to backport to. PRs will be created automatically on merge, or when you update this checklist after merge.")
 
 	for _, p := range pkgs {
 		if len(p.Branches) == 0 {
@@ -82,7 +80,11 @@ func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
 		fmt.Fprintln(&b)
 		fmt.Fprintf(&b, "**%s**\n", p.Package)
 		for _, r := range p.Branches {
-			line := fmt.Sprintf("- `%s`", r.Branch)
+			box := "[ ]"
+			if checked[r.Branch] {
+				box = "[x]"
+			}
+			line := fmt.Sprintf("- %s `%s`", box, r.Branch)
 			if r.MaintainedUntil != nil {
 				line += fmt.Sprintf(" (maintained until %s)", *r.MaintainedUntil)
 			}

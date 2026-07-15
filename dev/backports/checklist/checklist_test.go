@@ -59,7 +59,7 @@ func TestBuildComment(t *testing.T) {
 				{Package: "aws", Branches: []backports.ActiveResult{awsBranch("backport-aws-6.14")}},
 			},
 			checked:      map[string]bool{},
-			wantContains: []string{"**aws**", "- `backport-aws-6.14`"},
+			wantContains: []string{"**aws**", "- [ ] `backport-aws-6.14`"},
 		},
 		{
 			title: "maintained_until appended when set",
@@ -78,13 +78,30 @@ func TestBuildComment(t *testing.T) {
 			wantMissing: []string{"maintained until"},
 		},
 		{
-			title: "branch rendered as plain list item regardless of checked state",
+			title: "unchecked branch renders with empty checkbox",
+			pkgs: []PackageBranches{
+				{Package: "aws", Branches: []backports.ActiveResult{awsBranch("backport-aws-6.14")}},
+			},
+			checked:      map[string]bool{},
+			wantContains: []string{"- [ ] `backport-aws-6.14`"},
+			wantMissing:  []string{"- [x] `backport-aws-6.14`"},
+		},
+		{
+			title: "checked branch renders with filled checkbox",
 			pkgs: []PackageBranches{
 				{Package: "aws", Branches: []backports.ActiveResult{awsBranch("backport-aws-6.14")}},
 			},
 			checked:      map[string]bool{"backport-aws-6.14": true},
-			wantContains: []string{"- `backport-aws-6.14`"},
-			wantMissing:  []string{"- [x] `backport-aws-6.14`", "- [ ] `backport-aws-6.14`"},
+			wantContains: []string{"- [x] `backport-aws-6.14`"},
+			wantMissing:  []string{"- [ ] `backport-aws-6.14`"},
+		},
+		{
+			title: "intro text mentions PRs will be created automatically for checked branches",
+			pkgs: []PackageBranches{
+				{Package: "aws", Branches: []backports.ActiveResult{awsBranch("backport-aws-6.14")}},
+			},
+			checked:      map[string]bool{},
+			wantContains: []string{"PRs will be created automatically on merge, or when you update this checklist after merge."},
 		},
 		{
 			title: "multiple packages both rendered",
