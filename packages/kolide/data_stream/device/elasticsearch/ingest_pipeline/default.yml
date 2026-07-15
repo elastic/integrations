@@ -363,6 +363,13 @@ processors:
       tag: remove_last_seen_at_from_fingerprint
       ignore_missing: true
       if: ctx._tmp?.fingerprint_source != null
+  - remove:
+      field:
+        - _tmp.fingerprint_source.registered_owner_info.last_authenticated_at
+        - _tmp.fingerprint_source.registered_owner_info.created_at
+      tag: remove_volatile_owner_fields_from_fingerprint
+      ignore_missing: true
+      if: ctx._tmp?.fingerprint_source != null
   - fingerprint:
       fields:
         - _tmp.fingerprint_source
