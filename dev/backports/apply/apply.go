@@ -184,6 +184,12 @@ func Apply(opts Options) (*Result, error) {
 		return nil, err
 	}
 
+	if prURL != "" {
+		if err := a.fixChangelogLink(changelogPath, newVersion, prURL, remote); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not update changelog link in backport PR: %v\n", err)
+		}
+	}
+
 	success = true
 	return &Result{
 		Status:       "success",
@@ -192,6 +198,30 @@ func Apply(opts Options) (*Result, error) {
 		NewVersion:   newVersion,
 		PRURL:        prURL,
 	}, nil
+}
+
+// fixChangelogLink replaces the sentinel link in changelog.yml with the real
+// backport PR URL, commits the change, and pushes it as a second commit on the
+// working branch. Failures are non-fatal: the caller logs a warning and returns
+// success since the PR already exists.
+func (a applier) fixChangelogLink(changelogPath, version, prURL, remote string) error {
+	if err := changelog.UpdateEntryLinks(changelogPath, version, prURL); err != nil {
+		return fmt.Errorf("updating changelog link failed: %w", err)
+	}
+	relPath, err := filepath.Rel(a.workDir, changelogPath)
+	if err != nil {
+		return fmt.Errorf("computing relative path for %s failed: %w", changelogPath, err)
+	}
+	if err := a.git.Run("add", relPath); err != nil {
+		return fmt.Errorf("staging changelog failed: %w", err)
+	}
+	if err := a.git.Run("commit", "-m", "Fix changelog link to backport PR"); err != nil {
+		return fmt.Errorf("committing changelog link fix failed: %w", err)
+	}
+	if err := a.git.Run("push", remote, "HEAD"); err != nil {
+		return fmt.Errorf("pushing changelog link fix failed: %w", err)
+	}
+	return nil
 }
 
 // resolvePackage looks up the package directory for the given package name.

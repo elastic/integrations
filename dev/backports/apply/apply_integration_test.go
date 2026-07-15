@@ -568,6 +568,97 @@ func TestApplyIntegration_ReportsConflictWhenManifestMissingBeforeCherryPick(t *
 	assert.Empty(t, strings.TrimSpace(branches))
 }
 
+// setupFixChangelogLinkRepo creates a bare remote and a local clone with a
+// working branch (auto-backport/kubernetes-1.x-abc12345) already checked out
+// and pushed, containing a changelog.yml with the sentinel link. This models
+// the state of the repo immediately after Apply() pushes the working branch
+// but before the link-fix commit is made.
+// Returns workDir, the absolute changelog path, and the version string.
+func setupFixChangelogLinkRepo(t *testing.T) (workDir, changelogPath, version string) {
+	t.Helper()
+
+	run := func(dir string, args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = dir
+		out, err := cmd.CombinedOutput()
+		require.NoError(t, err, "git %v: %s", args, out)
+	}
+
+	remoteDir := t.TempDir()
+	run(remoteDir, "init", "--bare", "-q")
+
+	workDir = t.TempDir()
+	run(workDir, "clone", "-q", remoteDir, ".")
+	run(workDir, "config", "user.email", "test@test.com")
+	run(workDir, "config", "user.name", "Test")
+	run(workDir, "config", "commit.gpgsign", "false")
+
+	// An initial commit is required before we can push.
+	require.NoError(t, os.WriteFile(filepath.Join(workDir, "README"), []byte("init"), 0o644))
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Initial commit")
+	run(workDir, "push", "-q", "origin", "HEAD:main")
+
+	// Create the working branch with the sentinel already committed.
+	version = "1.0.1"
+	pkgDir := filepath.Join(workDir, "packages", "kubernetes")
+	require.NoError(t, os.MkdirAll(pkgDir, 0o755))
+	changelogPath = filepath.Join(pkgDir, "changelog.yml")
+
+	sentinel := sentinelURL("elastic/integrations")
+	require.NoError(t, os.WriteFile(changelogPath,
+		[]byte("- version: \"1.0.1\"\n  changes:\n    - description: Fix a bug.\n      type: bugfix\n      link: "+sentinel+"\n"),
+		0o644,
+	))
+	run(workDir, "checkout", "-q", "-b", "auto-backport/kubernetes-1.x-abc12345")
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Fix a bug\n\nBackport version: 1.0.1")
+	run(workDir, "push", "-q", "origin", "HEAD")
+
+	return workDir, changelogPath, version
+}
+
+func TestFixChangelogLink_Success(t *testing.T) {
+	workDir, changelogPath, version := setupFixChangelogLinkRepo(t)
+
+	const realPRURL = "https://github.com/elastic/integrations/pull/5678"
+
+	a := applier{git: gitutil.Git{Dir: workDir}, workDir: workDir}
+	require.NoError(t, a.fixChangelogLink(changelogPath, version, realPRURL, "origin"))
+
+	// changelog.yml must contain the real PR URL, not the sentinel.
+	data, err := os.ReadFile(changelogPath)
+	require.NoError(t, err)
+	assert.Contains(t, string(data), realPRURL)
+	assert.NotContains(t, string(data), "REPLACE_ME")
+
+	// A second commit must exist with the expected message.
+	log, err := gitutil.Git{Dir: workDir}.Output("log", "--format=%s", "-n", "1")
+	require.NoError(t, err)
+	assert.Equal(t, "Fix changelog link to backport PR", strings.TrimSpace(log))
+
+	// The commit must have been pushed to the remote.
+	remoteLog, err := gitutil.Git{Dir: workDir}.Output("log", "--format=%s", "-n", "1", "origin/auto-backport/kubernetes-1.x-abc12345")
+	require.NoError(t, err)
+	assert.Equal(t, "Fix changelog link to backport PR", strings.TrimSpace(remoteLog))
+}
+
+func TestFixChangelogLink_PushFails(t *testing.T) {
+	workDir, changelogPath, version := setupFixChangelogLinkRepo(t)
+
+	// Break the remote so the push step fails.
+	cmd := exec.Command("git", "remote", "set-url", "origin", "/no/such/remote")
+	cmd.Dir = workDir
+	require.NoError(t, cmd.Run())
+
+	const realPRURL = "https://github.com/elastic/integrations/pull/5678"
+
+	a := applier{git: gitutil.Git{Dir: workDir}, workDir: workDir}
+	err := a.fixChangelogLink(changelogPath, version, realPRURL, "origin")
+	assert.Error(t, err)
+}
+
 func TestApplyIntegration_DryRun(t *testing.T) {
 	workDir, fixSHA := setupIntegrationRepo(t)
 
