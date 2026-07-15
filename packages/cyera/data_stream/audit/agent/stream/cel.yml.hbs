@@ -25,10 +25,10 @@ redact:
     - client_id
     - client_secret
 program: |-
-  state.with(
-    (has(state.?next.expiry) && timestamp(state.next.expiry) > now) ?
-      // The cached token is still valid; leave the state unchanged.
-      {}
+  (
+    (has(state.?token.expiry) && timestamp(state.token.expiry) > now) ?
+      // The cached token is still valid.
+      state.token
     :
       post_request(
         state.api_url.trim_right("/") + "/v1/login",
@@ -47,60 +47,56 @@ program: |-
       ).do_request().as(resp, (resp.StatusCode == 200) ?
         resp.Body.decode_json().as(body,
           {
-            "next": {
-              "access_token": body.jwt,
-              "expiry": try(
-                // Attempt to parse the expiry from the absolute value.
-                body.expires.parse_time(
-                  [
-                    time_layout.RFC1123,
-                    time_layout.RFC1123Z,
-                  ]
-                ),
-                "error"
-              ).as(t, !has(t.error) ?
-                t
-              :
-                // But fall back to the relative time if that fails.
-                now() + duration(string(body.expiresIn) + "s")
-              ).format(time_layout.RFC3339),
-            },
+            "access_token": body.jwt,
+            // Attempt to parse the expiry from the absolute value.
+            "expiry": body.expires.parse_time(
+              [
+                time_layout.RFC1123,
+                time_layout.RFC1123Z,
+              ]
+            ).as(t, !is_error(t) ?
+              t
+            :
+              // But fall back to the relative time if that fails.
+              now + duration(string(body.expiresIn) + "s")
+            ).format(time_layout.RFC3339),
           }
         )
       :
         {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "POST " + state.api_url.trim_right("/") + "/v1/login " + (
-                (size(resp.Body) != 0) ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-              ),
-            },
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": resp.Status,
+            "message": "POST " + state.api_url.trim_right("/") + "/v1/login " + (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                resp.Status + " (" + string(resp.StatusCode) + ")"
+            ),
           },
-          "want_more": false,
         }
       )
-  ).as(state,
-    state.?want_more.orValue(false) ?
-      // Mid-pagination: drop events already published by the previous
-      // evaluation and keep the pagination state as-is.
-      state.drop("events")
-    :
-      state.with(
-        {
-          "start_time": state.?cursor.updated_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
-          "counter": 0,
-          "offset": 0,
-        }
-      )
-  ).as(state,
-    has(state.?events.error) ?
-      state
-    :
+  ).as(token, has(token.error) ?
+    state.with(
+      {
+        "events": {"error": token.error},
+        "want_more": false,
+      }
+    )
+  :
+    (
+      state.?want_more.orValue(false) ?
+        // Mid-pagination: keep the window and offsets from the previous evaluation.
+        state
+      :
+        state.with(
+          {
+            "start_time": state.?cursor.updated_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+            "counter": 0,
+            "offset": 0,
+          }
+        )
+    ).as(state,
       state.with(
         request(
           "GET",
@@ -112,7 +108,7 @@ program: |-
         ).with(
           {
             "Header": {
-              "Authorization": ["Bearer " + state.next.access_token],
+              "Authorization": ["Bearer " + token.access_token],
               "Accept": ["application/json"],
             },
           }
@@ -123,11 +119,7 @@ program: |-
             ).as(more,
               {
                 "events": (has(body.data) && body.data.size() > 0) ?
-                  body.data.map(e,
-                    {
-                      "message": e.encode_json(),
-                    }
-                  )
+                  body.data.map(e, {"message": e.encode_json()})
                 :
                   [],
                 "offset": more ?
@@ -139,6 +131,7 @@ program: |-
                 :
                   0,
                 "want_more": more,
+                "token": token,
                 "cursor": {
                   ?"max_date_time": more ?
                     (
@@ -171,26 +164,25 @@ program: |-
             "events": {
               "error": {
                 "code": string(resp.StatusCode),
-                "id": string(resp.Status),
+                "id": resp.Status,
                 "message": "GET " + state.url.trim_right("/") + "/audits/resources/audits/v2 " + (
                   (size(resp.Body) != 0) ?
                     string(resp.Body)
                   :
-                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
                 ),
               },
             },
             "want_more": false,
+            "token": token,
           }
         )
       )
+    )
   )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
-{{/if}}
-{{#if preserve_duplicate_custom_fields}}
-  - preserve_duplicate_custom_fields
 {{/if}}
 {{#each tags as |tag|}}
   - {{tag}}

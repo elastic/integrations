@@ -50,20 +50,10 @@ processors:
         - json.createdAt
       tag: fingerprint_audit
       target_field: _id
-  - rename:
-      field: json.action
-      tag: rename_action
-      target_field: cyera.audit.action
-      ignore_missing: true
-  - set:
-      field: event.action
-      tag: set_event_action_from_audit_action
-      copy_from: cyera.audit.action
-      ignore_empty_value: true
   - date:
       field: json.createdAt
       tag: date_createdAt
-      target_field: cyera.audit.created_at
+      target_field: '@timestamp'
       formats:
         - ISO8601
       if: ctx.json?.createdAt != null && ctx.json.createdAt != ''
@@ -71,11 +61,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      tag: set_@timestamp_from_audit_created_at
-      copy_from: cyera.audit.created_at
-      ignore_empty_value: true
   - date:
       field: json.updatedAt
       tag: date_updatedAt
@@ -88,31 +73,53 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.description
-      tag: rename_description
-      target_field: cyera.audit.description
+      field: json.action
+      tag: rename_action_to_event_action
+      target_field: event.action
       ignore_missing: true
-  - set:
-      field: message
-      tag: set_message_from_audit_description
-      copy_from: cyera.audit.description
-      ignore_empty_value: true
+  - rename:
+      field: json.description
+      tag: rename_description_to_message
+      target_field: message
+      ignore_missing: true
   - rename:
       field: json.email
-      tag: rename_email
-      target_field: cyera.audit.email
+      tag: rename_email_to_user_email
+      target_field: user.email
       ignore_missing: true
-  - set:
-      field: user.email
-      tag: set_user_email_from_audit_email
-      copy_from: cyera.audit.email
-      ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_audit_email_into_related_user
-      value: '{{{cyera.audit.email}}}'
+      tag: append_user_email_into_related_user
+      value: '{{{user.email}}}'
       allow_duplicates: false
-      if: ctx.cyera?.audit?.email != null
+      if: ctx.user?.email != null
+  - convert:
+      field: json.ip
+      tag: convert_ip_to_source_ip
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_source_ip_into_related_ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - rename:
+      field: json.severity
+      tag: rename_severity_to_log_level
+      target_field: log.level
+      ignore_missing: true
+  - user_agent:
+      field: json.userAgent
+      tag: user_agent_audit_user_agent
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.userAgent != null
   - rename:
       field: json.environmentName
       tag: rename_environmentName
@@ -120,60 +127,14 @@ processors:
       ignore_missing: true
   - rename:
       field: json.frontegg_id
-      tag: rename_frontegg_id
-      target_field: cyera.audit.frontegg_id
+      tag: rename_frontegg_id_to_event_id
+      target_field: event.id
       ignore_missing: true
-  - set:
-      field: event.id
-      tag: set_event_id_from_audit_frontegg_id
-      copy_from: cyera.audit.frontegg_id
-      ignore_empty_value: true
-  - convert:
-      field: json.ip
-      tag: convert_ip_to_ip
-      target_field: cyera.audit.ip
-      type: ip
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: source.ip
-      tag: set_source_ip_from_audit_ip
-      copy_from: cyera.audit.ip
-      ignore_empty_value: true
-  - append:
-      field: related.ip
-      tag: append_audit_ip_into_related_ip
-      value: '{{{cyera.audit.ip}}}'
-      allow_duplicates: false
-      if: ctx.cyera?.audit?.ip != null
-  - rename:
-      field: json.severity
-      tag: rename_severity
-      target_field: cyera.audit.severity
-      ignore_missing: true
-  - set:
-      field: log.level
-      tag: set_log_level_from_audit_severity
-      copy_from: cyera.audit.severity
-      ignore_empty_value: true
   - rename:
       field: json.tenantId
       tag: rename_tenantId
       target_field: cyera.audit.tenant_id
       ignore_missing: true
-  - rename:
-      field: json.userAgent
-      tag: rename_userAgent
-      target_field: cyera.audit.user_agent
-      ignore_missing: true
-  - user_agent:
-      field: cyera.audit.user_agent
-      tag: user_agent_audit_user_agent
-      ignore_missing: true
-      ignore_failure: true
   - rename:
       field: json.vendorId
       tag: rename_vendorId
@@ -301,19 +262,6 @@ processors:
         if (entry.outcome != null) {
           ctx.event.outcome = entry.outcome;
         }
-  - remove:
-      field:
-        - cyera.audit.action
-        - cyera.audit.created_at
-        - cyera.audit.description
-        - cyera.audit.email
-        - cyera.audit.frontegg_id
-        - cyera.audit.ip
-        - cyera.audit.severity
-        - cyera.audit.user_agent
-      tag: remove_custom_duplicate_fields
-      ignore_missing: true
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
       tag: remove_json
