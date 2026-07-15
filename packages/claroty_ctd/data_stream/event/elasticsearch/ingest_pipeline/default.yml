@@ -425,69 +425,110 @@ processors:
       tag: rename_CtdDestinationAssetType
       target_field: claroty_ctd.event.destination.asset_type
       ignore_missing: true
-  - rename:
+  - split:
       field: cef.extensions.CtdDestinationHost
-      tag: rename_CtdDestinationHost
+      tag: split_CtdDestinationHost_into_destination_host
       target_field: claroty_ctd.event.destination.host
+      separator: ',\s*'
       ignore_missing: true
+      if: ctx.cef?.extensions?.CtdDestinationHost != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.domain
       tag: set_destination_domain_from_event_destination_host
       copy_from: claroty_ctd.event.destination.host
       ignore_empty_value: true
-  - append:
-      field: related.hosts
-      tag: append_CtdDestinationHost_into_related_hosts
-      value: "{{{claroty_ctd.event.destination.host}}}"
-      allow_duplicates: false
-      if: ctx.claroty_ctd?.event?.destination?.host != null
-  - convert:
+  - foreach:
+      field: claroty_ctd.event.destination.host
+      tag: foreach_claroty_ctd_event_destination_host
+      if: ctx.claroty_ctd?.event?.destination?.host instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_destination_host_into_related_hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - split:
       field: cef.extensions.CtdDestinationIp
-      tag: convert_CtdDestinationIp_to_ip
+      tag: split_CtdDestinationIp_into_destination_ip
       target_field: claroty_ctd.event.destination.ip
-      type: ip
+      separator: ',\s*'
       ignore_missing: true
       if: ctx.cef?.extensions?.CtdDestinationIp != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.event.destination.ip
+      tag: foreach_claroty_ctd_event_destination_ip_1
+      if: ctx.claroty_ctd?.event?.destination?.ip instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_destination_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
       tag: set_destination_ip_from_event_destination_ip
       copy_from: claroty_ctd.event.destination.ip
       ignore_empty_value: true
-  - append:
-      field: related.ip
-      tag: append_CtdDestinationIp_into_related_ip
-      value: "{{{claroty_ctd.event.destination.ip}}}"
-      allow_duplicates: false
-      if: ctx.claroty_ctd?.event?.destination?.ip != null
-  - rename:
+  - foreach:
+      field: claroty_ctd.event.destination.ip
+      tag: foreach_claroty_ctd_event_destination_ip_2
+      if: ctx.claroty_ctd?.event?.destination?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_destination_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - split:
       field: cef.extensions.CtdDestinationMac
-      tag: rename_CtdDestinationMac
+      tag: split_CtdDestinationMac_into_destination_mac
       target_field: claroty_ctd.event.destination.mac
+      separator: ',\s*'
       ignore_missing: true
+      if: ctx.cef?.extensions?.CtdDestinationMac != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.mac
       tag: set_destination_mac_from_event_destination_mac
       copy_from: claroty_ctd.event.destination.mac
       ignore_empty_value: true
-  - gsub:
+  - foreach:
       field: destination.mac
-      tag: gsub_destination_mac
-      pattern: '[-:.]'
-      replacement: '-'
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      tag: foreach_destination_mac
+      if: ctx.destination?.mac instanceof List
+      processor:
+        gsub:
+          field: _ingest._value
+          tag: gsub_destination_mac
+          pattern: '[-:.]'
+          replacement: '-'
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: destination.mac
       tag: uppercase_destination_mac
       ignore_missing: true
-      if: ctx.destination?.mac != ''
       on_failure:
         - append:
             field: error.message
@@ -1653,69 +1694,110 @@ processors:
       tag: rename_CtdSourceAssetType
       target_field: claroty_ctd.event.source.asset_type
       ignore_missing: true
-  - rename:
+  - split:
       field: cef.extensions.CtdSourceHost
-      tag: rename_CtdSourceHost
+      tag: split_CtdSourceHost_into_source_host
       target_field: claroty_ctd.event.source.host
+      separator: ',\s*'
       ignore_missing: true
+      if: ctx.cef?.extensions?.CtdSourceHost != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.domain
       tag: set_source_domain_from_event_source_host
       copy_from: claroty_ctd.event.source.host
       ignore_empty_value: true
-  - append:
-      field: related.hosts
-      tag: append_CtdSourceHost_into_related_hosts
-      value: "{{{claroty_ctd.event.source.host}}}"
-      allow_duplicates: false
-      if: ctx.claroty_ctd?.event?.source?.host != null
-  - convert:
+  - foreach:
+      field: claroty_ctd.event.source.host
+      tag: foreach_claroty_ctd_event_source_host
+      if: ctx.claroty_ctd?.event?.source?.host instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_source_host_into_related_hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - split:
       field: cef.extensions.CtdSourceIp
-      tag: convert_CtdSourceIp_to_ip
+      tag: split_CtdSourceIp_into_source_ip
       target_field: claroty_ctd.event.source.ip
-      type: ip
+      separator: ',\s*'
       ignore_missing: true
       if: ctx.cef?.extensions?.CtdSourceIp != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: claroty_ctd.event.source.ip
+      tag: foreach_claroty_ctd_event_source_ip_1
+      if: ctx.claroty_ctd?.event?.source?.ip instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_source_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
       tag: set_source_ip_from_event_source_ip
       copy_from: claroty_ctd.event.source.ip
       ignore_empty_value: true
-  - append:
-      field: related.ip
-      tag: append_CtdSourceIp_into_related_ip
-      value: "{{{claroty_ctd.event.source.ip}}}"
-      allow_duplicates: false
-      if: ctx.claroty_ctd?.event?.source?.ip != null
-  - rename:
+  - foreach:
+      field: claroty_ctd.event.source.ip
+      tag: foreach_claroty_ctd_event_source_ip_2
+      if: ctx.claroty_ctd?.event?.source?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_source_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - split:
       field: cef.extensions.CtdSourceMac
-      tag: rename_CtdSourceMac
+      tag: split_CtdSourceMac_into_source_mac
       target_field: claroty_ctd.event.source.mac
+      separator: ',\s*'
       ignore_missing: true
+      if: ctx.cef?.extensions?.CtdSourceMac != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.mac
       tag: set_source_mac_from_event_source_mac
       copy_from: claroty_ctd.event.source.mac
       ignore_empty_value: true
-  - gsub:
+  - foreach:
       field: source.mac
-      tag: gsub_source_mac
-      pattern: '[-:.]'
-      replacement: '-'
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      tag: foreach_source_mac
+      if: ctx.source?.mac instanceof List
+      processor:
+        gsub:
+          field: _ingest._value
+          tag: gsub_source_mac
+          pattern: '[-:.]'
+          replacement: '-'
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: source.mac
       tag: uppercase_source_mac
       ignore_missing: true
-      if: ctx.source?.mac != ''
       on_failure:
         - append:
             field: error.message

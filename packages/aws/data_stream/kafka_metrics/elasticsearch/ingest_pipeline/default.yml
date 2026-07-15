@@ -3,21 +3,26 @@ description: "Pipeline for Amazon MSK metrics"
 
 processors:
   - dot_expander:
+      tag: dot_expander_*_c2762c23
       field: "*"
       ignore_failure: true
   - rename:
+      tag: rename_aws_dimensions_Cluster_Name_to_aws_dimensions_ClusterName_c395738e
       field: aws.dimensions.Cluster Name
       target_field: aws.dimensions.ClusterName
       ignore_missing: true
   - rename:
+      tag: rename_aws_dimensions_Consumer_Group_to_aws_dimensions_ConsumerGroup_8f2fbc2a
       field: aws.dimensions.Consumer Group
       target_field: aws.dimensions.ConsumerGroup
       ignore_missing: true
   - rename:
+      tag: rename_aws_dimensions_Broker_ID_to_aws_dimensions_BrokerID_22ec9d9a
       field: aws.dimensions.Broker ID
       target_field: aws.dimensions.BrokerID
       ignore_missing: true
   - rename:
+      tag: rename_aws_dimensions_Client_Authentication_to_aws_dimensions_ClientAuthentication_05f2be7c
       field: aws.dimensions.Client Authentication
       target_field: aws.dimensions.ClientAuthentication
       ignore_missing: true
@@ -30,4 +35,4 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

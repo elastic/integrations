@@ -2,12 +2,14 @@ source:
   index:
     - logs-ti_anyrun.ioc-*
 dest:
-  index: logs-ti_anyrun_latest.dest_ioc-1
+  index: logs-ti_anyrun_latest.dest_ioc-2
   aliases:
     - alias: logs-ti_anyrun_latest.ioc
       move_on_creation: true
 latest:
   unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
     - event.dataset
     - threat.indicator.id
     - threat.indicator.type
@@ -24,6 +26,6 @@ retention_policy:
     max_age: 1m
 _meta:
   managed: true
-  fleet_transform_version: 1.1.0
+  fleet_transform_version: 1.2.0
 settings:
   num_failure_retries: -1
