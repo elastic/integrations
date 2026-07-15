@@ -21,8 +21,8 @@ import (
 
 	"github.com/elastic/integrations/dev/backports"
 	"github.com/elastic/integrations/dev/backports/changelog"
-	"github.com/elastic/integrations/dev/backports/gitutil"
 	"github.com/elastic/integrations/dev/citools"
+	"github.com/elastic/integrations/dev/gitutil"
 )
 
 // Options controls the behaviour of Apply.
