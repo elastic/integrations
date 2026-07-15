@@ -1406,12 +1406,12 @@ processors:
       formats: ["UNIX"]
       target_field: event.end
       if: "ctx.checkpoint?.lastupdatetime != null"
-  - set:
+  - date:
       tag: set_timestamp_from_lastupdatetime
-      field: @timestamp
-      copy_from: checkpoint.lastupdatetime
-      override: true
-      ignore_empty_value: true
+      field: checkpoint.lastupdatetime
+      formats: ["UNIX"]
+      target_field: "@timestamp"
+      if: "ctx.checkpoint?.lastupdatetime != null"
   - date:
       tag: date_checkpoint_creation_time_to_event_start_f2bceb79
       field: checkpoint.creation_time
