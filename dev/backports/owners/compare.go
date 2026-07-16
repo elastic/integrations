@@ -17,10 +17,10 @@ import (
 // CodeownersRelPath is .github/CODEOWNERS's path relative to the repo root.
 const CodeownersRelPath = ".github/CODEOWNERS"
 
-// readCodeowners reads and parses the current worktree's CODEOWNERS file
+// parseCodeowners reads and parses the current worktree's CODEOWNERS file
 // (workDir/.github/CODEOWNERS) and remoteRef's version of it (e.g.
 // "origin/main"), via git show.
-func readCodeowners(git gitutil.Git, workDir, remoteRef string) (current, source *codeowners.Owners, err error) {
+func parseCodeowners(git gitutil.Git, workDir, remoteRef string) (current, source *codeowners.Owners, err error) {
 	currentData, err := os.ReadFile(filepath.Join(workDir, CodeownersRelPath))
 	if err != nil {
 		return nil, nil, fmt.Errorf("reading %s: %w", CodeownersRelPath, err)
@@ -100,7 +100,7 @@ func existingSubPaths(workDir, pkgPath string, current, source *codeowners.Owner
 // Callers checking multiple packages in one run should prefer compareWith to
 // avoid re-reading and re-parsing CODEOWNERS on every call.
 func Compare(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string) (plan SyncPlan, found bool, err error) {
-	current, source, err := readCodeowners(git, workDir, remoteRef)
+	current, source, err := parseCodeowners(git, workDir, remoteRef)
 	if err != nil {
 		return SyncPlan{}, false, err
 	}
@@ -110,7 +110,7 @@ func Compare(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string) (pla
 // compareWith is like Compare but accepts pre-parsed CODEOWNERS for both the
 // current worktree and remoteRef, avoiding a re-read when checking multiple
 // packages in the same run. The current and source owners must have been
-// produced by readCodeowners (or equivalent) against the same workDir and
+// produced by parseCodeowners (or equivalent) against the same workDir and
 // remoteRef that are passed here.
 func compareWith(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string, current, source *codeowners.Owners) (plan SyncPlan, found bool, err error) {
 	pkgPath := "/" + relPkgDir
