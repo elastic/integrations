@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - add_workflows_backport_prs-test
   issue_comment:
     types: [edited]
 
@@ -94,7 +95,7 @@ jobs:
           if [[ "$EVENT_NAME" == "push" ]]; then
             MERGE_SHA="$PUSH_SHA"
             PR_DATA=$(gh api "repos/$REPOSITORY/commits/$MERGE_SHA/pulls" \
-              --jq 'map(select(.base.ref == "main")) | first // empty')
+              --jq 'map(select(.base.ref == "add_workflows_backport_prs-test")) | first // empty')
             if [[ -z "$PR_DATA" ]]; then
               echo "No PR found for commit $MERGE_SHA — skipping"
               exit 0
