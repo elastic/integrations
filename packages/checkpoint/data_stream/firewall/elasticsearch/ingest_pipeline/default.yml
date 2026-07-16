@@ -813,6 +813,12 @@ processors:
       override: false
       ignore_empty_value: true
   - set:
+      tag: set_user_full_name_4f1523ba
+      field: user.full_name
+      value: '{{{ source.user.full_name }}}'
+      override: false
+      ignore_empty_value: true
+  - set:
       tag: set_user_id_cc07e8aa
       field: user.id
       value: '{{{ source.user.id }}}'
@@ -1536,6 +1542,12 @@ processors:
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
+      tag: append_related_user_7021abb5
+      field: related.user
+      value: "{{{user.full_name}}}"
+      allow_duplicates: false
+      if: ctx.user?.full_name != null
+  - append:
       tag: append_related_user_34fcf415
       field: related.user
       value: "{{{user.email}}}"
@@ -1566,6 +1578,12 @@ processors:
       value: "{{{source.user.email}}}"
       allow_duplicates: false
       if: ctx.source?.user?.email != null
+  - append:
+      tag: append_related_user_18471188
+      field: related.user
+      value: "{{{source.user.full_name}}}"
+      allow_duplicates: false
+      if: ctx.source?.user?.full_name != null
   - dissect:
       field: destination.user.email
       pattern: '%{destination.user.name}@%{destination.user.domain}'
@@ -1591,6 +1609,12 @@ processors:
       value: "{{{destination.user.email}}}"
       allow_duplicates: false
       if: ctx.destination?.user?.email != null
+  - append:
+      tag: append_related_user_7ec630c0
+      field: related.user
+      value: "{{{destination.user.full_name}}}"
+      allow_duplicates: false
+      if: ctx.destination?.user?.full_name != null
 
   - script:
       tag: script_422800ed
