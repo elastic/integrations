@@ -76,13 +76,13 @@ program: |
           }
         ]
       }.encode_json()
-    ).with(
+    ).as(req, req.with(
       {
-        "Header": {
+        "Header": req.Header.with({
           "Authorization": ["Bearer " + string(state.api_token)],
-        }
+        }),
       }
-    ).do_request().as(resp, (resp.StatusCode == 200) ?
+    )).do_request().as(resp, (resp.StatusCode == 200) ?
       resp.Body.decode_json().as(body,
         (has(body.ot_activity_events) && body.ot_activity_events != null && size(body.ot_activity_events) > 0) ?
           {

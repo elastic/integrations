@@ -1,91 +1,131 @@
-# Cloudflare Logpush
+# Cloudflare Logpush Integration for Elastic
 
 ## Overview
 
-The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DNS, DNS Firewall, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Sinkhole HTTP, Spectrum Event, Network Session and Workers Trace Events logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, Zero Trust Network Session, and Workers Trace Events logs.
 
-The Cloudflare Logpush integration can be used in the following modes to collect data:
-- HTTP Endpoint mode - Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent.
-- AWS S3 polling mode - Cloudflare writes data to S3 and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
-- AWS S3 SQS mode - Cloudflare writes data to S3, S3 pushes a new object notification to SQS, Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple Agents can be used in this mode.
-- Azure Blob Storage polling mode - Cloudflare writes data to Azure Blob Storage and Elastic Agent polls the Azure Blob Storage containers by listing its contents and reading new files.
-- Google Cloud Storage polling mode - Cloudflare writes data to Google Cloud Storage and Elastic Agent polls the GCS buckets by listing its contents and reading new files.
+Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
-For example, you could use the data from this integration to know which websites have the highest traffic, which areas have the highest network traffic, or observe mitigation statistics.
+### Compatibility
 
-## Data streams
+This integration follows the log schemas and field definitions published in the [Cloudflare Log fields reference](https://developers.cloudflare.com/logs/reference/log-fields/).
 
-The Cloudflare Logpush integration collects logs for the following types of events. For more information on each dataset, refer to the Logs reference section at the end of this page.
+Cloudflare Logpush supports delivering logs to the following destinations, which can all be consumed by this integration:
+
+- [HTTP destinations](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/http/)
+- [Amazon S3](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/aws-s3/)
+- [S3-compatible endpoints](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/s3-compatible-endpoints/) (including [Cloudflare R2](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/r2/))
+- [Google Cloud Storage](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/google-cloud-storage/)
+- [Microsoft Azure Blob Storage](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/azure/)
+
+### How it works
+
+Cloudflare Logpush pushes logs to the destination of your choice. Elastic Agent then reads those logs and ships them to Elasticsearch, where they are processed through each data stream's ingest pipeline.
+
+The integration supports the following collection modes:
+
+- **HTTP Endpoint mode** — Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent.
+- **AWS S3 polling mode** — Cloudflare writes logs to an S3 bucket and Elastic Agent polls the bucket by listing its contents and reading new files.
+- **AWS S3 SQS mode** — Cloudflare writes logs to S3; S3 publishes object-created notifications to an SQS queue; Elastic Agent receives those notifications from SQS and reads the corresponding S3 objects. This mode supports horizontal scaling across multiple agents.
+- **S3-compatible (Cloudflare R2) polling mode** — Cloudflare writes logs to an R2 or other S3-compatible bucket and Elastic Agent polls the bucket using the S3 API.
+- **Azure Blob Storage polling mode** — Cloudflare writes logs to an Azure Blob Storage container and Elastic Agent polls the container by listing its contents and reading new files.
+- **Google Cloud Storage polling mode** — Cloudflare writes logs to a GCS bucket and Elastic Agent polls the bucket by listing its contents and reading new files.
+
+## What data does this integration collect?
+
+The Cloudflare Logpush integration collects logs for the following Cloudflare [datasets](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/). Data streams are grouped by whether the underlying dataset is classified as a Cloudflare [Zero Trust dataset](https://developers.cloudflare.com/cloudflare-one/insights/logs/logpush/#zero-trust-datasets) or a non Zero Trust dataset.
 
 ### Zero Trust events
 
-**Access Request**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/access_requests/).
-
-**Audit**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
-
-**CASB findings**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
-
-**Device Posture Results**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
-
-**DLP Forensic Copies**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/dlp_forensic_copies/).
-
-**Email Security Alerts**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/email_security_alerts/).
-
-**Gateway DNS**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
-
-**Gateway HTTP**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
-
-**Gateway Network**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
-
-**Zero Trust Network Session**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/zero_trust_network_sessions/).
+- `access_request`: HTTP requests to sites protected by Cloudflare Access. See [Access Requests schema](https://developers.cloudflare.com/logs/reference/log-fields/account/access_requests/).
+- `audit`: Authentication events through Cloudflare Access, plus account-level configuration and administrative actions. See [Audit Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
+- `casb`: Security issues detected by Cloudflare CASB in connected SaaS applications. See [CASB Findings schema](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
+- `device_posture`: Device posture status from the Cloudflare One Client (WARP). See [Device Posture Results schema](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
+- `gateway_dns`: DNS queries inspected by Cloudflare Gateway. See [Gateway DNS schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
+- `gateway_http`: HTTP requests inspected by Cloudflare Gateway. See [Gateway HTTP schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
+- `gateway_network`: Network packets inspected by Cloudflare Gateway. See [Gateway Network schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
+- `network_session`: Network session logs for traffic proxied by Cloudflare Gateway. See [Zero Trust Network Session schema](https://developers.cloudflare.com/logs/reference/log-fields/account/zero_trust_network_sessions/).
 
 ### Non Zero Trust events
 
-**DNS**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/dns_logs/).
+- `dns`: Zone-scoped authoritative DNS query logs. See [DNS logs schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/dns_logs/).
+- `dns_firewall`: Cloudflare DNS Firewall query and response logs. See [DNS Firewall logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/dns_firewall_logs/).
+- `dlp_forensic_copies`: Data Loss Prevention forensic copies of content that matched a DLP profile. See [DLP Forensic Copies schema](https://developers.cloudflare.com/logs/reference/log-fields/account/dlp_forensic_copies/).
+- `email_security_alerts`: Cloudflare Email Security alerts for phishing, malware, and other email-based threats. See [Email Security Alerts schema](https://developers.cloudflare.com/logs/reference/log-fields/account/email_security_alerts/).
+- `firewall_event`: Zone-level Firewall events for requests mitigated by Cloudflare security products (WAF, Rate Limiting, Firewall Rules, etc.). See [Firewall Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/firewall_events/).
+- `http_request`: HTTP/HTTPS request logs served at the Cloudflare edge. See [HTTP Requests schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/http_requests/).
+- `magic_ids`: Magic Network Monitoring IDS detection logs. See [Magic IDS Detections schema](https://developers.cloudflare.com/logs/reference/log-fields/account/magic_ids_detections/).
+- `nel_report`: Network Error Logging (NEL) reports collected from end-user browsers. See [NEL Reports schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/nel_reports/).
+- `network_analytics`: Network Analytics (Magic Transit / Magic WAN packet-sampled flow) logs. See [Network Analytics Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/network_analytics_logs/).
+- `page_shield_events`: Page Shield events reporting changes to scripts and connections observed on protected zones. See [Page Shield Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/page_shield_events/).
+- `sinkhole_http`: HTTP traffic captured by Cloudflare sinkholes. See [Sinkhole HTTP logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/sinkhole_http_logs/).
+- `spectrum_event`: Cloudflare Spectrum events for TCP/UDP applications proxied through Cloudflare. See [Spectrum Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/spectrum_events/).
+- `workers_trace`: Cloudflare Workers Trace Events with execution logs and exceptions for Workers scripts. See [Workers Trace Events schema](https://developers.cloudflare.com/logs/reference/log-fields/account/workers_trace_events/).
 
-**DNS Firewall**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/dns_firewall_logs/).
+### Supported use cases
 
-**Firewall Event**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/firewall_events/).
+Integrating Cloudflare Logpush with Elastic provides centralized visibility across Cloudflare's edge, Zero Trust, and network-layer products. Common use cases include:
 
-**HTTP Request**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/http_requests/).
+- Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
+- Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`).
+- Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
+- Auditing administrative activity on the Cloudflare account (`audit`).
+- Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
 
-**Magic IDS**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/magic_ids_detections/).
+## What do I need to use this integration?
 
-**NEL Report**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/nel_reports/).
-
-**Network Analytics**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/network_analytics_logs/).
-
-**Page Shield events**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/page_shield_events/).
-
-**Sinkhole HTTP**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/sinkhole_http_logs/).
-
-**Spectrum Event**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/spectrum_events/).
-
-**Workers Trace Events**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/workers_trace_events/).
-
-## Requirements
+### From Elastic
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-This module has been tested against **Cloudflare version v4**.
+### From Cloudflare
 
-**Note**: It is recommended to use AWS SQS for Cloudflare Logpush.
+To use this integration, you must be able to create and manage [Cloudflare Logpush jobs](https://developers.cloudflare.com/logs/logpush/logpush-job/) for the datasets you want to collect.
 
-## Setup
+**Permissions**
 
-### Collect data from AWS S3 Bucket
+Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
-- Configure [Cloudflare Logpush to Amazon S3](https://developers.cloudflare.com/logs/get-started/enable-destinations/aws-s3/) to send Cloudflare's data to an AWS S3 bucket.
-- The default values of the "Bucket List Prefix" are listed below. However, users can set the parameter "Bucket List Prefix" according to their requirements.
+- **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
+- **Account-scoped datasets** (for example, `audit_logs`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
-  | Data Stream Name           | Bucket List Prefix     |
+**Destination-specific credentials**
+
+Depending on the delivery destination, you also need:
+
+- **AWS S3 / S3-compatible** — an S3 bucket (or Cloudflare R2 bucket) and credentials (Access Key ID / Secret Access Key, or an IAM role) that Elastic Agent can use to list and read objects. For SQS-based delivery, an SQS queue subscribed to S3 object-created events.
+- **Google Cloud Storage** — a GCS bucket and a service account key (JSON) with read access to the bucket.
+- **Azure Blob Storage** — a storage account, a blob container, and either a shared access key, a connection string, or OAuth2 client credentials with read access to the container.
+- **HTTP Endpoint** — a reachable HTTPS endpoint exposed by Elastic Agent. Cloudflare requires a valid TLS certificate on the destination.
+
+## How do I deploy this integration?
+
+This integration supports Elastic Agent-based installations.
+
+### Agent-based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+### Onboard and configure
+
+Configure one of the following delivery pipelines before enabling the integration in Elastic.
+
+#### Collect data from AWS S3 Bucket
+
+- Configure [Cloudflare Logpush to Amazon S3](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/aws-s3/) to send Cloudflare's data to an AWS S3 bucket.
+- The default values of the **Bucket Prefix** are listed below. However, users can set the parameter **Bucket Prefix** according to their requirements.
+
+  | Data Stream Name           | Bucket Prefix          |
   | -------------------------- | ---------------------- |
   | Access Request             | access_request         |
   | Audit Logs                 | audit_logs             |
   | CASB findings              | casb                   |
   | Device Posture Results     | device_posture         |
+  | DLP Forensic Copies        | dlp_forensic_copies    |
   | DNS                        | dns                    |
   | DNS Firewall               | dns_firewall           |
+  | Email Security Alerts      | email_security_alerts  |
   | Firewall Event             | firewall_event         |
   | Gateway DNS                | gateway_dns            |
   | Gateway HTTP               | gateway_http           |
@@ -94,73 +134,76 @@ This module has been tested against **Cloudflare version v4**.
   | Magic IDS                  | magic_ids              |
   | NEL Report                 | nel_report             |
   | Network Analytics          | network_analytics_logs |
+  | Page Shield Events         | page_shield_events     |
   | Zero Trust Network Session | network_session        |
   | Sinkhole HTTP              | sinkhole_http          |
   | Spectrum Event             | spectrum_event         |
   | Workers Trace Events       | workers_trace          |
 
-### Collect data from AWS SQS
+#### Collect data from AWS SQS
 
 1. If Logpush forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
 2. Follow the steps below for each Logpush data stream that has been enabled:
-     1. Create an SQS queue
-         - To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Amazon documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
-         - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
-     2. Setup event notification from the S3 bucket using the instructions [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html). Use the following settings:
+    1. Create an SQS queue
+        - To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Amazon documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+        - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
+    2. Setup event notification from the S3 bucket using the instructions [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html). Use the following settings:
         - Event type: `All object create events` (`s3:ObjectCreated:*`)
-         - Destination: SQS Queue
-         - Prefix (filter): enter the prefix for this Logpush data stream, e.g. `audit_logs/`
-         - Select the SQS queue that has been created for this data stream
+        - Destination: SQS Queue
+        - Prefix (filter): enter the prefix for this Logpush data stream, e.g. `audit_logs/`
+        - Select the SQS queue that has been created for this data stream
 
- **Note**:
-  - A separate SQS queue and S3 bucket notification is required for each enabled data stream.
-  - Permissions for the above AWS S3 bucket and SQS queues should be configured according to the [Filebeat S3 input documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#_aws_permissions_2)
-  - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
-  - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
+**Note:**
+- A separate SQS queue and S3 bucket notification is required for each enabled data stream.
+- Permissions for the above AWS S3 bucket and SQS queues should be configured according to the [Filebeat S3 input documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#_aws_permissions_2).
+- Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
+- Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
+- It is recommended to use AWS SQS for Cloudflare Logpush.
 
-### Collect data from S3-Compatible Cloudflare R2 Buckets
+#### Collect data from S3-Compatible Cloudflare R2 Buckets
 
-- Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/r2/) to push logs to Cloudflare R2.
+- Configure [Cloudflare Logpush to Cloudflare R2](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/r2/) (or another [S3-compatible endpoint](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/s3-compatible-endpoints/)) to push logs into an R2 bucket.
 
-**Note**:
-- When creating the API token, make sure it has [Admin permissions](https://developers.cloudflare.com/r2/api/s3/tokens/#permissions). This is needed to list buckets and view bucket configuration.
+**Note:**
+- To obtain the **Access Key ID** and **Secret Access Key**, create an R2 API token by following the [R2 authentication documentation](https://developers.cloudflare.com/r2/api/tokens/). Once the token is created successfully, Cloudflare will display the **Access Key ID** and **Secret Access Key** values. Use these credentials to authenticate the integration.
+- When creating the R2 API token, make sure it has [Admin permissions](https://developers.cloudflare.com/r2/api/s3/tokens/#permissions). This is needed to list buckets and view bucket configuration.
 
 When configuring the integration to read from S3-Compatible Buckets such as Cloudflare R2, the following steps are required:
-- Enable the toggle `Collect logs via S3 Bucket`.
-- Make sure that the Bucket Name is set.
-- Although you have to create an API token, that token should not be used for authentication with the S3 API. You just have to set the Access Key ID and Secret Access Key.
-- Set the endpoint URL which can be found in Bucket Details. Endpoint should be a full URI that will be used as the API endpoint of the service. For Cloudflare R2 buckets, the URI is typically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`.
+- Enable the **Collect logs via S3 Bucket** toggle.
+- Set the **S3-Compatible Bucket Name** (shown as `[Global][S3] S3-Compatible Bucket Name` in the UI) to the R2 bucket name.
+- Set the **Endpoint** field to the API endpoint shown in the bucket details. It must be a full URI used as the API endpoint of the service. For Cloudflare R2 buckets, the URI is typically of the form `https://<accountid>.r2.cloudflarestorage.com`.
 - Set the **Region** field to `auto`. This is required for all non-AWS S3-compatible buckets on Elastic Agent 8.19.12 and later. For Cloudflare R2, the region is always `auto` per the [R2 S3 API documentation](https://developers.cloudflare.com/r2/api/s3/api/#bucket-region).
-- Bucket Prefix is optional for each data stream.
+- **Bucket Prefix** is optional for each data stream.
 
-### Collect data from GCS Buckets
+#### Collect data from GCS Buckets
 
-- Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/google-cloud-storage/) to ingest data into a GCS bucket.
-- Configure the GCS bucket names and credentials along with the required configurations under the "Collect Cloudflare Logpush logs via Google Cloud Storage" section. 
-- Make sure the service account and authentication being used, has proper levels of access to the GCS bucket [Manage Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys/)
+- Configure [Cloudflare Logpush to Google Cloud Storage](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/google-cloud-storage/) to ingest data into a GCS bucket.
+- Configure the GCS bucket names and credentials along with the required configurations under the "Collect Cloudflare Logpush logs via Google Cloud Storage" section.
+- Make sure the service account and authentication being used has proper levels of access to the GCS bucket. Refer to [Manage Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys/) for more details.
 
-**Note**:
+**Note:**
 - The GCS input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
 - The GCS input accepts a service account JSON key or a service account JSON file for authentication.
 - The GCS input supports JSON/NDJSON data.
 
-### Collect data from Azure Blob Storage
+#### Collect data from Azure Blob Storage
 
-- [Enable Microsoft Azure](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/azure/) to ingest data into Azure Blob Storage containers.
-- Configure Azure Blob Storage container names and credentials along with the required configurations under the "Collect Cloudflare Logpush logs via Azure Blob Storage" section. 
-- Make sure the storage account and authentication being used, has proper levels of access to the Azure Blob Storage Container. Please follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-data-operations-portal) for more details.
-- If you want to use RBAC for your account please follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory).
+- Configure [Cloudflare Logpush to Microsoft Azure](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/azure/) to ingest data into Azure Blob Storage containers.
+- Configure Azure Blob Storage container names and credentials along with the required configurations under the "Collect Cloudflare Logpush logs via Azure Blob Storage" section.
+- Make sure the storage account and authentication being used has proper levels of access to the Azure Blob Storage Container. Follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-data-operations-portal) for more details.
+- If you want to use RBAC for your account, follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory).
 
-**Note**:
+**Note:**
 - The Azure Blob Storage input does not support fetching from containers using container prefixes, so the containers' names must be configured manually for each data stream.
 - The Azure Blob Storage input accepts a service account key (shared credentials key), service account URI (connection string) and OAuth2 credentials for authentication.
 - The Azure Blob Storage input only supports JSON/NDJSON data.
 
-### Collect data from the Cloudflare HTTP Endpoint
+#### Collect data from the Cloudflare HTTP Endpoint
 
-- Refer to [Enable HTTP destination](https://developers.cloudflare.com/logs/get-started/enable-destinations/http/) for Cloudflare Logpush.
-- Add same custom header along with its value on both the side for additional security.
+- Refer to [Enable HTTP destination](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/http/) for Cloudflare Logpush.
+- Add the same custom header along with its value on both sides (Cloudflare job and Elastic Agent HTTP input) for additional security.
 - For example, while creating a job along with a header and value for a particular dataset:
+
 ```
 curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE ID>/logpush/jobs' \
 --header 'X-Auth-Key: <X-AUTH-KEY>' \
@@ -175,29 +218,74 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 }'
 ```
 
-**Note**:
-- The destination_conf parameter inside the request data should set the Content-Type header to `application/json`. This is the content type that the HTTP endpoint expects for incoming events.
-- Default port for the HTTP Endpoint is _9560_.
+**Note:**
+- The `destination_conf` parameter inside the request data should set the `Content-Type` header to `application/json`. This is the content type that the HTTP endpoint expects for incoming events.
+- Default port for the HTTP Endpoint is `9560`.
 - When using the same port for more than one dataset, be sure to specify different dataset paths.
 - To enable request ACKing, add a `wait_for_completion_timeout` request query with the timeout for an ACK. See the [HTTP Endpoint documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html) for details.
 
 ### Enable the integration in Elastic
 
-1. In Kibana, go to **Management** > **Integrations**.
-2. In the integrations search bar type **Cloudflare Logpush**.
-3. Click the **Cloudflare Logpush** integration from the search results.
-4. Click the **Add Cloudflare Logpush** button to add Cloudflare Logpush integration.
-5. Enable the Integration with the HTTP Endpoint, AWS S3 input or GCS input.
-6. Under the AWS S3 input, there are two types of inputs: using AWS S3 Bucket or using SQS.
-7. Configure Cloudflare to send logs to the Elastic Agent via HTTP Endpoint, or any R2, AWS or GCS Bucket following the specific guides above.
+1. In the top search bar in Kibana, search for **Integrations**.
+2. In the search bar, type **Cloudflare Logpush**.
+3. Select the **Cloudflare Logpush** integration from the search results.
+4. Select **Add Cloudflare Logpush** to add the integration.
+5. Enable and configure only the collection methods which you will use.
 
-## Logs reference
+    * To **Collect Cloudflare Logpush logs via HTTP Endpoint**, you'll need to:
+        - Configure the **Listen Address** and, per data stream, the **Listen Port** and **URL**.
+        - Optionally configure **Secret Header** / **Secret Value** and **SSL Configuration** to secure the endpoint.
+    * To **Collect Cloudflare Logpush logs via AWS S3, AWS SQS, or S3-Compatible Buckets**, you'll need to:
+        - Enable the **Collect logs via S3 Bucket** toggle when polling an S3 or S3-compatible bucket directly. Leave it disabled to consume S3 object-created events from an SQS queue.
+        - For direct polling, configure the **[S3] Bucket ARN**, the **[S3] Access Point ARN**, or the **[Global][S3] S3-Compatible Bucket Name** (for Cloudflare R2 and other S3-compatible providers). For S3-compatible buckets also set **Endpoint** and **Region**.
+        - Configure credentials using any of: **Access Key ID** / **Secret Access Key** (plus an optional **Session Token**), a **Role ARN**, or a **Shared Credential File** / **Credential Profile Name**.
+        - For each enabled data stream, set the **[SQS] Queue URL** (when using SQS) or the **[S3] Bucket Prefix** (when polling an S3 / S3-compatible bucket). For R2 / S3-compatible buckets you may also override the bucket name per data stream using the **[<Dataset>][S3] S3-Compatible Bucket Name** field.
+        - Tune throughput with **[S3/SQS] Number of Workers** and **[S3] Interval** (polling mode) or **[SQS] Visibility Timeout** / **[SQS] API Timeout** (SQS mode).
+    * To **Collect Cloudflare Logpush logs via Google Cloud Storage**, you'll need to:
+        - Configure **Project Id** and either **JSON Credentials key** or **JSON Credentials file path**.
+        - For each data stream, configure the **Buckets** list and optionally tune **Maximum number of workers**, **Polling**, **Polling interval**, and **Bucket Timeout**.
+    * To **Collect Cloudflare Logpush logs via Azure Blob Storage**, you'll need to:
+        - Configure **Account Name** and (optionally) **Storage URL**, and authenticate using either a **Service Account Key**, a **Service Account URI**, or by enabling **Collect logs using OAuth2 authentication** and supplying **Client ID (OAuth2)**, **Client Secret (OAuth2)**, and **Tenant ID (OAuth2)**.
+        - For each data stream, configure the **Containers** list and optionally tune **Maximum number of workers**, **Polling**, and **Polling interval**.
 
-### access_request
+6. Select **Save and continue** to save the integration.
+
+### Validation
+
+#### Dashboards populated
+
+1. In the top search bar in Kibana, search for **Dashboards**.
+2. In the search bar, type **Cloudflare Logpush**.
+3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
+
+## Troubleshooting
+
+- For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+- For Cloudflare-side troubleshooting and delivery status, refer to the [Logpush health dashboard](https://developers.cloudflare.com/logs/logpush/logpush-health/) and the relevant [destination-specific troubleshooting guide](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/).
+- When collecting from Cloudflare R2 via the AWS S3 input, the error `failed to get AWS region for bucket: operation error S3: GetBucketLocation` usually indicates a credentials or permissions problem. Inspect the full API error response to identify the underlying issue.
+- When using Azure Blob Storage, SAS tokens must have the **Write-only** permission, the service set to **Blob-only** (`ss=b`), and the resource type set to **Object-only** (`srt=o`). Set an expiration of at least five years to avoid unexpected token expiry. Refer to [Troubleshooting Azure destinations](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/azure/#troubleshooting-azure-destinations) for details.
+- When using the HTTP Endpoint input, ensure the Elastic Agent endpoint is reachable over HTTPS with a trusted certificate and that any `secret.header` / `secret.value` pair configured on the agent matches the `header_*` parameter defined in the Logpush job's `destination_conf`.
+
+## Performance and scaling
+
+For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+
+Additional considerations:
+
+- For high-volume zones, AWS SQS mode is recommended because it distributes work across multiple Elastic Agents without requiring bucket polling.
+- Tune [`max_upload_bytes`, `max_upload_records`, and `max_upload_interval_seconds`](https://developers.cloudflare.com/logs/logpush/logpush-job/api-configuration/#max-upload-parameters) on the Logpush job to match the throughput your agents and destination can handle.
+- For each input, adjust the worker count and polling interval to balance latency against API calls / egress costs. The relevant fields are **[S3/SQS] Number of Workers** and **[S3] Interval** for the AWS S3 input, and **Maximum number of workers** with **Polling interval** for the Google Cloud Storage and Azure Blob Storage inputs.
+- Use Cloudflare Logpush [sampling](https://developers.cloudflare.com/logs/logpush/logpush-job/api-configuration/#sampling-rate) and [filters](https://developers.cloudflare.com/logs/logpush/logpush-job/filters/) to reduce the volume of low-value events at the source.
+
+## Reference
+
+### Logs reference
+
+#### access_request
 
 This is the `access_request` dataset.
 
-#### Example
+##### Example
 
 An example event for `access_request` looks as following:
 
@@ -359,12 +447,11 @@ An example event for `access_request` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### audit
+#### audit
 
 This is the `audit` dataset.
 
-
-#### Example
+##### Example
 
 An example event for `audit` looks as following:
 
@@ -512,11 +599,11 @@ An example event for `audit` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### casb
+#### casb
 
 This is the `casb` dataset.
 
-#### Example
+##### Example
 
 An example event for `casb` looks as following:
 
@@ -685,11 +772,11 @@ An example event for `casb` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### device_posture
+#### device_posture
 
 This is the `device_posture` dataset.
 
-#### Example
+##### Example
 
 An example event for `device_posture` looks as following:
 
@@ -865,11 +952,11 @@ An example event for `device_posture` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### dlp_forensic_copies
+#### dlp_forensic_copies
 
 This is the `dlp_forensic_copies` dataset.
 
-#### Example
+##### Example
 
 An example event for `dlp_forensic_copies` looks as following:
 
@@ -877,9 +964,9 @@ An example event for `dlp_forensic_copies` looks as following:
 {
     "@timestamp": "2023-05-04T11:29:14.000Z",
     "agent": {
-        "ephemeral_id": "46d0e042-e386-4309-83fe-f22fa8cef397",
-        "id": "57444465-a0cd-4b2f-a7c9-af783ce1a161",
-        "name": "elastic-agent-22795",
+        "ephemeral_id": "08b12760-d0b3-4f02-9502-40d5d09bf6ba",
+        "id": "c029e4ac-be30-488b-a5f8-ea95b6088bd8",
+        "name": "elastic-agent-65147",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -900,14 +987,14 @@ An example event for `dlp_forensic_copies` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.dlp_forensic_copies",
-        "namespace": "20200",
+        "namespace": "93378",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "57444465-a0cd-4b2f-a7c9-af783ce1a161",
+        "id": "c029e4ac-be30-488b-a5f8-ea95b6088bd8",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -917,7 +1004,7 @@ An example event for `dlp_forensic_copies` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dlp_forensic_copies",
-        "ingested": "2026-04-29T02:52:34Z",
+        "ingested": "2026-07-07T13:20:36Z",
         "kind": "event",
         "original": "{\"AccountID\":\"acc-id\",\"Datetime\":\"2023-05-04T11:29:14Z\",\"ForensicCopyID\":\"copy-id\",\"GatewayRequestID\":\"req-id\",\"Headers\":{\"key1\":\"val1\",\"key2\":\"val2\"},\"Payload\":\"Tm90aGluZyB0byBzZWUgaGVyZS4gTW92ZSBhbG9uZy4K\",\"Phase\":\"request\",\"TriggeredRuleID\":\"9\"}",
         "type": [
@@ -972,11 +1059,11 @@ An example event for `dlp_forensic_copies` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### dns
+#### dns
 
 This is the `dns` dataset.
 
-#### Example
+##### Example
 
 An example event for `dns` looks as following:
 
@@ -1103,11 +1190,11 @@ An example event for `dns` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### dns_firewall
+#### dns_firewall
 
 This is the `dns_firewall` dataset.
 
-#### Example
+##### Example
 
 An example event for `dns_firewall` looks as following:
 
@@ -1115,9 +1202,9 @@ An example event for `dns_firewall` looks as following:
 {
     "@timestamp": "2023-09-19T12:30:00.000Z",
     "agent": {
-        "ephemeral_id": "fa7a10f7-96fa-404a-8d48-d6ddb776760c",
-        "id": "3d1bd14d-4ca0-4b54-b00e-9ca8f7110ea9",
-        "name": "elastic-agent-21286",
+        "ephemeral_id": "fd39493c-4678-460f-b087-894d13ac31d4",
+        "id": "110af927-35c9-4b98-b61e-1eb31afb656a",
+        "name": "elastic-agent-31841",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -1157,7 +1244,7 @@ An example event for `dns_firewall` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.dns_firewall",
-        "namespace": "24235",
+        "namespace": "13103",
         "type": "logs"
     },
     "destination": {
@@ -1180,13 +1267,13 @@ An example event for `dns_firewall` looks as following:
             "name": "example.com",
             "type": "A"
         },
-        "response_code": "0"
+        "response_code": "NoError"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "3d1bd14d-4ca0-4b54-b00e-9ca8f7110ea9",
+        "id": "110af927-35c9-4b98-b61e-1eb31afb656a",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1196,7 +1283,7 @@ An example event for `dns_firewall` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dns_firewall",
-        "ingested": "2026-05-18T06:40:14Z",
+        "ingested": "2026-07-07T13:21:32Z",
         "kind": "event",
         "original": "{\"ClientResponseCode\":0,\"ClusterID\":\"CLUSTER-001\",\"ColoCode\":\"SFO\",\"EDNSSubnet\":\"67.43.156.0\",\"EDNSSubnetLength\":24,\"QueryDO\":true,\"QueryName\":\"example.com\",\"QueryRD\":true,\"QuerySize\":60,\"QueryTCP\":false,\"QueryType\":1,\"ResponseCached\":true,\"ResponseCachedStale\":false,\"SourceIP\":\"67.43.156.2\",\"Timestamp\":\"2023-09-19T12:30:00Z\",\"UpstreamIP\":\"81.2.69.144\",\"UpstreamResponseCode\":0,\"UpstreamResponseTimeMs\":30}",
         "type": [
@@ -1284,11 +1371,11 @@ An example event for `dns_firewall` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### email_security_alerts
+#### email_security_alerts
 
 This is the `email_security_alerts` dataset.
 
-#### Example
+##### Example
 
 An example event for `email_security_alerts` looks as following:
 
@@ -1535,6 +1622,13 @@ An example event for `email_security_alerts` looks as following:
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.hash.md5 | MD5 hash. | keyword |
+| email.attachments.file.hash.sha1 | SHA1 hash. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.hash.ssdeep | SSDEEP hash. | keyword |
+| email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
@@ -1546,11 +1640,11 @@ An example event for `email_security_alerts` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### firewall_event
+#### firewall_event
 
 This is the `firewall_event` dataset.
 
-#### Example
+##### Example
 
 An example event for `firewall_event` looks as following:
 
@@ -1778,11 +1872,11 @@ An example event for `firewall_event` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### gateway_dns
+#### gateway_dns
 
 This is the `gateway_dns` dataset.
 
-#### Example
+##### Example
 
 An example event for `gateway_dns` looks as following:
 
@@ -1790,9 +1884,9 @@ An example event for `gateway_dns` looks as following:
 {
     "@timestamp": "2023-05-02T22:49:53.000Z",
     "agent": {
-        "ephemeral_id": "0d5b40c6-2008-4ad0-8cb4-046ba22a95d7",
-        "id": "12640826-2373-4835-8e5e-d8c4f9b93657",
-        "name": "elastic-agent-32400",
+        "ephemeral_id": "bddb69af-e548-447a-9e6e-2f6d1d649036",
+        "id": "d2b67947-1c13-4335-9ffa-7a79805a4c57",
+        "name": "elastic-agent-83651",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -1812,7 +1906,7 @@ An example event for `gateway_dns` looks as following:
                     "type": "1"
                 }
             ],
-            "application_id": 0,
+            "application_id": "0",
             "colo": {
                 "code": "ORD",
                 "id": 14
@@ -1832,8 +1926,8 @@ An example event for `gateway_dns` looks as following:
             "matched": {
                 "category": {
                     "ids": [
-                        7,
-                        163
+                        "7",
+                        "163"
                     ],
                     "names": [
                         "Photography",
@@ -1849,8 +1943,8 @@ An example event for `gateway_dns` looks as following:
             "question": {
                 "category": {
                     "ids": [
-                        26,
-                        155
+                        "26",
+                        "155"
                     ],
                     "names": [
                         "Technology",
@@ -1863,11 +1957,13 @@ An example event for `gateway_dns` looks as following:
                 "type": "A",
                 "type_id": 1
             },
-            "resolved_ip": [
-                "67.43.156.1",
-                "67.43.156.2",
-                "67.43.156.3"
-            ],
+            "resolved_ip_details": {
+                "ips": [
+                    "67.43.156.1",
+                    "67.43.156.2",
+                    "67.43.156.3"
+                ]
+            },
             "resolver_decision": "allowedOnNoPolicyMatch",
             "response_code": "0",
             "source": {
@@ -1885,7 +1981,7 @@ An example event for `gateway_dns` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.gateway_dns",
-        "namespace": "45159",
+        "namespace": "45531",
         "type": "logs"
     },
     "destination": {
@@ -1937,13 +2033,13 @@ An example event for `gateway_dns` looks as following:
             "67.43.156.2",
             "67.43.156.3"
         ],
-        "response_code": "0"
+        "response_code": "NoError"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "12640826-2373-4835-8e5e-d8c4f9b93657",
+        "id": "d2b67947-1c13-4335-9ffa-7a79805a4c57",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1953,7 +2049,7 @@ An example event for `gateway_dns` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.gateway_dns",
-        "ingested": "2026-05-18T06:42:20Z",
+        "ingested": "2026-07-10T10:21:13Z",
         "kind": "event",
         "original": "{\"ApplicationID\":0,\"ColoCode\":\"ORD\",\"ColoID\":14,\"Datetime\":\"2023-05-02T22:49:53Z\",\"DeviceID\":\"083a8354-d56c-11ed-9771-6a842b111aaa\",\"DeviceName\":\"zt-test-vm1\",\"DstIP\":\"89.160.20.129\",\"DstPort\":443,\"Email\":\"user@test.com\",\"Location\":\"GCP default\",\"LocationID\":\"f233bd67-78c7-4050-9aff-ad63cce25732\",\"MatchedCategoryIDs\":[7,163],\"MatchedCategoryNames\":[\"Photography\",\"Weather\"],\"Policy\":\"7bdc7a9c-81d3-4816-8e56-de1acad3dec5\",\"PolicyID\":\"1412\",\"Protocol\":\"https\",\"QueryCategoryIDs\":[26,155],\"QueryCategoryNames\":[\"Technology\",\"Technology\"],\"QueryName\":\"security.ubuntu.com\",\"QueryNameReversed\":\"com.ubuntu.security\",\"QuerySize\":48,\"QueryType\":1,\"QueryTypeName\":\"A\",\"RCode\":0,\"RData\":[{\"data\":\"CHNlY3VyaXR5BnVidW50dQMjb20AAAEAAQAAAAgABLl9vic=\",\"type\":\"1\"},{\"data\":\"CHNlY3VyaXR5BnVidW50dQNjb20AAAEAABAAAAgABLl9viQ=\",\"type\":\"1\"},{\"data\":\"CHNlT3VyaXR5BnVidW50dQNjb20AAAEAAQAAAAgABFu9Wyc=\",\"type\":\"1\"}],\"ResolvedIPs\":[\"67.43.156.1\",\"67.43.156.2\",\"67.43.156.3\"],\"ResolverDecision\":\"allowedOnNoPolicyMatch\",\"SrcIP\":\"67.43.156.2\",\"SrcPort\":0,\"TimeZone\":\"UTC\",\"TimeZoneInferredMethod\":\"fromLocalTime\",\"UserID\":\"166befbb-00e3-5e20-bd6e-27245000000\"}",
         "outcome": "success",
@@ -2031,7 +2127,7 @@ An example event for `gateway_dns` looks as following:
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
 | cloudflare_logpush.gateway_dns.account_id | Cloudflare account ID. | keyword |
 | cloudflare_logpush.gateway_dns.answers | The response data objects. | flattened |
-| cloudflare_logpush.gateway_dns.application_id | ID of the application the domain belongs to. | long |
+| cloudflare_logpush.gateway_dns.application_id | ID of the application the domain belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.application_name | Name of the application the domain belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.authoritative_name_server_ip | The IPs of the authoritative nameservers that provided the answers, if any. | ip |
 | cloudflare_logpush.gateway_dns.cname | Resolved intermediate cname domains. | keyword |
@@ -2063,7 +2159,7 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.is_response_cached | Response comes from cache or not. | boolean |
 | cloudflare_logpush.gateway_dns.location.id | UUID of the location the DNS request is coming from. | keyword |
 | cloudflare_logpush.gateway_dns.location.name | Name of the location the DNS request is coming from. | keyword |
-| cloudflare_logpush.gateway_dns.matched.category.ids | ID or IDs of category that the domain was matched with the policy. | long |
+| cloudflare_logpush.gateway_dns.matched.category.ids | ID or IDs of category that the domain was matched with the policy. | keyword |
 | cloudflare_logpush.gateway_dns.matched.category.names | Name or names of category that the domain was matched with the policy. | keyword |
 | cloudflare_logpush.gateway_dns.matched.indicator_feed.ids | ID or IDs of indicator feed(s) that the domain was matched with the policy. | keyword |
 | cloudflare_logpush.gateway_dns.matched.indicator_feed.names | Name or names of indicator feed(s) that the domain was matched with the policy. | keyword |
@@ -2072,10 +2168,10 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.protocol | The protocol used for the DNS query by the client. | keyword |
 | cloudflare_logpush.gateway_dns.question.application.ids | ID or IDs of applications the queried domain belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.question.application.names | Name or names of applications the queried domain belongs to. | keyword |
-| cloudflare_logpush.gateway_dns.question.category.ids | ID or IDs of category that the domain belongs to. | long |
+| cloudflare_logpush.gateway_dns.question.category.ids | ID or IDs of category that the domain belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.question.category.names | Name or names of category that the domain belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.question.id | Globally unique identifier of the query. | keyword |
-| cloudflare_logpush.gateway_dns.question.indicator_feed.ids | ID or IDs of indicator feed(s) that the domain belongs to. | long |
+| cloudflare_logpush.gateway_dns.question.indicator_feed.ids | ID or IDs of indicator feed(s) that the domain belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.question.indicator_feed.names | Name or names of indicator feed(s) that the domain belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.question.name | The query name. | keyword |
 | cloudflare_logpush.gateway_dns.question.reversed | Query name in reverse. | keyword |
@@ -2086,7 +2182,6 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.registration_id | The UUID of the device registration from which the HTTP request originated. | keyword |
 | cloudflare_logpush.gateway_dns.request_context_category.ids | ID or IDs of the category that was sent to gateway in the EDNS request for filtering. | keyword |
 | cloudflare_logpush.gateway_dns.request_context_category.names | Name or names of the category that was sent to gateway in the EDNS request for filtering. | keyword |
-| cloudflare_logpush.gateway_dns.resolved_ip | The resolved IPs in the response, if any. | ip |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.category.ids | ID or IDs of category that the IPs in the response belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.category.names | Name or names of category that the IPs in the response belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.continent_codes | Continent code of each resolved IP, if any. | keyword |
@@ -2121,11 +2216,11 @@ An example event for `gateway_dns` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### gateway_http
+#### gateway_http
 
 This is the `gateway_http` dataset.
 
-#### Example
+##### Example
 
 An example event for `gateway_http` looks as following:
 
@@ -2133,9 +2228,9 @@ An example event for `gateway_http` looks as following:
 {
     "@timestamp": "2023-05-03T20:55:05.000Z",
     "agent": {
-        "ephemeral_id": "a375df4c-195d-4f86-b947-5f5c8a56c199",
-        "id": "c3e9e2f1-198e-4016-96fd-b40d22516ba7",
-        "name": "elastic-agent-91580",
+        "ephemeral_id": "98292628-0303-45ca-9bac-d90748334c62",
+        "id": "394fc28d-22f9-40df-a561-7df47fb341ab",
+        "name": "elastic-agent-29642",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -2210,7 +2305,7 @@ An example event for `gateway_http` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.gateway_http",
-        "namespace": "98733",
+        "namespace": "33063",
         "type": "logs"
     },
     "destination": {
@@ -2242,7 +2337,7 @@ An example event for `gateway_http` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "c3e9e2f1-198e-4016-96fd-b40d22516ba7",
+        "id": "394fc28d-22f9-40df-a561-7df47fb341ab",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -2253,7 +2348,7 @@ An example event for `gateway_http` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.gateway_http",
-        "ingested": "2026-05-18T06:44:52Z",
+        "ingested": "2026-07-07T13:23:32Z",
         "kind": "event",
         "original": "{\"AccountID\":\"e1836771179f98aabb828da5ea69a348\",\"Action\":\"block\",\"BlockedFileHash\":\"91dc1db739a705105e1c763bfdbdaa84c0de8\",\"BlockedFileName\":\"downloaded_test\",\"BlockedFileReason\":\"malware\",\"BlockedFileSize\":43,\"BlockedFileType\":\"bin\",\"Datetime\":\"2023-05-03T20:55:05Z\",\"DestinationIP\":\"89.160.20.129\",\"DestinationPort\":443,\"DeviceID\":\"083a8354-d56c-11ed-9771-6a842b100cff\",\"DeviceName\":\"zt-test-vm1\",\"DownloadedFileNames\":[\"downloaded_file\",\"downloaded_test\"],\"Email\":\"user@example.com\",\"FileInfo\":{\"files\":[{\"name\":\"downloaded_file\",\"size\":43},{\"name\":\"downloaded_test\",\"size\":341}]},\"HTTPHost\":\"guce.yahoo.com\",\"HTTPMethod\":\"GET\",\"HTTPStatusCode\":302,\"HTTPVersion\":\"HTTP/2\",\"IsIsolated\":false,\"PolicyID\":\"85063bec-74cb-4546-85a3-e0cde2cdfda2\",\"PolicyName\":\"Block Yahoo\",\"Referer\":\"https://www.example.com/\",\"RequestID\":\"1884fec9b600007fb06a299400000001\",\"SourceIP\":\"67.43.156.2\",\"SourceInternalIP\":\"192.168.1.123\",\"SourcePort\":47924,\"URL\":\"https://test.com\",\"UntrustedCertificateAction\":\"none\",\"UploadedFileNames\":[\"uploaded_file\",\"uploaded_test\"],\"UserAgent\":\"Mozilla/5.0 (X11; Ubuntu; Linux x86_64) Firefox/112.0\",\"UserID\":\"166befbb-00e3-5e20-bd6e-27245723949f\"}",
         "type": [
@@ -2382,7 +2477,7 @@ An example event for `gateway_http` looks as following:
 | cloudflare_logpush.gateway_http.policy.name | The name of the gateway policy applied to the request, if any. | keyword |
 | cloudflare_logpush.gateway_http.private_app_aud | The private app AUD, if any. | keyword |
 | cloudflare_logpush.gateway_http.proxy_endpoint | The proxy endpoint used on this network session, if any. | keyword |
-| cloudflare_logpush.gateway_http.quarantined | If the request content was quarantined. | keyword |
+| cloudflare_logpush.gateway_http.quarantined | If the request content was quarantined. | boolean |
 | cloudflare_logpush.gateway_http.redirect_target_uri | Custom URI to which the user was redirected, if any. | keyword |
 | cloudflare_logpush.gateway_http.registration_id | The UUID of the device registration from which the HTTP request originated. | keyword |
 | cloudflare_logpush.gateway_http.request.host | Content of the host header in the HTTP request. | keyword |
@@ -2422,11 +2517,11 @@ An example event for `gateway_http` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### gateway_network
+#### gateway_network
 
 This is the `gateway_network` dataset.
 
-#### Example
+##### Example
 
 An example event for `gateway_network` looks as following:
 
@@ -2434,9 +2529,9 @@ An example event for `gateway_network` looks as following:
 {
     "@timestamp": "2023-05-18T21:12:57.058Z",
     "agent": {
-        "ephemeral_id": "bb2bfd1b-c4db-449d-862d-aef156d1e223",
-        "id": "e7be4f6c-e802-4720-9ae6-04ba68f633d6",
-        "name": "elastic-agent-69794",
+        "ephemeral_id": "55567dbc-1d78-4c6d-bc37-8d760bd7a8d2",
+        "id": "e7e25675-f582-4cb7-81f1-b31b9ee46789",
+        "name": "elastic-agent-89432",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -2477,7 +2572,7 @@ An example event for `gateway_network` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.gateway_network",
-        "namespace": "92706",
+        "namespace": "82387",
         "type": "logs"
     },
     "destination": {
@@ -2510,7 +2605,7 @@ An example event for `gateway_network` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "e7be4f6c-e802-4720-9ae6-04ba68f633d6",
+        "id": "e7e25675-f582-4cb7-81f1-b31b9ee46789",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -2522,7 +2617,7 @@ An example event for `gateway_network` looks as following:
         ],
         "dataset": "cloudflare_logpush.gateway_network",
         "id": "5f2d04be-3512-11e8-b467-0ed5f89f718b",
-        "ingested": "2026-05-18T06:45:50Z",
+        "ingested": "2026-07-07T13:24:32Z",
         "kind": "event",
         "original": "{\"AccountID\":\"e1836771179f98aabb828da5ea69a111\",\"Action\":\"allowedOnNoRuleMatch\",\"Datetime\":1684444377058000000,\"DestinationIP\":\"89.160.20.129\",\"DestinationPort\":443,\"DeviceID\":\"083a8354-d56c-11ed-9771-6a842b100cff\",\"DeviceName\":\"zt-test-vm1\",\"Email\":\"user@test.com\",\"OverrideIP\":\"175.16.199.4\",\"OverridePort\":8080,\"PolicyID\":\"85063bec-74cb-4546-85a3-e0cde2cdfda2\",\"PolicyName\":\"My policy\",\"SNI\":\"www.elastic.co\",\"SessionID\":\"5f2d04be-3512-11e8-b467-0ed5f89f718b\",\"SourceIP\":\"67.43.156.2\",\"SourceInternalIP\":\"192.168.1.3\",\"SourcePort\":47924,\"Transport\":\"tcp\",\"UserID\":\"166befbb-00e3-5e20-bd6e-27245723949f\"}",
         "type": [
@@ -2647,11 +2742,11 @@ An example event for `gateway_network` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### http_request
+#### http_request
 
 This is the `http_request` dataset.
 
-#### Example
+##### Example
 
 An example event for `http_request` looks as following:
 
@@ -2659,9 +2754,9 @@ An example event for `http_request` looks as following:
 {
     "@timestamp": "2022-05-25T13:25:26.000Z",
     "agent": {
-        "ephemeral_id": "a40fecc1-2ab2-490f-a99b-bdf108a7e6ca",
-        "id": "005a84af-709c-46d9-8153-49b95f61e8f6",
-        "name": "elastic-agent-60454",
+        "ephemeral_id": "96cc83c6-7346-4dd6-aa43-2720e6471fe7",
+        "id": "08f22c71-abcf-414f-9b97-3c10af22c7c1",
+        "name": "elastic-agent-20873",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -2669,9 +2764,9 @@ An example event for `http_request` looks as following:
         "http_request": {
             "bot": {
                 "detection_ids": [
-                    7,
-                    8,
-                    9
+                    "7",
+                    "8",
+                    "9"
                 ],
                 "score": {
                     "src": "Verified Bot",
@@ -2748,7 +2843,7 @@ An example event for `http_request` looks as following:
                 "rate": {
                     "limit": {
                         "action": "unknown",
-                        "id": 0
+                        "id": "0"
                     }
                 },
                 "request": {
@@ -2842,14 +2937,14 @@ An example event for `http_request` looks as following:
                 }
             },
             "zone": {
-                "id": 393347122,
+                "id": "393347122",
                 "name": "example.com"
             }
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.http_request",
-        "namespace": "92118",
+        "namespace": "81207",
         "type": "logs"
     },
     "destination": {
@@ -2862,7 +2957,7 @@ An example event for `http_request` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "005a84af-709c-46d9-8153-49b95f61e8f6",
+        "id": "08f22c71-abcf-414f-9b97-3c10af22c7c1",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -2873,7 +2968,7 @@ An example event for `http_request` looks as following:
         ],
         "dataset": "cloudflare_logpush.http_request",
         "id": "710e98d9367f357d",
-        "ingested": "2026-05-18T06:46:51Z",
+        "ingested": "2026-07-08T08:10:10Z",
         "kind": "event",
         "original": "{\"BotDetectionIDs\":[7,8,9],\"BotScore\":20,\"BotScoreSrc\":\"Verified Bot\",\"BotTags\":[\"bing\",\"api\"],\"CacheCacheStatus\":\"dynamic\",\"CacheResponseBytes\":983828,\"CacheResponseStatus\":200,\"CacheTieredFill\":false,\"ClientASN\":43766,\"ClientCountry\":\"sa\",\"ClientDeviceType\":\"desktop\",\"ClientIP\":\"175.16.199.0\",\"ClientIPClass\":\"noRecord\",\"ClientMTLSAuthCertFingerprint\":\"Fingerprint\",\"ClientMTLSAuthStatus\":\"unknown\",\"ClientRequestBytes\":5800,\"ClientRequestHost\":\"xyz.example.com\",\"ClientRequestMethod\":\"POST\",\"ClientRequestPath\":\"/xyz/checkout\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestReferer\":\"https://example.com/s/example/default?sourcerer=(default:(id:!n,selectedPatterns:!(example,%27logs-endpoint.*-example%27,%27logs-system.*-example%27,%27logs-windows.*-example%27)))\\u0026timerange=(global:(linkTo:!(),timerange:(from:%272022-05-16T06:26:36.340Z%27,fromStr:now-24h,kind:relative,to:%272022-05-17T06:26:36.340Z%27,toStr:now)),timeline:(linkTo:!(),timerange:(from:%272022-04-17T22:00:00.000Z%27,kind:absolute,to:%272022-04-18T21:59:59.999Z%27)))\\u0026timeline=(activeTab:notes,graphEventId:%27%27,id:%279844bdd4-4dd6-5b22-ab40-3cd46fce8d6b%27,isOpen:!t)\",\"ClientRequestScheme\":\"https\",\"ClientRequestSource\":\"edgeWorkerFetch\",\"ClientRequestURI\":\"/s/example/api/telemetry/v2/clusters/_stats\",\"ClientRequestUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36\",\"ClientSSLCipher\":\"NONE\",\"ClientSSLProtocol\":\"TLSv1.2\",\"ClientSrcPort\":0,\"ClientTCPRTTMs\":0,\"ClientXRequestedWith\":\"Request With\",\"Cookies\":{\"key\":\"value\"},\"EdgeCFConnectingO2O\":false,\"EdgeColoCode\":\"RUH\",\"EdgeColoID\":339,\"EdgeEndTimestamp\":\"2022-05-25T13:25:32Z\",\"EdgePathingOp\":\"wl\",\"EdgePathingSrc\":\"macro\",\"EdgePathingStatus\":\"nr\",\"EdgeRateLimitAction\":\"unknown\",\"EdgeRateLimitID\":0,\"EdgeRequestHost\":\"abc.example.com\",\"EdgeResponseBodyBytes\":980397,\"EdgeResponseBytes\":981308,\"EdgeResponseCompressionRatio\":0,\"EdgeResponseContentType\":\"application/json\",\"EdgeResponseStatus\":200,\"EdgeServerIP\":\"1.128.0.0\",\"EdgeStartTimestamp\":\"2022-05-25T13:25:26Z\",\"EdgeTimeToFirstByteMs\":5333,\"OriginDNSResponseTimeMs\":3,\"OriginIP\":\"67.43.156.0\",\"OriginRequestHeaderSendDurationMs\":0,\"OriginResponseBytes\":0,\"OriginResponseDurationMs\":5319,\"OriginResponseHTTPExpires\":\"2022-05-27T13:25:26Z\",\"OriginResponseHTTPLastModified\":\"2022-05-26T13:25:26Z\",\"OriginResponseHeaderReceiveDurationMs\":5155,\"OriginResponseStatus\":200,\"OriginResponseTime\":5232000000,\"OriginSSLProtocol\":\"TLSv1.2\",\"OriginTCPHandshakeDurationMs\":24,\"OriginTLSHandshakeDurationMs\":53,\"ParentRayID\":\"710e98d93d50357d\",\"RayID\":\"710e98d9367f357d\",\"SecurityAction\":\"unknown\",\"SecurityLevel\":\"off\",\"SecurityRuleDescription\":\"matchad variable message\",\"SecurityRuleID\":\"98d93d5\",\"SmartRouteColoID\":20,\"UpperTierColoID\":0,\"WAFAttackScore\":50,\"WAFFlags\":\"0\",\"WAFMatchedVar\":\"example\",\"WAFProfile\":\"unknown\",\"WAFRCEAttackScore\":1,\"WAFSQLiAttackScore\":99,\"WAFXSSAttackScore\":90,\"WorkerCPUTime\":0,\"WorkerStatus\":\"unknown\",\"WorkerSubrequest\":true,\"WorkerSubrequestCount\":0,\"ZoneID\":393347122,\"ZoneName\":\"example.com\"}",
         "type": [
@@ -2976,7 +3071,7 @@ An example event for `http_request` looks as following:
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloudflare_logpush.http_request.bot.detection_ids | List of IDs that correlate to the Bot Management Heuristic detections made on a request. Available in Logpush v2 only. | long |
+| cloudflare_logpush.http_request.bot.detection_ids | List of IDs that correlate to the Bot Management Heuristic detections made on a request. Available in Logpush v2 only. | keyword |
 | cloudflare_logpush.http_request.bot.detection_tags | List of tags that correlate to the Bot Management Heuristic detections made on a request. Available only for Bot Management customers. To enable this feature, contact your account team. | keyword |
 | cloudflare_logpush.http_request.bot.score.src | Detection engine responsible for generating the Bot Score. Possible values are Not Computed, Heuristics, Machine Learning, Behavioral Analysis, Verified Bot, JS Fingerprinting, Cloudflare Service. | text |
 | cloudflare_logpush.http_request.bot.score.value | Cloudflare Bot Score. Scores below 30 are commonly associated with automated traffic. | long |
@@ -3025,7 +3120,7 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.edge.pathing.src | Details how the request was classified based on security checks. | text |
 | cloudflare_logpush.http_request.edge.pathing.status | Indicates what data was used to determine the handling of this request. | text |
 | cloudflare_logpush.http_request.edge.rate.limit.action | The action taken by the blocking rule; empty if no action taken. | keyword |
-| cloudflare_logpush.http_request.edge.rate.limit.id | The internal rule ID of the rate-limiting rule that triggered a block (ban) or log action. | long |
+| cloudflare_logpush.http_request.edge.rate.limit.id | The internal rule ID of the rate-limiting rule that triggered a block (ban) or log action. | keyword |
 | cloudflare_logpush.http_request.edge.request.host | Host header on the request from the edge to the origin. | keyword |
 | cloudflare_logpush.http_request.edge.response.body_bytes | Size of the HTTP response body returned to clients. | long |
 | cloudflare_logpush.http_request.edge.response.bytes | Number of bytes returned by the edge to the client. | long |
@@ -3088,7 +3183,7 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.worker.subrequest.count | Number of subrequests issued by a worker when handling this request. | long |
 | cloudflare_logpush.http_request.worker.subrequest.value | Whether or not this request was a worker subrequest. | boolean |
 | cloudflare_logpush.http_request.worker.wall_time_us | Real-time in microseconds elapsed between start and end of worker invocation. | long |
-| cloudflare_logpush.http_request.zone.id | Internal zone ID. | long |
+| cloudflare_logpush.http_request.zone.id | Internal zone ID. | keyword |
 | cloudflare_logpush.http_request.zone.name | The human-readable name of the zone. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
@@ -3104,11 +3199,11 @@ An example event for `http_request` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### magic_ids
+#### magic_ids
 
 This is the `magic_ids` dataset.
 
-#### Example
+##### Example
 
 An example event for `magic_ids` looks as following:
 
@@ -3116,9 +3211,9 @@ An example event for `magic_ids` looks as following:
 {
     "@timestamp": "2023-09-11T03:02:57.000Z",
     "agent": {
-        "ephemeral_id": "61afdfe3-0dbf-4d46-b45e-fe220ee31911",
-        "id": "8fd12f28-f7fa-4364-86a4-9cac977085b9",
-        "name": "elastic-agent-50922",
+        "ephemeral_id": "406029df-9cc8-47bd-a872-9ea7f8889c4b",
+        "id": "a4cbce5c-7ea9-4145-a61e-95e60e15f34a",
+        "name": "elastic-agent-47494",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -3134,7 +3229,7 @@ An example event for `magic_ids` looks as following:
                 "port": 80
             },
             "signature": {
-                "id": 2031296,
+                "id": "2031296",
                 "message": "ET CURRENT_EVENTS [Fireeye] POSSIBLE HackTool.TCP.Rubeus.[User32LogonProcesss]",
                 "revision": 1
             },
@@ -3148,7 +3243,7 @@ An example event for `magic_ids` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.magic_ids",
-        "namespace": "15005",
+        "namespace": "69504",
         "type": "logs"
     },
     "destination": {
@@ -3177,7 +3272,7 @@ An example event for `magic_ids` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "8fd12f28-f7fa-4364-86a4-9cac977085b9",
+        "id": "a4cbce5c-7ea9-4145-a61e-95e60e15f34a",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -3189,7 +3284,7 @@ An example event for `magic_ids` looks as following:
             "intrusion_detection"
         ],
         "dataset": "cloudflare_logpush.magic_ids",
-        "ingested": "2026-05-11T12:57:17Z",
+        "ingested": "2026-07-08T08:11:15Z",
         "kind": "event",
         "original": "{\"Action\":\"pass\",\"ColoCity\":\"Tokyo\",\"ColoCode\":\"NRT\",\"DestinationIP\":\"89.160.20.129\",\"DestinationPort\":80,\"Protocol\":\"tcp\",\"SignatureID\":2031296,\"SignatureMessage\":\"ET CURRENT_EVENTS [Fireeye] POSSIBLE HackTool.TCP.Rubeus.[User32LogonProcesss]\",\"SignatureRevision\":1,\"SourceIP\":\"67.43.156.2\",\"SourcePort\":44667,\"Timestamp\":\"2023-09-11T03:02:57Z\"}",
         "type": [
@@ -3250,7 +3345,7 @@ An example event for `magic_ids` looks as following:
 | cloudflare_logpush.magic_ids.colo.code | The IATA airport code corresponding to where the detection occurred. | keyword |
 | cloudflare_logpush.magic_ids.destination.ip | The destination IP of the packet which triggered the detection. | ip |
 | cloudflare_logpush.magic_ids.destination.port | The destination port of the packet which triggered the detection. It is set to 0 if the protocol field is set to any. | long |
-| cloudflare_logpush.magic_ids.signature.id | The signature ID of the detection. | long |
+| cloudflare_logpush.magic_ids.signature.id | The signature ID of the detection. | keyword |
 | cloudflare_logpush.magic_ids.signature.message | The signature message of the detection. Describes what the packet is attempting to do. | keyword |
 | cloudflare_logpush.magic_ids.signature.revision | The signature revision of the detection. | long |
 | cloudflare_logpush.magic_ids.source.ip | The source IP of packet which triggered the detection. | ip |
@@ -3271,11 +3366,11 @@ An example event for `magic_ids` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### nel_report
+#### nel_report
 
 This is the `nel_report` dataset.
 
-#### Example
+##### Example
 
 An example event for `nel_report` looks as following:
 
@@ -3396,11 +3491,11 @@ An example event for `nel_report` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### network_analytics
+#### network_analytics
 
 This is the `network_analytics` dataset.
 
-#### Example
+##### Example
 
 An example event for `network_analytics` looks as following:
 
@@ -3408,9 +3503,9 @@ An example event for `network_analytics` looks as following:
 {
     "@timestamp": "2021-07-27T00:01:07.000Z",
     "agent": {
-        "ephemeral_id": "80437a68-d353-483d-bf25-7851c2f11f0d",
-        "id": "7995797e-6e9e-4f8b-956d-57acba24e128",
-        "name": "elastic-agent-70734",
+        "ephemeral_id": "82520cbc-cc66-44db-a4c3-f3cc0cd7605d",
+        "id": "5bf8c237-a0c8-4d79-9fac-a4ba268ac5cf",
+        "name": "elastic-agent-16464",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -3505,7 +3600,7 @@ An example event for `network_analytics` looks as following:
                 "dscp": 46,
                 "ecn": 1,
                 "extension_headers": [
-                    "header"
+                    0
                 ],
                 "flow_label": 1,
                 "identification": 1
@@ -3550,7 +3645,7 @@ An example event for `network_analytics` looks as following:
                 },
                 "mss": 512,
                 "options": [
-                    "mss"
+                    2
                 ],
                 "sack": {
                     "blocks": [
@@ -3579,7 +3674,7 @@ An example event for `network_analytics` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.network_analytics",
-        "namespace": "88444",
+        "namespace": "80486",
         "type": "logs"
     },
     "destination": {
@@ -3596,7 +3691,7 @@ An example event for `network_analytics` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "7995797e-6e9e-4f8b-956d-57acba24e128",
+        "id": "5bf8c237-a0c8-4d79-9fac-a4ba268ac5cf",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -3606,9 +3701,9 @@ An example event for `network_analytics` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.network_analytics",
-        "ingested": "2026-05-25T03:06:49Z",
+        "ingested": "2026-07-08T08:12:21Z",
         "kind": "event",
-        "original": "{\"AttackCampaignID\":\"xyz987\",\"AttackID\":\"abc777\",\"ColoCountry\":\"AD\",\"ColoGeoHash\":\"gbuun\",\"ColoID\":46,\"ColoName\":\"SJC\",\"Datetime\":\"2021-07-27T00:01:07Z\",\"DestinationASN\":1900,\"DestinationASNDescription\":\"asn description\",\"DestinationCountry\":\"AD\",\"DestinationGeoHash\":\"gbuun\",\"DestinationPort\":0,\"Direction\":\"ingress\",\"GREChecksum\":10,\"GREEthertype\":10,\"GREHeaderLength\":1024,\"GREKey\":10,\"GRESequenceNumber\":10,\"GREVersion\":10,\"ICMPChecksum\":10,\"ICMPCode\":10,\"ICMPType\":10,\"IPDestinationAddress\":\"175.16.199.0\",\"IPDestinationSubnet\":\"/24\",\"IPFragmentOffset\":1480,\"IPHeaderLength\":20,\"IPMoreFragments\":1480,\"IPProtocol\":6,\"IPProtocolName\":\"tcp\",\"IPSourceAddress\":\"67.43.156.0\",\"IPSourceSubnet\":\"/24\",\"IPTotalLength\":1024,\"IPTotalLengthBuckets\":10,\"IPTtl\":240,\"IPTtlBuckets\":2,\"IPv4Checksum\":0,\"IPv4DontFragment\":0,\"IPv4Dscp\":46,\"IPv4Ecn\":1,\"IPv4Identification\":1,\"IPv4Options\":1,\"IPv6Dscp\":46,\"IPv6Ecn\":1,\"IPv6ExtensionHeaders\":\"header\",\"IPv6FlowLabel\":1,\"IPv6Identification\":1,\"MitigationReason\":\"BLOCKED\",\"MitigationScope\":\"local\",\"MitigationSystem\":\"flowtrackd\",\"Outcome\":\"pass\",\"ProtocolState\":\"OPEN\",\"RuleID\":\"rule1\",\"RulesetID\":\"3b64149bfa6e4220bbbc2bd6db589552\",\"RulesetOverrideID\":\"id1\",\"SampleInterval\":1,\"SourceASN\":1500,\"SourceASNDescription\":\"Source ASN Description\",\"SourceCountry\":\"AD\",\"SourceGeoHash\":\"gbuun\",\"SourcePort\":0,\"TCPAcknowledgementNumber\":1000,\"TCPChecksum\":10,\"TCPDataOffset\":0,\"TCPFlags\":1,\"TCPFlagsString\":\"Human-readable flags string\",\"TCPMss\":512,\"TCPOptions\":\"mss\",\"TCPSackBlocks\":1,\"TCPSacksPermitted\":1,\"TCPSequenceNumber\":100,\"TCPTimestampEcr\":100,\"TCPTimestampValue\":100,\"TCPUrgentPointer\":10,\"TCPWindowScale\":10,\"TCPWindowSize\":10,\"UDPChecksum\":10,\"UDPPayloadLength\":10,\"Verdict\":\"pass\"}",
+        "original": "{\"AttackCampaignID\":\"xyz987\",\"AttackID\":\"abc777\",\"ColoCountry\":\"AD\",\"ColoGeoHash\":\"gbuun\",\"ColoID\":46,\"ColoName\":\"SJC\",\"Datetime\":\"2021-07-27T00:01:07Z\",\"DestinationASN\":1900,\"DestinationASNDescription\":\"asn description\",\"DestinationCountry\":\"AD\",\"DestinationGeoHash\":\"gbuun\",\"DestinationPort\":0,\"Direction\":\"ingress\",\"GREChecksum\":10,\"GREEthertype\":10,\"GREHeaderLength\":1024,\"GREKey\":10,\"GRESequenceNumber\":10,\"GREVersion\":10,\"ICMPChecksum\":10,\"ICMPCode\":10,\"ICMPType\":10,\"IPDestinationAddress\":\"175.16.199.0\",\"IPDestinationSubnet\":\"/24\",\"IPFragmentOffset\":1480,\"IPHeaderLength\":20,\"IPMoreFragments\":1480,\"IPProtocol\":6,\"IPProtocolName\":\"tcp\",\"IPSourceAddress\":\"67.43.156.0\",\"IPSourceSubnet\":\"/24\",\"IPTotalLength\":1024,\"IPTotalLengthBuckets\":10,\"IPTtl\":240,\"IPTtlBuckets\":2,\"IPv4Checksum\":0,\"IPv4DontFragment\":0,\"IPv4Dscp\":46,\"IPv4Ecn\":1,\"IPv4Identification\":1,\"IPv4Options\":1,\"IPv6Dscp\":46,\"IPv6Ecn\":1,\"IPv6ExtensionHeaders\":\"0\",\"IPv6FlowLabel\":1,\"IPv6Identification\":1,\"MitigationReason\":\"BLOCKED\",\"MitigationScope\":\"local\",\"MitigationSystem\":\"flowtrackd\",\"Outcome\":\"pass\",\"ProtocolState\":\"OPEN\",\"RuleID\":\"rule1\",\"RulesetID\":\"3b64149bfa6e4220bbbc2bd6db589552\",\"RulesetOverrideID\":\"id1\",\"SampleInterval\":1,\"SourceASN\":1500,\"SourceASNDescription\":\"Source ASN Description\",\"SourceCountry\":\"AD\",\"SourceGeoHash\":\"gbuun\",\"SourcePort\":0,\"TCPAcknowledgementNumber\":1000,\"TCPChecksum\":10,\"TCPDataOffset\":0,\"TCPFlags\":1,\"TCPFlagsString\":\"Human-readable flags string\",\"TCPMss\":512,\"TCPOptions\":\"2\",\"TCPSackBlocks\":1,\"TCPSacksPermitted\":1,\"TCPSequenceNumber\":100,\"TCPTimestampEcr\":100,\"TCPTimestampValue\":100,\"TCPUrgentPointer\":10,\"TCPWindowScale\":10,\"TCPWindowSize\":10,\"UDPChecksum\":10,\"UDPPayloadLength\":10,\"Verdict\":\"pass\"}",
         "outcome": "success",
         "type": [
             "info"
@@ -3722,7 +3817,7 @@ An example event for `network_analytics` looks as following:
 | cloudflare_logpush.network_analytics.ipv4.options | List of Options numbers included in the IPv4 packet header. | long |
 | cloudflare_logpush.network_analytics.ipv6.dscp | Value of the Differentiated Services Code Point header field in the IPv6 packet. | long |
 | cloudflare_logpush.network_analytics.ipv6.ecn | Value of the Explicit Congestion Notification header field in the IPv6 packet. | long |
-| cloudflare_logpush.network_analytics.ipv6.extension_headers | List of Extension Header numbers included in the IPv6 packet header. | text |
+| cloudflare_logpush.network_analytics.ipv6.extension_headers | List of Extension Header numbers included in the IPv6 packet header. | long |
 | cloudflare_logpush.network_analytics.ipv6.flow_label | Value of the Flow Label header field in the IPv6 packet. | long |
 | cloudflare_logpush.network_analytics.ipv6.identification | Value of the Identification extension header field in the IPv6 packet. | long |
 | cloudflare_logpush.network_analytics.mitigation.reason | Reason for applying a mitigation to the packet, if any. | keyword |
@@ -3731,10 +3826,10 @@ An example event for `network_analytics` looks as following:
 | cloudflare_logpush.network_analytics.outcome | The action that Cloudflare systems took on the packet. | keyword |
 | cloudflare_logpush.network_analytics.pfp_custom_tag | The custom network analytics tag set by Programmable Flow Protection. | keyword |
 | cloudflare_logpush.network_analytics.protocol_state | State of the packet in the context of the protocol, if any. | keyword |
-| cloudflare_logpush.network_analytics.rule.id | Unique identifier of the rule contained with the Cloudflare L3/4 managed ruleset that this packet matched, if any. | text |
+| cloudflare_logpush.network_analytics.rule.id | Unique identifier of the rule contained with the Cloudflare L3/4 managed ruleset that this packet matched, if any. | keyword |
 | cloudflare_logpush.network_analytics.rule.name | Human-readable name of the rule contained within the Cloudflare L3/4 managed ruleset that this packet matched, if any. | text |
 | cloudflare_logpush.network_analytics.rule.set.id | Unique identifier of the Cloudflare L3/4 managed ruleset containing the rule that this packet matched, if any. | keyword |
-| cloudflare_logpush.network_analytics.rule.set.override.id | Unique identifier of the rule within the accounts root ddos_l4 phase ruleset which resulted in an override of the default sensitivity or action being applied/evaluated, if any. | text |
+| cloudflare_logpush.network_analytics.rule.set.override.id | Unique identifier of the rule within the accounts root ddos_l4 phase ruleset which resulted in an override of the default sensitivity or action being applied/evaluated, if any. | keyword |
 | cloudflare_logpush.network_analytics.sample_interval | The sample interval for this log. | long |
 | cloudflare_logpush.network_analytics.source.as.number.description | The ASN description associated with the source IP of the packet. | text |
 | cloudflare_logpush.network_analytics.source.as.number.name | The name of the ASN associated with the source IP of the packet. | text |
@@ -3750,7 +3845,7 @@ An example event for `network_analytics` looks as following:
 | cloudflare_logpush.network_analytics.tcp.flags.string | Human-readable string representation of the Flags header field in the TCP packet. | text |
 | cloudflare_logpush.network_analytics.tcp.flags.value | Value of the Flags header field in the TCP packet. | long |
 | cloudflare_logpush.network_analytics.tcp.mss | Value of the MSS option header field in the TCP packet. | long |
-| cloudflare_logpush.network_analytics.tcp.options | List of Options numbers included in the TCP packet header. | text |
+| cloudflare_logpush.network_analytics.tcp.options | List of Options numbers included in the TCP packet header. | long |
 | cloudflare_logpush.network_analytics.tcp.sack.blocks | Value of the SACK Blocks option header in the TCP packet. | long |
 | cloudflare_logpush.network_analytics.tcp.sack.permitted | Value of the SACK Permitted option header in the TCP packet. | long |
 | cloudflare_logpush.network_analytics.tcp.sequence_number | Value of the Sequence Number header field in the TCP packet. | long |
@@ -3777,11 +3872,11 @@ An example event for `network_analytics` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### network_session
+#### network_session
 
 This is the `network_session` dataset.
 
-#### Example
+##### Example
 
 An example event for `network_session` looks as following:
 
@@ -4063,11 +4158,11 @@ An example event for `network_session` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### page_shield_events
+#### page_shield_events
 
 This is the `page_shield_events` dataset.
 
-#### Example
+##### Example
 
 An example event for `page_shield_events` looks as following:
 
@@ -4188,11 +4283,11 @@ An example event for `page_shield_events` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### sinkhole_http
+#### sinkhole_http
 
 This is the `sinkhole_http` dataset.
 
-#### Example
+##### Example
 
 An example event for `sinkhole_http` looks as following:
 
@@ -4400,11 +4495,11 @@ An example event for `sinkhole_http` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### spectrum_event
+#### spectrum_event
 
 This is the `spectrum_event` dataset.
 
-#### Example
+##### Example
 
 An example event for `spectrum_event` looks as following:
 
@@ -4613,11 +4708,11 @@ An example event for `spectrum_event` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
 
-### workers_trace
+#### workers_trace
 
 This is the `workers_trace` dataset.
 
-#### Example
+##### Example
 
 An example event for `workers_trace` looks as following:
 
@@ -4765,3 +4860,12 @@ An example event for `workers_trace` looks as following:
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 
+
+### Inputs used
+
+These inputs are used in this integration:
+
+- [http_endpoint](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-http_endpoint)
+- [aws-s3](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3)
+- [gcs](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-gcs)
+- [azure-blob-storage](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-azure-blob-storage)

@@ -1,0 +1,67 @@
+- name: kolide.issues
+  type: group
+  description: Custom fields for Kolide device issues, collected from the REST API (GET /issues) and webhooks (issues.new / issues.resolved).
+  fields:
+    - name: id
+      type: keyword
+      description: Canonical identifier of the issue. From API `id` or webhook `issue_id`.
+    - name: title
+      type: keyword
+      description: Short human-readable description of the issue. Can be null on `issues.new` webhooks.
+    - name: issue_key
+      type: keyword
+      description: The key that identifies what kind of issue this is, for example `bundle_id` (API only).
+    - name: issue_value
+      type: keyword
+      description: The value associated with the issue key, for example the offending bundle identifier (API only).
+    - name: value
+      type: flattened
+      description: Structured details about why the device failed the check; the shape varies by check (API only).
+    - name: exempted
+      type: boolean
+      description: Whether the issue has been exempted from blocking the device (API only).
+    - name: detected_at
+      type: date
+      description: Timestamp at which the issue was first detected (API only).
+    - name: resolved_at
+      type: date
+      description: Timestamp at which the issue was resolved, if any (API only).
+    - name: blocks_device_at
+      type: date
+      description: Timestamp at which the issue will begin blocking the device (API only).
+    - name: last_rechecked_at
+      type: date
+      description: Timestamp at which the issue was last rechecked (API only).
+    - name: check
+      type: group
+      description: Reference to the check that produced the issue.
+      fields:
+        - name: id
+          type: keyword
+          description: Identifier of the failing check (webhook `check_id`).
+        - name: tags
+          type: keyword
+          description: Tags associated with the check (webhook only).
+    - name: device_information
+      type: group
+      description: Reference to the device the issue was detected on (API only).
+      fields:
+        - name: link
+          type: keyword
+          description: API URL of the device record.
+    - name: check_information
+      type: group
+      description: Reference to the check that produced the issue (API only).
+      fields:
+        - name: link
+          type: keyword
+          description: API URL of the check record.
+    - name: detected_version
+      type: keyword
+      description: Version of the software detected on the device (for example, Chrome, OS).
+    - name: expected_version
+      type: keyword
+      description: Minimum or newest version required for compliance.
+    - name: ssh_key_type
+      type: keyword
+      description: SSH key algorithm type (for example, ssh-ed25519, ssh-rsa).

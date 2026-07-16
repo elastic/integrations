@@ -1,0 +1,48 @@
+{
+    "id": "aws_lambda_otel-destination-delivery-failures",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when Lambda fails to deliver events to configured on-success or on-failure destinations.",
+        "name": "[AWS Lambda OTel] Destination delivery failures",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws_lambda",
+            "otel"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Destination Delivery Failures\n\n### Triage Steps\n1. Verify destination targets (SQS, SNS, EventBridge, Lambda) exist and permissions are correct.\n2. Check destination resource policies and KMS encryption settings.\n3. Review whether the destination service is throttling or unavailable.\n4. Confirm on-success and on-failure destination ARNs in the function configuration.\n5. Cross-check function error rates — destination failures often accompany invocation failures.\n\n### Escalation\nDestination delivery failures mean invocation outcomes are not being recorded — audit and recovery workflows may miss events."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE Namespace == \"AWS/Lambda\"\n    AND MetricName == \"DestinationDeliveryFailures\"\n    AND stat == \"Sum\"\n| STATS total_delivery_failures = SUM(`metrics.amazonaws.com/AWS/Lambda/DestinationDeliveryFailures`)\n  BY FunctionName, cloud.region\n// Any destination delivery failure is critical\n| WHERE total_delivery_failures > 0\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT total_delivery_failures DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "function_id",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

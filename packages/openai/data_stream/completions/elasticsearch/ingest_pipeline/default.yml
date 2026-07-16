@@ -25,6 +25,14 @@ processors:
     - remove:
         field: openai.completions.results
         ignore_missing: true
+    - drop:
+        tag: drop_finalization_sentinel
+        if: ctx.openai?.completions?.skip != null
+        description: >-
+          Drops the keep-alive sentinel the CEL program emits when a page contains only buckets
+          still inside the finalization grace period while pagination must continue. The sentinel
+          keeps filebeat's want_more chain alive (a zero-event evaluation ends the polling cycle
+          early); it carries no usage data and must not be indexed.
     # Add base OpenAI fields
     - rename:
         field: openai.completions.model
@@ -50,6 +58,23 @@ processors:
         field: openai.completions.object
         target_field: openai.base.usage_object_type
         ignore_missing: true
+    - script:
+        tag: set_base_usage_tokens
+        lang: painless
+        description: >-
+          Sums all token sub-fields (input, output, input_audio, output_audio) into a single
+          openai.base.usage_tokens for rate-limit headroom calculations. Script is required here
+          because completions has multiple token sources; single-source streams (embeddings,
+          moderations) use copy_from instead.
+        source: >-
+          long t = 0;
+          if (ctx.openai?.completions?.input_tokens != null) { t += ((Number)ctx.openai.completions.input_tokens).longValue(); }
+          if (ctx.openai?.completions?.output_tokens != null) { t += ((Number)ctx.openai.completions.output_tokens).longValue(); }
+          if (ctx.openai?.completions?.input_audio_tokens != null) { t += ((Number)ctx.openai.completions.input_audio_tokens).longValue(); }
+          if (ctx.openai?.completions?.output_audio_tokens != null) { t += ((Number)ctx.openai.completions.output_audio_tokens).longValue(); }
+          if (ctx.openai == null) { ctx.openai = [:]; }
+          if (ctx.openai.base == null) { ctx.openai.base = [:]; }
+          ctx.openai.base.usage_tokens = t;
     - date:
         field: openai.completions.start_time
         target_field: openai.base.start_time

@@ -44,3 +44,22 @@ deactivate
 echo ""
 echo "=== Running check_changelog_entries.sh tests ==="
 run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_check_changelog_entries.sh"
+
+echo ""
+echo "=== Running trigger_backport_lib.sh tests ==="
+# yq is required by generate_trigger_pipeline(); install it if not already available.
+if ! command -v yq &>/dev/null; then
+    source "${REPO_ROOT}/.buildkite/scripts/common.sh"
+    add_bin_path
+    with_yq
+fi
+run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_trigger_backport.sh"
+
+echo ""
+echo "=== Running backport_branch_lib.sh tests ==="
+# test_backport_branch.sh also requires yq.
+run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_backport_branch.sh"
+
+echo ""
+echo "=== Running non_package_patterns tests ==="
+run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_non_package_patterns.sh"

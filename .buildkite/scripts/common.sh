@@ -701,6 +701,16 @@ is_logsdb_compatible() {
     return 0
 }
 
+# pr_has_package_related_files reads file paths from stdin (one per line) and returns 0 if
+# at least one path is not matched by any non-package pattern, meaning package tests should run.
+# Returns 1 if every path is covered by a non-package pattern (no package tests needed).
+# Patterns are loaded from non_package_patterns.txt (one ERE per line; # comments and blank lines ignored).
+# Avoid using grep -q: SIGPIPE under set -o pipefail can cause missed detections.
+# See: https://buildkite.com/elastic/integrations/builds/25606
+pr_has_package_related_files() {
+    grep -Evf <(grep -Ev '^[[:space:]]*(#|$)' "${SCRIPTS_BUILDKITE_PATH}/non_package_patterns.txt") > /dev/null
+}
+
 # is_pr_affected accepts a package path and returns true if the package is affected by the PR
 # it expects that the working directory is the package path to be checked
 # Example:
@@ -773,50 +783,10 @@ is_pr_affected() {
 
     commit_merge=$(git merge-base "${from}" "${to}")
     echoerr "[${package_name}] git-diff: check non-package files (${commit_merge}..${to})"
-    
     # .github/CODEOWNERS must not be added to "skip_ci_on_only_changed" in ".buildkite/pull-requests.json".
     # When this file is updated, the Buildkite build must be triggered to run the "mage check" step.
     # Same for ".buildkite/scripts/packages/.+.sh": this pattern must not be added to "skip_ci_on_only_changed" to allow triggering the tests of the given package.
-    local non_package_patterns=(
-        'packages/'
-        '\.buildkite/pipeline\.backport\.yml'
-        '\.buildkite/pipeline\.publish\.yml'
-        '\.buildkite/pipeline\.schedule-daily\.yml'
-        '\.buildkite/pipeline\.schedule-weekly\.yml'
-        '\.buildkite/pipeline\.serverless\.yml'
-        '\.buildkite/pull-requests\.json'
-        '\.buildkite/scripts/backport_branch\.sh'
-        '\.buildkite/scripts/build_packages\.sh'
-        '\.buildkite/scripts/check_changelog_entries\.sh'
-        '\.buildkite/scripts/packages/.+\.sh'
-        '\.buildkite/scripts/requirements-ci-python-scripts\.txt'
-        '\.buildkite/scripts/run_buildkite_scripts_tests\.sh'
-        '\.buildkite/scripts/run_dev_scripts_tests\.sh'
-        '\.buildkite/scripts/test_check_changelog_entries\.sh'
-        '\.buildkite/scripts/test_helpers\.sh'
-        '\.github/CODEOWNERS'
-        '\.github/ISSUE_TEMPLATE/'
-        '\.github/PULL_REQUEST_TEMPLATE\.md'
-        '\.github/dependabot\.yml'
-        '\.github/stale\.yml'
-        '\.github/workflows/'
-        '\.mergify\.yml'
-        '\.agents/skills/'
-        'catalog-info\.yaml'
-        'docs/'
-        'dev/scripts/'
-        'CODE_OF_CONDUCT\.md'
-        'CONTRIBUTING\.md'
-        'README\.md'
-    )
-    local non_package_regex
-    non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
-    
-    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
-    # Example:
-    # https://buildkite.com/elastic/integrations/builds/25606
-    # https://github.com/elastic/integrations/pull/13810
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v "${non_package_regex}" > /dev/null; then
+    if git diff --name-only "${commit_merge}" "${to}" | pr_has_package_related_files; then
         echo "[${package_name}] PR is affected: found non-package files"
         return 0
     fi
@@ -1224,6 +1194,36 @@ delete_and_create_gh_pr_comment() {
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "/repos/${owner}/${repo}/issues/comments/${comment_id}"
+    fi
+
+    local contents
+    contents="$(cat "${comment_file}")"
+    printf -v contents '%s\n%s' "${contents}" "${metadata}"
+
+    echo "Creating new comment"
+    gh pr comment \
+        "${pr_number}" \
+        --repo "${owner}/${repo}" \
+        --body "${contents}"
+}
+
+# Posts a new comment on every pipeline run/retry while staying idempotent
+# within a single attempt. Pass a unique id per attempt (e.g. build-number +
+# retry-count) — if a comment with that id already exists the call is a no-op,
+# so transient gh failures can be retried safely without double-posting.
+create_new_gh_pr_comment() {
+    local owner="$1"
+    local repo="$2"
+    local pr_number="$3"
+    local id="$4"
+    local comment_file="$5"
+    local metadata="<!--COMMENT_GENERATED_WITH_ID_${id}-->"
+
+    local comment_id
+    comment_id=$(get_comment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
+    if [[ -n "${comment_id}" ]]; then
+        echo "Comment already posted for id=${id}, skipping"
+        return
     fi
 
     local contents

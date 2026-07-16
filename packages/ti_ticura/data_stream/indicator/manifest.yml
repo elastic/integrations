@@ -1,0 +1,91 @@
+type: logs
+title: Indicator
+ilm_policy: logs-ti_ticura.indicator-default_policy
+streams:
+  - input: cel
+    vars:
+      - name: url
+        type: text
+        title: Ticura URL
+        multi: false
+        required: true
+        show_user: false
+        default: https://api.ticura.io/v1/feeds/download/full?targetFormat=ECSV1&mode=url
+        description: >-
+          Fixed Ticura feed endpoint. Not user-configurable; overridden only by the package's system tests to point at a mock. `mode=url` makes the API return the feed's direct download URL as JSON, which the integration downloads directly.
+      - name: api_token
+        type: password
+        title: Ticura API key
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+        description: API key used to access the Ticura API instance
+      - name: interval
+        type: text
+        title: Download Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 1h
+        description: >-
+          How often the full feed is downloaded. **Keep this below 24 hours.** Indicators are re-asserted on every download, so this interval bounds freshness: indicators Ticura removes from the feed leave the active set within roughly a day, and never faster than one interval. An interval of 24 hours or longer can make still-active indicators briefly disappear from dashboards and Indicator Match rules between downloads.
+      - name: http_client_timeout
+        type: text
+        title: HTTP client timeout
+        description: Maximum time to wait for a single feed download to complete. Feed size depends on your Ticura subscription and selected filters, ranging from a few MB for narrowly-scoped feeds to a few hundred MB for full feeds. Increase this value if your feed is large or your network is slow.
+        multi: false
+        required: true
+        show_user: true
+        default: 15m
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        multi: false
+        required: false
+        show_user: false
+        description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - ti_ticura-indicator
+      - name: preserve_original_event
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        default: false
+        multi: false
+        required: true
+        show_user: true
+      - name: enable_request_tracer
+        title: Enable request tracing
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Only applies to agent-based deployments. See the [CEL input `resource.tracer.filename` documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+        type: bool
+        default: false
+        multi: false
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+    template_path: cel.yml.hbs
+    title: Ticura Indicators
+    description: Collect threat intelligence indicators from Ticura curated feeds.

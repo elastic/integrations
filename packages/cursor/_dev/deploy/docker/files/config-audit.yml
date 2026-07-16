@@ -1,100 +1,8 @@
 rules:
-  # Round 3+ — steady-state, page 1.
-  # Fires on every subsequent interval once Round 2 has completed.
-  # The startTime exactly matches the last event timestamp returned by Round 2
-  # (2026-05-04T17:00:00.000Z), which the CEL stored as cursor.last_timestamp
-  # and then reformatted to RFC3339Nano (trailing zeros stripped to `Z`).
-  # Returns zero events so the cursor does not advance and polling terminates.
-  - path: /teams/audit-logs
-    methods: ["GET"]
-    query_params:
-      page: "1"
-      startTime: "2026-05-04T17:00:00Z"
-      endTime: "{endTime:.*}"
-      pageSize: "{pageSize:.*}"
-    request_headers:
-      Authorization:
-        - "Basic a2V5X3Rlc3QxMjM6"
-      Accept:
-        - "application/json"
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          {
-            "events": [],
-            "pagination": {
-              "page": 1,
-              "pageSize": 100,
-              "totalCount": 0,
-              "totalPages": 0,
-              "hasNextPage": false,
-              "hasPreviousPage": false
-            },
-            "params": { "teamId": 9990001, "startDate": 0, "endDate": 0 }
-          }
-  # Round 2 — page 1.
-  # Fires at the start of the second polling interval.
-  # The startTime exactly matches the last event timestamp from Round 1 page 2
-  # (2026-05-04T15:30:00.000Z), which the CEL stored as cursor.last_timestamp
-  # and then reformatted to RFC3339Nano (trailing zeros stripped to `Z`).
-  # Returns 2 events and hasNextPage=false so pagination stops immediately.
-  # The last event timestamp (2026-05-04T17:00:00.000Z) becomes the cursor for Round 3+.
-  - path: /teams/audit-logs
-    methods: ["GET"]
-    query_params:
-      page: "1"
-      startTime: "2026-05-04T15:30:00Z"
-      endTime: "{endTime:.*}"
-      pageSize: "{pageSize:.*}"
-    request_headers:
-      Authorization:
-        - "Basic a2V5X3Rlc3QxMjM6"
-      Accept:
-        - "application/json"
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          {
-            "events": [
-              {
-                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0007",
-                "timestamp": "2026-05-04T16:00:00.000Z",
-                "ip_address": "198.51.100.22",
-                "user_email": "admin@example.com",
-                "event_type": "add_user",
-                "event_data": { "user_email": "newuser@example.com" }
-              },
-              {
-                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0008",
-                "timestamp": "2026-05-04T17:00:00.000Z",
-                "ip_address": "198.51.100.23",
-                "user_email": "admin2@example.com",
-                "event_type": "team_settings",
-                "event_data": { "setting": "allow_invites", "enabled": true }
-              }
-            ],
-            "pagination": {
-              "page": 1,
-              "pageSize": 100,
-              "totalCount": 2,
-              "totalPages": 1,
-              "hasNextPage": false,
-              "hasPreviousPage": false
-            },
-            "params": { "teamId": 9990001, "startDate": 0, "endDate": 0 }
-          }
-  # Round 1 — page 2 (final page).
-  # Fires during the first polling interval after the CEL follows hasNextPage=true from page 1.
-  # startTime/endTime are dynamic (runtime values) so both are captured with a regex.
-  # Returns 3 events and hasNextPage=false, ending pagination for Round 1.
-  # The last event timestamp (2026-05-04T15:30:00.000Z) is stored as cursor.last_timestamp,
-  # which becomes the exact startTime the CEL sends in Round 2.
+  # Page 2 (final page).
+  # Returns 3 events and hasNextPage=false, ending pagination.
+  # Timestamps use now-relative offsets so they never age past the CEL
+  # program's 30-day API clamp.
   - path: /teams/audit-logs
     methods: ["GET"]
     query_params:
@@ -117,7 +25,7 @@ rules:
             "events": [
               {
                 "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0004",
-                "timestamp": "2026-05-04T13:00:00.000Z",
+                "timestamp": "{{ (now "-237h").Format "2006-01-02T15:04:05.000Z" }}",
                 "ip_address": "203.0.113.10",
                 "user_email": "unknown",
                 "event_type": "remove_user",
@@ -125,7 +33,7 @@ rules:
               },
               {
                 "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0005",
-                "timestamp": "2026-05-04T14:00:00.000Z",
+                "timestamp": "{{ (now "-236h").Format "2006-01-02T15:04:05.000Z" }}",
                 "ip_address": "198.51.100.20",
                 "user_email": "cloud@example.com",
                 "event_type": "cloud_agent_user_settings",
@@ -133,7 +41,7 @@ rules:
               },
               {
                 "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0006",
-                "timestamp": "2026-05-04T15:30:00.000Z",
+                "timestamp": "{{ (now "-235h").Format "2006-01-02T15:04:05.000Z" }}",
                 "ip_address": "198.51.100.21",
                 "user_email": "ops@example.com",
                 "event_type": "login",
@@ -150,12 +58,9 @@ rules:
             },
             "params": { "teamId": 9990001, "startDate": 0, "endDate": 0 }
           }
-  # Round 1 — page 1 (catchall).
-  # Fires at the very start of the first polling interval when no cursor exists.
-  # startTime is derived from now-initial_interval and endTime from now, both dynamic,
-  # so both are captured with a regex. This rule must be last among page=1 rules so
-  # the more-specific Round 2 and Round 3+ rules match first.
+  # Page 1 (catchall).
   # Returns 3 events and hasNextPage=true, driving the CEL to fetch page 2.
+  # startTime and endTime are dynamic (runtime values) so both use a regex.
   - path: /teams/audit-logs
     methods: ["GET"]
     query_params:
@@ -178,7 +83,7 @@ rules:
             "events": [
               {
                 "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0001",
-                "timestamp": "2026-05-04T10:00:00.000Z",
+                "timestamp": "{{ (now "-240h").Format "2006-01-02T15:04:05.000Z" }}",
                 "ip_address": "198.51.100.10",
                 "user_email": "alice@example.com",
                 "event_type": "login",
@@ -186,7 +91,7 @@ rules:
               },
               {
                 "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0002",
-                "timestamp": "2026-05-04T11:00:00.000Z",
+                "timestamp": "{{ (now "-239h").Format "2006-01-02T15:04:05.000Z" }}",
                 "ip_address": "192.0.2.50",
                 "user_email": "mcp@example.com",
                 "event_type": "mcp_server_config",
@@ -194,7 +99,7 @@ rules:
               },
               {
                 "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0003",
-                "timestamp": "2026-05-04T12:00:00.000Z",
+                "timestamp": "{{ (now "-238h").Format "2006-01-02T15:04:05.000Z" }}",
                 "ip_address": "198.51.100.11",
                 "user_email": "bob@example.com",
                 "event_type": "cloud_agent_user_settings",

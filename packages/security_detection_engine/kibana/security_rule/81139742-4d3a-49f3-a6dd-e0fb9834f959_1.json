@@ -1,0 +1,112 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies inbound ICMP Timestamp (type 13) or Information (type 15) requests from external addresses to internal RFC1918 destinations. These message types are rarely used in modern networks and are commonly associated with host and path fingerprinting during reconnaissance.",
+        "from": "now-9m",
+        "index": [
+            "logs-network_traffic.icmp-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "ICMP Timestamp or Information Request from the Internet",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating ICMP Timestamp or Information Request from the Internet\n\nICMP Timestamp and Information requests are legacy diagnostic messages. Inbound use from the Internet toward internal\nhosts is uncommon in production networks and often indicates active scanning or OS fingerprinting.\n\n### Possible investigation steps\n\n- Review `source.ip` against threat intelligence and prior scan activity on the environment.\n- Determine whether the targeted `destination.ip` is an exposed host, VPN concentrator, or mis-NATed internal asset.\n- Look for adjacent port scans, SYN sweeps, or exploit attempts from the same source around the alert window.\n- Check whether the destination host replied and whether follow-on connections were attempted.\n\n### False positive analysis\n\n- Some legacy network monitoring or SLA probes may still use ICMP Timestamp requests. Maintain exceptions for known\n  monitoring source ranges after validation.\n- Shared hosting or multi-tenant environments with overlapping address space may require destination-specific tuning.\n\n### Response and remediation\n\n- Block or rate-limit the external source at the perimeter if activity is unauthorized.\n- Verify that the targeted internal host is not unintentionally exposed to the Internet.\n- Increase monitoring on targeted assets for follow-on exploitation attempts.",
+        "query": "data_stream.dataset:network_traffic.icmp\n  and (network_traffic.icmp.request.type:(13 or 15) or icmp.request.type:(13 or 15))\n  and destination.ip:(\n    10.0.0.0/8 or\n    172.16.0.0/12 or\n    192.168.0.0/16\n  )\n  and not source.ip:(\n    10.0.0.0/8 or\n    100.64.0.0/10 or\n    127.0.0.0/8 or\n    169.254.0.0/16 or\n    172.16.0.0/12 or\n    192.168.0.0/16 or\n    192.0.0.0/24 or\n    192.0.0.0/29 or\n    192.0.0.8/32 or\n    192.0.0.9/32 or\n    192.0.0.10/32 or\n    192.0.0.170/32 or\n    192.0.0.171/32 or\n    192.0.2.0/24 or\n    192.175.48.0/24 or\n    192.31.196.0/24 or\n    192.52.193.0/24 or\n    192.88.99.0/24 or\n    198.18.0.0/15 or\n    198.51.100.0/24 or\n    203.0.113.0/24 or\n    224.0.0.0/4 or\n    240.0.0.0/4 or\n    \"::1\" or\n    \"FE80::/10\" or\n    \"FF00::/8\"\n  )\n",
+        "references": [
+            "https://www.rfc-editor.org/rfc/rfc792",
+            "https://nmap.org/book/host-discovery-techniques.html",
+            "https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "icmp.request.type",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "network_traffic.icmp.request.type",
+                "type": "integer"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "81139742-4d3a-49f3-a6dd-e0fb9834f959",
+        "setup": "## Setup\n\nThis rule requires ICMP transaction telemetry from the Elastic network_traffic integration (`network_traffic.icmp`\ndata stream).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Network",
+            "Tactic: Discovery",
+            "Tactic: Reconnaissance",
+            "Use Case: Network Security Monitoring",
+            "Use Case: Threat Detection",
+            "Data Source: Network Traffic",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1018",
+                        "name": "Remote System Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1018/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0043",
+                    "name": "Reconnaissance",
+                    "reference": "https://attack.mitre.org/tactics/TA0043/"
+                },
+                "technique": [
+                    {
+                        "id": "T1595",
+                        "name": "Active Scanning",
+                        "reference": "https://attack.mitre.org/techniques/T1595/",
+                        "subtechnique": [
+                            {
+                                "id": "T1595.001",
+                                "name": "Scanning IP Blocks",
+                                "reference": "https://attack.mitre.org/techniques/T1595/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "81139742-4d3a-49f3-a6dd-e0fb9834f959_1",
+    "type": "security-rule"
+}

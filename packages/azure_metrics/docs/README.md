@@ -97,15 +97,15 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Elastic Agent is required to collect data from Azure Monitor and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
-### Agentless deployment
+### Elastic Managed deployment
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html).
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ## Known limitations & issues
 
-- Missing Lookback Support: The integration currently lacks a lookback window for metric collection. If the Elastic Agent stops or an Agentless deployment restarts, metrics might be missed. A lookback feature is currently in development to address this.
+- Missing Lookback Support: The integration currently lacks a lookback window for metric collection. If the Elastic Agent stops or an Elastic Managed deployment restarts, metrics might be missed. A lookback feature is currently in development to address this.
 - Batch API Issue: When Batch API is active (default is inactive), a lack of matching resources in a single integration can cause collection to halt for all integrations.
   - Fixes Scheduled: 8.19.17, 9.3.6, and 9.4.2.
   - Workarounds: Turn off the Batch API setting, or ensure each integration targets at least one Azure resource.
@@ -393,6 +393,7 @@ so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | azure.application_id | The application ID | keyword |  |  |
 | azure.compute_vm_scaleset.available_memory_bytes.avg | Amount of physical memory, in bytes, immediately available for allocation to a process or for system use in the Virtual Machine | float | byte | gauge |
+| azure.compute_vm_scaleset.available_memory_percentage.avg | Amount of physical memory, as a percentage, immediately available for allocation to a process or for system use in the Virtual Machine | float | percent | gauge |
 | azure.compute_vm_scaleset.cpu_credits_consumed.avg | Total number of credits consumed by the Virtual Machine. Only available on B-series burstable VMs | float |  | gauge |
 | azure.compute_vm_scaleset.cpu_credits_remaining.avg | Total number of credits available to burst. Only available on B-series burstable VMs | float |  | gauge |
 | azure.compute_vm_scaleset.data_disk_bandwidth_consumed_percentage.avg | Percentage of data disk bandwidth consumed per minute | float | percent | gauge |

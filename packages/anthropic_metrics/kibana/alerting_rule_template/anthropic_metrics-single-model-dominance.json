@@ -1,0 +1,43 @@
+{
+    "id": "anthropic_metrics-single-model-dominance",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Anthropic] Single Model Dominance",
+        "description": "Alerts when a single model accounts for more than 90% of total token consumption. May indicate a misconfiguration where traffic is not routing to the intended model.",
+        "tags": [
+            "Anthropic",
+            "Usage",
+            "Configuration"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "15m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 6,
+            "timeWindowUnit": "h",
+            "esqlQuery": {
+                "esql": "// Alert when one model accounts for more than 90% of total tokens.\n// Two-stage aggregation: per-model totals, then compare top model vs grand total.\n// Requires at least 2 active models and minimum volume to avoid false positives.\n// Adjust the 90.0 threshold in the final WHERE clause as needed.\nFROM metrics-anthropic_metrics.usage-*\n| WHERE anthropic.usage.uncached_input_tokens IS NOT NULL AND anthropic.usage.model IS NOT NULL\n| STATS model_tokens = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.output_tokens) BY anthropic.usage.model\n| SORT model_tokens DESC\n| LIMIT 20\n| STATS top_model_tokens = MAX(model_tokens), grand_total = SUM(model_tokens), model_count = COUNT(*)\n| EVAL dominance_pct = ROUND(top_model_tokens * 100.0 / grand_total, 1)\n| WHERE model_count >= 2 AND grand_total > 10000 AND dominance_pct > 90.0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "anthropic_metrics-602de168-1b42-4dd6-a463-9c4878e5db94"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Single Model Dominance\n\n### Triage Steps\n1. Open the Token Usage dashboard and check the model breakdown panel to see which model dominates.\n2. Verify whether the dominance is intentional (e.g., a standardization decision) or a misconfiguration.\n3. Check `anthropic.usage.workspace_id` to see if the dominance is org-wide or limited to specific workspaces.\n4. Review application routing configurations to confirm traffic is being directed to the intended models.\n5. Compare the current model distribution against the previous week to identify when the shift occurred.\n\n### Common Causes\n- Intentional standardization on a single model (may be a false positive — consider tuning)\n- Load balancer or routing misconfiguration sending all traffic to one model\n- A fallback configuration where a primary model is unavailable and all traffic routes to the backup\n- A new workload overwhelming other models' share of traffic\n\n### Tuning\n- Adjust the `90.0` dominance percentage threshold to match your organization's model diversity goals.\n- The alert requires at least 2 active models and `10000` tokens minimum volume to avoid false positives on low-traffic periods.\n- If single-model usage is expected for your org, consider disabling this alert."
+            }
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

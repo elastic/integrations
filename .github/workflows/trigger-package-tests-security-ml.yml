@@ -19,6 +19,9 @@ concurrency:
   group: trigger-secml-itp-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
+permissions:
+  contents: none
+
 jobs:
   trigger:
     if: github.event.pull_request.head.repo.full_name == github.repository
@@ -30,7 +33,7 @@ jobs:
     steps:
       - name: Fetch ephemeral token for security-ml dispatch
         id: auth
-        uses: elastic/ci-gh-actions/fetch-github-token@v1.5.0
+        uses: elastic/ci-gh-actions/fetch-github-token@v1.5.3
         with:
           vault-instance: ci-prod
 

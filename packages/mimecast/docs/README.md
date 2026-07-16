@@ -323,6 +323,8 @@ An example event for `cloud_integrated` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -690,22 +692,22 @@ An example event for `siem` looks as following:
 {
     "@timestamp": "2021-11-12T12:15:46.000Z",
     "agent": {
-        "ephemeral_id": "209054e3-c38a-4e5a-bb6c-e771a044eb63",
-        "id": "561734f3-9650-4135-bc74-cf4d379801c5",
-        "name": "elastic-agent-56189",
+        "ephemeral_id": "b9b503e9-092b-4ff9-82d7-5fe035b87cab",
+        "id": "949dd69d-1c58-45d5-8401-dd1500236b54",
+        "name": "elastic-agent-24961",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.siem_logs",
-        "namespace": "85570",
+        "namespace": "59193",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "561734f3-9650-4135-bc74-cf4d379801c5",
+        "id": "949dd69d-1c58-45d5-8401-dd1500236b54",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -730,7 +732,7 @@ An example event for `siem` looks as following:
         ],
         "created": "2021-11-12T12:15:46+0000",
         "dataset": "mimecast.siem_logs",
-        "ingested": "2025-12-16T05:32:04Z",
+        "ingested": "2026-06-08T14:14:21Z",
         "original": "{\"Content-Disposition\":\"attachment; filename=\\\"jrnl_20211018093329655.json\\\"\",\"Dir\":\"Internal\",\"Rcpt\":\"o365_service_account@example.com\",\"RcptActType\":\"Jnl\",\"RcptHdrType\":\"Unknown\",\"Sender\":\"johndoe@example.com\",\"aCode\":\"fjihpfEgM_iRwemxhe3t_w\",\"acc\":\"ABC123\",\"datetime\":\"2021-11-12T12:15:46+0000\"}",
         "outcome": "unknown"
     },
@@ -760,6 +762,14 @@ An example event for `siem` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.hash.md5 | MD5 hash. | keyword |
+| email.attachments.file.hash.sha1 | SHA1 hash. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
+| email.attachments.file.size | Attachment file size in bytes. | long |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -855,7 +865,7 @@ An example event for `siem` looks as following:
 | mimecast.route | The route of the message. (Inbound; Outbound; Internal; External) | keyword |
 | mimecast.scanResults | The reason that the click was blocked. | keyword |
 | mimecast.senderDomain | The sender domain. | keyword |
-| mimecast.senderDomainInternal | The sender domain is a registered internal domain. | keyword |
+| mimecast.senderDomainInternal | Whether the sender domain is a registered internal domain. | keyword |
 | mimecast.senderEnvelope | The sender of the email. | keyword |
 | mimecast.senderHeader | Sender address found in the from header of the email. | keyword |
 | mimecast.senderIp | The source IP of the original message or sending mail server. | keyword |
@@ -978,6 +988,9 @@ An example event for `threat_intel_malware_customer` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1095,6 +1108,9 @@ An example event for `threat_intel_malware_grid` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1218,6 +1234,11 @@ An example event for `ttp_ap` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |

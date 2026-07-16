@@ -57,11 +57,11 @@ Rate limit configuration snapshots:
 
 ## How do I deploy this integration?
 
-### Agentless deployment
+### Elastic Managed deployment
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/docs/manage-data/ingest/agentless/agentless-integrations) and the [Agentless integrations FAQ](https://www.elastic.co/docs/troubleshoot/security/agentless-integrations).
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/agentless/agentless-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/troubleshoot/security/agentless-integrations).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent-based deployment
 
@@ -219,4 +219,29 @@ The `rate_limit` data stream collects rate limit configuration from the Anthropi
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of input that generated the event. | keyword |
+
+
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+**The following alert rule templates are available:**
+
+<details>
+<summary>View the alert rule templates</summary>
+
+| Name | Description |
+|---|---|
+| [Anthropic] Cache Hit Rate Drop | Alerts when the input token cache hit ratio drops below 30%. A sudden drop means prompts are not hitting cache, which increases cost and latency. |
+| [Anthropic] Cost Anomaly | Alerts when daily cost exceeds a configurable threshold. Catches unexpected spend spikes from runaway workloads or new model adoption before they accumulate. |
+| [Anthropic] Monthly Budget Spend Limit | Alerts when cumulative spend for the current calendar month exceeds a configurable budget. Resets on the 1st of each month. Default threshold is $1,000 (100000 cents). Adjust the threshold in the ES|QL WHERE clause. |
+| [Anthropic] Single Model Dominance | Alerts when a single model accounts for more than 90% of total token consumption. May indicate a misconfiguration where traffic is not routing to the intended model. |
+| [Anthropic] Token Consumption Spike | Alerts when total token consumption in the current window is unusually high compared to baseline. Fires when any model's hourly token count exceeds a configurable threshold. |
+| [Anthropic] Per-Workspace Daily Cost Spike | Alerts when any single workspace's daily cost exceeds a configurable threshold. Catches runaway spend in individual workspaces that may hide under the org-wide total. Default threshold is $20 (2000 cents). Adjust the threshold in the ES|QL WHERE clause. |
+
+</details>
 

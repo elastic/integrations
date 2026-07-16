@@ -6,11 +6,24 @@ on:
 
 permissions:
   contents: read
+  copilot-requests: write
   issues: write
   pull-requests: read
 
 jobs:
   run:
+    # Disabled 2026-07-02 — no current owner. Re-enable by removing this
+    # `if: false` line via a reviewed PR so the change is visible.
+    if: false
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-breaking-change-detector.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+    with:
+      additional-instructions: |
+        Do NOT flag changes to `conditions.kibana.version` or
+        `conditions.elastic.subscription` in any package's `manifest.yml`
+        as breaking changes. The Elastic package registry is version-aware:
+        when a package narrows its Kibana version constraint, users on
+        older Kibana versions are not broken — they continue to see and
+        use the latest package version compatible with their stack. The
+        newer version is simply not offered to them. Narrowing stack
+        version constraints is a normal, non-breaking operation in this
+        repository.

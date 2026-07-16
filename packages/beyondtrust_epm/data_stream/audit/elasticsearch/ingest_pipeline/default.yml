@@ -1,0 +1,804 @@
+---
+description: Pipeline for processing audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      ignore_missing: true
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: beyondtrust_epm.audit
+  - fingerprint:
+      tag: fingerprint_with_id
+      fields:
+        - beyondtrust_epm.audit.id
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_change_into_event_type
+      value: change
+  - append:
+      field: event.category
+      tag: append_change_into_event_type
+      value: configuration
+  - date:
+      field: beyondtrust_epm.audit.agentDataAuditing.newTimestamp
+      tag: date_agentDataAuditing_newTimestamp
+      if: ctx.beyondtrust_epm?.audit?.agentDataAuditing?.newTimestamp != null && ctx.beyondtrust_epm.audit.agentDataAuditing.newTimestamp != ''
+      target_field: beyondtrust_epm.audit.agentDataAuditing.newTimestamp
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.agentDataAuditing.newTimestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: beyondtrust_epm.audit.agentDataAuditing.oldTimestamp
+      tag: date_agentDataAuditing_oldTimestamp
+      if: ctx.beyondtrust_epm?.audit?.agentDataAuditing?.oldTimestamp != null && ctx.beyondtrust_epm.audit.agentDataAuditing.oldTimestamp != ''
+      target_field: beyondtrust_epm.audit.agentDataAuditing.oldTimestamp
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.agentDataAuditing.oldTimestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.apiClientDataAuditing.deleted
+      tag: convert_apiClientDataAuditing_deleted_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.apiClientDataAuditing.deleted
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.apiClientDataAuditing.secretUpdated
+      tag: convert_apiClientDataAuditing_secretUpdated_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.apiClientDataAuditing.secretUpdated
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.authorizationRequestDataAuditing.authRequestConfigChanged
+      tag: convert_authorizationRequestDataAuditing_authRequestConfigChanged_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.authorizationRequestDataAuditing.authRequestConfigChanged
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.authorizationRequestDataAuditing.authRequestIntegrationEnabled
+      tag: convert_authorizationRequestDataAuditing_authRequestIntegrationEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.authorizationRequestDataAuditing.authRequestIntegrationEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.authorizationRequestDataAuditing.oldAuthRequestIntegrationEnabled
+      tag: convert_authorizationRequestDataAuditing_oldAuthRequestIntegrationEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.authorizationRequestDataAuditing.oldAuthRequestIntegrationEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.autoUpdateRateLimitDataAuditing.oldPmRequestsLimitMinutes
+      tag: convert_autoUpdateRateLimitDataAuditing_oldPmRequestsLimitMinutes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.autoUpdateRateLimitDataAuditing.oldPmRequestsLimitMinutes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.autoUpdateRateLimitDataAuditing.oldPmRequestsLimits
+      tag: convert_autoUpdateRateLimitDataAuditing_oldPmRequestsLimits_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.autoUpdateRateLimitDataAuditing.oldPmRequestsLimits
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.autoUpdateRateLimitDataAuditing.pmRequestsLimitMinutes
+      tag: convert_autoUpdateRateLimitDataAuditing_pmRequestsLimitMinutes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.autoUpdateRateLimitDataAuditing.pmRequestsLimitMinutes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.autoUpdateRateLimitDataAuditing.pmRequestsLimits
+      tag: convert_autoUpdateRateLimitDataAuditing_pmRequestsLimits_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.autoUpdateRateLimitDataAuditing.pmRequestsLimits
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.azureADIntegrationDataAuditing.azureAdConfigChanged
+      tag: convert_azureADIntegrationDataAuditing_azureAdConfigChanged_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.azureADIntegrationDataAuditing.azureAdConfigChanged
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.azureADIntegrationDataAuditing.azureAdIntegrationEnabled
+      tag: convert_azureADIntegrationDataAuditing_azureAdIntegrationEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.azureADIntegrationDataAuditing.azureAdIntegrationEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.azureADIntegrationDataAuditing.azureAdUseCertificateAuth
+      tag: convert_azureADIntegrationDataAuditing_azureAdUseCertificateAuth_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.azureADIntegrationDataAuditing.azureAdUseCertificateAuth
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.azureADIntegrationDataAuditing.oldAzureAdIntegrationEnabled
+      tag: convert_azureADIntegrationDataAuditing_oldAzureAdIntegrationEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.azureADIntegrationDataAuditing.oldAzureAdIntegrationEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.azureADIntegrationDataAuditing.oldAzureAdUseCertificateAuth
+      tag: convert_azureADIntegrationDataAuditing_oldAzureAdUseCertificateAuth_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.azureADIntegrationDataAuditing.oldAzureAdUseCertificateAuth
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.computerPolicyDataAuditing.deactivatedAgentDeletionDays
+      tag: convert_computerPolicyDataAuditing_deactivatedAgentDeletionDays_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.computerPolicyDataAuditing.deactivatedAgentDeletionDays
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.computerPolicyDataAuditing.enableDeactivatedAgentDeletion
+      tag: convert_computerPolicyDataAuditing_enableDeactivatedAgentDeletion_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.computerPolicyDataAuditing.enableDeactivatedAgentDeletion
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.computerPolicyDataAuditing.inactivityAgentDeactivationDays
+      tag: convert_computerPolicyDataAuditing_inactivityAgentDeactivationDays_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.computerPolicyDataAuditing.inactivityAgentDeactivationDays
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.computerPolicyDataAuditing.oldDeactivatedAgentDeletionDays
+      tag: convert_computerPolicyDataAuditing_oldDeactivatedAgentDeletionDays_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.computerPolicyDataAuditing.oldDeactivatedAgentDeletionDays
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.computerPolicyDataAuditing.oldEnableDeactivatedAgentDeletion
+      tag: convert_computerPolicyDataAuditing_oldEnableDeactivatedAgentDeletion_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.computerPolicyDataAuditing.oldEnableDeactivatedAgentDeletion
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.computerPolicyDataAuditing.oldInactivityAgentDeactivationDays
+      tag: convert_computerPolicyDataAuditing_oldInactivityAgentDeactivationDays_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.computerPolicyDataAuditing.oldInactivityAgentDeactivationDays
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: beyondtrust_epm.audit.created
+      tag: date_created
+      if: ctx.beyondtrust_epm?.audit?.created != null && ctx.beyondtrust_epm.audit.created != ''
+      target_field: beyondtrust_epm.audit.created
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.created
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_audit_created
+      copy_from: beyondtrust_epm.audit.created
+      ignore_empty_value: true
+  - set:
+      field: event.created
+      tag: set_event_created_from_audit_created
+      copy_from: beyondtrust_epm.audit.created
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_audit_details
+      copy_from: beyondtrust_epm.audit.details
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.audit.groupDataAuditing.newIsDefault
+      tag: convert_groupDataAuditing_newIsDefault_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.groupDataAuditing.newIsDefault
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.groupDataAuditing.oldIsDefault
+      tag: convert_groupDataAuditing_oldIsDefault_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.groupDataAuditing.oldIsDefault
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.id
+      tag: convert_id_to_string
+      type: string
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_audit_id
+      copy_from: beyondtrust_epm.audit.id
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.audit.installationKeyDataAuditing.deleted
+      tag: convert_installationKeyDataAuditing_deleted_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.installationKeyDataAuditing.deleted
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.installationKeyDataAuditing.newDisabled
+      tag: convert_installationKeyDataAuditing_newDisabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.installationKeyDataAuditing.newDisabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.installationKeyDataAuditing.oldDisabled
+      tag: convert_installationKeyDataAuditing_oldDisabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.installationKeyDataAuditing.oldDisabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.locked
+      tag: convert_locked_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.locked
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.managementRuleDataAuditing.newPriority
+      tag: convert_managementRuleDataAuditing_newPriority_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.managementRuleDataAuditing.newPriority
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.managementRuleDataAuditing.oldPriority
+      tag: convert_managementRuleDataAuditing_oldPriority_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.managementRuleDataAuditing.oldPriority
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.mmcRemoteClientDataAuditing.enabled
+      tag: convert_mmcRemoteClientDataAuditing_enabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.mmcRemoteClientDataAuditing.enabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.mmcRemoteClientDataAuditing.oldEnabled
+      tag: convert_mmcRemoteClientDataAuditing_oldEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.mmcRemoteClientDataAuditing.oldEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.openIdConfigDataAuditing.secretUpdated
+      tag: convert_openIdConfigDataAuditing_secretUpdated_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.openIdConfigDataAuditing.secretUpdated
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.reputationSettingsDataAuditing.oldReputationIntegrationEnabled
+      tag: convert_reputationSettingsDataAuditing_oldReputationIntegrationEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.reputationSettingsDataAuditing.oldReputationIntegrationEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.reputationSettingsDataAuditing.reputationConfigChanged
+      tag: convert_reputationSettingsDataAuditing_reputationConfigChanged_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.reputationSettingsDataAuditing.reputationConfigChanged
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.reputationSettingsDataAuditing.reputationIntegrationEnabled
+      tag: convert_reputationSettingsDataAuditing_reputationIntegrationEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.reputationSettingsDataAuditing.reputationIntegrationEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.securitySettingsDataAuditing.oldTokenTimeout
+      tag: convert_securitySettingsDataAuditing_oldTokenTimeout_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.securitySettingsDataAuditing.oldTokenTimeout
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.securitySettingsDataAuditing.tokenTimeout
+      tag: convert_securitySettingsDataAuditing_tokenTimeout_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.securitySettingsDataAuditing.tokenTimeout
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.siemIntegrationBaseDetailModel.siemIntegrationEnabled
+      tag: convert_siemIntegrationBaseDetailModel_siemIntegrationEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.siemIntegrationBaseDetailModel.siemIntegrationEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.siemIntegrationQradarAuditing.siemIntegrationEnabled
+      tag: convert_siemIntegrationQradarAuditing_siemIntegrationEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.siemIntegrationQradarAuditing.siemIntegrationEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.siemIntegrationS3Auditing.siemIntegrationEnabled
+      tag: convert_siemIntegrationS3Auditing_siemIntegrationEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.siemIntegrationS3Auditing.siemIntegrationEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.siemIntegrationS3Auditing.siemSseEnabled
+      tag: convert_siemIntegrationS3Auditing_siemSseEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.siemIntegrationS3Auditing.siemSseEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.siemIntegrationSentinelAuditing.siemIntegrationEnabled
+      tag: convert_siemIntegrationSentinelAuditing_siemIntegrationEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.siemIntegrationSentinelAuditing.siemIntegrationEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.siemIntegrationSplunkAuditing.siemIntegrationEnabled
+      tag: convert_siemIntegrationSplunkAuditing_siemIntegrationEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.siemIntegrationSplunkAuditing.siemIntegrationEnabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.name
+      tag: set_user_name_from_audit_user
+      copy_from: beyondtrust_epm.audit.user
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.audit.userDataAuditing.deletedAt
+      tag: date_userDataAuditing_deletedAt
+      if: ctx.beyondtrust_epm?.audit?.userDataAuditing?.deletedAt != null && ctx.beyondtrust_epm.audit.userDataAuditing.deletedAt != ''
+      target_field: beyondtrust_epm.audit.userDataAuditing.deletedAt
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.userDataAuditing.deletedAt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.userDataAuditing.newDisabled
+      tag: convert_userDataAuditing_newDisabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.userDataAuditing.newDisabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.audit.userDataAuditing.oldDisabled
+      tag: convert_userDataAuditing_oldDisabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.audit.userDataAuditing.oldDisabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.id
+      tag: set_user_id_from_audit_userId
+      copy_from: beyondtrust_epm.audit.userId
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_beyondtrust_epm_audit_userId_into_related_user
+      value: '{{{beyondtrust_epm.audit.userId}}}'
+      allow_duplicates: false
+      if: ctx.beyondtrust_epm?.audit?.userId != null
+  - append:
+      field: related.user
+      tag: append_beyondtrust_epm_audit_user_into_related_user
+      value: '{{{beyondtrust_epm.audit.user}}}'
+      allow_duplicates: false
+      if: ctx.beyondtrust_epm?.audit?.user != null
+  - append:
+      field: related.user
+      tag: append_beyondtrust_epm_audit_changedBy_into_related_user
+      value: '{{{beyondtrust_epm.audit.changedBy}}}'
+      allow_duplicates: false
+      if: ctx.beyondtrust_epm?.audit?.changedBy != null
+  - remove:
+      field:
+        - beyondtrust_epm.audit.details
+        - beyondtrust_epm.audit.id
+        - beyondtrust_epm.audit.user
+        - beyondtrust_epm.audit.userId
+        - beyondtrust_epm.audit.created
+      tag: remove_fields_mapped_to_ecs
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  # rename to snake case
+  - script:
+      description: >
+        Convert field names from camelCase to snake_case recursively.
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      source: |-
+        String camelToSnake(String str) {
+          StringBuilder result = new StringBuilder();
+          for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0) {
+                char prev = str.charAt(i - 1);
+                boolean nextIsLower = (i + 1 < str.length()) && Character.isLowerCase(str.charAt(i + 1));
+                boolean prevIsDigit = Character.isDigit(prev);
+                if (Character.isLowerCase(prev) || prevIsDigit || (Character.isUpperCase(prev) && nextIsLower)) {
+                  result.append('_');
+                }
+              }
+              result.append(Character.toLowerCase(c));
+            } else {
+              result.append(c);
+            }
+          }
+          return result.toString();
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              String newKey = camelToSnake(entry.getKey());
+              newObj[newKey] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        ctx.beyondtrust_epm = ctx.beyondtrust_epm ?: [:];
+        if (ctx.beyondtrust_epm?.audit != null) {
+          ctx.beyondtrust_epm.audit = convertToSnakeCase(ctx.beyondtrust_epm.audit);
+        }
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      if: ctx.error?.message != null
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{_ingest.on_failure_processor_type}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
