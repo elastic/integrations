@@ -126,8 +126,8 @@ func Apply(opts Options) (*Result, error) {
 	success := false
 	defer func() {
 		if !success {
-			_ = a.git.Run("checkout", "-")
-			_ = a.git.Run("branch", "-D", workingBranch)
+			_ = a.git.RunToStderr("checkout", "-")
+			_ = a.git.RunToStderr("branch", "-D", workingBranch)
 		}
 	}()
 
@@ -175,7 +175,7 @@ func Apply(opts Options) (*Result, error) {
 		}, nil
 	}
 
-	if err := a.git.Run("push", remote, "HEAD"); err != nil {
+	if err := a.git.RunToStderr("push", remote, "HEAD"); err != nil {
 		return nil, fmt.Errorf("pushing: %w", err)
 	}
 
@@ -195,7 +195,7 @@ func Apply(opts Options) (*Result, error) {
 	// presence is no longer needed. Callers running mage targets after this
 	// function returns rely on the working tree still holding the tooling code
 	// from the calling branch, not the backport branch content.
-	if err := a.git.Run("checkout", "-"); err != nil {
+	if err := a.git.RunToStderr("checkout", "-"); err != nil {
 		fmt.Fprintf(os.Stderr, "warning: could not restore original branch: %v\n", err)
 	}
 
@@ -221,13 +221,13 @@ func (a applier) fixChangelogLink(changelogPath, version, prURL, remote string) 
 	if err != nil {
 		return fmt.Errorf("computing relative path for %s failed: %w", changelogPath, err)
 	}
-	if err := a.git.Run("add", relPath); err != nil {
+	if err := a.git.RunToStderr("add", relPath); err != nil {
 		return fmt.Errorf("staging changelog failed: %w", err)
 	}
-	if err := a.git.Run("commit", "-m", "Fix changelog link to backport PR"); err != nil {
+	if err := a.git.RunToStderr("commit", "-m", "Fix changelog link to backport PR"); err != nil {
 		return fmt.Errorf("committing changelog link fix failed: %w", err)
 	}
-	if err := a.git.Run("push", remote, "HEAD"); err != nil {
+	if err := a.git.RunToStderr("push", remote, "HEAD"); err != nil {
 		return fmt.Errorf("pushing changelog link fix failed: %w", err)
 	}
 	return nil
@@ -275,13 +275,13 @@ func workingBranchName(pkg, branchName, sha8 string) string {
 // prepareWorkingBranch fetches the backport branch from remote and creates a
 // local working branch off it.
 func (a applier) prepareWorkingBranch(remote, branchName, workingBranch string) error {
-	if err := a.git.Run("fetch", remote, branchName); err != nil {
+	if err := a.git.RunToStderr("fetch", remote, branchName); err != nil {
 		return fmt.Errorf(
 			"fetching %q from remote %q failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w",
 			branchName, remote, err,
 		)
 	}
-	if err := a.git.Run("checkout", "-b", workingBranch, remote+"/"+branchName); err != nil {
+	if err := a.git.RunToStderr("checkout", "-b", workingBranch, remote+"/"+branchName); err != nil {
 		return fmt.Errorf("creating working branch %s: %w", workingBranch, err)
 	}
 	return nil
@@ -318,9 +318,9 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 	// git config: resolveManifestVersionConflict below parses "<<<<<<<"/"======="/
 	// ">>>>>>>" text directly, and a diff3/zdiff3 style would make every block
 	// look unresolvable.
-	cherryErr := a.git.Run("-c", "merge.conflictStyle=merge", "cherry-pick", "-n", sha)
+	cherryErr := a.git.RunToStderr("-c", "merge.conflictStyle=merge", "cherry-pick", "-n", sha)
 
-	if err := a.git.Run("checkout", "HEAD", "--", changelogPath); err != nil {
+	if err := a.git.RunToStderr("checkout", "HEAD", "--", changelogPath); err != nil {
 		a.abortCherryPick()
 		return nil, fmt.Errorf("restoring changelog after cherry-pick: %w", err)
 	}
@@ -336,7 +336,7 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 			return nil, fmt.Errorf("resolving manifest.yml conflict: %w", err)
 		}
 		if manifestResolved {
-			if err := a.git.Run("add", manifestPath); err != nil {
+			if err := a.git.RunToStderr("add", manifestPath); err != nil {
 				a.abortCherryPick()
 				return nil, fmt.Errorf("staging resolved manifest.yml: %w", err)
 			}
@@ -376,7 +376,7 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 // with -n, git does not always write CHERRY_PICK_HEAD, so --abort may fail
 // and leave the index dirty.
 func (a applier) abortCherryPick() {
-	_ = a.git.Run("reset", "--hard", "HEAD")
+	_ = a.git.RunToStderr("reset", "--hard", "HEAD")
 }
 
 // manifestMissingConflict reports a conflict Result if manifestPath does not
@@ -562,7 +562,7 @@ func (a applier) resetAndWriteChanges(manifestPath, changelogPath string, change
 	// cherryPickOrConflict already restores changelog.yml on the success path, so
 	// this checkout is redundant in normal flow. It is kept here so this function
 	// remains self-contained and correct if ever called from a different context.
-	if err := a.git.Run("checkout", "HEAD", "--", changelogPath); err != nil {
+	if err := a.git.RunToStderr("checkout", "HEAD", "--", changelogPath); err != nil {
 		return "", fmt.Errorf("resetting changelog: %w", err)
 	}
 	newVersion, err := bumpPatchVersion(manifestPath)
@@ -588,10 +588,10 @@ func (a applier) commitChanges(pkgDir, sha, newVersion string) error {
 	}
 	commitMsg := strings.TrimRight(originalMsg, "\n") +
 		fmt.Sprintf("\n\n(cherry picked from commit %s)\n\nBackport version: %s", sha, newVersion)
-	if err := a.git.Run("add", pkgDir); err != nil {
+	if err := a.git.RunToStderr("add", pkgDir); err != nil {
 		return fmt.Errorf("staging changes: %w", err)
 	}
-	if err := a.git.Run("commit", "-m", commitMsg); err != nil {
+	if err := a.git.RunToStderr("commit", "-m", commitMsg); err != nil {
 		return fmt.Errorf("committing: %w", err)
 	}
 	return nil
