@@ -600,7 +600,7 @@ func (a applier) syncOwners(remote, sourceBranch, pkg, pkgDir string) string {
 		rollback()
 		return warn("skipping owner sync for %s: %v", pkg, err)
 	}
-	if err := a.commitOwnerSync(pkg, pkgDir); err != nil {
+	if err := a.commitOwnerSync(pkg, manifestPath); err != nil {
 		rollback()
 		return warn("committing owner sync for %s: %v", pkg, err)
 	}
@@ -719,11 +719,11 @@ func setManifestOwner(manifestPath, newOwner string) error {
 	return os.WriteFile(manifestPath, updated, info.Mode())
 }
 
-// commitOwnerSync stages the owner-sync changes to pkgDir and CODEOWNERS and
-// commits them separately from the cherry-pick commit.
-func (a applier) commitOwnerSync(pkg, pkgDir string) error {
-	if err := a.git.Run("add", pkgDir); err != nil {
-		return fmt.Errorf("staging package changes: %w", err)
+// commitOwnerSync stages manifest.yml and CODEOWNERS and commits them
+// separately from the cherry-pick commit.
+func (a applier) commitOwnerSync(pkg, manifestPath string) error {
+	if err := a.git.Run("add", manifestPath); err != nil {
+		return fmt.Errorf("staging manifest.yml: %w", err)
 	}
 	if err := a.git.Run("add", filepath.Join(a.workDir, owners.CodeownersRelPath)); err != nil {
 		return fmt.Errorf("staging CODEOWNERS: %w", err)
