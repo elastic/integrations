@@ -18,11 +18,20 @@ jobs:
     # Skip bot-authored edits to break the infinite self-trigger loop:
     # patching the checklist comment (✅ / ⚠️ suffix) fires another
     # issue_comment edited event — filtering on actor stops it here.
-    # For issue_comment events also require the event to be on a pull request.
+    # For issue_comment events also require:
+    #   - the event is on a pull request (not a plain issue)
+    #   - the edited comment contains the checklist marker (zero-cost body check,
+    #     no API call needed — the full comment body is in the event payload)
     if: >-
       ${{
         github.actor != 'github-actions[bot]' &&
-        (github.event_name == 'push' || github.event.issue.pull_request != null)
+        (
+          github.event_name == 'push' ||
+          (
+            github.event.issue.pull_request != null &&
+            contains(github.event.comment.body, '<!-- backport-checklist -->')
+          )
+        )
       }}
     concurrency:
       # Serialise runs per PR:
