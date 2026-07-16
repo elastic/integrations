@@ -356,18 +356,12 @@ processors:
       tag: categorize
       ignore_missing_pipeline: true
 
-  # Deduplication: CEL cursor uses an inclusive detected_at boundary, so the last
-  # record may be re-collected. Fingerprint event.id to _id so polls upsert state.
-  # _tmp.blocked (computed in categorize.yml from blocks_device_at vs @timestamp)
-  # is included so a pending issue, a blocked issue, and a resolved issue each
-  # fingerprint to a distinct _id instead of collapsing into one document across
-  # the issue's lifecycle. kolide.issues.blocks_device_at itself is also kept
-  # here even though it doesn't change while an issue is pending (it's set once
-  # and is otherwise immutable) -- it's included purely so the source of
-  # _tmp.blocked stays obvious in this fields list, not because it adds any
-  # additional deduplication behavior. This intentionally changes the _id for
-  # existing open issues on upgrade (kolide is Technical Preview); see the
-  # changelog for a cleanup delete-by-query if needed.
+  # Deduplication: CEL cursor's inclusive detected_at boundary can re-collect
+  # the last record, so fingerprint event.id to _id and drop it as a duplicate.
+  # _tmp.blocked and blocks_device_at are included so pending/blocked/resolved
+  # states of the same issue fingerprint to distinct _ids instead of collapsing.
+  # This intentionally changes the _id for existing open issues on upgrade
+  # (kolide is Technical Preview); see the changelog for a cleanup delete-by-query.
   - fingerprint:
       fields:
         - event.id

@@ -128,7 +128,8 @@ processors:
 
   # event.id / deduplication: check-run results have no native id, so derive a
   # stable event.id from device_id + check_id + @timestamp. aws-s3/gcs are
-  # at-least-once, so fingerprint it to _id to upsert re-delivered objects.
+  # at-least-once, so fingerprint it to _id so re-delivered objects are dropped
+  # as duplicates instead of indexed twice.
   - set:
       field: event.id
       tag: set_event_id

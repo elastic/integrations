@@ -336,7 +336,7 @@ The `request` data stream collects approval-workflow requests from the Kolide RE
 
 #### device
 
-The `device` data stream provides Kolide device inventory records and device-trust status changes. Because the `GET /devices` endpoint does not expose a modified-since cursor, each interval retrieves the complete collection. The ingest pipeline assigns a content-based document `_id` so unchanged devices are overwritten, while any change is captured as a new document.
+The `device` data stream provides Kolide device inventory records and device-trust status changes. Because the `GET /devices` endpoint does not expose a modified-since cursor, each interval retrieves the complete collection. The ingest pipeline assigns a content-based document `_id` so unchanged devices are deduplicated across polls, while any change is captured as a new document.
 
 ##### device fields
 
@@ -348,7 +348,7 @@ The `device` data stream provides Kolide device inventory records and device-tru
 
 #### people
 
-The `people` data stream provides Kolide identity records for active people using the `GET /people` endpoint. This includes Elastic Common Schema (ECS) user fields, SCIM-imported usernames, last-authentication time, and device-registration flags that Kolide exposes on this resource. Group, identity provider (IdP), SCIM, and deprovisioning details live on separate Kolide API resources like `person_groups` and `deprovisioned_people` that this data stream does not collect. Because the `GET /people` endpoint does not expose a modified-since cursor, each interval retrieves the complete collection. The ingest pipeline assigns a person-id-based document `_id` so unchanged people are overwritten.
+The `people` data stream provides Kolide identity records for active people using the `GET /people` endpoint. This includes Elastic Common Schema (ECS) user fields, SCIM-imported usernames, last-authentication time, and device-registration flags that Kolide exposes on this resource. Group, identity provider (IdP), SCIM, and deprovisioning details live on separate Kolide API resources like `person_groups` and `deprovisioned_people` that this data stream does not collect. Because the `GET /people` endpoint does not expose a modified-since cursor, each interval retrieves the complete collection. The ingest pipeline derives a content-fingerprint document `_id`, excluding `last_authenticated_at`, so byte-identical records are deduplicated across polls; records whose tracked fields change between polls are indexed as new documents rather than overwriting the prior one.
 
 ##### people fields
 
