@@ -68,12 +68,12 @@ func (m *packageManifest) HasRequires() bool {
 func ParsePackageManifest(content []byte) (*packageManifest, error) {
 	cfg, err := yaml.NewConfig(content, ucfg.PathSep("."))
 	if err != nil {
-		return nil, fmt.Errorf("parsing package manifest: %w", err)
+		return nil, fmt.Errorf("failed to parse package manifest: %w", err)
 	}
 
 	var manifest packageManifest
 	if err := cfg.Unpack(&manifest); err != nil {
-		return nil, fmt.Errorf("unpacking package manifest: %w", err)
+		return nil, fmt.Errorf("failed to unpack package manifest: %w", err)
 	}
 	return &manifest, nil
 }
