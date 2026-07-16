@@ -41,10 +41,10 @@ func parseCodeowners(git gitutil.Git, workDir, remoteRef string) (current, sourc
 	return current, source, nil
 }
 
-// readManifestOwners reads and extracts the owner.github field from
+// parseManifestOwners reads and extracts the owner.github field from
 // pkgDir/manifest.yml and from remoteRef's version of it, found at
 // relPkgDir (pkgDir relative to the repo root, slash-separated).
-func readManifestOwners(git gitutil.Git, pkgDir, remoteRef, relPkgDir string) (current, source string, err error) {
+func parseManifestOwners(git gitutil.Git, pkgDir, remoteRef, relPkgDir string) (current, source string, err error) {
 	currentData, err := os.ReadFile(filepath.Join(pkgDir, "manifest.yml"))
 	if err != nil {
 		return "", "", fmt.Errorf("reading manifest.yml: %w", err)
@@ -123,7 +123,7 @@ func compareWith(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string, 
 		return SyncPlan{}, false, nil
 	}
 
-	currentManifestOwner, sourceManifestOwner, err := readManifestOwners(git, pkgDir, remoteRef, relPkgDir)
+	currentManifestOwner, sourceManifestOwner, err := parseManifestOwners(git, pkgDir, remoteRef, relPkgDir)
 	if err != nil {
 		return SyncPlan{}, false, err
 	}
