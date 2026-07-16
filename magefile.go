@@ -604,10 +604,10 @@ func PostBackportComment() error {
 //
 // Usage: mage ApplyBackport <sha> <package> <target> [-openPR] [-asJSON] [-dryRun] \
 //
-//	[repository] [packagesDir]
+//	[-remote=<remote>] [-repository=<org/repo>] [-packagesDir=<path>]
 //
 // sha, pkg, target are required. All remaining parameters are optional (nil = unset).
-// *bool flags may be passed as -openPR / -asJSON / -dryRun on the command line.
+// All optional flags use -name=value format on the command line.
 func ApplyBackport(sha, pkg, target string, openPR, asJSON, dryRun *bool, remote, repository, packagesDir *string) error {
 	opts := apply.Options{
 		SHA:         sha,
