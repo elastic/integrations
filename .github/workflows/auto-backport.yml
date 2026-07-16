@@ -66,33 +66,6 @@ jobs:
             echo "PR #$ISSUE_NUMBER is not merged (state: $STATE) — skipping"
           fi
 
-      - uses: actions/checkout@v7
-        if: >-
-          ${{
-            github.event_name == 'push' ||
-            steps.pr-check.outputs.merged == 'true'
-          }}
-        with:
-          fetch-depth: 0
-
-      - name: Set up Go
-        if: >-
-          ${{
-            github.event_name == 'push' ||
-            steps.pr-check.outputs.merged == 'true'
-          }}
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: .go-version
-
-      - name: Install mage
-        if: >-
-          ${{
-            github.event_name == 'push' ||
-            steps.pr-check.outputs.merged == 'true'
-          }}
-        run: go install github.com/magefile/mage
-
       - name: Resolve merge SHA and PR metadata
         id: resolve
         if: >-
@@ -135,6 +108,21 @@ jobs:
           echo "merge_sha=$MERGE_SHA" >> "$GITHUB_OUTPUT"
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "pr_author=$PR_AUTHOR" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v7
+        if: steps.resolve.outputs.pr_number != ''
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        if: steps.resolve.outputs.pr_number != ''
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: .go-version
+
+      - name: Install mage
+        if: steps.resolve.outputs.pr_number != ''
+        run: go install github.com/magefile/mage
 
       - name: Find checklist comment
         id: find-comment
