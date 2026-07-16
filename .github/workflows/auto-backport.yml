@@ -51,11 +51,26 @@ jobs:
             echo "Actor $ACTOR lacks write/admin permission ($PERMISSION) — skipping"
           fi
 
+      - name: Check PR is merged
+        id: pr-check
+        if: github.event_name == 'issue_comment' && steps.actor-check.outputs.permitted == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          STATE=$(gh pr view "$ISSUE_NUMBER" --repo "$REPOSITORY" --json state --jq '.state')
+          if [[ "$STATE" == "MERGED" ]]; then
+            echo "merged=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "PR #$ISSUE_NUMBER is not merged (state: $STATE) — skipping"
+          fi
+
       - uses: actions/checkout@v7
         if: >-
           ${{
             github.event_name == 'push' ||
-            steps.actor-check.outputs.permitted == 'true'
+            steps.pr-check.outputs.merged == 'true'
           }}
         with:
           fetch-depth: 0
@@ -64,7 +79,7 @@ jobs:
         if: >-
           ${{
             github.event_name == 'push' ||
-            steps.actor-check.outputs.permitted == 'true'
+            steps.pr-check.outputs.merged == 'true'
           }}
         uses: actions/setup-go@v6
         with:
@@ -74,7 +89,7 @@ jobs:
         if: >-
           ${{
             github.event_name == 'push' ||
-            steps.actor-check.outputs.permitted == 'true'
+            steps.pr-check.outputs.merged == 'true'
           }}
         run: go install github.com/magefile/mage
 
@@ -83,7 +98,7 @@ jobs:
         if: >-
           ${{
             github.event_name == 'push' ||
-            steps.actor-check.outputs.permitted == 'true'
+            steps.pr-check.outputs.merged == 'true'
           }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -106,12 +121,7 @@ jobs:
           else
             PR_NUMBER="$ISSUE_NUMBER"
             PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$REPOSITORY" \
-              --json state,mergeCommit,labels,author)
-            STATE=$(jq -r '.state' <<< "$PR_DATA")
-            if [[ "$STATE" != "MERGED" ]]; then
-              echo "PR #$PR_NUMBER is not merged (state: $STATE) — skipping"
-              exit 0
-            fi
+              --json mergeCommit,labels,author)
             MERGE_SHA=$(jq -r '.mergeCommit.oid'            <<< "$PR_DATA")
             LABELS=$(jq -r   '[.labels[].name] | join(",")' <<< "$PR_DATA")
             PR_AUTHOR=$(jq -r '.author.login'               <<< "$PR_DATA")
