@@ -357,11 +357,9 @@ processors:
       ignore_missing_pipeline: true
 
   # Deduplication: CEL cursor's inclusive detected_at boundary can re-collect
-  # the last record, so fingerprint event.id to _id and drop it as a duplicate.
-  # _tmp.blocked and blocks_device_at are included so pending/blocked/resolved
+  # the last record, so fingerprint drops duplicates. resolved_at, blocked and
+  # blocks_device_at are included so pending/blocked/resolved states of the same
   # states of the same issue fingerprint to distinct _ids instead of collapsing.
-  # This intentionally changes the _id for existing open issues on upgrade
-  # (kolide is Technical Preview); see the changelog for a cleanup delete-by-query.
   - fingerprint:
       fields:
         - event.id
