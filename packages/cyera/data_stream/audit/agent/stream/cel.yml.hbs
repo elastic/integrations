@@ -24,6 +24,7 @@ redact:
   fields:
     - client_id
     - client_secret
+    - token
 program: |-
   (
     (has(state.?token.expiry) && timestamp(state.token.expiry) > now) ?
@@ -103,7 +104,7 @@ program: |-
           state.url.trim_right("/") + "/audits/resources/audits/v2?" + {
             "count": [string(state.batch_size)],
             "offset": [string(state.offset)],
-            "created_from": [string(state.start_time)],
+            "created_from": [state.start_time],
           }.format_query()
         ).with(
           {
@@ -115,7 +116,7 @@ program: |-
         ).do_request().as(resp, (resp.StatusCode == 200) ?
           resp.Body.decode_json().as(body,
             (
-              has(body.data) && body.data.size() > 0 && int(state.counter) + int(size(body.data)) < int(body.?total.orValue(-1))
+              has(body.data) && body.data.size() > 0 && int(state.counter) + size(body.data) < int(body.?total.orValue(-1))
             ).as(more,
               {
                 "events": (has(body.data) && body.data.size() > 0) ?
