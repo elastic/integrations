@@ -38,25 +38,25 @@ func parseCodeowners(git gitutil.Git, localPath, remoteGitRef string) (current, 
 }
 
 // parseManifestOwners reads and extracts the owner.github field from
-// pkgDir/manifest.yml and from remoteRef's version of it, found at
-// relPkgDir (pkgDir relative to the repo root, slash-separated).
-func parseManifestOwners(git gitutil.Git, pkgDir, remoteRef, relPkgDir string) (current, source string, err error) {
-	currentData, err := os.ReadFile(filepath.Join(pkgDir, "manifest.yml"))
+// localPath on disk and from remoteGitRef (e.g.
+// "origin/main:packages/aws/manifest.yml") via git show.
+func parseManifestOwners(git gitutil.Git, localPath, remoteGitRef string) (current, source string, err error) {
+	currentData, err := os.ReadFile(localPath)
 	if err != nil {
-		return "", "", fmt.Errorf("reading manifest.yml: %w", err)
+		return "", "", fmt.Errorf("reading %s: %w", localPath, err)
 	}
-	sourceData, err := git.Output("show", remoteRef+":"+relPkgDir+"/manifest.yml")
+	sourceData, err := git.Output("show", remoteGitRef)
 	if err != nil {
-		return "", "", fmt.Errorf("reading %s manifest.yml: %w", remoteRef, err)
+		return "", "", fmt.Errorf("reading %s: %w", remoteGitRef, err)
 	}
 
 	current, err = manifestOwner(currentData)
 	if err != nil {
-		return "", "", fmt.Errorf("reading manifest owner: %w", err)
+		return "", "", fmt.Errorf("parsing manifest owner from %s: %w", localPath, err)
 	}
 	source, err = manifestOwner([]byte(sourceData))
 	if err != nil {
-		return "", "", fmt.Errorf("reading %s manifest owner: %w", remoteRef, err)
+		return "", "", fmt.Errorf("parsing manifest owner from %s: %w", remoteGitRef, err)
 	}
 	return current, source, nil
 }
@@ -121,7 +121,9 @@ func compareWith(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string, 
 		return SyncPlan{}, false, nil
 	}
 
-	currentManifestOwner, sourceManifestOwner, err := parseManifestOwners(git, pkgDir, remoteRef, relPkgDir)
+	manifestPath := filepath.Join(pkgDir, "manifest.yml")
+	remoteManifestRef := remoteRef + ":" + relPkgDir + "/manifest.yml"
+	currentManifestOwner, sourceManifestOwner, err := parseManifestOwners(git, manifestPath, remoteManifestRef)
 	if err != nil {
 		return SyncPlan{}, false, err
 	}
