@@ -1,0 +1,75 @@
+rules:
+  # Page 2: follows pagination.next (cursor=CURSORPAGE2). Terminal page. Must
+  # precede the page-1 catch-all below since rule matching is first-match-wins
+  # and the page-1 rule (per_page only) would otherwise also match this request.
+  - path: /people
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      cursor: 'CURSORPAGE2'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "864140",
+                "name": "Bob Smith",
+                "email": "bob.smith@example.com",
+                "created_at": "2024-02-05T09:30:00Z",
+                "last_authenticated_at": null,
+                "has_registered_device": false,
+                "usernames": []
+              }
+            ],
+            "pagination": {
+              "next": "",
+              "current_cursor": "CURSORPAGE2",
+              "next_cursor": "",
+              "count": 1
+            }
+          }
+  # Page 1: initial request (per_page only, no cursor). Returns one person and
+  # a next-page cursor token.
+  - path: /people
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "861637",
+                "name": "Alice Johnson",
+                "email": "alice.johnson@example.com",
+                "created_at": "2024-01-10T08:00:00Z",
+                "last_authenticated_at": "2024-06-15T12:00:00Z",
+                "has_registered_device": true,
+                "usernames": ["alice.johnson@example.com"]
+              }
+            ],
+            "pagination": {
+              "next": "http://{{ hostname }}:{{ env "PORT" }}/people?per_page={{ .request.vars.per_page }}&cursor=CURSORPAGE2",
+              "current_cursor": "",
+              "next_cursor": "CURSORPAGE2",
+              "count": 1
+            }
+          }
