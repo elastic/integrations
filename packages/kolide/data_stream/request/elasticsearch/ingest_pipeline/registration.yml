@@ -1,0 +1,148 @@
+---
+description: >-
+  API-specific field extraction for Kolide registration_request records (GET
+  /registration_requests, PATCH/PUT /registration_requests/{id}). Invoked from
+  default.yml when json._kolide_request_type == 'registration'. See
+  https://kolideapi.readme.io/reference/get_registration-requests for the
+  documented response schema; field names below (in particular the
+  device_information/requester_information link-object's `link` property)
+  differ from the vendor's published OpenAPI schema in a couple of spots.
+processors:
+  # Human message. Real property is `requester_message`; `message` is kept as a
+  # defensive fallback in case a future API revision renames it.
+  - set:
+      field: message
+      tag: set_message_from_requester_message
+      copy_from: json.requester_message
+      ignore_empty_value: true
+      if: ctx.message == null && ctx.json?.requester_message instanceof String
+  - set:
+      field: message
+      tag: set_message_from_message
+      copy_from: json.message
+      ignore_empty_value: true
+      if: ctx.message == null && ctx.json?.message instanceof String
+
+  # Request state. Real property is `status` (pending | approved | denied);
+  # `state` is kept as a defensive fallback in case a future API revision
+  # renames it. Normalization to lowercase and event.outcome derivation happen
+  # centrally in default.yml's "Extended field extraction" section.
+  - set:
+      field: kolide.request.state
+      tag: set_state_from_status
+      copy_from: json.status
+      ignore_empty_value: true
+      if: ctx.json?.status instanceof String
+  - set:
+      field: kolide.request.state
+      tag: set_state_from_state
+      copy_from: json.state
+      ignore_empty_value: true
+      if: ctx.kolide?.request?.state == null && ctx.json?.state instanceof String
+
+  # Admin decision notes. `internal_denial_note` / `internal_approval_note` are
+  # never shown to the requester, so they land in a vendor-only field (the two
+  # are mutually exclusive per record, depending on the outcome);
+  # `end_user_denial_note` is the requester-facing denial message and maps to
+  # event.reason.
+  - set:
+      field: kolide.request.internal_message
+      tag: set_internal_message_denial
+      copy_from: json.internal_denial_note
+      ignore_empty_value: true
+      if: ctx.kolide?.request?.internal_message == null && ctx.json?.internal_denial_note instanceof String
+  - set:
+      field: kolide.request.internal_message
+      tag: set_internal_message_approval
+      copy_from: json.internal_approval_note
+      ignore_empty_value: true
+      if: ctx.kolide?.request?.internal_message == null && ctx.json?.internal_approval_note instanceof String
+  - set:
+      field: event.reason
+      tag: set_event_reason_denial
+      copy_from: json.end_user_denial_note
+      ignore_empty_value: true
+      if: ctx.event?.reason == null && ctx.json?.end_user_denial_note instanceof String
+
+  # Device. `device_information` is a link-object: {identifier, link}. The live
+  # API returns `link`; `location` is kept as a defensive fallback since some
+  # vendor schema documentation names this property `location` instead. The
+  # response does not embed a device name, so host.name is not set here;
+  # correlate on host.id with the `device` data stream if a name is needed.
+  - convert:
+      field: json.device_information.identifier
+      target_field: host.id
+      type: string
+      tag: convert_host_id
+      ignore_missing: true
+      if: ctx.host?.id == null
+  - set:
+      field: kolide.request.device.url
+      tag: set_device_url_link
+      copy_from: json.device_information.link
+      ignore_empty_value: true
+      if: ctx.kolide?.request?.device?.url == null && ctx.json?.device_information?.link instanceof String
+  - set:
+      field: kolide.request.device.url
+      tag: set_device_url_location
+      copy_from: json.device_information.location
+      ignore_empty_value: true
+      if: ctx.kolide?.request?.device?.url == null && ctx.json?.device_information?.location instanceof String
+
+  # Requester. `requester_information` is a link-object: {identifier, link}.
+  # See the device_information comment above for the link/location fallback
+  # note. The response does not embed a requester name or email, so
+  # user.email/user.name are not set here; correlate on user.id with the
+  # `people` data stream if a name or email is needed.
+  - convert:
+      field: json.requester_information.identifier
+      target_field: user.id
+      type: string
+      tag: convert_user_id
+      ignore_missing: true
+      if: ctx.user?.id == null
+  - set:
+      field: kolide.request.requester.url
+      tag: set_requester_url_link
+      copy_from: json.requester_information.link
+      ignore_empty_value: true
+      if: ctx.kolide?.request?.requester?.url == null && ctx.json?.requester_information?.link instanceof String
+  - set:
+      field: kolide.request.requester.url
+      tag: set_requester_url_location
+      copy_from: json.requester_information.location
+      ignore_empty_value: true
+      if: ctx.kolide?.request?.requester?.url == null && ctx.json?.requester_information?.location instanceof String
+
+  # The API only exposes `requested_at` (there is no separate created/updated
+  # timestamp; the decision trail lives in the `audit` data stream).
+  - date:
+      field: json.requested_at
+      target_field: kolide.request.created_at
+      formats:
+        - ISO8601
+      tag: date_kolide_created_at_requested_at
+      if: ctx.json?.requested_at != null
+  - date:
+      field: json.created_at
+      target_field: kolide.request.created_at
+      formats:
+        - ISO8601
+      tag: date_kolide_created_at
+      if: ctx.kolide?.request?.created_at == null && ctx.json?.created_at != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
