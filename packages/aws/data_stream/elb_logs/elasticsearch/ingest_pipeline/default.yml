@@ -173,11 +173,24 @@ processors:
       field: event.outcome
       value: failure
       if: 'ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400'
-  - set:
-      tag: set_trace_id_53565e4a
-      field: trace.id
-      value: '{{aws.elb.trace_id}}'
+  - script:
+      tag: script_derive_trace_id_from_xray
+      lang: painless
+      description: Derive the OpenTelemetry-compatible trace ID from the X-Ray format trace ID (Root=1-{8 hex}-{24 hex}) so ELB access logs and APM spans share the same trace.id. Falls back to the raw value for unrecognized formats.
       if: ctx?.aws?.elb?.trace_id != null
+      source: |-
+        String traceId = ctx.aws.elb.trace_id;
+        String root = traceId.splitOnToken(';')[0];
+        if (root.startsWith('Root=1-')) {
+          String[] parts = root.substring(7).splitOnToken('-');
+          if (parts.length == 2 && parts[0].length() == 8 && parts[1].length() == 24) {
+            traceId = parts[0] + parts[1];
+          }
+        }
+        if (ctx.trace == null) {
+          ctx.trace = new HashMap();
+        }
+        ctx.trace.id = traceId;
   - split:
       tag: split__tmp_actions_executed_to_aws_elb_action_executed_2b54cfea
       field: _tmp.actions_executed
