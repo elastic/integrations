@@ -14,29 +14,26 @@ import (
 	"github.com/elastic/integrations/dev/gitutil"
 )
 
-// CodeownersRelPath is .github/CODEOWNERS's path relative to the repo root.
-const CodeownersRelPath = ".github/CODEOWNERS"
-
 // parseCodeowners reads and parses the current worktree's CODEOWNERS file
 // (workDir/.github/CODEOWNERS) and remoteRef's version of it (e.g.
 // "origin/main"), via git show.
 func parseCodeowners(git gitutil.Git, workDir, remoteRef string) (current, source *codeowners.Owners, err error) {
-	currentData, err := os.ReadFile(filepath.Join(workDir, CodeownersRelPath))
+	currentData, err := os.ReadFile(filepath.Join(workDir, codeowners.DefaultCodeownersPath))
 	if err != nil {
-		return nil, nil, fmt.Errorf("reading %s: %w", CodeownersRelPath, err)
+		return nil, nil, fmt.Errorf("reading %s: %w", codeowners.DefaultCodeownersPath, err)
 	}
-	sourceData, err := git.Output("show", remoteRef+":"+CodeownersRelPath)
+	sourceData, err := git.Output("show", remoteRef+":"+codeowners.DefaultCodeownersPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("reading %s %s: %w", remoteRef, CodeownersRelPath, err)
+		return nil, nil, fmt.Errorf("reading %s %s: %w", remoteRef, codeowners.DefaultCodeownersPath, err)
 	}
 
 	current, err = codeowners.ParseOwners(string(currentData))
 	if err != nil {
-		return nil, nil, fmt.Errorf("parsing %s: %w", CodeownersRelPath, err)
+		return nil, nil, fmt.Errorf("parsing %s: %w", codeowners.DefaultCodeownersPath, err)
 	}
 	source, err = codeowners.ParseOwners(sourceData)
 	if err != nil {
-		return nil, nil, fmt.Errorf("parsing %s %s: %w", remoteRef, CodeownersRelPath, err)
+		return nil, nil, fmt.Errorf("parsing %s %s: %w", remoteRef, codeowners.DefaultCodeownersPath, err)
 	}
 	return current, source, nil
 }

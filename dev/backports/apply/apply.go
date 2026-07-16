@@ -24,6 +24,7 @@ import (
 	"github.com/elastic/integrations/dev/backports/changelog"
 	"github.com/elastic/integrations/dev/backports/owners"
 	"github.com/elastic/integrations/dev/citools"
+	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/gitutil"
 )
 
@@ -589,7 +590,7 @@ func (a applier) syncOwners(remote, sourceBranch, pkg, pkgDir string) string {
 	}
 
 	manifestPath := filepath.Join(pkgDir, "manifest.yml")
-	codeownersPath := filepath.Join(a.workDir, owners.CodeownersRelPath)
+	codeownersPath := filepath.Join(a.workDir, codeowners.DefaultCodeownersPath)
 	rollback := func() {
 		if rbErr := a.git.Run("checkout", "--", manifestPath, codeownersPath); rbErr != nil {
 			fmt.Fprintf(os.Stderr, "warning: could not restore files after owner sync failure for %s: %v\n", pkg, rbErr)
@@ -659,10 +660,10 @@ func writeOwnerSyncPlan(workDir, pkgDir, pkgPath string, plan owners.SyncPlan) e
 		return nil
 	}
 
-	codeownersPath := filepath.Join(workDir, owners.CodeownersRelPath)
+	codeownersPath := filepath.Join(workDir, codeowners.DefaultCodeownersPath)
 	data, err := os.ReadFile(codeownersPath)
 	if err != nil {
-		return fmt.Errorf("reading %s: %w", owners.CodeownersRelPath, err)
+		return fmt.Errorf("reading %s: %w", codeowners.DefaultCodeownersPath, err)
 	}
 	info, err := os.Stat(codeownersPath)
 	if err != nil {
@@ -671,7 +672,7 @@ func writeOwnerSyncPlan(workDir, pkgDir, pkgPath string, plan owners.SyncPlan) e
 
 	updated := owners.ApplyUpdates(string(data), updates, pkgPath)
 	if err := os.WriteFile(codeownersPath, []byte(updated), info.Mode()); err != nil {
-		return fmt.Errorf("writing %s: %w", owners.CodeownersRelPath, err)
+		return fmt.Errorf("writing %s: %w", codeowners.DefaultCodeownersPath, err)
 	}
 	return nil
 }
@@ -725,7 +726,7 @@ func (a applier) commitOwnerSync(pkg, manifestPath string) error {
 	if err := a.git.Run("add", manifestPath); err != nil {
 		return fmt.Errorf("staging manifest.yml: %w", err)
 	}
-	if err := a.git.Run("add", filepath.Join(a.workDir, owners.CodeownersRelPath)); err != nil {
+	if err := a.git.Run("add", filepath.Join(a.workDir, codeowners.DefaultCodeownersPath)); err != nil {
 		return fmt.Errorf("staging CODEOWNERS: %w", err)
 	}
 	if err := a.git.Run("commit", "-m", fmt.Sprintf("Sync %s package owners from main", pkg)); err != nil {
