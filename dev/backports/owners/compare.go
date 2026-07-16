@@ -14,26 +14,25 @@ import (
 	"github.com/elastic/integrations/dev/gitutil"
 )
 
-// parseCodeowners reads and parses the current worktree's CODEOWNERS file
-// (workDir/.github/CODEOWNERS) and remoteRef's version of it (e.g.
-// "origin/main"), via git show.
-func parseCodeowners(git gitutil.Git, workDir, remoteRef string) (current, source *codeowners.Owners, err error) {
-	currentData, err := os.ReadFile(filepath.Join(workDir, codeowners.DefaultCodeownersPath))
+// parseCodeowners reads and parses CODEOWNERS from localPath on disk and
+// from remoteGitRef (e.g. "origin/main:.github/CODEOWNERS") via git show.
+func parseCodeowners(git gitutil.Git, localPath, remoteGitRef string) (current, source *codeowners.Owners, err error) {
+	currentData, err := os.ReadFile(localPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("reading %s: %w", codeowners.DefaultCodeownersPath, err)
+		return nil, nil, fmt.Errorf("reading %s: %w", localPath, err)
 	}
-	sourceData, err := git.Output("show", remoteRef+":"+codeowners.DefaultCodeownersPath)
+	sourceData, err := git.Output("show", remoteGitRef)
 	if err != nil {
-		return nil, nil, fmt.Errorf("reading %s %s: %w", remoteRef, codeowners.DefaultCodeownersPath, err)
+		return nil, nil, fmt.Errorf("reading %s: %w", remoteGitRef, err)
 	}
 
 	current, err = codeowners.ParseOwners(string(currentData))
 	if err != nil {
-		return nil, nil, fmt.Errorf("parsing %s: %w", codeowners.DefaultCodeownersPath, err)
+		return nil, nil, fmt.Errorf("parsing %s: %w", localPath, err)
 	}
 	source, err = codeowners.ParseOwners(sourceData)
 	if err != nil {
-		return nil, nil, fmt.Errorf("parsing %s %s: %w", remoteRef, codeowners.DefaultCodeownersPath, err)
+		return nil, nil, fmt.Errorf("parsing %s: %w", remoteGitRef, err)
 	}
 	return current, source, nil
 }
@@ -97,7 +96,9 @@ func existingSubPaths(workDir, pkgPath string, current, source *codeowners.Owner
 // Callers checking multiple packages in one run should prefer compareWith to
 // avoid re-reading and re-parsing CODEOWNERS on every call.
 func Compare(git gitutil.Git, workDir, pkgDir, relPkgDir, remoteRef string) (plan SyncPlan, found bool, err error) {
-	current, source, err := parseCodeowners(git, workDir, remoteRef)
+	localPath := filepath.Join(workDir, codeowners.DefaultCodeownersPath)
+	remoteGitRef := remoteRef + ":" + codeowners.DefaultCodeownersPath
+	current, source, err := parseCodeowners(git, localPath, remoteGitRef)
 	if err != nil {
 		return SyncPlan{}, false, err
 	}

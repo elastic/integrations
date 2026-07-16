@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/gitutil"
 )
 
@@ -31,7 +32,9 @@ type Mismatch struct {
 // silently skipped, same as a package Compare reports as not found on
 // remoteRef.
 func CheckPackages(git gitutil.Git, workDir, remoteRef string, pkgNames []string, pkgDirs map[string]string) []Mismatch {
-	current, source, err := parseCodeowners(git, workDir, remoteRef)
+	localPath := filepath.Join(workDir, codeowners.DefaultCodeownersPath)
+	remoteGitRef := remoteRef + ":" + codeowners.DefaultCodeownersPath
+	current, source, err := parseCodeowners(git, localPath, remoteGitRef)
 	if err != nil {
 		// Surface as an error on every package rather than silently checking nothing.
 		var mismatches []Mismatch
