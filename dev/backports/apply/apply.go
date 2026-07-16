@@ -190,6 +190,15 @@ func Apply(opts Options) (*Result, error) {
 		}
 	}
 
+	// Restore the branch that was active before Apply() started. The working
+	// branch has been pushed (and the PR opened if --open-pr was set), so local
+	// presence is no longer needed. Callers running mage targets after this
+	// function returns rely on the working tree still holding the tooling code
+	// from the calling branch, not the backport branch content.
+	if err := a.git.Run("checkout", "-"); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: could not restore original branch: %v\n", err)
+	}
+
 	success = true
 	return &Result{
 		Status:       "success",

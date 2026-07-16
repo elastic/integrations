@@ -700,3 +700,34 @@ func TestApplyIntegration_DryRun(t *testing.T) {
 	assert.Contains(t, commitMsg, "cherry picked from commit")
 	assert.Contains(t, commitMsg, "Backport version: 1.0.1")
 }
+
+func TestApplyIntegration_RestoresBranchAfterSuccess(t *testing.T) {
+	workDir, fixSHA := setupIntegrationRepo(t)
+
+	g := gitutil.Git{Dir: workDir}
+	before, err := g.Output("rev-parse", "--abbrev-ref", "HEAD")
+	require.NoError(t, err)
+	require.Equal(t, "main", strings.TrimSpace(before), "test pre-condition: must start on main")
+
+	result, err := Apply(Options{
+		SHA:         fixSHA,
+		Package:     "kubernetes",
+		Target:      "backport-kubernetes-1.x",
+		Remote:      "origin",
+		DryRun:      false,
+		OpenPR:      false,
+		PackagesDir: "packages",
+		Repository:  "elastic/integrations",
+		WorkDir:     workDir,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Equal(t, "success", result.Status)
+
+	// Apply() must restore the branch it found at entry — callers running mage
+	// targets after this call rely on the working tree holding the calling
+	// branch's tooling code, not the backport branch content.
+	after, err := g.Output("rev-parse", "--abbrev-ref", "HEAD")
+	require.NoError(t, err)
+	assert.Equal(t, "main", strings.TrimSpace(after), "Apply() must restore the original branch on success")
+}
