@@ -222,9 +222,11 @@ jobs:
             NEW_BODY=$(mage -d "$GITHUB_WORKSPACE" updateChecklistBranchStatus "$BODY_FILE" "$BRANCH" "$STATUS")
             printf '%s' "$NEW_BODY" > "$BODY_FILE"
 
+            echo "Updating checklist comment for $BRANCH → $STATUS"
             gh api --method PATCH \
               "repos/$REPOSITORY/issues/comments/$COMMENT_ID" \
-              --field body=@"$BODY_FILE"
+              --field body=@"$BODY_FILE" \
+              --silent
 
             echo "Processed $BRANCH → $STATUS"
           done
