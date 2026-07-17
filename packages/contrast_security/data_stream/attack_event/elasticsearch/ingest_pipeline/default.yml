@@ -1,6 +1,14 @@
 ---
 description: Minimal ingest pipeline for Contrast Security attack events.
 processors:
+  - script:
+      tag: coerce_non_object_event
+      if: "ctx.event != null && !(ctx.event instanceof Map)"
+      lang: painless
+      source: >-
+        def original = ctx.event;
+        ctx.event = new HashMap();
+        ctx.event.original = original.toString();
   - set:
       tag: set_event_dataset
       field: event.dataset
