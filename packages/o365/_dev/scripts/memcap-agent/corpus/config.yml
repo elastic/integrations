@@ -1,0 +1,48 @@
+# Generation tuning for the fields in fields.yml. Fields not listed here are
+# generated with default per-type randomness. The top-level `fields:` key is the
+# format the corpus generator's config loader expects (config.LoadConfigFromYaml).
+fields:
+  - name: Id                       # dedup key: keep effectively unique across the corpus
+    cardinality: 100000000
+  - name: CreationTime
+    period: -12h                   # spread over the initial_interval window
+  - name: RecordType
+    value: 15                      # AzureActiveDirectoryStsLogon
+  - name: Operation
+    enum:
+      - UserLoggedIn
+      - UserLoginFailed
+      - Add member to role.
+      - Update user.
+  - name: Workload
+    value: AzureActiveDirectory
+  - name: ResultStatus
+    enum:
+      - Success
+      - Failed
+  - name: UserType
+    value: 0
+  - name: UserId
+    cardinality: 5000
+  - name: UserKey
+    cardinality: 5000
+  - name: ClientIP
+    cardinality: 5000
+  - name: OrganizationId
+    cardinality: 1                 # single tenant = single content blob = worst case
+  - name: Actor.Type
+    range:
+      min: 0
+      max: 5
+  - name: Target.Type
+    range:
+      min: 0
+      max: 5
+  - name: ExtendedProperties.Value
+    cardinality: 100000
+  - name: ModifiedProperties.NewValue
+    cardinality: 100000
+  - name: ModifiedProperties.OldValue
+    cardinality: 100000
+  - name: DeviceProperties.Value
+    cardinality: 100000

@@ -1,0 +1,136 @@
+# o365 agentless worst-case memory harness
+
+Synthetic single-blob memory test for the o365 `audit` CEL input, built for the
+agentless Operational Readiness Review (ORR). It answers "how much memory does one
+large Office 365 content blob cost, and where does it OOM at the agentless pod
+limit?".
+
+This is a bespoke Docker + cgroup harness, **not** an `elastic-package` benchmark.
+It runs the real `elastic-agent` image the way `agentless-controller` deploys it
+against the `elastic/stream` mock serving one big content blob, under a Docker
+`--memory` cap, and reads the cgroup `memory.peak` high-water mark.
+
+## Layout
+
+- `elastic-agent.yml` — standalone Elastic Agent config with the o365 `audit` CEL
+  input inlined (single source of truth; tuned for a single-blob worst case).
+- `run.sh` — one run: generate corpus → start mock → run capped agent → report
+  `memory.peak` / OOM. Sweep with `TOTAL_EVENTS` and `MEM_LIMIT`.
+- `sweep.sh` — several blob sizes at a big cap, fits `memory.peak = base + k·blob`,
+  and derives the OOM boundary for 1Gi / 512Mi.
+- `corpus/` — generator inputs for the worst-case blob (`template.ndjson`,
+  `config.yml`, `fields.yml`).
+- `mock-config.yml` — elastic/stream mock config (OAuth token, subscriptions,
+  content listing/fetch serving the generated blob).
+
+This harness is self-contained: everything it needs lives in this folder (plus the
+external corpus-generator binary and Docker). It does not depend on the o365
+`_dev/benchmark/` tree.
+
+### Keep the CEL program in sync with the shipping input
+
+`elastic-agent.yml`'s `program:` block is a **verbatim copy** of the `program:` block
+in `../../../data_stream/audit/agent/stream/cel.yml.hbs` (that block is pure CEL, no
+Handlebars). The memory numbers are only meaningful if the harness exercises the
+program o365 actually ships, so **re-copy the block whenever `cel.yml.hbs` changes**
+(only the surrounding config differs: the harness tunes `state.base` for a single-blob
+worst case and points at the mock). Verify they match:
+
+```
+python3 - <<'PY'
+import difflib
+def body(p):
+    ls=open(p).read().split('\n'); i=next(k for k,l in enumerate(ls) if l.strip()=='program: |-'); o=[]
+    for l in ls[i+1:]:
+        s=l.strip()
+        if s=='processors:' or (s and not l[0].isspace()): break
+        if s: o.append(s)
+    return o
+h=body('../../../data_stream/audit/agent/stream/cel.yml.hbs')
+a=body('elastic-agent.yml')
+d=list(difflib.unified_diff(h,a,lineterm=''))
+print('program IN SYNC' if not d else '\n'.join(d))
+PY
+```
+
+Note: if `cel.yml.hbs` ever adopts the CEL `emit` macro / streaming decode
+(elastic/beats#51279), the memory profile changes fundamentally and this harness plus
+the ORR numbers must be re-run.
+
+`run.sh` and `sweep.sh` write runtime artifacts (`work/`, `logs/`) into this folder.
+These are scratch — do not commit them (avoid a blind `git add -A` here, as `work/`
+can hold a multi-hundred-MB corpus). Re-run the harness to reproduce them (see
+[Output and analysis](#output-and-analysis) below).
+
+## Prerequisites
+
+- Docker running (pulls `elastic-agent`, `observability/stream`, `curlimages/curl`).
+- The corpus generator built once:
+  ```
+  cd elastic-integration-corpus-generator-tool && go build -o eicgt .
+  ```
+  Point `TOOL=` at that repo if it is not at the default path in `run.sh`.
+
+## Usage
+
+```
+# one run at the enforced pod limit
+MEM_LIMIT=1g TOTAL_EVENTS=100000 ./run.sh
+
+# fit the multiplier + derive the OOM boundary (recommended)
+SWEEP_CAP=6g SWEEP_EVENTS="2000 5000 10000 20000" ./sweep.sh
+```
+
+Key env: `STACK_VERSION` (match the shipped agent, default 9.4.2), `MEM_LIMIT`,
+`TOTAL_EVENTS`, `SWEEP_CAP`, `SWEEP_EVENTS`, `KEEP=1` (leave containers up), `TOOL`.
+
+## Output and analysis
+
+`run.sh` prints a `RESULT` block to stdout with the numbers that matter:
+
+- `raw blob bytes` — the single content blob's size.
+- `memory.peak` — cgroup high-water mark (the authoritative figure; on an OOM run it
+  is pinned at the cap and is *not* the true peak — use a bigger cap to measure it).
+- `OOM killed` — whether the cgroup killed the beat at that cap.
+- `content fetches` — should be `>= 1`, confirming the mock served the blob.
+
+`sweep.sh` runs several blob sizes at a non-OOM cap and writes, under `logs/`:
+
+- `sweep-<ts>.log` — full console output of the whole sweep (every run + the summary).
+- `sweep-<ts>.csv` — one row per run: `events,raw_blob_bytes,memory_peak_bytes,oom`.
+- `run-<ts>-<N>.log` — the individual `run.sh` output for each event count `N`.
+
+The summary at the end of `sweep-<ts>.log` is what you read: it fits
+`memory.peak ≈ base + k × raw_blob` over the non-OOM points and prints the derived
+largest raw blob that fits at 1Gi and 512Mi. To interpret:
+
+- **`k`** is the memory multiplier per raw blob byte; a high `k` reflects that the raw
+  body, decoded CEL objects, and mapped events coexist in one evaluation.
+- **OOM boundary** = the raw blob size where `base + k × blob` reaches the cap. Convert
+  to events by dividing by the event size (e.g. ~10 KB worst-case, ~3 KB average).
+- Any run that itself OOM'd is excluded from the fit (its `memory.peak` is just the
+  cap); if that happens, raise `SWEEP_CAP` and re-run.
+
+Copy the summary numbers into the ORR load-test section; the raw `logs/` are scratch
+and should not be committed.
+
+## Result (recorded for the ORR)
+
+Fit `memory.peak ≈ 204 MB baseline + ~12.1 × raw blob size` (elastic-agent 9.4.2).
+Single-blob OOM boundary: **~68 MB raw blob @ 1Gi**, **~25 MB @ 512Mi**. Expressed as
+**events per blob** (a memory *capacity* at the ceiling, not a throughput rate):
+~6,900 worst-case (10 KB) / ~23,000 average (3 KB) events per blob at 1Gi. The peak is
+high because the raw body, the decoded CEL objects, and the mapped events all coexist
+in one evaluation — see the ORR memory profile / load-test sections for full context
+and caveats.
+
+## Notes / deviations from a live agentless pod
+
+- Output points at an unreachable Elasticsearch on purpose: events are held (not
+  drained), so the decoded blob stays resident (conservative worst case) and drained
+  events do not add page cache to the cgroup. As a result this harness measures memory
+  *capacity* (events per blob at the OOM ceiling), **not throughput / EPS**. EPS is a
+  delivered-events-per-second rate under sustained load and needs a real ES output.
+- CEL state store is local disk here (agentless uses Elasticsearch); the cursor is a
+  few KB and irrelevant to the decode peak.
+- APM is off.
