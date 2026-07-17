@@ -63,11 +63,11 @@ An example event for `raw_event` looks as following:
 {
     "@timestamp": "2024-11-28T05:24:15.693Z",
     "agent": {
-        "ephemeral_id": "b2114da7-4d06-4236-a161-456e590812c4",
-        "id": "ffd91dcb-1e39-4e3d-a0ca-06e5b5d75873",
-        "name": "elastic-agent-96710",
+        "ephemeral_id": "7ea3fe76-e396-467a-9306-9275e62581cb",
+        "id": "40c0cba3-776f-463a-a365-f3fe72c61452",
+        "name": "elastic-agent-95612",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.2"
     },
     "cyberark_epm": {
         "raw_event": {
@@ -121,16 +121,16 @@ An example event for `raw_event` looks as following:
     },
     "data_stream": {
         "dataset": "cyberark_epm.raw_event",
-        "namespace": "33414",
+        "namespace": "46289",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ffd91dcb-1e39-4e3d-a0ca-06e5b5d75873",
+        "id": "40c0cba3-776f-463a-a365-f3fe72c61452",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.2"
     },
     "event": {
         "action": "all",
@@ -140,7 +140,7 @@ An example event for `raw_event` looks as following:
         ],
         "dataset": "cyberark_epm.raw_event",
         "end": "2024-11-28T05:03:10.094Z",
-        "ingested": "2025-01-06T05:28:21Z",
+        "ingested": "2026-07-06T11:53:54Z",
         "kind": "event",
         "original": "{\"accessAction\":\"false\",\"accessTargetName\":null,\"accessTargetType\":\"Internet\",\"agentEventCount\":1,\"agentId\":\"109f521d-2ee1-450b-9f71-3cc56d8ebf37\",\"applicationSubType\":null,\"arrivalTime\":\"2024-11-28T05:24:15.693Z\",\"authorizationRights\":null,\"bundleId\":null,\"bundleName\":null,\"bundleVersion\":null,\"company\":\"Microsoft Corporation\",\"computerName\":\"TEST-PC\",\"deceptionType\":0,\"displayName\":\"Windows host process (Rundll32) (rundll32.exe)\",\"eventCount\":1,\"eventType\":\"Launch\",\"evidences\":null,\"exposedUsers\":null,\"fatherProcess\":null,\"fileAccessPermission\":null,\"fileDescription\":\"Windows host process (Rundll32)\",\"fileName\":\"rundll32.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\\\\rundll32.exe\",\"filePathWithoutFilename\":\"C:\\\\Windows\\\\System32\\\\\",\"fileQualifier\":\"-6929158130464282036\",\"fileSize\":71168,\"fileVersion\":\"10.0.17763.1697\",\"firstEventDate\":\"2024-11-28T05:03:10.094Z\",\"hash\":\"A40886F98905F3D9DBDD61DA1D59CCB4F4854758\",\"interpreter\":null,\"justification\":null,\"justificationEmail\":null,\"lastEventDate\":\"2024-11-28T05:03:10.094Z\",\"logonAttemptTypeId\":5,\"logonStatusId\":3221225779,\"lureUser\":null,\"modificationTime\":\"2024-10-29T05:24:15.618Z\",\"operatingSystemType\":\"Windows\",\"originUserUID\":null,\"originalFileName\":\"RUNDLL32.EXE\",\"owner\":\"NT SERVICE\\\\TrustedInstaller\",\"packageName\":\"Windows host process (Rundll32) (rundll32.exe)\",\"policyCategory\":null,\"policyName\":\"test-rule2\",\"processCertificateIssuer\":null,\"processCommandLine\":\"Startupscan.dll,SusRunTask\",\"productCode\":null,\"productName\":\"Microsoft® Windows® Operating System\",\"productVersion\":\"10.0.17763.1697\",\"publisher\":\"Microsoft Windows\",\"runAsUsername\":null,\"skippedCount\":0,\"sourceName\":\"Microsoft Windows\",\"sourceProcessCertificateIssuer\":null,\"sourceProcessCommandLine\":null,\"sourceProcessHash\":null,\"sourceProcessPublisher\":null,\"sourceProcessSigner\":null,\"sourceProcessUsername\":null,\"sourceType\":\"Windows\",\"sourceWSIp\":null,\"sourceWSName\":null,\"symLink\":null,\"threatProtectionAction\":\"ALL\",\"threatProtectionActionId\":0,\"upgradeCode\":null,\"userIsAdmin\":true,\"userName\":\"TEST-PC\\\\Administrator\",\"winEventRecordId\":0,\"winEventType\":0,\"workingDirectory\":null}",
         "start": "2024-11-28T05:03:10.094Z",
@@ -316,11 +316,11 @@ An example event for `policyaudit_raw_event` looks as following:
 {
     "@timestamp": "2024-11-25T14:27:54.054Z",
     "agent": {
-        "ephemeral_id": "1a61d14a-fd5a-4285-8fa6-044656c01031",
-        "id": "204b047e-1c2d-4330-9821-2d3b668edf6b",
-        "name": "elastic-agent-60258",
+        "ephemeral_id": "b433f865-1940-4642-a125-41c29ecae6bb",
+        "id": "5a493f2c-7eeb-4ab6-83c7-1aa1fd9f0c6c",
+        "name": "elastic-agent-87286",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.2"
     },
     "cyberark_epm": {
         "policyaudit_raw_event": {
@@ -361,16 +361,16 @@ An example event for `policyaudit_raw_event` looks as following:
     },
     "data_stream": {
         "dataset": "cyberark_epm.policyaudit_raw_event",
-        "namespace": "49746",
+        "namespace": "33261",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "204b047e-1c2d-4330-9821-2d3b668edf6b",
+        "id": "5a493f2c-7eeb-4ab6-83c7-1aa1fd9f0c6c",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -379,7 +379,7 @@ An example event for `policyaudit_raw_event` looks as following:
         ],
         "dataset": "cyberark_epm.policyaudit_raw_event",
         "end": "2024-11-25T10:37:58.431Z",
-        "ingested": "2025-01-06T05:27:15Z",
+        "ingested": "2026-07-06T11:52:53Z",
         "kind": "event",
         "original": "{\"accessTargetName\":\"C:\\\\Oracle\\\\oemmw\\\\OPatch\\\\version.txt\",\"accessTargetType\":\"ransomware\",\"agentEventCount\":2,\"agentId\":\"48b4bf28-5257-4460-a384-9aac70fb7db2\",\"applicationSubType\":null,\"arguments\":\"status sshd\",\"arrivalTime\":\"2024-11-25T14:27:54.054Z\",\"authorizationRights\":null,\"bundleName\":\"\",\"bundleVersion\":\"\",\"codeURL\":\"\",\"commandInfo\":\"\",\"company\":\"\",\"computerName\":\"k8sworker1-50-2-19\",\"displayName\":\"systemctl\",\"eventType\":\"StartElevated\",\"fileAccessPermission\":\"-rwxr-xr-x\",\"fileDescription\":\"systemctl\",\"fileName\":\"systemctl\",\"filePath\":\"/usr/bin/systemctl\",\"fileQualifier\":\"2375697114193346955\",\"fileSize\":1115760,\"fileVersion\":\"\",\"firstEventDate\":\"2024-11-25T10:31:12.018Z\",\"hash\":\"5f344897632b50114a8ff649054599c6f7fa8a69\",\"interpreter\":\"\",\"justification\":\"\",\"justificationEmail\":\"\",\"lastEventDate\":\"2024-11-25T10:37:58.431Z\",\"mimeType\":\"\",\"modificationTime\":\"2024-10-26T14:27:54.041Z\",\"operatingSystemType\":\"Linux\",\"originUserUID\":\"0\",\"originalFileName\":\"\",\"owner\":\"root\",\"packageName\":\"systemctl\",\"parentProcess\":\"\",\"policyAction\":\"Elevate\",\"policyName\":\"Test-elastic\",\"productCode\":\"\",\"productName\":\"SQL*PLUS\",\"productVersion\":\"\",\"publisher\":\"\",\"runAsUsername\":\"root\",\"skippedCount\":0,\"sourceName\":\"/usr/bin/systemctl\",\"sourceType\":\"LocalDisk\",\"symLink\":\"\",\"upgradeCode\":\"\",\"userIsAdmin\":true,\"userName\":\"root\",\"workingDirectory\":\"/home/serviceuser\"}",
         "start": "2024-11-25T10:31:12.018Z",
@@ -530,11 +530,11 @@ An example event for `aggregated_event` looks as following:
 {
     "@timestamp": "2024-11-25T11:25:18.712Z",
     "agent": {
-        "ephemeral_id": "41121a9e-2b78-42e1-b4ee-97279ee58824",
-        "id": "497e924b-d605-4c9d-a197-8e5804077321",
-        "name": "elastic-agent-46395",
+        "ephemeral_id": "d7ea9f7e-3c32-4ab5-95c9-3a466e728db9",
+        "id": "2706ecc4-8a14-4ae7-ab62-4e01d6315282",
+        "name": "elastic-agent-81923",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.2"
     },
     "cyberark_epm": {
         "aggregated_event": {
@@ -579,16 +579,16 @@ An example event for `aggregated_event` looks as following:
     },
     "data_stream": {
         "dataset": "cyberark_epm.aggregated_event",
-        "namespace": "99704",
+        "namespace": "10671",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "497e924b-d605-4c9d-a197-8e5804077321",
+        "id": "2706ecc4-8a14-4ae7-ab62-4e01d6315282",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -597,7 +597,7 @@ An example event for `aggregated_event` looks as following:
         ],
         "dataset": "cyberark_epm.aggregated_event",
         "end": "2024-11-25T11:25:17.114Z",
-        "ingested": "2025-01-06T05:25:15Z",
+        "ingested": "2026-07-06T11:50:56Z",
         "kind": "event",
         "original": "{\"CLSID\":\"\",\"affectedComputers\":1,\"affectedUsers\":1,\"agentId\":\"109f521d-2ee1-450b-9f71-3cc56d8ebf37\",\"aggregatedBy\":\"0E4B8652719D84B66BFBFCF195C43513AF8459D8,2048\",\"appPackageDisplayName\":\"\",\"applicationType\":\"Executable\",\"applicationTypeId\":3,\"arrivalTime\":\"2024-11-25T11:25:18.712Z\",\"deceptionType\":0,\"defenceActionId\":0,\"eventType\":\"Launch\",\"eventTypeId\":2048,\"exposedUsers\":0,\"fileLocation\":\"C:\\\\Oracle\\\\oemmw\\\\oracle_common\\\\ccr\\\\bin\\\\\",\"fileQualifier\":\"-1035712369269809536\",\"fileSize\":13312,\"firstEventComputerName\":\"TEST\",\"firstEventDate\":\"2024-11-25T11:25:17.114Z\",\"firstEventUserName\":\"TEST\\\\Administrator\",\"hash\":\"SHA1##0E4B8652719D84B66BFBFCF195C43513AF8459D8\",\"lastAgentId\":\"109f521d-2ee1-450b-9f71-3cc56d8ebf37\",\"lastEventAccessTargetName\":\"\",\"lastEventAccessTargetType\":null,\"lastEventAgentId\":null,\"lastEventAuthorizationRights\":\"\",\"lastEventComputerName\":\"TEST\",\"lastEventDate\":\"2024-11-25T11:25:17.114Z\",\"lastEventDisplayName\":\"setupCCR.exe -a -d -S...\",\"lastEventExposedUsers\":null,\"lastEventExposedUsersCount\":0,\"lastEventFileName\":\"setupCCR.exe\",\"lastEventId\":\"ZpURY5MBdDBWucfdnK1j\",\"lastEventInitiatedProcess\":null,\"lastEventInitiatedProcessLocation\":null,\"lastEventJustification\":\"\",\"lastEventOriginalFileName\":\"\",\"lastEventPackageName\":null,\"lastEventSourceName\":\"ouiSFX (setup_em13200p1_win64.exe)\",\"lastEventSourceType\":\"LocalDisk\",\"lastEventSymLink\":\"\",\"lastEventUserName\":\"TEST\\\\Administrator\",\"mimeType\":\"\",\"operatingSystemType\":\"Windows\",\"packageName\":\"ouiSFX (setup_em13200p1_win64.exe)\",\"productCode\":null,\"publisher\":\"\",\"skipped\":false,\"skippedCount\":0,\"threatDetectionAction\":\"\",\"totalEvents\":1,\"upgradeCode\":null,\"url\":\"\"}",
         "start": "2024-11-25T11:25:17.114Z",
@@ -735,11 +735,11 @@ An example event for `policyaudit_aggregated_event` looks as following:
 {
     "@timestamp": "2022-12-19T05:51:06.024Z",
     "agent": {
-        "ephemeral_id": "4a9c2d55-8e03-42ee-9d25-55164bff9092",
-        "id": "f1613af9-3456-4b63-b774-f20eda58a491",
-        "name": "elastic-agent-46379",
+        "ephemeral_id": "8cbdbba2-9c50-4854-9c2a-075ebcae2e70",
+        "id": "b6227a62-bc3a-4a3d-8a4c-e2ea82486928",
+        "name": "elastic-agent-56821",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.2"
     },
     "cyberark_epm": {
         "policyaudit_aggregated_event": {
@@ -780,16 +780,16 @@ An example event for `policyaudit_aggregated_event` looks as following:
     },
     "data_stream": {
         "dataset": "cyberark_epm.policyaudit_aggregated_event",
-        "namespace": "90464",
+        "namespace": "33531",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f1613af9-3456-4b63-b774-f20eda58a491",
+        "id": "b6227a62-bc3a-4a3d-8a4c-e2ea82486928",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -798,7 +798,7 @@ An example event for `policyaudit_aggregated_event` looks as following:
         ],
         "dataset": "cyberark_epm.policyaudit_aggregated_event",
         "end": "2022-12-19T01:04:47.284Z",
-        "ingested": "2025-01-06T05:26:14Z",
+        "ingested": "2026-07-06T11:51:54Z",
         "kind": "event",
         "original": "{\"CLSID\":\"\",\"adminTaskId\":\"\",\"affectedComputers\":1,\"affectedUsers\":1,\"aggregatedBy\":\"C340EFFBAED989E7F8FFC6F7574856CD8ED0D18B,QQQ\",\"appPackageDisplayName\":\"\",\"applicationType\":\"Executable\",\"arrivalTime\":\"2022-12-19T05:51:06.024Z\",\"authorizationRight\":\"com.apple.AOSNotification.FindMyMac.modify\",\"eventType\":\"Launch\",\"fileLocation\":\"C:\\\\Program Files (x86)\\\\Google\\\\Update\\\\1.3.36.152\\\\\",\"fileQualifier\":\"-5566271857083130002\",\"fileSize\":408536,\"firstEventAgentId\":\"b074b7d4-664a-40d1-b929-69e89bbd254c\",\"firstEventDate\":\"2022-12-14T21:06:44.756Z\",\"firstEventUserName\":\"NT AUTHORITY\\\\SYSTEM\",\"hash\":\"SHA1##C340EFFBAED989E7F8FFC6F7574856CD8ED0D18B\",\"lastEventAccessTarget\":null,\"lastEventAccessTargetType\":\"Registry\",\"lastEventAgentId\":\"b074b7d4-664a-40d1-b929-69e89bbd254c\",\"lastEventDate\":\"2022-12-19T01:04:47.284Z\",\"lastEventDisplayName\":\"Google Crash Handler (GoogleCrashHandler64.exe)\",\"lastEventFileName\":\"GoogleCrashHandler64.exe\",\"lastEventId\":\"QtvvKIUB8k35oa3KjVf7\",\"lastEventJustification\":\"\",\"lastEventPackageName\":\"Google Update (GoogleUpdate.exe)\",\"lastEventSourceName\":\"Updater (Google Updater)\",\"lastEventSourceType\":\"Updater\",\"lastEventSymlink\":\"\",\"lastEventUserName\":\"NT AUTHORITY\\\\SYSTEM\",\"mimeType\":\"\",\"operatingSystemType\":\"Windows\",\"policyAction\":null,\"policyId\":11161,\"policyName\":\"QQQ\",\"productCode\":null,\"publisher\":\"Google LLC\",\"skipped\":false,\"skippedCount\":0,\"totalEvents\":8,\"upgradeCode\":null,\"url\":\"\"}",
         "start": "2022-12-14T21:06:44.756Z",
@@ -927,11 +927,11 @@ An example event for `admin_audit` looks as following:
 {
     "@timestamp": "2024-11-25T05:37:28.373Z",
     "agent": {
-        "ephemeral_id": "1948d980-9bbf-4bc6-b1fe-333a4b03ce3d",
-        "id": "1002d46a-e45c-4ff8-8460-b561d81b207e",
-        "name": "elastic-agent-83261",
+        "ephemeral_id": "4b45a5c1-7b38-434f-8f17-a8d605c63e7d",
+        "id": "75ccfaff-309d-4cc7-aad7-4b2e4a3e99ef",
+        "name": "elastic-agent-41944",
         "type": "filebeat",
-        "version": "8.18.1"
+        "version": "8.19.2"
     },
     "cyberark_epm": {
         "admin_audit": {
@@ -949,16 +949,16 @@ An example event for `admin_audit` looks as following:
     },
     "data_stream": {
         "dataset": "cyberark_epm.admin_audit",
-        "namespace": "54477",
+        "namespace": "32767",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1002d46a-e45c-4ff8-8460-b561d81b207e",
+        "id": "75ccfaff-309d-4cc7-aad7-4b2e4a3e99ef",
         "snapshot": false,
-        "version": "8.18.1"
+        "version": "8.19.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -966,7 +966,7 @@ An example event for `admin_audit` looks as following:
             "iam"
         ],
         "dataset": "cyberark_epm.admin_audit",
-        "ingested": "2025-06-03T11:24:52Z",
+        "ingested": "2026-07-06T11:49:47Z",
         "kind": "event",
         "original": "{\"Administrator\":\"bob@example.com\",\"Description\":\"Enter Set Elastic/test\",\"EventTime\":\"2024-11-25T05:37:28.373Z\",\"Feature\":\"Sets\",\"InternalSessionId\":876,\"LoggedAt\":\"2024-11-25T05:25:13.167Z\",\"LoggedFrom\":\"175.16.199.1\",\"PermissionDescription\":\"None\",\"Role\":\"SetAdmin\",\"SetName\":\"Elastic/test\"}",
         "type": [

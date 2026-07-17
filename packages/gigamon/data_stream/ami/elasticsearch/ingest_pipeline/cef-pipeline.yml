@@ -1,0 +1,729 @@
+---
+description: Pipeline for Gigamon CEF Ami logs.. CEF decoding happens in the Agent. This performs additional enrichment and vendor specific transformations.
+processors:
+  - rename:
+      field: cef.extensions
+      target_field: gigamon.ami
+      if: ctx.cef.extensions != null
+      tag: rename_cef_extension
+  - rename:
+      field: cef.device
+      target_field: gigamon.ami.device
+      if: ctx.cef.device != null
+      tag: rename_cef_device
+
+  # rename
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_smb_version
+      ignore_missing: true
+      target_field: gigamon.ami.smb_version
+
+  - rename:
+      field: gigamon.ami.GigamonMdataSeqNum
+      ignore_missing: true
+      target_field: gigamon.ami.seq_num
+
+  - rename:
+      field: gigamon.ami.GigamonApplicationID
+      target_field: gigamon.ami.app_id
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonApplicationName
+      target_field: gigamon.ami.app_name
+      ignore_missing: true
+    
+  - rename:
+      field: gigamon.ami.GigamonMdataAppTags
+      target_field: gigamon.ami.app_tags
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataIpVer
+      target_field: gigamon.ami.ip_version
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataFlowStartMsec
+      target_field: gigamon.ami.start_time
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataFlowEndMsec
+      target_field: gigamon.ami.end_time
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataIntfName
+      target_field: gigamon.ami.intf_name
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataEgressIntfID
+      target_field: gigamon.ami.egress_intf_id
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataSysUpTimeFirst
+      target_field: gigamon.ami.sys_up_time_first
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataSysUpTimeLast
+      target_field: gigamon.ami.sys_up_time_last
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataFlowEndReason
+      target_field: gigamon.ami.end_reason
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_smb_command_string
+      target_field: gigamon.ami.smb_command_string
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.dMac
+      target_field: gigamon.ami.dst_mac
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.dst
+      target_field: gigamon.ami.dst_ip
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.dpt
+      target_field: gigamon.ami.dst_port
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonResponderOctets
+      target_field: gigamon.ami.dst_bytes
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonResponderPackets
+      target_field: gigamon.ami.dst_packets
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.sMac
+      target_field: gigamon.ami.src_mac
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.src
+      target_field: gigamon.ami.src_ip
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.spt
+      target_field: gigamon.ami.src_port
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonInitiatorOctets
+      target_field: gigamon.ami.src_bytes
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonInitiatorPackets
+      target_field: gigamon.ami.src_packets
+      ignore_missing: true
+
+  - rename:
+      if: ctx.gigamon?.ami?.dst_port == null
+      field: gigamon.ami.destinationPort
+      target_field: gigamon.ami.dst_port
+      ignore_missing: true
+
+  - rename:
+      if: ctx.gigamon?.ami?.src_port == null
+      field: gigamon.ami.sourcePort
+      target_field: gigamon.ami.src_port
+      ignore_missing: true
+
+  - rename:
+      if: ctx.gigamon?.ami?.dst_ip == null
+      field: gigamon.ami.destinationAddress
+      target_field: gigamon.ami.dst_ip
+      ignore_missing: true
+
+  - rename:
+      if: ctx.gigamon?.ami?.src_ip == null
+      field: gigamon.ami.sourceAddress
+      target_field: gigamon.ami.src_ip
+      ignore_missing: true
+
+  - rename:
+      if: ctx.gigamon?.ami?.src_mac == null
+      field: gigamon.ami.sourceMacAddress
+      target_field: gigamon.ami.src_mac
+      ignore_missing: true
+
+  - rename:
+      if: ctx.gigamon?.ami?.dst_mac == null
+      field: gigamon.ami.destinationMacAddress
+      target_field: gigamon.ami.dst_mac
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.transportProtocol
+      target_field: gigamon.ami.protocol
+      ignore_missing: true
+
+      # dns fields
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_qdcount
+      target_field: gigamon.ami.dns_qdcount
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_transaction_id
+      target_field: gigamon.ami.dns_transaction_id
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_name
+      target_field: gigamon.ami.dns_name
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_host
+      target_field: gigamon.ami.dns_host
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_host_addr
+      target_field: gigamon.ami.dns_host_addr
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_host_type
+      target_field: gigamon.ami.dns_host_type
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_ttl
+      target_field: gigamon.ami.dns_ttl
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_flags
+      target_field: gigamon.ami.dns_flags
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_opcode
+      target_field: gigamon.ami.dns_opcode
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_class
+      target_field: gigamon.ami.dns_class
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_host_class
+      target_field: gigamon.ami.dns_host_class
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_host_raw
+      target_field: gigamon.ami.dns_host_raw
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_query
+      target_field: gigamon.ami.dns_query
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_query_type
+      target_field: gigamon.ami.dns_query_type
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.deviceInboundInterface
+      target_field: gigamon.ami.device_inbound_interface
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_ancount
+      target_field: gigamon.ami.dns_ancount
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_arcount
+      target_field: gigamon.ami.dns_arcount
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_reply_code
+      target_field: gigamon.ami.dns_reply_code
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_response_time
+      target_field: gigamon.ami.dns_response_time
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_reverse_addr
+      target_field: gigamon.ami.dns_reverse_addr
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_dns_tunneling
+      target_field: gigamon.ami.dns_tunneling
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ip_wrong_crc
+      target_field: gigamon.ami.ip_wrong_crc
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_krb5_login
+      target_field: gigamon.ami.krb5_login
+      ignore_missing: true
+
+      # http_fields
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_server
+      target_field: gigamon.ami.http_server
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_uri
+      target_field: gigamon.ami.http_uri
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_uri_full
+      target_field: gigamon.ami.http_uri_full
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_mime_type
+      target_field: gigamon.ami.http_mime_type
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_server_agent
+      target_field: gigamon.ami.http_server_agent
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_rtt
+      target_field: gigamon.ami.http_rtt
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_code
+      target_field: gigamon.ami.http_code
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_content_len
+      target_field: gigamon.ami.http_content_len
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_uri_path
+      target_field: gigamon.ami.http_uri_path
+      ignore_missing: true
+  #      convert:
+  #        '*v1*': V1
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_request_size
+      target_field: gigamon.ami.http_request_size
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_host
+      target_field: gigamon.ami.http_host
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_uri_decoded
+      target_field: gigamon.ami.http_uri_decoded
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_uri_raw
+      target_field: gigamon.ami.http_uri_raw
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_content_type
+      target_field: gigamon.ami.http_content_type
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_method
+      target_field: gigamon.ami.http_method
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_version
+      target_field: gigamon.ami.http_version
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_user_agent
+      target_field: gigamon.ami.http_user_agent
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_response_ts
+      target_field: gigamon.ami.http_response_ts
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_content_encoding
+      target_field: gigamon.ami.http_content_encoding
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_http_referer
+      target_field: gigamon.ami.http_referer
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataFlowStartSec
+      target_field: gigamon.ami.flow_start_sec
+      ignore_missing: true
+
+      # tcp_fields
+  - rename:
+      field: gigamon.ami.GigamonMdataTcpFlags
+      target_field: gigamon.ami.tcp_flags
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_tcp_rtt_app
+      target_field: gigamon.ami.tcp_rtt_app
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_tcp_loss_count
+      target_field: gigamon.ami.tcp_loss_count
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_tcp_rtt
+      target_field: gigamon.ami.tcp_rtt
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_tcp_retransmission_bytes
+      target_field: gigamon.ami.tcp_retransmission_bytes
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_tcp_wrong_crc
+      target_field: gigamon.ami.tcp_wrong_crc
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_tcp_flag_reset
+      target_field: gigamon.ami.tcp_flag_reset
+      ignore_missing: true
+
+      # ssl_fields
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certif_md5
+      target_field: gigamon.ami.ssl_certif_md5
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_common_name
+      target_field: gigamon.ami.ssl_common_name
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_validity_not_before
+      target_field: gigamon.ami.ssl_validity_not_before
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_validity_not_after
+      target_field: gigamon.ami.ssl_validity_not_after
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_serial_number
+      target_field: gigamon.ami.ssl_serial_number
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_handshake_type
+      target_field: gigamon.ami.ssl_handshake_type
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_organization_name
+      target_field: gigamon.ami.ssl_organization_name
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_request_size
+      target_field: gigamon.ami.ssl_request_size
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_cipher_suite_id
+      target_field: gigamon.ami.ssl_cipher_suite_id
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_cipher_suite_list
+      target_field: gigamon.ami.ssl_cipher_suite_list
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certif_sha1
+      target_field: gigamon.ami.ssl_certif_sha1
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_content_type
+      target_field: gigamon.ami.ssl_content_type
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_protocol_version
+      target_field: gigamon.ami.ssl_protocol_version
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_client_hello_extension_type
+      target_field: gigamon.ami.ssl_client_hello_extension_type
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_server_hello_extension_type
+      target_field: gigamon.ami.ssl_server_hello_extension_type
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_dn_subject
+      target_field: gigamon.ami.ssl_certificate_dn_subject
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_subject_cn
+      target_field: gigamon.ami.ssl_certificate_subject_cn
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_subject_l
+      target_field: gigamon.ami.ssl_certificate_subject_l
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_subject_st
+      target_field: gigamon.ami.ssl_certificate_subject_st
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_subject_o
+      target_field: gigamon.ami.ssl_certificate_subject_o
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_subject_ou
+      target_field: gigamon.ami.ssl_certificate_subject_ou
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_subject_c
+      target_field: gigamon.ami.ssl_certificate_subject_c
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_dn_issuer
+      target_field: gigamon.ami.ssl_certificate_dn_issuer
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_issuer_cn
+      target_field: gigamon.ami.ssl_certificate_issuer_cn
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_issuer_l
+      target_field: gigamon.ami.ssl_certificate_issuer_l
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_issuer_st
+      target_field: gigamon.ami.ssl_certificate_issuer_st
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_issuer_o
+      target_field: gigamon.ami.ssl_certificate_issuer_o
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_issuer_ou
+      target_field: gigamon.ami.ssl_certificate_issuer_ou
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_issuer_c
+      target_field: gigamon.ami.ssl_certificate_issuer_c
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_client_hello_extension_len
+      target_field: gigamon.ami.ssl_client_hello_extension_len
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_server_hello_extension_len
+      target_field: gigamon.ami.ssl_server_hello_extension_len
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_nb_compression_methods
+      target_field: gigamon.ami.ssl_nb_compression_methods
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_compression_method
+      target_field: gigamon.ami.ssl_compression_method
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_ext_sig_algorithms_len
+      target_field: gigamon.ami.ssl_ext_sig_algorithms_len
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_ext_sig_algorithm_scheme
+      target_field: gigamon.ami.ssl_ext_sig_algorithm_scheme
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_ext_sig_algorithm_hash
+      target_field: gigamon.ami.ssl_ext_sig_algorithm_hash
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_ext_sig_algorithm_sig
+      target_field: gigamon.ami.ssl_ext_sig_algorithm_sig
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_subject_key_algo_oid
+      target_field: gigamon.ami.ssl_certificate_subject_key_algo_oid
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_certificate_subject_key_size
+      target_field: gigamon.ami.ssl_certificate_subject_key_size
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_cert_extension_oid
+      target_field: gigamon.ami.ssl_cert_extension_oid
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_cert_ext_authority_key_id
+      target_field: gigamon.ami.ssl_cert_ext_authority_key_id
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_cert_ext_subject_key_id
+      target_field: gigamon.ami.ssl_cert_ext_subject_key_id
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_fingerprint_ja3
+      target_field: gigamon.ami.ssl_fingerprint_ja3
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_index
+      target_field: gigamon.ami.ssl_index
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_issuer
+      target_field: gigamon.ami.ssl_issuer
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_session_id
+      target_field: gigamon.ami.ssl_session_id
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_declassify_override
+      target_field: gigamon.ami.ssl_declassify_override
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdata_ssl_signalization_override
+      target_field: gigamon.ami.ssl_signalization_override
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataTcpRttMin
+      target_field: gigamon.ami.tcp_rtt_min
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataTcpRttMax
+      target_field: gigamon.ami.tcp_rtt_max
+      ignore_missing: true
+    
+  - rename:
+      field: gigamon.ami.GigamonMdataTcpRttMean
+      target_field: gigamon.ami.tcp_rtt_mean
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataTcpRttAppMin
+      target_field: gigamon.ami.tcp_rtt_app_min
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataTcpRttAppMax
+      target_field: gigamon.ami.tcp_rtt_app_max
+      ignore_missing: true
+
+  - rename:
+      field: gigamon.ami.GigamonMdataTcpRttAppMean
+      target_field: gigamon.ami.tcp_rtt_app_mean
+      ignore_missing: true
+
+  # Cleanup
+  - remove:
+      field:
+        - cef
+        - _tmp
+      ignore_missing: true
+      ignore_failure: true
+on_failure:
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
