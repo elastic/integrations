@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/cli/go-gh/v2"
 
@@ -132,16 +133,28 @@ func collectChangelogEntry(git gitutil.Git, before, after, cl string) (string, e
 }
 
 // backportPRNumber returns the PR number associated with the given commit SHA,
-// or "" if none is found.
+// or "" if none is found after retries. The GitHub API association between a
+// merge commit and its PR may not be immediately available after the push
+// event fires, so we retry a few times with exponential backoff.
 func backportPRNumber(repository, sha string) (string, error) {
-	stdout, _, err := gh.Exec("api",
-		fmt.Sprintf("repos/%s/commits/%s/pulls", repository, sha),
-		"--jq", ".[0].number // empty",
-	)
-	if err != nil {
-		return "", err
+	delays := []time.Duration{0, 5 * time.Second, 15 * time.Second, 30 * time.Second}
+	for i, d := range delays {
+		if d > 0 {
+			fmt.Fprintf(os.Stderr, "backportPRNumber: attempt %d/%d — waiting %s\n", i+1, len(delays), d)
+			time.Sleep(d)
+		}
+		stdout, _, err := gh.Exec("api",
+			fmt.Sprintf("repos/%s/commits/%s/pulls", repository, sha),
+			"--jq", ".[0].number // empty",
+		)
+		if err != nil {
+			return "", err
+		}
+		if n := strings.TrimSpace(stdout.String()); n != "" {
+			return n, nil
+		}
 	}
-	return strings.TrimSpace(stdout.String()), nil
+	return "", nil
 }
 
 // syncPRExists returns true if a PR (open or closed) already exists with the
