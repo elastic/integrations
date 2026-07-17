@@ -1,0 +1,473 @@
+---
+description: Pipeline for processing sign-on logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.4.0
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      tag: remove_agentless_tags
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      description: error message set and no data to process.
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+      if: ctx.event?.original == null
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: workday.sign_on
+      if: ctx.event?.original != null
+  - fingerprint:
+      fields:
+        - event.original
+      tag: fingerprint_sign_on
+      target_field: _id
+      ignore_missing: true
+  - script:
+      tag: normalize_hyphenated_field_names
+      lang: painless
+      description: Rename any sign-on fields whose names contain a hyphen to use an underscore instead.
+      if: ctx.workday?.sign_on instanceof Map
+      source: |-
+        def signon = ctx.workday.sign_on;
+        for (def key : new ArrayList(signon.keySet())) {
+          if (key.contains('-')) {
+            signon.put(key.replace('-', '_'), signon.remove(key));
+          }
+        }
+  - script:
+      tag: convert_signon_boolean_flags
+      lang: painless
+      description: Convert Workday 0/1 string flags to booleans.
+      if: ctx.workday?.sign_on != null
+      source: |-
+        def flags = [
+          'Account_Locked__Disabled_or_Expired',
+          'Active_Session',
+          'Device_is_Trusted',
+          'Failed_Signon',
+          'Forgotten_Password_Reset_Request',
+          'Invalid_Credentials',
+          'Invalid_Password',
+          'Is_Device_Managed',
+          'Password_Changed',
+          'Signon',
+          'Successful'
+        ];
+        def signon = ctx.workday.sign_on;
+        for (def flag : flags) {
+          if (signon.containsKey(flag) && signon.get(flag) instanceof String) {
+            signon.put(flag, signon.get(flag) == '1');
+          }
+        }
+  - set:
+      field: workday.sign_on.Authentication_Type
+      tag: set_authentication_type_from_signon_variant
+      copy_from: workday.sign_on.Authentication_Type_for_Signon
+      ignore_empty_value: true
+      override: false
+      if: ctx.workday?.sign_on?.Authentication_Type == null
+  - date:
+      field: workday.sign_on.Sign_on_Time
+      tag: date_signon_time
+      target_field: workday.sign_on.Sign_on_Time
+      formats:
+        - ISO8601
+      if: ctx.workday?.sign_on?.Sign_on_Time != null && ctx.workday.sign_on.Sign_on_Time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_signon_time
+      copy_from: workday.sign_on.Sign_on_Time
+      ignore_empty_value: true
+  - set:
+      field: event.start
+      tag: set_event_start_from_signon_time
+      copy_from: workday.sign_on.Sign_on_Time
+      ignore_empty_value: true
+  - date:
+      field: workday.sign_on.Session_Start
+      tag: date_session_start
+      target_field: workday.sign_on.Session_Start
+      formats:
+        - ISO8601
+      if: ctx.workday?.sign_on?.Session_Start != null && ctx.workday.sign_on.Session_Start != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_session_start
+      copy_from: workday.sign_on.Session_Start
+      ignore_empty_value: true
+      override: false
+  - set:
+      field: event.start
+      tag: set_event_start_from_session_start
+      copy_from: workday.sign_on.Session_Start
+      ignore_empty_value: true
+      override: false
+  - date:
+      field: workday.sign_on.Signon_DateTime
+      tag: date_signon_datetime
+      target_field: workday.sign_on.Signon_DateTime
+      formats:
+        - ISO8601
+      if: ctx.workday?.sign_on?.Signon_DateTime != null && ctx.workday.sign_on.Signon_DateTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_signon_datetime
+      copy_from: workday.sign_on.Signon_DateTime
+      ignore_empty_value: true
+      override: false
+  - set:
+      field: event.start
+      tag: set_event_start_from_signon_datetime
+      copy_from: workday.sign_on.Signon_DateTime
+      ignore_empty_value: true
+      override: false
+  - date:
+      field: workday.sign_on.Session_End
+      tag: date_session_end
+      target_field: workday.sign_on.Session_End
+      formats:
+        - ISO8601
+      if: ctx.workday?.sign_on?.Session_End != null && ctx.workday.sign_on.Session_End != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      tag: set_event_end_from_session_end
+      copy_from: workday.sign_on.Session_End
+      ignore_empty_value: true
+      override: false
+  - date:
+      field: workday.sign_on.Signoff_DateTime
+      tag: date_signoff_datetime
+      target_field: workday.sign_on.Signoff_DateTime
+      formats:
+        - ISO8601
+      if: ctx.workday?.sign_on?.Signoff_DateTime != null && ctx.workday.sign_on.Signoff_DateTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      tag: set_event_end_from_signoff_datetime
+      copy_from: workday.sign_on.Signoff_DateTime
+      ignore_empty_value: true
+      override: false
+  - date:
+      field: workday.sign_on.Signoff_Time
+      tag: date_signoff_time
+      target_field: workday.sign_on.Signoff_Time
+      formats:
+        - ISO8601
+      if: ctx.workday?.sign_on?.Signoff_Time != null && ctx.workday.sign_on.Signoff_Time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      tag: set_event_end_from_signoff_time
+      copy_from: workday.sign_on.Signoff_Time
+      ignore_empty_value: true
+  - date:
+      field: workday.sign_on.Created_Moment
+      tag: date_created_moment
+      target_field: workday.sign_on.Created_Moment
+      formats:
+        - ISO8601
+      if: ctx.workday?.sign_on?.Created_Moment != null && ctx.workday.sign_on.Created_Moment != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_created_moment
+      copy_from: workday.sign_on.Created_Moment
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_username
+      copy_from: workday.sign_on.userName
+      ignore_empty_value: true
+  - set:
+      field: user.full_name
+      tag: set_user_full_name_from_signon_worker
+      copy_from: workday.sign_on.Signon_Worker
+      ignore_empty_value: true
+  - set:
+      field: user_agent.original
+      tag: set_user_agent_original
+      copy_from: workday.sign_on.User_Agent
+      ignore_empty_value: true
+  - user_agent:
+      field: user_agent.original
+      tag: user_agent_parse
+      ignore_missing: true
+  - set:
+      field: host.os.name
+      tag: set_host_os_name_from_operating_system
+      copy_from: workday.sign_on.Operating_System
+      ignore_empty_value: true
+  - set:
+      field: device.type
+      tag: set_device_type_from_device_type
+      copy_from: workday.sign_on.Device_Type
+      ignore_empty_value: true
+  - convert:
+      field: workday.sign_on.Signon_IP_Address
+      tag: convert_signon_ip_address_to_source_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.workday?.sign_on?.Signon_IP_Address != ''
+      on_failure:
+        - rename:
+            field: workday.sign_on.Signon_IP_Address
+            tag: rename_signon_ip_address_to_source_ip
+            target_field: workday.sign_on.signon_ip_address_string
+            ignore_missing: true
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_signon_ip_address
+      copy_from: workday.sign_on.Signon_IP_Address
+      ignore_empty_value: true
+  - convert:
+      field: workday.sign_on.Session_IP_Address
+      tag: convert_session_ip_address_to_source_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.workday?.sign_on?.Session_IP_Address != ''
+      on_failure:
+        - rename:
+            field: workday.sign_on.Session_IP_Address
+            tag: rename_session_ip_address_to_source_ip
+            target_field: workday.sign_on.session_ip_address_string
+            ignore_missing: true
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_session_ip_address
+      copy_from: workday.sign_on.Session_IP_Address
+      ignore_empty_value: true
+      override: false
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip_to_source_geo
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      tag: geoip_source_ip_to_source_as
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - set:
+      field: event.reason
+      tag: set_event_reason_from_failure_message
+      copy_from: workday.sign_on.Authentication_Failure_Message
+      ignore_empty_value: true
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_tenant_name
+      copy_from: workday.sign_on.tenant_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_related_user_name
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_related_user_full_name
+      value: '{{{user.full_name}}}'
+      allow_duplicates: false
+      if: ctx.user?.full_name != null
+  - append:
+      field: related.ip
+      tag: append_related_ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - set:
+      field: user_agent.name
+      tag: set_user_agent_name_from_browser_type
+      copy_from: workday.sign_on.Browser_Type
+      ignore_empty_value: true
+      override: false
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_authentication_into_event_category
+      value: authentication
+      allow_duplicates: false
+  - append:
+      field: event.category
+      tag: append_session_into_event_category
+      value: session
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_start_into_event_type
+      value: start
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_end_into_event_type
+      value: end
+      allow_duplicates: false
+      if: ctx.event?.end != null
+  - set:
+      field: event.action
+      tag: set_event_action
+      value: user-signon
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: ctx.workday?.sign_on?.Failed_Signon == true || ctx.event?.reason != null
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.event?.outcome == null
+  - set:
+      field: host.entity.attributes.managed
+      tag: set_host_entity_managed_from_is_device_managed
+      copy_from: workday.sign_on.Is_Device_Managed
+      ignore_empty_value: true
+      if: ctx.workday?.sign_on?.Is_Device_Managed instanceof Boolean
+  - set:
+      field: host.entity.lifecycle.last_activity
+      tag: set_host_entity_last_activity_from_event_start
+      copy_from: event.start
+      ignore_empty_value: true
+  - set:
+      field: host.entity.lifecycle.last_activity
+      tag: set_host_entity_last_activity_from_event_end
+      copy_from: event.end
+      ignore_empty_value: true
+      override: true
+  - remove:
+      field:
+        - workday.sign_on.Session_Start
+        - workday.sign_on.Session_End
+        - workday.sign_on.Sign_on_Time
+        - workday.sign_on.Created_Moment
+        - workday.sign_on.userName
+        - workday.sign_on.Signon_Worker
+        - workday.sign_on.User_Agent
+        - workday.sign_on.Operating_System
+        - workday.sign_on.Device_Type
+        - workday.sign_on.Signon_IP_Address
+        - workday.sign_on.Session_IP_Address
+        - workday.sign_on.Authentication_Failure_Message
+        - workday.sign_on.tenant_name
+        - workday.sign_on.Signon_DateTime
+        - workday.sign_on.Signoff_DateTime
+        - workday.sign_on.Signoff_Time
+      tag: remove_custom_fields_mapped_with_ecs_fields
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{_ingest.on_failure_processor_type}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
