@@ -87,10 +87,33 @@
                 }
             }
         },
-        "description": "Overview of Backstage audit log activity: request volume by event ID and plugin, actor activity, severity distribution, and failures. Backstage audit events carry no session identifier, so the actor-vs-event heatmaps approximate a user's journey rather than a true session replay. Outcome (event.outcome: success / failure / unknown) reflects the audited operation's result.",
+        "description": "Overview of Backstage audit log activity: event volume by event ID and plugin, actor activity, severity distribution, and failures. Backstage audit events carry no session identifier, so the actor-vs-event heatmaps approximate a user's journey rather than a true session replay. Outcome (event.outcome: success / failure / unknown) reflects the audited operation's result.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "backstage.logs"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "backstage.logs"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -177,7 +200,7 @@
                     "y": 0
                 },
                 "panelIndex": "69f32df1-c1bd-4e9a-b56e-d1c9808450d0",
-                "title": "Total Requests",
+                "title": "Total Events",
                 "type": "lens"
             },
             {
@@ -252,7 +275,7 @@
                     "y": 0
                 },
                 "panelIndex": "94b5a0da-6ea9-4074-9d71-6fbb4c89e0a4",
-                "title": "Failed Requests",
+                "title": "Failed Events",
                 "type": "lens"
             },
             {
@@ -327,7 +350,7 @@
                     "y": 0
                 },
                 "panelIndex": "6f4e88c9-4e2f-4107-9ad3-de814b2f8a86",
-                "title": "High Severity Requests",
+                "title": "High Severity Events",
                 "type": "lens"
             },
             {
@@ -402,7 +425,7 @@
                     "y": 0
                 },
                 "panelIndex": "ab4071df-53f0-42f2-994b-75bbc2ef82f8",
-                "title": "Medium Severity Requests",
+                "title": "Medium Severity Events",
                 "type": "lens"
             },
             {
@@ -512,7 +535,7 @@
                     "y": 8
                 },
                 "panelIndex": "fbafcf41-7266-4f2c-8f41-290ce7b60342",
-                "title": "Requests by Event ID",
+                "title": "Events by Event ID",
                 "type": "lens"
             },
             {
@@ -622,7 +645,7 @@
                     "y": 8
                 },
                 "panelIndex": "7c67a34b-4b68-4a5f-a472-dc4d26994e73",
-                "title": "Requests by Plugin",
+                "title": "Events by Plugin",
                 "type": "lens"
             },
             {
@@ -924,7 +947,7 @@
                     "y": 39
                 },
                 "panelIndex": "847c5302-c77a-4acb-b601-41696fd7b585",
-                "title": "Failed Requests by Event ID",
+                "title": "Failed Events by Event ID",
                 "type": "lens"
             },
             {
@@ -1057,7 +1080,7 @@
                     "y": 39
                 },
                 "panelIndex": "b4ee12af-53b1-4c37-bed8-139cd1ebfae4",
-                "title": "Failed Requests by Plugin",
+                "title": "Failed Events by Plugin",
                 "type": "lens"
             },
             {
@@ -1203,7 +1226,7 @@
                     "y": 54
                 },
                 "panelIndex": "d5413826-dc2f-48e4-bc96-2ea271209878",
-                "title": "Failed Requests: Actor vs Event ID",
+                "title": "Failed Events: Actor vs Event ID",
                 "type": "lens"
             },
             {
@@ -1387,7 +1410,7 @@
                     "y": 70
                 },
                 "panelIndex": "c68ee8ea-2db7-457e-b3a7-5ce5b25eceb2",
-                "title": "Requests by Plugin, split by Severity",
+                "title": "Events by Plugin, split by Severity",
                 "type": "lens"
             },
             {
@@ -1571,7 +1594,7 @@
                     "y": 70
                 },
                 "panelIndex": "e8c7c846-6b62-4fe5-84f7-10619adb7a40",
-                "title": "Requests by Event ID, split by Severity",
+                "title": "Events by Event ID, split by Severity",
                 "type": "lens"
             }
         ],
@@ -1668,6 +1691,11 @@
         {
             "id": "logs-*",
             "name": "e8c7c846-6b62-4fe5-84f7-10619adb7a40:indexpattern-datasource-layer-4ed65f23-2e23-498b-a948-26871cfd78d5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         }
     ],
