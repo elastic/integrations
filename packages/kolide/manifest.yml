@@ -1,7 +1,7 @@
 format_version: "3.4.2"
 name: kolide
 title: "Kolide"
-version: "0.1.2"
+version: "0.2.0"
 source:
   license: "Elastic-2.0"
 description: "Collect logs from Kolide (by 1Password) Device Trust with Elastic Agent."
@@ -25,7 +25,7 @@ screenshots:
 policy_templates:
   - name: kolide
     title: Kolide logs
-    description: Collect logs from Kolide via webhooks (HTTP endpoint) and the REST API.
+    description: Collect logs from Kolide via webhooks (HTTP endpoint), the REST API, and the Log Pipeline (AWS S3 or Google Cloud Storage).
     deployment_modes:
       default:
         enabled: true
@@ -61,7 +61,7 @@ policy_templates:
       - type: aws-s3
         title: Collect Kolide Log Pipeline data from AWS S3
         description: >-
-          Collect Kolide Log Pipeline data (authentication logs, audit logs, and device check-run results) that Kolide writes to a customer-owned S3 bucket, via direct bucket polling or SQS notifications.
+          Collect Kolide Log Pipeline data (authentication logs, audit logs, device check-run results, and raw osquery result/status logs) that Kolide writes to a customer-owned S3 bucket, via direct bucket polling or SQS notifications.
         vars:
           - name: shared_credential_file
             type: text
@@ -120,6 +120,36 @@ policy_templates:
             type: text
             title: Proxy URL
             description: URL to proxy AWS API connections, in the form of `http[s]://<user>:<password>@<server name/ip>:<port>`.
+            required: false
+            show_user: false
+      - type: gcs
+        title: Collect Kolide Log Pipeline data from Google Cloud Storage
+        description: >-
+          Collect Kolide Log Pipeline data (authentication logs, audit logs, device check-run results, and raw osquery result/status logs) that Kolide writes to a customer-owned GCS bucket, via bucket polling.
+        vars:
+          - name: project_id
+            type: text
+            title: Project ID
+            description: The GCP project ID the GCS bucket belongs to. Required to collect via GCS.
+            required: true
+            show_user: true
+          - name: service_account_key
+            type: password
+            title: Service Account Key
+            description: The GCP service account JSON key contents the Elastic Agent uses to read from the bucket. The service account only needs read access (for example, the `Storage Object Viewer` role). Alternative to the Service Account File; leave both empty to use Application Default Credentials (Workload Identity).
+            secret: true
+            required: false
+            show_user: true
+          - name: service_account_file
+            type: text
+            title: Service Account File
+            description: Path on the Elastic Agent host to a GCP service account JSON key file used to read from the bucket. Alternative to the Service Account Key.
+            required: false
+            show_user: false
+          - name: alternative_host
+            type: text
+            title: Alternative Host
+            description: Overrides the default host for the storage client (default is `storage.googleapis.com`). Used for testing against GCS emulators.
             required: false
             show_user: false
 owner:

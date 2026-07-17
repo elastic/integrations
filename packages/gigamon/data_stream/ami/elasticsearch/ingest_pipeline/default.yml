@@ -9,6 +9,10 @@ processors:
       target_field: gigamon.ami
       if: ctx.json != null
       tag: rename_json
+  - pipeline:
+      if: ctx.cef != null
+      name: '{{ IngestPipeline "cef-pipeline" }}'
+      tag: cef_pipeline
   - set:
       field: event.kind
       value: event
@@ -466,6 +470,78 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'  
+  - convert:
+      field: gigamon.ami.tcp_rtt_min
+      if: ctx.gigamon?.ami?.tcp_rtt_min != null
+      tag: convert_tcp_rtt_min
+      type: double
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt_min
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_rtt_max
+      if: ctx.gigamon?.ami?.tcp_rtt_max != null
+      tag: convert_tcp_rtt_max
+      type: double
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt_max
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_rtt_mean
+      if: ctx.gigamon?.ami?.tcp_rtt_mean != null
+      tag: convert_tcp_rtt_mean
+      type: double
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt_mean
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_rtt_app_min
+      if: ctx.gigamon?.ami?.tcp_rtt_app_min != null
+      tag: convert_tcp_rtt_app_min
+      type: double
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt_app_min
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_rtt_app_max
+      if: ctx.gigamon?.ami?.tcp_rtt_app_max != null
+      tag: convert_tcp_rtt_app_max
+      type: double
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt_app_max
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gigamon.ami.tcp_rtt_app_mean
+      if: ctx.gigamon?.ami?.tcp_rtt_app_mean != null
+      tag: convert_tcp_rtt_app_mean
+      type: double
+      on_failure:
+        - remove:
+            field: gigamon.ami.tcp_rtt_app_mean
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: Gigamon AMI lookup mappings
@@ -895,18 +971,6 @@ processors:
             ctx.gigamon.ami.dns_reply_code_value = params['dns_reply_code'][ctx.gigamon.ami.dns_reply_code];
         }
 
-  - convert:
-      field: gigamon.ami.dns_response_time
-      if: ctx.gigamon?.ami?.dns_response_time != null
-      tag: convert_dns_response_time
-      type: float
-      on_failure:
-        - remove:
-            field: gigamon.ami.dns_response_time
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
      lang: painless
      description: Convert dns_response_time in seconds to nanoseconds for populating event.duration
@@ -960,18 +1024,6 @@ processors:
       value: "{{{gigamon.ami.dns_host_addr}}}"
       if: ctx.gigamon?.ami?.dns_host_addr != null
       allow_duplicates: false
-  - convert:
-      field: gigamon.ami.dns_ttl
-      if: ctx.gigamon?.ami?.dns_ttl != null
-      tag: convert_dns_ttl
-      type: long
-      on_failure:
-        - remove:
-            field: gigamon.ami.dns_ttl
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: dns.answers.ttl
       tag: set_dns_answers.ttl
@@ -1041,18 +1093,6 @@ processors:
       tag: set_http_version
       copy_from: gigamon.ami.http_version
       if: ctx.gigamon?.ami?.http_version != null
-  - convert:
-      field: gigamon.ami.http_code
-      if: ctx.gigamon?.ami?.http_code != null
-      tag: convert_http_code
-      type: long
-      on_failure:
-        - remove:
-            field: gigamon.ami.http_code
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.status_code
       tag: set_http_response_status_code
