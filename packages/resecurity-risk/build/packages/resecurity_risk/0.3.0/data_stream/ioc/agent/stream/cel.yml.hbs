@@ -1,0 +1,36 @@
+interval: '{{interval}}'
+resource.url: '{{url}}'
+resource.retry.max_attempts: 3
+resource.retry.wait_min: 1s
+resource.retry.wait_max: 60s
+redact:
+  fields:
+    - state.api_key
+state:
+  page: 1
+  api_key: '{{api_key}}'
+  want_more: true
+  max_pages: '{{max_pages_per_poll}}'
+program: |
+  state.want_more ? (
+    request(
+      "GET",
+      state.url + "/ioc/index?page=" + string(int(state.page))
+    ).with({"Header": {"Accept": ["application/json"], "Authorization": ["Basic " + state.api_key.base64()]}}).do_request().as(resp,
+      resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(body, {
+          "events": body.map(item, item),
+          "page": int(state.page) + 1,
+          "max_pages": state.max_pages,
+          "want_more":
+            int(resp.Header["X-Pagination-Current-Page"][0]) <
+            int(resp.Header["X-Pagination-Page-Count"][0]) &&
+            int(state.page) < int(state.max_pages)
+        })
+      :
+        {
+          "events": [{"error": {"code": string(resp.StatusCode), "message": string(resp.Body)}}],
+          "want_more": false
+        }
+    )
+  ) : {"events": [], "want_more": false}

@@ -1,0 +1,28 @@
+title: "Resecurity Breach"
+type: logs
+dataset: resecurity_risk.breach
+streams:
+  - input: cel
+    template_path: cel.yml.hbs
+    title: "Collect Resecurity Breaches"
+    description: "Collect Leaked-Credential breach records from the Resecurity RISK API. Requires a search term."
+    vars:
+      - name: search_query
+        type: text
+        title: "Search Query"
+        description: "Required Search Phrase, e.g. a company domain, email, or username to monitor for breach exposure. The Breach API does not support listing all records."
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: "Collection Interval"
+        default: "1h"
+        required: true
+        show_user: true
+      - name: max_pages_per_poll
+        type: integer
+        title: "Max Pages per Poll"
+        description: "The Breach API has no incremental/date filter, so each poll re-walks pages from the start. This bounds how many pages are fetched per interval."
+        default: 10
+        required: true
+        show_user: true

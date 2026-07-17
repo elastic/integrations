@@ -1,0 +1,29 @@
+title: "Resecurity Alert"
+type: logs
+dataset: resecurity_risk.alert
+streams:
+  - input: cel
+    template_path: cel.yml.hbs
+    title: "Collect Resecurity Alerts"
+    description: "Collect Threat Intelligence Alerts from the Resecurity RISK API."
+    vars:
+      - name: search_query
+        type: text
+        title: "Search Query"
+        description: "Optional Search Phrase to Filter alerts by subject/content. Leave Blank to fetch ALL alerts."
+        default: ""
+        required: false
+        show_user: true
+      - name: interval
+        type: text
+        title: "Collection Interval"
+        default: "1h"
+        required: true
+        show_user: true
+      - name: max_pages_per_poll
+        type: integer
+        title: "Max Pages per Poll"
+        description: "The Alert API has no incremental/date filter, so each poll re-walks pages from the start. This bounds how many pages are fetched per interval."
+        default: 10
+        required: true
+        show_user: true

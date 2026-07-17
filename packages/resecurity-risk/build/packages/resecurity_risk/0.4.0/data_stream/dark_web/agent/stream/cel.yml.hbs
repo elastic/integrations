@@ -1,0 +1,43 @@
+interval: '{{interval}}'
+resource.url: '{{url}}'
+resource.retry.max_attempts: 3
+resource.retry.wait_min: 1s
+resource.retry.wait_max: 60s
+redact:
+  fields:
+    - state.api_key
+state:
+  api_key: '{{api_key}}'
+  query: '{{search_query}}'
+  max_pages: '{{max_pages_per_poll}}'
+program: |
+  (has(state.page) ? int(state.page) : 1).as(page,
+    request(
+      "GET",
+      state.url + "/dark-web/index?" + {"query": [state.query]}.format_query() + "&page=" + string(page)
+    ).with({"Header": {"Accept": ["application/json"], "Authorization": ["Basic " + state.api_key.base64()]}}).do_request().as(resp,
+      resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(body,
+          (
+            int(resp.Header["X-Pagination-Current-Page"][0]) <
+            int(resp.Header["X-Pagination-Page-Count"][0])
+          ).as(has_more, {
+            "events": body.map(item, item),
+            "page": has_more ? page + 1 : 1,
+            "want_more": has_more && page < int(state.max_pages),
+            "api_key": state.api_key,
+            "query": state.query,
+            "max_pages": state.max_pages
+          })
+        )
+      :
+        {
+          "events": [{"error": {"code": string(resp.StatusCode), "message": string(resp.Body)}}],
+          "page": 1,
+          "want_more": false,
+          "api_key": state.api_key,
+          "query": state.query,
+          "max_pages": state.max_pages
+        }
+    )
+  )

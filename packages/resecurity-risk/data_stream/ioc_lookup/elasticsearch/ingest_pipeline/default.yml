@@ -1,0 +1,141 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: enrichment
+  - set:
+      field: event.category
+      value: [threat]
+  - set:
+      field: event.type
+      value: [indicator]
+  - set:
+      field: event.dataset
+      value: resecurity_risk.ioc_lookup
+  - fingerprint:
+      fields:
+        - hash_query
+      target_field: _id
+      if: ctx.hash_query != null
+      ignore_missing: true
+  - rename:
+      field: hash_query
+      target_field: resecurity.ioc.hash_query
+      ignore_missing: true
+  - rename:
+      field: found
+      target_field: resecurity.ioc.found
+      ignore_missing: true
+  - set:
+      field: resecurity.ioc.found
+      value: true
+      if: ctx.resecurity?.ioc?.found == null && ctx.error == null
+  - date:
+      field: update_date
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.update_date != null
+      ignore_failure: true
+  - set:
+      field: file.name
+      copy_from: file_name
+      if: ctx.file_name != null
+  - rename:
+      field: id
+      target_field: resecurity.ioc.id
+      ignore_missing: true
+  - rename:
+      field: actor_name
+      target_field: resecurity.ioc.actor_name
+      ignore_missing: true
+  - rename:
+      field: malware_name
+      target_field: resecurity.ioc.malware_name
+      ignore_missing: true
+  - rename:
+      field: file_name
+      target_field: resecurity.ioc.file_name
+      ignore_missing: true
+  - rename:
+      field: file_type
+      target_field: resecurity.ioc.file_type
+      ignore_missing: true
+  - rename:
+      field: detection_ratio
+      target_field: resecurity.ioc.detection_ratio
+      ignore_missing: true
+  - rename:
+      field: item_url
+      target_field: resecurity.ioc.item_url
+      ignore_missing: true
+  - date:
+      field: add_date
+      target_field: resecurity.ioc.add_date
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.add_date != null
+      ignore_failure: true
+  - remove:
+      field: add_date
+      ignore_missing: true
+  - date:
+      field: analysis_date
+      target_field: resecurity.ioc.analysis_date
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.analysis_date != null
+      ignore_failure: true
+  - remove:
+      field: analysis_date
+      ignore_missing: true
+  - date:
+      field: update_date
+      target_field: resecurity.ioc.update_date
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.update_date != null
+      ignore_failure: true
+  - remove:
+      field: update_date
+      ignore_missing: true
+  - set:
+      field: file.hash.md5
+      copy_from: md5
+      if: ctx.md5 != null
+  - set:
+      field: file.hash.sha256
+      copy_from: sha256
+      if: ctx.sha256 != null
+  - append:
+      field: related.hash
+      value: "{{{md5}}}"
+      if: ctx.md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{{sha256}}}"
+      if: ctx.sha256 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{{resecurity.ioc.hash_query}}}"
+      if: ctx.resecurity?.ioc?.hash_query != null
+      allow_duplicates: false
+  - remove:
+      field: md5
+      ignore_missing: true
+  - remove:
+      field: sha256
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error

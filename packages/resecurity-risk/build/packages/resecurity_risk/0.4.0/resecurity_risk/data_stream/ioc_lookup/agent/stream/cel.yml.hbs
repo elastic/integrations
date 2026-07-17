@@ -1,0 +1,36 @@
+interval: '{{interval}}'
+resource.url: '{{url}}'
+resource.retry.max_attempts: 3
+resource.retry.wait_min: 1s
+resource.retry.wait_max: 60s
+redact:
+  fields:
+    - state.api_key
+state:
+  api_key: '{{api_key}}'
+  hashes:
+{{#each hashes as |hash|}}
+    - '{{hash}}'
+{{/each}}
+program: |
+  state.hashes.map(h,
+    request(
+      "GET",
+      state.url + "/ioc/search-by-hash?" + {"hash": [string(h)]}.format_query()
+    ).with({"Header": {"Accept": ["application/json"], "Authorization": ["Basic " + state.api_key.base64()]}}).do_request().as(resp,
+      resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().with({"hash_query": string(h)})
+      : resp.StatusCode == 404 ?
+        {"hash_query": string(h), "found": false}
+      :
+        {
+          "hash_query": string(h),
+          "error": {"code": string(resp.StatusCode), "message": string(resp.Body)}
+        }
+    )
+  ).as(evts, {
+    "events": evts,
+    "want_more": false,
+    "api_key": state.api_key,
+    "hashes": state.hashes
+  })

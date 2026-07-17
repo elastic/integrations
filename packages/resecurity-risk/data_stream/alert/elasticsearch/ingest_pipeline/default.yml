@@ -1,0 +1,156 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: enrichment
+  - set:
+      field: event.category
+      value: [threat]
+  - set:
+      field: event.type
+      value: [indicator]
+  - set:
+      field: event.dataset
+      value: resecurity_risk.alert
+  - fingerprint:
+      fields:
+        - id
+      target_field: _id
+      if: ctx.id != null
+      ignore_missing: true
+  - date:
+      field: updated_at
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.updated_at != null
+      ignore_failure: true
+  - remove:
+      field: updated_at
+      ignore_missing: true
+  - set:
+      field: event.risk_score
+      copy_from: risk_score
+      if: ctx.risk_score != null
+  - remove:
+      field: risk_score
+      ignore_missing: true
+  - rename:
+      field: id
+      target_field: resecurity.alert.id
+      ignore_missing: true
+  - rename:
+      field: subject
+      target_field: resecurity.alert.subject
+      ignore_missing: true
+  - rename:
+      field: content
+      target_field: resecurity.alert.content
+      ignore_missing: true
+  - rename:
+      field: category.id
+      target_field: resecurity.alert.category.id
+      ignore_missing: true
+  - rename:
+      field: category.name
+      target_field: resecurity.alert.category.name
+      ignore_missing: true
+  - remove:
+      field: category
+      if: ctx.category instanceof Map && ctx.category.isEmpty()
+      ignore_missing: true
+  - rename:
+      field: confidence_score
+      target_field: resecurity.alert.confidence_score
+      ignore_missing: true
+  - rename:
+      field: tlp_status
+      target_field: resecurity.alert.tlp_status
+      ignore_missing: true
+  - rename:
+      field: geography
+      target_field: resecurity.alert.geography
+      ignore_missing: true
+  - rename:
+      field: ioc
+      target_field: resecurity.alert.ioc
+      ignore_missing: true
+  - rename:
+      field: ttp
+      target_field: resecurity.alert.ttp
+      ignore_missing: true
+  - split:
+      field: tags
+      separator: ","
+      if: ctx.tags != null
+      ignore_failure: true
+  - rename:
+      field: tags
+      target_field: resecurity.alert.tags
+      ignore_missing: true
+  - foreach:
+      field: resecurity.alert.tags
+      if: ctx.resecurity?.alert?.tags != null
+      processor:
+        trim:
+          field: _ingest._value
+      ignore_failure: true
+  - foreach:
+      field: resecurity.alert.tags
+      if: ctx.resecurity?.alert?.tags != null
+      processor:
+        append:
+          field: tags
+          value: "{{{_ingest._value}}}"
+          allow_duplicates: false
+      ignore_failure: true
+  - split:
+      field: threat_actors
+      separator: ","
+      if: ctx.threat_actors != null
+      ignore_failure: true
+  - rename:
+      field: threat_actors
+      target_field: resecurity.alert.threat_actors
+      ignore_missing: true
+  - foreach:
+      field: resecurity.alert.threat_actors
+      if: ctx.resecurity?.alert?.threat_actors != null
+      processor:
+        trim:
+          field: _ingest._value
+      ignore_failure: true
+  - rename:
+      field: for_splunk.email
+      target_field: resecurity.alert.for_splunk.email
+      ignore_missing: true
+  - foreach:
+      field: for_splunk.ip
+      if: ctx.for_splunk?.ip != null
+      processor:
+        append:
+          field: related.ip
+          value: "{{{_ingest._value}}}"
+          allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: for_splunk
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: "{{{resecurity.alert.ioc.md5}}}"
+      if: ctx.resecurity?.alert?.ioc?.md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{{resecurity.alert.ioc.sha256}}}"
+      if: ctx.resecurity?.alert?.ioc?.sha256 != null
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
