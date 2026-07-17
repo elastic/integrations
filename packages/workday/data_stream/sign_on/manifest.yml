@@ -1,67 +1,39 @@
-title: Activity
+title: Sign-on
 type: logs
+ilm_policy: logs-workday.sign_on-default_policy
 streams:
   - input: cel
-    title: Activity logs
-    description: Collect Activity logs from Workday.
+    title: Sign-on logs
+    description: Collect Sign-on logs from Workday.
     template_path: cel.yml.hbs
     vars:
-      - name: hostname
+      - name: url
         type: text
-        title: Hostname
-        description: 'Hostname of Workday instance. Example: <your-workday-host>.workday.com'
-        required: true
-        show_user: true
-      - name: tenant
-        type: text
-        title: Tenant
-        description: Tenant of Workday instance.
-        required: true
-        show_user: true
-      - name: client_id
-        type: text
-        title: Client ID
+        title: Report URL
+        description: 'Full URL of the Workday Custom Report (Reports as a Service / RaaS JSON endpoint). Example: `https://<your-workday-host>.workday.com/ccx/service/customreport2/<tenant>/<report_owner>/<report_name>?format=json`.'
         multi: false
         required: true
         show_user: true
-        description: Client ID.
-      - name: client_secret
+      - name: username
+        type: text
+        title: Username
+        description: Username for basic authentication against the Workday Custom Report API (usually the Integration System User).
+        multi: false
+        required: true
+        show_user: true
+      - name: password
         type: password
-        title: Client Secret
+        title: Password
+        description: Password for basic authentication against the Workday Custom Report API.
         multi: false
         required: true
         show_user: true
         secret: true
-        description: Client Secret.
-      - name: refresh_token
-        type: text
-        title: Refresh Token
-        description: Refresh token for Workday instance.
-        multi: false
-        required: true
-        show_user: true
-        secret: true
-      - name: initial_interval
-        type: text
-        title: Initial Interval
-        description: How far back to pull the Activity logs from Workday API. Supported units for this parameter are h/m/s.
-        default: 24h
-        multi: false
-        required: true
-        show_user: true
       - name: interval
         type: text
         title: Interval
-        description: Duration between requests to the Workday API. Supported units for this parameter are h/m/s.
-        default: 5m
-        multi: false
-        required: true
-        show_user: true
-      - name: batch_size
-        type: integer
-        title: Batch Size
-        description: Batch size for the response of the Workday API. The batch size can range from a minimum of 1 to a maximum of 1000.
-        default: 1000
+        description: Duration between requests to the Workday Custom Report API. Supported units for this parameter are h/m/s.
+        default: 24h
         multi: false
         required: true
         show_user: true
@@ -72,7 +44,7 @@ streams:
         multi: false
         required: true
         show_user: false
-        default: 30s
+        default: 5m
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
@@ -90,7 +62,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - workday-activity
+          - workday-sign_on
       - name: preserve_original_event
         required: true
         show_user: true
