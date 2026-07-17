@@ -200,11 +200,11 @@ An example event for `logs` looks as following:
 {
     "@timestamp": "2026-07-16T15:40:27.001Z",
     "agent": {
-        "ephemeral_id": "d626fbcc-f95c-4710-8e64-fe061e740b43",
-        "id": "ead4bee4-3988-4199-b31e-50feb1fa1cb3",
-        "name": "elastic-agent-26103",
+        "ephemeral_id": "583e11b6-f0ac-49d8-b373-b0db09338971",
+        "id": "0a039fc8-ac99-4ffa-92c3-f639c49f2e15",
+        "name": "elastic-agent-31354",
         "type": "filebeat",
-        "version": "9.4.3"
+        "version": "9.3.3"
     },
     "backstage": {
         "query": {
@@ -222,16 +222,16 @@ An example event for `logs` looks as following:
     },
     "data_stream": {
         "dataset": "backstage.logs",
-        "namespace": "18064",
+        "namespace": "26579",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "ead4bee4-3988-4199-b31e-50feb1fa1cb3",
+        "id": "0a039fc8-ac99-4ffa-92c3-f639c49f2e15",
         "snapshot": false,
-        "version": "9.4.3"
+        "version": "9.3.3"
     },
     "event": {
         "action": "entity-fetch:initiated",
@@ -241,10 +241,10 @@ An example event for `logs` looks as following:
         ],
         "code": "entity-fetch",
         "dataset": "backstage.logs",
-        "ingested": "2026-07-17T04:11:58Z",
+        "ingested": "2026-07-17T05:02:30Z",
         "kind": "event",
         "module": "backstage",
-        "original": "{\"actor\":{\"actorId\":\"user:default/alice.johnson\",\"hostname\":\"backstage.example.internal\",\"ip\":\"::ffff:89.160.20.112\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\"},\"eventId\":\"entity-fetch\",\"isAuditEvent\":true,\"level\":\"info\",\"message\":\"catalog.entity-fetch\",\"meta\":{\"query\":{\"fields\":[\"metadata\",\"kind\",\"spec.profile\"],\"filter\":[\"kind=group,relations.hasMember=user:default/alice.johnson\"]},\"queryType\":\"all\"},\"plugin\":\"catalog\",\"request\":{\"method\":\"GET\",\"url\":\"/api/catalog/entities?fields=metadata,kind,spec.profile&filter=kind%3Dgroup%2Crelations.hasMember%3Duser%3Adefault%2Falice.johnson\"},\"service\":\"backstage\",\"severityLevel\":\"low\",\"span_id\":\"a1b2c3d4e5f60718\",\"status\":\"initiated\",\"timestamp\":\"2026-07-16T15:40:27.001Z\",\"trace_flags\":\"01\",\"trace_id\":\"1a2b3c4d5e6f70819aebfcdd0e1f2a3b\"}",
+        "original": "{\"actor\":{\"actorId\":\"user:default/alice.johnson\",\"hostname\":\"backstage.example.internal\",\"ip\":\"::ffff:192.168.0.1\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\"},\"eventId\":\"entity-fetch\",\"isAuditEvent\":true,\"level\":\"info\",\"message\":\"catalog.entity-fetch\",\"meta\":{\"query\":{\"fields\":[\"metadata\",\"kind\",\"spec.profile\"],\"filter\":[\"kind=group,relations.hasMember=user:default/alice.johnson\"]},\"queryType\":\"all\"},\"plugin\":\"catalog\",\"request\":{\"method\":\"GET\",\"url\":\"/api/catalog/entities?fields=metadata,kind,spec.profile&filter=kind%3Dgroup%2Crelations.hasMember%3Duser%3Adefault%2Falice.johnson\"},\"service\":\"backstage\",\"severityLevel\":\"low\",\"span_id\":\"a1b2c3d4e5f60718\",\"status\":\"initiated\",\"timestamp\":\"2026-07-16T15:40:27.001Z\",\"trace_flags\":\"01\",\"trace_id\":\"1a2b3c4d5e6f70819aebfcdd0e1f2a3b\"}",
         "outcome": "unknown",
         "provider": "catalog",
         "severity": 3,
@@ -264,7 +264,7 @@ An example event for `logs` looks as following:
     "log": {
         "file": {
             "device_id": "43",
-            "inode": "390",
+            "inode": "392",
             "path": "/tmp/service_logs/test-audit-events.log"
         },
         "level": "info",
@@ -276,35 +276,14 @@ An example event for `logs` looks as following:
             "backstage.example.internal"
         ],
         "ip": [
-            "89.160.20.112"
+            "192.168.0.1"
         ],
         "user": [
             "user:default/alice.johnson"
         ]
     },
     "source": {
-        "as": {
-            "number": 29518,
-            "organization": {
-                "name": "Bredband2 AB"
-            }
-        },
-        "geo": {
-            "city_name": "Linköping",
-            "continent_name": "Europe",
-            "country_iso_code": "SE",
-            "country_name": "Sweden",
-            "location": {
-                "coordinates": [
-                    15.61669997870922,
-                    58.416699967347085
-                ],
-                "type": "Point"
-            },
-            "region_iso_code": "SE-E",
-            "region_name": "Östergötland County"
-        },
-        "ip": "89.160.20.112"
+        "ip": "192.168.0.1"
     },
     "span": {
         "id": "a1b2c3d4e5f60718"
