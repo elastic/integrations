@@ -70,11 +70,11 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-07-17T14:40:02.395Z",
+    "@timestamp": "2026-07-17T16:34:07.424Z",
     "agent": {
-        "ephemeral_id": "49ff7a8f-d3f1-44fe-84c1-e8f395dce1ce",
-        "id": "a5de01f0-97e2-4cc1-beb3-1dbe1b9954a3",
-        "name": "elastic-agent-47190",
+        "ephemeral_id": "68ba2c86-379b-41ad-986c-3a9b2b1fca21",
+        "id": "df7173eb-3614-47a6-9ccd-cfd7c675d3ff",
+        "name": "elastic-agent-17810",
         "type": "filebeat",
         "version": "9.4.3"
     },
@@ -98,7 +98,7 @@ An example event for `asset` looks as following:
     },
     "data_stream": {
         "dataset": "qualys_gav.asset",
-        "namespace": "50883",
+        "namespace": "66247",
         "type": "logs"
     },
     "device": {
@@ -111,7 +111,7 @@ An example event for `asset` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "a5de01f0-97e2-4cc1-beb3-1dbe1b9954a3",
+        "id": "df7173eb-3614-47a6-9ccd-cfd7c675d3ff",
         "snapshot": false,
         "version": "9.4.3"
     },
@@ -122,7 +122,7 @@ An example event for `asset` looks as following:
         ],
         "created": "2025-07-09T14:21:12.000Z",
         "dataset": "qualys_gav.asset",
-        "ingested": "2026-07-17T14:40:05Z",
+        "ingested": "2026-07-17T16:34:10Z",
         "kind": "event",
         "module": "qualys_gav",
         "risk_score": 0,
@@ -334,8 +334,8 @@ An example event for `asset` looks as following:
             "host_id": "1437386",
             "hosting_category1": "CDN",
             "hw_uuid": "422a2b16-4c8b-588a-a20c-c1851ad7e376",
-            "interval_id": "b052f7ef-538a-414a-98e6-6be8ddb45925",
-            "interval_start": "2026-07-17T14:40:02.392Z",
+            "interval_id": "c40299bb-2eac-4f90-b0c5-a0b14bff71f8",
+            "interval_start": "2026-07-17T16:34:07.422Z",
             "inventory": {
                 "created": "2025-07-09T14:21:12.000Z",
                 "last_updated": "2025-07-11T14:21:10.000Z",
