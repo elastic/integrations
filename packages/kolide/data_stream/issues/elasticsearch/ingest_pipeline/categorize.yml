@@ -7,9 +7,12 @@ description: >-
   domain category (malware or vulnerability), keyed by check id (rule.id); the
   base configuration category is always retained, and unlisted checks remain
   configuration only. event.type is creation for a newly detected/open issue
-  and change for a resolved or updated issue (resolved_at set, or the
-  issues.resolved webhook action). event.outcome (open -> failure, resolved ->
-  success) is assigned in default.yml and is left untouched here.
+  and change for a resolved, pending-block, or blocked issue (resolved_at set,
+  blocks_device_at set, or the issues.resolved webhook action). event.action
+  becomes will_be_blocked once blocks_device_at is set but its deadline hasn't
+  passed yet, and blocked once the deadline has passed. event.outcome (open ->
+  failure, resolved -> success) is assigned in default.yml and is left
+  untouched here.
 processors:
   - script:
       lang: painless
@@ -52,9 +55,35 @@ processors:
           }
         }
 
-        // A resolved/updated issue is a change; a newly detected issue is a creation.
+        // blocked/resolved issues are a change; a newly detected issue is a creation.
+        // blocked_device_at is a future deadline, not an immediate state: the device
+        // is only actually blocked once that deadline has passed relative to this event.
+        boolean pendingBlock = (ctx.kolide?.issues?.blocks_device_at != null);
+        boolean blocked = false;
+        if (pendingBlock && ctx['@timestamp'] != null) {
+          ZonedDateTime blockAt = ZonedDateTime.parse(ctx.kolide.issues.blocks_device_at);
+          ZonedDateTime eventTime = ZonedDateTime.parse(ctx['@timestamp']);
+          blocked = !blockAt.isAfter(eventTime);
+        }
         boolean resolved = (ctx.kolide?.issues?.resolved_at != null) || (action == 'issues.resolved');
-        ctx.event.type = resolved ? ['change'] : ['creation'];
+        ctx.event.type = (pendingBlock || resolved) ? ['change'] : ['creation'];
+
+        // Persist the computed blocked state for the fingerprint processor in
+        // default.yml, so pending/blocked/resolved each fingerprint to a distinct _id.
+        ctx._tmp = ctx._tmp == null ? [:] : ctx._tmp;
+        ctx._tmp.blocked = blocked;
+
+        // Precedence: a resolved issue takes priority over a still-blocking one;
+        // a pending future block takes priority over a plain open issue.
+        if (action == 'issue') {
+          if (resolved) {
+            ctx.event.action = 'resolved';
+          } else if (blocked) {
+            ctx.event.action = 'blocked';
+          } else if (pendingBlock) {
+            ctx.event.action = 'will_be_blocked';
+          }
+        }
 
 on_failure:
   - append:

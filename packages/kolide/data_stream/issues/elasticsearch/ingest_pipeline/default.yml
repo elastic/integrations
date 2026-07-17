@@ -69,7 +69,14 @@ processors:
       description: Decode the CEL message (a JSON string of one issue object) into the working json object.
 
   # Common normalization (`json` is an API issue object or a webhook envelope).
-  # @timestamp: webhook `timestamp`, else API `detected_at`.
+  # @timestamp: webhook `timestamp`, else the max of the API's three lifecycle
+  # timestamps (detected_at/resolved_at/blocks_device_at). Using detected_at
+  # alone made a freshly-blocked or freshly-resolved issue's document appear
+  # to have an old @timestamp from whenever it was originally detected, even
+  # though the fetch was triggered by a state change that just happened.
+  # blocks_device_at is a *future* enforcement deadline (see fields.yml), not a
+  # past event, so it is capped at the current time -- otherwise a document
+  # could be indexed with a future @timestamp.
   - date:
       field: json.timestamp
       target_field: '@timestamp'
@@ -77,13 +84,32 @@ processors:
         - ISO8601
       tag: date_timestamp_webhook
       if: ctx.json?.timestamp != null
-  - date:
-      field: json.detected_at
-      target_field: '@timestamp'
-      formats:
-        - ISO8601
-      tag: date_timestamp_api
+  - set:
+      field: _tmp.ingest_timestamp
+      copy_from: _ingest.timestamp
+      tag: set_tmp_ingest_timestamp
       if: ctx.json?.timestamp == null && ctx.json?.detected_at != null
+  - script:
+      lang: painless
+      tag: set_timestamp_api_max_lifecycle
+      description: >-
+        Sets @timestamp to the most recent of detected_at/resolved_at/blocks_device_at
+        (capped at now) so the document reflects the state change that triggered
+        this fetch, not always the issue's original detection time.
+      if: ctx.json?.timestamp == null && ctx.json?.detected_at != null
+      source: |-
+        ZonedDateTime now = (ZonedDateTime) ctx._tmp.ingest_timestamp;
+        ZonedDateTime max = ZonedDateTime.parse(ctx.json.detected_at);
+        if (ctx.json.resolved_at != null) {
+          ZonedDateTime resolved = ZonedDateTime.parse(ctx.json.resolved_at);
+          if (resolved.isAfter(max)) { max = resolved; }
+        }
+        if (ctx.json.blocks_device_at != null) {
+          ZonedDateTime blocked = ZonedDateTime.parse(ctx.json.blocks_device_at);
+          if (blocked.isAfter(max)) { max = blocked; }
+        }
+        if (max.isAfter(now)) { max = now; }
+        ctx['@timestamp'] = max.format(DateTimeFormatter.ISO_INSTANT);
 
   # event.id: webhook delivery ULID (`json.id`) or API issue id (`json.id`).
   - rename:
@@ -330,14 +356,21 @@ processors:
       tag: categorize
       ignore_missing_pipeline: true
 
-  # Deduplication: CEL cursor uses an inclusive detected_at boundary, so the last
-  # record may be re-collected. Fingerprint event.id to _id so polls upsert state.
+  # Deduplication: CEL cursor's inclusive detected_at boundary can re-collect
+  # the last record, so fingerprint drops duplicates. resolved_at, blocked and
+  # blocks_device_at are included so pending/blocked/resolved states of the same
+  # states of the same issue fingerprint to distinct _ids instead of collapsing.
   - fingerprint:
       fields:
         - event.id
+        - kolide.issues.detected_at
+        - kolide.issues.resolved_at
+        - _tmp.blocked
+        - kolide.issues.blocks_device_at
       target_field: _id
       method: SHA-256
-      tag: fingerprint_event_id
+      ignore_missing: true
+      tag: fingerprint_event_id_detected_at_blocks_device_at_blocked_resolved_at
       if: ctx.event?.id != null && ctx.event.id != ''
 
   # Cleanup.
