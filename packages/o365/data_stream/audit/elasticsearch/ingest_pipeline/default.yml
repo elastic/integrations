@@ -73,6 +73,19 @@ processors:
             ctx.o365audit[field] = new BigDecimal(value).toBigIntegerExact().toString();
           }
         }
+  - rename:
+      tag: rename_sender_object_to_sender_entity
+      description: >-
+        o365audit.Sender is polymorphic across workloads: it can be reported as
+        a plain email address (keyword), while other records report it as a
+        structured identity object. A single field can't be mapped as both,
+        so structured Sender values are moved to SenderEntity, keeping Sender
+        consistently a keyword.
+      field: o365audit.Sender
+      target_field: o365audit.SenderEntity
+      if: ctx.o365audit?.Sender instanceof Map
+      ignore_missing: true
+
   - fingerprint:
       tag: fingerprint_443be558
       fields:

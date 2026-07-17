@@ -108,6 +108,7 @@ The following event types are supported for CrowdStrike Event Streams (whether y
 - IDP Incidents
 - IDP Summary events
 - Mobile Detection events
+- OverwatchGenericDetectionSummaryEvent
 - Recon Notification events
 - XDR Detection events
 - Scheduled Report Notification events
@@ -274,11 +275,11 @@ The FDR dataset includes:
 5. Configure the integration.
 6. Click **Save and Continue** to save the integration.
 
-### Agentless enabled integration
+### Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent based installation
 
@@ -287,6 +288,20 @@ You can install only one Elastic Agent per host.
 Elastic Agent is required to stream data from the AWS SQS, Event Streams API, REST API, or SIEM Connector and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ## Troubleshooting
+
+### Event Streams input stops collecting after repeated connection failures
+
+The **Falcon events** data stream's **Event Streams API** input (`streaming`) reconnects to the CrowdStrike stream with a bounded number of retries. Failures such as a non-200 response or an authentication error from bad credentials count toward **Retry - Maximum Attempts**; once that limit is reached the input terminates and the Elastic Agent must be restarted to resume collection.
+
+On Elastic Agent 8.19.19, 9.3.8, 9.4.4, or later, transient connection-level failures (an empty response, a network error, or a timeout) are instead retried indefinitely with back-off and do not count toward the limit, so the input self-heals once the upstream recovers. On earlier agents these transient failures count toward the limit and can terminate the input.
+
+If the Falcon Event Streams input goes **Degraded** and then stops, and the agent logs show repeated discover or connection errors, tune the retry settings on the integration policy:
+
+- Increase **Retry - Maximum Attempts** to tolerate longer upstream outages.
+- Enable **Retry - Infinite Retries** to never terminate on repeated failures. The input keeps retrying with capped back-off until the upstream recovers.
+- Under **Advanced options**, adjust **Retry - Minimum Wait** and **Retry - Maximum Wait** to control the back-off window between attempts.
+
+Values above 10 for **Retry - Maximum Attempts**, and **Retry - Infinite Retries**, also require Elastic Agent 8.19.19, 9.3.8, 9.4.4, or later; on earlier agents they are silently capped at 10 attempts.
 
 ### Vulnerability API returns 404 Not found
 
