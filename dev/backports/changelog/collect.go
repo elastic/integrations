@@ -67,7 +67,7 @@ func Collect(before, after, repository string) (*CollectResult, error) {
 	}
 
 	if len(lines) == 0 {
-		fmt.Fprintf(os.Stderr, "no changelog entry found for backport PR %s\n", prNumber)
+		fmt.Fprintf(os.Stderr, "no changelog entry found for backport PR %s or already present in main branch\n", prNumber)
 		return &CollectResult{HasChanges: false, BackportPRNumber: prNumber, WorkingBranch: workingBranch}, nil
 	}
 
