@@ -1,0 +1,310 @@
+---
+description: >-
+  Parse Kolide request records from GET /exemption_requests and
+  GET /registration_requests (CEL), plus request webhook deliveries
+  (requests.issue_exemption / requests.registration). API-side field
+  extraction is delegated to per-endpoint sub-pipelines (exemption.yml /
+  registration.yml) since the two REST resources use different field names for
+  their admin decision notes; webhook field extraction is delegated to
+  webhook.yml.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.4.0'
+
+  # --- CEL input only (Agentless metadata + collector error placeholders) ---
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  # --- end CEL-only ---
+
+  # Webhook envelope: root-level `event` is a string (requests.*), not ECS.
+  - rename:
+      field: event
+      tag: rename_webhook_event_envelope
+      target_field: json.event
+      ignore_missing: true
+      if: ctx.event instanceof String
+      description: Move the webhook envelope `event` string out of the way of the ECS `event` object.
+  - script:
+      lang: painless
+      tag: move_webhook_envelope_to_json
+      if: ctx.json?.event != null && ctx.data != null
+      description: Move webhook envelope id, timestamp, and data into json.
+      source: |-
+        if (ctx.containsKey('id')) { ctx.json.id = ctx.remove('id'); }
+        if (ctx.containsKey('timestamp')) { ctx.json.timestamp = ctx.remove('timestamp'); }
+        if (ctx.containsKey('data')) { ctx.json.data = ctx.remove('data'); }
+
+  # CEL path: message is JSON for one request object.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json_cel
+      if: ctx.json == null && ctx.event?.original != null
+      description: Decode the CEL message JSON into json.
+
+  # Timestamps: webhook envelope timestamp, then common API timestamp names, else ingest time.
+  - date:
+      field: json.timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_timestamp_webhook
+      if: ctx.json?.timestamp != null
+  - date:
+      field: json.created_at
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_created_at_api
+      if: ctx['@timestamp'] == null && ctx.json?.created_at != null
+  - date:
+      field: json.requested_at
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_requested_at_api
+      if: ctx['@timestamp'] == null && ctx.json?.requested_at != null
+  - set:
+      field: '@timestamp'
+      copy_from: _ingest.timestamp
+      tag: set_timestamp_ingest_fallback
+      if: ctx['@timestamp'] == null
+
+  # --- Webhook: delegate field extraction to webhook.yml. ---
+  - pipeline:
+      name: '{{ IngestPipeline "webhook" }}'
+      tag: dispatch_webhook
+      if: ctx.json?.event != null
+
+  # --- API (CEL) field extraction. Webhook-set fields are skipped via null guards. ---
+  # Request type from the API source marker emitted by the CEL program.
+  - set:
+      field: kolide.request.type
+      tag: set_type_from_api_marker
+      copy_from: json._kolide_request_type
+      if: ctx.json?._kolide_request_type != null
+  # event.action: `request` for the API path (when not set by the webhook path).
+  - set:
+      field: event.action
+      tag: set_event_action_api
+      value: request
+      if: ctx.event?.action == null
+
+  # Request identifiers. For the API path, json.id is the exemption/registration
+  # request's own canonical id. For the webhook path, neither requests.issue_exemption
+  # nor requests.registration carries the underlying request's id in `data`; json.id
+  # here is the webhook delivery's id (a ULID), used as the best available identifier.
+  - set:
+      field: kolide.request.id
+      tag: set_request_id_from_json
+      copy_from: json.id
+      ignore_empty_value: true
+      if: ctx.json?.id != null
+  - rename:
+      field: json.id
+      target_field: event.id
+      tag: rename_event_id
+      ignore_missing: true
+      if: ctx.event?.id == null
+
+  # --- API: delegate field extraction to the per-endpoint sub-pipeline. The two
+  # REST resources share the same top-level shape (status, requester_message,
+  # requested_at, device_information/requester_information link-objects) but use
+  # different field names for their admin decision notes, so each gets its own
+  # pipeline mirroring its own API reference page. ---
+  - pipeline:
+      name: '{{ IngestPipeline "exemption" }}'
+      tag: dispatch_exemption
+      if: ctx.json?._kolide_request_type == 'exemption'
+  - pipeline:
+      name: '{{ IngestPipeline "registration" }}'
+      tag: dispatch_registration
+      if: ctx.json?._kolide_request_type == 'registration'
+
+  # kolide.request.message mirrors the resolved ECS `message` (both paths: set from
+  # requester_message/message in exemption.yml/registration.yml for the API path,
+  # or from json.data.message in webhook.yml for the webhook path).
+  - set:
+      field: kolide.request.message
+      tag: set_kolide_request_message
+      copy_from: message
+      ignore_empty_value: true
+      if: ctx.kolide?.request?.message == null && ctx.message instanceof String
+
+  # user.name fallback (both paths): if only an email is known (API path never has a
+  # name; the webhook `issue_exemption` event only carries person_email), use it as
+  # user.name too so the field is never left empty when an identity is known at all.
+  - set:
+      field: user.name
+      tag: set_user_name_from_email
+      copy_from: user.email
+      ignore_empty_value: true
+      if: ctx.user?.name == null && ctx.user?.email instanceof String
+
+  # host.hostname mirrors host.name when set (webhook path sets host.name; the API
+  # path does not, since device_information carries no name — see above).
+  - set:
+      field: host.hostname
+      tag: set_host_hostname
+      copy_from: host.name
+      if: ctx.host?.name != null
+
+  # related.* enrichment.
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_name
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_id
+      value: '{{{host.id}}}'
+      allow_duplicates: false
+      if: ctx.host?.id != null
+  - append:
+      field: related.user
+      tag: append_related_user_email
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      field: related.user
+      tag: append_related_user_name
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_related_user_id
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+
+  # --- Extended field extraction (state normalization + event.outcome) ---
+  - lowercase:
+      field: kolide.request.state
+      tag: lowercase_state
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_type_and_state
+      value: '{{{kolide.request.type}}}_request_{{{kolide.request.state}}}'
+      if: >-
+        ctx.event?.action == 'request' &&
+        ctx.kolide?.request?.type != null &&
+        ctx.kolide?.request?.state != null
+  - set:
+      field: event.outcome
+      tag: set_outcome_success
+      value: success
+      if: ctx.kolide?.request?.state == 'approved'
+  - set:
+      field: event.outcome
+      tag: set_outcome_failure
+      value: failure
+      if: ctx.kolide?.request?.state == 'denied' || ctx.kolide?.request?.state == 'rejected'
+  - set:
+      field: event.outcome
+      tag: set_outcome_unknown
+      value: unknown
+      if: >-
+        ctx.kolide?.request?.state == 'pending' ||
+        ctx.kolide?.request?.state == 'open' ||
+        ctx.kolide?.request?.state == 'withdrawn'
+
+  # --- ECS categorization from the resolved event.action ---
+  - pipeline:
+      name: '{{ IngestPipeline "categorize" }}'
+      tag: categorize
+      ignore_missing_pipeline: true
+
+  # Snapshot/API dedup and webhook de-duplication.
+  - fingerprint:
+      fields:
+        - kolide.request.id
+        - kolide.request.type
+        - kolide.request.state
+        - kolide.request.internal_message
+        - event.reason
+      target_field: _id
+      method: SHA-256
+      tag: fingerprint_request_identity
+      ignore_missing: true
+      if: ctx.kolide?.request?.id != null && ctx.kolide.request.id != ''
+
+  # Cleanup.
+  - remove:
+      field:
+        - json
+        - data
+      tag: remove_temp_fields
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
