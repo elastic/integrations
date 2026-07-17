@@ -35,6 +35,7 @@ func Collect(before, after, repository string) (*CollectResult, error) {
 		return nil, fmt.Errorf("resolving backport PR number: %w", err)
 	}
 	if prNumber == "" {
+		fmt.Fprintf(os.Stderr, "no backport PR found for commit %s\n", after)
 		return &CollectResult{HasChanges: false}, nil
 	}
 
@@ -44,7 +45,7 @@ func Collect(before, after, repository string) (*CollectResult, error) {
 		return nil, fmt.Errorf("checking for existing sync PR: %w", err)
 	}
 	if exists {
-		return &CollectResult{HasChanges: false}, nil
+		return &CollectResult{HasChanges: false, BackportPRNumber: prNumber, WorkingBranch: workingBranch}, nil
 	}
 
 	git := gitutil.Git{}
@@ -66,7 +67,8 @@ func Collect(before, after, repository string) (*CollectResult, error) {
 	}
 
 	if len(lines) == 0 {
-		return &CollectResult{HasChanges: false}, nil
+		fmt.Fprintf(os.Stderr, "no changelog entry found for backport PR %s\n", prNumber)
+		return &CollectResult{HasChanges: false, BackportPRNumber: prNumber, WorkingBranch: workingBranch}, nil
 	}
 
 	tsvFile, err := os.CreateTemp("", "changelog-entries-*.tsv")
