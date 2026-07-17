@@ -1,0 +1,94 @@
+- name: query
+  title: Query reference
+  type: group
+  fields:
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      description: |
+        Consolidated query identifier used to group profiles across sources. Set by the ingest
+        pipeline to the scheduled/RRULE query name, the saved query id, or the raw SQL for ad-hoc
+        live queries (in that order of preference). The raw-SQL fallback is truncated to 1024
+        characters so it always remains indexed; the full SQL is available in action_data.query
+        and osquery_profile.query.
+- name: agent_id
+  type: keyword
+  ignore_above: 1024
+  description: Identifier of the agent that produced the profile, copied from agent.id for correlation with other osquery_manager data streams.
+- name: action_id
+  type: keyword
+  ignore_above: 1024
+  description: Originating action identifier for live query profiles when applicable.
+- name: response_id
+  type: keyword
+  ignore_above: 1024
+  description: Response identifier for correlating with result or action response documents.
+- name: action_data
+  title: Osquery original action data
+  type: group
+  description: Original action payload for live queries when included by the agent.
+  fields:
+    - name: ecs_mapping
+      type: object
+      enabled: false
+    - name: id
+      type: keyword
+      ignore_above: 1024
+    - name: platform
+      type: keyword
+      ignore_above: 1024
+    - name: query
+      type: keyword
+      ignore_above: 1024
+    - name: saved_query_id
+      type: keyword
+      ignore_above: 1024
+    - name: version
+      type: keyword
+      ignore_above: 1024
+- name: osquery_profile
+  title: Osquery query profile metrics
+  type: group
+  description: Performance metrics from osquery_schedule (scheduled) or process snapshots around a live query (live).
+  fields:
+    - name: source
+      type: keyword
+      ignore_above: 1024
+      description: 'Profile origin: scheduled (osquery_schedule metrics), rrule (RRULE-scheduled run), or live (process deltas around a live query).'
+    - name: query_name
+      type: keyword
+      ignore_above: 1024
+      description: Original scheduled/RRULE query name as emitted by osquerybeat. Preserved alongside the consolidated query.name.
+    - name: query
+      type: text
+      description: SQL text of the query when provided by the agent.
+    - name: utilization
+      type: float
+      description: CPU utilization as a percentage (cpu_time / wall time).
+    - name: duration
+      type: long
+      description: Wall-clock duration in milliseconds.
+    - name: memory
+      type: long
+      description: Resident memory bytes (live) or last_memory from osquery_schedule (scheduled).
+    - name: user_time
+      type: long
+      description: User CPU time in milliseconds.
+    - name: system_time
+      type: long
+      description: System CPU time in milliseconds.
+    - name: cpu_time
+      type: long
+      description: Total CPU time in milliseconds (user_time + system_time).
+    - name: output_size_cumulative
+      type: long
+      description: Cumulative output size from osquery_schedule for scheduled queries.
+    - name: executions
+      type: long
+      description: Number of executions recorded in osquery_schedule for scheduled queries.
+    - name: exit
+      type: long
+      description: Exit status for live query profiles (0 success, 1 error).
+- name: host.os.build
+  type: keyword
+  description: OS build information.
