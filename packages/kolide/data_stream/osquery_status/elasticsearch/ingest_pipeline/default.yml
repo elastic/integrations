@@ -1,0 +1,247 @@
+---
+description: >-
+  Parse raw osquery Status Logs (GLOG-style daemon/agent telemetry)
+  collected from the Kolide Log Pipeline via the aws-s3/gcs inputs. Unlike
+  osquery_result, these are logs about the osquery daemon itself, not host
+  inventory state. Kolide encodes status logs with SINGLE-LETTER abbreviated
+  keys - {s: severity, f: filename, i: line,
+  m: message, h: hostIdentifier, c: calendarTime, u: unixTime,
+  kolide_decorations: {...}, request_id, type: "status_log"}. There is no
+  osquery version field in status logs (unlike what generic osquery
+  documentation's field name list might suggest) and no separate `decorations`
+  block (only `kolide_decorations`, a top-level key). Reference:
+  https://www.kolide.com/docs/admins/log-pipeline/overview and
+  https://osquery.readthedocs.io/en/stable/deployment/logging/
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.4.0'
+
+  # The aws-s3/gcs inputs deliver the raw object in `message`. Keep a raw copy
+  # in event.original, then decode it into the working `json` object below.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.json == null && ctx.event?.original != null
+      description: Decode the raw osquery status log line into the working json object.
+
+  - set:
+      field: event.action
+      tag: set_event_action
+      value: osquery_status
+
+  # @timestamp from osquery's unixTime (epoch seconds, key "u"). calendarTime
+  # (key "c") is a locale-dependent human-readable string, not parsed.
+  - date:
+      field: json.u
+      tag: date_timestamp
+      target_field: '@timestamp'
+      formats:
+        - UNIX
+      if: ctx.json?.u != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'failed to parse json.u: {{{ _ingest.on_failure_message }}}'
+
+  # GLOG severity (key "s"; 0=INFO, 1=WARNING, 2=ERROR, 3=FATAL) -> log.level
+  # is derived in categorize.yml; keep the raw value too. Stored as keyword
+  # since it is a bounded status code used only for exact-match lookups, not
+  # arithmetic/range queries.
+  - rename:
+      field: json.s
+      tag: rename_severity
+      target_field: kolide.osquery_status.severity
+      ignore_missing: true
+  - convert:
+      field: kolide.osquery_status.severity
+      tag: convert_severity_to_string
+      type: string
+      ignore_missing: true
+
+  - rename:
+      field: json.f
+      tag: rename_log_origin_file_name
+      target_field: log.origin.file.name
+      ignore_missing: true
+  - rename:
+      field: json.i
+      tag: rename_log_origin_file_line
+      target_field: log.origin.file.line
+      ignore_missing: true
+  - rename:
+      field: json.m
+      tag: rename_message
+      target_field: message
+      ignore_missing: true
+
+  # Host identity, primary source: kolide_decorations (top-level key,
+  # present on 100% of sampled objects). device_id is a JSON integer.
+  # json.h is osquery's own hostIdentifier (a UUID in this fleet's config).
+  - rename:
+      field: json.h
+      tag: rename_host_identifier
+      target_field: kolide.osquery_status.host_identifier
+      ignore_missing: true
+  - rename:
+      field: json.request_id
+      tag: rename_request_id
+      target_field: kolide.osquery_status.request_id
+      ignore_missing: true
+  - convert:
+      field: json.kolide_decorations.device_id
+      tag: set_host_id
+      target_field: host.id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.kolide_decorations.device_display_name
+      tag: set_host_name
+      target_field: host.name
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname
+      copy_from: host.name
+      ignore_empty_value: true
+  - rename:
+      field: json.kolide_decorations.serial_number
+      tag: rename_device_serial
+      target_field: kolide.osquery_status.device_serial
+      ignore_missing: true
+  - rename:
+      field: json.kolide_decorations.hardware_uuid
+      tag: rename_hardware_uuid
+      target_field: kolide.osquery_status.hardware_uuid
+      ignore_missing: true
+  - rename:
+      field: json.kolide_decorations.enrolled_at
+      tag: rename_enrolled_at
+      target_field: kolide.osquery_status.enrolled_at
+      ignore_missing: true
+  - rename:
+      field: json.kolide_decorations.device_registered_at
+      tag: rename_device_registered_at
+      target_field: kolide.osquery_status.device_registered_at
+      ignore_missing: true
+  - convert:
+      field: json.kolide_decorations.device_registered_owner_id
+      tag: set_user_id
+      target_field: user.id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.kolide_decorations.device_registered_owner_name
+      tag: set_user_full_name
+      target_field: user.full_name
+      ignore_missing: true
+  - rename:
+      field: json.kolide_decorations.device_registered_owner_email
+      tag: set_user_email
+      target_field: user.email
+      ignore_missing: true
+  # host.ip is normalized as an array per ECS, so this cannot be a plain rename.
+  - script:
+      tag: set_host_ip
+      lang: painless
+      if: ctx.json?.kolide_decorations?.remote_ip != null
+      source: |-
+        if (ctx.host == null) { ctx.host = new HashMap(); }
+        ctx.host.ip = [ ctx.json.kolide_decorations.remote_ip ];
+
+  # related.* enrichment.
+  - append:
+      field: related.ip
+      tag: append_host_ip_to_related
+      value: '{{{host.ip.0}}}'
+      allow_duplicates: false
+      if: ctx.host?.ip != null && ctx.host.ip.size() > 0
+  - append:
+      field: related.hosts
+      tag: append_host_name_to_related_hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+
+  # ECS categorization (kind/category/type/log.level) from the resolved severity.
+  - pipeline:
+      name: '{{ IngestPipeline "categorize" }}'
+      tag: categorize
+      ignore_missing_pipeline: true
+
+  # event.id / deduplication: request_id is a Kolide-generated ULID, unique
+  # per delivered object, so it alone is sufficient as a dedup key.
+  # aws-s3 is at-least-once, so fingerprint it to _id so re-delivered objects
+  # are dropped as duplicates instead of indexed twice.
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: kolide.osquery_status.request_id
+      ignore_empty_value: true
+  - fingerprint:
+      fields:
+        - event.id
+      target_field: _id
+      method: SHA-256
+      tag: fingerprint_event_id
+      if: ctx.event?.id != null && ctx.event.id != ''
+  - fingerprint:
+      fields:
+        - event.original
+      target_field: _id
+      method: SHA-256
+      tag: fingerprint_event_original
+      if: ctx.event?.id == null && ctx.event?.original != null
+
+  # Cleanup working object.
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
