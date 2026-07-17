@@ -1,0 +1,78 @@
+rules:
+  # /exemption_requests: every poll starts here (per_page only, no cursor)
+  # because the full-snapshot program re-collects the whole resource each
+  # interval, then moves on to /registration_requests. Returns one open
+  # exemption request as a single terminal page (next_cursor empty). Re-collected
+  # requests share a content-based fingerprint _id, so repeated rounds overwrite
+  # rather than duplicate.
+  - path: /exemption_requests
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "exemption-request-001",
+                "status": "open",
+                "requester_message": "Need temporary access for incident response",
+                "requested_at": "2024-03-11T21:28:17Z",
+                "device_information": {"identifier": "200001", "link": "https://api.example.com/devices/200001"},
+                "requester_information": {"identifier": "100001", "link": "https://api.example.com/people/100001"},
+                "issues": [{"identifier": "9999", "link": "https://api.example.com/issues/9999"}]
+              }
+            ],
+            "pagination": {
+              "next": "",
+              "current_cursor": "",
+              "next_cursor": "",
+              "count": 1
+            }
+          }
+  # /registration_requests: reached once /exemption_requests's last page (empty
+  # next_cursor) flips the CEL program's cursor.kind to "registration" within
+  # the same poll. Also a single terminal page.
+  - path: /registration_requests
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "registration-request-002",
+                "status": "approved",
+                "requester_message": "Register replacement laptop",
+                "requested_at": "2024-03-12T10:00:00Z",
+                "internal_approval_note": "Approved - device meets compliance baseline.",
+                "device_information": {"identifier": "200002", "link": "https://api.example.com/devices/200002"},
+                "requester_information": {"identifier": "100002", "link": "https://api.example.com/people/100002"}
+              }
+            ],
+            "pagination": {
+              "next": "",
+              "current_cursor": "",
+              "next_cursor": "",
+              "count": 1
+            }
+          }
