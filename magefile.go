@@ -28,6 +28,7 @@ import (
 	bpchecklist "github.com/elastic/integrations/dev/backports/checklist"
 	bppackages "github.com/elastic/integrations/dev/backports/packages"
 	"github.com/elastic/integrations/dev/citools"
+	"github.com/elastic/integrations/dev/gitutil"
 	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
 	"github.com/elastic/integrations/dev/packagenames"
@@ -531,6 +532,34 @@ func IsElasticPackageDependencyLessThan(version string) error {
 //
 // Required env vars: BEFORE, AFTER, REPOSITORY, BACKPORT_BRANCH.
 // Optional env vars: PACKAGES_DIR (defaults to "packages").
+// CheckChangelogVersionsInMain verifies that changelog versions introduced in the
+// current PR do not already exist in origin/main. It exits non-zero when any
+// conflict is found. Intended to run on PRs targeting backport-* branches.
+//
+// baseBranch is the PR's target branch (e.g. "backport-aws-1.x"); only changes
+// relative to that branch are examined, not the full backport history.
+func CheckChangelogVersionsInMain(baseBranch string) error {
+	if baseBranch == "" {
+		return fmt.Errorf("baseBranch is required")
+	}
+	before := "origin/" + baseBranch
+
+	git := gitutil.Git{}
+	conflicts, err := changelog.CheckVersionsAgainstMain(git, before, "HEAD")
+	if err != nil {
+		return err
+	}
+	if len(conflicts) > 0 {
+		fmt.Fprintln(os.Stderr, "ERROR: the following changelog versions are already present in main:")
+		for _, c := range conflicts {
+			fmt.Fprintf(os.Stderr, "  - %s\n", c)
+		}
+		return fmt.Errorf("found %d changelog version(s) already in main", len(conflicts))
+	}
+	fmt.Println("All changelog versions are new — no conflicts with main.")
+	return nil
+}
+
 func SyncBackportChangelog() error {
 	before := os.Getenv("BEFORE")
 	after := os.Getenv("AFTER")

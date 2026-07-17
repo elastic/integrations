@@ -88,6 +88,39 @@ func Collect(before, after, repository string) (*CollectResult, error) {
 	}, nil
 }
 
+// CheckVersionsAgainstMain finds changelog files that changed between before
+// and after and reports any versions that already exist in origin/main.
+// Each conflict is returned as a human-readable string "path: version X.Y.Z".
+// Intended for use in PR checks to catch duplicate version entries early.
+func CheckVersionsAgainstMain(git gitutil.Git, before, after string) ([]string, error) {
+	changelogs, err := changedChangelogs(git, before, after)
+	if err != nil {
+		return nil, err
+	}
+	var conflicts []string
+	for _, cl := range changelogs {
+		diff, err := gitDiff(git, before, after, cl)
+		if err != nil {
+			return nil, fmt.Errorf("diffing %s: %w", cl, err)
+		}
+		ver, _, err := ExtractFromDiff(diff)
+		if err != nil {
+			return nil, err
+		}
+		if ver == "" {
+			continue
+		}
+		inMain, err := versionInMain(git, cl, ver)
+		if err != nil {
+			return nil, err
+		}
+		if inMain {
+			conflicts = append(conflicts, fmt.Sprintf("%s: version %s", cl, ver))
+		}
+	}
+	return conflicts, nil
+}
+
 // collectChangelogEntry processes a single changelog path cl and returns the
 // TSV line to record ("pkg\tversion\tentryFilePath"), or "" when there is
 // nothing new to sync for that changelog.
