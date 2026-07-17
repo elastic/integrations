@@ -198,13 +198,13 @@ An example event for `logs` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-22T20:30:05.131Z",
+    "@timestamp": "2026-07-16T15:40:27.001Z",
     "agent": {
-        "ephemeral_id": "6865ea25-7808-4442-aa96-9b85652f369e",
-        "id": "96dc9143-5e60-4ff1-bed3-2c67c54293de",
-        "name": "elastic-agent-55019",
+        "ephemeral_id": "d626fbcc-f95c-4710-8e64-fe061e740b43",
+        "id": "ead4bee4-3988-4199-b31e-50feb1fa1cb3",
+        "name": "elastic-agent-26103",
         "type": "filebeat",
-        "version": "9.3.3"
+        "version": "9.4.3"
     },
     "backstage": {
         "query": {
@@ -213,23 +213,25 @@ An example event for `logs` looks as following:
                 "kind",
                 "spec.profile"
             ],
-            "filter": "kind=group,relations.hasMember=user:default/guest",
+            "filter": [
+                "kind=group,relations.hasMember=user:default/alice.johnson"
+            ],
             "type": "all"
         },
         "severity_level": "low"
     },
     "data_stream": {
         "dataset": "backstage.logs",
-        "namespace": "75927",
+        "namespace": "18064",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "96dc9143-5e60-4ff1-bed3-2c67c54293de",
+        "id": "ead4bee4-3988-4199-b31e-50feb1fa1cb3",
         "snapshot": false,
-        "version": "9.3.3"
+        "version": "9.4.3"
     },
     "event": {
         "action": "entity-fetch:initiated",
@@ -239,10 +241,10 @@ An example event for `logs` looks as following:
         ],
         "code": "entity-fetch",
         "dataset": "backstage.logs",
-        "ingested": "2026-07-15T14:26:13Z",
+        "ingested": "2026-07-17T04:11:58Z",
         "kind": "event",
         "module": "backstage",
-        "original": "{\"actor\":{\"hostname\":\"localhost\",\"ip\":\"127.0.0.1\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\"},\"eventId\":\"entity-fetch\",\"isAuditEvent\":true,\"level\":\"info\",\"message\":\"catalog.entity-fetch\",\"meta\":{\"query\":{\"fields\":[\"metadata\",\"kind\",\"spec.profile\"],\"filter\":[\"kind=group,relations.hasMember=user:default/guest\"]},\"queryType\":\"all\"},\"plugin\":\"catalog\",\"request\":{\"method\":\"GET\",\"url\":\"/api/catalog/entities?fields=metadata,kind,spec.profile&filter=kind%3Dgroup%2Crelations.hasMember%3Duser%3Adefault%2Fguest\"},\"service\":\"backstage\",\"severityLevel\":\"low\",\"status\":\"initiated\",\"timestamp\":\"2026-05-22T20:30:05.131Z\"}",
+        "original": "{\"actor\":{\"actorId\":\"user:default/alice.johnson\",\"hostname\":\"backstage.example.internal\",\"ip\":\"::ffff:89.160.20.112\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\"},\"eventId\":\"entity-fetch\",\"isAuditEvent\":true,\"level\":\"info\",\"message\":\"catalog.entity-fetch\",\"meta\":{\"query\":{\"fields\":[\"metadata\",\"kind\",\"spec.profile\"],\"filter\":[\"kind=group,relations.hasMember=user:default/alice.johnson\"]},\"queryType\":\"all\"},\"plugin\":\"catalog\",\"request\":{\"method\":\"GET\",\"url\":\"/api/catalog/entities?fields=metadata,kind,spec.profile&filter=kind%3Dgroup%2Crelations.hasMember%3Duser%3Adefault%2Falice.johnson\"},\"service\":\"backstage\",\"severityLevel\":\"low\",\"span_id\":\"a1b2c3d4e5f60718\",\"status\":\"initiated\",\"timestamp\":\"2026-07-16T15:40:27.001Z\",\"trace_flags\":\"01\",\"trace_id\":\"1a2b3c4d5e6f70819aebfcdd0e1f2a3b\"}",
         "outcome": "unknown",
         "provider": "catalog",
         "severity": 3,
@@ -250,28 +252,6 @@ An example event for `logs` looks as following:
             "access",
             "start"
         ]
-    },
-    "host": {
-        "architecture": "aarch64",
-        "containerized": false,
-        "hostname": "elastic-agent-55019",
-        "ip": [
-            "172.21.0.2",
-            "172.18.0.5"
-        ],
-        "mac": [
-            "CA-6D-AC-53-6C-AB",
-            "EA-A3-55-2E-7E-99"
-        ],
-        "name": "elastic-agent-55019",
-        "os": {
-            "family": "",
-            "kernel": "6.12.76-linuxkit",
-            "name": "Wolfi",
-            "platform": "wolfi",
-            "type": "linux",
-            "version": "20230201"
-        }
     },
     "http": {
         "request": {
@@ -284,7 +264,7 @@ An example event for `logs` looks as following:
     "log": {
         "file": {
             "device_id": "43",
-            "inode": "67",
+            "inode": "390",
             "path": "/tmp/service_logs/test-audit-events.log"
         },
         "level": "info",
@@ -293,36 +273,70 @@ An example event for `logs` looks as following:
     "message": "catalog.entity-fetch",
     "related": {
         "hosts": [
-            "localhost"
+            "backstage.example.internal"
         ],
         "ip": [
-            "127.0.0.1"
+            "89.160.20.112"
+        ],
+        "user": [
+            "user:default/alice.johnson"
         ]
     },
     "source": {
-        "ip": "127.0.0.1"
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
+        },
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "coordinates": [
+                    15.61669997870922,
+                    58.416699967347085
+                ],
+                "type": "Point"
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.112"
+    },
+    "span": {
+        "id": "a1b2c3d4e5f60718"
     },
     "tags": [
-        "backstage",
+        "forwarded",
+        "backstage-logs",
         "preserve_original_event"
     ],
+    "trace": {
+        "id": "1a2b3c4d5e6f70819aebfcdd0e1f2a3b"
+    },
     "url": {
-        "original": "/api/catalog/entities?fields=metadata,kind,spec.profile&filter=kind%3Dgroup%2Crelations.hasMember%3Duser%3Adefault%2Fguest",
+        "original": "/api/catalog/entities?fields=metadata,kind,spec.profile&filter=kind%3Dgroup%2Crelations.hasMember%3Duser%3Adefault%2Falice.johnson",
         "path": "/api/catalog/entities",
-        "query": "fields=metadata,kind,spec.profile&filter=kind=group,relations.hasMember=user:default/guest"
+        "query": "fields=metadata,kind,spec.profile&filter=kind=group,relations.hasMember=user:default/alice.johnson"
+    },
+    "user": {
+        "id": "user:default/alice.johnson"
     },
     "user_agent": {
         "device": {
             "name": "Mac"
         },
         "name": "Chrome",
-        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
         "os": {
             "full": "Mac OS X 10.15.7",
             "name": "Mac OS X",
             "version": "10.15.7"
         },
-        "version": "148.0.0.0"
+        "version": "150.0.0.0"
     }
 }
 ```
