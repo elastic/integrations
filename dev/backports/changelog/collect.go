@@ -13,8 +13,8 @@ import (
 
 	"github.com/cli/go-gh/v2"
 
-	"github.com/elastic/integrations/dev/backports/gitutil"
 	"github.com/elastic/integrations/dev/citools"
+	"github.com/elastic/integrations/dev/gitutil"
 )
 
 // CollectResult holds the outputs produced by Collect.

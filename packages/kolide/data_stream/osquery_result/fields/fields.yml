@@ -1,0 +1,56 @@
+- name: kolide.osquery_result
+  type: group
+  description: >-
+    Custom fields for raw osquery Result Logs, collected from the Kolide Log Pipeline (S3/GCS).
+  fields:
+    - name: pack_name
+      type: keyword
+      description: Name of the osquery pack (parsed from the `name` envelope field, e.g. `pack:kolide_log_pipeline:<pack_name>:<query_name>`).
+    - name: query_name
+      type: keyword
+      description: Name of the osquery query within the pack. Also mirrored to `rule.name`.
+    - name: host_identifier
+      type: keyword
+      description: Osquery's own host identifier string (typically a UUID or hostname, depending on the host's `--host_identifier` configuration). Kept for correlation/debugging alongside the more reliable `host.id`/`host.name` sourced from Kolide's device decoration.
+    - name: device_serial
+      type: keyword
+      description: Serial number of the reporting device, from Kolide's device decoration (`kolide_decorations.serial_number`, falling back to `decorations.hardware_serial`). No ECS host-serial field exists, so this stays custom.
+    - name: hardware_uuid
+      type: keyword
+      description: Hardware UUID of the reporting device, from Kolide's device decoration (`kolide_decorations.hardware_uuid`, falling back to `decorations.uuid`).
+    - name: hardware_version
+      type: keyword
+      description: Hardware version string from osquery's own decorator block (`decorations.hardware_version`). No ECS equivalent.
+    - name: request_id
+      type: keyword
+      description: Kolide Log Pipeline request ID (a ULID) for this delivery. Unique per object, used as the deduplication key for `event.id`.
+    - name: epoch
+      type: long
+      description: Osquery's log-rotation epoch for this query.
+    - name: counter
+      type: long
+      description: Osquery's per-epoch row counter, also copied to `event.sequence`.
+    - name: numerics
+      type: boolean
+      description: Whether osquery is configured to emit numeric-typed columns as native JSON numbers rather than strings (`numerics` envelope field).
+    - name: calendar_time
+      type: keyword
+      description: Osquery's human-readable, locale-dependent timestamp string. `@timestamp` (derived from `unixTime`) is authoritative; this is kept only for reference.
+    - name: enrolled_at
+      type: date
+      description: When the reporting device enrolled with Kolide (`kolide_decorations.enrolled_at`).
+    - name: device_registered_at
+      type: date
+      description: When the reporting device was registered to its owner in Kolide (`kolide_decorations.device_registered_at`).
+    - name: added
+      type: flattened
+      description: >-
+        Rows added since the last differential run (`diffResults.added`). The shape is arbitrary and depends on which osquery table or custom SQL the query targets, so it is stored as a flattened field rather than mapping each key.
+    - name: removed
+      type: flattened
+      description: >-
+        Rows removed since the last differential run (`diffResults.removed`). Same arbitrary-shape rationale as `added`.
+    - name: snapshot
+      type: flattened
+      description: >-
+        The snapshot query's row values (an array of column-value objects). The shape is arbitrary and depends on which osquery table or custom SQL the query targets, so it is stored as a flattened field rather than mapping each key.
