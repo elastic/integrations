@@ -29,10 +29,21 @@ inputs:
             state.with(
               state.?api_type.orValue("community") == "commercial" ?
                 (
-                  has(state.token) && has(state.token.access_token) && has(state.token.expires) && now() < timestamp(int(state.token.expires) - 60) ?
-                    state.token
+                  !has(state.username) || !has(state.password) ?
+                    {
+                      "events": {
+                        "error": {
+                          "message": "api_type is 'commercial' but username/password are not configured",
+                        },
+                      },
+                      "want_more": false,
+                    }
                   :
-                    request(
+                    (
+                      has(state.token) && has(state.token.access_token) && has(state.token.expires) && now() < timestamp(int(state.token.expires) - 60) ?
+                        state.token
+                      :
+                        request(
                       "POST",
                       state.url.trim_right("/") + "/v1/login",
                       {
@@ -65,6 +76,7 @@ inputs:
                         },
                         "want_more": false,
                       }
+                    )
                     )
                 ).as(token, !has(token.access_token) ? token :
                   (
