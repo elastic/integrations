@@ -1,0 +1,96 @@
+rules:
+  # --- PHASE 1: list files — page 2 (requested with ?after=2026-07-15T15:40:00Z) ---
+  # Empty page with has_more:false terminates the listing pagination.
+  - path: /v1/compliance/workspaces/ws-example-001/logs
+    methods: ['GET']
+    query_params:
+      event_type: CONVERSATION_MESSAGE
+      limit: 2
+      after: "2026-07-15T15:40:00Z"
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [],
+            "has_more": false,
+            "last_end_time": null
+          }
+          `}}
+
+  # --- PHASE 1: list files — page 1 (initial request) ---
+  # Returns file metadata; the `id` of each entry is downloaded in phase 2.
+  - path: /v1/compliance/workspaces/ws-example-001/logs
+    methods: ['GET']
+    query_params:
+      event_type: CONVERSATION_MESSAGE
+      limit: 2
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "eclf_a1c2e3f40011",
+                "event_type": "CONVERSATION_MESSAGE",
+                "end_time": "2026-07-15T15:29:05.746561Z",
+                "file_name": "CONVERSATION_MESSAGE_2026-07-15T15:29:05.746561+00:00.jsonl",
+                "file_size": 812,
+                "file_sha256": "f25287ba6575fa01eec1bbd68443168f377909fb517bed260aa2ec9ad0d6082d"
+              },
+              {
+                "id": "eclf_b2d3f4a50022",
+                "event_type": "CONVERSATION_MESSAGE",
+                "end_time": "2026-07-15T15:33:11.005333Z",
+                "file_name": "CONVERSATION_MESSAGE_2026-07-15T15:33:11.005333+00:00.jsonl",
+                "file_size": 934,
+                "file_sha256": "9ace560c398a21cdf55b465527440dfe4700177e23028a652834a1b713bba3dd"
+              }
+            ],
+            "has_more": true,
+            "last_end_time": "2026-07-15T15:40:00Z"
+          }
+          `}}
+
+  # --- PHASE 2: download file eclf_a1c2e3f40011 (JSON Lines) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_a1c2e3f40011
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {{ minify_json `{"event_id":"9d6bb4e9-3882-4dbe-9d4c-2668b692f9a1","type":"CONVERSATION_MESSAGE","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"timestamp":"2026-07-15T15:29:00.243000Z","message":{"id":"39adf8b1-e281-42c0-920b-9d8f63426fc8","created_at":"2026-07-15T15:29:00.243000Z","author":{"type":"user","client_type":"desktop_web"},"content":{"type":"text","value":"Draft a concise release note for v2.3."}},"conversation":{"id":"6a57a2e4-ba84-832d-9604-9567f8223bc6","title":"Release notes","created_at":"2026-07-15T15:10:34.219710Z","is_pinned":false,"is_temporary_chat":false}}` }}
+          {{ minify_json `{"event_id":"9d6bb4e9-3882-4dbe-9d4c-2668b692f9a2","type":"CONVERSATION_MESSAGE","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"timestamp":"2026-07-15T15:29:05.746561Z","previous_message_id":"39adf8b1-e281-42c0-920b-9d8f63426fc8","message":{"id":"af1f845c-583e-40d5-a5e2-e448d61bc698","created_at":"2026-07-15T15:29:05.746561Z","author":{"type":"assistant","model":"gpt-5-5","tools_used":["browser"]},"content":{"type":"text","value":"Here is a concise release note for v2.3.","annotations":[{"type":"url_citation","urls":["https://docs.example.com/release/v2-3"]}]}},"conversation":{"id":"6a57a2e4-ba84-832d-9604-9567f8223bc6","title":"Release notes","created_at":"2026-07-15T15:10:34.219710Z","is_pinned":false,"is_temporary_chat":false}}` }}
+
+  # --- PHASE 2: download file eclf_b2d3f4a50022 (JSON Lines) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_b2d3f4a50022
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {{ minify_json `{"event_id":"9d6bb4e9-3882-4dbe-9d4c-2668b692f9b3","type":"CONVERSATION_MESSAGE","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Bb22AsDfGhJkLz","user_email":"bob.turner@example.com"},"timestamp":"2026-07-15T15:33:06.483734Z","message":{"id":"43216cc5-0fc5-41e4-bf07-eefa0ef9dd0d","created_at":"2026-07-15T15:33:06.483734Z","author":{"type":"user","client_type":"macos_app"},"content":{"type":"text","value":"Explain why the CI check is failing."}},"conversation":{"id":"6a57a893-07c8-8328-af5e-cf89c45e37d8","title":"CI failure","created_at":"2026-07-15T15:30:12.353185Z","is_pinned":false,"is_temporary_chat":true}}` }}
+          {{ minify_json `{"event_id":"9d6bb4e9-3882-4dbe-9d4c-2668b692f9b4","type":"CONVERSATION_MESSAGE","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Bb22AsDfGhJkLz","user_email":"bob.turner@example.com"},"timestamp":"2026-07-15T15:33:11.005333Z","previous_message_id":"43216cc5-0fc5-41e4-bf07-eefa0ef9dd0d","message":{"id":"e7d5e4ab-bd91-4f23-aa39-715b1a26a275","created_at":"2026-07-15T15:33:11.005333Z","author":{"type":"assistant","model":"gpt-5-6-thinking","tools_used":["browser"],"skills_used":["skill-778"]},"content":{"type":"text","value":"The check fails because a required dependency is missing from the lockfile."}},"conversation":{"id":"6a57a893-07c8-8328-af5e-cf89c45e37d8","title":"CI failure","created_at":"2026-07-15T15:30:12.353185Z","is_pinned":false,"is_temporary_chat":true}}` }}
