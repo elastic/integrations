@@ -1,0 +1,286 @@
+- name: openai_chatgpt_enterprise
+  type: group
+  description: OpenAI Compliance Logs Platform event fields.
+  fields:
+    - name: custom_agents_log
+      type: group
+      fields:
+        - name: actor
+          type: group
+          fields:
+            - name: agent_runtime
+              type: group
+              fields:
+                - name: delegator
+                  type: group
+                  fields:
+                    - name: type
+                      type: keyword
+                      description: Type of the principal that delegated the agent run.
+                - name: id
+                  type: keyword
+                  description: Agent runtime identifier.
+            - name: agent_task
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Agent task identifier.
+            - name: id
+              type: keyword
+              description: Agent harness identifier for an AGENT actor.
+            - name: name
+              type: keyword
+              description: Display name of an AGENT actor.
+            - name: product_id
+              type: keyword
+              description: Product (agent) identifier for an AGENT actor.
+            - name: product_type
+              type: keyword
+              description: Product type of an AGENT actor.
+            - name: redacted_id
+              type: keyword
+              description: Redacted identifier of the API key (present when actor.type = API_KEY).
+            - name: type
+              type: keyword
+              description: Type of actor that performed the action (for example ACCOUNT_USER or AGENT).
+        - name: client_id
+          type: keyword
+          description: Normalized Workspace Agents client identifier.
+        - name: event_details
+          type: group
+          fields:
+            - name: access_method
+              type: keyword
+              description: Memory access mode.
+            - name: action_name
+              type: keyword
+              description: Connector action name.
+            - name: agent_fields
+              type: group
+              fields:
+                - name: category
+                  type: keyword
+                  description: Agent category.
+                - name: file_tree_id
+                  type: keyword
+                  description: Snapshot file tree identifier.
+                - name: model_spec
+                  type: group
+                  fields:
+                    - name: reasoning_effort
+                      type: keyword
+                      description: Reasoning effort configured for the agent model.
+                - name: prompt
+                  type: keyword
+                  description: Agent system prompt snapshot.
+                - name: skills
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: Attached skill identifier.
+                    - name: name
+                      type: keyword
+                      description: Attached skill name.
+                    - name: type
+                      type: keyword
+                      description: Attached skill type.
+                - name: starter_prompts
+                  type: keyword
+                  description: Configured starter prompts.
+                - name: store_visible
+                  type: boolean
+                  description: Whether the agent is visible in the store.
+                - name: tagline
+                  type: keyword
+                  description: Agent tagline.
+                - name: tools
+                  type: group
+                  fields:
+                    - name: connectors
+                      type: group
+                      fields:
+                        - name: allowed_tools
+                          type: keyword
+                          description: Tools allowed for the connector.
+                        - name: auth_variant_type
+                          type: keyword
+                          description: Connector auth variant type.
+                        - name: connector_id
+                          type: keyword
+                          description: Connector identifier configured on the agent.
+                        - name: link_id
+                          type: keyword
+                          description: Connector link identifier.
+                        - name: user_approvals
+                          type: keyword
+                          description: User approval policy for the connector.
+                    - name: image_generation
+                      type: keyword
+                      description: Image generation tool configuration.
+                    - name: image_generation_enabled
+                      type: boolean
+                      description: Whether image generation is enabled.
+                    - name: web_search
+                      type: keyword
+                      description: Web search tool configuration.
+                    - name: widget_tools
+                      type: keyword
+                      description: Configured widget tools.
+                - name: workspace_capability
+                  type: keyword
+                  description: Workspace capability of the agent.
+            - name: changes_count
+              type: long
+              description: Count of included changes in a publish.
+            - name: connector_id
+              type: keyword
+              description: Connector identifier.
+            - name: conversation_id
+              type: keyword
+              description: Conversation identifier for ChatGPT custom-agent invocations.
+            - name: detail_type
+              type: keyword
+              description: Discriminator identifying the specific Custom Agents event-details schema.
+            - name: elicitation_type
+              type: keyword
+              description: Elicitation mode.
+            - name: failure_message
+              type: text
+              description: Terminal failure string for incident triage.
+            - name: had_published_version
+              type: boolean
+              description: Whether the agent had a published version at deletion time.
+            - name: interaction_id
+              type: keyword
+              description: Interaction identifier.
+            - name: invoker
+              type: group
+              fields:
+                - name: case_name
+                  type: keyword
+                  description: Optional case name on the invoker.
+                - name: connector_id
+                  type: keyword
+                  description: Connector identifier for webhook trigger invocations.
+                - name: initiator
+                  type: group
+                  fields:
+                    - name: auth_user_id
+                      type: keyword
+                      description: Auth user identifier of the initiator when available.
+                    - name: display_name
+                      type: keyword
+                      description: Initiator display name.
+                    - name: id
+                      type: keyword
+                      description: Initiator identifier.
+                    - name: kind
+                      type: keyword
+                      description: Initiator kind.
+                - name: is_shared_invocation
+                  type: boolean
+                  description: Whether this is a shared-agent invocation.
+                - name: schedule_id
+                  type: keyword
+                  description: Schedule identifier for scheduled trigger invocations.
+                - name: type
+                  type: keyword
+                  description: Invoker type.
+                - name: user_message_text
+                  type: text
+                  description: End-user message text that started a ChatGPT custom-agent run.
+                - name: webhook_name
+                  type: keyword
+                  description: Webhook name for webhook trigger invocations.
+            - name: link_id
+              type: keyword
+              description: Connector link identifier.
+            - name: memory_path
+              type: keyword
+              description: Memory file or directory path relative to the agent Memory root.
+            - name: message_id
+              type: keyword
+              description: Runtime message identifier.
+            - name: phase
+              type: keyword
+              description: Agent message phase.
+            - name: publish_type
+              type: keyword
+              description: Publication mode.
+            - name: release_description
+              type: text
+              description: Release description.
+            - name: release_name
+              type: keyword
+              description: Release title.
+            - name: requires_elicitation
+              type: boolean
+              description: Whether the agent determined the tool call needs elicitation before execution.
+            - name: run_id
+              type: keyword
+              description: Stable runtime identifier used to correlate later activity for the same run.
+            - name: save_source
+              type: keyword
+              description: Save source label.
+            - name: skill_id
+              type: keyword
+              description: Identifier for the attached skill on the agent version.
+            - name: skill_name
+              type: keyword
+              description: Display name of the attached skill.
+            - name: skill_type
+              type: keyword
+              description: Skill source type.
+            - name: text
+              type: keyword
+              description: Extracted displayable agent-authored message text.
+            - name: trigger_count
+              type: long
+              description: Count of triggers linked to the agent at delete time.
+            - name: trigger_fields
+              type: group
+              fields:
+                - name: connector_id
+                  type: keyword
+                  description: Connector identifier for a connector trigger.
+                - name: enabled
+                  type: boolean
+                  description: Whether the trigger is enabled.
+                - name: instructions
+                  type: keyword
+                  description: Trigger instructions.
+                - name: link_id
+                  type: keyword
+                  description: Connector link identifier for a trigger.
+                - name: param_keys
+                  type: keyword
+                  description: Parameter keys (keys only) for a trigger.
+                - name: required_actions
+                  type: keyword
+                  description: Required actions for a connector trigger.
+                - name: webhook_name
+                  type: keyword
+                  description: Webhook name for a trigger.
+            - name: trigger_id
+              type: keyword
+              description: Identifier for the trigger.
+            - name: trigger_type
+              type: keyword
+              description: Trigger type string.
+            - name: version_id
+              type: keyword
+              description: Identifier for the saved, runtime, or published version.
+        - name: principal
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: Principal that owns the event (for example CHATGPT_WORKSPACE).
+        - name: type
+          type: keyword
+          description: Top-level event category. Always CUSTOM_AGENTS_LOG for this data stream.
+        - name: workspace_id
+          type: keyword
+          description: Workspace identifier associated with the event.

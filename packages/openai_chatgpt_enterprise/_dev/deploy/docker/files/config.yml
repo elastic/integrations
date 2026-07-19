@@ -1,0 +1,110 @@
+rules:
+  # --- PHASE 1: list files — page 2 (requested with ?after=2026-03-12T00:00:00Z) ---
+  # Empty page with has_more:false terminates the listing pagination.
+  - path: /v1/compliance/workspaces/ws-example-001/logs
+    methods: ['GET']
+    query_params:
+      event_type: CUSTOM_AGENTS_LOG
+      limit: 2
+      after: "2026-03-12T00:00:00Z"
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [],
+            "has_more": false,
+            "last_end_time": null
+          }
+          `}}
+
+  # --- PHASE 1: list files — page 1 (initial request) ---
+  # Returns file metadata; the `id` of each entry is downloaded in phase 2.
+  - path: /v1/compliance/workspaces/ws-example-001/logs
+    methods: ['GET']
+    query_params:
+      event_type: CUSTOM_AGENTS_LOG
+      limit: 2
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "eclf_a1c2e3f40011",
+                "event_type": "CUSTOM_AGENTS_LOG",
+                "end_time": "2026-03-10T18:16:04.120000Z",
+                "file_name": "CUSTOM_AGENTS_LOG_2026-03-10T18:16:04.120000+00:00.jsonl",
+                "file_size": 4096,
+                "file_sha256": "f25287ba6575fa01eec1bbd68443168f377909fb517bed260aa2ec9ad0d6082d"
+              },
+              {
+                "id": "eclf_b2d3f4a50022",
+                "event_type": "CUSTOM_AGENTS_LOG",
+                "end_time": "2026-03-11T09:10:00.000000Z",
+                "file_name": "CUSTOM_AGENTS_LOG_2026-03-11T09:10:00.000000+00:00.jsonl",
+                "file_size": 4096,
+                "file_sha256": "9ace560c398a21cdf55b465527440dfe4700177e23028a652834a1b713bba3dd"
+              }
+            ],
+            "has_more": true,
+            "last_end_time": "2026-03-12T00:00:00Z"
+          }
+          `}}
+
+  # --- PHASE 2: download file eclf_a1c2e3f40011 (JSON Lines) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_a1c2e3f40011
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000001","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-03T20:40:00.000000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"AGENT_CREATED","client_id":"AGENT_BUILDER_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"AGENT_CREATED","agent_id":"agent-123","version_id":"version-1","agent_fields":{"model_spec":{"name":"gpt-5","reasoning_effort":"medium"},"name":"Sales Ops Agent","prompt":"Summarize CRM activity and next actions.","description":"Workspace sales assistant","tagline":"Triage pipeline updates","category":"operations","skills":[{"id":"skill-1","type":"uploaded_skill","name":"crm-guide"}],"starter_prompts":[],"file_tree_id":"snapshot-99","tools":{"web_search":null,"image_generation_enabled":false,"widget_tools":[],"connectors":[]}}}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000002","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-03T20:41:00.000000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"AGENT_UPDATED","client_id":"AGENT_BUILDER_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"AGENT_UPDATED","agent_id":"agent-123","version_id":"version-2","save_source":"builder","agent_fields":{"model_spec":{"name":"gpt-5","reasoning_effort":"medium"},"name":"Sales Ops Agent","description":"Workspace sales assistant","category":"operations","tools":{"image_generation_enabled":false,"connectors":[{"connector_id":"salesforce","auth_variant_type":"LINK","link_id":"link-1","allowed_tools":["read"],"user_approvals":"never"}]}}}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000003","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-02-28T20:43:58.762392Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"AGENT_PUBLISHED","client_id":"AGENT_BUILDER_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"AGENT_PUBLISHED","agent_id":"agent-123","version_id":"version-7","publish_type":"changes","changes_count":4,"release_name":"v2","release_description":"Workflow and connector updates","agent_fields":{"model_spec":{"name":"gpt-5","reasoning_effort":"medium"},"name":"Sales Ops Agent","description":"Workspace sales assistant","category":"operations","workspace_capability":"discover","store_visible":true,"skills":[{"id":"skill-1","type":"uploaded_skill","name":"crm-guide"}],"file_tree_id":"snapshot-99","tools":{"image_generation_enabled":false,"widget_tools":[],"connectors":[{"connector_id":"salesforce","auth_variant_type":"LINK","link_id":"link-1","allowed_tools":["read"],"user_approvals":"never"}]}}}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000004","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-03T20:43:58.762392Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"AGENT_DELETED","client_id":"ENTERPRISE_COMPLIANCE_API","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"AGENT_DELETED","agent_id":"agent-123","version_id":"version-7","delete_reason":"enterprise_compliance_api","trigger_count":2,"had_published_version":true,"agent_fields":{"model_spec":{"name":"gpt-5","reasoning_effort":"medium"},"name":"Sales Ops Agent","prompt":"Summarize CRM activity and next actions.","description":"Workspace sales assistant","tagline":"Triage pipeline updates","category":"operations","skills":[{"id":"skill-1","type":"uploaded_skill","name":"crm-guide"}],"starter_prompts":[],"file_tree_id":"snapshot-99","tools":{"web_search":null,"image_generation_enabled":false,"widget_tools":[],"connectors":[]}}}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000005","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-10T18:14:03.120000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"AGENT_RUN_CREATED","client_id":"CHATGPT_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"AGENT_RUN_CREATED","agent_id":"agent-123","version_id":"version-7","run_id":"thread_019c9c87-1084-7ad1-b487-c2ee563367c4","conversation_id":"conversation-123","invoker":{"type":"chatgpt","initiator":{"kind":"account_user","id":"account-user-123","display_name":"Alice Martin","auth_user_id":"user-Aa11QwErTyUiOp"},"user_message_text":"Summarize our Q4 revenue by region.","is_shared_invocation":false,"connector_id":null,"webhook_name":null,"schedule_id":null,"case_name":null}}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000006","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-10T18:14:08.120000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"AGENT_RUN_MESSAGE","client_id":"CHATGPT_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"AGENT_RUN_MESSAGE","agent_id":"agent-123","version_id":"version-7","run_id":"thread_019c9c87-1084-7ad1-b487-c2ee563367c4","message_id":"msg-1","text":"working on it","phase":"commentary"}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000007","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-10T18:15:18.120000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"SKILL_USED","client_id":"CHATGPT_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"SKILL_USED","agent_id":"agent-123","version_id":"version-7","run_id":"thread_019c9c87-1084-7ad1-b487-c2ee563367c4","skill_id":"skill-1","skill_name":"crm-guide","skill_type":"uploaded_skill"}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000008","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-10T18:15:21.120000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"AGENT","product_type":"COLLAB_AGENT","id":"agent-harness-123","name":"Sales Ops Agent","product_id":"agent-123","agent_runtime":{"id":"runtime-123","delegator":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"}},"agent_task":{"id":"task-123"}},"event_type":"MEMORY_READ","client_id":"CHATGPT_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"MEMORY_READ","agent_id":"agent-123","version_id":"version-7","run_id":"thread_019c9c87-1084-7ad1-b487-c2ee563367c4","memory_path":"customer-notes/q4.md","access_method":"read"}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000009","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-10T18:16:04.120000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"AGENT","product_type":"COLLAB_AGENT","id":"agent-harness-123","name":"Sales Ops Agent","product_id":"agent-123","agent_runtime":{"id":"runtime-123","delegator":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"}},"agent_task":{"id":"task-123"}},"event_type":"MEMORY_WRITE","client_id":"CHATGPT_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"MEMORY_WRITE","agent_id":"agent-123","version_id":"version-7","run_id":"thread_019c9c87-1084-7ad1-b487-c2ee563367c4","memory_path":"customer-notes/q4.md","access_method":"update"}}` }}
+
+  # --- PHASE 2: download file eclf_b2d3f4a50022 (JSON Lines) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_b2d3f4a50022
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000010","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-10T18:16:45.120000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"AGENT","product_type":"COLLAB_AGENT","id":"agent-harness-123","name":"Sales Ops Agent","product_id":"agent-123","agent_runtime":{"id":"runtime-123","delegator":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"}},"agent_task":{"id":"task-123"}},"event_type":"MEMORY_DELETE","client_id":"CHATGPT_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"MEMORY_DELETE","agent_id":"agent-123","version_id":"version-7","run_id":"thread_019c9c87-1084-7ad1-b487-c2ee563367c4","memory_path":"customer-notes/old.md","access_method":"delete"}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000011","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-10T18:18:09.120000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"CONNECTOR_CALL_REQUESTED","client_id":"CHATGPT_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"CONNECTOR_CALL_REQUESTED","agent_id":"agent-123","version_id":"version-7","run_id":"thread_019c9c87-1084-7ad1-b487-c2ee563367c4","tool_call_id":"call_123","connector_id":"salesforce","connector_name":"Salesforce","action_name":"read","link_id":"link-1","requires_elicitation":true,"elicitation_type":"approval"}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000012","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-10T18:18:11.120000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"CONNECTOR_CALL_COMPLETED","client_id":"CHATGPT_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"CONNECTOR_CALL_COMPLETED","agent_id":"agent-123","version_id":"version-7","run_id":"thread_019c9c87-1084-7ad1-b487-c2ee563367c4","tool_call_id":"call_123","connector_id":"salesforce","connector_name":"Salesforce","action_name":"read","link_id":"link-1","status":"success"}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000013","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-10T18:18:20.120000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"CONNECTOR_OAUTH_RESOLVED","client_id":"CHATGPT_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"CONNECTOR_OAUTH_RESOLVED","agent_id":"agent-123","version_id":"version-7","conversation_id":"conversation-123","run_id":"thread_019c9c87-1084-7ad1-b487-c2ee563367c4","interaction_id":"interaction-9","tool_call_id":"call_123","connector_id":"salesforce","link_id":"link-1"}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000014","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-10T18:19:42.120000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"AGENT_RUN_COMPLETED","client_id":"CHATGPT_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"AGENT_RUN_COMPLETED","agent_id":"agent-123","version_id":"version-7","run_id":"thread_019c9c87-1084-7ad1-b487-c2ee563367c4"}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000015","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-10T18:20:42.120000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"AGENT_RUN_FAILED","client_id":"CHATGPT_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"AGENT_RUN_FAILED","agent_id":"agent-123","version_id":"version-7","run_id":"thread_019c9c87-1084-7ad1-b487-c2ee563367c4","failure_message":"failed: upstream timeout"}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000016","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-11T09:00:00.000000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"TRIGGER_CREATED","client_id":"AGENT_BUILDER_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"TRIGGER_CREATED","agent_id":"agent-123","trigger_id":"trigger-1","trigger_type":"connector","trigger_fields":{"connector_id":"salesforce","link_id":"link-1","webhook_name":"deal-updated","required_actions":["read"],"enabled":true,"instructions":"Run when a deal is updated.","param_keys":["deal_id"]}}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000017","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-11T09:05:00.000000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"TRIGGER_UPDATED","client_id":"AGENT_BUILDER_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"TRIGGER_UPDATED","agent_id":"agent-123","trigger_id":"trigger-1","trigger_type":"connector","trigger_fields":{"connector_id":"salesforce","link_id":"link-1","webhook_name":"deal-updated","required_actions":["read","write"],"enabled":false,"instructions":"Paused.","param_keys":["deal_id"]}}}` }}
+          {{ minify_json `{"event_id":"ca000000-0000-0000-0000-000000000018","type":"CUSTOM_AGENTS_LOG","timestamp":"2026-03-11T09:10:00.000000Z","principal":{"id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-Aa11QwErTyUiOp","user_email":"alice.martin@example.com"},"event_type":"TRIGGER_DELETED","client_id":"AGENT_BUILDER_WEB","workspace_id":"9f1c2e3a-0b1d-4c2e-8a3f-1122334455aa","event_details":{"detail_type":"TRIGGER_DELETED","agent_id":"agent-123","trigger_id":"trigger-1","trigger_type":"connector","trigger_fields":{"connector_id":"salesforce","link_id":"link-1","webhook_name":"deal-updated","enabled":false}}}` }}
