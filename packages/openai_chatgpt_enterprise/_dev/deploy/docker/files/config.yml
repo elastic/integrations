@@ -1,0 +1,171 @@
+rules:
+  # =========================================================================
+  # PHASE 1 — list log files (paginated). Returns file metadata only; the
+  # JSONL content is fetched per-file in phase 2 (see the /logs/{id} rules).
+  # =========================================================================
+
+  # --- list page 2 (requested with ?after=2026-07-09T12:00:00Z) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs
+    methods: ['GET']
+    query_params:
+      event_type: APP_AUTH_LOG
+      limit: 2
+      after: "2026-07-09T12:00:00Z"
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "eclf_c3",
+                "event_type": "APP_AUTH_LOG",
+                "end_time": "2026-07-09T13:00:00Z",
+                "file_name": "APP_AUTH_LOG_2026-07-09T13:00:00+00:00.jsonl",
+                "file_size": 512,
+                "file_sha256": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3"
+              }
+            ],
+            "has_more": false,
+            "last_end_time": "2026-07-09T13:00:00Z"
+          }
+          `}}
+
+  # --- list page 1 (initial request; no ?after) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs
+    methods: ['GET']
+    query_params:
+      event_type: APP_AUTH_LOG
+      limit: 2
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "eclf_a1",
+                "event_type": "APP_AUTH_LOG",
+                "end_time": "2026-07-09T10:11:00Z",
+                "file_name": "APP_AUTH_LOG_2026-07-09T10:11:00+00:00.jsonl",
+                "file_size": 1024,
+                "file_sha256": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+              },
+              {
+                "id": "eclf_b2",
+                "event_type": "APP_AUTH_LOG",
+                "end_time": "2026-07-09T10:12:00Z",
+                "file_name": "APP_AUTH_LOG_2026-07-09T10:12:00+00:00.jsonl",
+                "file_size": 768,
+                "file_sha256": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2"
+              }
+            ],
+            "has_more": true,
+            "last_end_time": "2026-07-09T12:00:00Z"
+          }
+          `}}
+
+  # =========================================================================
+  # PHASE 2 — download each log file's JSONL body. The real API 307-redirects
+  # to a signed URL; the mock serves the JSON Lines content directly (200).
+  # Each line is one APP_AUTH_LOG event and is emitted as a separate document.
+  # =========================================================================
+
+  # --- download file eclf_a1 (2 events) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_a1
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {{ minify_json `
+          {
+            "event_id": "7b3e4de1-2219-4d6c-9d6e-8f4d40c7c001",
+            "type": "APP_AUTH_LOG",
+            "timestamp": "2026-07-09T10:10:00.000000Z",
+            "principal": { "id": "be545252-ad04-4cfa-9ca5-deca58416151", "type": "CHATGPT_WORKSPACE" },
+            "actor": { "type": "ACCOUNT_USER", "user_id": "user-AbCdEf1234567890", "user_email": "user@example.org" },
+            "app_id": "asdk_app_0123456789abcdef0123456789abcdef",
+            "link_id": "link_00112233445566778899aabbccddeeff",
+            "action": "link"
+          }
+          `}}
+          {{ minify_json `
+          {
+            "event_id": "7b3e4de1-2219-4d6c-9d6e-8f4d40c7c002",
+            "type": "APP_AUTH_LOG",
+            "timestamp": "2026-07-09T10:11:00.000000Z",
+            "principal": { "id": "be545252-ad04-4cfa-9ca5-deca58416151", "type": "CHATGPT_WORKSPACE" },
+            "actor": { "type": "ACCOUNT_USER", "user_id": "user-AbCdEf1234567890", "user_email": "user@example.org" },
+            "app_id": null,
+            "link_id": "link_00112233445566778899aabbccddeeff",
+            "action": "unlink"
+          }
+          `}}
+
+  # --- download file eclf_b2 (1 event) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_b2
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {{ minify_json `
+          {
+            "event_id": "7b3e4de1-2219-4d6c-9d6e-8f4d40c7c003",
+            "type": "APP_AUTH_LOG",
+            "timestamp": "2026-07-09T10:12:00.000000Z",
+            "principal": { "id": "be545252-ad04-4cfa-9ca5-deca58416151", "type": "CHATGPT_WORKSPACE" },
+            "actor": { "type": "ACCOUNT_USER", "user_id": "user-ZyXwVu0987654321", "user_email": "admin@example.org" },
+            "app_id": "connector_fedcba9876543210fedcba9876543210",
+            "link_id": "link_ffeeddccbbaa99887766554433221100",
+            "action": "link"
+          }
+          `}}
+
+  # --- download file eclf_c3 (1 event) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_c3
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {{ minify_json `
+          {
+            "event_id": "7b3e4de1-2219-4d6c-9d6e-8f4d40c7c004",
+            "type": "APP_AUTH_LOG",
+            "timestamp": "2026-07-09T13:00:00.000000Z",
+            "principal": { "id": "be545252-ad04-4cfa-9ca5-deca58416151", "type": "CHATGPT_WORKSPACE" },
+            "actor": { "type": "ACCOUNT_USER", "user_id": "user-ZyXwVu0987654321", "user_email": "admin@example.org" },
+            "app_id": null,
+            "link_id": "link_ffeeddccbbaa99887766554433221100",
+            "action": "unlink"
+          }
+          `}}
