@@ -1,0 +1,437 @@
+- name: openai_chatgpt_enterprise.audit_log
+  type: group
+  description: OpenAI ChatGPT Enterprise Audit Logs event fields.
+  fields:
+    - name: action_data
+      type: group
+      description: Action-specific payload; schema varies per action. Empty ({}) for actions such as SESSION_LOGOUT_ALL.
+      fields:
+        - name: affected_connector_ids
+          type: keyword
+          description: Connector IDs whose workspace permissions were affected (APP_PUBLISH / WORKSPACE_TOGGLE_FEATURE).
+        - name: after
+          type: date
+          description: Pagination cursor for list actions (RFC3339 timestamp).
+        - name: after_string
+          type: keyword
+          description: Pagination cursor for list actions (Opaque token).
+        - name: agent_id
+          type: keyword
+          description: Workspace agent identifier.
+        - name: alert_recipients
+          type: group
+          fields:
+            - name: email
+              type: keyword
+              description: Recipient email for usage alerts (SUBSCRIPTION_SET_USAGE_ALERTS).
+            - name: type
+              type: keyword
+              description: Recipient type.
+        - name: alert_thresholds
+          type: group
+          fields:
+            - name: credits
+              type: long
+              description: Credit threshold amount.
+            - name: type
+              type: keyword
+              description: Threshold type.
+        - name: allow_all_in_workspace
+          type: boolean
+          description: Whether the app is visible to the whole workspace (APP_UPDATE_ACCESS_POLICY).
+        - name: allowed_ips
+          type: keyword
+          description: CIDR entries in the IP allowlist (WORKSPACE_SET_*_IP_ALLOWLIST).
+        - name: already_exists
+          type: boolean
+          description: True if a shared conversation already existed (CONVERSATION_SHARE).
+        - name: app_id
+          type: keyword
+          description: App / connector identifier.
+        - name: app_name
+          type: keyword
+          description: App / connector friendly name.
+        - name: auth_user_id
+          type: keyword
+          description: Auth user ID of a memory owner (DELETE_MEMORY).
+        - name: automation_id
+          type: keyword
+          description: Automation identifier.
+        - name: before
+          type: date
+          description: Pagination cursor upper bound for list actions (RFC3339 timestamp).
+        - name: before_string
+          type: keyword
+          description: Pagination cursor upper bound for list actions (Opaque token).
+        - name: changed_fields
+          type: keyword
+          description: List of fields changed by the request.
+        - name: changed_fields_by_connector
+          type: flattened
+          description: Map of connector ID -> changed fields (keys are connector IDs).
+        - name: classification
+          type: keyword
+          description: FedRAMP banner classification string (WORKSPACE_SET_FEDRAMP_BANNER).
+        - name: client_id
+          type: keyword
+          description: Codex remote-control client identifier.
+        - name: codex_environment_id
+          type: keyword
+          description: Codex environment identifier (GET_CODE_ENVIRONMENT).
+        - name: context_plugin_id
+          type: keyword
+          description: Plugin whose UI initiated the action.
+        - name: conversation_id
+          type: keyword
+          description: Conversation identifier.
+        - name: created_at
+          type: date
+          description: Creation time (epoch seconds).
+        - name: created_by_user_id
+          type: keyword
+          description: Auth user ID that created the service account (nullable).
+        - name: credential_id
+          type: keyword
+          description: Credential / personal access token identifier.
+        - name: credential_name
+          type: keyword
+          description: User-provided credential name.
+        - name: credential_type
+          type: keyword
+          description: Credential type.
+        - name: cursor
+          type: keyword
+          description: Pagination cursor (list actions).
+        - name: deactivated_at
+          type: date
+          description: Service account deletion time (epoch seconds) or null.
+        - name: domain_id
+          type: keyword
+          description: Managed domain identifier.
+        - name: domains
+          type: keyword
+          description: Allowed action domains for a GPT (may be null to clear).
+        - name: email_address
+          type: keyword
+          description: Single email address (invite actions).
+        - name: email_addresses
+          type: keyword
+          description: List of email addresses (invite / group actions).
+        - name: enabled
+          type: boolean
+          description: Enabled / active state after the change.
+        - name: environment_id
+          type: keyword
+          description: Environment identifier.
+        - name: event_type
+          type: keyword
+          description: 'Compliance event category: filter list (array) or resolved category (download, string).'
+        - name: expires_at
+          type: date
+          description: Credential expiration time (epoch seconds) or null.
+        - name: feature
+          type: keyword
+          description: Feature / flag identifier toggled (WORKSPACE_TOGGLE_FEATURE / WORKSPACE_SET_SHARING_PERMISSION).
+        - name: file_format
+          type: keyword
+          description: File output mode.
+        - name: file_id
+          type: keyword
+          description: File identifier.
+        - name: gpt_id
+          type: keyword
+          description: GPT identifier.
+        - name: group_id
+          type: keyword
+          description: Group identifier.
+        - name: hostname
+          type: keyword
+          description: Domain hostname added (DOMAIN_CREATE).
+        - name: id
+          type: keyword
+          description: Resource identifier (GPT / project) for the action.
+        - name: include_summary
+          type: boolean
+          description: Whether recording summary sections are included (DOWNLOAD_RECORDING_TRANSCRIPT).
+        - name: installation_policy
+          type: keyword
+          description: Plugin installation policy after the update.
+        - name: installation_policy_before
+          type: keyword
+          description: Plugin installation policy before the update.
+        - name: installed_by_default_role_ids
+          type: keyword
+          description: Role IDs the plugin is installed for by default (after).
+        - name: installed_by_default_role_ids_before
+          type: keyword
+          description: Role IDs the plugin was installed for by default (before).
+        - name: knowledge_app_type
+          type: keyword
+          description: App backend / type provisioned (APP_CREATE).
+        - name: limit
+          type: long
+          description: Requested page size (list actions).
+        - name: log_file_id
+          type: keyword
+          description: Compliance log file identifier (download actions).
+        - name: markdown
+          type: keyword
+          description: FedRAMP banner markdown body.
+        - name: memory_context_id
+          type: keyword
+          description: Memory context identifier (DELETE_MEMORY).
+        - name: memory_id
+          type: keyword
+          description: Memory identifier.
+        - name: message_id
+          type: keyword
+          description: Message identifier (rating actions).
+        - name: name
+          type: keyword
+          description: Resource / service-account / credential name.
+        - name: new_name
+          type: keyword
+          description: New / updated name.
+        - name: new_role
+          type: keyword
+          description: Role assigned to the user (USER_ROLE_UPDATED).
+        - name: new_workspace_permissions_by_connector
+          type: flattened
+          description: Map of connector ID -> permission snapshot after the change.
+        - name: old_name
+          type: keyword
+          description: Previous name before the change.
+        - name: order
+          type: keyword
+          description: Sort order (list directory actions).
+        - name: overage_limit_credits
+          type: keyword
+          description: 'Credit overage limit, integer or the string unlimited.'
+        - name: owner_id
+          type: keyword
+          description: Owner filter / owner user ID (list agents etc.).
+        - name: owner_user_id
+          type: keyword
+          description: Auth user ID of the credential owner.
+        - name: plugin_id
+          type: keyword
+          description: Plugin identifier.
+        - name: previous_enabled
+          type: boolean
+          description: Service account active state before the update.
+        - name: previous_name
+          type: keyword
+          description: Service account name before the update (nullable).
+        - name: previous_role
+          type: keyword
+          description: Previous role for a share target (nullable) (SKILL_SHARE).
+        - name: previous_workspace_permissions_by_connector
+          type: flattened
+          description: Map of connector ID -> permission snapshot before the change.
+        - name: principal_id
+          type: keyword
+          description: Principal (user or group) identifier for a share target.
+        - name: principal_type
+          type: keyword
+          description: 'Principal type: user or group.'
+        - name: project_id
+          type: keyword
+          description: Project identifier.
+        - name: public_display_name
+          type: keyword
+          description: External display name (WORKSPACE_SET_IS_DISCOVERABLE).
+        - name: rating
+          type: keyword
+          description: Message rating.
+        - name: recording_id
+          type: keyword
+          description: Recording identifier.
+        - name: remote_thread_id
+          type: keyword
+          description: Codex remote-control thread identifier.
+        - name: requested_access_removals
+          type: group
+          fields:
+            - name: recipient_type
+              type: keyword
+              description: Recipient type requested for removal (PROJECT_UPDATE_SHARING).
+            - name: user_id
+              type: keyword
+              description: User ID requested for removal.
+        - name: requested_access_updates
+          type: group
+          fields:
+            - name: capabilities
+              type: keyword
+              description: Capabilities requested for the recipient.
+            - name: recipient_type
+              type: keyword
+              description: Recipient type requested to add/update.
+            - name: user_id
+              type: keyword
+              description: User ID requested to add/update.
+        - name: revoked_at
+          type: date
+          description: Revocation time (epoch seconds) or null.
+        - name: revoked_unified_sessions
+          type: keyword
+          description: Unified session IDs revoked (SESSION_REVOKE).
+        - name: role
+          type: keyword
+          description: Role granted / removed (manager or user; or invite role).
+        - name: room_id
+          type: keyword
+          description: Project chat room identifier.
+        - name: scope_id
+          type: keyword
+          description: Connector scope identifier (DELETE_PROJECT_CONNECTOR_SCOPE).
+        - name: scopes
+          type: keyword
+          description: Product-access scopes on the credential (sorted, deduplicated).
+        - name: service_account_id
+          type: keyword
+          description: Service account auth user ID.
+        - name: session_id
+          type: keyword
+          description: Session identifier (SESSION_REVOKE).
+        - name: shared_conversation_id
+          type: keyword
+          description: Shared conversation identifier (CONVERSATION_SHARE / view).
+        - name: shared_to
+          type: group
+          fields:
+            - name: capabilities
+              type: keyword
+              description: Capabilities granted to the recipient segment.
+            - name: group_id
+              type: keyword
+              description: Group ID recipient (sharing).
+            - name: recipient_type
+              type: keyword
+              description: 'Recipient type (UPDATE_SHARING).'
+            - name: type
+              type: keyword
+              description: 'Recipient segment type (CHANGE_VISIBILITY).'
+        - name: sign_in_endpoint
+          type: keyword
+          description: SAML sign-in endpoint URL / SCIM connection identifier.
+        - name: since_timestamp
+          type: date
+          description: Lower-bound timestamp filter (list actions).
+        - name: skill_id
+          type: keyword
+          description: Skill identifier.
+        - name: skill_name
+          type: keyword
+          description: Skill name.
+        - name: source_surface
+          type: keyword
+          description: Admin surface that initiated the action (admin_apps or admin_plugins).
+        - name: state_changed
+          type: boolean
+          description: Whether the successful request performed the initial revoke transition.
+        - name: system_instruction
+          type: keyword
+          description: Workspace default system prompt (WORKSPACE_SET_SYSTEM_INSTRUCTION).
+        - name: task_id
+          type: keyword
+          description: Codex task identifier.
+        - name: textdoc_id
+          type: keyword
+          description: Canvas text document identifier.
+        - name: third_party_gizmo_id
+          type: keyword
+          description: Third-party GPT identifier.
+        - name: total_requested
+          type: long
+          description: Count of join requests approved (INVITE_ACCEPT_ALL).
+        - name: use_workspace_name_for_discovery
+          type: boolean
+          description: Whether the workspace name is reused for discovery.
+        - name: user_id
+          type: keyword
+          description: Auth user ID targeted by the action.
+        - name: value
+          type: keyword
+          description: Generic value payload (boolean/string) for toggle/set actions.
+        - name: value_bool
+          type: boolean
+          description: Boolean form of action_data.value (populated when the changed value is a boolean).
+        - name: workspace_access_state
+          type: keyword
+          description: 'Skill workspace access state: restricted / discoverable / enabled.'
+        - name: workspace_id
+          type: keyword
+          description: Workspace identifier.
+        - name: workspace_policy
+          type: keyword
+          description: Workspace policy document or identifier (WORKSPACE_SET_POLICY).
+    - name: action_privilege
+      type: keyword
+      description: 'Privilege level for the action: ADMIN or STANDARD_USER.'
+    - name: action_result
+      type: keyword
+      description: 'Outcome of the action: SUCCESS, BLOCKED, or ERROR.'
+    - name: actor
+      type: group
+      fields:
+        - name: redacted_id
+          type: keyword
+          description: Redacted identifier of the API key (present when actor.type = API_KEY).
+        - name: type
+          type: keyword
+          description: Type of actor that performed the action (e.g. ACCOUNT_USER, API_KEY).
+    - name: app_id
+      type: keyword
+      description: Identifier of the connected app / connector.
+    - name: client_id
+      type: keyword
+      description: Codex client identifier associated with the event.
+    - name: event_details
+      type: group
+      fields:
+        - name: detail_type
+          type: keyword
+          description: Discriminator identifying the specific Codex event-details schema.
+    - name: principal
+      type: group
+      fields:
+        - name: type
+          type: keyword
+          description: Principal that owns the event (e.g. CHATGPT_WORKSPACE).
+    - name: request_metadata
+      type: group
+      fields:
+        - name: client_ip_details
+          type: group
+          fields:
+            - name: asn
+              type: keyword
+              description: Autonomous System Number resolved from the client IP.
+            - name: city
+              type: keyword
+              description: City resolved from the client IP.
+            - name: country
+              type: keyword
+              description: Country resolved from the client IP.
+            - name: latitude
+              type: keyword
+              description: Latitude resolved from the client IP.
+            - name: longitude
+              type: keyword
+              description: Longitude resolved from the client IP.
+            - name: region
+              type: keyword
+              description: Region / state resolved from the client IP.
+            - name: region_code
+              type: keyword
+              description: Region / state code resolved from the client IP.
+        - name: client_ja4
+          type: keyword
+          description: JA4 TLS fingerprint of the client (may be empty).
+    - name: type
+      type: keyword
+      description: 'Top-level event category (APP_LOG, APP_AUTH_LOG, AUDIT_LOG, AUTH_LOG, CODEX_LOG, CODEX_SECURITY_LOG).'
+    - name: workspace_id
+      type: keyword
+      description: Workspace identifier associated with the event.
