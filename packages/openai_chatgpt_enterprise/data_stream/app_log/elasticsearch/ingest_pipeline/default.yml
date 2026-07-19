@@ -1,0 +1,231 @@
+---
+description: Parse OpenAI ChatGPT Enterprise Application Logs events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original `message` field to `event.original` to store a copy of the original message.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: openai_chatgpt_enterprise.app_log
+      tag: parse_json
+      if: ctx.event?.original != null
+  - fingerprint:
+      fields:
+        - openai_chatgpt_enterprise.app_log.event_id
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_event_id
+  - set:
+      field: gen_ai.system
+      tag: set_gen_ai_system
+      value: openai
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: openai_chatgpt_enterprise.app_log.event_id
+      ignore_empty_value: true
+  - date:
+      field: openai_chatgpt_enterprise.app_log.timestamp
+      target_field: openai_chatgpt_enterprise.app_log.timestamp
+      formats:
+        - ISO8601
+      tag: date_timestamp
+      if: ctx.openai_chatgpt_enterprise?.app_log?.timestamp != null && ctx.openai_chatgpt_enterprise.app_log.timestamp != ''
+      on_failure:
+        - remove:
+            field: openai_chatgpt_enterprise.app_log.timestamp
+            ignore_missing: true
+            tag: remove_timestamp_on_failure
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_timestamp
+      copy_from: openai_chatgpt_enterprise.app_log.timestamp
+      ignore_empty_value: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - set:
+      field: user.id
+      tag: set_user_id_from_actor
+      copy_from: openai_chatgpt_enterprise.app_log.actor.user_id
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_actor
+      copy_from: openai_chatgpt_enterprise.app_log.actor.user_email
+      ignore_empty_value: true
+  - dissect:
+      field: user.email
+      pattern: '%{}@%{user.domain}'
+      tag: dissect_user_domain_from_email
+      if: ctx.user?.email != null && ctx.user.email.contains('@')
+  - set:
+      field: organization.id
+      tag: set_organization_id_from_principal
+      copy_from: openai_chatgpt_enterprise.app_log.principal.id
+      ignore_empty_value: true
+      if: ctx.openai_chatgpt_enterprise?.app_log?.principal?.id != null
+  - set:
+      field: openai_chatgpt_enterprise.app_log.query
+      tag: set_query_from_input
+      copy_from: openai_chatgpt_enterprise.app_log.input.query
+      ignore_empty_value: true
+      if: ctx.openai_chatgpt_enterprise?.app_log?.input?.query instanceof String
+  - script:
+      lang: painless
+      tag: extract_input_meta
+      description: Extract client context from the free-form app input _meta (slash-named keys).
+      if: ctx.openai_chatgpt_enterprise?.app_log?.input?._meta instanceof Map
+      source: |-
+        def m = ctx.openai_chatgpt_enterprise.app_log.input._meta;
+        def ua = m.get('openai/userAgent');
+        if (ua != null && ua != '') {
+          if (ctx.user_agent == null) { ctx.user_agent = [:]; }
+          ctx.user_agent.original = ua;
+        }
+        def loc = m.get('openai/userLocation');
+        if (loc instanceof Map) {
+          if (ctx.source == null) { ctx.source = [:]; }
+          if (ctx.source.geo == null) { ctx.source.geo = [:]; }
+          if (loc.city != null && loc.city != '') { ctx.source.geo.city_name = loc.city; }
+          if (loc.region != null && loc.region != '') { ctx.source.geo.region_name = loc.region; }
+          if (loc.country != null && loc.country != '') { ctx.source.geo.country_iso_code = loc.country; }
+          if (loc.latitude != null && loc.latitude != '' && loc.longitude != null && loc.longitude != '') {
+            ctx.source.geo.location = loc.latitude + ',' + loc.longitude;
+          }
+        }
+        def meta = new HashMap();
+        def locale = m.get('openai/locale');
+        if (locale != null && locale != '') { meta.locale = locale; }
+        def subject = m.get('openai/subject');
+        if (subject != null && subject != '') { meta.subject = subject; }
+        def session = m.get('openai/session');
+        if (session != null && session != '') { meta.session = session; }
+        def org = m.get('openai/organization');
+        if (org != null && org != '') { meta.organization = org; }
+        def tz = m.get('timezone');
+        if (tz != null && tz != '') { meta.timezone = tz; }
+        if (meta.size() > 0) { ctx.openai_chatgpt_enterprise.app_log.meta = meta; }
+  - remove:
+      field: openai_chatgpt_enterprise.app_log.input._meta
+      tag: remove_input_meta_after_extraction
+      ignore_missing: true
+      description: >-
+        Drop the request _meta after extracting its client context to ECS and
+        custom meta fields, so ECS-mapped values are not duplicated in the
+        free-form input.
+  - user_agent:
+      field: user_agent.original
+      ignore_missing: true
+      tag: enrich_user_agent
+  - append:
+      field: event.category
+      tag: append_event_category_app_log
+      value: api
+  - append:
+      field: event.type
+      tag: append_event_type_app_log
+      value: access
+  - append:
+      field: related.user
+      tag: append_user_email_to_related
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      field: related.user
+      tag: append_user_id_to_related
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - remove:
+      field:
+        - openai_chatgpt_enterprise.app_log.event_id
+        - openai_chatgpt_enterprise.app_log.timestamp
+        - openai_chatgpt_enterprise.app_log.actor.user_id
+        - openai_chatgpt_enterprise.app_log.actor.user_email
+        - openai_chatgpt_enterprise.app_log.principal.id
+      tag: remove_custom_fields_mapped_to_ecs
+      ignore_missing: true
+      description: Remove custom fields that were copied to ECS fields.
+  - script:
+      lang: painless
+      tag: remove_null_values
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - append:
+      field: tags
+      tag: append_preserve_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
