@@ -1,0 +1,190 @@
+- name: openai_chatgpt_enterprise.codex_log
+  type: group
+  description: OpenAI ChatGPT Enterprise Codex Logs event fields.
+  fields:
+    - name: actor
+      type: group
+      fields:
+        - name: redacted_id
+          type: keyword
+          description: Redacted identifier of the API key (present when actor.type = API_KEY).
+        - name: type
+          type: keyword
+          description: Type of actor that performed the action (e.g. ACCOUNT_USER, API_KEY).
+    - name: app_id
+      type: keyword
+      description: Identifier of the connected app / connector.
+    - name: client_id
+      type: keyword
+      description: Codex client identifier associated with the event.
+    - name: event_details
+      type: group
+      fields:
+        - name: access_token_id
+          type: keyword
+          description: Codex access token identifier.
+        - name: access_token_name
+          type: keyword
+          description: User-provided access token name.
+        - name: arguments
+          type: group
+          fields:
+            - name: jql
+              type: keyword
+              description: Arguments passed to an app/MCP call (shape varies; example is a Jira JQL query).
+        - name: call_id
+          type: keyword
+          description: Identifier of the MCP/tool call.
+        - name: created_by_user_id
+          type: keyword
+          description: Auth user ID that created the resource.
+        - name: current_settings
+          type: group
+          fields:
+            - name: default_model
+              type: keyword
+              description: Default model after the change.
+            - name: network_access
+              type: keyword
+              description: Network-access policy after the change.
+        - name: decision
+          type: keyword
+          description: Approval decision for a suggested tool call (e.g. approved, denied).
+        - name: detail_type
+          type: keyword
+          description: Discriminator identifying the specific Codex event-details schema.
+        - name: elicitation_type
+          type: keyword
+          description: Type of MCP elicitation (e.g. oauth_consent).
+        - name: environment_fields
+          type: group
+          fields:
+            - name: agent_settings
+              type: group
+              fields:
+                - name: model
+                  type: keyword
+                  description: Model configured for the environment's agent.
+            - name: cache_settings
+              type: group
+              fields:
+                - name: enabled
+                  type: boolean
+                  description: Whether environment caching is enabled.
+            - name: description
+              type: text
+              description: Environment description.
+            - name: env_var_keys
+              type: keyword
+              description: Names (keys only) of configured environment variables.
+            - name: label
+              type: keyword
+              description: Environment label / name.
+            - name: permissions
+              type: group
+              fields:
+                - name: network_access
+                  type: keyword
+                  description: Environment network-access permission.
+            - name: repos
+              type: keyword
+              description: Repositories attached to the environment.
+        - name: environment_id
+          type: keyword
+          description: Codex environment identifier.
+        - name: expires_at
+          type: date
+          description: Expiration time, e.g. for access tokens. Format assumed RFC3339 (verify).
+        - name: marketplace_name
+          type: keyword
+          description: Marketplace source for a plugin.
+        - name: phase
+          type: keyword
+          description: Turn phase (e.g. prompt).
+        - name: plugin_creator_account_user_id
+          type: keyword
+          description: Account user ID that created the plugin.
+        - name: plugin_display_name
+          type: keyword
+          description: Plugin display name.
+        - name: plugin_id
+          type: keyword
+          description: Plugin identifier.
+        - name: plugin_name
+          type: keyword
+          description: Plugin (technical) name.
+        - name: plugin_release_id
+          type: keyword
+          description: Plugin release identifier.
+        - name: plugin_scope
+          type: keyword
+          description: Plugin scope (e.g. WORKSPACE).
+        - name: plugin_version
+          type: keyword
+          description: Plugin version.
+        - name: previous_settings
+          type: group
+          fields:
+            - name: default_model
+              type: keyword
+              description: Default model before the change.
+            - name: network_access
+              type: keyword
+              description: Network-access policy before the change.
+        - name: prompt_text
+          type: keyword
+          description: Prompt text submitted by the user (sensitive content).
+        - name: reasoning_effort
+          type: keyword
+          description: Reasoning effort setting (e.g. low/medium/high).
+        - name: response_text
+          type: keyword
+          description: Model response text (sensitive content).
+        - name: result_preview
+          type: keyword
+          description: Preview of a tool/call result.
+        - name: service_tier
+          type: keyword
+          description: Service tier used for the request.
+        - name: session_id
+          type: keyword
+          description: Codex session identifier.
+        - name: status
+          type: keyword
+          description: Outcome status (e.g. success, error).
+        - name: token_usage
+          type: group
+          fields:
+            - name: cached_input_tokens
+              type: long
+              description: Cached input tokens used.
+            - name: reasoning_output_tokens
+              type: long
+              description: Reasoning output tokens generated.
+        - name: tool_input
+          type: keyword
+          description: Input passed to the tool (shape varies).
+        - name: tool_meta
+          type: group
+          fields:
+            - name: connector_id
+              type: keyword
+              description: Connector identifier associated with the tool.
+            - name: resource_id
+              type: keyword
+              description: Resource identifier associated with the tool.
+        - name: turn_id
+          type: keyword
+          description: Identifier of the conversation turn.
+    - name: principal
+      type: group
+      fields:
+        - name: type
+          type: keyword
+          description: Principal that owns the event (e.g. CHATGPT_WORKSPACE).
+    - name: type
+      type: keyword
+      description: Top-level event category (e.g. CODEX_LOG).
+    - name: workspace_id
+      type: keyword
+      description: Workspace identifier associated with the event.

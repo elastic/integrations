@@ -1,0 +1,127 @@
+rules:
+  # =========================================================================
+  # PHASE 1 — list log files (paginated). Returns file metadata only; the
+  # JSONL content is fetched per-file in phase 2 (see the /logs/{id} rules).
+  # =========================================================================
+
+  # --- list page 2 (requested with ?after=2026-07-09T12:00:00Z) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs
+    methods: ['GET']
+    query_params:
+      event_type: CODEX_LOG
+      limit: 2
+      after: "2026-07-09T12:00:00Z"
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "eclf_c3",
+                "event_type": "CODEX_LOG",
+                "end_time": "2026-07-09T13:00:00Z",
+                "file_name": "CODEX_LOG_2026-07-09T13:00:00+00:00.jsonl",
+                "file_size": 512,
+                "file_sha256": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3"
+              }
+            ],
+            "has_more": false,
+            "last_end_time": "2026-07-09T13:00:00Z"
+          }
+          `}}
+
+  # --- list page 1 (initial request; no ?after) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs
+    methods: ['GET']
+    query_params:
+      event_type: CODEX_LOG
+      limit: 2
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "eclf_a1",
+                "event_type": "CODEX_LOG",
+                "end_time": "2026-07-09T10:11:00Z",
+                "file_name": "CODEX_LOG_2026-07-09T10:11:00+00:00.jsonl",
+                "file_size": 1024,
+                "file_sha256": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+              },
+              {
+                "id": "eclf_b2",
+                "event_type": "CODEX_LOG",
+                "end_time": "2026-07-09T10:12:00Z",
+                "file_name": "CODEX_LOG_2026-07-09T10:12:00+00:00.jsonl",
+                "file_size": 768,
+                "file_sha256": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2"
+              }
+            ],
+            "has_more": true,
+            "last_end_time": "2026-07-09T12:00:00Z"
+          }
+          `}}
+
+  # =========================================================================
+  # PHASE 2 — download each log file's JSONL body. The real API 307-redirects
+  # to a signed URL; the mock serves the JSON Lines content directly (200).
+  # Each line is one Codex event and is emitted as a separate document.
+  # =========================================================================
+
+  # --- download file eclf_a1 (2 events) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_a1
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {"event_id":"cd000000-0000-0000-0000-000000000010","type":"CODEX_LOG","timestamp":"2026-07-09T10:10:00.000000Z","principal":{"id":"be545252-ad04-4cfa-9ca5-deca58416151","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-TUvqhBX7HbQPRgHyEBt5WRcI","user_email":"user@example.org"},"event_type":"ACCESS_TOKEN_CREATED","client_id":"CODEX_WEB","workspace_id":"be545252-ad04-4cfa-9ca5-deca58416151","event_details":{"detail_type":"ACCESS_TOKEN_CREATED","access_token_id":"cat-1001","access_token_name":"ci-runner-token","created_by_user_id":"user-TUvqhBX7HbQPRgHyEBt5WRcI","expires_at":"2026-10-09T10:10:00Z"}}
+          {"event_id":"cd000000-0000-0000-0000-000000000012","type":"CODEX_LOG","timestamp":"2026-07-09T10:11:00.000000Z","principal":{"id":"be545252-ad04-4cfa-9ca5-deca58416151","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-TUvqhBX7HbQPRgHyEBt5WRcI","user_email":"user@example.org"},"event_type":"APP_MCP_CALL","client_id":"CODEX_CLI","workspace_id":"be545252-ad04-4cfa-9ca5-deca58416151","event_details":{"detail_type":"APP_MCP_CALL","call_id":"mcp-call-1","name":"search_issues","arguments":{"jql":"project=OPS AND status=Open"},"tool_meta":{"connector_id":"conn-jira01","resource_id":"jira-cloud"}}}
+
+  # --- download file eclf_b2 (1 event) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_b2
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {"event_id":"cd000000-0000-0000-0000-000000000008","type":"CODEX_LOG","timestamp":"2026-07-09T10:09:10.000000Z","principal":{"id":"be545252-ad04-4cfa-9ca5-deca58416151","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-TUvqhBX7HbQPRgHyEBt5WRcI","user_email":"user@example.org"},"event_type":"TOOL_CALL_COMPLETED","client_id":"CODEX_IDE_VSCODE","workspace_id":"be545252-ad04-4cfa-9ca5-deca58416151","event_details":{"detail_type":"TOOL_CALL_COMPLETED","session_id":"session-123","tool_name":"apply_patch","tool_type":"filesystem","tool_input":"src/rca/timeline.tsx","turn_id":"turn-1","call_id":"call-1","tool_call_id":"tc-991","status":"success","model":"gpt-5.1-codex-max","environment_id":"env-123"}}
+
+  # --- download file eclf_c3 (1 event) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_c3
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {"event_id":"cd000000-0000-0000-0000-000000000006","type":"CODEX_LOG","timestamp":"2026-07-09T10:08:44.000000Z","principal":{"id":"be545252-ad04-4cfa-9ca5-deca58416151","type":"CHATGPT_WORKSPACE"},"actor":{"type":"ACCOUNT_USER","user_id":"user-TUvqhBX7HbQPRgHyEBt5WRcI","user_email":"user@example.org"},"event_type":"PROMPT_RESPONSE_RECEIVED","client_id":"CODEX_CLI","workspace_id":"be545252-ad04-4cfa-9ca5-deca58416151","event_details":{"detail_type":"PROMPT_RESPONSE_RECEIVED","session_id":"session-123","response_text":"Refactored timeline.tsx and split the remediation view.","status":"success","turn_id":"turn-1","call_id":"call-1","model":"gpt-5.1-codex-max","service_tier":"default","reasoning_effort":"medium","token_usage":{"input_tokens":4200,"output_tokens":1800,"cached_input_tokens":900,"reasoning_output_tokens":600},"environment_id":"env-123"}}
