@@ -1,0 +1,178 @@
+rules:
+  # =========================================================================
+  # PHASE 1 — list Codex Security Log files (paginated with `after`).
+  # The specific page-2 rule (after = page-1 last_end_time) must come first so
+  # it wins over the general page-1 rule; page 2 returns an empty page with
+  # has_more=false, which terminates collection.
+  # =========================================================================
+
+  # --- list page 2 (after cursor from page 1) -> empty, terminates ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs
+    methods: ['GET']
+    query_params:
+      event_type: CODEX_SECURITY_LOG
+      after: '2026-07-09T13:20:00.000000Z'
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data": [], "has_more": false, "last_end_time": null}
+
+  # --- list page 1 (initial) -> 2 files, has_more true ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs
+    methods: ['GET']
+    query_params:
+      event_type: CODEX_SECURITY_LOG
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data": [{"id": "eclf_a1", "event_type": "CODEX_SECURITY_LOG", "end_time": "2026-07-09T12:30:00.000000Z", "file_name": "CODEX_SECURITY_LOG_2026-07-09T12:30:00.000000+00:00.jsonl", "file_size": 640, "file_sha256": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"}, {"id": "eclf_b2", "event_type": "CODEX_SECURITY_LOG", "end_time": "2026-07-09T13:20:00.000000Z", "file_name": "CODEX_SECURITY_LOG_2026-07-09T13:20:00.000000+00:00.jsonl", "file_size": 512, "file_sha256": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2"}], "has_more": true, "last_end_time": "2026-07-09T13:20:00.000000Z"}
+
+  # =========================================================================
+  # PHASE 2 — download each log file (JSON Lines, one event per line).
+  # =========================================================================
+
+  # --- download file eclf_a1 (2 events) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_a1
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {{ minify_json `
+          {
+            "event_id": "cs000000-1111-4a11-8b11-000000000001",
+            "type": "CODEX_SECURITY_LOG",
+            "timestamp": "2026-07-09T13:20:00.000000Z",
+            "principal": { "id": "11111111-2222-3333-4444-555555555555", "type": "CHATGPT_WORKSPACE" },
+            "actor": { "type": "ACCOUNT_USER", "user_id": "user-Aaaaaaaaaaaaaaaaaaaaaaa1", "user_email": "alice.martin@example.org" },
+            "event_type": "PROPOSED_PATCH_PR_CREATED",
+            "client_id": "CODEX_WEB",
+            "workspace_id": "11111111-2222-3333-4444-555555555555",
+            "event_details": {
+              "detail_type": "PROPOSED_PATCH_PR_CREATED",
+              "finding_id": "hid-mock-123",
+              "pr_url": "https://github.com/example-org/example-repo/pull/123"
+            }
+          }
+          `}}
+          {{ minify_json `
+          {
+            "event_id": "cs000000-1111-4a11-8b11-000000000002",
+            "type": "CODEX_SECURITY_LOG",
+            "timestamp": "2026-07-09T12:00:00.000000Z",
+            "principal": { "id": "11111111-2222-3333-4444-555555555555", "type": "CHATGPT_WORKSPACE" },
+            "actor": { "type": "ACCOUNT_USER", "user_id": "user-Aaaaaaaaaaaaaaaaaaaaaaa1", "user_email": "alice.martin@example.org" },
+            "event_type": "SCAN_CONFIGURATION_CREATED",
+            "client_id": "CODEX_WEB",
+            "workspace_id": "11111111-2222-3333-4444-555555555555",
+            "event_details": {
+              "detail_type": "SCAN_CONFIGURATION_CREATED",
+              "scan_configuration_id": "scfg-mock-1",
+              "scan_configuration_fields": {
+                "scan_type": "secrets",
+                "owner_id": "user-Aaaaaaaaaaaaaaaaaaaaaaa1",
+                "workspace_id": "11111111-2222-3333-4444-555555555555",
+                "repo_id": "repo-mock-9",
+                "repo_url": "https://github.com/example-org/example-repo",
+                "environment_id": "env-mock-123",
+                "state": "active",
+                "lookback_days": 30,
+                "notification_rules_created_count": 2,
+                "notification_rules_updated_count": 0,
+                "notification_rules_deleted_count": 0
+              }
+            }
+          }
+          `}}
+
+  # --- download file eclf_b2 (2 events) ---
+  - path: /v1/compliance/workspaces/ws-example-001/logs/eclf_b2
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/x-ndjson'
+        body: |-
+          {{ minify_json `
+          {
+            "event_id": "cs000000-1111-4a11-8b11-000000000003",
+            "type": "CODEX_SECURITY_LOG",
+            "timestamp": "2026-07-09T12:30:00.000000Z",
+            "principal": { "id": "11111111-2222-3333-4444-555555555555", "type": "CHATGPT_WORKSPACE" },
+            "actor": { "type": "ACCOUNT_USER", "user_id": "user-Aaaaaaaaaaaaaaaaaaaaaaa1", "user_email": "alice.martin@example.org" },
+            "event_type": "SCAN_CONFIGURATION_UPDATED",
+            "client_id": "CODEX_WEB",
+            "workspace_id": "11111111-2222-3333-4444-555555555555",
+            "event_details": {
+              "detail_type": "SCAN_CONFIGURATION_UPDATED",
+              "scan_configuration_id": "scfg-mock-1",
+              "updated_fields": {
+                "environment_id": "env-mock-123",
+                "state": "active",
+                "owner_id": "user-Aaaaaaaaaaaaaaaaaaaaaaa1",
+                "lookback_days": 60,
+                "project_overview_updated": true,
+                "project_overview_length": 420,
+                "notification_rules_created_count": 0,
+                "notification_rules_updated_count": 1,
+                "notification_rules_deleted_count": 0
+              },
+              "scan_configuration_fields": {
+                "scan_type": "secrets",
+                "owner_id": "user-Aaaaaaaaaaaaaaaaaaaaaaa1",
+                "workspace_id": "11111111-2222-3333-4444-555555555555",
+                "repo_id": "repo-mock-9",
+                "repo_url": "https://github.com/example-org/example-repo",
+                "environment_id": "env-mock-123",
+                "state": "active",
+                "lookback_days": 60
+              }
+            }
+          }
+          `}}
+          {{ minify_json `
+          {
+            "event_id": "cs000000-1111-4a11-8b11-000000000004",
+            "type": "CODEX_SECURITY_LOG",
+            "timestamp": "2026-07-09T13:00:00.000000Z",
+            "principal": { "id": "11111111-2222-3333-4444-555555555555", "type": "CHATGPT_WORKSPACE" },
+            "actor": { "type": "ACCOUNT_USER", "user_id": "user-Aaaaaaaaaaaaaaaaaaaaaaa1", "user_email": "alice.martin@example.org" },
+            "event_type": "SCAN_FINDING_UPDATED",
+            "client_id": "CODEX_WEB",
+            "workspace_id": "11111111-2222-3333-4444-555555555555",
+            "event_details": {
+              "detail_type": "SCAN_FINDING_UPDATED",
+              "finding_id": "hid-mock-123",
+              "updated_fields": {
+                "status": "wontfix",
+                "assignee_user_email": "bob.singh@example.org",
+                "criticality": "low",
+                "resolution_reason": "False positive: test fixture includes dummy secret.",
+                "resolution_reason_updated": true,
+                "criticality_reason": "Low exploitability in isolated dev-only path.",
+                "criticality_reason_updated": true
+              }
+            }
+          }
+          `}}
