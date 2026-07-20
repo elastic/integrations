@@ -39,7 +39,7 @@ PLATEAU_S="${PLATEAU_S:-30}"                       # memory flat this long => de
 # corpus/ holds the generator template/config/fields, mock-config.yml is the
 # elastic/stream mock config, elastic-agent.yml is the input config.
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TOOL="${TOOL:-/Users/kcreddy/go/src/github.com/elastic/elastic-integration-corpus-generator-tool}"
+TOOL="${TOOL:-$HOME/go/src/github.com/elastic/elastic-integration-corpus-generator-tool}"
 PKG="$HERE/corpus"
 MOCK_CONFIG="$HERE/mock-config.yml"
 AGENT_YML="$HERE/elastic-agent.yml"
@@ -157,7 +157,7 @@ done
 # --------------------------- 5. report ---------------------------
 peak=$(read_peak); peak=${peak:-0}
 [ "$peak" -lt "$maxseen" ] && peak=$maxseen   # fall back to observed max if exec read failed
-served=$(docker logs svc-o365 2>&1 | grep -c 'subscriptions/content' || true)
+served=$(docker logs svc-o365 2>&1 | grep -c 'activity/feed/audit/' || true)
 echo
 echo "================= RESULT (elastic-agent) ================="
 echo " agent version   : $STACK_VERSION"
