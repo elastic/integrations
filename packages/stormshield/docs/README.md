@@ -270,6 +270,40 @@ To collect logs via UDP, select **Collect logs via UDP** and configure the follo
 
 You'll find events from Stormshield SNS logs in the `log` data stream. This data stream includes logs of the following types: traffic, filter, protection, and system events.
 
+##### ECS event categorization
+
+Each log family (identified by the `logtype` field) is mapped to the ECS categorization fields. Alarms raised by the intrusion prevention engine produce `event.kind: alert`. The periodic statistics families (`monitor`, `filterstat`, `count`, `routerstat`, `authstat`, `ipsecstat`) produce `event.kind: metric`, so health telemetry can be excluded from detection rule scopes with a single filter. All other families produce `event.kind: event`.
+
+| logtype | event.kind | event.category | event.type |
+|---|---|---|---|
+| alarm | alert | intrusion_detection, network | info |
+| auth | event | authentication | start |
+| authstat | metric | authentication | info |
+| connection | event | network, session | connection, end |
+| count, filterstat, ipsecstat, routerstat | metric | network | info |
+| date | event | host | change |
+| dmrouting, routing | event | network, host | change |
+| filter | event | network | connection |
+| ftp | event | network | info |
+| monitor | metric | host | info |
+| plugin | event | network | protocol |
+| pop3, smtp | event | email, network | info |
+| pvm | event | vulnerability | info |
+| restapi | event | web, configuration | access |
+| sandboxing | event | network | info |
+| server | event | configuration | access |
+| ssl | event | network | connection |
+| system | event | host | info |
+| vpn | event | network | info |
+| web | event | web, network | access |
+| xvpn | event | network, session | connection |
+
+For the families that carry a rule action, `event.type` additionally receives `allowed` when the action is `pass` and `denied` when the action is `block` (matched case-insensitively). An empty action field corresponds to a rule set to Log, and no modifier is added. Unknown log families fall back to `event.kind: event` without `event.category` or `event.type`, so a family missing from the table is visible instead of being mislabeled.
+
+For alarm logs, `event.code` carries the Stormshield alarm identifier, `event.risk_score` the `risk` field (1-100), and `event.severity` the vendor alarm level from `pri`, where 1 is a major alarm and 4 a minor alarm. This scale is specific to the alarm family. In most other families, the appliance hardcodes the `pri` field to 5.
+
+`network.direction` is computed from the source and destination IP addresses, treating private (RFC 1918) address ranges as internal networks.
+
 ##### `log` fields
 
 You'll find a list of all exported fields in the following table:
@@ -285,6 +319,7 @@ You'll find a list of all exported fields in the following table:
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
+| destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
@@ -300,7 +335,14 @@ You'll find a list of all exported fields in the following table:
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
+| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of input. | keyword |
 | log.source.address | Source address for the log. | keyword |
 | log.syslog.appname | The device or application that originated the Syslog message, if available. | keyword |
@@ -312,15 +354,22 @@ You'll find a list of all exported fields in the following table:
 | log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
 | log.syslog.version | The version of the Syslog protocol specification. Only applicable for RFC 5424 messages. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| observer.egress.interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |
+| observer.egress.interface.name | Interface name as reported by the system. | keyword |
+| observer.ingress.interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |
+| observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
@@ -357,6 +406,9 @@ You'll find a list of all exported fields in the following table:
 | stormshield.system | Indicator of the Firewalls system status.  This value is used by the fleet management tool (Stormshield Network Unified Manager) to provide information on the system status (available RAM, CPU use, bandwidth, interfaces, fullness of audit logs, and so on). Decimal format representing a percentage. | keyword |
 | stormshield.time | Local time at which the log was recorded in the log file (time configured on the Firewall). String in YYYY-MM-DD HH:MM:SS format. Available from: SNS v1.0.0. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 
@@ -371,39 +423,46 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2024-03-08T10:14:08.000Z",
     "agent": {
-        "ephemeral_id": "fbc0ca2c-7300-45ce-84b1-6ece2bc46905",
-        "id": "e0b60804-99ad-435e-865c-35384901d186",
-        "name": "elastic-agent-45518",
+        "ephemeral_id": "19c5155e-5f61-4dc1-b23c-cd84e946b455",
+        "id": "63ff8a64-ec88-4856-ba1c-8653054b4358",
+        "name": "elastic-agent-17632",
         "type": "filebeat",
-        "version": "8.14.1"
+        "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "stormshield.log",
-        "namespace": "65295",
+        "namespace": "52256",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "e0b60804-99ad-435e-865c-35384901d186",
+        "id": "63ff8a64-ec88-4856-ba1c-8653054b4358",
         "snapshot": false,
-        "version": "8.14.1"
+        "version": "9.4.3"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
         "dataset": "stormshield.log",
-        "ingested": "2024-09-18T14:01:36Z",
+        "ingested": "2026-07-08T10:05:22Z",
+        "kind": "event",
         "original": "id=firewall time=\"2024-03-08 10:14:08\" fw=\"stormy-1\" tz=+0000 startime=\"2024-03-08 10:14:08\" error=0 user=\"admin\" address=192.168.197.1 sessionid=1 msg=\"PKI SEARCH scope=local type=ca\" logtype=\"server\"",
         "start": "2024-03-08T10:14:08.000Z",
-        "timezone": "+00:00"
+        "timezone": "+00:00",
+        "type": [
+            "access"
+        ]
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "172.27.0.3:40024"
+            "address": "172.21.0.3:49430"
         },
         "syslog": {
             "appname": "serverd",
