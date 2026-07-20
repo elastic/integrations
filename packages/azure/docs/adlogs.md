@@ -815,7 +815,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.auditlogs.properties.target_resources.\*.display_name | Display name | keyword |
 | azure.auditlogs.properties.target_resources.\*.id | ID | keyword |
 | azure.auditlogs.properties.target_resources.\*.ip_address | ip Address | keyword |
-| azure.auditlogs.properties.target_resources.\*.modified_properties.\*.\* | Modified properties (e.g. old_value, new_value, display_name). | object |
+| azure.auditlogs.properties.target_resources.\*.modified_properties.\*.\* | Modified properties (for example, old_value, new_value, display_name). | object |
 | azure.auditlogs.properties.target_resources.\*.type | Type | keyword |
 | azure.auditlogs.properties.target_resources.\*.user_principal_name | User principal name | keyword |
 | azure.auditlogs.result_description | Result description | keyword |
