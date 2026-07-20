@@ -416,6 +416,7 @@ You'll find a list of all exported fields in the following table:
 | stormshield.etherproto | Type of Ethernet protocol. Example: profinet-rt. Alarm, connection and plugin logs. Available from: SNS v4.0.0. | keyword |
 | stormshield.filename | Name of the file scanned by the sandboxing option. FTP, POP3, sandboxing, SMTP and web logs. | keyword |
 | stormshield.filetype | Type of the file scanned by the sandboxing option. Values: document, pdf, executable, archive. FTP, POP3, sandboxing, SMTP and web logs. | keyword |
+| stormshield.filterstat | Counters of the periodic filter statistics log, typed as numbers and named as the vendor writes them, covering the accepted and blocked totals and the memory and state gauges. | object |
 | stormshield.format | Type of an IEC104 message. Plugin logs only. Available from: SNS v3.1.0. | keyword |
 | stormshield.fw | firewall's ID This is the name entered by the administrator or, by default, its serial number. String of characters in UTF-8 format.  Example: firewall_name or V50XXXXXXXXXXXX Available from: SNS v1.0.0. | keyword |
 | stormshield.groupid | Identifier that allows tracking child connections. FTP and plugin logs. | long |
@@ -427,6 +428,9 @@ You'll find a list of all exported fields in the following table:
 | stormshield.logtype | The specific type of log this is from. | keyword |
 | stormshield.metadata | Flattened metadata | flattened |
 | stormshield.method | Authentication method used on authentication logs. On SNS 5.x restapi logs, the HTTP method of the REST request. | keyword |
+| stormshield.monitor.cpu.kernel_time | Time consumed by the kernel, from the CPU counters of the periodic monitor log. | long |
+| stormshield.monitor.cpu.system_disruption | Time allocated to system disruptions, from the CPU counters of the periodic monitor log. | long |
+| stormshield.monitor.cpu.user_time | Time allocated to the management of user processes, from the CPU counters of the periodic monitor log. | long |
 | stormshield.out_bytes | Count of bytes leaving the firewall | long |
 | stormshield.phase | IKE negotiation phase, 0, 1 or 2. IPsec VPN logs only. | long |
 | stormshield.pktdump | Network packet captured on the alarm, encoded in hexadecimal for analysis by a third-party tool. Alarm logs only. | keyword |
@@ -440,6 +444,7 @@ You'll find a list of all exported fields in the following table:
 | stormshield.responsemode | Value of the Mode field of an NTP response. Plugin logs only. Available from: SNS v3.8.0. | keyword |
 | stormshield.sandboxing | Classification of the file according to the sandboxing option. Values: clean, suspicious, malicious, unknown, forward, failed. FTP, POP3, sandboxing, SMTP and web logs. | keyword |
 | stormshield.sandboxinglevel | Level of the file infection on a scale of 0 (clean) to 100 (malicious). FTP, POP3, sandboxing and SMTP logs. | long |
+| stormshield.security | Indicator of the firewall security status, a percentage reported for fleet management. Monitor logs only. | long |
 | stormshield.sensible | Set to 1 when the packet that raised the alarm involves a host under strong protection. Alarm logs only. Documented through SNS 4.x. | long |
 | stormshield.serverappid | Last server application detected on the connection. Example: google. Connection and plugin logs. Available from: SNS v3.2.0. | keyword |
 | stormshield.service | Service (product with a dedicated port) on which the vulnerability was detected.  String of characters in UTF-8 format. Example: OpenSSH_5.4 | keyword |

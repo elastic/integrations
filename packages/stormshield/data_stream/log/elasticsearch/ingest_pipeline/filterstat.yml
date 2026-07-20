@@ -9,9 +9,20 @@ processors:
         i: in_count
         o: out_count
       source: >-
+        boolean isNumeric(def s) {
+          if (!(s instanceof String) || s.isEmpty() || s.length() > 18) {
+            return false;
+          }
+          for (int i = 0; i < s.length(); i++) {
+            if (Character.isDigit(s.charAt(i)) == false) {
+              return false;
+            }
+          }
+          return true;
+        }
         Pattern compositeKeyPattern = /^(\w+)\((\w+)\/(\w+)\)$/;
         Pattern compositeValuePattern = /^(\w+)\/(\w+)$/;
-        
+
         def replacePairs = [:];
         def move = [];
         ctx.stormshield.forEach((k, v) -> {
@@ -20,15 +31,23 @@ processors:
           } else if (Character.isUpperCase(k.charAt(0))) {
             move.add(k);
           }
-        
+
           return true;
         });
-        
+
         if (!ctx.stormshield.containsKey("metadata")) {
           ctx.stormshield.metadata = [:];
         }
         move.forEach(k -> {
-          ctx.stormshield.metadata[k] = ctx.stormshield[k];
+          def v = ctx.stormshield[k];
+          if (isNumeric(v)) {
+            if (!ctx.stormshield.containsKey("filterstat")) {
+              ctx.stormshield.filterstat = [:];
+            }
+            ctx.stormshield.filterstat[k] = Long.parseLong(v);
+          } else {
+            ctx.stormshield.metadata[k] = v;
+          }
           ctx.stormshield.remove(k);
           return true;
         });
