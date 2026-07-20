@@ -250,23 +250,30 @@ processors:
       target_field: destination.nat.ip
       if: "ctx.checkpoint?.xlatedst != '0.0.0.0' && ctx.checkpoint?.xlatedst != ''"
       ignore_missing: true
-  - set:
-      tag: set_source_user_name_276eacf0
-      field: source.user.name
-      copy_from: checkpoint.src_user_name
-      ignore_empty_value: true
-  - set:
-      tag: set_source_user_name_d2cd1e3b
-      field: source.user.name
-      copy_from: checkpoint.administrator
-      if: ctx.source?.user?.name == null
-      ignore_empty_value: true
-  - set:
-      tag: set_user_name_9961f466
-      field: user.name
-      copy_from: checkpoint.user
-      if: ctx.user?.name == null
-      ignore_empty_value: true
+  - grok:
+      tag: grok_src_user_name
+      field: checkpoint.src_user_name
+      if: ctx.checkpoint?.src_user_name != null
+      patterns:
+        - "^%{DATA:source.user.full_name} \\(%{EMAILADDRESS:source.user.email}\\)$"
+        - "^%{EMAILADDRESS:source.user.email}$"
+        - "^%{DATA:source.user.name}$"
+  - grok:
+      tag: grok_administrator
+      field: checkpoint.administrator
+      if: ctx.checkpoint?.administrator != null && ctx.source?.user?.name == null && ctx.source?.user?.email == null
+      patterns:
+        - "^%{DATA:source.user.full_name} \\(%{EMAILADDRESS:source.user.email}\\)$"
+        - "^%{EMAILADDRESS:source.user.email}$"
+        - "^%{DATA:source.user.name}$"
+  - grok:
+      tag: grok_user
+      field: checkpoint.user
+      if: ctx.checkpoint?.user != null && ctx.user?.name == null
+      patterns:
+        - "^%{DATA:user.full_name} \\(%{EMAILADDRESS:user.email}\\)$"
+        - "^%{EMAILADDRESS:user.email}$"
+        - "^%{DATA:user.name}$"
   - convert:
       tag: convert_checkpoint_failed_login_factor_num_919842ca
       field: checkpoint.failed_login_factor_num
@@ -369,11 +376,14 @@ processors:
       target_field: destination.domain
       if: ctx.server?.domain == null
       ignore_missing: true
-  - set:
-      tag: set_destination_user_name_ccf3ca27
-      field: destination.user.name
-      copy_from: checkpoint.dst_user_name
+  - grok:
+      tag: grok_dst_user_name
+      field: checkpoint.dst_user_name
       if: ctx.checkpoint?.dst_user_name != null
+      patterns:
+        - "^%{DATA:destination.user.full_name} \\(%{EMAILADDRESS:destination.user.email}\\)$"
+        - "^%{EMAILADDRESS:destination.user.email}$"
+        - "^%{DATA:destination.user.name}$"
   - set:
       tag: set_destination_user_domain_d38bee06
       field: destination.user.domain
@@ -782,6 +792,12 @@ processors:
       tag: set_user_name_026954b6
       field: user.name
       value: '{{{ source.user.name }}}'
+      override: false
+      ignore_empty_value: true
+  - set:
+      tag: set_user_full_name_4f1523ba
+      field: user.full_name
+      value: '{{{ source.user.full_name }}}'
       override: false
       ignore_empty_value: true
   - set:
@@ -1484,11 +1500,6 @@ processors:
       replacement: ""
       if: ctx.checkpoint?.sys_message != null
   # Standardize user fields
-  - rename:
-      target_field: user.email
-      field: user.name
-      tag: rename_user_email
-      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
   - grok:
       field: user.email
       patterns:
@@ -1505,16 +1516,17 @@ processors:
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
+      tag: append_related_user_7021abb5
+      field: related.user
+      value: "{{{user.full_name}}}"
+      allow_duplicates: false
+      if: ctx.user?.full_name != null
+  - append:
       tag: append_related_user_34fcf415
       field: related.user
       value: "{{{user.email}}}"
       allow_duplicates: false
       if: ctx.user?.email != null
-  - rename:
-      target_field: source.user.email
-      field: source.user.name
-      tag: rename_source_user_email
-      if: ctx.source?.user?.email == null && ctx.source?.user?.name != null && ctx.source.user.name.indexOf("@") > 0
   - grok:
       field: source.user.email
       patterns:
@@ -1536,11 +1548,12 @@ processors:
       value: "{{{source.user.email}}}"
       allow_duplicates: false
       if: ctx.source?.user?.email != null
-  - rename:
-      target_field: destination.user.email
-      field: destination.user.name
-      tag: rename_destination_user_email
-      if: ctx.destination?.user?.email == null && ctx.destination?.user?.name != null && ctx.destination.user.name.indexOf("@") > 0
+  - append:
+      tag: append_related_user_18471188
+      field: related.user
+      value: "{{{source.user.full_name}}}"
+      allow_duplicates: false
+      if: ctx.source?.user?.full_name != null
   - grok:
       field: destination.user.email
       patterns:
@@ -1562,6 +1575,12 @@ processors:
       value: "{{{destination.user.email}}}"
       allow_duplicates: false
       if: ctx.destination?.user?.email != null
+  - append:
+      tag: append_related_user_7ec630c0
+      field: related.user
+      value: "{{{destination.user.full_name}}}"
+      allow_duplicates: false
+      if: ctx.destination?.user?.full_name != null
 
   - script:
       tag: script_422800ed
