@@ -84,6 +84,8 @@ streams:
           The path to the file containing the private JSON Web Key (JWK) of your Okta service application.
           This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
           Only one of JWK JSON, PEM Encoded Key or JWK File may be used.
+        hide_in_deployment_modes:
+          - agentless
       - name: okta_scopes
         type: text
         title: Okta Scopes
@@ -256,6 +258,8 @@ streams:
         required: false
         show_user: false
         description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+        hide_in_deployment_modes:
+          - agentless
       - name: tags
         type: text
         title: Tags
@@ -289,6 +293,19 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: use_minimal_state
+        type: bool
+        title: Use minimal state
+        description: >-
+          Use the minimal-state sync implementation. Required for agentless
+          deployments. Uses reduced local storage and supports ES-backed state.
+        multi: false
+        required: false
+        show_user: false
+        default: true
+        hide_in_deployment_modes:
+          - default
+          - agentless
 elasticsearch:
   dynamic_dataset: true
   dynamic_namespace: true
