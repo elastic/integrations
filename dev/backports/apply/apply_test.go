@@ -11,6 +11,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/elastic/integrations/dev/backports/owners"
 )
 
 func TestResolveBranchName(t *testing.T) {
@@ -115,6 +117,315 @@ func TestBumpPatchVersion(t *testing.T) {
 			assert.Equal(t, tc.wantContent, string(updated))
 		})
 	}
+}
+
+// TestResolveManifestVersionConflict follows the version convention of a
+// real backport: "ours" (the HEAD side of the conflict) is the backport
+// branch's own, older version — the branch was cut from an elder commit and
+// only advances through its own independent patch bumps. "theirs" is the
+// version the cherry-picked commit carries on main, which is normally ahead
+// since main keeps advancing on its own. Resolving a version-only conflict
+// keeps "theirs" content verbatim for now (including its higher version and
+// any adjacent field it added) — cherryPickOrConflict normalizes the version
+// back to the branch's own lineage immediately afterward, so the version
+// value seen here never survives into the final commit.
+func TestResolveManifestVersionConflict(t *testing.T) {
+	tests := []struct {
+		name            string
+		content         string
+		wantContent     string
+		wantHadConflict bool
+		wantResolved    bool
+	}{
+		{
+			name:            "no conflict markers",
+			content:         "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
+			wantContent:     "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
+			wantHadConflict: false,
+			wantResolved:    true,
+		},
+		{
+			// Branch is at 6.14.2 (its own lineage); main's commit shows 6.15.0,
+			// having advanced past where the branch branched off. Resolved content
+			// keeps 6.15.0 for now — bumpPatchVersion later produces 6.14.3, not
+			// 6.15.x, once cherryPickOrConflict normalizes the version back down.
+			name: "version-only conflict on our side keeps theirs",
+			content: "name: aws\n" +
+				"<<<<<<< HEAD\n" +
+				"version: 6.14.2\n" +
+				"=======\n" +
+				"version: 6.15.0\n" +
+				">>>>>>> abc1234 (Add feature)\n" +
+				"format_version: 3.0.0\n",
+			wantContent: "name: aws\n" +
+				"version: 6.15.0\n" +
+				"format_version: 3.0.0\n",
+			wantHadConflict: true,
+			wantResolved:    true,
+		},
+		{
+			// Branch is at 6.14.2; by the time this fix landed, main had advanced
+			// much further (6.18.0) and also added a "categories" field in the
+			// same commit. The resolved content preserves both the higher version
+			// and the new field — the field survives into the final commit, but
+			// the version is later normalized back to the branch's own lineage
+			// (6.14.3), same as the previous case.
+			name: "version-only conflict on our side preserves theirs' adjacent addition",
+			content: "name: aws\n" +
+				"<<<<<<< HEAD\n" +
+				"version: 6.14.2\n" +
+				"=======\n" +
+				"version: 6.18.0\n" +
+				"categories:\n" +
+				"  - kubernetes\n" +
+				">>>>>>> abc1234 (Add categories field)\n" +
+				"format_version: 3.0.0\n",
+			wantContent: "name: aws\n" +
+				"version: 6.18.0\n" +
+				"categories:\n" +
+				"  - kubernetes\n" +
+				"format_version: 3.0.0\n",
+			wantHadConflict: true,
+			wantResolved:    true,
+		},
+		{
+			// Not a realistic git shape: theirs dropping the version field
+			// without re-adding it anywhere else in the file would require an
+			// already-invalid, schema-violating main commit. This exists to
+			// exercise the versionLines-count safety net in
+			// resolveManifestVersionConflict as defense-in-depth, per its doc
+			// comment, not to simulate a plausible cherry-pick conflict.
+			name: "version-only conflict that would drop the version field entirely is left untouched",
+			content: "name: aws\n" +
+				"<<<<<<< HEAD\n" +
+				"version: 6.14.2\n" +
+				"=======\n" +
+				">>>>>>> abc1234 (Delete version)\n" +
+				"format_version: 3.0.0\n",
+			wantContent: "name: aws\n" +
+				"<<<<<<< HEAD\n" +
+				"version: 6.14.2\n" +
+				"=======\n" +
+				">>>>>>> abc1234 (Delete version)\n" +
+				"format_version: 3.0.0\n",
+			wantHadConflict: true,
+			wantResolved:    false,
+		},
+		{
+			name: "conflict with other content is left untouched",
+			content: "name: aws\n" +
+				"<<<<<<< HEAD\n" +
+				"version: 6.14.2\n" +
+				"owner:\n" +
+				"  github: elastic/obs-infraobs-integrations\n" +
+				"=======\n" +
+				"version: 6.15.0\n" +
+				">>>>>>> abc1234 (Add feature)\n" +
+				"format_version: 3.0.0\n",
+			wantContent: "name: aws\n" +
+				"<<<<<<< HEAD\n" +
+				"version: 6.14.2\n" +
+				"owner:\n" +
+				"  github: elastic/obs-infraobs-integrations\n" +
+				"=======\n" +
+				"version: 6.15.0\n" +
+				">>>>>>> abc1234 (Add feature)\n" +
+				"format_version: 3.0.0\n",
+			wantHadConflict: true,
+			wantResolved:    false,
+		},
+		{
+			name: "unrelated conflict on both sides is left untouched",
+			content: "name: aws\n" +
+				"version: 6.14.2\n" +
+				"<<<<<<< HEAD\n" +
+				"description: Old description.\n" +
+				"=======\n" +
+				"description: New description.\n" +
+				">>>>>>> abc1234 (Add feature)\n",
+			wantContent: "name: aws\n" +
+				"version: 6.14.2\n" +
+				"<<<<<<< HEAD\n" +
+				"description: Old description.\n" +
+				"=======\n" +
+				"description: New description.\n" +
+				">>>>>>> abc1234 (Add feature)\n",
+			wantHadConflict: true,
+			wantResolved:    false,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "manifest.yml")
+			require.NoError(t, os.WriteFile(path, []byte(tc.content), 0o644))
+
+			gotHadConflict, gotResolved, err := resolveManifestVersionConflict(path)
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantHadConflict, gotHadConflict, "hadConflict")
+			assert.Equal(t, tc.wantResolved, gotResolved, "resolved")
+
+			updated, err := os.ReadFile(path)
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantContent, string(updated))
+		})
+	}
+}
+
+func TestSetManifestVersion(t *testing.T) {
+	tests := []struct {
+		name        string
+		content     string
+		version     string
+		wantContent string
+	}{
+		{
+			name:        "unquoted",
+			content:     "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
+			version:     "6.14.5",
+			wantContent: "name: aws\nversion: 6.14.5\nformat_version: 3.0.0\n",
+		},
+		{
+			name:        "double-quoted",
+			content:     "name: zscaler\nversion: \"1.23.3\"\nformat_version: 3.0.0\n",
+			version:     "1.23.9",
+			wantContent: "name: zscaler\nversion: \"1.23.9\"\nformat_version: 3.0.0\n",
+		},
+		{
+			name:        "no-op when already set",
+			content:     "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
+			version:     "6.14.2",
+			wantContent: "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "manifest.yml")
+			require.NoError(t, os.WriteFile(path, []byte(tc.content), 0o644))
+
+			require.NoError(t, setManifestVersion(path, tc.version))
+
+			updated, err := os.ReadFile(path)
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantContent, string(updated))
+		})
+	}
+}
+
+func TestSetManifestOwner(t *testing.T) {
+	tests := []struct {
+		name        string
+		content     string
+		newOwner    string
+		wantContent string
+		wantErr     bool
+	}{
+		{
+			name:        "basic replace",
+			content:     "name: aws\nversion: 6.14.2\nowner:\n  github: elastic/obs-old-team\n",
+			newOwner:    "elastic/obs-new-team",
+			wantContent: "name: aws\nversion: 6.14.2\nowner:\n  github: elastic/obs-new-team\n",
+		},
+		{
+			// The whole point of a targeted line rewrite (mirroring
+			// setManifestVersion) is that every other field — before the
+			// owner block, and the sibling "type:" field inside it — must
+			// survive byte-for-byte, not just "look similar".
+			name: "preserves rest of file, including sibling owner.type field",
+			content: "format_version: \"3.0.0\"\nname: aws\ntype: integration\nversion: 6.14.2\n" +
+				"owner:\n  github: elastic/obs-old-team\n  type: elastic\ndescription: An integration.\n",
+			newOwner: "elastic/obs-new-team",
+			wantContent: "format_version: \"3.0.0\"\nname: aws\ntype: integration\nversion: 6.14.2\n" +
+				"owner:\n  github: elastic/obs-new-team\n  type: elastic\ndescription: An integration.\n",
+		},
+		{
+			name:    "missing owner block",
+			content: "name: aws\nversion: 6.14.2\n",
+			wantErr: true,
+		},
+		{
+			name:    "owner block without a github field",
+			content: "name: aws\nversion: 6.14.2\nowner:\n  type: elastic\n",
+			wantErr: true,
+		},
+		{
+			// A comment mentioning "github:" ahead of the real field must not
+			// be mistaken for it — the match has to be anchored to the key,
+			// not just look for the substring anywhere on the line.
+			name:        "ignores a comment mentioning github: before the real field",
+			content:     "name: aws\nversion: 6.14.2\nowner:\n  # see github: https://example.com/teams\n  github: elastic/obs-old-team\n",
+			newOwner:    "elastic/obs-new-team",
+			wantContent: "name: aws\nversion: 6.14.2\nowner:\n  # see github: https://example.com/teams\n  github: elastic/obs-new-team\n",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "manifest.yml")
+			require.NoError(t, os.WriteFile(path, []byte(tc.content), 0o644))
+
+			err := setManifestOwner(path, tc.newOwner)
+			if tc.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			updated, err := os.ReadFile(path)
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantContent, string(updated))
+		})
+	}
+}
+
+// The CODEOWNERS-rewriting logic itself is tested directly in
+// dev/backports/owners (owners.ApplyUpdates) — writeOwnerSyncPlan is a thin
+// file-I/O wrapper around it plus setManifestOwner, tested here.
+func TestWriteOwnerSyncPlan(t *testing.T) {
+	workDir := t.TempDir()
+	pkgDir := filepath.Join(workDir, "packages", "aws")
+	require.NoError(t, os.MkdirAll(filepath.Join(workDir, ".github"), 0o755))
+	require.NoError(t, os.MkdirAll(pkgDir, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(workDir, ".github", "CODEOWNERS"),
+		[]byte("/packages/aws @elastic/obs-old-team\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(pkgDir, "manifest.yml"),
+		[]byte("name: aws\nowner:\n  github: elastic/obs-old-team\n"), 0o644))
+
+	plan := owners.SyncPlan{
+		ManifestOwner: "elastic/obs-new-team",
+		PackageOwner:  []string{"@elastic/obs-new-team"},
+		SubPaths: map[string][]string{
+			"/packages/aws/data_stream/cloudtrail": {"@elastic/security-team"},
+		},
+	}
+
+	require.NoError(t, writeOwnerSyncPlan(workDir, pkgDir, "/packages/aws", plan))
+
+	manifestData, err := os.ReadFile(filepath.Join(pkgDir, "manifest.yml"))
+	require.NoError(t, err)
+	assert.Contains(t, string(manifestData), "github: elastic/obs-new-team")
+
+	codeownersData, err := os.ReadFile(filepath.Join(workDir, ".github", "CODEOWNERS"))
+	require.NoError(t, err)
+	assert.Equal(t,
+		"/packages/aws @elastic/obs-new-team\n/packages/aws/data_stream/cloudtrail @elastic/security-team\n",
+		string(codeownersData))
+}
+
+func TestWriteOwnerSyncPlan_SkipsCodeownersWhenPlanHasNoCodeownersChanges(t *testing.T) {
+	workDir := t.TempDir()
+	pkgDir := filepath.Join(workDir, "packages", "aws")
+	require.NoError(t, os.MkdirAll(pkgDir, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(pkgDir, "manifest.yml"),
+		[]byte("name: aws\nowner:\n  github: elastic/obs-old-team\n"), 0o644))
+
+	// No .github/CODEOWNERS file exists at all — writeOwnerSyncPlan must not
+	// try to read/write it when the plan has no PackageOwner/SubPaths changes.
+	plan := owners.SyncPlan{ManifestOwner: "elastic/obs-new-team"}
+
+	require.NoError(t, writeOwnerSyncPlan(workDir, pkgDir, "/packages/aws", plan))
+
+	manifestData, err := os.ReadFile(filepath.Join(pkgDir, "manifest.yml"))
+	require.NoError(t, err)
+	assert.Contains(t, string(manifestData), "github: elastic/obs-new-team")
 }
 
 func TestParseEntryFields(t *testing.T) {
