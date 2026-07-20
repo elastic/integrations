@@ -1,0 +1,83 @@
+---
+name: Update required package versions
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview proposals without applying changes or publishing'
+        type: boolean
+        default: false
+      preview:
+        description: 'Print what would be published without touching git or GitHub'
+        type: boolean
+        default: false
+  # Manual-only for now: adoption of `requires:` blocks is just starting (first
+  # package is landing). Re-enable the schedule once a manual run has been
+  # verified end-to-end against a real package (PR/issue creation included).
+  # schedule:
+  #   - cron: '0 9 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  requires-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: .go-version
+
+      - name: Install mage
+        run: go install github.com/magefile/mage
+
+      - name: Install elastic-package
+        # No version suffix: `go install` then resolves elastic-package from
+        # this module's go.mod build list, i.e. exactly the pin Dependabot
+        # bumps deliberately via PR (gomod ecosystem) — not the latest
+        # release. That pin matters because this job runs unattended and
+        # depends on exact elastic-package JSON output fields (kind,
+        # codeowner, kibana_constraint, new_version, skip_reason).
+        run: |
+          go install github.com/elastic/elastic-package
+          echo "ELASTIC_PACKAGE_BIN=$(go env GOPATH)/bin/elastic-package" >> $GITHUB_ENV
+
+      - name: Configure git
+        uses: elastic/oblt-actions/git/setup@v1
+        with:
+          username: 'github-actions[bot]'
+          email: 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Run RequiresUpdate
+        # Scans packages, applies proposals, and opens one PR (or issue) per
+        # package — see dev/requiresupdate.
+        # Scheduled runs (when cron is enabled) always use dryRun=false and
+        # preview=false; workflow_dispatch inputs are only read for manual runs.
+        id: requires_update
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || 'false' }}
+          PREVIEW: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preview || 'false' }}
+        run: >-
+          mage RequiresUpdate
+          -dryRun=${{ env.DRY_RUN }}
+          -preview=${{ env.PREVIEW }}
+        continue-on-error: true
+
+      - name: Fail if RequiresUpdate reported errors
+        # continue-on-error above lets already-succeeded packages still get a
+        # PR/issue when one package errors, but that must not make the job
+        # look green — otherwise a real failure and "nothing to do" (today's
+        # expected state) are indistinguishable in the Actions UI.
+        if: always() && steps.requires_update.outcome == 'failure'
+        run: |
+          echo "::error::RequiresUpdate reported errors — see the 'Run RequiresUpdate' step log above."
+          exit 1
