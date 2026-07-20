@@ -1500,11 +1500,9 @@ processors:
       replacement: ""
       if: ctx.checkpoint?.sys_message != null
   # Standardize user fields
-  - grok:
+  - dissect:
       field: user.email
-      patterns:
-        - '%{DATA:user.full_name} \(%{DATA:user.name}@%{DATA:user.domain}\)'
-        - '%{DATA:user.name}@%{DATA:user.domain}'
+      pattern: '%{user.name}@%{user.domain}'
       tag: dissect_user_email
       if: ctx.user?.name == null
       ignore_missing: true
@@ -1527,11 +1525,9 @@ processors:
       value: "{{{user.email}}}"
       allow_duplicates: false
       if: ctx.user?.email != null
-  - grok:
+  - dissect:
       field: source.user.email
-      patterns:
-        - '%{DATA:source.user.full_name} \(%{DATA:source.user.name}@%{DATA:source.user.domain}\)'
-        - '%{DATA:source.user.name}@%{DATA:source.user.domain}'
+      pattern: '%{user.name}@%{user.domain}'
       tag: dissect_source_user_email
       if: ctx.source?.user?.name == null
       ignore_missing: true
