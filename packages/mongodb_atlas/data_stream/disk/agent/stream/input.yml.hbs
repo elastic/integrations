@@ -147,7 +147,9 @@ program: |
   ).as(state, !has(state.disk_next) ?
     state
   : (state.disk_next >= size(state.disk_list)) ?
-    (int(state.disk_page_num) == 1) ?
+    // Parenthesized: CEL requires the true-branch of a ternary to be a
+    // ConditionalOr, so a nested ternary here must be wrapped in parens.
+    ((int(state.disk_page_num) == 1) ?
       {
         "events": [],
         "group_id": state.group_id,
@@ -168,7 +170,7 @@ program: |
         "host_list": state.host_list,
         "next": int(state.next),
         "want_more": true,
-      }
+      })
   :
     request("GET", string(state.host_list[state.next] + state.disk_list[state.disk_next] + state.query)).with(
       {
