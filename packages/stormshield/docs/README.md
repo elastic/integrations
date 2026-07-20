@@ -396,20 +396,72 @@ You'll find a list of all exported fields in the following table:
 | source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.port | Port of the source. | long |
+| stormshield.agentid | SSO agent identifier, from 0 to 5. Authentication logs only. Available from: SNS v3.0.0. | long |
+| stormshield.cat_site | URL filtering category of the website visited, with the curly braces of the vendor format removed. Example: news. SSL and web logs. Available from: SNS v1.0.0. | keyword |
+| stormshield.cipclassid | Value of the Class ID field in a CIP message. Plugin logs only. Available from: SNS v3.5.0. | keyword |
+| stormshield.cipservicecode | Value of the Service Code field in a CIP message. Plugin logs only. Available from: SNS v3.5.0. | keyword |
+| stormshield.class | Category of the alarm, named Context in the web administration interface. Example: protocol, system, filter. Alarm logs only. | keyword |
+| stormshield.classification | Code number indicating the alarm category. Alarm logs only. Documented through SNS 4.x. | long |
+| stormshield.clientappid | Last client application detected on the connection. Example: firefox. Connection and plugin logs. Available from: SNS v3.2.0. | keyword |
+| stormshield.confid | Index of the configuration profile that matched the traffic, from 00 to 09. | keyword |
+| stormshield.contentpolicy | Index of the filter profile used, from 00 to 09. POP3, SMTP, SSL and web logs. Available from: SNS v1.0.0. | keyword |
+| stormshield.cookie_i | IKE initiator cookie of the negotiation. IPsec VPN logs only. | keyword |
+| stormshield.cookie_r | IKE responder cookie of the negotiation. IPsec VPN logs only. | keyword |
+| stormshield.dsthostrep | Reputation score of the destination host, when reputation management is enabled for it. | long |
 | stormshield.dstif | Name of the destination interface. String of characters in UTF-8 format. Example: Ethernet 1 Available from: SNS v1.0.0. | keyword |
 | stormshield.dstifname | Name of the object representing the traffics destination interface. String of characters in UTF-8 format. Example: dmz1 Available from: SNS v1.0.0. | keyword |
+| stormshield.dstiprep | Public reputation categories of the destination IP address, when it is listed in the IP address reputation base. Values: anonymizer, botnet, malware, phishing, tor, scanner, spam. | keyword |
+| stormshield.error_class | Number of the error class in an S7 response. Plugin logs only. | keyword |
+| stormshield.error_code | Error code within the error class of an S7 response on SNS 4.x plugin logs, or error code of a REST request on SNS 5.x restapi logs. | keyword |
+| stormshield.etherproto | Type of Ethernet protocol. Example: profinet-rt. Alarm, connection and plugin logs. Available from: SNS v4.0.0. | keyword |
+| stormshield.filename | Name of the file scanned by the sandboxing option. FTP, POP3, sandboxing, SMTP and web logs. | keyword |
+| stormshield.filetype | Type of the file scanned by the sandboxing option. Values: document, pdf, executable, archive. FTP, POP3, sandboxing, SMTP and web logs. | keyword |
+| stormshield.format | Type of an IEC104 message. Plugin logs only. Available from: SNS v3.1.0. | keyword |
 | stormshield.fw | firewall's ID This is the name entered by the administrator or, by default, its serial number. String of characters in UTF-8 format.  Example: firewall_name or V50XXXXXXXXXXXX Available from: SNS v1.0.0. | keyword |
+| stormshield.groupid | Identifier that allows tracking child connections. FTP and plugin logs. | long |
+| stormshield.icmpcode | ICMP message code of the packet, based on the ICMP type. Alarm and filter logs. | long |
+| stormshield.icmptype | ICMP message type of the packet. Alarm and filter logs. | long |
+| stormshield.ikev | IKE protocol version used for the negotiation. IPsec VPN logs only. | long |
 | stormshield.in_bytes | Count of bytes coming into the firewall | long |
+| stormshield.localnet | Local network address protected by the tunnel. IPsec and SSL VPN logs. | keyword |
 | stormshield.logtype | The specific type of log this is from. | keyword |
 | stormshield.metadata | Flattened metadata | flattened |
+| stormshield.method | Authentication method used on authentication logs. On SNS 5.x restapi logs, the HTTP method of the REST request. | keyword |
 | stormshield.out_bytes | Count of bytes leaving the firewall | long |
+| stormshield.phase | IKE negotiation phase, 0, 1 or 2. IPsec VPN logs only. | long |
+| stormshield.pktdump | Network packet captured on the alarm, encoded in hexadecimal for analysis by a third-party tool. Alarm logs only. | keyword |
+| stormshield.pktdumplen | Size in bytes of the packet capture attached to the alarm, which can differ from pktlen. Alarm logs only. | long |
+| stormshield.pktlen | Size in bytes of the network packet that raised the alarm. Alarm logs only. | long |
 | stormshield.ports | The network ports found on the device | keyword |
+| stormshield.remoteid | Identifier of the peer used during the negotiation of the IKE security association, an IP address or an e-mail address. IPsec VPN logs only. | keyword |
+| stormshield.remotenet | Network address of the peer. IPsec and SSL VPN logs. | keyword |
+| stormshield.repeat | Number of occurrences of the alarm during the anti-flooding window. Alarm logs only. | long |
+| stormshield.requestmode | Value of the Mode field of an NTP request. Plugin logs only. Available from: SNS v3.8.0. | keyword |
+| stormshield.responsemode | Value of the Mode field of an NTP response. Plugin logs only. Available from: SNS v3.8.0. | keyword |
+| stormshield.sandboxing | Classification of the file according to the sandboxing option. Values: clean, suspicious, malicious, unknown, forward, failed. FTP, POP3, sandboxing, SMTP and web logs. | keyword |
+| stormshield.sandboxinglevel | Level of the file infection on a scale of 0 (clean) to 100 (malicious). FTP, POP3, sandboxing and SMTP logs. | long |
+| stormshield.sensible | Set to 1 when the packet that raised the alarm involves a host under strong protection. Alarm logs only. Documented through SNS 4.x. | long |
+| stormshield.serverappid | Last server application detected on the connection. Example: google. Connection and plugin logs. Available from: SNS v3.2.0. | keyword |
 | stormshield.service | Service (product with a dedicated port) on which the vulnerability was detected.  String of characters in UTF-8 format. Example: OpenSSH_5.4 | keyword |
+| stormshield.sessionid | Identifier of the administration session. Server logs only. | long |
+| stormshield.side | Role of the firewall in the IKE negotiation, initiator or responder. IPsec VPN logs only. | keyword |
+| stormshield.slotlevel | Level of the filter policy slot that matched the traffic, 1 for global and 2 for local. | long |
+| stormshield.slotname | Name of the filter policy slot that matched the traffic. Filter logs only. Documented through SNS 4.x. | keyword |
+| stormshield.spamlevel | Result of the antispam processing on the message. Values: 0 for a non-spam message, 1 to 3 for the criticality of a spam message, X for a processing error, ? when the nature of the message could not be determined. Available from: SNS v1.0.0. | keyword |
+| stormshield.spi_in | SPI of the inbound IPsec security association. IPsec VPN logs only. | keyword |
+| stormshield.spi_out | SPI of the outbound IPsec security association. IPsec VPN logs only. | keyword |
+| stormshield.srchostrep | Reputation score of the source host, when reputation management is enabled for it. | long |
 | stormshield.srcif | Internal name of the interface at the source of the traffic. String of characters in UTF-8 format. Example: Ethernet0 Available from: SNS v1.0.0. | keyword |
 | stormshield.srcifname | Name of the object representing the interface at the source of the traffic. String of characters in UTF-8 format. Example: out Available from: SNS v1.0.0. | keyword |
+| stormshield.srciprep | Public reputation categories of the source IP address, when it is listed in the IP address reputation base. Values: anonymizer, botnet, malware, phishing, tor, scanner, spam. | keyword |
 | stormshield.startime | Local time at the beginning of the logged event (time configured on the Firewall). String in YYYY-MM-DD HH:MM:SS format. Available from: SNS v1.0.0. | keyword |
 | stormshield.system | Indicator of the Firewalls system status.  This value is used by the fleet management tool (Stormshield Network Unified Manager) to provide information on the system status (available RAM, CPU use, bandwidth, interfaces, fullness of audit logs, and so on). Decimal format representing a percentage. | keyword |
+| stormshield.target | Side of the connection targeted by the alarm, src or dst. Alarm and filter logs. | keyword |
 | stormshield.time | Local time at which the log was recorded in the log file (time configured on the Firewall). String in YYYY-MM-DD HH:MM:SS format. Available from: SNS v1.0.0. | keyword |
+| stormshield.totp | Whether a time-based one-time password was used for the authentication, yes or no. Authentication and SSL VPN logs. | keyword |
+| stormshield.unitid | Value of the Unit Id in a Modbus message, which specifies a PLC. Plugin logs only. Available from: SNS v2.3.0. | long |
+| stormshield.urlruleid | Number of the URL filter rule applied. Web logs only. Available from: SNS v3.2.0. | long |
+| stormshield.virus | Message indicating whether a virus has been detected, when the antivirus is enabled. Example: clean. FTP, POP3, SMTP and web logs. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
@@ -430,22 +482,22 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2024-03-08T10:14:08.000Z",
     "agent": {
-        "ephemeral_id": "19c5155e-5f61-4dc1-b23c-cd84e946b455",
-        "id": "63ff8a64-ec88-4856-ba1c-8653054b4358",
-        "name": "elastic-agent-17632",
+        "ephemeral_id": "897c8175-d64f-4dd1-bb13-d2151349a852",
+        "id": "56cd6117-be70-43af-8dfe-1ff5d9719a60",
+        "name": "elastic-agent-30031",
         "type": "filebeat",
         "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "stormshield.log",
-        "namespace": "52256",
+        "namespace": "57804",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "63ff8a64-ec88-4856-ba1c-8653054b4358",
+        "id": "56cd6117-be70-43af-8dfe-1ff5d9719a60",
         "snapshot": false,
         "version": "9.4.3"
     },
@@ -455,9 +507,10 @@ An example event for `log` looks as following:
             "configuration"
         ],
         "dataset": "stormshield.log",
-        "ingested": "2026-07-08T10:05:22Z",
+        "ingested": "2026-07-20T10:41:13Z",
         "kind": "event",
         "original": "id=firewall time=\"2024-03-08 10:14:08\" fw=\"stormy-1\" tz=+0000 startime=\"2024-03-08 10:14:08\" error=0 user=\"admin\" address=192.168.197.1 sessionid=1 msg=\"PKI SEARCH scope=local type=ca\" logtype=\"server\"",
+        "outcome": "success",
         "start": "2024-03-08T10:14:08.000Z",
         "timezone": "+00:00",
         "type": [
@@ -469,7 +522,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.3:49430"
+            "address": "172.21.0.3:34348"
         },
         "syslog": {
             "appname": "serverd",
@@ -489,6 +542,7 @@ An example event for `log` looks as following:
     "message": "PKI SEARCH scope=local type=ca",
     "observer": {
         "name": "stormy-1",
+        "product": "SNS",
         "type": "firewall",
         "vendor": "Stormshield"
     },
@@ -503,9 +557,9 @@ An example event for `log` looks as following:
         "metadata": {
             "address": "192.168.197.1",
             "error": "0",
-            "id": "firewall",
-            "sessionid": "1"
+            "id": "firewall"
         },
+        "sessionid": 1,
         "startime": "2024-03-08 10:14:08",
         "time": "2024-03-08 10:14:08"
     },

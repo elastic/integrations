@@ -593,7 +593,6 @@ processors:
             - Pvm
             - UI
             - address
-            - agentid
             - alarmid
             - arg
             - auth
@@ -603,83 +602,32 @@ processors:
             - authsslvpn
             - authtotp
             - authwebadmin
-            - cat_site
-            - cipclassid
-            - cipservicecode
-            - class
-            - classification
-            - clientappid
-            - confid
-            - contentpolicy
-            - cookie_i
-            - cookie_r
             - datechange
             - domain
             - dstcontinent
             - dstcountry
-            - dsthostrep
-            - dstiprep
             - dstportname
             - error
-            - error_class
-            - error_code
-            - etherproto
-            - filename
-            - filetype
-            - format
-            - groupid
-            - icmpcode
-            - icmptype
             - id
-            - ikev
-            - localnet
             - mem
-            - method
             - modsrc
             - modsrcport
             - op
             - peername
-            - phase
-            - pktdump
-            - pktdumplen
-            - pktlen
             - pri
             - rcvd
-            - remoteid
-            - remotenet
-            - repeat
-            - requestmode
-            - responsemode
             - result
             - risk
             - ruletype
-            - sandboxing
-            - sandboxinglevel
             - security
-            - sensible
             - sent
-            - serverappid
-            - sessionid
-            - side
-            - slotlevel
-            - slotname
-            - spamlevel
-            - spi_in
-            - spi_out
             - srccontinent
             - srccountry
-            - srchostrep
-            - srciprep
             - srcname
             - srcportname
-            - target
-            - totp
             - unit_id
-            - unitid
-            - urlruleid
             - usergroup
             - version
-            - virus
       source: >-
         if (!ctx.stormshield.containsKey("metadata")) {
             ctx.stormshield.metadata = [:];
@@ -704,6 +652,118 @@ processors:
       target_field: stormshield.out_bytes
       type: long
       ignore_missing: true
+
+  # ------------------------------------------------------------
+  # Typed vendor fields. The numeric keys documented by the vendor are converted
+  # so they stay aggregatable instead of landing in the flattened metadata object.
+  - convert:
+      tag: convert_stormshield_classification
+      field: stormshield.classification
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_repeat
+      field: stormshield.repeat
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_sensible
+      field: stormshield.sensible
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_icmptype
+      field: stormshield.icmptype
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_icmpcode
+      field: stormshield.icmpcode
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_pktlen
+      field: stormshield.pktlen
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_pktdumplen
+      field: stormshield.pktdumplen
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_srchostrep
+      field: stormshield.srchostrep
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_dsthostrep
+      field: stormshield.dsthostrep
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_agentid
+      field: stormshield.agentid
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_sessionid
+      field: stormshield.sessionid
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_slotlevel
+      field: stormshield.slotlevel
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_phase
+      field: stormshield.phase
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_ikev
+      field: stormshield.ikev
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_unitid
+      field: stormshield.unitid
+      type: long
+      ignore_missing: true
+  # The IP reputation keys carry comma-separated categories.
+  - split:
+      tag: split_stormshield_srciprep
+      field: stormshield.srciprep
+      separator: ","
+      if: ctx.stormshield?.srciprep != null
+  - split:
+      tag: split_stormshield_dstiprep
+      field: stormshield.dstiprep
+      separator: ","
+      if: ctx.stormshield?.dstiprep != null
+  - convert:
+      tag: convert_stormshield_urlruleid
+      field: stormshield.urlruleid
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_groupid
+      field: stormshield.groupid
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_stormshield_sandboxinglevel
+      field: stormshield.sandboxinglevel
+      type: long
+      ignore_missing: true
+  # The vendor writes the URL filtering category between curly braces, cat_site="{news}".
+  - gsub:
+      tag: gsub_stormshield_cat_site_braces
+      field: stormshield.cat_site
+      pattern: '^\{|\}$'
+      replacement: ''
+      if: ctx.stormshield?.cat_site != null
 
   # ------------------------------------------------------------
   # ECS categorization
