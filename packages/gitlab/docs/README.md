@@ -749,6 +749,9 @@ Collect logs for changes to group or project settings and memberships. Check out
 | data_stream.type | Data stream type. | constant_keyword |
 | gitlab.audit.change |  | keyword |
 | gitlab.audit.created_at |  | date |
+| gitlab.audit.details.custom_message_object.action |  | keyword |
+| gitlab.audit.details.custom_message_object.protocol |  | keyword |
+| gitlab.audit.details.custom_message_string |  | keyword |
 | gitlab.audit.entity_id |  | long |
 | gitlab.audit.entity_type |  | keyword |
 | gitlab.audit.from |  | keyword |
