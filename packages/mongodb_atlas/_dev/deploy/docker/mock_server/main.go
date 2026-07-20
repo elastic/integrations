@@ -275,8 +275,14 @@ func handleLog(w http.ResponseWriter, _ *http.Request, filename string) {
 
 	var buf bytes.Buffer
 	gz := gzip.NewWriter(&buf)
-	gz.Write(raw)
-	gz.Close()
+	if _, err := gz.Write(raw); err != nil {
+		http.Error(w, fmt.Sprintf("gzip write: %v", err), http.StatusInternalServerError)
+		return
+	}
+	if err := gz.Close(); err != nil {
+		http.Error(w, fmt.Sprintf("gzip close: %v", err), http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/gzip")
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", buf.Len()))
