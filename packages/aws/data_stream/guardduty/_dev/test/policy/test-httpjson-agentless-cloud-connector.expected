@@ -1,0 +1,84 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            agentVersion: ^9.4.0
+            name: aws
+      name: test-httpjson-agentless-cloud-connector-aws
+      streams:
+        - auth.aws:
+            external_id: ${SECRET_0}
+            role_arn: arn:aws:iam::123456789012:role/ElasticGuardDutyReadOnly
+            use_cloud_connectors: true
+          chain:
+            - step:
+                replace: $.nextToken
+                request.method: POST
+                request.ssl: null
+                request.timeout: 30s
+                request.transforms:
+                    - set:
+                        target: body.findingIds
+                        value: '[[toJSON .parent_last_response.body.findingIds]]'
+                        value_type: json
+                    - set:
+                        target: body.sortCriteria
+                        value: '{"attributeName":"updatedAt","orderBy":"ASC"}'
+                        value_type: json
+                request.url: https://guardduty.us-east-1.amazonaws.com/detector/12abc34d567e8fa901bc2d34e567f890/findings/get
+                response.split:
+                    target: body.findings
+          config_version: 2
+          cursor:
+            last_execution_datetime:
+                ignore_empty_value: true
+                value: '[[$f := (index .last_response.body "findings")]][[if $f]][[if (ne (len $f) 50)]][[.last_event.updatedAt]][[end]][[end]]'
+          data_stream:
+            dataset: aws.guardduty
+          interval: 5m
+          publisher_pipeline.disable_host: true
+          request.method: POST
+          request.ssl: null
+          request.timeout: 30s
+          request.transforms:
+            - set:
+                target: body.maxResults
+                value: 50
+                value_type: int
+            - set:
+                target: body.sortCriteria
+                value: '{"attributeName":"updatedAt","orderBy":"ASC"}'
+                value_type: json
+            - set:
+                default: '[[((now (parseDuration "-48h"))).UnixMilli]]'
+                target: body.findingCriteria.criterion.updatedAt.greaterThan
+                value: '[[((parseDate .cursor.last_execution_datetime)).UnixMilli]]'
+          request.url: https://guardduty.us-east-1.amazonaws.com/detector/12abc34d567e8fa901bc2d34e567f890/findings
+          response.pagination:
+            - set:
+                do_not_log_failure: true
+                fail_on_template_error: true
+                target: body.nextToken
+                value: '[[if (ne .last_response.body.nextToken "")]][[.last_response.body.nextToken]][[end]]'
+          tags:
+            - forwarded
+            - aws-guardduty
+      type: httpjson
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-aws.guardduty-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

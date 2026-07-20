@@ -112,6 +112,13 @@ streams:
           Name of the bucket to poll for 3rd-party S3-compatible services.
         required: false
         show_user: false
+      - name: region
+        type: text
+        title: "[S3] Region"
+        description: |-
+          Region of the non-AWS S3-compatible endpoint. Required when a non-AWS bucket name is configured.
+        required: false
+        show_user: false
       - name: bucket_list_prefix
         type: text
         title: "[S3] Bucket List Prefix"
@@ -234,6 +241,105 @@ streams:
         title: "Custom configurations"
         description: |-
           Additional settings to be added to the configuration. Be careful using this as it might break the input. See [`aws-s3` input settings docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html) for details.
+        required: false
+        show_user: false
+        default: ""
+  - input: gcs
+    title: "Kolide audit logs via Google Cloud Storage (Log Pipeline)"
+    description: |-
+      Collect Kolide admin audit logs (the `kolide/audit_logs/` prefix) that the Kolide Log Pipeline writes to a customer-owned GCS bucket, via bucket polling.
+    template_path: gcs.yml.hbs
+    enabled: false
+    vars:
+      - name: buckets
+        type: yaml
+        title: "[GCS] Buckets"
+        description: |-
+          The list of GCS buckets to poll, as YAML. The attribute `name` is required; `number_of_workers` (as `max_workers`), `poll`, `poll_interval`, and `bucket_timeout` can also be set per bucket to override the global values. See the [`gcs` input settings docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-gcs.html#attrib-buckets) for details.
+        required: true
+        show_user: true
+        default: |
+          # The bucket name is the Kolide Log Pipeline destination bucket.
+          - name: kolide-log-pipeline
+      - name: file_selectors
+        type: yaml
+        title: "[GCS] File Selectors"
+        description: |-
+          A list of regex patterns that limit which GCS objects are processed, matched against the object key. Defaults to the Kolide Log Pipeline prefix for this data type; adjust it if you customized the object path template in the Kolide log destination.
+        required: false
+        show_user: true
+        default: |
+          - regex: '^kolide/audit_logs/'
+      - name: number_of_workers
+        type: integer
+        title: "[GCS] Number of Workers"
+        description: |-
+          Number of workers that will process the GCS objects, per bucket.
+        required: false
+        show_user: true
+        default: 3
+      - name: poll
+        type: bool
+        title: "[GCS] Polling"
+        description: |-
+          Determines if the bucket is continuously polled for new objects.
+        required: false
+        show_user: true
+        default: true
+      - name: poll_interval
+        type: text
+        title: "[GCS] Polling Interval"
+        description: |-
+          Time interval between polling operations.
+        required: false
+        show_user: true
+        default: 15s
+      - name: bucket_timeout
+        type: text
+        title: "[GCS] Bucket Timeout"
+        description: |-
+          Maximum time to wait for a bucket API response before timing out. Accepts a duration like `120s`, `2m`.
+        required: false
+        show_user: false
+        default: 120s
+      - name: timestamp_epoch
+        type: integer
+        title: "[GCS] Timestamp Epoch"
+        description: |-
+          If set, only process GCS objects whose last-modified time is newer than this Unix epoch time (in seconds).
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: "Tags"
+        description: |-
+          Tags to include in the published event.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - kolide-audit-gcs
+      - name: preserve_original_event
+        type: bool
+        title: "Preserve original event"
+        description: |-
+          Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: "Processors"
+        description: |-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        required: false
+        show_user: false
+      - name: custom
+        type: yaml
+        title: "Custom configurations"
+        description: |-
+          Additional settings to be added to the configuration. Be careful using this as it might break the input. See [`gcs` input settings docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-gcs.html) for details.
         required: false
         show_user: false
         default: ""

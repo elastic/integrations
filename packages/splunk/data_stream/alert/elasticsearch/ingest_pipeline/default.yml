@@ -1331,11 +1331,73 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - set:
+            field: network.transport
+            tag: set_network_transport_from_proto
+            copy_from: splunk.alert.proto
+            ignore_empty_value: true
+            description: >-
+              `proto` may hold a transport name (e.g. `tcp`) rather than an IP
+              protocol number. When it is not numeric, keep it as ECS
+              `network.transport` instead of failing the conversion and dropping it.
         - remove:
             field: splunk.alert.proto
+            ignore_missing: true
+  - script:
+      tag: normalize_network_transport_and_iana_number
+      if: ctx.splunk?.alert?.proto != null || ctx.network?.transport != null
+      description: >-
+        Populate ECS `network.transport` (name) and `network.iana_number`
+        (number) from either form of `proto` so numeric and named protocols
+        produce the same ECS fields. Numbers are mapped using the IANA
+        protocol-numbers registry.
+      ignore_failure: true
+      params:
+        number_to_name:
+          "0": hopopt
+          "1": icmp
+          "2": igmp
+          "6": tcp
+          "8": egp
+          "17": udp
+          "47": gre
+          "50": esp
+          "51": ah
+          "58": ipv6-icmp
+          "112": vrrp
+          "132": sctp
+        name_to_number:
+          hopopt: "0"
+          icmp: "1"
+          igmp: "2"
+          tcp: "6"
+          egp: "8"
+          udp: "17"
+          gre: "47"
+          esp: "50"
+          ah: "51"
+          ipv6-icmp: "58"
+          vrrp: "112"
+          sctp: "132"
+      source: |-
+        ctx.network = ctx.network ?: [:];
+        if (ctx.splunk?.alert?.proto != null) {
+          def num = String.valueOf(ctx.splunk.alert.proto);
+          ctx.network.iana_number = num;
+          def name = params.number_to_name.get(num);
+          if (name != null) {
+            ctx.network.transport = name;
+          }
+        }
+        if (ctx.network.transport != null) {
+          ctx.network.transport = ctx.network.transport.toLowerCase();
+          if (ctx.network.iana_number == null) {
+            def n = params.name_to_number.get(ctx.network.transport);
+            if (n != null) {
+              ctx.network.iana_number = n;
+            }
+          }
+        }
   - set:
       field: network.protocol
       tag: set_network_protocol_from_alert_protocol
