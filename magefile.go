@@ -25,10 +25,15 @@ import (
 	"github.com/elastic/integrations/dev/backports"
 	"github.com/elastic/integrations/dev/backports/apply"
 	"github.com/elastic/integrations/dev/backports/changelog"
+	bpchecklist "github.com/elastic/integrations/dev/backports/checklist"
+	bpowners "github.com/elastic/integrations/dev/backports/owners"
+	bppackages "github.com/elastic/integrations/dev/backports/packages"
 	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
+	"github.com/elastic/integrations/dev/gitutil"
 	"github.com/elastic/integrations/dev/packagenames"
+	"github.com/elastic/integrations/dev/requiresupdate"
 	"github.com/elastic/integrations/dev/testsreporter"
 )
 
@@ -387,6 +392,142 @@ func CheckBackportBranchActive(branch string, asJSON *bool) error {
 	return nil
 }
 
+// diffPackages runs git diff --name-only before..after and maps the changed
+// files to package names. Shared by DetectBackportPackages and
+// CheckBackportOwners so the diff-to-package logic lives in one place.
+func diffPackages(before, after string) ([]string, error) {
+	out, err := sh.Output("git", "diff", "--name-only", before+".."+after)
+	if err != nil {
+		return nil, fmt.Errorf("running git diff: %w", err)
+	}
+	var files []string
+	for _, line := range strings.Split(out, "\n") {
+		if line = strings.TrimSpace(line); line != "" {
+			files = append(files, line)
+		}
+	}
+	return bppackages.DetectPackages(files, "packages")
+}
+
+// DetectBackportPackages lists the packages touched by commits between before and after.
+// Runs git diff --name-only before..after and maps the changed files to package names
+// using the packages/ directory as the root.
+// Plain output: one package name per line. Pass -asJSON for a JSON array.
+func DetectBackportPackages(before, after string, asJSON *bool) error {
+	pkgs, err := diffPackages(before, after)
+	if err != nil {
+		return err
+	}
+
+	if asJSON != nil && *asJSON {
+		data, err := json.Marshal(pkgs)
+		if err != nil {
+			return fmt.Errorf("marshalling packages: %w", err)
+		}
+		fmt.Println(string(data))
+	} else {
+		for _, p := range pkgs {
+			fmt.Println(p)
+		}
+	}
+	return nil
+}
+
+// CheckBackportOwners reports package owner mismatches between the current
+// worktree and remote/sourceBranch (the ownership source of truth, normally
+// "main"), for every package changed between before and after — before..after,
+// following DetectBackportPackages's convention: before is normally the PR's
+// merge-base with sourceBranch, after is the PR's own commit.
+// Prints a JSON array to stdout; see check_backport_owners.sh's
+// build_owner_check_comment for the exact shape it expects. A package fully
+// in sync, or no longer present on sourceBranch, is omitted entirely.
+func CheckBackportOwners(remote, sourceBranch, before, after string) error {
+	if err := sh.Run("git", "fetch", remote, sourceBranch); err != nil {
+		return fmt.Errorf("fetching %s: %w", sourceBranch, err)
+	}
+	remoteRef := remote + "/" + sourceBranch
+
+	pkgs, err := diffPackages(before, after)
+	if err != nil {
+		return fmt.Errorf("detecting packages: %w", err)
+	}
+
+	pkgIndex, err := changelog.BuildPackageIndex("packages")
+	if err != nil {
+		return fmt.Errorf("building package index: %w", err)
+	}
+
+	mismatches := bpowners.CheckPackages(gitutil.Git{}, "", remoteRef, pkgs, pkgIndex)
+
+	type mismatchJSON struct {
+		Package string   `json:"package"`
+		Teams   []string `json:"teams,omitempty"`
+		Error   string   `json:"error,omitempty"`
+	}
+	results := make([]mismatchJSON, 0, len(mismatches))
+	for _, m := range mismatches {
+		entry := mismatchJSON{Package: m.Package, Teams: m.Teams}
+		if m.Err != nil {
+			entry.Error = m.Err.Error()
+		}
+		results = append(results, entry)
+	}
+
+	data, err := json.Marshal(results)
+	if err != nil {
+		return fmt.Errorf("marshalling results: %w", err)
+	}
+	fmt.Println(string(data))
+	return nil
+}
+
+// RenderBackportChecklist prints the backport-checklist comment body for a PR.
+// It reads the list of packages from artifactPath (a JSON file with shape
+// {"pr_number": N, "packages": [...]}) and the existing comment body (if any) from
+// stdin. Active branches for each package are looked up in .backports.yml using the
+// current UTC time. Previously checked boxes are preserved: any branch that appeared
+// as "- [x] `branch`" in the existing body is rendered ticked in the new body.
+// Prints nothing when no package has any active branch; callers should skip posting.
+func RenderBackportChecklist(artifactPath string) error {
+	data, err := os.ReadFile(artifactPath)
+	if err != nil {
+		return fmt.Errorf("reading artifact: %w", err)
+	}
+
+	var artifact struct {
+		Packages []string `json:"packages"`
+	}
+	if err := json.Unmarshal(data, &artifact); err != nil {
+		return fmt.Errorf("parsing artifact: %w", err)
+	}
+
+	existingBody, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		return fmt.Errorf("reading stdin: %w", err)
+	}
+
+	checked := bpchecklist.ParseCheckedBranches(string(existingBody))
+
+	branchesByPkg, err := backports.ListAllActiveBackportBranches(".backports.yml", artifact.Packages, time.Now().UTC())
+	if err != nil {
+		return fmt.Errorf("listing active backport branches: %w", err)
+	}
+
+	pkgs := make([]bpchecklist.PackageBranches, 0, len(artifact.Packages))
+	for _, pkg := range artifact.Packages {
+		pkgs = append(pkgs, bpchecklist.PackageBranches{
+			Package:  pkg,
+			Branches: branchesByPkg[pkg],
+		})
+	}
+
+	body := bpchecklist.BuildComment(pkgs, checked)
+	if body != "" {
+		fmt.Print(body)
+	}
+	return nil
+}
+
 // IsElasticPackageDependencyLessThan checks whether or not the elastic-package version set in go.mod is less than the given version
 func IsElasticPackageDependencyLessThan(version string) error {
 	foundVersion, err := citools.PackageVersionGoMod("go.mod", elasticPackageModulePath)
@@ -568,4 +709,17 @@ func writeGitHubOutputs(outputs map[string]string) error {
 		}
 	}
 	return nil
+}
+
+// RequiresUpdate updates required package versions for all integration packages,
+// adds a changelog entry per modified package, and opens one PR (or issue) per
+// package.
+//
+// Usage: mage RequiresUpdate [-dryRun] [-preview]
+//
+// Pass -dryRun to preview proposals without applying changes (also skips
+// publishing, since no files would be written); pass -preview to print what
+// would be published without touching git or GitHub.
+func RequiresUpdate(dryRun, preview *bool) error {
+	return requiresupdate.Run(dryRun != nil && *dryRun, preview != nil && *preview)
 }
