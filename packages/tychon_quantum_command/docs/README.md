@@ -189,188 +189,23 @@ The `tychon_pqc` data stream receives TYCHON Quantum Command output files collec
 
 This stream can contain multiple TYCHON record families in one place, including inventory, certificates, ciphers, applications, crypto libraries, readiness, keystores, VPN client findings, IPsec tunnel findings, MACsec findings, installed application data, browser extension data, archives, and other supporting scan artifacts.
 
-### Data streams using ILM policies
-
-This package does not define a custom package-level ILM policy in `docs/README.md`. Apply retention and lifecycle controls according to your deployment standards for both the raw source stream and the transform destination indices.
-### Transforms used
-
-#### applications
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-applications
+**Exported fields**
 
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp |  | date |
-| event.category |  | keyword |
-| event.dataset |  | keyword |
-| event.ingested |  | date |
-| host.hostname |  | keyword |
-| host.id |  | keyword |
-| id | Tychon unique document identifier for the application record. | keyword |
-| kerberos.config_source |  | keyword |
-| kerberos.has_aes128 |  | boolean |
-| kerberos.has_aes256 |  | boolean |
-| kerberos.has_des |  | boolean |
-| kerberos.has_rc4 |  | boolean |
-| kerberos.is_quantum_safe |  | boolean |
-| kerberos.raw_bitmask |  | long |
-| kerberos.supported_types |  | keyword |
-| observer.domain |  | keyword |
-| observer.hostname |  | keyword |
-| observer.id |  | keyword |
-| observer.os.build |  | keyword |
-| observer.os.family |  | keyword |
-| observer.os.kernel |  | keyword |
-| observer.os.name |  | keyword |
-| observer.os.platform |  | keyword |
-| observer.os.version |  | keyword |
-| observer.software_version |  | keyword |
-| observer.tychon_client_id |  | keyword |
-| observer.windows_server_role |  | keyword |
-| scan.target_input |  | keyword |
-| scan.timestamp |  | date |
-| scan.type |  | keyword |
-| tychon.application.app_root |  | keyword |
-| tychon.application.connected_to_count |  | long |
-| tychon.application.crypto_library_count |  | long |
-| tychon.application.in_memory_cert_count |  | long |
-| tychon.application.keychain_identity_count |  | long |
-| tychon.application.keystore_count |  | long |
-| tychon.application.name |  | keyword |
-| tychon.application.path |  | keyword |
-| tychon.application.pid |  | long |
-| tychon.application.port_count |  | long |
-| tychon.application.private_key_count |  | long |
-| tychon.application.service_display_name |  | keyword |
-| tychon.application.service_name |  | keyword |
-| tychon.application.source |  | keyword |
-| tychon.index |  | keyword |
-| tychon.library.crypt32_pqc_status |  | keyword |
-| tychon.library.crypt32_version |  | keyword |
-| tychon.library.openssl_pqc_status |  | keyword |
-| tychon.library.openssl_version |  | keyword |
-| tychon.library.uses_crypt32 |  | boolean |
-| tychon.library.uses_openssl |  | boolean |
-| tychon.library.uses_windows_cng |  | boolean |
-| tychon.library.windows_cng_pqc_status |  | keyword |
-| tychon.library.windows_cng_version |  | keyword |
-| tychon.type |  | keyword |
-
-#### archives
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-archives
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp |  | date |
-| archive.encryption.strength |  | keyword |
-| archive.encryption.type |  | keyword |
-| archive.format.version |  | keyword |
-| archive.type |  | keyword |
-| event.dataset |  | keyword |
-| event.ingested |  | date |
-| id | Tychon unique document identifier for the archive record. | keyword |
-| tychon.index |  | keyword |
-| tychon.type |  | keyword |
-
-#### assets
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-assets
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp |  | date |
-| config.config_file |  | keyword |
-| config.property_key |  | keyword |
-| config.ref_type |  | keyword |
-| config.resolved_path |  | keyword |
-| event.action |  | keyword |
-| event.category |  | keyword |
-| event.dataset |  | keyword |
-| event.ingested |  | date |
-| event.kind |  | keyword |
-| file.name |  | keyword |
-| file.path |  | keyword |
-| id | Tychon unique document identifier for the asset record. | keyword |
-| kerberos.config_source |  | keyword |
-| kerberos.has_aes128 |  | boolean |
-| kerberos.has_aes256 |  | boolean |
-| kerberos.has_des |  | boolean |
-| kerberos.has_rc4 |  | boolean |
-| kerberos.is_quantum_safe |  | boolean |
-| kerberos.raw_bitmask |  | long |
-| kerberos.supported_types |  | keyword |
-| observer.hostname |  | keyword |
-| observer.id |  | keyword |
-| observer.tychon_client_id |  | keyword |
-| observer.windows_server_role |  | keyword |
-| process.name |  | keyword |
-| process.path |  | keyword |
-| process.pid |  | long |
-| scan.target_input |  | keyword |
-| scan.timestamp |  | date |
-| scan.type |  | keyword |
-| tychon.index |  | keyword |
-| tychon.type |  | keyword |
-
-#### browser_exts
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-installed-browser-extensions
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp |  | date |
-| event.category |  | keyword |
-| event.dataset |  | keyword |
-| event.ingested |  | date |
-| id | Tychon unique document identifier for the browser extension record. | keyword |
-| kerberos.config_source |  | keyword |
-| kerberos.has_aes128 |  | boolean |
-| kerberos.has_aes256 |  | boolean |
-| kerberos.has_des |  | boolean |
-| kerberos.has_rc4 |  | boolean |
-| kerberos.is_quantum_safe |  | boolean |
-| kerberos.raw_bitmask |  | long |
-| kerberos.supported_types |  | keyword |
-| observer.hostname |  | keyword |
-| observer.id |  | keyword |
-| observer.tychon_client_id |  | keyword |
-| observer.windows_server_role |  | keyword |
-| package.description |  | keyword |
-| package.name |  | keyword |
-| package.version |  | keyword |
-| scan.target_input |  | keyword |
-| scan.timestamp |  | date |
-| scan.type |  | keyword |
-| tychon.browser_extension.browser |  | keyword |
-| tychon.browser_extension.extension_id |  | keyword |
-| tychon.browser_extension.permissions |  | keyword |
-| tychon.browser_extension.profile_path |  | keyword |
-| tychon.browser_extension.quantum_ready |  | boolean |
-| tychon.index |  | keyword |
-| tychon.scan_mode |  | keyword |
-| tychon.type |  | keyword |
-
-#### certificates
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-certificates
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp |  | date |
+| certificate.alias |  | keyword |
+| certificate.authority_key_id |  | keyword |
 | certificate.basic_constraints.is_ca |  | boolean |
 | certificate.basic_constraints.max_path_len |  | long |
 | certificate.basic_constraints.max_path_len_zero |  | boolean |
+| certificate.chain_complete |  | boolean |
+| certificate.crl_distribution_points |  | keyword |
+| certificate.cve_list |  | keyword |
+| certificate.ext_key_usage |  | keyword |
+| certificate.extended_key_usage |  | keyword |
 | certificate.file_details.attributes |  | keyword |
 | certificate.file_details.extension |  | keyword |
 | certificate.file_details.group |  | keyword |
@@ -381,39 +216,92 @@ This package does not define a custom package-level ILM policy in `docs/README.m
 | certificate.file_details.sha1_hash |  | keyword |
 | certificate.file_details.sha256_hash |  | keyword |
 | certificate.file_details.size |  | long |
+| certificate.has_private_key |  | boolean |
+| certificate.is_ca |  | boolean |
 | certificate.is_csr |  | boolean |
 | certificate.is_private_key |  | boolean |
 | certificate.is_self_signed |  | boolean |
 | certificate.issuer |  | keyword |
 | certificate.issuer_common_name |  | keyword |
+| certificate.issuer_country |  | keyword |
+| certificate.issuer_locality |  | keyword |
+| certificate.issuer_organization |  | keyword |
+| certificate.issuer_organizational_unit |  | keyword |
+| certificate.issuer_province |  | keyword |
+| certificate.issuing_certificate_urls |  | keyword |
+| certificate.key_algorithm |  | keyword |
+| certificate.key_size |  | long |
+| certificate.key_strength_assessment |  | keyword |
 | certificate.key_usage |  | keyword |
+| certificate.migration_priority |  | keyword |
 | certificate.not_after |  | date |
 | certificate.not_before |  | date |
+| certificate.ocsp_servers |  | keyword |
+| certificate.policy_identifiers |  | keyword |
+| certificate.pqc_readiness |  | keyword |
+| certificate.pqc_reason |  | wildcard |
 | certificate.pqc_vulnerable |  | boolean |
+| certificate.quantum_risk |  | keyword |
 | certificate.raw_pem_certificate |  | match_only_text |
+| certificate.recommended_action |  | keyword |
+| certificate.risk_level |  | keyword |
+| certificate.risk_reason |  | wildcard |
 | certificate.serial_number |  | keyword |
 | certificate.sha1_fingerprint |  | keyword |
 | certificate.sha256_fingerprint |  | keyword |
 | certificate.signature_algorithm |  | keyword |
+| certificate.signature_hex |  | wildcard |
 | certificate.source_file_path |  | keyword |
 | certificate.source_id |  | keyword |
 | certificate.subject |  | keyword |
+| certificate.subject_alternative_names.dns_names |  | keyword |
+| certificate.subject_alternative_names.email_addresses |  | keyword |
+| certificate.subject_alternative_names.ip_addresses |  | keyword |
 | certificate.subject_common_name |  | keyword |
+| certificate.subject_country |  | keyword |
+| certificate.subject_key_id |  | keyword |
+| certificate.subject_locality |  | keyword |
+| certificate.subject_organization |  | keyword |
+| certificate.subject_organizational_unit |  | keyword |
+| certificate.subject_province |  | keyword |
 | certificate.subject_public_key_info.algorithm |  | keyword |
 | certificate.subject_public_key_info.bit_size |  | long |
+| certificate.subject_public_key_info.curve |  | keyword |
+| certificate.subject_public_key_info.ecdsa_x_hex |  | wildcard |
+| certificate.subject_public_key_info.ecdsa_y_hex |  | wildcard |
 | certificate.subject_public_key_info.rsa_exponent |  | long |
 | certificate.subject_public_key_info.rsa_modulus_hex |  | wildcard |
+| certificate.thumbprint |  | keyword |
 | certificate.universal_id |  | keyword |
 | certificate.validity.duration_days |  | keyword |
 | certificate.version |  | long |
+| certificate.vulnerable |  | boolean |
+| config.config_file |  | keyword |
+| config.property_key |  | keyword |
+| config.ref_type |  | keyword |
+| config.resolved_path |  | keyword |
 | crypto.key_algorithm |  | keyword |
 | crypto.key_size |  | long |
 | crypto.signature_algorithm |  | keyword |
+| data_stream.dataset |  | constant_keyword |
+| data_stream.namespace |  | constant_keyword |
+| data_stream.type |  | constant_keyword |
+| destination.address |  | keyword |
+| destination.domain |  | keyword |
+| destination.ip |  | ip |
+| destination.port |  | long |
+| ecs.version |  | keyword |
+| error.message |  | match_only_text |
+| error.pipeline |  | keyword |
+| error.processor_tag |  | keyword |
+| error.processor_type |  | keyword |
 | event.action |  | keyword |
 | event.category |  | keyword |
 | event.dataset |  | keyword |
 | event.ingested |  | date |
 | event.kind |  | keyword |
+| event.original |  | match_only_text |
+| event.type |  | keyword |
 | file.extension |  | keyword |
 | file.group.name |  | keyword |
 | file.mtime |  | date |
@@ -422,331 +310,25 @@ This package does not define a custom package-level ILM policy in `docs/README.m
 | file.path |  | keyword |
 | file.permissions |  | keyword |
 | file.size |  | long |
-| hash.sha256_certificate |  | keyword |
-| id | Tychon unique document identifier for the certificate record. | keyword |
-| kerberos.config_source |  | keyword |
-| kerberos.has_aes128 |  | boolean |
-| kerberos.has_aes256 |  | boolean |
-| kerberos.has_des |  | boolean |
-| kerberos.has_rc4 |  | boolean |
-| kerberos.is_quantum_safe |  | boolean |
-| kerberos.raw_bitmask |  | long |
-| kerberos.supported_types |  | keyword |
-| observer.hostname |  | keyword |
-| observer.id |  | keyword |
-| observer.tychon_client_id |  | keyword |
-| observer.windows_server_role |  | keyword |
-| omb.sig_tier |  | keyword |
-| pqc.vulnerable |  | boolean |
-| scan.target_input |  | keyword |
-| scan.timestamp |  | date |
-| scan.type |  | keyword |
-| tychon.index |  | keyword |
-| tychon.type |  | keyword |
-| x509.is_valid |  | boolean |
-| x509.issuer.common_name |  | keyword |
-| x509.issuer.distinguished_name |  | keyword |
-| x509.public_key_algorithm |  | keyword |
-| x509.public_key_size |  | long |
-| x509.serial_number |  | keyword |
-| x509.signature_algorithm |  | keyword |
-| x509.subject.common_name |  | keyword |
-| x509.subject.distinguished_name |  | keyword |
-| x509.validity.not_after |  | date |
-| x509.validity.not_before |  | date |
-| x509.version_number |  | long |
-
-#### ciphers
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-ciphers
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp |  | date |
-| error.message |  | match_only_text |
-| event.action |  | keyword |
-| event.category |  | keyword |
-| event.dataset |  | keyword |
-| event.ingested |  | date |
 | hash.sha1_certificate |  | keyword |
 | hash.sha256_certificate |  | keyword |
-| id | Tychon unique document identifier for the cipher record. | keyword |
-| kerberos.config_source |  | keyword |
-| kerberos.has_aes128 |  | boolean |
-| kerberos.has_aes256 |  | boolean |
-| kerberos.has_des |  | boolean |
-| kerberos.has_rc4 |  | boolean |
-| kerberos.is_quantum_safe |  | boolean |
-| kerberos.raw_bitmask |  | long |
-| kerberos.supported_types |  | keyword |
-| observer.hostname |  | keyword |
-| observer.id |  | keyword |
-| observer.tychon_client_id |  | keyword |
-| observer.windows_server_role |  | keyword |
-| omb.additional_notes |  | wildcard |
-| omb.block_cipher_key_lengths |  | keyword |
-| omb.block_cipher_modes |  | keyword |
-| omb.block_ciphers |  | keyword |
-| omb.certifications |  | keyword |
-| omb.crqc_vulnerable_algos |  | keyword |
-| omb.dsa_algorithms |  | keyword |
-| omb.hash_algorithms |  | keyword |
-| omb.kem_algorithms |  | keyword |
-| omb.kex_ciphersuites |  | keyword |
-| omb.kex_protocols |  | keyword |
-| omb.mac_algorithms |  | keyword |
-| omb.module_name |  | keyword |
-| omb.operating_system |  | keyword |
-| omb.other_crypto_details |  | keyword |
-| omb.other_protocols |  | keyword |
-| omb.pqc_algos |  | keyword |
-| omb.software_package_name |  | keyword |
-| omb.software_package_version |  | keyword |
-| omb.symmetric_algos |  | keyword |
-| omb.vulnerability_status |  | keyword |
-| port.number |  | long |
-| port.protocol_detected |  | keyword |
-| port.status_overall |  | keyword |
-| process.command_line |  | wildcard |
-| process.executable |  | keyword |
-| process.executable_directory |  | keyword |
-| process.name |  | keyword |
-| process.pid |  | long |
-| process.username |  | keyword |
-| quantum_ready |  | boolean |
-| quantum_ready_cert |  | boolean |
-| quantum_ready_cipher |  | boolean |
-| quantum_ready_kx |  | boolean |
-| scan.target_input |  | keyword |
-| scan.timestamp |  | date |
-| scan.type |  | keyword |
-| server.address |  | keyword |
-| server.ip |  | ip |
-| server.port |  | long |
-| service.name |  | keyword |
-| service.state |  | keyword |
-| target_host.address |  | keyword |
-| target_host.domain |  | keyword |
-| target_host.ip |  | ip |
-| target_host.ipv4 |  | ip |
-| tychon.cipher.config_source |  | keyword |
-| tychon.cipher.insecure_ciphers |  | keyword |
-| tychon.cipher.is_encrypted |  | boolean |
-| tychon.cipher.migration_priority |  | keyword |
-| tychon.cipher.port |  | long |
-| tychon.cipher.pqc_readiness |  | keyword |
-| tychon.cipher.pqc_vulnerable |  | boolean |
-| tychon.cipher.protocol |  | keyword |
-| tychon.cipher.quantum_risk |  | keyword |
-| tychon.cipher.recommended_action |  | keyword |
-| tychon.cipher.supported_ciphers |  | keyword |
-| tychon.crypto.cipher |  | keyword |
-| tychon.crypto.pqc_readiness |  | keyword |
-| tychon.crypto.pqc_vulnerable |  | boolean |
-| tychon.crypto.protocol |  | keyword |
-| tychon.crypto.quantum_risk |  | keyword |
-| tychon.index |  | keyword |
-| tychon.type |  | keyword |
-| x509.issuer.common_name |  | keyword |
-| x509.issuer.distinguished_name |  | keyword |
-| x509.public_key_algorithm |  | keyword |
-| x509.public_key_size |  | long |
-| x509.serial_number |  | keyword |
-| x509.signature_algorithm |  | keyword |
-| x509.subject.common_name |  | keyword |
-| x509.subject.distinguished_name |  | keyword |
-
-#### crypto_libs
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-crypto-libraries
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp |  | date |
-| event.action |  | keyword |
-| event.category |  | keyword |
-| event.dataset |  | keyword |
-| event.ingested |  | date |
-| event.kind |  | keyword |
-| id | Tychon unique document identifier for the crypto library record. | keyword |
-| kerberos.config_source |  | keyword |
-| kerberos.has_aes128 |  | boolean |
-| kerberos.has_aes256 |  | boolean |
-| kerberos.has_des |  | boolean |
-| kerberos.has_rc4 |  | boolean |
-| kerberos.is_quantum_safe |  | boolean |
-| kerberos.raw_bitmask |  | long |
-| kerberos.supported_types |  | keyword |
-| observer.hostname |  | keyword |
-| observer.id |  | keyword |
-| observer.tychon_client_id |  | keyword |
-| observer.windows_server_role |  | keyword |
-| process.executable |  | keyword |
-| process.executable_directory |  | keyword |
-| process.name |  | keyword |
-| process.pid |  | long |
-| scan.target_input |  | keyword |
-| scan.timestamp |  | date |
-| scan.type |  | keyword |
-| tychon.index |  | keyword |
-| tychon.library.crypto_type |  | keyword |
-| tychon.library.name |  | keyword |
-| tychon.library.openssl_version |  | keyword |
-| tychon.library.pqc_status |  | keyword |
-| tychon.library.uses_openssl |  | boolean |
-| tychon.library.uses_windows_cng |  | boolean |
-| tychon.library.windows_cng_version |  | keyword |
-| tychon.type |  | keyword |
-| vulnerability.assessed_at |  | date |
-| vulnerability.is_vulnerable |  | boolean |
-| vulnerability.risk_level |  | keyword |
-| vulnerability.risk_reason |  | keyword |
-
-#### inst_apps
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-installed-apps
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp |  | date |
-| event.category |  | keyword |
-| event.dataset |  | keyword |
-| event.ingested |  | date |
-| id | Tychon unique document identifier for the installed application record. | keyword |
-| kerberos.config_source |  | keyword |
-| kerberos.has_aes128 |  | boolean |
-| kerberos.has_aes256 |  | boolean |
-| kerberos.has_des |  | boolean |
-| kerberos.has_rc4 |  | boolean |
-| kerberos.is_quantum_safe |  | boolean |
-| kerberos.raw_bitmask |  | long |
-| kerberos.supported_types |  | keyword |
-| observer.hostname |  | keyword |
-| observer.id |  | keyword |
-| observer.tychon_client_id |  | keyword |
-| observer.windows_server_role |  | keyword |
-| package.description |  | keyword |
-| package.install_directory |  | keyword |
-| package.name |  | keyword |
-| package.path |  | keyword |
-| package.version |  | keyword |
-| scan.target_input |  | keyword |
-| scan.timestamp |  | date |
-| scan.type |  | keyword |
-| tychon.index |  | keyword |
-| tychon.installed_app.crypto_library_count |  | long |
-| tychon.scan_mode |  | keyword |
-| tychon.type |  | keyword |
-
-#### inventory
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-inventory
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp |  | date |
-| destination.domain |  | keyword |
-| destination.ip |  | ip |
-| destination.port |  | long |
-| event.action |  | keyword |
-| event.category |  | keyword |
-| event.dataset |  | keyword |
-| event.ingested |  | date |
-| event.kind |  | keyword |
 | host.architecture |  | keyword |
+| host.cpu.cores |  | long |
+| host.domain |  | keyword |
 | host.hostname |  | keyword |
 | host.id |  | keyword |
-| host.ip |  | keyword |
+| host.ip |  | ip |
+| host.ipv4 |  | ip |
+| host.ipv6 |  | ip |
+| host.memory.total |  | long |
+| host.os.family |  | keyword |
+| host.os.kernel |  | keyword |
+| host.os.name |  | keyword |
+| host.os.platform |  | keyword |
+| host.os.version |  | keyword |
 | host.os_category |  | keyword |
 | host.os_pqc_tier |  | keyword |
-| id | Tychon unique document identifier for the inventory record. | keyword |
-| kerberos.config_source |  | keyword |
-| kerberos.has_aes128 |  | boolean |
-| kerberos.has_aes256 |  | boolean |
-| kerberos.has_des |  | boolean |
-| kerberos.has_rc4 |  | boolean |
-| kerberos.is_quantum_safe |  | boolean |
-| kerberos.raw_bitmask |  | long |
-| kerberos.supported_types |  | keyword |
-| observer.database_schema_version |  | keyword |
-| observer.hostname |  | keyword |
-| observer.id |  | keyword |
-| observer.output_schema_version |  | keyword |
-| observer.tychon_client_id |  | keyword |
-| observer.type |  | keyword |
-| observer.vendor |  | keyword |
-| observer.version |  | keyword |
-| observer.windows_server_role |  | keyword |
-| omb.kex_primary |  | keyword |
-| omb.kex_primary_quantum_safe |  | boolean |
-| omb.kex_secondary |  | keyword |
-| omb.kex_tier |  | keyword |
-| omb.protocol_tier |  | keyword |
-| omb.sig_tier |  | keyword |
-| process.command_line |  | wildcard |
-| process.executable |  | keyword |
-| process.executable_directory |  | keyword |
-| process.name |  | keyword |
-| process.pid |  | long |
-| process.start |  | date |
-| process.user_name |  | keyword |
-| quantum_ready |  | boolean |
-| quantum_ready_cert |  | boolean |
-| quantum_ready_cipher |  | boolean |
-| quantum_ready_kx |  | boolean |
-| scan.target_input |  | keyword |
-| scan.timestamp |  | date |
-| scan.type |  | keyword |
-| scan_type |  | keyword |
-| server.port |  | long |
-| server.protocol |  | keyword |
-| tls.duration_ms |  | long |
-| tls.insecure_cipher_count |  | long |
-| tls.insecure_ciphers |  | keyword |
-| tls.preferred_cipher |  | keyword |
-| tls.preferred_key_exchange |  | keyword |
-| tls.preferred_protocol |  | keyword |
-| tls.supported_key_exchange_count |  | long |
-| tls.supported_key_exchanges |  | keyword |
-| tls.supported_protocol_count |  | long |
-| tls.supported_protocols |  | keyword |
-| tls.total_probes |  | long |
-| tychon.index |  | keyword |
-| tychon.type |  | keyword |
-| x509.issuer_cn |  | keyword |
-| x509.key_bits |  | long |
-| x509.key_type |  | keyword |
-| x509.key_usage |  | keyword |
-| x509.not_after |  | date |
-| x509.not_before |  | date |
-| x509.serial_number |  | keyword |
-| x509.sha256_fingerprint |  | keyword |
-| x509.sig_algorithm |  | keyword |
-| x509.subject_cn |  | keyword |
-
-#### ipsec_tnls
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-ipsec-tunnels
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp |  | date |
-| event.action |  | keyword |
-| event.category |  | keyword |
-| event.dataset |  | keyword |
-| event.ingested |  | date |
-| event.kind |  | keyword |
-| id | Tychon unique document identifier for the IPSec tunnel record. | keyword |
+| id |  | keyword |
 | ipsec_tunnel.active |  | boolean |
 | ipsec_tunnel.config_path |  | keyword |
 | ipsec_tunnel.detection_confidence |  | keyword |
@@ -763,19 +345,266 @@ This package does not define a custom package-level ILM policy in `docs/README.m
 | kerberos.has_aes256 |  | boolean |
 | kerberos.has_des |  | boolean |
 | kerberos.has_rc4 |  | boolean |
+| kerberos.is_explicitly_configured |  | boolean |
 | kerberos.is_quantum_safe |  | boolean |
 | kerberos.raw_bitmask |  | long |
 | kerberos.supported_types |  | keyword |
+| keystore.accessible |  | boolean |
+| keystore.cert_count |  | long |
+| keystore.encryption.iterations |  | long |
+| keystore.encryption.mac |  | keyword |
+| keystore.encryption.salt_length |  | long |
+| keystore.encryption.vulnerable |  | boolean |
+| keystore.error_message |  | keyword |
+| keystore.path |  | keyword |
+| keystore.permissions |  | keyword |
+| keystore.requires_auth |  | boolean |
+| keystore.size |  | long |
+| keystore.stats.certificate_types.ca |  | long |
+| keystore.stats.certificate_types.end_entity |  | long |
+| keystore.stats.expired_certificates |  | long |
+| keystore.stats.key_algorithms.ECDSA |  | long |
+| keystore.stats.key_algorithms.RSA |  | long |
+| keystore.stats.pqc_vulnerable_certificates |  | long |
+| keystore.stats.vulnerable_certificates |  | long |
+| keystore.type |  | keyword |
+| network.protocol |  | keyword |
+| observer.bigfix_client_installed |  | boolean |
+| observer.bios_serial_number |  | keyword |
+| observer.cpu_cores |  | long |
+| observer.cpu_logical_cores |  | long |
+| observer.cpu_model_name |  | keyword |
+| observer.cpu_vendor_id |  | keyword |
+| observer.current_user |  | keyword |
+| observer.database_schema_version |  | keyword |
+| observer.domain |  | keyword |
+| observer.error |  | keyword |
+| observer.fips_mode_enabled |  | boolean |
 | observer.hostname |  | keyword |
 | observer.id |  | keyword |
+| observer.ip_addresses |  | keyword |
+| observer.is_vdi_environment |  | boolean |
+| observer.kernel_arch |  | keyword |
+| observer.kernel_version |  | keyword |
+| observer.machine_serial_number |  | keyword |
+| observer.organization |  | keyword |
+| observer.os.build |  | keyword |
+| observer.os.family |  | keyword |
+| observer.os.kernel |  | keyword |
+| observer.os.name |  | keyword |
+| observer.os.platform |  | keyword |
+| observer.os.version |  | keyword |
+| observer.output_schema_version |  | keyword |
+| observer.platform_version |  | keyword |
+| observer.ram_used_percent |  | float |
+| observer.software_version |  | keyword |
+| observer.system_uptime_seconds |  | long |
+| observer.total_ram_bytes |  | long |
 | observer.tychon_client_id |  | keyword |
+| observer.type |  | keyword |
+| observer.user_gid |  | keyword |
+| observer.user_home_dir |  | keyword |
+| observer.user_uid |  | keyword |
+| observer.vdi_identity_source |  | keyword |
+| observer.vendor |  | keyword |
+| observer.version |  | keyword |
 | observer.windows_server_role |  | keyword |
+| omb.additional_notes |  | wildcard |
+| omb.block_cipher_key_lengths |  | keyword |
+| omb.block_cipher_modes |  | keyword |
+| omb.block_ciphers |  | keyword |
+| omb.certifications |  | keyword |
+| omb.crqc_vulnerable_algos |  | keyword |
+| omb.dsa_algorithms |  | keyword |
+| omb.dsa_hash_algorithms |  | keyword |
+| omb.dsa_parameters |  | keyword |
+| omb.hash_algorithm_parameters |  | keyword |
+| omb.hash_algorithms |  | keyword |
+| omb.kem_algorithms |  | keyword |
+| omb.kem_parameters |  | keyword |
+| omb.kex_ciphersuites |  | keyword |
+| omb.kex_primary |  | keyword |
+| omb.kex_primary_quantum_safe |  | boolean |
+| omb.kex_protocols |  | keyword |
+| omb.kex_secondary |  | keyword |
+| omb.kex_tier |  | keyword |
+| omb.mac_algorithm_parameters |  | keyword |
+| omb.mac_algorithms |  | keyword |
+| omb.module_name |  | keyword |
+| omb.operating_system |  | keyword |
+| omb.other_crypto_details |  | keyword |
+| omb.other_protocols |  | keyword |
+| omb.other_protocols_params |  | keyword |
+| omb.pqc_algos |  | keyword |
+| omb.protocol_tier |  | keyword |
+| omb.sig_tier |  | keyword |
+| omb.software_package_name |  | keyword |
+| omb.software_package_version |  | keyword |
+| omb.symmetric_algos |  | keyword |
+| omb.vendor |  | keyword |
+| omb.vulnerability_status |  | keyword |
+| package.description |  | keyword |
+| package.install_directory |  | keyword |
+| package.name |  | keyword |
+| package.path |  | keyword |
+| package.version |  | keyword |
+| port.number |  | long |
+| port.protocol_detected |  | keyword |
+| port.status_overall |  | keyword |
 | pqc.is_pqc_ready |  | boolean |
+| pqc.key_strength |  | keyword |
+| pqc.migration_priority |  | keyword |
 | pqc.pqc_migration_status |  | keyword |
 | pqc.quantum_resistance |  | keyword |
+| pqc.quantum_risk |  | keyword |
+| pqc.readiness |  | keyword |
+| pqc.reason |  | wildcard |
+| pqc.recommended_action |  | keyword |
+| pqc.vulnerable |  | boolean |
+| process.command_line |  | wildcard |
+| process.executable |  | keyword |
+| process.executable_directory |  | keyword |
+| process.executable_file.attributes |  | keyword |
+| process.executable_file.company_name |  | keyword |
+| process.executable_file.extension |  | keyword |
+| process.executable_file.file_version |  | keyword |
+| process.executable_file.group |  | keyword |
+| process.executable_file.md5_hash |  | keyword |
+| process.executable_file.name |  | keyword |
+| process.executable_file.owner |  | keyword |
+| process.executable_file.path |  | keyword |
+| process.executable_file.product_name |  | keyword |
+| process.executable_file.product_version |  | keyword |
+| process.executable_file.sha1_hash |  | keyword |
+| process.executable_file.sha256_hash |  | keyword |
+| process.executable_file.size |  | long |
+| process.hash.sha256 |  | keyword |
+| process.name |  | keyword |
+| process.path |  | keyword |
+| process.pid |  | long |
+| process.service_info.description |  | keyword |
+| process.service_info.display_name |  | keyword |
+| process.service_info.name |  | keyword |
+| process.service_info.state |  | keyword |
+| process.start |  | date |
+| process.user_name |  | keyword |
+| process.username |  | keyword |
+| quantum_readiness.assessment_duration_ms |  | long |
+| quantum_readiness.assessment_id |  | keyword |
+| quantum_readiness.assessment_type |  | keyword |
+| quantum_readiness.compliance.common_criteria |  | boolean |
+| quantum_readiness.compliance.compliance_notes |  | wildcard |
+| quantum_readiness.compliance.fips_ready |  | boolean |
+| quantum_readiness.compliance.nist_ready |  | boolean |
+| quantum_readiness.cost_analysis.app_family |  | keyword |
+| quantum_readiness.cost_analysis.hardware_cost_usd |  | float |
+| quantum_readiness.cost_analysis.instance_count |  | long |
+| quantum_readiness.cost_analysis.labor_cost_usd |  | float |
+| quantum_readiness.cost_analysis.labor_rate_used |  | float |
+| quantum_readiness.cost_analysis.license_cost_usd |  | float |
+| quantum_readiness.cost_analysis.os_category |  | keyword |
+| quantum_readiness.cost_analysis.os_hardware_cost_usd |  | float |
+| quantum_readiness.cost_analysis.os_labor_cost_usd |  | float |
+| quantum_readiness.cost_analysis.os_labor_hours |  | float |
+| quantum_readiness.cost_analysis.os_license_cost_usd |  | float |
+| quantum_readiness.cost_analysis.os_tier |  | keyword |
+| quantum_readiness.cost_analysis.os_total_cost_usd |  | float |
+| quantum_readiness.cost_analysis.os_upgrade_target |  | keyword |
+| quantum_readiness.cost_analysis.tier |  | keyword |
+| quantum_readiness.cost_analysis.total_cost_usd |  | float |
+| quantum_readiness.cost_analysis.total_hardware_cost_usd |  | float |
+| quantum_readiness.cost_analysis.total_labor_cost_usd |  | float |
+| quantum_readiness.cost_analysis.total_labor_hours |  | float |
+| quantum_readiness.cost_analysis.total_license_cost_usd |  | float |
+| quantum_readiness.crypto_libraries.fips_mode |  | boolean |
+| quantum_readiness.crypto_libraries.legacy_libraries_present |  | boolean |
+| quantum_readiness.crypto_libraries.max_score |  | long |
+| quantum_readiness.crypto_libraries.openssl_max_score |  | long |
+| quantum_readiness.crypto_libraries.openssl_score |  | long |
+| quantum_readiness.crypto_libraries.openssl_version |  | keyword |
+| quantum_readiness.crypto_libraries.oqs_provider |  | boolean |
+| quantum_readiness.crypto_libraries.pqc_support |  | boolean |
+| quantum_readiness.crypto_libraries.system_crypto_max_score |  | long |
+| quantum_readiness.crypto_libraries.system_crypto_score |  | long |
+| quantum_readiness.crypto_libraries.system_libraries |  | keyword |
+| quantum_readiness.crypto_libraries.total_score |  | long |
+| quantum_readiness.crypto_libraries.uses_openssl |  | boolean |
+| quantum_readiness.detailed_report |  | match_only_text |
+| quantum_readiness.hardware.architecture |  | keyword |
+| quantum_readiness.hardware.available_ram_gb |  | float |
+| quantum_readiness.hardware.base_frequency_ghz |  | float |
+| quantum_readiness.hardware.cores |  | long |
+| quantum_readiness.hardware.cpu_max_score |  | long |
+| quantum_readiness.hardware.cpu_score |  | long |
+| quantum_readiness.hardware.has_aes_ni |  | boolean |
+| quantum_readiness.hardware.has_avx2 |  | boolean |
+| quantum_readiness.hardware.has_hsm |  | boolean |
+| quantum_readiness.hardware.has_neon |  | boolean |
+| quantum_readiness.hardware.has_secure_boot |  | boolean |
+| quantum_readiness.hardware.has_tpm |  | boolean |
+| quantum_readiness.hardware.instruction_sets |  | keyword |
+| quantum_readiness.hardware.logical_cores |  | long |
+| quantum_readiness.hardware.max_score |  | long |
+| quantum_readiness.hardware.memory_max_score |  | long |
+| quantum_readiness.hardware.memory_score |  | long |
+| quantum_readiness.hardware.security_hw_max_score |  | long |
+| quantum_readiness.hardware.security_hw_score |  | long |
+| quantum_readiness.hardware.total_ram_gb |  | float |
+| quantum_readiness.hardware.total_score |  | long |
+| quantum_readiness.hardware.tpm_version |  | keyword |
+| quantum_readiness.max_possible_score |  | long |
+| quantum_readiness.network.bandwidth_max_score |  | long |
+| quantum_readiness.network.bandwidth_score |  | long |
+| quantum_readiness.network.estimated_bandwidth_mbps |  | long |
+| quantum_readiness.network.ipv6_support |  | boolean |
+| quantum_readiness.network.latency_ms |  | long |
+| quantum_readiness.network.max_score |  | long |
+| quantum_readiness.network.modern_cipher_support |  | boolean |
+| quantum_readiness.network.mtu |  | long |
+| quantum_readiness.network.protocol_max_score |  | long |
+| quantum_readiness.network.protocol_score |  | long |
+| quantum_readiness.network.tls13_capable |  | boolean |
+| quantum_readiness.network.total_score |  | long |
+| quantum_readiness.operating_system.build |  | keyword |
+| quantum_readiness.operating_system.crypto_api_max_score |  | long |
+| quantum_readiness.operating_system.crypto_api_score |  | long |
+| quantum_readiness.operating_system.crypto_framework |  | keyword |
+| quantum_readiness.operating_system.family |  | keyword |
+| quantum_readiness.operating_system.fips_mode_enabled |  | boolean |
+| quantum_readiness.operating_system.kernel_version |  | keyword |
+| quantum_readiness.operating_system.max_score |  | long |
+| quantum_readiness.operating_system.modern_crypto_api |  | boolean |
+| quantum_readiness.operating_system.native_pqc_support |  | boolean |
+| quantum_readiness.operating_system.os_version_max_score |  | long |
+| quantum_readiness.operating_system.os_version_score |  | long |
+| quantum_readiness.operating_system.pqc_framework |  | keyword |
+| quantum_readiness.operating_system.symcrypt_present |  | boolean |
+| quantum_readiness.operating_system.total_score |  | long |
+| quantum_readiness.operating_system.version |  | keyword |
+| quantum_readiness.overall_score |  | long |
+| quantum_readiness.readiness_status |  | keyword |
+| quantum_readiness.ready_timeline |  | keyword |
+| quantum_readiness.recommendations |  | keyword |
+| quantum_readiness.status_color |  | keyword |
+| quantum_readiness.system_classification.criticality_level |  | keyword |
+| quantum_readiness.system_classification.detection_reason |  | keyword |
+| quantum_readiness.system_classification.role |  | keyword |
+| quantum_readiness.system_classification.type |  | keyword |
+| quantum_readiness.timestamp |  | date |
+| quantum_readiness.upgrade_pathway.action |  | keyword |
+| quantum_readiness.upgrade_pathway.component |  | keyword |
+| quantum_readiness.upgrade_pathway.description |  | keyword |
+| quantum_readiness.upgrade_pathway.estimated_time_weeks |  | long |
+| quantum_readiness.upgrade_pathway.order |  | long |
+| quantum_readiness.upgrade_pathway.priority |  | keyword |
+| quantum_ready |  | boolean |
+| quantum_ready_cert |  | boolean |
+| quantum_ready_cipher |  | boolean |
+| quantum_ready_kx |  | boolean |
 | scan.target_input |  | keyword |
 | scan.timestamp |  | date |
 | scan.type |  | keyword |
+| scan_type |  | keyword |
 | security.known_vulnerabilities |  | keyword |
 | security.perfect_forward_secrecy |  | boolean |
 | security.pqc_support |  | boolean |
@@ -786,6 +615,84 @@ This package does not define a custom package-level ILM policy in `docs/README.m
 | security.vulnerable |  | boolean |
 | security.weak_crypto |  | boolean |
 | security.weak_dh_group |  | boolean |
+| server.address |  | keyword |
+| server.ip |  | ip |
+| server.port |  | long |
+| server.protocol |  | keyword |
+| service.name |  | keyword |
+| service.state |  | keyword |
+| source.domain |  | keyword |
+| source.user.id |  | keyword |
+| ssh.algorithms.client_offered_ciphers |  | keyword |
+| ssh.algorithms.client_offered_host_key_algos |  | keyword |
+| ssh.algorithms.client_offered_kex |  | keyword |
+| ssh.algorithms.client_offered_macs |  | keyword |
+| ssh.algorithms.negotiated_cipher_c2s |  | keyword |
+| ssh.algorithms.negotiated_cipher_s2c |  | keyword |
+| ssh.algorithms.negotiated_host_key_algo |  | keyword |
+| ssh.algorithms.negotiated_kex |  | keyword |
+| ssh.algorithms.negotiated_mac_c2s |  | keyword |
+| ssh.algorithms.negotiated_mac_s2c |  | keyword |
+| ssh.algorithms.server_offered_ciphers_c2s |  | keyword |
+| ssh.algorithms.server_offered_ciphers_s2c |  | keyword |
+| ssh.algorithms.server_offered_host_key_algos |  | keyword |
+| ssh.algorithms.server_offered_kex |  | keyword |
+| ssh.algorithms.server_offered_macs_c2s |  | keyword |
+| ssh.algorithms.server_offered_macs_s2c |  | keyword |
+| ssh.banner |  | keyword |
+| ssh.host_key.bits |  | long |
+| ssh.host_key.fingerprint_sha256 |  | keyword |
+| ssh.host_key.public_key |  | match_only_text |
+| ssh.host_key.type |  | keyword |
+| ssh.host_key.x509_certificate.is_csr |  | boolean |
+| ssh.host_key.x509_certificate.is_private_key |  | boolean |
+| ssh.host_key.x509_certificate.is_self_signed |  | boolean |
+| ssh.host_key.x509_certificate.issuer.common_name |  | keyword |
+| ssh.host_key.x509_certificate.pqc_vulnerable |  | boolean |
+| ssh.host_key.x509_certificate.serial_number |  | keyword |
+| ssh.host_key.x509_certificate.source_file_path |  | keyword |
+| ssh.host_key.x509_certificate.subject.common_name |  | keyword |
+| ssh.host_key.x509_certificate.subject_public_key_info.algorithm |  | keyword |
+| ssh.host_key.x509_certificate.subject_public_key_info.bit_size |  | long |
+| ssh.server.encryption_ciphers |  | keyword |
+| ssh.server.host_key_algorithms |  | keyword |
+| ssh.server.kex_algorithms |  | keyword |
+| ssh.server.mac_algorithms |  | keyword |
+| ssh.status |  | keyword |
+| target_host.address |  | keyword |
+| target_host.domain |  | keyword |
+| target_host.ip |  | ip |
+| target_host.ipv4 |  | ip |
+| tls.certificate.extended_key_usage |  | keyword |
+| tls.certificate.issuer |  | keyword |
+| tls.certificate.not_after |  | date |
+| tls.certificate.not_before |  | date |
+| tls.certificate.serial_number |  | keyword |
+| tls.certificate.subject |  | keyword |
+| tls.duration_ms |  | long |
+| tls.insecure_cipher_count |  | long |
+| tls.insecure_ciphers |  | keyword |
+| tls.preferred_cipher |  | keyword |
+| tls.preferred_key_exchange |  | keyword |
+| tls.preferred_protocol |  | keyword |
+| tls.server.cipher_count |  | long |
+| tls.server.hash.sha1 |  | keyword |
+| tls.server.issuer |  | keyword |
+| tls.server.not_after |  | date |
+| tls.server.not_before |  | date |
+| tls.server.serial_number |  | keyword |
+| tls.server.subject |  | keyword |
+| tls.server.supported_ciphers |  | keyword |
+| tls.server.supported_protocols |  | keyword |
+| tls.supported_cipher_count |  | long |
+| tls.supported_ciphers |  | keyword |
+| tls.supported_key_exchange_count |  | long |
+| tls.supported_key_exchanges |  | keyword |
+| tls.supported_protocol_count |  | long |
+| tls.supported_protocols |  | keyword |
+| tls.total_probes |  | long |
+| tls.weak_cipher_count |  | long |
+| tls.weak_ciphers |  | keyword |
 | tunnel_details.auth_method |  | keyword |
 | tunnel_details.dh_group |  | keyword |
 | tunnel_details.encryption_algorithm |  | keyword |
@@ -794,294 +701,188 @@ This package does not define a custom package-level ILM policy in `docs/README.m
 | tunnel_details.nat_traversal |  | boolean |
 | tunnel_details.perfect_forward_secrecy |  | boolean |
 | tunnel_details.protocol |  | keyword |
+| tychon.application.app_root |  | keyword |
+| tychon.application.company_name |  | keyword |
+| tychon.application.connected_to_count |  | long |
+| tychon.application.crypto_library_count |  | long |
+| tychon.application.file_version |  | keyword |
+| tychon.application.in_memory_cert_count |  | long |
+| tychon.application.insecure_ciphers |  | keyword |
+| tychon.application.keychain_identity_count |  | long |
+| tychon.application.keystore_count |  | long |
+| tychon.application.name |  | keyword |
+| tychon.application.path |  | keyword |
+| tychon.application.pid |  | long |
+| tychon.application.port |  | long |
+| tychon.application.port_count |  | long |
+| tychon.application.port_quantum_grade.grade |  | keyword |
+| tychon.application.port_quantum_grade.score |  | float |
+| tychon.application.preferred_cipher |  | keyword |
+| tychon.application.preferred_key_exchange |  | keyword |
+| tychon.application.preferred_protocol |  | keyword |
+| tychon.application.private_key_count |  | long |
+| tychon.application.product_name |  | keyword |
+| tychon.application.product_version |  | keyword |
+| tychon.application.protocol_detected |  | keyword |
+| tychon.application.quantum_grade.best_port_score |  | float |
+| tychon.application.quantum_grade.grade |  | keyword |
+| tychon.application.quantum_grade.os_deductions |  | float |
+| tychon.application.quantum_grade.score |  | float |
+| tychon.application.quantum_grade.worst_port_score |  | float |
+| tychon.application.quantum_ready |  | boolean |
+| tychon.application.service_display_name |  | keyword |
+| tychon.application.service_name |  | keyword |
+| tychon.application.software_package_names |  | keyword |
+| tychon.application.software_package_versions |  | keyword |
+| tychon.application.source |  | keyword |
+| tychon.application.supported_cipher_suites |  | keyword |
+| tychon.application.supported_key_exchanges |  | keyword |
+| tychon.application.supported_protocols |  | keyword |
+| tychon.application.weak_ciphers |  | keyword |
+| tychon.asset_type |  | keyword |
+| tychon.browser_extension.browser |  | keyword |
+| tychon.browser_extension.extension_id |  | keyword |
+| tychon.browser_extension.permissions |  | keyword |
+| tychon.browser_extension.profile_path |  | keyword |
+| tychon.browser_extension.quantum_ready |  | boolean |
+| tychon.certificate_leaf_details.basic_constraints.is_ca |  | boolean |
+| tychon.certificate_leaf_details.basic_constraints.max_path_len_zero |  | boolean |
+| tychon.certificate_leaf_details.extended_key_usage |  | keyword |
+| tychon.certificate_leaf_details.is_csr |  | boolean |
+| tychon.certificate_leaf_details.is_private_key |  | boolean |
+| tychon.certificate_leaf_details.is_self_signed |  | boolean |
+| tychon.certificate_leaf_details.issuer.common_name |  | keyword |
+| tychon.certificate_leaf_details.issuer.country |  | keyword |
+| tychon.certificate_leaf_details.issuer.locality |  | keyword |
+| tychon.certificate_leaf_details.issuer.organization |  | keyword |
+| tychon.certificate_leaf_details.issuer.organizational_unit |  | keyword |
+| tychon.certificate_leaf_details.issuer.province |  | keyword |
+| tychon.certificate_leaf_details.issuer.raw_string |  | keyword |
+| tychon.certificate_leaf_details.key_usage |  | keyword |
+| tychon.certificate_leaf_details.pqc_vulnerable |  | boolean |
+| tychon.certificate_leaf_details.raw_pem_certificate |  | match_only_text |
+| tychon.certificate_leaf_details.serial_number |  | keyword |
+| tychon.certificate_leaf_details.sha1_fingerprint |  | keyword |
+| tychon.certificate_leaf_details.sha256_fingerprint |  | keyword |
+| tychon.certificate_leaf_details.signature_algorithm |  | keyword |
+| tychon.certificate_leaf_details.signature_hex |  | wildcard |
+| tychon.certificate_leaf_details.source_id |  | keyword |
+| tychon.certificate_leaf_details.subject.common_name |  | keyword |
+| tychon.certificate_leaf_details.subject.country |  | keyword |
+| tychon.certificate_leaf_details.subject.locality |  | keyword |
+| tychon.certificate_leaf_details.subject.organization |  | keyword |
+| tychon.certificate_leaf_details.subject.organizational_unit |  | keyword |
+| tychon.certificate_leaf_details.subject.province |  | keyword |
+| tychon.certificate_leaf_details.subject.raw_string |  | keyword |
+| tychon.certificate_leaf_details.subject_key_id |  | keyword |
+| tychon.certificate_leaf_details.subject_public_key_info.algorithm |  | keyword |
+| tychon.certificate_leaf_details.subject_public_key_info.bit_size |  | long |
+| tychon.certificate_leaf_details.subject_public_key_info.curve |  | keyword |
+| tychon.certificate_leaf_details.subject_public_key_info.ecdsa_x_hex |  | wildcard |
+| tychon.certificate_leaf_details.subject_public_key_info.ecdsa_y_hex |  | wildcard |
+| tychon.certificate_leaf_details.subject_public_key_info.rsa_exponent |  | long |
+| tychon.certificate_leaf_details.subject_public_key_info.rsa_modulus_hex |  | wildcard |
+| tychon.certificate_leaf_details.validity.duration_days |  | keyword |
+| tychon.certificate_leaf_details.validity.not_after |  | date |
+| tychon.certificate_leaf_details.validity.not_before |  | date |
+| tychon.certificate_leaf_details.version |  | long |
+| tychon.cipher.config_source |  | keyword |
+| tychon.cipher.insecure_ciphers |  | keyword |
+| tychon.cipher.is_encrypted |  | boolean |
+| tychon.cipher.migration_priority |  | keyword |
+| tychon.cipher.port |  | long |
+| tychon.cipher.pqc_readiness |  | keyword |
+| tychon.cipher.pqc_vulnerable |  | boolean |
+| tychon.cipher.protocol |  | keyword |
+| tychon.cipher.quantum_risk |  | keyword |
+| tychon.cipher.recommended_action |  | keyword |
+| tychon.cipher.supported_ciphers |  | keyword |
+| tychon.cipher_negotiation.active |  | boolean |
+| tychon.cipher_negotiation.alpn_protocol |  | keyword |
+| tychon.cipher_negotiation.cipher_suite |  | keyword |
+| tychon.cipher_negotiation.compression_method |  | keyword |
+| tychon.cipher_negotiation.intel.vulnerabilities |  | keyword |
+| tychon.cipher_negotiation.is_preferred |  | boolean |
+| tychon.cipher_negotiation.key_length_bits |  | long |
+| tychon.cipher_negotiation.last_seen |  | date |
+| tychon.cipher_negotiation.protocol |  | keyword |
+| tychon.cipher_negotiation.session_id |  | keyword |
+| tychon.cipher_negotiation.session_ticket_lifetime_hint_seconds |  | long |
+| tychon.cipher_negotiation.source |  | keyword |
+| tychon.cipher_negotiation.source_id |  | keyword |
+| tychon.cipher_negotiation.universal_id |  | keyword |
+| tychon.cipher_quick.duration_ms |  | long |
+| tychon.cipher_quick.insecure_cipher_count |  | long |
+| tychon.cipher_quick.insecure_ciphers |  | keyword |
+| tychon.cipher_quick.preferred_cipher |  | keyword |
+| tychon.cipher_quick.preferred_key_exchange |  | keyword |
+| tychon.cipher_quick.preferred_protocol |  | keyword |
+| tychon.cipher_quick.supported_cipher_count |  | long |
+| tychon.cipher_quick.supported_cipher_suites |  | keyword |
+| tychon.cipher_quick.supported_key_exchange_count |  | long |
+| tychon.cipher_quick.supported_key_exchanges |  | keyword |
+| tychon.cipher_quick.supported_protocol_count |  | long |
+| tychon.cipher_quick.supported_protocols |  | keyword |
+| tychon.cipher_quick.total_probes |  | long |
+| tychon.cipher_quick.weak_cipher_count |  | long |
+| tychon.cipher_quick.weak_ciphers |  | keyword |
+| tychon.crypto.auth |  | keyword |
+| tychon.crypto.certificate |  | keyword |
+| tychon.crypto.cipher |  | keyword |
+| tychon.crypto.grade |  | keyword |
+| tychon.crypto.grade_score |  | float |
+| tychon.crypto.key_exchange |  | keyword |
+| tychon.crypto.mac |  | keyword |
+| tychon.crypto.pqc_readiness |  | keyword |
+| tychon.crypto.pqc_vulnerable |  | boolean |
+| tychon.crypto.protocol |  | keyword |
+| tychon.crypto.protocol_version |  | keyword |
+| tychon.crypto.quantum_risk |  | keyword |
 | tychon.index |  | keyword |
-| tychon.type |  | keyword |
-
-#### keystores
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-keystores
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp |  | date |
-| event.action |  | keyword |
-| event.category |  | keyword |
-| event.dataset |  | keyword |
-| event.ingested |  | date |
-| event.kind |  | keyword |
-| file.name |  | keyword |
-| file.path |  | keyword |
-| id | Tychon unique document identifier for the keystore record. | keyword |
-| kerberos.config_source |  | keyword |
-| kerberos.has_aes128 |  | boolean |
-| kerberos.has_aes256 |  | boolean |
-| kerberos.has_des |  | boolean |
-| kerberos.has_rc4 |  | boolean |
-| kerberos.is_quantum_safe |  | boolean |
-| kerberos.raw_bitmask |  | long |
-| kerberos.supported_types |  | keyword |
-| keystore.accessible |  | boolean |
-| keystore.cert_count |  | long |
-| keystore.path |  | keyword |
-| keystore.requires_auth |  | boolean |
-| keystore.stats.certificate_types.ca |  | long |
-| keystore.stats.expired_certificates |  | long |
-| keystore.stats.key_algorithms.ECDSA |  | long |
-| keystore.stats.key_algorithms.RSA |  | long |
-| keystore.stats.pqc_vulnerable_certificates |  | long |
-| keystore.stats.vulnerable_certificates |  | long |
-| keystore.type |  | keyword |
-| observer.hostname |  | keyword |
-| observer.id |  | keyword |
-| observer.tychon_client_id |  | keyword |
-| observer.windows_server_role |  | keyword |
-| scan.target_input |  | keyword |
-| scan.timestamp |  | date |
-| scan.type |  | keyword |
-| tychon.index |  | keyword |
-| tychon.type |  | keyword |
-
-#### macsec
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-macsec
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp |  | date |
-| event.dataset |  | keyword |
-| event.ingested |  | date |
-| id | Tychon unique document identifier for the MACsec record. | keyword |
-| macsec.cipher_suite |  | keyword |
-| macsec.detection_confidence |  | keyword |
-| macsec.detection_method |  | keyword |
-| macsec.implementation |  | keyword |
-| macsec.interface_name |  | keyword |
-| macsec.key_agreement_method |  | keyword |
-| macsec.parent_interface |  | keyword |
-| macsec.risk_level |  | keyword |
-| macsec.sci |  | keyword |
-| macsec.status |  | keyword |
-| macsec.validation_mode |  | keyword |
-| tychon.index |  | keyword |
-| tychon.type |  | keyword |
-
-#### readiness
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-system-readiness
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Timestamp when the readiness event occurred. | date |
-| data_stream.dataset | Data stream dataset of the source event. | constant_keyword |
-| data_stream.namespace | Data stream namespace of the source event. | constant_keyword |
-| data_stream.type | Data stream type of the source event. | constant_keyword |
-| ecs.version | ECS version of the transformed event. | keyword |
-| error.message | Error message captured during readiness collection or processing. | match_only_text |
-| event.action | Action captured for the readiness event. | keyword |
-| event.category | Event category for the readiness event. | keyword |
-| event.dataset | Event dataset of the source readiness record. | keyword |
-| event.ingested | Timestamp when the event was ingested into Elasticsearch. | date |
-| event.kind | Event kind for the readiness record. | keyword |
-| id | Tychon unique document identifier for the system readiness record. | keyword |
-| kerberos.config_source | Source of Kerberos encryption configuration. | keyword |
-| kerberos.has_aes128 | Indicates whether AES128 Kerberos support is enabled. | boolean |
-| kerberos.has_aes256 | Indicates whether AES256 Kerberos support is enabled. | boolean |
-| kerberos.has_des | Indicates whether DES Kerberos support is enabled. | boolean |
-| kerberos.has_rc4 | Indicates whether RC4 Kerberos support is enabled. | boolean |
-| kerberos.is_explicitly_configured | Indicates whether Kerberos encryption settings are explicitly configured. | boolean |
-| kerberos.is_quantum_safe | Indicates whether the Kerberos configuration is considered post-quantum safe. | boolean |
-| kerberos.raw_bitmask | Windows Kerberos encryption type bitmask, when available. | long |
-| kerberos.supported_types | Supported Kerberos encryption types as reported by the host. | keyword |
-| observer.bigfix_client_installed | Indicates whether a BigFix client is installed on the observer host. | boolean |
-| observer.bios_serial_number | BIOS serial number reported by the observer host. | keyword |
-| observer.cpu_cores | Number of physical CPU cores reported by the observer host. | long |
-| observer.cpu_logical_cores | Number of logical CPU cores reported by the observer host. | long |
-| observer.cpu_model_name | CPU model name reported by the observer host. | keyword |
-| observer.cpu_vendor_id | CPU vendor identifier reported by the observer host. | keyword |
-| observer.current_user | Current user context used by the observer when scanning. | keyword |
-| observer.domain | Domain associated with the observer host. | keyword |
-| observer.fips_mode_enabled | Indicates whether FIPS mode is enabled on the observer host. | boolean |
-| observer.hostname | Hostname of the observer host. | keyword |
-| observer.id | Unique observer identifier. | keyword |
-| observer.ip_addresses | IP addresses reported by the observer host. | keyword |
-| observer.is_vdi_environment | Indicates whether the observer is running in a VDI environment. | boolean |
-| observer.kernel_arch | Kernel architecture reported by the observer host. | keyword |
-| observer.kernel_version | Kernel version reported by the observer host. | keyword |
-| observer.machine_serial_number | Machine serial number reported by the observer host. | keyword |
-| observer.organization | Organization associated with the observer host. | keyword |
-| observer.os.build | Observer operating system build identifier. | keyword |
-| observer.os.family | Observer operating system family. | keyword |
-| observer.os.kernel | Observer operating system kernel string. | keyword |
-| observer.os.name | Observer operating system name. | keyword |
-| observer.os.platform | Observer operating system platform. | keyword |
-| observer.os.version | Observer operating system version. | keyword |
-| observer.platform_version | Platform-specific version string reported by the observer host. | keyword |
-| observer.ram_used_percent | Percent of RAM in use on the observer host. | float |
-| observer.software_version | Tychon software version on the observer host. | keyword |
-| observer.system_uptime_seconds | System uptime in seconds on the observer host. | long |
-| observer.total_ram_bytes | Total RAM bytes on the observer host. | long |
-| observer.tychon_client_id | Tychon client identifier reported on Windows endpoints. | keyword |
-| observer.user_gid | Current user group identifier on the observer host. | keyword |
-| observer.user_home_dir | Home directory of the current user on the observer host. | keyword |
-| observer.user_uid | Current user identifier on the observer host. | keyword |
-| observer.vdi_identity_source | Source used to determine VDI identity. | keyword |
-| observer.windows_server_role | Windows server role or workstation role of the observer host. | keyword |
-| quantum_readiness.assessment_duration_ms | Duration of the readiness assessment in milliseconds. | long |
-| quantum_readiness.assessment_id | Unique assessment identifier emitted by TQC. | keyword |
-| quantum_readiness.assessment_type | Type of readiness assessment performed. | keyword |
-| quantum_readiness.compliance.common_criteria | Indicates whether Common Criteria readiness is met. | boolean |
-| quantum_readiness.compliance.compliance_notes | Compliance notes reported by the readiness assessment. | wildcard |
-| quantum_readiness.compliance.fips_ready | Indicates whether FIPS readiness requirements are met. | boolean |
-| quantum_readiness.compliance.nist_ready | Indicates whether NIST readiness requirements are met. | boolean |
-| quantum_readiness.cost_analysis.labor_rate_used | Labor rate used for cost analysis. | float |
-| quantum_readiness.cost_analysis.os_category | Operating system category used in cost analysis. | keyword |
-| quantum_readiness.cost_analysis.os_hardware_cost_usd | Hardware cost for the operating system upgrade path. | float |
-| quantum_readiness.cost_analysis.os_labor_cost_usd | Labor cost for the operating system upgrade path. | float |
-| quantum_readiness.cost_analysis.os_labor_hours | Labor hours for the operating system upgrade path. | float |
-| quantum_readiness.cost_analysis.os_license_cost_usd | License cost for the operating system upgrade path. | float |
-| quantum_readiness.cost_analysis.os_tier | Operating system tier classification for cost analysis. | keyword |
-| quantum_readiness.cost_analysis.os_total_cost_usd | Total operating system remediation cost. | float |
-| quantum_readiness.cost_analysis.os_upgrade_target | Target operating system identified for remediation. | keyword |
-| quantum_readiness.cost_analysis.total_cost_usd | Total estimated remediation cost. | float |
-| quantum_readiness.cost_analysis.total_hardware_cost_usd | Total estimated hardware cost. | float |
-| quantum_readiness.cost_analysis.total_labor_cost_usd | Total estimated labor cost. | float |
-| quantum_readiness.cost_analysis.total_labor_hours | Total estimated labor hours. | float |
-| quantum_readiness.cost_analysis.total_license_cost_usd | Total estimated license cost. | float |
-| quantum_readiness.crypto_libraries.fips_mode | Indicates whether FIPS mode is enabled for system crypto libraries. | boolean |
-| quantum_readiness.crypto_libraries.legacy_libraries_present | Indicates whether legacy crypto libraries were detected. | boolean |
-| quantum_readiness.crypto_libraries.max_score | Maximum score available for crypto libraries. | long |
-| quantum_readiness.crypto_libraries.openssl_max_score | Maximum score assigned to OpenSSL readiness. | long |
-| quantum_readiness.crypto_libraries.openssl_score | OpenSSL readiness score. | long |
-| quantum_readiness.crypto_libraries.openssl_version | OpenSSL version detected on the system. | keyword |
-| quantum_readiness.crypto_libraries.oqs_provider | Indicates whether an OQS provider was detected. | boolean |
-| quantum_readiness.crypto_libraries.pqc_support | Indicates whether post-quantum crypto support was detected. | boolean |
-| quantum_readiness.crypto_libraries.system_crypto_max_score | Maximum score available for the system crypto stack. | long |
-| quantum_readiness.crypto_libraries.system_crypto_score | Score assigned to the system crypto stack. | long |
-| quantum_readiness.crypto_libraries.system_libraries | System crypto libraries detected during the assessment. | keyword |
-| quantum_readiness.crypto_libraries.total_score | Total crypto library readiness score. | long |
-| quantum_readiness.crypto_libraries.uses_openssl | Indicates whether OpenSSL was detected in the system crypto stack. | boolean |
-| quantum_readiness.detailed_report | Markdown-formatted detailed readiness report. | match_only_text |
-| quantum_readiness.hardware.architecture | Hardware architecture evaluated by the readiness assessment. | keyword |
-| quantum_readiness.hardware.available_ram_gb | Available RAM in gigabytes. | float |
-| quantum_readiness.hardware.base_frequency_ghz | Base CPU frequency in gigahertz. | float |
-| quantum_readiness.hardware.cores | Number of CPU cores evaluated. | long |
-| quantum_readiness.hardware.cpu_max_score | Maximum possible CPU score. | long |
-| quantum_readiness.hardware.cpu_score | CPU score assigned by the assessment. | long |
-| quantum_readiness.hardware.has_aes_ni | Indicates whether AES-NI instructions are available. | boolean |
-| quantum_readiness.hardware.has_avx2 | Indicates whether AVX2 instructions are available. | boolean |
-| quantum_readiness.hardware.has_hsm | Indicates whether a hardware security module is available. | boolean |
-| quantum_readiness.hardware.has_neon | Indicates whether NEON instructions are available. | boolean |
-| quantum_readiness.hardware.has_secure_boot | Indicates whether secure boot support is available. | boolean |
-| quantum_readiness.hardware.has_tpm | Indicates whether TPM support is available. | boolean |
-| quantum_readiness.hardware.instruction_sets | Instruction sets detected on the host. | keyword |
-| quantum_readiness.hardware.logical_cores | Number of logical CPU cores evaluated. | long |
-| quantum_readiness.hardware.max_score | Maximum hardware score. | long |
-| quantum_readiness.hardware.memory_max_score | Maximum memory score. | long |
-| quantum_readiness.hardware.memory_score | Memory score assigned by the assessment. | long |
-| quantum_readiness.hardware.security_hw_max_score | Maximum security hardware score. | long |
-| quantum_readiness.hardware.security_hw_score | Security hardware score assigned by the assessment. | long |
-| quantum_readiness.hardware.total_ram_gb | Total RAM in gigabytes. | float |
-| quantum_readiness.hardware.total_score | Total hardware readiness score. | long |
-| quantum_readiness.hardware.tpm_version | TPM version detected on the host. | keyword |
-| quantum_readiness.max_possible_score | Maximum possible score for the readiness assessment. | long |
-| quantum_readiness.network.bandwidth_max_score | Maximum bandwidth score. | long |
-| quantum_readiness.network.bandwidth_score | Bandwidth score assigned by the assessment. | long |
-| quantum_readiness.network.estimated_bandwidth_mbps | Estimated network bandwidth in megabits per second. | long |
-| quantum_readiness.network.ipv6_support | Indicates whether IPv6 support is available. | boolean |
-| quantum_readiness.network.latency_ms | Estimated network latency in milliseconds. | long |
-| quantum_readiness.network.max_score | Maximum network score. | long |
-| quantum_readiness.network.modern_cipher_support | Indicates whether modern network ciphers are supported. | boolean |
-| quantum_readiness.network.mtu | Network MTU detected during assessment. | long |
-| quantum_readiness.network.protocol_max_score | Maximum network protocol score. | long |
-| quantum_readiness.network.protocol_score | Network protocol score assigned by the assessment. | long |
-| quantum_readiness.network.tls13_capable | Indicates whether TLS 1.3 capability is present. | boolean |
-| quantum_readiness.network.total_score | Total network readiness score. | long |
-| quantum_readiness.operating_system.build | Operating system build reported by the assessment. | keyword |
-| quantum_readiness.operating_system.crypto_api_max_score | Maximum operating system crypto API score. | long |
-| quantum_readiness.operating_system.crypto_api_score | Operating system crypto API score assigned by the assessment. | long |
-| quantum_readiness.operating_system.crypto_framework | Native crypto framework detected on the operating system. | keyword |
-| quantum_readiness.operating_system.family | Operating system family evaluated by the assessment. | keyword |
-| quantum_readiness.operating_system.fips_mode_enabled | Indicates whether operating system FIPS mode is enabled. | boolean |
-| quantum_readiness.operating_system.kernel_version | Kernel version evaluated by the assessment. | keyword |
-| quantum_readiness.operating_system.max_score | Maximum operating system score. | long |
-| quantum_readiness.operating_system.modern_crypto_api | Indicates whether a modern crypto API is available. | boolean |
-| quantum_readiness.operating_system.native_pqc_support | Indicates whether native post-quantum support is available. | boolean |
-| quantum_readiness.operating_system.os_version_max_score | Maximum operating system version score. | long |
-| quantum_readiness.operating_system.os_version_score | Operating system version score assigned by the assessment. | long |
-| quantum_readiness.operating_system.pqc_framework | Post-quantum framework detected on the operating system. | keyword |
-| quantum_readiness.operating_system.symcrypt_present | Indicates whether SymCrypt is present. | boolean |
-| quantum_readiness.operating_system.total_score | Total operating system readiness score. | long |
-| quantum_readiness.operating_system.version | Operating system version evaluated by the assessment. | keyword |
-| quantum_readiness.overall_score | Overall readiness score. | long |
-| quantum_readiness.readiness_status | High-level readiness status returned by the assessment. | keyword |
-| quantum_readiness.ready_timeline | Estimated timeline to reach readiness. | keyword |
-| quantum_readiness.recommendations | Readiness recommendations summarized by TQC. | keyword |
-| quantum_readiness.status_color | UI-oriented status color assigned by TQC. | keyword |
-| quantum_readiness.system_classification.criticality_level | System criticality level assigned by TQC. | keyword |
-| quantum_readiness.system_classification.detection_reason | Reason used to classify the system role and type. | keyword |
-| quantum_readiness.system_classification.role | System role assigned by the readiness assessment. | keyword |
-| quantum_readiness.system_classification.type | System type assigned by the readiness assessment. | keyword |
-| quantum_readiness.timestamp | Native readiness timestamp emitted by TQC. | date |
-| quantum_readiness.upgrade_pathway.action | Recommended remediation action. | keyword |
-| quantum_readiness.upgrade_pathway.component | Component targeted by the remediation action. | keyword |
-| quantum_readiness.upgrade_pathway.description | Description of the recommended remediation step. | keyword |
-| quantum_readiness.upgrade_pathway.estimated_time_weeks | Estimated time in weeks for the remediation step. | long |
-| quantum_readiness.upgrade_pathway.order | Ordered step number in the upgrade pathway. | long |
-| quantum_readiness.upgrade_pathway.priority | Priority assigned to the remediation step. | keyword |
-| scan.target_input | Original scan target input supplied to TQC. | keyword |
-| scan.timestamp | Timestamp emitted by the scanner for this record. | date |
-| scan.type | Scan mode used to collect the readiness record. | keyword |
-| tags | Tags preserved on the transformed readiness document. | keyword |
-| tychon.index | Tychon dataset discriminator used by the source event. | keyword |
-| tychon.type | Tychon record type. | keyword |
-
-#### vpn_clients
-* Source Index: logs-tychon_quantum_command.tychon_pqc-*
-* Destination Index: tychon-pqc-vpn-clients
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp |  | date |
-| event.action |  | keyword |
-| event.category |  | keyword |
-| event.dataset |  | keyword |
-| event.ingested |  | date |
-| event.kind |  | keyword |
-| file.path |  | keyword |
-| id | Tychon unique document identifier for the VPN client record. | keyword |
-| kerberos.config_source |  | keyword |
-| kerberos.has_aes128 |  | boolean |
-| kerberos.has_aes256 |  | boolean |
-| kerberos.has_des |  | boolean |
-| kerberos.has_rc4 |  | boolean |
-| kerberos.is_quantum_safe |  | boolean |
-| kerberos.raw_bitmask |  | long |
-| kerberos.supported_types |  | keyword |
-| observer.hostname |  | keyword |
-| observer.id |  | keyword |
-| observer.tychon_client_id |  | keyword |
-| observer.windows_server_role |  | keyword |
-| scan.target_input |  | keyword |
-| scan.timestamp |  | date |
-| scan.type |  | keyword |
-| security.pqc_support |  | boolean |
-| security.pqc_vulnerable |  | boolean |
-| security.risk_level |  | keyword |
-| security.score |  | long |
-| security.security_score |  | long |
-| security.vulnerable |  | boolean |
-| security.weak_crypto |  | boolean |
-| service.name |  | keyword |
-| service.state |  | keyword |
-| tychon.index |  | keyword |
+| tychon.installed_app.crypto_libraries |  | keyword |
+| tychon.installed_app.crypto_library_count |  | long |
+| tychon.library.crypt32_pqc_status |  | keyword |
+| tychon.library.crypt32_version |  | keyword |
+| tychon.library.crypto_type |  | keyword |
+| tychon.library.gnutls_pqc_status |  | keyword |
+| tychon.library.gnutls_version |  | keyword |
+| tychon.library.name |  | keyword |
+| tychon.library.nss_pqc_status |  | keyword |
+| tychon.library.openssl_pqc_status |  | keyword |
+| tychon.library.openssl_version |  | keyword |
+| tychon.library.pqc_algorithms |  | keyword |
+| tychon.library.pqc_status |  | keyword |
+| tychon.library.schannel_pqc_status |  | keyword |
+| tychon.library.schannel_version |  | keyword |
+| tychon.library.uses_crypt32 |  | boolean |
+| tychon.library.uses_gnutls |  | boolean |
+| tychon.library.uses_nss |  | boolean |
+| tychon.library.uses_openssl |  | boolean |
+| tychon.library.uses_schannel |  | boolean |
+| tychon.library.uses_windows_cng |  | boolean |
+| tychon.library.windows_cng_pqc_status |  | keyword |
+| tychon.library.windows_cng_version |  | keyword |
+| tychon.migration_priority |  | keyword |
+| tychon.pipeline.failed |  | boolean |
+| tychon.pipeline.processed |  | boolean |
+| tychon.pqc_readiness |  | keyword |
+| tychon.quantum_risk |  | keyword |
+| tychon.routing.original.host_architecture |  | keyword |
+| tychon.routing.original.host_hostname |  | keyword |
+| tychon.routing.original.host_id |  | keyword |
+| tychon.routing.original.host_ip |  | ip |
+| tychon.routing.original.host_ipv4 |  | ip |
+| tychon.routing.original.host_ipv6 |  | ip |
+| tychon.routing.original.host_os_family |  | keyword |
+| tychon.routing.original.host_os_name |  | keyword |
+| tychon.routing.original.host_os_platform |  | keyword |
+| tychon.routing.original.host_os_version |  | keyword |
+| tychon.routing.source.hostname |  | keyword |
+| tychon.routing.source.observer_id |  | keyword |
+| tychon.routing.target.address |  | keyword |
+| tychon.routing.target.ip |  | ip |
+| tychon.scan_mode |  | keyword |
+| tychon.scanner_version |  | keyword |
 | tychon.type |  | keyword |
 | vpn_client.active |  | boolean |
 | vpn_client.config_path |  | keyword |
@@ -1103,3 +904,89 @@ This package does not define a custom package-level ILM policy in `docs/README.m
 | vpn_config.kill_switch |  | boolean |
 | vpn_config.logging_enabled |  | boolean |
 | vpn_config.split_tunneling |  | boolean |
+| vulnerability.assessed_at |  | date |
+| vulnerability.cve_list |  | keyword |
+| vulnerability.is_vulnerable |  | boolean |
+| vulnerability.risk_level |  | keyword |
+| vulnerability.risk_reason |  | wildcard |
+| x509.fingerprint_sha256 |  | keyword |
+| x509.is_ca |  | boolean |
+| x509.is_self_signed |  | boolean |
+| x509.is_valid |  | boolean |
+| x509.is_weak_signature |  | boolean |
+| x509.issuer.common_name |  | keyword |
+| x509.issuer.distinguished_name |  | keyword |
+| x509.issuer.organization |  | keyword |
+| x509.issuer_cn |  | keyword |
+| x509.issuer_org |  | keyword |
+| x509.key_bits |  | long |
+| x509.key_type |  | keyword |
+| x509.key_usage |  | keyword |
+| x509.not_after |  | date |
+| x509.not_before |  | date |
+| x509.public_key_algorithm |  | keyword |
+| x509.public_key_curve |  | keyword |
+| x509.public_key_size |  | long |
+| x509.serial_number |  | keyword |
+| x509.sha256_fingerprint |  | keyword |
+| x509.sig_algorithm |  | keyword |
+| x509.signature_algorithm |  | keyword |
+| x509.subject.common_name |  | keyword |
+| x509.subject.distinguished_name |  | keyword |
+| x509.subject.organization |  | keyword |
+| x509.subject_cn |  | keyword |
+| x509.subject_org |  | keyword |
+| x509.validity.not_after |  | date |
+| x509.validity.not_before |  | date |
+| x509.version_number |  | long |
+
+
+**Example event**
+
+An example event for `tychon_pqc` looks as following:
+
+```json
+{
+    "@timestamp": "2026-06-11T12:00:00Z",
+    "event": {
+        "kind": "event",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "tychon_quantum_command.tychon_pqc"
+    },
+    "data_stream": {
+        "type": "logs",
+        "dataset": "tychon_quantum_command.tychon_pqc",
+        "namespace": "default"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "host": {
+        "hostname": "server01"
+    },
+    "tychon": {
+        "index": "applications",
+        "asset_type": "application",
+        "scan_mode": "quantum_command",
+        "pqc_readiness": "partial",
+        "quantum_risk": "medium",
+        "application": {
+            "name": "Example Service",
+            "port": 443,
+            "preferred_protocol": "TLSv1.3",
+            "preferred_cipher": "TLS_AES_256_GCM_SHA384",
+            "preferred_key_exchange": "ECDHE",
+            "port_quantum_grade": {
+                "grade": "B",
+                "score": 82.5
+            }
+        }
+    }
+}
+```
+
+### Data streams using ILM policies
+
+This package does not define a custom package-level ILM policy. Apply retention and lifecycle controls according to your deployment standards for both the raw source stream and the transform destination indices.
