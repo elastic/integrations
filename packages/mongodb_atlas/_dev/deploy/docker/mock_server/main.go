@@ -170,14 +170,21 @@ func handleProcessList(w http.ResponseWriter, r *http.Request, groupID string) {
 		writeErrorJSON(w, http.StatusServiceUnavailable,
 			"SERVICE_UNAVAILABLE", "mock: process list unavailable")
 	default:
+		// Shape mirrors a real Atlas /processes result object (synthetic
+		// identifiers only — no real host names or group IDs).
 		writeJSON(w, map[string]any{
 			"results": []map[string]any{{
-				"id":             "hostname-1:27017",
-				"hostname":       "hostname-1",
+				"id":             "hostname-1.example.mongodb.net:27017",
+				"hostname":       "hostname-1.example.mongodb.net",
 				"port":           27017,
 				"typeName":       "REPLICA_PRIMARY",
-				"version":        "7.0.6",
-				"replicaSetName": "rs0",
+				"version":        "8.0.27",
+				"replicaSetName": "atlas-mock-shard-0",
+				"userAlias":      "mock-shard-00-00.example.mongodb.net",
+				"groupId":        groupID,
+				"created":        "2024-01-01T00:00:00Z",
+				"lastPing":       "2024-01-01T00:01:00Z",
+				"links":          []any{selfLink(r)},
 			}},
 			"totalCount": 1,
 			"links":      []any{selfLink(r)},
@@ -193,28 +200,34 @@ func handleProcessMeasurements(w http.ResponseWriter, r *http.Request, groupID s
 			"SERVICE_UNAVAILABLE", "mock: measurements unavailable")
 		return
 	}
+	// Top-level shape mirrors a real Atlas process-measurements response:
+	// groupId, hostId, processId, start, end, granularity (ISO-8601, uppercase),
+	// measurements, links. Real Atlas has no top-level "period".
 	writeJSON(w, map[string]any{
-		"processId":   "hostname-1:27017",
-		"granularity": "PT1M",
-		"period":      "PT1M",
+		"groupId":     groupID,
+		"hostId":      "hostname-1.example.mongodb.net:27017",
+		"processId":   "hostname-1.example.mongodb.net:27017",
+		"granularity": "PT10M",
 		"start":       "2024-01-01T00:00:00Z",
-		"end":         "2024-01-01T00:01:00Z",
+		"end":         "2024-01-01T00:10:00Z",
 		"measurements": []map[string]any{
-			dataPoint("CONNECTIONS", 38.0),
-			dataPoint("ASSERT_REGULAR", 0.332),
-			dataPoint("PROCESS_CPU_USER", 1.07),
-			dataPoint("PROCESS_CPU_KERNEL", 0.237),
-			dataPoint("PROCESS_NORMALIZED_CPU_USER", 0.654),
-			dataPoint("PROCESS_NORMALIZED_CPU_KERNEL", 0.073),
+			dataPoint("CONNECTIONS", "SCALAR", 38.0),
+			dataPoint("ASSERT_REGULAR", "SCALAR_PER_SECOND", 0.332),
+			dataPoint("PROCESS_CPU_USER", "RAW", 1.07),
+			dataPoint("PROCESS_CPU_KERNEL", "RAW", 0.237),
+			dataPoint("PROCESS_NORMALIZED_CPU_USER", "RAW", 0.654),
+			dataPoint("PROCESS_NORMALIZED_CPU_KERNEL", "RAW", 0.073),
 		},
 		"links": []any{selfLink(r)},
 	})
 }
 
 func handleDiskList(w http.ResponseWriter, r *http.Request) {
+	// Real Atlas names the data partition "data".
 	writeJSON(w, map[string]any{
 		"results": []map[string]any{{
-			"partitionName": "xvdf",
+			"partitionName": "data",
+			"links":         []any{selfLink(r)},
 		}},
 		"totalCount": 1,
 		"links":      []any{selfLink(r)},
@@ -227,18 +240,19 @@ func handleDiskMeasurements(w http.ResponseWriter, r *http.Request, groupID stri
 			"SERVICE_UNAVAILABLE", "mock: disk measurements unavailable")
 		return
 	}
+	// Note: real Atlas disk-measurement responses omit start/end (unlike process
+	// measurements, which include them).
 	writeJSON(w, map[string]any{
-		"processId":     "hostname-1:27017",
-		"partitionName": "xvdf",
-		"granularity":   "PT1M",
-		"period":        "PT1M",
-		"start":         "2024-01-01T00:00:00Z",
-		"end":           "2024-01-01T00:01:00Z",
+		"groupId":       groupID,
+		"hostId":        "hostname-1.example.mongodb.net:27017",
+		"processId":     "hostname-1.example.mongodb.net:27017",
+		"partitionName": "data",
+		"granularity":   "PT10M",
 		"measurements": []map[string]any{
-			dataPoint("DISK_PARTITION_IOPS_READ", 0.332),
-			dataPoint("DISK_PARTITION_IOPS_WRITE", 5.224),
-			dataPoint("DISK_PARTITION_SPACE_FREE", 6.334e9),
-			dataPoint("DISK_PARTITION_SPACE_USED", 1.279e9),
+			dataPoint("DISK_PARTITION_IOPS_READ", "SCALAR_PER_SECOND", 0.332),
+			dataPoint("DISK_PARTITION_IOPS_WRITE", "SCALAR_PER_SECOND", 5.224),
+			dataPoint("DISK_PARTITION_SPACE_FREE", "BYTES", 6.334e9),
+			dataPoint("DISK_PARTITION_SPACE_USED", "BYTES", 1.279e9),
 		},
 		"links": []any{selfLink(r)},
 	})
@@ -250,17 +264,21 @@ func handleHardwareMeasurements(w http.ResponseWriter, r *http.Request, groupID 
 			"SERVICE_UNAVAILABLE", "mock: hardware measurements unavailable")
 		return
 	}
+	// The hardware (FTS) endpoint returns two arrays — hardwareMeasurements and
+	// statusMeasurements — which the CEL program reads by name; keep that shape.
+	// hostId is intentionally omitted (the hardware pipeline maps groupId only).
 	writeJSON(w, map[string]any{
-		"processId":   "hostname-1:27017",
-		"granularity": "PT1M",
+		"groupId":     groupID,
+		"processId":   "hostname-1.example.mongodb.net:27017",
+		"granularity": "PT10M",
 		"hardwareMeasurements": []map[string]any{
-			dataPoint("FTS_PROCESS_CPU_USER", 0.779),
-			dataPoint("FTS_PROCESS_CPU_KERNEL", 0.164),
-			dataPoint("FTS_DISK_USAGE", 115420774.4),
+			dataPoint("FTS_PROCESS_CPU_USER", "RAW", 0.779),
+			dataPoint("FTS_PROCESS_CPU_KERNEL", "RAW", 0.164),
+			dataPoint("FTS_DISK_USAGE", "BYTES", 115420774.4),
 		},
 		"statusMeasurements": []map[string]any{
-			dataPoint("JVM_CURRENT_MEMORY", 132.4),
-			dataPoint("JVM_MAX_MEMORY", 511.0),
+			dataPoint("JVM_CURRENT_MEMORY", "BYTES", 132.4),
+			dataPoint("JVM_MAX_MEMORY", "BYTES", 511.0),
 		},
 		"links": []any{selfLink(r)},
 	})
@@ -317,11 +335,16 @@ func handleSettings(w http.ResponseWriter, _ *http.Request) {
 // Helpers
 // --------------------------------------------------------------------------
 
-func dataPoint(name string, value float64) map[string]any {
+// dataPoint mirrors a real Atlas measurement entry: {name, units, dataPoints}.
+// The `units` field is part of the real API shape (e.g. SCALAR, BYTES,
+// SCALAR_PER_SECOND); the CEL programs read only name + dataPoints and drop the
+// rest, so units never reaches an indexed document — it is here for fidelity.
+func dataPoint(name, units string, value float64) map[string]any {
 	return map[string]any{
-		"name": name,
+		"name":  name,
+		"units": units,
 		"dataPoints": []map[string]any{
-			{"value": value, "timestamp": "2024-01-01T00:00:00Z"},
+			{"timestamp": "2024-01-01T00:00:00Z", "value": value},
 		},
 	}
 }
