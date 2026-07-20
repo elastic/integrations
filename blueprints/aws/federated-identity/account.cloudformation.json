@@ -1,0 +1,71 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Elastic Cloud Connectors federated identity role for AWS — canonical base blueprint for single-account deployments. The cloud-iac-provisioner loads this template and applies RFC 6902 patches from each enabled integration to append the required IAM policies.",
+  "Parameters": {
+    "ElasticResourceId": {
+      "Type": "String",
+      "Description": "Elastic resource ID. Used to construct the ExternalId trust condition, uniquely scoping this role to the Elastic deployment."
+    },
+    "ElasticRoleARN": {
+      "Type": "String",
+      "Default": "arn:aws:iam::254766567737:role/cloud_connectors",
+      "Description": "Elastic's super-role ARN that this role will trust. Change only for non-production Elastic environments."
+    }
+  },
+  "Resources": {
+    "ElasticCloudConnectorsRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": { "Fn::Sub": "ElasticCloudConnectorsRole-${AWS::StackName}" },
+        "Path": "/",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": { "Ref": "ElasticRoleARN" }
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "sts:ExternalId": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        { "Ref": "ElasticResourceId" },
+                        {
+                          "Fn::Select": [
+                            2,
+                            { "Fn::Split": ["/", { "Ref": "AWS::StackId" }] }
+                          ]
+                        }
+                      ]
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "ManagedPolicyArns": [],
+        "Policies": []
+      }
+    }
+  },
+  "Outputs": {
+    "RoleArn": {
+      "Description": "ARN of the Elastic Cloud Connectors role. Supply this to the Elastic platform when configuring the integration.",
+      "Value": { "Fn::GetAtt": ["ElasticCloudConnectorsRole", "Arn"] }
+    },
+    "ExternalId": {
+      "Description": "UUID fragment used as part of the ExternalId trust condition. Supply this to the Elastic platform when configuring the integration.",
+      "Value": {
+        "Fn::Select": [
+          2,
+          { "Fn::Split": ["/", { "Ref": "AWS::StackId" }] }
+        ]
+      }
+    }
+  }
+}

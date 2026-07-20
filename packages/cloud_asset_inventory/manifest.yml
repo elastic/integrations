@@ -1,7 +1,7 @@
-format_version: 3.3.2
+format_version: 3.7.0
 name: cloud_asset_inventory
 title: "Cloud Asset Discovery"
-version: "1.7.1"
+version: "1.8.0"
 source:
   license: "Elastic-2.0"
 description: "Discover and Create Cloud Assets Discovery"
@@ -81,6 +81,48 @@ policy_templates:
             # ACCOUNT_TYPE value should be either "single-account" or "organization-account"
             # RESOURCE_ID is the project id for serverless / kibana component id for ess
             default: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-asset-inventory-cloud-connectors-ACCOUNT_TYPE-9.2.0.yml&param_ElasticResourceId=RESOURCE_ID
+        provider_permissions:
+          - provider: aws
+            description: >
+              Read-only access to AWS services required to discover and inventory cloud assets.
+              The SecurityAudit managed policy covers enumeration across most services;
+              the inline permissions below add Config, Organizations, and newer-service coverage.
+            roles:
+              - name: SecurityAudit
+                id: arn:aws:iam::aws:policy/SecurityAudit
+                description: AWS-managed read-only policy for enumerating resources across all AWS services.
+            permissions:
+              - name: config:ListDiscoveredResources
+                description: List all resources tracked by AWS Config for asset inventory.
+              - name: config:SelectResourceConfig
+                description: Query resource configuration state from AWS Config.
+              - name: config:SelectAggregateResourceConfig
+                description: Query aggregated resource configuration across the organization.
+              - name: config:DescribeConfigurationRecorders
+                description: Verify AWS Config recorders are active and capturing resource state.
+              - name: config:DescribeAggregationAuthorizations
+                description: Read Config aggregation authorization for org-wide inventory.
+              - name: config:DescribeConfigurationAggregators
+                description: Enumerate Config aggregators covering multiple accounts/regions.
+              - name: organizations:DescribeOrganization
+                description: Read organization metadata for org-wide asset discovery scope.
+              - name: organizations:ListAccounts
+                description: Enumerate all member accounts for organization-wide inventory.
+              - name: organizations:ListAccountsForParent
+                description: Walk the organization tree to discover all accounts under each OU.
+              - name: organizations:ListOrganizationalUnitsForParent
+                description: Enumerate OUs for hierarchical asset grouping.
+              - name: organizations:ListRoots
+                description: Read organization root for top-level hierarchy traversal.
+              - name: sts:AssumeRole
+                description: Assume cross-account roles to collect assets from member accounts.
+              - name: sts:GetCallerIdentity
+                description: Resolve the AWS account ID and identity for the collection session.
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account.cloudformation.patches.json
+            title: Cloud Asset Discovery federated identity role with SecurityAudit access
       - type: cloudbeat/asset_inventory_azure
         title: Azure Asset Discovery
         description: Azure Asset Discovery
