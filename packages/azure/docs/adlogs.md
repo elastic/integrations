@@ -810,6 +810,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.auditlogs.properties.logged_by_service | Logged by service | keyword |
 | azure.auditlogs.properties.operation_type | Operation type | keyword |
 | azure.auditlogs.properties.result | Log result | keyword |
+| azure.auditlogs.properties.result_description | Result description | keyword |
 | azure.auditlogs.properties.result_reason | Reason for the log result | keyword |
 | azure.auditlogs.properties.target_resources.\*.display_name | Display name | keyword |
 | azure.auditlogs.properties.target_resources.\*.id | ID | keyword |
