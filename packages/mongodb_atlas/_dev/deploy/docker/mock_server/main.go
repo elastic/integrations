@@ -308,18 +308,66 @@ func handleLog(w http.ResponseWriter, _ *http.Request, filename string) {
 }
 
 func handleAlerts(w http.ResponseWriter, r *http.Request) {
+	// Return one synthetic alert so system tests can collect and validate events.
 	writeJSON(w, map[string]any{
-		"results":    []any{},
+		"results": []map[string]any{{
+			"alertConfigId": "alert-config-mock-001",
+			"clusterName":   "atlas-mock-cluster",
+			"created":       "2024-01-01T00:00:00Z",
+			"currentValue": map[string]any{
+				"number": 1.0,
+				"units":  "RAW",
+			},
+			"eventTypeName":   "OUTSIDE_METRIC_THRESHOLD",
+			"groupId":         "mock-group-001",
+			"hostnameAndPort": "hostname-1.example.mongodb.net:27017",
+			"id":              "alert-mock-001",
+			"lastNotified":    "2024-01-01T00:01:00Z",
+			"metricName":      "FTS_PROCESS_CPU_USER",
+			"orgId":           "mock-org-001",
+			"replicaSetName":  "atlas-mock-shard-0",
+			"resolved":        "2024-01-01T00:01:00Z",
+			"status":          "CLOSED",
+			"updated":         "2024-01-01T00:01:00Z",
+		}},
 		"links":      []any{selfLink(r)},
-		"totalCount": 0,
+		"totalCount": 1,
 	})
 }
 
 func handleEvents(w http.ResponseWriter, r *http.Request) {
+	// Return one synthetic event so system tests (organization and project
+	// data streams) can collect and validate events instead of timing out.
 	writeJSON(w, map[string]any{
-		"results":    []any{},
+		"results": []map[string]any{{
+			"created":       "2024-01-01T00:00:00Z",
+			"eventTypeName": "INVITED_TO_GROUP",
+			"groupId":       "mock-group-001",
+			"id":            "event-mock-001",
+			"isGlobalAdmin": false,
+			"raw": map[string]any{
+				"_t":          "USER_AUDIT",
+				"cre":         "2024-01-01T00:00:00Z",
+				"description": "Mock event",
+				"et":          "INVITED_TO_GROUP",
+				"hidden":      false,
+				"id":          "event-mock-001",
+				"isMmsAdmin":  false,
+				"newRoles":    []string{},
+				"remoteAddr":  "0.0.0.0",
+				"severity":    "INFO",
+				"source":      "USER",
+				"un":          "mock.user@example.com",
+				"ut":          "LOCAL",
+			},
+			"orgId":          "mock-org-001",
+			"remoteAddress":  "0.0.0.0",
+			"targetUsername": "mock.user@example.com",
+			"userId":         "mock-user-001",
+			"username":       "mock.user@example.com",
+		}},
 		"links":      []any{selfLink(r)},
-		"totalCount": 0,
+		"totalCount": 1,
 	})
 }
 
