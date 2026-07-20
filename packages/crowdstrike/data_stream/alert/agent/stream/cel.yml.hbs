@@ -48,7 +48,10 @@ program: |-
           "limit": int(state.batch_size),
           "sort": "updated_timestamp|asc",
           "filter": [
-            "updated_timestamp:>'" + start_time + "'",
+            // Inclusive lower bound: records sharing the boundary timestamp can span a page
+            // or error boundary, so ">=" avoids permanently skipping same-timestamp records.
+            // Re-fetched records are de-duplicated downstream by the fingerprint _id
+            "updated_timestamp:>='" + start_time + "'",
             ?state.?query.optMap(q, "(" + q + ")"),
           ].join("+"),
         }.encode_json()
