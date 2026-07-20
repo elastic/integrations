@@ -139,6 +139,27 @@ processors:
       copy_from: stormshield.id
       if: ctx.stormshield?.id != null
 
+  - set:
+      tag: set_observer_ingress_interface_id
+      field: observer.ingress.interface.id
+      copy_from: stormshield.srcif
+      ignore_empty_value: true
+  - set:
+      tag: set_observer_ingress_interface_name
+      field: observer.ingress.interface.name
+      copy_from: stormshield.srcifname
+      ignore_empty_value: true
+  - set:
+      tag: set_observer_egress_interface_id
+      field: observer.egress.interface.id
+      copy_from: stormshield.dstif
+      ignore_empty_value: true
+  - set:
+      tag: set_observer_egress_interface_name
+      field: observer.egress.interface.name
+      copy_from: stormshield.dstifname
+      ignore_empty_value: true
+
   - convert:
       tag: convert_stormshield_modsrc_to_source_nat_ip_cf7c07ec
       field: stormshield.modsrc
@@ -222,7 +243,7 @@ processors:
       properties:
       - asn
       - organization_name
-      ignore_missing: true
+      if: ctx.destination?.ip != null
   - rename:
       tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
@@ -246,7 +267,7 @@ processors:
       properties:
       - asn
       - organization_name
-      ignore_missing: true
+      if: ctx.source?.ip != null
   - rename:
       tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
@@ -294,6 +315,25 @@ processors:
       target_field: source.bytes
       type: long
       ignore_missing: true
+
+  - convert:
+      tag: convert_stormshield_rcvd_to_destination_bytes
+      field: stormshield.rcvd
+      target_field: destination.bytes
+      type: long
+      ignore_missing: true
+
+  - script:
+      tag: script_sum_network_bytes
+      lang: painless
+      description: Sum source and destination bytes into network.bytes.
+      if: ctx.source?.bytes != null && ctx.destination?.bytes != null
+      ignore_failure: true
+      source: >-
+        if (ctx.network == null) {
+            ctx.network = [:];
+        }
+        ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes;
 
   - rename:
       tag: rename_stormshield_dstname_to_destination_domain_675a68da
@@ -446,6 +486,54 @@ processors:
         }
         
 
+  # Promote fields raised by the intrusion prevention engine before they are
+  # moved under stormshield.metadata.
+  - set:
+      tag: set_event_code_from_alarmid
+      field: event.code
+      copy_from: stormshield.alarmid
+      ignore_empty_value: true
+  - convert:
+      tag: convert_stormshield_risk_to_event_risk_score
+      field: stormshield.risk
+      target_field: event.risk_score
+      type: float
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_event_risk_score
+            field: event.risk_score
+            ignore_missing: true
+  # The pri field of alarm logs carries the alarm level (1 = major, 4 = minor),
+  # unlike other log families where it is a syslog-like severity hardcoded to 5.
+  - convert:
+      tag: convert_alarm_pri_to_event_severity
+      field: stormshield.pri
+      target_field: event.severity
+      type: long
+      if: ctx.stormshield?.logtype == 'alarm' && ctx.stormshield.pri != null
+      ignore_failure: true
+
+  # Promote HTTP proxy fields.
+  - set:
+      tag: set_url_original_from_arg
+      field: url.original
+      copy_from: stormshield.arg
+      ignore_empty_value: true
+      if: ctx.stormshield?.logtype == 'web' && ctx.stormshield.arg != null
+  - set:
+      tag: set_url_domain_from_destination_domain
+      field: url.domain
+      copy_from: destination.domain
+      if: ctx.stormshield?.logtype == 'web' && ctx.destination?.domain != null
+
+  - append:
+      tag: append_related_hosts_srcname
+      field: related.hosts
+      value: "{{{stormshield.srcname}}}"
+      if: ctx.stormshield?.srcname != null && ctx.stormshield.srcname != ''
+      allow_duplicates: false
+
   - script:
       tag: script_move_things
       lang: painless
@@ -463,30 +551,65 @@ processors:
             - authsslvpn
             - authtotp
             - authwebadmin
+            - cat_site
             - class
+            - classification
+            - clientappid
             - confid
+            - contentpolicy
+            - cookie_i
+            - cookie_r
+            - datechange
+            - domain
             - dstcontinent
             - dstcountry
             - dstportname
             - error
+            - filename
+            - filetype
+            - groupid
+            - icmpcode
+            - icmptype
             - id
+            - ikev
+            - localnet
             - mem
+            - method
             - modsrc
             - modsrcport
             - op
+            - phase
             - pri
             - rcvd
+            - remoteid
+            - remotenet
+            - repeat
             - result
+            - risk
+            - ruletype
+            - sandboxing
+            - sandboxinglevel
             - security
+            - sensible
             - sent
+            - serverappid
             - sessionid
+            - side
             - slotlevel
             - slotname
+            - spamlevel
+            - spi_in
+            - spi_out
             - srccontinent
             - srccountry
             - srcname
             - srcportname
+            - target
+            - totp
+            - urlruleid
+            - usergroup
             - version
+            - virus
       source: >-
         if (!ctx.stormshield.containsKey("metadata")) {
             ctx.stormshield.metadata = [:];
@@ -511,6 +634,87 @@ processors:
       target_field: stormshield.out_bytes
       type: long
       ignore_missing: true
+
+  # ------------------------------------------------------------
+  # ECS categorization
+  - remove:
+      tag: remove_empty_event_action
+      description: An empty action field means the traffic matched a rule set to Log.
+      field: event.action
+      if: ctx.event?.action != null && ctx.event.action == ''
+
+  - network_direction:
+      tag: network_direction
+      internal_networks:
+        - private
+      if: ctx.source?.ip != null && ctx.destination?.ip != null
+      ignore_failure: true
+
+  - script:
+      tag: script_ecs_categorization
+      lang: painless
+      description: Set the ECS categorization fields from the log family and the rule action.
+      if: ctx.error == null
+      params:
+        logtypes:
+          alarm:      { kind: alert,  category: [intrusion_detection, network], type: [info] }
+          auth:       { kind: event,  category: [authentication], type: [start] }
+          authstat:   { kind: metric, category: [authentication], type: [info] }
+          connection: { kind: event,  category: [network, session], type: [connection, end] }
+          count:      { kind: metric, category: [network], type: [info] }
+          date:       { kind: event,  category: [host], type: [change] }
+          dmrouting:  { kind: event,  category: [network, host], type: [change] }
+          filter:     { kind: event,  category: [network], type: [connection] }
+          filterstat: { kind: metric, category: [network], type: [info] }
+          ftp:        { kind: event,  category: [network], type: [info] }
+          ipsecstat:  { kind: metric, category: [network], type: [info] }
+          monitor:    { kind: metric, category: [host], type: [info] }
+          plugin:     { kind: event,  category: [network], type: [protocol] }
+          pop3:       { kind: event,  category: [email, network], type: [info] }
+          pvm:        { kind: event,  category: [vulnerability], type: [info] }
+          restapi:    { kind: event,  category: [web, configuration], type: [access] }
+          routerstat: { kind: metric, category: [network], type: [info] }
+          routing:    { kind: event,  category: [network, host], type: [change] }
+          sandboxing: { kind: event,  category: [network], type: [info] }
+          server:     { kind: event,  category: [configuration], type: [access] }
+          smtp:       { kind: event,  category: [email, network], type: [info] }
+          ssl:        { kind: event,  category: [network], type: [connection] }
+          system:     { kind: event,  category: [host], type: [info] }
+          vpn:        { kind: event,  category: [network], type: [info] }
+          web:        { kind: event,  category: [web, network], type: [access] }
+          xvpn:       { kind: event,  category: [network, session], type: [connection] }
+        action_types:
+          pass: allowed
+          block: denied
+        action_logtypes:
+          - alarm
+          - connection
+          - filter
+          - ftp
+          - plugin
+          - pop3
+          - smtp
+          - ssl
+          - web
+      source: >-
+        def logtype = ctx.stormshield?.logtype;
+        def entry = params.logtypes[logtype];
+        if (ctx.event == null) {
+            ctx.event = [:];
+        }
+        if (entry == null) {
+            ctx.event.kind = 'event';
+        } else {
+            ctx.event.kind = entry.kind;
+            ctx.event.category = new ArrayList(entry.category);
+            ctx.event.type = new ArrayList(entry.type);
+            if (params.action_logtypes.contains(logtype) && ctx.event.action instanceof String) {
+                def mapped = params.action_types[ctx.event.action.toLowerCase()];
+                if (mapped != null && !ctx.event.type.contains(mapped)) {
+                    ctx.event.type.add(mapped);
+                }
+            }
+        }
 
   # ------------------------------------------------------------
   # Add the 'related' fields
@@ -547,6 +751,13 @@ processors:
       field: related.user
       value: "{{{user.name}}}"
       if: ctx.user?.name != null
+      allow_duplicates: false
+
+  - append:
+      tag: append_related_hosts_destination_domain
+      field: related.hosts
+      value: "{{{destination.domain}}}"
+      if: ctx.destination?.domain != null
       allow_duplicates: false
 
   # ------------------------------------------------------------
