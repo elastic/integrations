@@ -23,7 +23,8 @@ func TestUpdateEntryLinks(t *testing.T) {
       link: https://github.com/elastic/integrations/pull/REPLACE_ME
 `)
 		require.NoError(t, UpdateEntryLinks(path, "1.5.0", newURL))
-		got, _ := os.ReadFile(path)
+		got, err := os.ReadFile(path)
+		require.NoError(t, err)
 		assert.Contains(t, string(got), newURL)
 		assert.NotContains(t, string(got), "REPLACE_ME")
 	})
@@ -39,7 +40,8 @@ func TestUpdateEntryLinks(t *testing.T) {
       link: https://github.com/elastic/integrations/pull/REPLACE_ME
 `)
 		require.NoError(t, UpdateEntryLinks(path, "1.5.0", newURL))
-		got, _ := os.ReadFile(path)
+		got, err := os.ReadFile(path)
+		require.NoError(t, err)
 		content := string(got)
 		assert.NotContains(t, content, "REPLACE_ME")
 		// Both link lines now contain the new URL.
@@ -66,7 +68,8 @@ func TestUpdateEntryLinks(t *testing.T) {
       link: `+oldURL+`
 `)
 		require.NoError(t, UpdateEntryLinks(path, "1.5.0", newURL))
-		got, _ := os.ReadFile(path)
+		got, err := os.ReadFile(path)
+		require.NoError(t, err)
 		content := string(got)
 		assert.Contains(t, content, newURL)
 		assert.Contains(t, content, oldURL, "unrelated entry must not be modified")
@@ -82,7 +85,8 @@ func TestUpdateEntryLinks(t *testing.T) {
 `
 		path := writeChangelog(t, original)
 		require.NoError(t, UpdateEntryLinks(path, "9.9.9", newURL))
-		got, _ := os.ReadFile(path)
+		got, err := os.ReadFile(path)
+		require.NoError(t, err)
 		assert.Equal(t, original, string(got))
 	})
 
