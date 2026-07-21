@@ -943,6 +943,12 @@ test_package_in_local_stack() {
     local package_name="$1"
     TEST_OPTIONS="--report-format xUnit --report-output file"
 
+    if [[ "${STACK_LOGSDB_COLUMNAR_ENABLED:-false}" == "true" ]]; then
+        # Parent `test` accepts --logsdb-columnar so system tests apply @custom
+        # doc_values overrides required under logsdb_columnar.
+        TEST_OPTIONS="${TEST_OPTIONS} --logsdb-columnar"
+    fi
+
     echo "Test package: ${package_name}"
     # Run all test suites
     ${ELASTIC_PACKAGE_BIN} test "${ELASTIC_PACKAGE_VERBOSITY}" ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
