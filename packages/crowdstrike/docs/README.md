@@ -315,6 +315,8 @@ To resolve this, adjust the `Batch Size` setting in the integration to reduce th
 
 The option `Enable Data Deduplication` allows you to avoid consuming duplicate events. By default, this option is set to `false`, and so duplicate events can be ingested. When this option is enabled, a [fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) is used to calculate a hash from a set of CrowdStrike fields that uniquely identify the event. The hash is assigned to the Elasticsearch [`_id`](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-id-field.html) field that makes the document unique and prevent duplicates.
 
+The fingerprint includes `@timestamp`, CrowdStrike `id`/`aid`/`cid`, and the FDR object type (`aidmaster`, `userinfo`, or `data`), derived from `log.file.path` or `aws.s3.object.key`. For Cloud Security (CSPM) findings, `rule.id` and a resource identifier are also included so distinct findings that share a timestamp and customer id stay unique.
+
 If duplicate events are ingested, to help find them, the integration's `event.id` field is populated by concatenating a few CrowdStrike fields that uniquely identify the event. These fields are `id`, `aid`, and `cid` from the CrowdStrike event. The fields are separated with pipe `|`.
 For example, if your CrowdStrike event contains `id: 123`, `aid: 456`, and `cid: 789` then the `event.id` would be `123|456|789`.
 
