@@ -16,8 +16,10 @@ resource.url: {{url}}
 state:
   initial_interval: {{initial_interval}}
   token_url: {{token_url}}
+  harvest_url: {{harvest_url}}
   client_id: {{client_id}}
   client_secret: {{client_secret}}
+  enrich_rejections: {{enrich_rejections}}
 {{#if user_id}}
   user_id: "{{user_id}}"
 {{/if}}
@@ -50,6 +52,76 @@ Endpoints:
       Pit-Id + Search-After (for page 2+)
     - Response: {paging: {pit_id, next_search_after}, results: [...]}
     - next_search_after is null on the last page.
+
+Rejection enrichment (optional, enrich_rejections):
+
+  A candidate/prospect rejection is audited as an "action" event with
+  event.target_type == "Candidate or Prospect rejected" and
+  event.meta == null — this event carries no application or candidate
+  ID. However, the same API request also audits a second, separate
+  event with event.target_type == "RejectionDetails" and
+  event.type == "data_change_create", whose event.meta.application_id
+  gives the Application ID. Both events share the same request.id, so
+  within a single page of audit results, a rejection event is
+  correlated to its RejectionDetails sibling by matching request.id,
+  and the resulting application_id is used to look up the rejection
+  reason and notes from the Harvest API. The result is merged into the
+  rejection event as event.rejection before it is emitted. This reuses
+  the same bearer token as the audit log request, so the OAuth client
+  must also be granted read access to these Harvest V3 endpoints.
+
+  Correlation by request.id:
+    - Exactly one RejectionDetails event shares the rejection event's
+      request.id: proceed to the Harvest API lookups below.
+    - None found: event.rejection.error records that no matching
+      RejectionDetails event was found for that request.id. This can
+      happen if the two events land on different audit-log pages;
+      increasing batch_size reduces how often pages split a request.
+    - More than one found (a bulk-reject action can audit multiple
+      "Candidate or Prospect rejected" and "RejectionDetails" events
+      under the same shared request.id, with no way to tell which
+      pairs with which): no attempt is made to guess. event.rejection
+      .error records the ambiguity and
+      event.rejection.ambiguous_application_ids lists the candidates.
+
+  GET https://harvest.greenhouse.io/v3/rejection_details?application_ids={application_id}
+    - The application_id is taken from event.meta.application_id on the
+      correlated RejectionDetails audit event. Using application_ids= rather
+      than ids= because the ids= filter is not reliably implemented on this
+      endpoint and returns empty for valid records.
+    - Returns an array; take [0]. Provides rejection_reason_id,
+      rejection_note_id, candidate_id, and rejected_at.
+    - If the array is empty (rejected without selecting a reason or adding
+      notes), the event is emitted with application_id only and no error.
+    - Auth: same OAuth Bearer token as the audit log request.
+    - Required scope: harvest:rejection_details:list
+
+  GET https://harvest.greenhouse.io/v3/rejection_reasons/{rejection_reason_id}
+    - Only called when rejection_reason_id from the above response is
+      not null (i.e. the rejection was made with a reason selected).
+    - Returns a single object (not an array). Provides id, name, and type.
+      Wrapped in [...] so the rest of the code can treat it uniformly.
+    - Note: GET /v3/rejection_reasons?ids={id} returns [] for all IDs
+      regardless of scope — the ?ids= filter is not implemented on this
+      endpoint. The single-resource endpoint /{id} must be used instead.
+    - Note: "Security concern" type reasons are only returned when the
+      enable_reject_as_security_concern product flag is on for the org;
+      if not, this endpoint returns 404 for those IDs. In that case the
+      reason name is extracted from the note body prefix
+      "Reason: <name>\n\n" that Greenhouse auto-prepends to every
+      rejection note. Only name is available via this fallback; id and
+      type are omitted.
+    - Required scope: harvest:rejection_reasons:show
+
+  GET https://harvest.greenhouse.io/v3/notes?ids={rejection_note_id}
+    - Only called when rejection_note_id from the rejection_details
+      response is not null (i.e. notes were entered at rejection time).
+    - Returns an array; take [0].body for the free-text note.
+    - Required scope: harvest:notes:list
+
+  A failed or inconclusive lookup does not drop the underlying audit
+  event: it is emitted with event.rejection.error describing why no
+  reason/notes could be attached.
 
 State:
   auth_token — shallow-replaced object holding token and expires.
@@ -168,7 +240,155 @@ program: |-
                               ).as(next_max_event_time,
                                 {
                                   "auth_token": auth.auth_token,
-                                  "events": results.map(e, {"message": e.encode_json()}),
+                                  "events": results.filter(rd,
+                                    rd.?event.target_type.orValue("") == "RejectionDetails" &&
+                                    rd.?event.type.orValue("") == "data_change_create" &&
+                                    rd.?event.meta.application_id.hasValue()
+                                  ).as(rejection_details_events,
+                                    results.map(e,
+                                      (
+                                        state.enrich_rejections &&
+                                        e.?event.type.orValue("") == "action" &&
+                                        e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
+                                      ).as(is_rejection,
+                                        {"message": (
+                                          is_rejection ?
+                                            rejection_details_events.filter(rde,
+                                              rde.?request.id.orValue("") == e.?request.id.orValue("")
+                                            ).as(matches,
+                                              (matches.size() == 1) ?
+                                                string(int(matches[0].event.meta.application_id)).as(application_id,
+                                                  string(int(matches[0].event.meta.id)).as(rejection_details_id,
+                                                    request(
+                                                      "GET",
+                                                      state.harvest_url.trim_right("/") + "/v3/rejection_details?application_ids=" + application_id
+                                                    ).with(
+                                                      {"Header": {"Authorization": ["Bearer " + auth.auth_token.token]}}
+                                                    ).do_request().as(rd_resp,
+                                                      (rd_resp.StatusCode == 200) ?
+                                                        rd_resp.Body.decode_json().as(rd_list,
+                                                          (size(rd_list) > 0) ?
+                                                            rd_list[0].as(rd,
+                                                              rd.?rejection_reason_id.orValue(null).as(rr_id,
+                                                                rd.?rejection_note_id.orValue(null).as(rn_id,
+                                                                  (rr_id != null ?
+                                                                    request(
+                                                                      "GET",
+                                                                      state.harvest_url.trim_right("/") + "/v3/rejection_reasons/" + string(int(rr_id))
+                                                                    ).with(
+                                                                      {"Header": {"Authorization": ["Bearer " + auth.auth_token.token]}}
+                                                                    ).do_request().as(rr_resp,
+                                                                      (rr_resp.StatusCode == 200) ?
+                                                                        [rr_resp.Body.decode_json()]
+                                                                      :
+                                                                        []
+                                                                    )
+                                                                  :
+                                                                    []
+                                                                  ).as(reason_list,
+                                                                    (rn_id != null ?
+                                                                      request(
+                                                                        "GET",
+                                                                        state.harvest_url.trim_right("/") + "/v3/notes?ids=" + string(int(rn_id))
+                                                                      ).with(
+                                                                        {"Header": {"Authorization": ["Bearer " + auth.auth_token.token]}}
+                                                                      ).do_request().as(rn_resp,
+                                                                        (rn_resp.StatusCode == 200) ?
+                                                                          rn_resp.Body.decode_json().as(rn_list,
+                                                                            (size(rn_list) > 0) ?
+                                                                              rn_list[0].?body.orValue("")
+                                                                            :
+                                                                              ""
+                                                                          )
+                                                                        :
+                                                                          ""
+                                                                      )
+                                                                    :
+                                                                      ""
+                                                                    ).as(notes_text,
+                                                                      e.with({
+                                                                        "event": e.event.with({
+                                                                          "rejection": {
+                                                                            "application_id": application_id,
+                                                                            ?"candidate_id": (rd.?candidate_id.orValue(null) == null) ?
+                                                                              optional.none()
+                                                                            :
+                                                                              optional.of(string(int(rd.candidate_id))),
+                                                                            ?"reason": (size(reason_list) == 0 || !reason_list[0].?id.hasValue()) ?
+                                                                              (
+                                                                                // Fallback: extract name from Greenhouse auto-prefix "Reason: <name>\n\n..."
+                                                                                // Used when the /{id} endpoint returns 404 (e.g. deleted reasons).
+                                                                                notes_text.startsWith("Reason: ") ?
+                                                                                  notes_text.split("\n").as(lines,
+                                                                                    optional.of({
+                                                                                      "name": lines[0].substring(8, size(lines[0])),
+                                                                                      "type": "",
+                                                                                    })
+                                                                                  )
+                                                                                :
+                                                                                  optional.none()
+                                                                              )
+                                                                            :
+                                                                              optional.of({
+                                                                                "id": string(int(reason_list[0].id)),
+                                                                                "name": reason_list[0].name,
+                                                                                "type": reason_list[0].?type.?name.orValue(""),
+                                                                              }),
+                                                                            ?"notes": (notes_text == "") ? optional.none() : optional.of(notes_text),
+                                                                            ?"rejected_at": rd.?rejected_at,
+                                                                          },
+                                                                        }),
+                                                                      })
+                                                                    )
+                                                                  )
+                                                                )
+                                                              )
+                                                            )
+                                                          :
+                                                            e.with({
+                                                              "event": e.event.with({
+                                                                "rejection": {
+                                                                  "application_id": application_id,
+                                                                },
+                                                              }),
+                                                            })
+                                                        )
+                                                      :
+                                                        e.with({
+                                                          "event": e.event.with({
+                                                            "rejection": {
+                                                              "application_id": application_id,
+                                                              "error": "rejection_details fetch failed: " + string(rd_resp.StatusCode),
+                                                            },
+                                                          }),
+                                                        })
+                                                    )
+                                                  )
+                                                )
+                                              : (matches.size() == 0) ?
+                                                e.with({
+                                                  "event": e.event.with({
+                                                    "rejection": {
+                                                      "error": "no RejectionDetails audit event found sharing request.id " + e.?request.id.orValue(""),
+                                                    },
+                                                  }),
+                                                })
+                                              :
+                                                e.with({
+                                                  "event": e.event.with({
+                                                    "rejection": {
+                                                      "error": "ambiguous: " + string(matches.size()) + " RejectionDetails events share request.id " + e.?request.id.orValue("") + " (likely a bulk rejection)",
+                                                      "ambiguous_application_ids": matches.map(m, string(int(m.event.meta.application_id))),
+                                                    },
+                                                  }),
+                                                })
+                                            )
+                                          :
+                                            e
+                                        ).encode_json()}
+                                      )
+                                    )
+                                  ),
                                   "cursor": {
                                     // Keep window_start_time fixed until the final
                                     // page succeeds so the whole window can be

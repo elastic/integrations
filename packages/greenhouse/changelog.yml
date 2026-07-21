@@ -1,4 +1,23 @@
 # newer versions go on top
+- version: "0.2.0"
+  changes:
+    - description: >-
+        Add optional rejection enrichment for "Candidate or Prospect rejected"
+        audit events. When enabled, the integration correlates the rejection
+        event to its accompanying RejectionDetails audit event (matched by
+        request.id) to obtain the application ID, then fetches the rejection
+        reason and any free-text rejection notes from the Harvest API. The
+        enriched fields are added under greenhouse.audit.event.rejection
+        (application_id, candidate_id, reason.id, reason.name, reason.type,
+        notes, rejected_at) and notes are also copied to event.reason. If
+        correlation fails (no match, or an ambiguous bulk-reject), the event
+        is still indexed with an error field and the
+        greenhouse-rejection-enrichment-failed tag rather than being dropped.
+        Requires the harvest:rejection_details:list,
+        harvest:rejection_reasons:show, and harvest:notes:list scopes on the
+        OAuth credential.
+      type: enhancement
+      link: https://github.com/elastic/integrations/issues/20255
 - version: "0.1.0"
   changes:
     - description: Initial release.
