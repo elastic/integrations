@@ -41,7 +41,7 @@ program: |
       "Header": {
         "x-apikey": [state.access_token],
         "x-tool": ["Elastic"],
-        "User-Agent": ["v1.0.0"], // Keep this in sync with 'version' in package level manifest.yml.
+        "User-Agent": ["v1.1.2"], // Keep this in sync with 'version' in package level manifest.yml.
       }
     }).do_request().as(resp, resp.StatusCode == 200 ?
       resp.Body.decode_json().as(body, {
@@ -102,7 +102,13 @@ program: |
             // "Key name strings must be non-empty strings up to 500 bytes"
             // for every request touching that window). Count consecutive 400s
             // for the window and, once the threshold is reached, skip past the
-            // window to restore collection, accepting the bounded data loss.
+            // window to restore collection. The skip discards every event
+            // dated within [start_time, end_time] that was not already
+            // ingested from pages before the failing one — potentially the
+            // whole window when the first page is what fails — not just the
+            // record the API chokes on; there is no narrower recovery because
+            // the API only filters by date and rejects every request whose
+            // results would include the poisoned record.
             // Both the retry notices and the final skip are published as error
             // events (array form) so that the failure counter and, on skip,
             // the advanced cursor are persisted to the registry across
