@@ -5,9 +5,11 @@
 # The CEL input runs inside a real elastic-agent container configured the way
 # agentless-controller deploys it (single container, monitoring enabled with
 # logs/metrics collection off, no GOMEMLIMIT, agentless env flags). This is the
-# authoritative harness for the ORR memory profile. The input config is the
-# self-contained elastic-agent.yml in this directory - there is no external
-# dependency other than the corpus generator and the corpus/mock files.
+# authoritative harness for the ORR memory profile. The input config is assembled
+# at run time from elastic-agent.yml.tmpl with the CEL program extracted verbatim
+# from the shipping data stream (data_stream/audit/agent/stream/cel.yml.hbs), so it
+# always matches what o365 ships. The only external dependency is the corpus
+# generator; the corpus/mock files live in this directory.
 #
 # Deviations from a live agentless pod (do not materially change decode peak):
 #   - output points at an unreachable ES (events are held, never drained), so no
@@ -37,15 +39,18 @@ PLATEAU_S="${PLATEAU_S:-30}"                       # memory flat this long => de
 
 # This harness is self-contained under packages/o365/_dev/scripts/memcap-agent/:
 # corpus/ holds the generator template/config/fields, mock-config.yml is the
-# elastic/stream mock config, elastic-agent.yml is the input config.
+# elastic/stream mock config, elastic-agent.yml.tmpl is the input-config template
+# (the CEL program is pulled from the shipping cel.yml.hbs at run time - see step 1b).
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOL="${TOOL:-$HOME/go/src/github.com/elastic/elastic-integration-corpus-generator-tool}"
 PKG="$HERE/corpus"
 MOCK_CONFIG="$HERE/mock-config.yml"
-AGENT_YML="$HERE/elastic-agent.yml"
+AGENT_TMPL="$HERE/elastic-agent.yml.tmpl"
+CEL_HBS="$HERE/../../../data_stream/audit/agent/stream/cel.yml.hbs"
 
 NET=o365-memcap-net
 WORK="$HERE/work"
+AGENT_YML="$WORK/elastic-agent.yml"                 # assembled at run time from AGENT_TMPL + CEL_HBS (step 1b)
 
 cleanup() {
   [ "$KEEP" = "1" ] && { echo "KEEP=1: leaving svc-o365 / o365-agent up"; return; }
@@ -59,7 +64,8 @@ command -v docker >/dev/null || { echo "docker not found"; exit 1; }
 [ -x "$TOOL/eicgt" ] || [ -x "$TOOL/elastic-integration-corpus-generator-tool" ] || {
   echo "corpus tool binary not found in $TOOL (build it first: cd $TOOL && go build -o eicgt .)"; exit 1; }
 EICGT="$TOOL/eicgt"; [ -x "$EICGT" ] || EICGT="$TOOL/elastic-integration-corpus-generator-tool"
-[ -f "$AGENT_YML" ] || { echo "missing $AGENT_YML"; exit 1; }
+[ -f "$AGENT_TMPL" ] || { echo "missing $AGENT_TMPL"; exit 1; }
+[ -f "$CEL_HBS" ]    || { echo "missing $CEL_HBS (needed to assemble the agent config)"; exit 1; }
 
 # --------------------------- 1. generate corpus ---------------------------
 rm -rf "$WORK"; mkdir -p "$WORK/corpus"
@@ -71,6 +77,23 @@ GEN="$(ls -1 "$WORK/corpus"/*template.ndjson | head -n1)"
 cp "$GEN" "$WORK/corpus/corpus-1"                  # mock globs /var/log/corpus-*
 BLOB=$(wc -c < "$WORK/corpus/corpus-1" | tr -d ' ')
 echo ">> blob: $TOTAL_EVENTS events, $BLOB bytes (~$((BLOB/1024/1024)) MB raw), cap=$MEM_LIMIT, agent=$STACK_VERSION"
+
+# --------------------------- 1b. assemble agent config ---------------------------
+# Keep the harness honest: rather than storing a copy of the CEL program that can
+# drift, extract the shipping `program:` block verbatim from cel.yml.hbs and splice
+# it into the template, so every run exercises exactly what o365 ships. The block in
+# cel.yml.hbs is indented 2 spaces; the stream in the template wants 6, so re-indent
+# by 4. The block runs from the `program: |-` line to the next top-level key.
+echo ">> assembling agent config (CEL program from $CEL_HBS) ..."
+awk '
+  /^program: \|-$/ { f=1; next }
+  f && /^[^[:space:]]/ { f=0 }
+  f { if ($0 ~ /^[[:space:]]*$/) print ""; else print "    " $0 }
+' "$CEL_HBS" > "$WORK/program.indented"
+[ -s "$WORK/program.indented" ] || { echo "failed to extract 'program:' block from $CEL_HBS"; exit 1; }
+awk 'FNR==NR { prog[++n]=$0; next }
+     /^[[:space:]]*#__CEL_PROGRAM__[[:space:]]*$/ { for (i=1;i<=n;i++) print prog[i]; next }
+     { print }' "$WORK/program.indented" "$AGENT_TMPL" > "$AGENT_YML"
 
 # --------------------------- 2. mock ---------------------------
 docker network create "$NET" >/dev/null 2>&1 || true

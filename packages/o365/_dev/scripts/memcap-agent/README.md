@@ -12,8 +12,11 @@ against the `elastic/stream` mock serving one big content blob, under a Docker
 
 ## Layout
 
-- `elastic-agent.yml` — standalone Elastic Agent config with the o365 `audit` CEL
-  input inlined (single source of truth; tuned for a single-blob worst case).
+- `elastic-agent.yml.tmpl` — standalone Elastic Agent config template, tuned for a
+  single-blob worst case. Its `program:` block is a `#__CEL_PROGRAM__` placeholder that
+  `run.sh` fills in from the shipping data stream at run time (see [Keep the CEL program
+  in sync](#keep-the-cel-program-in-sync-with-the-shipping-input)), writing the runnable
+  config to `work/elastic-agent.yml`.
 - `run.sh` — one run: generate corpus → start mock → run capped agent → report
   `memory.peak` / OOM. Sweep with `TOTAL_EVENTS` and `MEM_LIMIT`.
 - `sweep.sh` — several blob sizes at a big cap, fits `memory.peak = base + k·blob`,
@@ -29,29 +32,15 @@ external corpus-generator binary and Docker). It does not depend on the o365
 
 ### Keep the CEL program in sync with the shipping input
 
-`elastic-agent.yml`'s `program:` block is a **verbatim copy** of the `program:` block
-in `../../../data_stream/audit/agent/stream/cel.yml.hbs` (that block is pure CEL, no
-Handlebars). The memory numbers are only meaningful if the harness exercises the
-program o365 actually ships, so **re-copy the block whenever `cel.yml.hbs` changes**
-(only the surrounding config differs: the harness tunes `state.base` for a single-blob
-worst case and points at the mock). Verify they match:
-
-```
-python3 - <<'PY'
-import difflib
-def body(p):
-    ls=open(p).read().split('\n'); i=next(k for k,l in enumerate(ls) if l.strip()=='program: |-'); o=[]
-    for l in ls[i+1:]:
-        s=l.strip()
-        if s=='processors:' or (s and not l[0].isspace()): break
-        if s: o.append(s)
-    return o
-h=body('../../../data_stream/audit/agent/stream/cel.yml.hbs')
-a=body('elastic-agent.yml')
-d=list(difflib.unified_diff(h,a,lineterm=''))
-print('program IN SYNC' if not d else '\n'.join(d))
-PY
-```
+The memory numbers are only meaningful if the harness runs the exact CEL program o365
+ships, so the program is **not** stored in this folder. On every run, `run.sh` extracts
+the `program:` block verbatim from `../../../data_stream/audit/agent/stream/cel.yml.hbs`
+(that block is pure CEL, no Handlebars), re-indents it, and splices it into
+`elastic-agent.yml.tmpl` in place of the `#__CEL_PROGRAM__` placeholder, writing the
+result to `work/elastic-agent.yml`. There is nothing to copy or verify by hand: change
+`cel.yml.hbs` and the next run picks it up. Only the surrounding config lives in the
+template (the harness tunes `state.base` for a single-blob worst case and points at the
+mock).
 
 Note: if `cel.yml.hbs` ever adopts the CEL `emit` macro / streaming decode
 (elastic/beats#51279), the memory profile changes fundamentally and this harness plus
