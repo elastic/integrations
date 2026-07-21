@@ -986,8 +986,8 @@
                 "snapshot": true
             },
             {
-                "id": "mcp_npm_packages_windows",
-                "query": "SELECT\n    np.name AS package_name,\n    np.version,\n    np.description,\n    np.path,\n    np.directory\nFROM npm_packages np\nWHERE np.directory IN ('C:\\Program Files\\nodejs\\node_modules')\nAND (\n    np.name LIKE '@modelcontextprotocol/%'\n    OR np.name LIKE 'mcp-server-%'\n    OR np.name LIKE '@anthropic-ai/%'\n    OR np.name LIKE '@elastic/mcp%'\n    OR np.name LIKE '@github/mcp-server%'\n    OR np.name LIKE 'mcp-remote%'\n)\nUNION\nSELECT\n    regex_match(f.path, '.*[\\\\/]node_modules[\\\\/](@[^\\\\/]+[\\\\/][^\\\\/]+|[^\\\\/]+)[\\\\/]package.json', 1) AS package_name,\n    '' AS version,\n    '' AS description,\n    f.path,\n    f.directory\nFROM file f\nWHERE (\n    f.path LIKE 'C:\\\\Users\\\\%\\\\AppData\\\\Roaming\\\\npm\\\\node_modules\\\\@modelcontextprotocol\\\\%\\\\package.json'\n    OR f.path LIKE 'C:\\\\Users\\\\%\\\\AppData\\\\Roaming\\\\npm\\\\node_modules\\\\mcp-server-%\\\\package.json'\n    OR f.path LIKE 'C:\\\\Users\\\\%\\\\AppData\\\\Roaming\\\\npm\\\\node_modules\\\\@anthropic-ai\\\\%\\\\package.json'\n    OR f.path LIKE 'C:\\\\Users\\\\%\\\\node_modules\\\\@modelcontextprotocol\\\\%\\\\package.json'\n    OR f.path LIKE 'C:\\\\Users\\\\%\\\\node_modules\\\\mcp-server-%\\\\package.json'\n    OR f.path LIKE 'C:\\\\Program Files\\\\nodejs\\\\node_modules\\\\@modelcontextprotocol\\\\%\\\\package.json'\n    OR f.path LIKE 'C:\\\\Program Files\\\\nodejs\\\\node_modules\\\\mcp-server-%\\\\package.json'\n)",
+                "id": "ai_npm_packages_windows",
+                "query": "SELECT\n    name,\n    version,\n    description,\n    path,\n    directory,\n    depth\nFROM npm_packages\nWHERE (\n    name LIKE '@modelcontextprotocol/%'\n    OR name LIKE 'mcp-server-%'\n    OR name LIKE '@anthropic-ai/%'\n    OR name LIKE '@elastic/mcp%'\n    OR name LIKE '@github/mcp-server%'\n    OR name LIKE 'mcp-remote%'\n)\nAND depth = 0;",
                 "interval": 86400,
                 "platform": "windows",
                 "timeout": 180,
@@ -1017,7 +1017,7 @@
                     {
                         "key": "package.name",
                         "value": {
-                            "field": "package_name"
+                            "field": "name"
                         }
                     },
                     {
@@ -1044,7 +1044,7 @@
                             "value": [
                                 "osquery",
                                 "ai_discovery",
-                                "mcp_packages",
+                                "npm_packages",
                                 "shadow_ai",
                                 "windows"
                             ]
@@ -1053,7 +1053,7 @@
                     {
                         "key": "event.action",
                         "value": {
-                            "value": "osquery.mcp_npm_packages"
+                            "value": "osquery.ai_npm_packages"
                         }
                     }
                 ],

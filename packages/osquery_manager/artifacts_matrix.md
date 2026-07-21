@@ -168,7 +168,7 @@ Interval `1h` = 3600s, `24h` = 86400s.
 | 11 | `ai_chrome_extensions_*` | `osquery.ai_chrome_extensions` | package | 24h | ✅ | ✅ | ✅ | AI browser extensions (Chrome/Chromium/Edge) |
 | 12 | `ai_firefox_extensions_*` | `osquery.ai_firefox_extensions` | package | 24h | ✅ | ✅ | ✅ | AI browser extensions (Firefox) |
 | 13 | `ai_docker_containers_*` | `osquery.ai_docker_containers` | host | 1h | ✅ | ✅ | ✅ | Docker containers running AI workloads (process-table fallback on Windows) |
-| 14 | `mcp_npm_packages_*` | `osquery.mcp_npm_packages` | package | 24h | ✅ | ✅ | ✅ | Installed MCP npm packages |
+| 14 | `ai_npm_packages_*` | `osquery.ai_npm_packages` | package | 24h | ✅ | ✅ | ✅ | Globally installed AI/MCP npm packages (depth 0) |
 | 15 | `ai_credential_files_*` | `osquery.ai_credential_files` | file | 24h | ✅ | ✅ | ✅ | AI credential-adjacent path metadata (.env, tokens, config locations) — metadata only |
 | 16 | `ai_jupyter_servers_*` | `osquery.ai_jupyter_servers` | process | 1h | ✅ | ✅ | ✅ | Running Jupyter Notebook/Lab servers |
 | 17 | `ai_vscode_extensions_*` | `osquery.ai_vscode_extensions` | package | 24h | ✅ | ✅ | ✅ | AI VS Code extensions |

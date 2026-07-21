@@ -715,7 +715,7 @@
             },
             {
                 "id": "ai_python_packages_linux",
-                "query": "SELECT\n    name,\n    version,\n    directory\nFROM python_packages\nWHERE name IN (\n    'torch', 'tensorflow', 'onnxruntime', 'jax', 'flax',\n    'transformers', 'diffusers', 'accelerate', 'peft', 'trl',\n    'huggingface-hub', 'tokenizers', 'datasets', 'sentence-transformers',\n    'safetensors',\n    'openai', 'anthropic', 'google-generativeai', 'cohere', 'replicate',\n    'groq', 'mistralai', 'together', 'fireworks-ai', 'deepseek-sdk',\n    'langchain', 'langchain-core', 'langchain-community',\n    'llama-index', 'llama-index-core',\n    'autogen', 'crewai', 'semantic-kernel', 'haystack-ai', 'dspy-ai',\n    'instructor', 'guidance', 'outlines',\n    'llama-cpp-python', 'ollama', 'vllm', 'ctransformers',\n    'bitsandbytes', 'auto-gptq', 'exllama',\n    'fastmcp', 'mcp',\n    'chromadb', 'qdrant-client', 'weaviate-client', 'pinecone-client',\n    'pymilvus', 'faiss-cpu', 'faiss-gpu',\n    'aider-chat', 'shell-gpt', 'mentat',\n    'gradio', 'streamlit',\n    'openai-whisper', 'whisper', 'elevenlabs', 'bark',\n    'litellm',\n    'llm'\n)\nUNION\nSELECT\n    pp.name,\n    pp.version,\n    pp.directory\nFROM python_packages pp\nWHERE pp.name IN (\n    'torch', 'tensorflow', 'onnxruntime', 'jax', 'flax',\n    'transformers', 'diffusers', 'accelerate', 'peft', 'trl',\n    'huggingface-hub', 'tokenizers', 'datasets', 'sentence-transformers',\n    'safetensors',\n    'openai', 'anthropic', 'google-generativeai', 'cohere', 'replicate',\n    'groq', 'mistralai', 'together', 'fireworks-ai', 'deepseek-sdk',\n    'langchain', 'langchain-core', 'langchain-community',\n    'llama-index', 'llama-index-core',\n    'autogen', 'crewai', 'semantic-kernel', 'haystack-ai', 'dspy-ai',\n    'instructor', 'guidance', 'outlines',\n    'llama-cpp-python', 'ollama', 'vllm', 'ctransformers',\n    'bitsandbytes', 'auto-gptq', 'exllama',\n    'fastmcp', 'mcp',\n    'chromadb', 'qdrant-client', 'weaviate-client', 'pinecone-client',\n    'pymilvus', 'faiss-cpu', 'faiss-gpu',\n    'aider-chat', 'shell-gpt', 'mentat',\n    'gradio', 'streamlit',\n    'openai-whisper', 'whisper', 'elevenlabs', 'bark',\n    'litellm',\n    'llm'\n)\nAND pp.directory IN (\n    SELECT path\n    FROM file\n    WHERE type = 'directory'\n    AND (\n\n        path LIKE '/home/%/site-packages'\n        OR path LIKE '/home/%/.venv/%/site-packages'\n        OR path LIKE '/home/%/venv/%/site-packages'\n        OR path LIKE '/home/%/lib/python%/site-packages'\n        OR path LIKE '/home/%/.local/lib/python%/site-packages'\n        OR path LIKE '/usr/local/lib/python%/site-packages'\n    )\n)",
+                "query": "SELECT\n    name,\n    version,\n    directory\nFROM python_packages\nWHERE name IN (\n    'torch', 'tensorflow', 'onnxruntime', 'jax', 'flax',\n    'transformers', 'diffusers', 'accelerate', 'peft', 'trl',\n    'huggingface-hub', 'tokenizers', 'datasets', 'sentence-transformers',\n    'safetensors',\n    'openai', 'anthropic', 'google-generativeai', 'cohere', 'replicate',\n    'groq', 'mistralai', 'together', 'fireworks-ai', 'deepseek-sdk',\n    'langchain', 'langchain-core', 'langchain-community',\n    'llama-index', 'llama-index-core',\n    'autogen', 'crewai', 'semantic-kernel', 'haystack-ai', 'dspy-ai',\n    'instructor', 'guidance', 'outlines',\n    'llama-cpp-python', 'ollama', 'vllm', 'ctransformers',\n    'bitsandbytes', 'auto-gptq', 'exllama',\n    'fastmcp', 'mcp',\n    'chromadb', 'qdrant-client', 'weaviate-client', 'pinecone-client',\n    'pymilvus', 'faiss-cpu', 'faiss-gpu',\n    'aider-chat', 'shell-gpt', 'mentat',\n    'gradio', 'streamlit',\n    'openai-whisper', 'whisper', 'elevenlabs', 'bark',\n    'litellm',\n    'llm'\n);",
                 "interval": 86400,
                 "platform": "linux",
                 "timeout": 180,
@@ -918,8 +918,8 @@
                 "snapshot": true
             },
             {
-                "id": "mcp_npm_packages_linux",
-                "query": "SELECT\n    np.name AS package_name,\n    np.version,\n    np.description,\n    np.path,\n    np.directory\nFROM npm_packages np\nWHERE np.directory IN ('/usr/lib/node_modules', '/usr/local/lib/node_modules')\nAND (\n    np.name LIKE '@modelcontextprotocol/%'\n    OR np.name LIKE 'mcp-server-%'\n    OR np.name LIKE '@anthropic-ai/%'\n    OR np.name LIKE '@elastic/mcp%'\n    OR np.name LIKE '@github/mcp-server%'\n    OR np.name LIKE 'mcp-remote%'\n)\nUNION\nSELECT\n    regex_match(f.path, '.*/node_modules/(@[^/]+/[^/]+|[^/]+)/package.json', 1) AS package_name,\n    '' AS version,\n    '' AS description,\n    f.path,\n    f.directory\nFROM file f\nWHERE (\n    f.path LIKE '/usr/lib/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/usr/lib/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/usr/lib/node_modules/@anthropic-ai/%/package.json'\n    OR f.path LIKE '/usr/lib/node_modules/@elastic/mcp%/package.json'\n    OR f.path LIKE '/usr/lib/node_modules/@github/mcp-server%/package.json'\n    OR f.path LIKE '/usr/lib/node_modules/mcp-remote%/package.json'\n    OR f.path LIKE '/usr/local/lib/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/usr/local/lib/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/usr/local/lib/node_modules/@anthropic-ai/%/package.json'\n    OR f.path LIKE '/usr/local/lib/node_modules/@elastic/mcp%/package.json'\n    OR f.path LIKE '/usr/local/lib/node_modules/@github/mcp-server%/package.json'\n    OR f.path LIKE '/usr/local/lib/node_modules/mcp-remote%/package.json'\n    OR f.path LIKE '/home/%/.nvm/versions/node/%/lib/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/home/%/.nvm/versions/node/%/lib/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/home/%/.nvm/versions/node/%/lib/node_modules/@anthropic-ai/%/package.json'\n    OR f.path LIKE '/home/%/node_modules/@modelcontextprotocol/%/package.json'\n    OR f.path LIKE '/home/%/node_modules/mcp-server-%/package.json'\n    OR f.path LIKE '/home/%/node_modules/@anthropic-ai/%/package.json'\n)",
+                "id": "ai_npm_packages_linux",
+                "query": "SELECT\n    name,\n    version,\n    description,\n    path,\n    directory,\n    depth\nFROM npm_packages\nWHERE (\n    name LIKE '@modelcontextprotocol/%'\n    OR name LIKE 'mcp-server-%'\n    OR name LIKE '@anthropic-ai/%'\n    OR name LIKE '@elastic/mcp%'\n    OR name LIKE '@github/mcp-server%'\n    OR name LIKE 'mcp-remote%'\n)\nAND depth = 0;",
                 "interval": 86400,
                 "platform": "linux",
                 "timeout": 180,
@@ -949,7 +949,7 @@
                     {
                         "key": "package.name",
                         "value": {
-                            "field": "package_name"
+                            "field": "name"
                         }
                     },
                     {
@@ -976,7 +976,7 @@
                             "value": [
                                 "osquery",
                                 "ai_discovery",
-                                "mcp_packages",
+                                "npm_packages",
                                 "shadow_ai",
                                 "linux"
                             ]
@@ -985,7 +985,7 @@
                     {
                         "key": "event.action",
                         "value": {
-                            "value": "osquery.mcp_npm_packages"
+                            "value": "osquery.ai_npm_packages"
                         }
                     }
                 ],
