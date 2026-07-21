@@ -564,7 +564,9 @@ processors:
   - script:
       tag: set_event_outcome_from_Status
       description: Set event.outcome from crowdstrike.Status using NTSTATUS severity bits.
-      if: ctx.crowdstrike?.Status != null && ctx.crowdstrike.Status != ''
+      if: >-
+        ctx.crowdstrike?.Status != null && ctx.crowdstrike.Status != '' &&
+        (ctx.event?.outcome == null || ctx.event.outcome == 'unknown')
       source: |-
         long status = Long.parseLong(ctx.crowdstrike.Status);
 
@@ -581,6 +583,11 @@ processors:
           // informational, warning, or non-zero success-class (PENDING/TIMEOUT)
           ctx.event.outcome = 'unknown';
         }
+      on_failure:
+        - append:
+            tag: append_error_message_06556072
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Cached event category for category-dependent processors
   - set:
