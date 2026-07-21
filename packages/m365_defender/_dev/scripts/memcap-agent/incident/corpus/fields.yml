@@ -1,0 +1,61 @@
+# Worst-case m365_defender `incident` record: a Microsoft Graph security
+# `incidents` object expanded with `$expand=alerts`, so each incident carries an
+# `alerts[]` array of full alert objects. That array has no server-side cap and is
+# the memory driver for this stream (httpjson splits body.value then body.alerts
+# with keep_parent:true). Shape mirrors data_stream/incident + alert test logs.
+# Every field here must be referenced by template.ndjson via `generate "<name>"`.
+- name: id
+  type: keyword
+- name: tenantId
+  type: keyword
+- name: displayName
+  type: keyword
+- name: status
+  type: keyword
+- name: severity
+  type: keyword
+- name: createdDateTime
+  type: date
+- name: lastUpdateDateTime
+  type: date
+# nested alert fields (each incident embeds ALERTS_PER_INCIDENT of these).
+- name: alert.id
+  type: keyword
+- name: alert.providerAlertId
+  type: keyword
+- name: alert.detectorId
+  type: keyword
+- name: alert.status
+  type: keyword
+- name: alert.severity
+  type: keyword
+- name: alert.category
+  type: keyword
+- name: alert.title
+  type: keyword
+- name: alert.description
+  type: keyword
+- name: alert.recommendedActions
+  type: keyword
+- name: alert.createdDateTime
+  type: date
+- name: alert.lastUpdateDateTime
+  type: date
+- name: alert.evidence.verdict
+  type: keyword
+- name: alert.evidence.mdeDeviceId
+  type: keyword
+- name: alert.evidence.azureAdDeviceId
+  type: keyword
+- name: alert.evidence.deviceDnsName
+  type: keyword
+- name: alert.evidence.osPlatform
+  type: keyword
+- name: alert.evidence.version
+  type: keyword
+- name: alert.evidence.healthStatus
+  type: keyword
+- name: alert.evidence.riskScore
+  type: keyword
+- name: alert.evidence.ipInterface
+  type: ip

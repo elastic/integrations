@@ -1,0 +1,31 @@
+{{- /*
+  Corpus-generator template for the alert memory harness. Renders ONE synthetic
+  alerts_v2 record, deliberately bloated (long text fields, 12 evidence items each
+  with 6 ipInterfaces) to model a worst-case alert shape; the generator emits many
+  copies to build a single large response page.
+
+  This is a JSON *fragment*, not a standalone document: mock-config.yml splices the
+  whole generated blob verbatim into the `value` array of an alerts_v2 response,
+  between the opening `{"value":[` and a final hard-coded record that closes the
+  array. Two deliberate oddities (identical to the o365 harness):
+    - each record ends with a trailing comma "}," so consecutive records form a
+      valid JSON array (the final hard-coded record has no comma and closes it);
+    - the template has NO trailing newline, because the corpus generator already
+      appends a "\n" after every rendered record.
+*/ -}}
+{{- $id := generate "id" -}}
+{{- $providerAlertId := generate "providerAlertId" -}}
+{{- $incidentId := generate "incidentId" -}}
+{{- $tenantId := generate "tenantId" -}}
+{{- $detectorId := generate "detectorId" -}}
+{{- $status := generate "status" -}}
+{{- $severity := generate "severity" -}}
+{{- $category := generate "category" -}}
+{{- $created := generate "createdDateTime" | date "2006-01-02T15:04:05.0000000Z07:00" -}}
+{{- $updated := generate "lastUpdateDateTime" | date "2006-01-02T15:04:05.0000000Z07:00" -}}
+{"id":"{{$id}}","providerAlertId":"{{$providerAlertId}}","incidentId":"{{$incidentId}}","status":"{{$status}}","severity":"{{$severity}}","classification":null,"determination":null,"serviceSource":"microsoftDefenderForEndpoint","detectionSource":"microsoftDefenderForEndpoint","productName":"Microsoft Defender for Endpoint","detectorId":"{{$detectorId}}","tenantId":"{{$tenantId}}","title":"{{ repeat 3 (generate "title") }}","description":"{{ repeat 6 (generate "description") }}","recommendedActions":"{{ repeat 6 (generate "recommendedActions") }}","category":"{{$category}}","assignedTo":null,"alertWebUrl":"https://security.microsoft.com/alerts/{{$id}}?tid={{$tenantId}}","incidentWebUrl":"https://security.microsoft.com/incidents/{{$incidentId}}?tid={{$tenantId}}","actorDisplayName":null,"threatDisplayName":null,"threatFamilyName":null,"mitreTechniques":["T1059.001","T1059.003","T1204.002"],"createdDateTime":"{{$created}}","lastUpdateDateTime":"{{$updated}}","resolvedDateTime":null,"firstActivityDateTime":"{{$created}}","lastActivityDateTime":"{{$updated}}","alertPolicyId":null,"additionalData":null,"comments":[],"evidence":[
+{{- range $i := until 12 -}}{{- if $i }},{{ end -}}
+{"@odata.type":"#microsoft.graph.security.deviceEvidence","createdDateTime":"{{ generate "evidence.createdDateTime" | date "2006-01-02T15:04:05.0000000Z07:00" }}","verdict":"{{ generate "evidence.verdict" }}","remediationStatus":"none","remediationStatusDetails":null,"roles":[],"detailedRoles":["PrimaryDevice"],"tags":[],"firstSeenDateTime":"{{ generate "evidence.createdDateTime" | date "2006-01-02T15:04:05.0000000Z07:00" }}","mdeDeviceId":"{{ generate "evidence.mdeDeviceId" }}","azureAdDeviceId":"{{ generate "evidence.azureAdDeviceId" }}","deviceDnsName":"{{ generate "evidence.deviceDnsName" }}","osPlatform":"{{ generate "evidence.osPlatform" }}","osBuild":22621,"version":"{{ generate "evidence.version" }}","healthStatus":"{{ generate "evidence.healthStatus" }}","riskScore":"{{ generate "evidence.riskScore" }}","rbacGroupId":0,"rbacGroupName":null,"onboardingStatus":"onboarded","defenderAvStatus":"updated","ipInterfaces":[
+{{- range $j := until 6 -}}{{- if $j }},{{ end -}}"{{ generate "evidence.ipInterface" }}"{{- end -}}
+]}{{- end -}}
+]},
