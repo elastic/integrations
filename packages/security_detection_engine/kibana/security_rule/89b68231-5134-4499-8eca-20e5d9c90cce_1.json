@@ -3,41 +3,20 @@
         "author": [
             "Elastic"
         ],
-        "description": "Detects when an Amazon ECR repository or registry policy is modified to grant public access using a wildcard principal (Principal:\"*\") statement. This rule analyzes SetRepositoryPolicy and PutRegistryPolicy events whose policy document grants an Allow effect to a wildcard (\"*\") principal, indicating that pull (and potentially push) permissions were extended to all identities, including unauthenticated users. A public container registry can expose proprietary images and any secrets baked into their layers, and, if push is allowed, enables supply-chain implantation. Public ECR access is sometimes intentional for image distribution, so the granting principal and the permissions should be validated.",
+        "description": "Identifies an Amazon Bedrock API key (bearer token) being used to perform a destructive or anti-recovery control-plane action, such as deleting a guardrail, deleting a custom or imported model, removing provisioned throughput, or disabling model invocation logging. Bedrock API keys are bearer credentials intended for model invocation (InvokeModel, Converse); using one to delete Bedrock resources or disable logging is inconsistent with that purpose and is characteristic of LLMjacking or sabotage following key theft. Every Bedrock API key call is identifiable in CloudTrail by \"additionalEventData.callWithBearerToken\" being true. The rule matches regardless of outcome, because a destructive attempt via a bearer token is suspicious even when denied.",
         "false_positives": [
-            "Repositories used to distribute public images may legitimately contain Principal:\"*\". This rule does not by itself determine whether a Deny statement restricts the same access; review the full policy in \"aws.cloudtrail.request_parameters\" and confirm the granted actions (pull-only versus push) and whether public exposure is intended."
+            "Automation that intentionally manages Bedrock resources using an API key could match. Confirm the principal in \"aws.cloudtrail.user_identity.arn\", the affected resource in \"aws.cloudtrail.request_parameters\", and whether the change was expected. Known maintenance principals can be excluded after validation."
         ],
-        "from": "now-15m",
-        "interval": "10m",
-        "investigation_fields": {
-            "field_names": [
-                "@timestamp",
-                "user.name",
-                "user_agent.original",
-                "source.ip",
-                "source.as.number",
-                "source.as.organization.name",
-                "aws.cloudtrail.user_identity.arn",
-                "aws.cloudtrail.user_identity.type",
-                "aws.cloudtrail.user_identity.access_key_id",
-                "aws.cloudtrail.resources.arn",
-                "aws.cloudtrail.resources.type",
-                "event.action",
-                "event.outcome",
-                "cloud.account.id",
-                "cloud.region",
-                "aws.cloudtrail.request_parameters",
-                "aws.cloudtrail.response_elements"
-            ]
-        },
+        "from": "now-30m",
         "language": "esql",
         "license": "Elastic License v2",
-        "name": "AWS ECR Repository or Registry Policy Granted Public Access",
-        "note": "## Triage and analysis\n\n### Investigating AWS ECR Repository or Registry Policy Granted Public Access\n\nThis rule detects \"SetRepositoryPolicy\" or \"PutRegistryPolicy\" calls where the policy document grants an Allow effect to a wildcard (\"*\") principal, granting access to all identities. A public ECR repository allows anyone to pull its images, exposing proprietary code and any secrets embedded in image layers; if push actions are granted, an adversary can implant a malicious image that downstream ECS, EKS, or Lambda workloads then run.\n\n### Possible investigation steps\n\n- Identify the actor in \"aws.cloudtrail.user_identity.arn\" and \"aws.cloudtrail.user_identity.type\", and review \"source.ip\" and \"user_agent.original\" for an unexpected origin or tool.\n- Extract the policy from \"aws.cloudtrail.request_parameters\" and identify the granted actions; pull actions (BatchGetImage, GetDownloadUrlForLayer) expose images, while push actions (PutImage, UploadLayerPart) enable implantation.\n- Confirm whether a Deny statement restricts the same access, in which case the alert may be a false positive.\n- Determine which repository is affected and whether it contains sensitive images, and correlate with subsequent pull or push activity from external principals.\n\n### False positive analysis\n\n- Public image distribution legitimately uses Principal:\"*\". Confirm the exposure is intended, the actions are pull-only, and the granting principal is approved.\n\n### Response and remediation\n\n- If the exposure is unauthorized, restore a known-good policy or remove the public statement, and review for any external pulls or pushes since the change.\n- Rotate or restrict credentials for the principal if compromise is suspected, and restrict \"ecr:SetRepositoryPolicy\" and \"ecr:PutRegistryPolicy\" to trusted administrators.\n",
-        "query": "FROM logs-aws.cloudtrail-* METADATA _id, _version, _index\n| WHERE event.provider == \"ecr.amazonaws.com\"\n  AND event.action IN (\"SetRepositoryPolicy\", \"PutRegistryPolicy\")\n  AND event.outcome == \"success\"\n  AND (aws.cloudtrail.user_identity.type IS NULL OR aws.cloudtrail.user_identity.type != \"AWSService\")\n  AND aws.cloudtrail.request_parameters RLIKE \"\"\".*\\\"Effect\\\": *\\\"Allow\\\".*\"\"\"\n  AND (aws.cloudtrail.request_parameters RLIKE \"\"\".*\\\"Principal\\\": *\\\"\\*\\\".*\"\"\"\n       OR aws.cloudtrail.request_parameters RLIKE \"\"\".*\\\"Principal\\\": *\\{ *\\\"AWS\\\": *\\\"\\*\\\".*\"\"\")\n| KEEP _id, _version, _index, @timestamp, aws.*, cloud.*, event.*, source.*, user.*, user_agent.*\n",
+        "name": "AWS Bedrock API Key Used for Destructive or Anti-Recovery Action",
+        "note": "## Triage and analysis\n\n### Investigating AWS Bedrock API Key Used for Destructive or Anti-Recovery Action\n\nAmazon Bedrock API keys are bearer tokens created for model invocation. In CloudTrail, every request made with one carries \"additionalEventData.callWithBearerToken\" set to true, which distinguishes it from a standard SigV4-signed call. The AmazonBedrockLimitedAccess policy attached to Bedrock API key phantom users also permits destructive Bedrock control-plane actions, so a stolen or misused key can delete guardrails and models or disable logging.\n\nUsing an API key to delete guardrails, custom or imported models, or provisioned throughput, or to disable model invocation logging, is inconsistent with the credential's purpose. It is characteristic of LLMjacking operations (which frequently disable guardrails and logging) or of sabotage following credential theft.\n\n### Possible investigation steps\n\n- Identify the specific action in \"event.action\" and the affected resource in \"aws.cloudtrail.request_parameters\".\n- Identify the principal in \"aws.cloudtrail.user_identity.arn\"/\"aws.cloudtrail.user_identity.type\" and review \"source.ip\", \"source.as.number\", and \"user_agent.original\"; generic HTTP clients (python-requests, aiohttp, curl) are a further LLMjacking indicator.\n- Review the same principal's other Bedrock API key activity for model-invocation spikes, cross-region use, or additional destructive actions.\n- Determine whether model invocation logging or guardrails were disabled, and when, to scope any window of reduced visibility.\n\n### False positive analysis\n\n- Sanctioned automation may manage Bedrock resources with an API key. Confirm the principal and change, and exclude known maintenance identities after validation.\n\n### Response and remediation\n\n- If unauthorized, revoke the Bedrock API key (attach an inline deny on \"bedrock:CallWithBearerToken\" to the phantom user or deactivate the service-specific credential) and restore the deleted resource or re-enable logging.\n- Check the phantom user for IAM access keys created as a persistence pivot and revoke them.\n- Review the principal's recent activity and prefer short-term keys or STS going forward.\n",
+        "query": "FROM logs-aws.cloudtrail-* METADATA _id, _version, _index\n| WHERE event.provider == \"bedrock.amazonaws.com\"\n    AND aws.cloudtrail.additional_eventdata RLIKE \"\"\".*callWithBearerToken=true.*\"\"\"\n    AND event.action IN (\n        \"DeleteGuardrail\",\n        \"DeleteModelInvocationLoggingConfiguration\",\n        \"PutModelInvocationLoggingConfiguration\",\n        \"DeleteImportedModel\",\n        \"DeleteCustomModel\",\n        \"DeleteModelCustomizationJob\",\n        \"DeleteProvisionedModelThroughput\",\n        \"DeleteMarketplaceModelEndpoint\"\n    )\n| KEEP _id, _version, _index, @timestamp, aws.*, cloud.*, event.*, source.*, user.*, user_agent.*\n",
         "references": [
-            "https://docs.aws.amazon.com/AmazonECR/latest/APIReference/API_SetRepositoryPolicy.html",
-            "https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-policies.html"
+            "https://www.beyondtrust.com/blog/entry/aws-bedrock-security-guide-api-keys-detection-response",
+            "https://www.beyondtrust.com/blog/entry/aws-bedrock-security-api-keys",
+            "https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html"
         ],
         "related_integrations": [
             {
@@ -1237,32 +1216,56 @@
                 "type": "keyword"
             }
         ],
-        "risk_score": 47,
-        "rule_id": "699fdfb9-8430-4dcb-b5a9-da67dae64808",
+        "risk_score": 73,
+        "rule_id": "89b68231-5134-4499-8eca-20e5d9c90cce",
         "setup": "This rule requires AWS CloudTrail logs ingested via the Elastic AWS integration. See https://docs.elastic.co/integrations/aws/cloudtrail for setup details.",
-        "severity": "medium",
+        "severity": "high",
         "tags": [
             "Domain: Cloud",
             "Data Source: AWS",
             "Data Source: Amazon Web Services",
-            "Data Source: AWS ECR",
+            "Data Source: AWS CloudTrail",
+            "Data Source: Amazon Bedrock",
             "Use Case: Threat Detection",
-            "Tactic: Exfiltration",
+            "Tactic: Impact",
+            "Tactic: Defense Evasion",
             "Resources: Investigation Guide"
         ],
         "threat": [
             {
                 "framework": "MITRE ATT&CK",
                 "tactic": {
-                    "id": "TA0010",
-                    "name": "Exfiltration",
-                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
                 },
                 "technique": [
                     {
-                        "id": "T1537",
-                        "name": "Transfer Data to Cloud Account",
-                        "reference": "https://attack.mitre.org/techniques/T1537/"
+                        "id": "T1485",
+                        "name": "Data Destruction",
+                        "reference": "https://attack.mitre.org/techniques/T1485/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
                     }
                 ]
             }
@@ -1271,6 +1274,6 @@
         "type": "esql",
         "version": 1
     },
-    "id": "699fdfb9-8430-4dcb-b5a9-da67dae64808_1",
+    "id": "89b68231-5134-4499-8eca-20e5d9c90cce_1",
     "type": "security-rule"
 }
