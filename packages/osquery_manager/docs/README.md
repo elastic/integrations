@@ -23,9 +23,9 @@ The integration ships three canonical platform packs for endpoint AI inventory:
 
 | Pack | Platform | Queries |
 |------|----------|---------|
-| `ai-asset-discovery-windows` | Windows | 24 |
-| `ai-asset-discovery-macos` | macOS | 24 |
-| `ai-asset-discovery-linux` | Linux | 23 |
+| `ai-asset-discovery-windows` | Windows | 19 |
+| `ai-asset-discovery-macos` | macOS | 19 |
+| `ai-asset-discovery-linux` | Linux | 18 |
 
 Assign the pack matching each agent's OS to your Osquery Manager policy in Fleet. Pack queries emit `event.action: osquery.ai_*` and `osquery.mcp_*` once scheduled pack queries run on assigned agents.
 
@@ -44,15 +44,15 @@ Some queries provide detection context rather than pure inventory:
 - `ai_config_file_changes` — recent MCP/AI config modifications (7200s lookback)
 - `ai_sensitive_file_access` (macOS/Linux) — AI processes with open handles to sensitive paths via `process_open_files`
 - `ai_sensitive_file_colocation` (Windows) — uid co-occurrence between AI processes and sensitive paths; **not access proof**
-- `ai_process_network_summary` — AI-process socket inventory across remote endpoints (includes API-host cmdline signals and `copilot_variant`)
+- `ai_process_network_summary` — AI-process socket inventory across remote endpoints (includes API-host cmdline signals)
 
 macOS/Linux access evidence (`ai_sensitive_file_access`) is distinct from Windows colocation inventory (`ai_sensitive_file_colocation`).
 
 ### Platform differences
 
-- **Windows** uses `programs`, `services`, `scheduled_tasks`, `ai_programs_windows`, `ai_gpu_systems` (NVIDIA/AMD via `video_info`), and `ai_sensitive_file_colocation`.
-- **macOS** uses `apps`, `launchd`, `homebrew_packages`, `ai_apple_silicon_inference` (Apple Silicon CPU brand proxy, not discrete GPU inventory), and `ai_sensitive_file_access`.
-- **Linux** uses `deb_packages`/`rpm_packages`, `systemd`, `crontab`, `ai_gpu_systems` (PCI GPU), and `ai_sensitive_file_access`.
+- **Windows** uses `programs`, `services`, `scheduled_tasks`, `ai_programs_windows`, and `ai_sensitive_file_colocation`.
+- **macOS** uses `apps`, `launchd`, `homebrew_packages`, and `ai_sensitive_file_access`.
+- **Linux** uses `deb_packages`/`rpm_packages`, `systemd`, `crontab`, and `ai_sensitive_file_access`.
 - Cross-platform queries may emit platform-adapted ECS shapes (for example Windows docker uses `process.*` fallback; macOS/Linux use `container.*`; `ai_python_packages` maps Python package output to `package.*` on all platforms).
 
 Model-file size thresholds use 100 MiB (104857600 bytes).
@@ -65,7 +65,7 @@ Correlate osquery inventory with hook or OpenTelemetry activity streams by `host
 
 ### Copilot variant classification
 
-Pack queries classify Copilot-related inventory into `osquery.copilot_variant` (`developer`, `productivity`, `browser`, `unknown`) where source fields support it. The field is sparse (mostly `NULL` outside Copilot hits), variant taxonomies differ by source (extensions vs programs vs processes), and not every source emits the field, so treat it as best-effort context rather than a reliable dimension.
+Install-time inventory queries (programs, apps, packages, browser/IDE extensions) classify Copilot-related hits into `osquery.copilot_variant` (`developer`, `productivity`, `browser`, `unknown`) where source fields support disambiguation — for example GitHub Copilot vs Microsoft 365 Copilot. Process queries (`ai_processes`, `ai_process_network_summary`) do **not** emit this field; use `osquery.process_category` or process name/cmdline instead. The field is sparse (mostly `NULL` outside Copilot hits) and variant taxonomies differ by source, so treat it as best-effort context on install inventory only.
 
 ### Deferred follow-ups (not collected by this package)
 
