@@ -83,6 +83,9 @@ steps:
       - ".buildkite/scripts/run_dev_scripts_tests.sh"
       - "dev/scripts/**.sh"
       - "dev/backports/**"
+    if: |
+      (build.env('BUILDKITE_PULL_REQUEST') != "false" && build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main") ||
+      (build.env('BUILDKITE_PULL_REQUEST') == "false" && build.branch == "main")
 
   - label: ":git: Trigger backport dry-runs"
     key: "trigger-backport-dryrun"
