@@ -1,0 +1,150 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "m",
+                "value": 5
+            },
+            "group_by": [
+                "source.ip",
+                "cloud.account.id"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects successful S3 GetObject calls targeting high-value credential and secret files commonly stored in S3 buckets: AWS credentials files (\".aws/credentials\", \".aws/config\"), SSH private keys (\"id_rsa\", \"id_ed25519\", \"id_ecdsa\", \"id_dsa\"), environment files (\".env\"), PEM and PuTTY key files, and other private key patterns. These file types are high-yield targets for credential harvesting from S3. The rule excludes AWSService identity type to suppress S3 replication, Glacier restore, and other AWS-internal data movement that legitimately reads these files.",
+        "false_positives": [
+            "Legitimate CI/CD pipelines, infrastructure tooling, or configuration management systems may retrieve secret files from S3 as part of their normal operation. Validate the calling identity, user agent, and source IP against known automation accounts and expected access patterns."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "source.as.number",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.provider",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS S3 Credential File Retrieved from Bucket",
+        "note": "## Triage and analysis\n\n### Investigating AWS S3 Credential File Retrieved from Bucket\n\nS3 is frequently used to store configuration files, scripts, and secrets. When files with credential-like\nnames are accessed, it warrants investigation to ensure that the retrieval was authorized.\n\n### Possible investigation steps\n\n- **Identify the accessed file**: Review `aws.cloudtrail.request_parameters` for the bucket name and key.\n  Determine whether the bucket is intended to store secrets.\n- **Verify the caller**: Inspect `aws.cloudtrail.user_identity.arn` and `source.ip`. If the caller is not\n  an approved automation role, escalate immediately.\n- **Check bucket permissions**: Determine if the bucket is publicly accessible or if the key naming\n  pattern was intentionally exposed.\n- **Look for downstream actions**: Search for subsequent IAM, STS, or console actions from the same\n  identity shortly after the object retrieval, which may indicate successful credential use.\n\n### False positive analysis\n\n- Legitimate backup or restore processes may access credential files stored in S3 as part of their\n  workflow. Validate the calling identity and user agent against known automation accounts.\n- CI/CD pipelines that retrieve secrets from S3 during deployment may trigger this rule. Verify the\n  source IP and ARN match expected automation infrastructure.\n\n### Response and remediation\n\n- Immediately disable the access key identified in `aws.cloudtrail.user_identity.access_key_id` if\n  the retrieval is determined to be unauthorized.\n- Audit the S3 bucket for overly permissive policies or public access configurations.\n- Rotate any credentials stored in the accessed object \u2014 treat them as compromised.\n- Review all CloudTrail events from the same identity in the preceding 30 minutes for signs of\n  lateral movement, IAM changes, or resource creation.\n- Implement S3 bucket policies or IAM conditions restricting access to credential files to only\n  authorized identities and source IPs.\n",
+        "query": "data_stream.dataset: \"aws.cloudtrail\" and\n    event.provider: \"s3.amazonaws.com\" and\n    event.action: \"GetObject\" and\n    event.outcome: \"success\" and\n    aws.cloudtrail.flattened.request_parameters.key: (\n        */.aws/credentials or\n        */.aws/config or\n        */id_rsa or\n        */id_ed25519 or\n        */id_ecdsa or\n        */id_dsa or\n        */.env or\n        */.env.* or\n        *.ppk or\n        *.pem or\n        *.key or\n        *private_key* or\n        */.ssh/authorized_keys\n    ) and\n    not aws.cloudtrail.user_identity.type: \"AWSService\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": ">=6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.flattened.request_parameters.key",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "2f0ee9fe-4529-4b9e-9f78-6c81ef33c6ba",
+        "setup": "S3 data event logging is required for this rule. This rule detects S3 GetObject events,\nwhich are data plane events not logged by default. To enable: CloudTrail console \u2192 Trails \u2192\n[trail name] \u2192 Data events \u2192 Add S3 \u2192 select the buckets to monitor (or all buckets with a wildcard).\nWithout this configuration, the rule produces no alerts.\n\nRefer to the AWS documentation on\nhttps://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html[logging data events]\nfor detailed steps.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS S3",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide",
+            "Tactic: Collection"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.001",
+                                "name": "Credentials In Files",
+                                "reference": "https://attack.mitre.org/techniques/T1552/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1530",
+                        "name": "Data from Cloud Storage",
+                        "reference": "https://attack.mitre.org/techniques/T1530/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 2
+    },
+    "id": "2f0ee9fe-4529-4b9e-9f78-6c81ef33c6ba_2",
+    "type": "security-rule"
+}

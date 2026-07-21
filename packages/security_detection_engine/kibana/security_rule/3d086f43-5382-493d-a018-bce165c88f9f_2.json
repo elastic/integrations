@@ -1,0 +1,165 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects Microsoft Entra ID sign-in activity where the Microsoft Authentication Broker requests the Device Registration Service from a source autonomous system number (ASN) associated with VPN, residential proxy, or hosting egress commonly observed in OAuth phishing and adversary-in-the-middle device registration flows. This pattern can indicate device join or primary refresh token acquisition staged from attacker-controlled infrastructure after a user completes authentication.",
+        "false_positives": [
+            "Users enrolling or joining devices while on corporate VPNs, consumer VPNs, or cloud egress that map to the listed ASNs may match. Legitimate mobile device management or bulk provisioning that uses the broker against Device Registration Service from the same networks can also trigger alerts. Baseline `source.as.organization.name` and successful broker-to-DRS sign-ins before tuning exclusions for approved ASNs or user groups."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-azure.signinlogs-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "source.as.number",
+                "source.as.organization.name",
+                "source.geo.country_name",
+                "event.outcome",
+                "azure.signinlogs.properties.user_principal_name",
+                "azure.signinlogs.properties.session_id",
+                "azure.signinlogs.properties.app_display_name",
+                "azure.signinlogs.properties.app_id",
+                "azure.signinlogs.properties.resource_display_name",
+                "azure.signinlogs.properties.resource_id",
+                "azure.signinlogs.properties.authentication_protocol",
+                "azure.tenant_id"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Entra ID Microsoft Authentication Broker DRS Sign-In from Suspicious ASN",
+        "note": "## Triage and analysis\n\n### Investigating Entra ID Microsoft Authentication Broker DRS Sign-In from Suspicious ASN\n\nReview `azure.signinlogs.properties.user_principal_name`, `azure.signinlogs.properties.app_display_name`,\n`azure.signinlogs.properties.resource_display_name`, `azure.signinlogs.properties.session_id`, `source.ip`,\n`source.as.number`, `source.as.organization.name`, and `user_agent.original`.\n\nConfirm whether the user intentionally registered or joined a device and whether the source ASN is expected for your\nenrollment or remote-access programs.\n\n### Possible investigation steps\n\n- Correlate `azure.signinlogs.properties.session_id` with other sign-ins for the same user, especially multi-IP OAuth\n  flows or follow-on primary refresh token usage.\n- Review Entra ID audit logs for device registration activity around the same timestamp.\n- Compare `source.as.organization.name` against approved VPN, MDM, and automation egress in your environment.\n- Hunt for additional users signing in from the same ASN with the same application pair in a short window.\n\n### False positive analysis\n\n- Corporate or consumer VPN exit nodes that use ASNs in the rule list are a common source of benign matches during\n  standard Windows or mobile device join.\n- Cloud hosting or ISP NAT pools may intermittently map to listed ASNs without indicating compromise.\n\n### Response and remediation\n\n- If malicious, revoke refresh tokens for the user, disable suspicious registered devices, and reset credentials per\n  policy.\n- Review conditional access for the Microsoft Authentication Broker and device registration requirements.\n- Escalate per incident procedures when paired with identity protection alerts or impossible travel.\n",
+        "query": "data_stream.dataset:\"azure.signinlogs\" and event.action:\"Sign-in activity\" and\nsource.as.number:(\n    399629 or 14061 or 136787 or 9009 or 45102 or 215540 or 29802 or 62240 or 204957 or 395092 or 393406 or 400940 or\n    59711 or 132203\n) and\nazure.signinlogs.properties.app_display_name:\"Microsoft Authentication Broker\" and\nazure.signinlogs.properties.resource_display_name:\"Device Registration Service\"\n",
+        "references": [
+            "https://www.volexity.com/blog/2025/04/22/phishing-for-codes-russian-threat-actors-target-microsoft-365-oauth-workflows/",
+            "https://dirkjanm.io/phishing-for-microsoft-entra-primary-refresh-tokens/"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": ">=1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.app_display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.resource_display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.number",
+                "type": "long"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "3d086f43-5382-493d-a018-bce165c88f9f",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Microsoft Entra ID",
+            "Data Source: Microsoft Entra ID Sign-In Logs",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide",
+            "Tactic: Lateral Movement"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.005",
+                                "name": "Device Registration",
+                                "reference": "https://attack.mitre.org/techniques/T1098/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.002",
+                                "name": "Spearphishing Link",
+                                "reference": "https://attack.mitre.org/techniques/T1566/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/",
+                        "subtechnique": [
+                            {
+                                "id": "T1550.001",
+                                "name": "Application Access Token",
+                                "reference": "https://attack.mitre.org/techniques/T1550/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 2
+    },
+    "id": "3d086f43-5382-493d-a018-bce165c88f9f_2",
+    "type": "security-rule"
+}

@@ -1,0 +1,123 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects successful GKE API requests from unauthenticated anonymous identities using an unusual user agent. Attackers may rely on anonymous access for initial cluster access or to avoid attribution. Matches \"system:anonymous\" / \"system:unauthenticated\" and GKE audit rows where the principal is missing (common for unauthenticated clients). Common kube-probe health checks (readyz/livez/healthz/version) are excluded.",
+        "false_positives": [
+            "Anonymous API access is a dangerous default. Health probes are excluded; investigate all other authorized anonymous requests and disable anonymous authentication where possible."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "gcp.audit.resource_name",
+                "orchestrator.resource.name",
+                "orchestrator.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Anonymous Request Authorized by Unusual User Agent",
+        "new_terms_fields": [
+            "user_agent.original"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating GKE Anonymous Request Authorized by Unusual User Agent\n\nAnonymous success outside health endpoints can indicate a publicly reachable API server or overly permissive RBAC for\n`system:anonymous` / `system:unauthenticated`. On GKE via GCP audit, some unauthenticated clients omit\n`client.user.email`; those successes are included when the user agent is unusual.\n\n### Investigation steps\n\n- Review `client.user.email`, `event.action`, `gcp.audit.resource_name`, `source.ip`, and `user_agent.original`.\n- Confirm whether the API server is Internet-exposed and whether anonymous auth is intentionally enabled.\n- Hunt for follow-on anonymous pod mutations, secret reads, or RBAC changes from the same source.\n\n### False positives\n\n- Custom health or readiness endpoints not covered by the built-in exclusions; add environment-specific exceptions after review.\n\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:k8s.io and event.outcome:success and client.user.email:(\"system:anonymous\" or \"system:unauthenticated\" or not *) and user_agent.original:(* and not (*kubernetes/$Format or kube-probe*)) and not gcp.audit.resource_name:(healthz or livez or readyz or version or .well-known*)\n",
+        "references": [
+            "https://media.defense.gov/2022/Aug/29/2003066362/-1/-1/0/CTR_KUBERNETES_HARDENING_GUIDANCE_1.2_20220829.PDF",
+            "https://cloud.google.com/kubernetes-engine/docs/how-to/audit-logging"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.resource_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "189f0f31-8f31-48eb-bb3e-c0db8c8b8c4c",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.001",
+                                "name": "Default Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "189f0f31-8f31-48eb-bb3e-c0db8c8b8c4c_1",
+    "type": "security-rule"
+}

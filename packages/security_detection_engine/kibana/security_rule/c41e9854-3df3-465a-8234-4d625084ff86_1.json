@@ -1,0 +1,136 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects write operations performed by GKE service accounts against RBAC resources (Roles, ClusterRoles, RoleBindings, ClusterRoleBindings). Service accounts typically do not manage RBAC directly; this activity may indicate token abuse or unauthorized privilege escalation.",
+        "false_positives": [
+            "In-cluster controllers, operators, and CI jobs may legitimately reconcile RBAC manifests. Baseline known automation service accounts before tuning."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "gcp.audit.resource_name",
+                "gcp.audit.request.kind",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Service Account Modified RBAC Objects",
+        "note": "## Triage and analysis\n\n### Investigating GKE Service Account Modified RBAC Objects\n\nThis rule detects service accounts performing allowed write actions on RBAC resources. Stolen or over-privileged service\naccount tokens can silently alter authorization to gain or retain elevated access.\n\n### Possible investigation steps\n\n- Review `client.user.email`, `event.action`, and `gcp.audit.resource_name`.\n- Trace the acting service account to its owning workload and inspect recent image changes or exec activity.\n- Correlate with change tickets or GitOps commits for the same RBAC object.\n\n### False positive analysis\n\n- Platform operators and GitOps controllers running in-cluster commonly create or patch RBAC objects.\n\n### Response and remediation\n\n- Revert unauthorized RBAC changes, rotate the service account credentials, and tighten RBAC for the workload.\n\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:\"k8s.io\" and event.outcome:success and\nclient.user.email:(system\\:serviceaccount\\:* and not (\n  \"system:serviceaccount:kube-system:clusterrole-aggregation-controller\" or\n  \"system:serviceaccount:kube-system:generic-garbage-collector\"\n)) and event.action:(\n  \"io.k8s.authorization.rbac.v1.clusterrolebindings.create\" or\n  \"io.k8s.authorization.rbac.v1.clusterrolebindings.delete\" or\n  \"io.k8s.authorization.rbac.v1.clusterrolebindings.patch\" or\n  \"io.k8s.authorization.rbac.v1.clusterrolebindings.update\" or\n  \"io.k8s.authorization.rbac.v1.clusterroles.create\" or\n  \"io.k8s.authorization.rbac.v1.clusterroles.delete\" or\n  \"io.k8s.authorization.rbac.v1.clusterroles.patch\" or\n  \"io.k8s.authorization.rbac.v1.clusterroles.update\" or\n  \"io.k8s.authorization.rbac.v1.rolebindings.create\" or\n  \"io.k8s.authorization.rbac.v1.rolebindings.delete\" or\n  \"io.k8s.authorization.rbac.v1.rolebindings.patch\" or\n  \"io.k8s.authorization.rbac.v1.rolebindings.update\" or\n  \"io.k8s.authorization.rbac.v1.roles.create\" or\n  \"io.k8s.authorization.rbac.v1.roles.delete\" or\n  \"io.k8s.authorization.rbac.v1.roles.patch\" or\n  \"io.k8s.authorization.rbac.v1.roles.update\"\n)\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/access-authn-authz/rbac/",
+            "https://heilancoos.github.io/research/2025/12/16/kubernetes.html#overly-permissive-role-based-access-control"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c41e9854-3df3-465a-8234-4d625084ff86",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "c41e9854-3df3-465a-8234-4d625084ff86_1",
+    "type": "security-rule"
+}

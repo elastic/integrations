@@ -1,0 +1,144 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects creation of a GKE RoleBinding or ClusterRoleBinding that grants permissions to a ServiceAccount, which may indicate privilege delegation or RBAC misconfiguration leading to elevated access.",
+        "false_positives": [
+            "GitOps, namespace onboarding, and workload deployment commonly create RoleBindings for service accounts. Default bootstrap bindings from `system:apiserver` and GKE node bootstrap from `gcp:kube-bootstrap` are excluded."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "gcp.audit.resource_name",
+                "gcp.audit.request.roleRef.name",
+                "gcp.audit.request.roleRef.kind",
+                "gcp.audit.request.subjects.name",
+                "gcp.audit.request.subjects.namespace",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Creation of a RoleBinding Referencing a ServiceAccount",
+        "note": "## Triage and analysis\n\n### Investigating GKE Creation of a RoleBinding Referencing a ServiceAccount\n\nThis rule detects creation of a RoleBinding or ClusterRoleBinding whose subject is a ServiceAccount. Attackers often bind\nover-privileged roles to an existing workload service account to operate with elevated rights.\n\n### Possible investigation steps\n\n- Review `client.user.email`, `source.ip`, `gcp.audit.request.roleRef`, and `gcp.audit.request.subjects`.\n- Determine which workloads run under the bound service account and whether the referenced role is cluster-scoped.\n- Correlate with secret access, exec, or additional RBAC changes from the same actor.\n\n### False positive analysis\n\n- Legitimate deployments and operators create service account bindings during routine releases.\n\n### Response and remediation\n\n- Remove unauthorized bindings, rotate the service account credentials, and tighten who can create RoleBindings.\n\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:\"k8s.io\" and event.outcome:success and\nevent.action:(\n  \"io.k8s.authorization.rbac.v1.rolebindings.create\" or\n  \"io.k8s.authorization.rbac.v1.clusterrolebindings.create\"\n) and gcp.audit.request.subjects.kind:\"ServiceAccount\" and not client.user.email:(\n  \"system:apiserver\" or\n  \"gcp:kube-bootstrap\"\n)\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/access-authn-authz/rbac/",
+            "https://heilancoos.github.io/research/2025/12/16/kubernetes.html#overly-permissive-role-based-access-control"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.request.subjects.kind",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1e58e0a0-7674-4aa9-9409-f72f100a8b5e",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "1e58e0a0-7674-4aa9-9409-f72f100a8b5e_1",
+    "type": "security-rule"
+}

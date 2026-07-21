@@ -1,0 +1,152 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies use of wmic.exe for shadow copy deletion on endpoints. This commonly occurs in tandem with ransomware or other destructive attacks.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.pe.original_file_name",
+                "process.command_line",
+                "process.parent.entity_id",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Volume Shadow Copy Deletion via WMIC",
+        "note": "## Triage and analysis\n\n### Investigating Volume Shadow Copy Deletion via WMIC\n\n#### Possible investigation steps\n\n- What recovery data did WMIC try to delete?\n  - Focus: `process.command_line` scope: \"shadowcopy delete\", \"ID=\", \"VolumeName=\", \"where\", \"/node:\", or broad no-filter deletion.\n  - Implication: escalate when the command removes all shadows, targets a remote node, or lacks a narrow snapshot or volume filter; lower suspicion only when it targets one expected snapshot or volume and parent, account, host, and later process evidence fit that task.\n\n- Is this the expected Microsoft WMIC binary for the host?\n  - Focus: `process.executable`, `process.pe.original_file_name`, `process.code_signature.subject_name`, and `process.code_signature.trusted`.\n  - Implication: escalate when WMIC is renamed, runs outside a Windows system path, has a non-Microsoft or untrusted signature, or mismatches its original file name; Microsoft-signed system-path WMIC lowers identity risk but does not clear shadow-copy deletion.\n\n- Which launcher and account initiated the deletion?\n  - Focus: `process.parent.executable`, `process.parent.command_line`, `user.id`, `user.name`, and `user.domain`.\n  - Implication: escalate when a document, browser, archive tool, script host, interactive user, or unexplained remote-management parent launches WMIC; lower suspicion only when parent command, account, and host identify the exact recovery, imaging, lab-reset, or authorized test runner.\n\n- Did the same host or lineage run other recovery-inhibition or encryption-prep commands?\n  - Why: ransomware often mixes WMIC with \"vssadmin.exe\", \"wbadmin.exe\", \"bcdedit.exe\", \"REAgentC.exe\", \"diskshadow.exe\", service-stop commands, or encryption tooling.\n  - Focus: same-`host.id` process starts, scoped to `process.parent.entity_id` when present, for recovery-inhibition utilities, service stops, backup-agent tampering, or encryption tools. !{investigate{\"description\":\"\",\"label\":\"Process events from the same parent\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: without `process.entity_id`, pivot by `host.id` + `process.pid` near the alert and treat lineage as weaker.\n  - Implication: escalate when WMIC is adjacent to additional recovery inhibition, backup tampering, service stops, or encryption preparation; keep scope narrower when process activity stays limited to one coherent maintenance or test sequence.\n\n- If local evidence is suspicious or unresolved, is the activity broader than one host workflow?\n  - Focus: same-`user.id` alerts for impact, execution, credential, or recovery-inhibition activity. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: review same-`host.id` alerts for alternate shadow-copy deletion utilities, backup tampering, or repeated destructive command lines. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate scope when the user or host shows related impact or execution alerts beyond this command; keep host-local only when both pivots stay confined to the same narrow command sequence.\n\n- Escalate for unauthorized shadow-copy deletion, remote targeting, destructive preparation, or broader spread; close only when command scope, binary identity, parent/account context, same-host corroboration, and related alerts bind to one recognized workflow; preserve evidence and escalate when mixed or incomplete.\n\n### False positive analysis\n\n- Treat WMIC shadow-copy deletion as a recovery-inhibition anti-pattern. Benign closure is narrow: telemetry must show one expected snapshot or volume, a parent command for that exact task, the expected account and host, and no contradictory same-host recovery-inhibition or encryption-prep activity. Use change records or test plans only as corroboration.\n- Do not close as benign when the command removes all shadows, uses \"/node:\" remote targeting, has unexplained lineage, or appears with service-stop, backup-tampering, or encryption-prep activity. Recurrence, WMIC identity, or a stated maintenance window is not enough when process evidence remains broad or contradictory.\n- Before creating an exception, require a confirmed benign case with the exact `process.command_line` scope, `process.parent.executable`, `process.parent.command_line`, `user.id`, and `host.id`. Build the exception from that minimum pattern, never on \"wmic.exe\", `process.name`, or \"shadowcopy\" alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document the command scope, parent workflow, account, host, and corroborating maintenance or test evidence. Create an exception only when the same workflow recurs consistently for the same account and host scope.\n- If suspicious but unconfirmed, export the alert, process tree, full command line, parent command line, account, host identifiers, and related-alert results before containment. Apply reversible containment first, such as heightened monitoring or temporary administrative-access restrictions for the affected host or account; isolate the endpoint only if process evidence suggests active encryption, backup tampering, or broader destructive activity.\n- If confirmed malicious, preserve the process tree and command evidence before stopping processes or deleting artifacts. Isolate the endpoint to prevent further impact, suspend or reset involved accounts when the same `user.id` shows unauthorized activity, and remove only the scripts, scheduled tasks, services, or tools identified through the process investigation.\n- Restore recovery capability after containment: re-enable or repair affected VSS, backup, and recovery settings, validate that snapshots or backup jobs are functioning, and confirm no related recovery-inhibition commands remain active on the same host or scoped host set.\n- Post-incident hardening: restrict WMIC and VSS-management access on sensitive hosts, use application control where WMIC is not required, retain the process evidence that proved the case, and record any observed variants such as \"vssadmin.exe\", PowerShell Win32_ShadowCopy deletion, \"wbadmin.exe\", \"bcdedit.exe\", or \"diskshadow.exe\" in the case notes.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  (process.name : \"WMIC.exe\" or ?process.pe.original_file_name == \"wmic.exe\") and\n  process.args : \"delete\" and process.args : \"shadowcopy\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": ">=3.0.0"
+            },
+            {
+                "package": "system",
+                "version": ">=2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": ">=5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": ">=1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "dc9c1f74-dac3-48e3-b47f-eb79db358f57",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Tactic: Execution"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1490",
+                        "name": "Inhibit System Recovery",
+                        "reference": "https://attack.mitre.org/techniques/T1490/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1047",
+                        "name": "Windows Management Instrumentation",
+                        "reference": "https://attack.mitre.org/techniques/T1047/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 319
+    },
+    "id": "dc9c1f74-dac3-48e3-b47f-eb79db358f57_319",
+    "type": "security-rule"
+}

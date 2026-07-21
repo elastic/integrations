@@ -1,0 +1,185 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies suspicious processes being spawned by the Microsoft Exchange Server worker process (w3wp). This activity may indicate exploitation activity or access to an existing web shell backdoor.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.pe.original_file_name",
+                "process.hash.sha256",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.parent.entity_id",
+                "process.parent.executable",
+                "process.parent.args"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Microsoft Exchange Worker Spawning Suspicious Processes",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft Exchange Worker Spawning Suspicious Processes\n\n#### Possible investigation steps\n\n- What Exchange worker-child path did the alert capture?\n  - Focus: child `process.executable` and `process.command_line`; worker `process.parent.executable`, `process.parent.args`, and `process.parent.command_line`; exact MSExchange app pool.\n  - Implication: escalate when an Exchange app pool launches shell/PowerShell for execution, download, discovery, or staging; lower suspicion only when parent arguments and child command match one narrow maintenance task with no webshell or RCE indicators.\n- What intent does the shell or PowerShell command show?\n  - Focus: `process.command_line`; encoded or inline execution, download cradles, archive/export, discovery, Set-OabVirtualDirectory, mailbox access, or FrontEnd\\HttpProxy, aspnet_client, web.config, and applicationHost.config paths.\n  - Implication: escalate on payload retrieval, web-root staging, credential access, account changes, mailbox export, cleanup, or lateral movement; lower suspicion only for one bounded recognized Exchange maintenance or validation action.\n- Does token and session context support human administration or service-context abuse?\n  - Why: w3wp.exe children often inherit app-pool or service identity, so user fields alone do not prove human administration.\n  - Focus: `user.id`, `user.name`, `user.domain`, `process.Ext.session_info.logon_type`, and `process.Ext.authentication_id`.\n  - Implication: escalate when a service, app-pool, or unexpected logon context launches interactive shell behavior or remote administration; lower suspicion only when identity, session type, and command scope match the same recognized workflow.\n- Is the child binary expected or masqueraded?\n  - Focus: `process.executable`, `process.hash.sha256`, `process.pe.original_file_name`, `process.code_signature.subject_name`, and `process.code_signature.trusted`.\n  - Implication: escalate when the child is renamed, user-writable, unsigned or untrusted, hash-new for the server, or mismatched to PE original name; a trusted Microsoft shell lowers identity concern but does not clear the unusual chain.\n- If process evidence is suspicious or unresolved, did file evidence show webshells or artifacts?\n  - Focus: with endpoint file telemetry, scope by `host.id` + `process.entity_id`, or `host.id` + `process.pid` + tight alert window if absent; inspect `file.path`, `file.Ext.original.path`, `file.origin_url`, and `file.Ext.windows.zone_identifier` for ASPX, scripts, binaries, DLLs, archives, or output under Exchange/IIS paths. !{investigate{\"description\":\"\",\"label\":\"File events for the suspicious child process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: check whether a written `file.path` later appears as `process.executable`; missing file telemetry limits proof but is not benign.\n  - Implication: escalate when the child writes new or modified ASPX, scripts, binaries, DLLs, archives, or output under Exchange FrontEnd\\HttpProxy, IIS aspnet_client, temp, or web-root paths; lower suspicion only when file activity stays inside the exact maintenance path with no web-content or payload staging.\n- If process evidence is suspicious or unresolved, did network evidence show retrieval or callback?\n  - Focus: with endpoint network telemetry, scope DNS and connections by `host.id` + `process.entity_id`, or `host.id` + `process.pid` + tight alert window if absent; read DNS (`dns.question.name`, `dns.resolved_ip`) separately from connections (`destination.ip`, `destination.port`). !{investigate{\"description\":\"\",\"label\":\"Network events for the suspicious child process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: map `dns.resolved_ip` to `destination.ip` before deciding whether the same process reached it. Missing network telemetry is unresolved, not benign.\n  - Implication: escalate when the child downloads tools, reaches public staging or callback infrastructure, or connects to systems unrelated to the Exchange task; lower suspicion only when destinations are internal, proxy, or vendor services fitting the same bounded workflow.\n- Does same-worker or same-host scope show broader Exchange compromise?\n  - Focus: surrounding same-worker process starts and related alerts on `host.id` or `user.id`, especially `process.parent.executable`, `process.parent.args`, `process.command_line`, and `process.hash.sha256` for repeated w3wp.exe descendants, credential dumping, account changes, archiving, cleanup, or side-loading chains.\n    - !{investigate{\"description\":\"\",\"label\":\"Process events from the same Exchange worker\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate scope when the host shows credential dumping, account changes, archive creation, cleanup, lateral movement, or repeated Exchange worker children; keep local only when surrounding process evidence and related alerts stay confined to the same recognized maintenance window.\n- Escalate on unexplained server-side execution, suspicious command intent, payload staging, suspicious destinations, or broader host compromise; close only when all available evidence aligns with one recognized Exchange workflow on this host; preserve artifacts and escalate when evidence is mixed or visibility incomplete.\n\n### False positive analysis\n\n- Recognized Exchange maintenance or controlled validation is the bounded benign path. Confirm only when `process.parent.args`, child `process.command_line`, `process.executable`, `process.hash.sha256`, `process.code_signature.subject_name`, `user.id`, and `host.id` align with one task, and any `file.path`, `dns.question.name`, or `destination.ip` evidence shows no payload staging or external callback. Use change records as corroboration; otherwise require recurring prior alerts with the same parent arguments, command pattern, child identity, user, host, and no contradictory artifacts or destinations.\n- Build exceptions only from the minimum confirmed pattern: `process.parent.args`, child `process.executable` or `process.hash.sha256`, `process.code_signature.subject_name`, stable `process.command_line` fragment, `user.id`, `host.id`, and any bounded artifact or destination pattern distinguishing the benign task. Avoid exceptions on \"w3wp.exe\", `process.name`, or `host.id` alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document the exact evidence that validated the workflow: `process.parent.args`, child `process.executable`, `process.command_line`, `user.id`, `host.id`, and any bounded artifact or destination pattern. Create an exception only after the same pattern is stable across prior alerts from this rule.\n- If suspicious but unconfirmed, preserve the alert, process tree, child `process.entity_id` or `process.pid`, `process.command_line`, parent `process.parent.entity_id`, `process.parent.args`, child hash and signer, `user.id`, `host.id`, and any staged artifacts, destinations, or IIS/Exchange log snippets before containment. Apply reversible containment first: block confirmed malicious destinations, restrict external access to the implicated Exchange service, or increase monitoring. Isolate only when active compromise evidence and server criticality justify disruption.\n- If confirmed malicious, contain the Exchange server or exposed service path based on the process, artifact, destination, and same-host evidence already preserved. Record process and artifact identifiers before terminating the child, then block confirmed malicious domains, IPs, and hashes.\n- Eradicate only the webshells, scripts, archives, scheduled tasks, dropped utilities, and configuration changes identified during triage. Restore modified Exchange or IIS content from known-good state, patch the Exchange server, review the virtual directories and app pools implicated by `process.parent.args`, and rotate Exchange, application, or service credentials if credential access, configuration theft, or mailbox export was involved.\n- Retain the related process, file, network, IIS, and Exchange logs that supported the decision. Document any adjacent variant or telemetry gap, such as missing endpoint file/network events or unavailable IIS request logs, for the detection engineering team.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.parent.name : \"w3wp.exe\" and process.parent.args : \"MSExchange*AppPool\" and\n  (\n    (process.name : (\"cmd.exe\", \"powershell.exe\", \"pwsh.exe\", \"powershell_ise.exe\") or\n    ?process.pe.original_file_name in (\"Cmd.Exe\", \"PowerShell.EXE\", \"pwsh.dll\", \"powershell_ise.EXE\"))\n  )\n",
+        "references": [
+            "https://www.microsoft.com/security/blog/2021/03/02/hafnium-targeting-exchange-servers",
+            "https://www.volexity.com/blog/2021/03/02/active-exploitation-of-microsoft-exchange-zero-day-vulnerabilities",
+            "https://discuss.elastic.co/t/detection-and-response-for-hafnium-activity/266289"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": ">=3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": ">=5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": ">=1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "f81ee52c-297e-46d9-9205-07e66931df26",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide",
+            "Tactic: Execution",
+            "Tactic: Persistence"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            },
+                            {
+                                "id": "T1059.003",
+                                "name": "Windows Command Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1505",
+                        "name": "Server Software Component",
+                        "reference": "https://attack.mitre.org/techniques/T1505/",
+                        "subtechnique": [
+                            {
+                                "id": "T1505.003",
+                                "name": "Web Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1505/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 317
+    },
+    "id": "f81ee52c-297e-46d9-9205-07e66931df26_317",
+    "type": "security-rule"
+}

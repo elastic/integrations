@@ -1,0 +1,3064 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies an Amazon Bedrock model invocation whose prompt or completion contains an AWS access key identifier (AKIA long-term or ASIA temporary/STS, followed by 16 characters), an Amazon Bedrock API key (ABSK bearer token), or a PEM private-key block. Credentials in the model input mean an application or user is sending secrets to the model, exposing them to invocation logging, the model provider, and prompt history; credentials in the model output mean the model is emitting secrets, which can result from training-data leakage, poisoned context, or a prompt-injection-driven exfiltration attempt. Either case is a credential-exposure event that warrants immediate rotation of the affected secret.",
+        "false_positives": [
+            "Prompts or completions that reference example or documentation keys (for example the AWS sample access key ending in EXAMPLE) match the access-key pattern. Review the matched value in \"gen_ai.prompt\" or \"gen_ai.completion\" and confirm whether it is a live credential before responding."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS Bedrock Model Prompt or Completion Containing Credentials",
+        "note": "## Triage and analysis\n\n### Investigating AWS Bedrock Model Prompt or Completion Containing Credentials\n\nBedrock model invocation logging records the full request and response of each InvokeModel/Converse call. This rule scans the decoded prompt and completion for live-credential patterns: AWS access key IDs (AKIA/ASIA followed by 16 characters) and PEM private-key headers. A credential in the prompt indicates secrets are being sent to the model (and persisted in logs and, for hosted models, to the provider); a credential in the completion indicates the model returned a secret, which is a sign of training-data or context leakage or a successful prompt-injection exfiltration.\n\n### Possible investigation steps\n\n- Review the matched value in \"gen_ai.prompt\" and \"gen_ai.completion\" and confirm whether it is a live credential or an example/placeholder.\n- Identify the caller in \"user.id\" and the model in \"aws_bedrock.invocation.model_id\", and determine which application generated the invocation.\n- If the credential is in the completion, review the prompt for injection or data-exfiltration instructions and check the model's knowledge base or context sources.\n- Determine the scope and privileges of the exposed credential to gauge impact.\n\n### False positive analysis\n\n- Example or documentation keys (such as the AWS EXAMPLE key) match the pattern. Confirm the value is a real credential before escalating.\n\n### Response and remediation\n\n- If the credential is live, rotate or deactivate it immediately and review CloudTrail for any use of it.\n- Identify and fix the application path that placed the credential into the prompt, and add input/output filtering (such as a Bedrock guardrail with a sensitive-information policy) to prevent recurrence.\n",
+        "query": "from logs-aws_bedrock.invocation-* metadata _id, _version, _index\n| where event.action in (\"ConverseStream\", \"Converse\") AND \n   ( gen_ai.prompt rlike \"\"\".*(AKIA|ASIA)[A-Z0-9]{16}.*\"\"\"\n    or gen_ai.completion rlike \"\"\".*(AKIA|ASIA)[A-Z0-9]{16}.*\"\"\"\n    or gen_ai.prompt rlike \"\"\".*-----BEGIN [A-Z ]*PRIVATE KEY-----.*\"\"\"\n    or gen_ai.completion rlike \"\"\".*-----BEGIN [A-Z ]*PRIVATE KEY-----.*\"\"\"\n    or gen_ai.prompt rlike \"\"\".*ABSK[A-Za-z0-9+/=]{20}.*\"\"\"\n    or gen_ai.completion rlike \"\"\".*ABSK[A-Za-z0-9+/=]{20}.*\"\"\"\n    or gen_ai.prompt rlike \"\"\".*gh[pousr]_[A-Za-z0-9]{36}.*\"\"\"\n    or gen_ai.completion rlike \"\"\".*gh[pousr]_[A-Za-z0-9]{36}.*\"\"\"\n    or gen_ai.prompt rlike \"\"\".*github_pat_[A-Za-z0-9_]+.*\"\"\"\n    or gen_ai.completion rlike \"\"\".*github_pat_[A-Za-z0-9_]+.*\"\"\"\n    or gen_ai.prompt rlike \"\"\".*glpat-[A-Za-z0-9_\\\\-]+.*\"\"\"\n    or gen_ai.completion rlike \"\"\".*glpat-[A-Za-z0-9_\\\\-]+.*\"\"\")\n| keep _id, _version, _index, @timestamp, gen_ai.*, aws_bedrock.*, user.*, cloud.*, event.*\n",
+        "references": [
+            "https://www.beyondtrust.com/blog/entry/aws-bedrock-security-guide-api-keys-detection-response"
+        ],
+        "related_integrations": [
+            {
+                "package": "aws_bedrock",
+                "version": ">=1.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.artifacts",
+                "type": "unsupported"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.error",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.error_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.image_generation_config.cfg_scale",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.image_generation_config.height",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.image_generation_config.number_of_images",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.image_generation_config.quality",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.image_generation_config.seed",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.image_generation_config.width",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.image_variation_params.images",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.image_variation_params.text",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.images",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.input.input_body_json",
+                "type": "unsupported"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.input.input_body_json_massive_hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.input.input_body_json_massive_length",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.input.input_body_s3_path",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.input.input_content_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.input.input_token_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.input.messages_content_kinds",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.messages.content.text",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.messages.content.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.messages.role",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.model_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.output.completion_text",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.output.output_body_json",
+                "type": "unsupported"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.output.output_body_s3_path",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.output.output_content_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.output.output_token_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.request_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.result",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.schema_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.schema_version",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.system.text",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.system.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws_bedrock.invocation.task_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.account.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.account.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.availability_zone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.attributes.known_redirects",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.attributes.managed",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.attributes.mfa_enabled",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.attributes.oauth_consent_restriction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.attributes.permissions",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.attributes.storage_class",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.last_seen_timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.lifecycle.last_activity",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.source",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.sub_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "cloud.image.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.instance.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.instance.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.machine.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.account.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.account.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.availability_zone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.attributes.known_redirects",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.attributes.managed",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.attributes.mfa_enabled",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.attributes.oauth_consent_restriction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.attributes.permissions",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.attributes.storage_class",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.last_seen_timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.lifecycle.last_activity",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.source",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.sub_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.instance.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.instance.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.machine.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.project.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.project.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.region",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.project.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.project.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.region",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.account.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.account.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.availability_zone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.attributes.known_redirects",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.attributes.managed",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.attributes.mfa_enabled",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.attributes.oauth_consent_restriction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.attributes.permissions",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.attributes.storage_class",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.last_seen_timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.lifecycle.last_activity",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.source",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.sub_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.instance.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.instance.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.machine.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.project.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.project.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.region",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.agent_id_status",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.created",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.duration",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.end",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.ingested",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.original",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.reason",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.risk_score",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "event.risk_score_norm",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "event.sequence",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.severity",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.timezone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.url",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.agent.description",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.agent.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.agent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.analysis.action_recommended",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.analysis.function",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.analysis.tool_names",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.completion",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.compliance.request_triggered",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.compliance.response_triggered",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.compliance.violation_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.compliance.violation_detected",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.guardrail_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.operation.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.output.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.owasp.description",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.owasp.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.performance.request_size",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.performance.response_size",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.performance.response_time",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.performance.start_response_time",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.policy.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.policy.confidence",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.policy.match_detail.score",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.policy.match_detail.threshold",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.policy.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.policy.violation",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.prompt",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.request.choice.count",
+                "type": "integer"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.request.frequency_penalty",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.request.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.request.max_tokens",
+                "type": "integer"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.request.model",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.request.model.description",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.request.model.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.request.model.instructions",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.request.model.role",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.request.model.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.request.model.version",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.request.presence_penalty",
+                "type": "double"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.request.seed",
+                "type": "integer"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.request.temperature",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.request.timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.request.top_k",
+                "type": "double"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.request.top_p",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.response.error_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.response.finish_reasons",
+                "type": "nested"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.response.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.response.model",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.response.timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.security.hallucination_consistency",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.security.jailbreak_score",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.security.prompt_injection_score",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.security.refusal_score",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.security.regex_pattern_count",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.sentiment.content_categories",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.sentiment.content_inappropriate",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.sentiment.score",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.sentiment.toxicity_score",
+                "type": "double"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.system",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.text.complexity_score",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.text.readability_score",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.text.similarity_score",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.threat.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.threat.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.threat.description",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.threat.detected",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.threat.risk_score",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.threat.signature",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.threat.source",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.threat.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.token.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.tool.call.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.tool.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.tool.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.usage.completion_tokens",
+                "type": "integer"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.usage.input_tokens",
+                "type": "integer"
+            },
+            {
+                "ecs": true,
+                "name": "gen_ai.usage.output_tokens",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.usage.prompt_tokens",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.user.rn",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.attributes.known_redirects",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.attributes.managed",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.attributes.mfa_enabled",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.attributes.oauth_consent_restriction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.attributes.permissions",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.attributes.storage_class",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.last_seen_timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.lifecycle.last_activity",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.administers.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.administers.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.administers.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.administers.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.administers.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.administers.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.administers.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.administers.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.administers.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.depends_on.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.depends_on.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.depends_on.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.depends_on.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.depends_on.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.depends_on.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.depends_on.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.depends_on.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.depends_on.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.owns.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.owns.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.owns.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.owns.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.owns.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.owns.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.owns.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.owns.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.owns.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.supervises.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.supervises.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.supervises.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.supervises.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.supervises.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.supervises.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.supervises.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.supervises.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.relationships.supervises.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.source",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.sub_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.entity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.full_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.group.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.risk.calculated_level",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.risk.calculated_score",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.risk.calculated_score_norm",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.risk.static_level",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.risk.static_score",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.risk.static_score_norm",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.changes.roles",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.attributes.known_redirects",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.attributes.managed",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.attributes.mfa_enabled",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.attributes.oauth_consent_restriction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.attributes.permissions",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.attributes.storage_class",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.last_seen_timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.lifecycle.last_activity",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.administers.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.administers.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.administers.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.administers.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.administers.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.administers.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.administers.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.administers.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.administers.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.depends_on.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.depends_on.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.depends_on.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.depends_on.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.depends_on.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.depends_on.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.depends_on.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.depends_on.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.depends_on.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.owns.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.owns.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.owns.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.owns.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.owns.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.owns.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.owns.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.owns.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.owns.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.supervises.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.supervises.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.supervises.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.supervises.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.supervises.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.supervises.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.supervises.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.supervises.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.relationships.supervises.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.source",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.sub_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.entity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.full_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.group.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.risk.calculated_level",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.risk.calculated_score",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.risk.calculated_score_norm",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.risk.static_level",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.risk.static_score",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.risk.static_score_norm",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.roles",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.attributes.known_redirects",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.attributes.managed",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.attributes.mfa_enabled",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.attributes.oauth_consent_restriction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.attributes.permissions",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.attributes.storage_class",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.last_seen_timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.lifecycle.last_activity",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.administers.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.administers.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.administers.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.administers.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.administers.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.administers.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.administers.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.administers.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.administers.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.depends_on.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.depends_on.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.depends_on.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.depends_on.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.depends_on.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.depends_on.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.depends_on.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.depends_on.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.depends_on.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.owns.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.owns.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.owns.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.owns.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.owns.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.owns.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.owns.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.owns.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.owns.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.supervises.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.supervises.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.supervises.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.supervises.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.supervises.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.supervises.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.supervises.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.supervises.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.relationships.supervises.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.source",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.sub_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.entity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.full_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.group.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.risk.calculated_level",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.risk.calculated_score",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.risk.calculated_score_norm",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.risk.static_level",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.risk.static_score",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.risk.static_score_norm",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.roles",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.attributes.known_redirects",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.attributes.managed",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.attributes.mfa_enabled",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.attributes.oauth_consent_restriction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.attributes.permissions",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.attributes.storage_class",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.last_seen_timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.lifecycle.last_activity",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.administers.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.administers.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.administers.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.administers.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.administers.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.administers.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.administers.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.administers.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.administers.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.depends_on.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.depends_on.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.depends_on.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.depends_on.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.depends_on.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.depends_on.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.depends_on.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.depends_on.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.depends_on.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.owns.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.owns.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.owns.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.owns.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.owns.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.owns.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.owns.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.owns.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.owns.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.supervises.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.supervises.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.supervises.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.supervises.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.supervises.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.supervises.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.supervises.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.supervises.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.relationships.supervises.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.source",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.sub_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.entity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.full_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.group.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.risk.calculated_level",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.risk.calculated_score",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.risk.calculated_score_norm",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.risk.static_level",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.risk.static_score",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.risk.static_score_norm",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "user.target.roles",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "68521f99-9b4f-40ef-a4e7-4d74794852b2",
+        "setup": "This rule requires Amazon Bedrock model invocation logs ingested via the Elastic AWS Bedrock integration, with text data delivery enabled in the Bedrock model-invocation-logging configuration.",
+        "severity": "medium",
+        "tags": [
+            "Domain: LLM",
+            "Data Source: AWS Bedrock",
+            "Data Source: Amazon Web Services",
+            "Use Case: Threat Detection",
+            "Mitre Atlas: LLM06",
+            "Resources: Investigation Guide",
+            "Tactic: Credential Access"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "68521f99-9b4f-40ef-a4e7-4d74794852b2_1",
+    "type": "security-rule"
+}

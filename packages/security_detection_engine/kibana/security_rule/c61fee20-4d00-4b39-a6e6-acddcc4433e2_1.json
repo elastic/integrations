@@ -1,0 +1,137 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies AWS CloudTrail data events where an unauthenticated identity successfully retrieves temporary AWS credentials from a Cognito Identity Pool via GetCredentialsForIdentity. Cognito Identity Pools can be configured to allow unauthenticated (guest) access, intended for scenarios like anonymous app analytics, but a pool that grants those anonymous identities meaningful IAM permissions becomes a public, unauthenticated path to real AWS credentials. Adversaries who discover an identity pool ID (often embedded in mobile app binaries, web app JavaScript, or public source repositories) can call GetId followed by GetCredentialsForIdentity with no login token at all to obtain temporary credentials, then use them to access whatever the pool's unauthenticated role permits. This is a New Terms rule that limits alerting to identity pools that have not been observed issuing credentials to an unauthenticated caller before, since some applications intentionally and continuously use guest access as part of normal operation.",
+        "false_positives": [
+            "Applications that intentionally allow unauthenticated Identity Pool access for legitimate purposes (for example, anonymous usage analytics or unauthenticated content delivery) will trigger this rule the first time that pattern is observed for a given identity pool. Confirm whether the pool's unauthenticated role grants only the minimal permissions the application actually needs, and treat repeated alerts for the same pool as expected once validated."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.resources.arn",
+                "aws.cloudtrail.resources.type",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.request_parameters",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Cognito Unauthenticated Identity Pool Credentials Issued",
+        "new_terms_fields": [
+            "aws.cloudtrail.resources.arn"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating AWS Cognito Unauthenticated Identity Pool Credentials Issued\n\nAmazon Cognito Identity Pools can be configured with `AllowUnauthenticatedIdentities`, letting a caller obtain a\nguest identity via `GetId` and then temporary AWS credentials via `GetCredentialsForIdentity`, with no login token or\nauthentication of any kind. This is by design for use cases like anonymous app analytics, but if the pool's\nunauthenticated IAM role is overpermissioned, anyone who discovers the identity pool ID gets a free, unauthenticated\npath to real AWS credentials.\n\nThis rule fires the first time a given identity pool is observed issuing credentials to an unauthenticated caller\n(`aws.cloudtrail.user_identity.type: \"Unknown\"`).\n\n#### Possible investigation steps\n\n- **Identify the pool**: review `aws.cloudtrail.resources.arn` to determine which identity pool issued the\n  credentials, and `aws.cloudtrail.request_parameters.identityId` for the specific guest identity.\n- **Confirm this is intentional guest access**: check whether the application this pool belongs to is designed for\n  anonymous/unauthenticated use (for example, a public mobile app or website with anonymous analytics).\n- **Review the unauthenticated role's permissions**: run\n  `aws cognito-identity get-identity-pool-roles --identity-pool-id <pool id>` and inspect the attached policy for the\n  unauthenticated role. Broad permissions (data store read/write, `iam:*`, cross-service access) on a role reachable\n  without authentication is a critical misconfiguration regardless of whether this specific call was malicious.\n- **Review source context**: check `source.ip`, `user_agent.original`, and `source.geo` for the calling identity. A\n  source unrelated to the application's expected client base (for example, a generic AWS SDK/CLI user agent instead\n  of a mobile/browser client) is a stronger indicator of discovery/abuse rather than normal app traffic.\n- **Look for follow-on activity**: search for subsequent API calls made using credentials tied to the same\n  `identityId` or the unauthenticated role's ARN, to determine what the caller actually did with the credentials.\n- **Look for pool enumeration**: check for `ListIdentityPools` or repeated `GetId`/`GetCredentialsForIdentity` calls\n  against multiple different identity pools from the same source in a short window, which suggests systematic\n  discovery rather than a single legitimate app session.\n\n### False positive analysis\n\n- Many applications intentionally use unauthenticated Identity Pool access for anonymous analytics or public content\n  delivery. This rule fires once per identity pool the first time this pattern is observed; if confirmed as\n  intentional and properly scoped (minimal unauthenticated role permissions), no further action is needed for that\n  pool.\n\n### Response and remediation\n\n- If the unauthenticated role is overpermissioned, scope it down immediately to the minimum required for legitimate\n  anonymous use, or disable `AllowUnauthenticatedIdentities` entirely if guest access is not required.\n- If credentials were abused, review all activity performed under the unauthenticated role's ARN during the\n  credential's validity window and revoke/rotate as appropriate (temporary credentials cannot be revoked directly,\n  but the role's trust policy or permissions can be tightened immediately).\n- Treat any identity pool ID found in client-side code (mobile app binaries, web JavaScript) as public information,\n  and ensure the unauthenticated role attached to it is scoped accordingly.\n\n",
+        "query": "data_stream.dataset: \"aws.cloudtrail\"\n    and event.provider: \"cognito-identity.amazonaws.com\"\n    and event.action: \"GetCredentialsForIdentity\"\n    and event.outcome: \"success\"\n    and aws.cloudtrail.user_identity.type: \"Unknown\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/cognito/latest/developerguide/identity-pool-roles.html",
+            "https://docs.aws.amazon.com/cognito/latest/developerguide/logging-using-cloudtrail.html",
+            "https://hackingthe.cloud/aws/exploitation/cognito_identity_pool_excessive_privileges/",
+            "https://github.com/RhinoSecurityLabs/pacu/tree/master/pacu/modules/cognito__attack"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": ">=6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c61fee20-4d00-4b39-a6e6-acddcc4433e2",
+        "setup": "Cognito Identity Pool data events must be enabled in CloudTrail to capture GetCredentialsForIdentity, GetId, GetOpenIdToken, GetOpenIdTokenForDeveloperIdentity, and UnlinkIdentity. Add an advanced event selector for eventCategory Data and resources.type AWS::Cognito::IdentityPool to the trail.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Cognito",
+            "Use Case: Asset Visibility",
+            "Resources: Investigation Guide",
+            "Tactic: Credential Access",
+            "Tactic: Initial Access"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "c61fee20-4d00-4b39-a6e6-acddcc4433e2_1",
+    "type": "security-rule"
+}
