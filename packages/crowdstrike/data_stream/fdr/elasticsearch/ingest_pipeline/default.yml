@@ -556,6 +556,32 @@ processors:
       name: '{{ IngestPipeline "categorize" }}'
       ignore_missing_pipeline: true
 
+  # Derive event.outcome from crowdstrike.Status.
+  # CrowdStrike Status uses NTSTATUS codes; severity is in bits 30-31:
+  #   0 = success, 1 = informational, 2 = warning, 3 = error.
+  # Status 0 represents success. Non-zero success-severity codes (e.g. STATUS_PENDING),
+  # warning, and informational represent unknown. Error represent failure.
+  - script:
+      tag: set_event_outcome_from_Status
+      description: Set event.outcome from crowdstrike.Status using NTSTATUS severity bits.
+      if: ctx.crowdstrike?.Status != null && ctx.crowdstrike.Status != ''
+      source: |-
+        long status = Long.parseLong(ctx.crowdstrike.Status);
+
+        ctx.event = ctx.event ?: [:];
+        if (status == 0L) {
+          ctx.event.outcome = 'success';
+          return;
+        }
+        // NTSTATUS severity in bits 30-31
+        def severity = (int) ((status >>> 30) & 0x3L);
+        if (severity == 3) {
+          ctx.event.outcome = 'failure';
+        } else {
+          // informational, warning, or non-zero success-class (PENDING/TIMEOUT)
+          ctx.event.outcome = 'unknown';
+        }
+
   # Cached event category for category-dependent processors
   - set:
       tag: set__temp_isFile_1aa6969f
