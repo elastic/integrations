@@ -732,6 +732,8 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | destination.service.name | Name of the service data is collected from. | keyword |
 | destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | destination.user.email | User email address. | keyword |
+| destination.user.full_name | User's full name, if available. | keyword |
+| destination.user.full_name.text | Multi-field of `destination.user.full_name`. | match_only_text |
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
@@ -857,6 +859,8 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | source.port | Port of the source. | long |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | source.user.email | User email address. | keyword |
+| source.user.full_name | User's full name, if available. | keyword |
+| source.user.full_name.text | Multi-field of `source.user.full_name`. | match_only_text |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
@@ -867,6 +871,8 @@ The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Beca
 | url.original.text | Multi-field of `url.original`. | match_only_text |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
+| user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
 | user.group.name | Name of the group. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
