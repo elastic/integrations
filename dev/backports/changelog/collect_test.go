@@ -110,7 +110,7 @@ func setupCheckVersionsRepo(t *testing.T) (workDir string, run func(...string)) 
 	require.NoError(t, cmd.Run())
 
 	workDir = t.TempDir()
-	exec.Command("git", "clone", "-q", remoteDir, workDir).Run() //nolint:errcheck
+	run("clone", "-q", remoteDir, workDir)
 	run("config", "user.email", "test@test.com")
 	run("config", "user.name", "Test")
 	run("config", "commit.gpgsign", "false")
