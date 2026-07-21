@@ -184,7 +184,7 @@
             },
             {
                 "id": "ai_listening_ports_windows",
-                "query": "SELECT\n    l.port,\n    l.address,\n    l.protocol,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid\nFROM listening_ports l\nJOIN processes p ON l.pid = p.pid\nWHERE (\n    l.port IN (11434, 1234, 7860, 6333, 6334, 19530)\n    OR (\n        l.port IN (43411, 4891, 1337, 5001, 8080, 8000, 4000, 3000, 3001, 8188, 9090, 1000, 8501, 8265, 9099, 5678, 8888)\n        AND (\n            p.name IN (\n                'ollama.exe', 'lms.exe', 'gpt4all.exe', 'jan.exe', 'vllm.exe',\n                'litellm.exe', 'koboldcpp.exe', 'llama-server.exe', 'llamafile.exe',\n                'open-webui.exe', 'anythingllm.exe', 'comfyui.exe', 'invokeai.exe',\n                'qdrant.exe', 'milvus.exe', 'weaviate.exe', 'chroma.exe',\n                'claude.exe', 'Cursor.exe', 'windsurf.exe', 'copilot-agent.exe',\n                'aider.exe', 'codex.exe', 'tabby.exe', 'exo.exe'\n            )\n            OR p.cmdline LIKE '%ollama%'\n            OR p.cmdline LIKE '%vllm%'\n            OR p.cmdline LIKE '%litellm%'\n            OR p.cmdline LIKE '%llama-server%'\n            OR p.cmdline LIKE '%llama.cpp%'\n            OR p.cmdline LIKE '%open-webui%'\n            OR p.cmdline LIKE '%anythingllm%'\n            OR p.cmdline LIKE '%chromadb%'\n            OR p.cmdline LIKE '%qdrant%'\n            OR p.cmdline LIKE '%weaviate%'\n            OR p.cmdline LIKE '%milvus%'\n            OR p.cmdline LIKE '%claude-code%'\n            OR p.cmdline LIKE '%cursor-retrieval%'\n            OR p.cmdline LIKE '%github.copilot%'\n            OR p.cmdline LIKE '%mcp-server%'\n            OR p.cmdline LIKE '%@modelcontextprotocol%'\n        )\n    )\n    OR (\n        l.port = 18789\n        AND (\n            p.cmdline LIKE '%openclaw%'\n            OR p.cmdline LIKE '%moltbot%'\n            OR p.cmdline LIKE '%clawdbot%'\n            OR p.name LIKE '%openclaw%'\n        )\n    )\n)\n    AND l.address != '127.0.0.1'\n    AND l.address != '::1';",
+                "query": "SELECT\n    l.port,\n    l.address,\n    l.protocol,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid\nFROM listening_ports l\nJOIN processes p ON l.pid = p.pid\nWHERE (\n    l.port IN (11434, 1234, 7860)\n    OR (\n        l.port IN (43411, 4891, 1337, 5001, 8080, 8000, 4000, 3000, 3001, 8188, 9090, 1000, 8501, 8265, 9099, 5678, 8888)\n        AND (\n            p.name IN (\n                'ollama', 'lms', 'gpt4all', 'jan', 'vllm', 'litellm', 'koboldcpp',\n                'llama-server', 'llamafile', 'open-webui', 'anythingllm', 'comfyui',\n                'invokeai',\n                'claude', 'cursor', 'Cursor', 'windsurf', 'Windsurf',\n                'copilot-agent', 'aider', 'codex', 'tabby', 'exo'\n            )\n            OR p.cmdline LIKE '%ollama%'\n            OR p.cmdline LIKE '%vllm%'\n            OR p.cmdline LIKE '%litellm%'\n            OR p.cmdline LIKE '%llama-server%'\n            OR p.cmdline LIKE '%llama.cpp%'\n            OR p.cmdline LIKE '%open-webui%'\n            OR p.cmdline LIKE '%anythingllm%'\n            OR p.cmdline LIKE '%claude-code%'\n            OR p.cmdline LIKE '%cursor-retrieval%'\n            OR p.cmdline LIKE '%github.copilot%'\n            OR p.cmdline LIKE '%mcp-server%'\n            OR p.cmdline LIKE '%@modelcontextprotocol%'\n        )\n    )\n    OR (\n        l.port = 18789\n        AND (\n            p.cmdline LIKE '%openclaw%'\n            OR p.cmdline LIKE '%moltbot%'\n            OR p.cmdline LIKE '%clawdbot%'\n            OR p.name LIKE '%openclaw%'\n        )\n    )\n)\nAND l.address != '127.0.0.1'\nAND l.address != '::1';",
                 "interval": 3600,
                 "platform": "windows",
                 "timeout": 180,
@@ -263,93 +263,6 @@
                         "key": "event.action",
                         "value": {
                             "value": "osquery.ai_listening_ports"
-                        }
-                    }
-                ],
-                "snapshot": true
-            },
-            {
-                "id": "ai_listening_ports_local_windows",
-                "query": "SELECT\n    l.port,\n    l.address,\n    l.protocol,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid\nFROM listening_ports l\nJOIN processes p ON l.pid = p.pid\nWHERE (\n    l.port IN (11434, 1234, 7860, 6333, 6334, 19530)\n    OR (\n        l.port IN (43411, 4891, 1337, 5001, 8080, 8000, 4000, 3000, 3001, 8188, 9090, 1000, 8501, 8265, 9099, 5678, 8888)\n        AND (\n            p.name IN (\n                'ollama.exe', 'lms.exe', 'gpt4all.exe', 'jan.exe', 'vllm.exe',\n                'litellm.exe', 'koboldcpp.exe', 'llama-server.exe', 'llamafile.exe',\n                'open-webui.exe', 'anythingllm.exe', 'comfyui.exe', 'invokeai.exe',\n                'qdrant.exe', 'milvus.exe', 'weaviate.exe', 'chroma.exe',\n                'claude.exe', 'Cursor.exe', 'windsurf.exe', 'copilot-agent.exe',\n                'aider.exe', 'codex.exe', 'tabby.exe', 'exo.exe'\n            )\n            OR p.cmdline LIKE '%ollama%'\n            OR p.cmdline LIKE '%vllm%'\n            OR p.cmdline LIKE '%litellm%'\n            OR p.cmdline LIKE '%llama-server%'\n            OR p.cmdline LIKE '%llama.cpp%'\n            OR p.cmdline LIKE '%open-webui%'\n            OR p.cmdline LIKE '%anythingllm%'\n            OR p.cmdline LIKE '%chromadb%'\n            OR p.cmdline LIKE '%qdrant%'\n            OR p.cmdline LIKE '%weaviate%'\n            OR p.cmdline LIKE '%milvus%'\n            OR p.cmdline LIKE '%claude-code%'\n            OR p.cmdline LIKE '%cursor-retrieval%'\n            OR p.cmdline LIKE '%github.copilot%'\n            OR p.cmdline LIKE '%mcp-server%'\n            OR p.cmdline LIKE '%@modelcontextprotocol%'\n        )\n    )\n    OR (\n        l.port = 18789\n        AND (\n            l.address = '127.0.0.1'\n            OR l.address = '::1'\n        )\n        AND (\n            p.cmdline LIKE '%openclaw%'\n            OR p.cmdline LIKE '%moltbot%'\n            OR p.cmdline LIKE '%clawdbot%'\n            OR p.name LIKE '%openclaw%'\n        )\n    )\n);",
-                "interval": 3600,
-                "platform": "windows",
-                "timeout": 180,
-                "ecs_mapping": [
-                    {
-                        "key": "event.category",
-                        "value": {
-                            "value": [
-                                "network"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.type",
-                        "value": {
-                            "value": [
-                                "info"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "server.port",
-                        "value": {
-                            "field": "port"
-                        }
-                    },
-                    {
-                        "key": "server.address",
-                        "value": {
-                            "field": "address"
-                        }
-                    },
-                    {
-                        "key": "network.transport",
-                        "value": {
-                            "field": "protocol"
-                        }
-                    },
-                    {
-                        "key": "process.name",
-                        "value": {
-                            "field": "name"
-                        }
-                    },
-                    {
-                        "key": "process.executable",
-                        "value": {
-                            "field": "path"
-                        }
-                    },
-                    {
-                        "key": "process.command_line",
-                        "value": {
-                            "field": "cmdline"
-                        }
-                    },
-                    {
-                        "key": "process.pid",
-                        "value": {
-                            "field": "pid"
-                        }
-                    },
-                    {
-                        "key": "tags",
-                        "value": {
-                            "value": [
-                                "osquery",
-                                "ai_discovery",
-                                "listening_ports_inventory",
-                                "shadow_ai",
-                                "windows",
-                                "high_noise"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.action",
-                        "value": {
-                            "value": "osquery.ai_listening_ports_local"
                         }
                     }
                 ],
@@ -573,7 +486,7 @@
             },
             {
                 "id": "ai_model_files_windows",
-                "query": "SELECT\n    path,\n    filename,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time\nFROM file\nWHERE (\n    path LIKE 'C:\\Users\\%\\.ollama\\models\\blobs\\%'\n    OR path LIKE 'C:\\Users\\%\\.lmstudio\\models\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\huggingface\\hub\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\llama.cpp\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\nomic.ai\\GPT4All\\%'\n)\nAND size > 104857600;",
+                "query": "SELECT\n    path,\n    filename,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time,\n    datetime(atime, 'unixepoch') AS accessed_time,\n    CASE\n        WHEN path LIKE 'C:\\Users\\%\\.ollama\\models\\%' THEN 'ollama'\n        WHEN path LIKE 'C:\\Users\\%\\.lmstudio\\%' THEN 'lm-studio'\n        WHEN path LIKE 'C:\\Users\\%\\.cache\\huggingface\\%' THEN 'huggingface'\n        WHEN path LIKE 'C:\\Users\\%\\.cache\\llama.cpp\\%' THEN 'llama.cpp'\n        WHEN path LIKE 'C:\\Users\\%\\AppData\\Local\\nomic.ai\\GPT4All\\%' THEN 'gpt4all'\n        WHEN path LIKE 'C:\\Users\\%\\Downloads\\%' THEN 'download'\n        ELSE 'other'\n    END AS tool\nFROM file\nWHERE (\n    path LIKE 'C:\\Users\\%\\.ollama\\models\\blobs\\%'\n    OR path LIKE 'C:\\Users\\%\\.ollama\\models\\%\\%'\n    OR path LIKE 'C:\\Users\\%\\.lmstudio\\models\\%'\n    OR path LIKE 'C:\\Users\\%\\.lmstudio\\models\\%\\%\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\.cache\\huggingface\\hub\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\huggingface\\hub\\%\\%\\%.safetensors'\n    OR path LIKE 'C:\\Users\\%\\.cache\\llama.cpp\\%'\n    OR path LIKE 'C:\\Users\\%\\.cache\\llama.cpp\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\nomic.ai\\GPT4All\\%'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\nomic.ai\\GPT4All\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\Downloads\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\Downloads\\%.safetensors'\n)\nAND size > 104857600;",
                 "interval": 86400,
                 "platform": "windows",
                 "timeout": 180,
@@ -637,77 +550,15 @@
                         }
                     },
                     {
+                        "key": "osquery.model_tool",
+                        "value": {
+                            "field": "tool"
+                        }
+                    },
+                    {
                         "key": "event.action",
                         "value": {
                             "value": "osquery.ai_model_files"
-                        }
-                    }
-                ],
-                "snapshot": true
-            },
-            {
-                "id": "ai_model_file_extensions_windows",
-                "query": "SELECT\n    path,\n    filename,\n    size,\n    datetime(mtime, 'unixepoch') AS modified_time\nFROM file\nWHERE (\n    path LIKE 'C:\\Users\\%\\.ollama\\models\\%\\%'\n    OR path LIKE 'C:\\Users\\%\\.lmstudio\\models\\%\\%\\%\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\.cache\\huggingface\\hub\\%\\%\\%\\%.safetensors'\n    OR path LIKE 'C:\\Users\\%\\.cache\\llama.cpp\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\AppData\\Local\\nomic.ai\\GPT4All\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\Downloads\\%.gguf'\n    OR path LIKE 'C:\\Users\\%\\Downloads\\%.safetensors'\n)\nAND size > 104857600;",
-                "interval": 86400,
-                "platform": "windows",
-                "timeout": 180,
-                "ecs_mapping": [
-                    {
-                        "key": "event.category",
-                        "value": {
-                            "value": [
-                                "file"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.type",
-                        "value": {
-                            "value": [
-                                "info"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "file.path",
-                        "value": {
-                            "field": "path"
-                        }
-                    },
-                    {
-                        "key": "file.name",
-                        "value": {
-                            "field": "filename"
-                        }
-                    },
-                    {
-                        "key": "file.size",
-                        "value": {
-                            "field": "size"
-                        }
-                    },
-                    {
-                        "key": "file.modified",
-                        "value": {
-                            "field": "modified_time"
-                        }
-                    },
-                    {
-                        "key": "tags",
-                        "value": {
-                            "value": [
-                                "osquery",
-                                "ai_discovery",
-                                "model_file_extensions",
-                                "shadow_ai",
-                                "windows"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.action",
-                        "value": {
-                            "value": "osquery.ai_model_file_extensions"
                         }
                     }
                 ],
@@ -987,7 +838,7 @@
             },
             {
                 "id": "ai_npm_packages_windows",
-                "query": "SELECT\n    name,\n    version,\n    description,\n    path,\n    directory,\n    depth\nFROM npm_packages\nWHERE (\n    name LIKE '@modelcontextprotocol/%'\n    OR name LIKE 'mcp-server-%'\n    OR name LIKE '@anthropic-ai/%'\n    OR name LIKE '@elastic/mcp%'\n    OR name LIKE '@github/mcp-server%'\n    OR name LIKE 'mcp-remote%'\n)\nAND depth = 0;",
+                "query": "SELECT\n    name,\n    version,\n    description,\n    path,\n    directory,\n    depth\nFROM npm_packages\nWHERE (\n    name LIKE '@modelcontextprotocol/%'\n    OR name LIKE 'mcp-server-%'\n    OR name LIKE '@anthropic-ai/%'\n    OR name LIKE '@elastic/mcp%'\n    OR name LIKE '@github/mcp-server%'\n    OR name LIKE 'mcp-remote%'\n    OR name LIKE '@openai/%'\n    OR name LIKE '@google/gemini-cli%'\n    OR name LIKE '@google/generative-ai%'\n    OR name LIKE '@google-cloud/vertexai%'\n    OR name LIKE '@langchain/%'\n    OR name LIKE 'langchain%'\n    OR name LIKE '@continuedev/%'\n    OR name LIKE '@mistralai/%'\n    OR name LIKE '@cohere/%'\n    OR name LIKE '@githubnext/%copilot%'\n    OR name LIKE '@github/copilot%'\n    OR name LIKE 'gemini-cli%'\n)\nAND depth = 0;",
                 "interval": 86400,
                 "platform": "windows",
                 "timeout": 180,
@@ -1253,92 +1104,6 @@
                         "key": "event.action",
                         "value": {
                             "value": "osquery.ai_credential_files"
-                        }
-                    }
-                ],
-                "snapshot": true
-            },
-            {
-                "id": "ai_jupyter_servers_windows",
-                "query": "SELECT\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    p.resident_size,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.parent AS ppid\nFROM processes p\nLEFT JOIN users u ON p.uid = u.uid\nWHERE p.name IN (\n    'jupyter', 'jupyter.exe', 'jupyter-lab', 'jupyter-lab.exe',\n    'jupyter-notebook', 'jupyter-notebook.exe',\n    'jupyter-server', 'jupyter-server.exe',\n    'jupyterhub', 'jupyterhub.exe',\n    'jupyterhub-singleuser', 'jupyterhub-singleuser.exe'\n)\n    OR p.cmdline LIKE '%jupyter%notebook%'\n    OR p.cmdline LIKE '%jupyter%lab%'\n    OR p.cmdline LIKE '%jupyter%server%'\n    OR p.cmdline LIKE '%jupyterhub%'\n    OR (p.name IN ('python', 'python3', 'python.exe') AND p.cmdline LIKE '%jupyter%');",
-                "interval": 3600,
-                "platform": "windows",
-                "timeout": 120,
-                "ecs_mapping": [
-                    {
-                        "key": "event.category",
-                        "value": {
-                            "value": [
-                                "process"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.type",
-                        "value": {
-                            "value": [
-                                "info"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "process.name",
-                        "value": {
-                            "field": "name"
-                        }
-                    },
-                    {
-                        "key": "process.executable",
-                        "value": {
-                            "field": "path"
-                        }
-                    },
-                    {
-                        "key": "process.command_line",
-                        "value": {
-                            "field": "cmdline"
-                        }
-                    },
-                    {
-                        "key": "process.pid",
-                        "value": {
-                            "field": "pid"
-                        }
-                    },
-                    {
-                        "key": "user.name",
-                        "value": {
-                            "field": "username"
-                        }
-                    },
-                    {
-                        "key": "process.start",
-                        "value": {
-                            "field": "start_time"
-                        }
-                    },
-                    {
-                        "key": "process.parent.pid",
-                        "value": {
-                            "field": "ppid"
-                        }
-                    },
-                    {
-                        "key": "tags",
-                        "value": {
-                            "value": [
-                                "osquery",
-                                "ai_discovery",
-                                "jupyter",
-                                "shadow_ai",
-                                "windows"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.action",
-                        "value": {
-                            "value": "osquery.ai_jupyter_servers"
                         }
                     }
                 ],
@@ -1950,7 +1715,7 @@
             },
             {
                 "id": "ai_process_network_summary_windows",
-                "query": "SELECT p.name AS process_name, p.path AS process_path, p.cmdline, p.pid, u.username, pos.remote_address, pos.remote_port, pos.local_port, pos.local_address, pos.state, CASE pos.family WHEN 2 THEN 'IPv4' WHEN 10 THEN 'IPv6' ELSE 'unknown' END AS address_family, CASE pos.protocol WHEN 6 THEN 'tcp' WHEN 17 THEN 'udp' ELSE CAST(pos.protocol AS TEXT) END AS transport_protocol, CASE WHEN pos.remote_address LIKE '10.%' OR pos.remote_address LIKE '192.168.%' THEN 1 ELSE 0 END AS is_rfc1918_destination, datetime(p.start_time, 'unixepoch') AS start_time FROM process_open_sockets pos JOIN processes p ON pos.pid = p.pid LEFT JOIN users u ON p.uid = u.uid WHERE pos.remote_address NOT IN ('127.0.0.1', '::1', '0.0.0.0', '::') AND pos.remote_address != '' AND (pos.state IN ('ESTABLISHED', 'CLOSE_WAIT', 'SYN_SENT') OR pos.state IS NULL) AND ( p.name IN ('ollama.exe', 'claude.exe', 'Cursor.exe', 'windsurf.exe', 'ChatGPT.exe', 'copilot-agent.exe', 'aider.exe', 'codex.exe', 'lms.exe', 'gpt4all.exe', 'jan.exe', 'llama-server.exe', 'open-webui.exe', 'litellm.exe', 'koboldcpp.exe', 'vllm.exe', 'llamafile.exe', 'tabby.exe', 'exo.exe', 'qwen.exe', 'grok.exe', 'gemini-cli.exe', 'genaiscript.exe', 'openai.exe', 'llm.exe', 'bolt.exe', 'replit.exe', 'ghostwriter.exe', 'bito.exe', 'devin', 'devin.exe', 'goose', 'goose.exe', 'warp', 'warp.exe', 'zed', 'zed.exe', 'augment', 'augment.exe', 'supermaven', 'supermaven.exe') OR p.cmdline LIKE '%ollama serve%' OR p.cmdline LIKE '%claude-code%' OR p.cmdline LIKE '%cursor-retrieval%' OR p.cmdline LIKE '%codeium%' OR p.cmdline LIKE '%github.copilot%' OR p.cmdline LIKE '%llama-server%' OR p.cmdline LIKE '%vllm.entrypoints%' OR p.cmdline LIKE '%mcp-server%' OR p.cmdline LIKE '%@modelcontextprotocol%' \n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%gemini-cli%'\n    OR p.cmdline LIKE '%genaiscript%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%crewai%'\n    )",
+                "query": "SELECT\n    p.name AS process_name,\n    p.path AS process_path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    pos.remote_address,\n    pos.remote_port,\n    pos.local_port,\n    pos.local_address,\n    pos.state,\n    CASE pos.family\n        WHEN 2 THEN 'IPv4'\n        WHEN 10 THEN 'IPv6'\n        ELSE 'unknown'\n    END AS address_family,\n    CASE pos.protocol\n        WHEN 6 THEN 'tcp'\n        WHEN 17 THEN 'udp'\n        ELSE CAST(pos.protocol AS TEXT)\n    END AS transport_protocol,\n    CASE\n        WHEN pos.remote_address LIKE '10.%' OR pos.remote_address LIKE '192.168.%' THEN 1\n        ELSE 0\n    END AS is_rfc1918_destination,\n    CASE\n        WHEN p.name IN ('copilot-agent.exe', 'copilot.exe')\n         OR p.cmdline LIKE '%copilot-agent%'\n         OR p.cmdline LIKE '%github.copilot%' THEN 'developer'\n        ELSE NULL\n    END AS copilot_variant,\n    datetime(p.start_time, 'unixepoch') AS start_time\nFROM process_open_sockets pos\nJOIN processes p ON pos.pid = p.pid\nLEFT JOIN users u ON p.uid = u.uid\nWHERE pos.remote_address NOT IN ('127.0.0.1', '::1', '0.0.0.0', '::')\n    AND pos.remote_address != ''\n    AND (pos.state IN ('ESTABLISHED', 'CLOSE_WAIT', 'SYN_SENT') OR pos.state IS NULL)\n    AND (\n        p.name IN ('ollama.exe', 'claude.exe', 'Cursor.exe', 'windsurf.exe',\n                  'ChatGPT.exe', 'copilot-agent.exe', 'copilot.exe', 'claude-code.exe',\n                  'aider.exe', 'codex.exe', 'lms.exe', 'gpt4all.exe', 'jan.exe',\n                  'llama-server.exe', 'open-webui.exe', 'litellm.exe', 'koboldcpp.exe',\n                  'vllm.exe', 'llamafile.exe', 'tabby.exe', 'exo.exe', 'qwen.exe',\n                  'grok.exe', 'gemini-cli.exe', 'genaiscript.exe', 'openai.exe', 'llm.exe',\n                  'bolt.exe', 'replit.exe', 'ghostwriter.exe', 'bito.exe', 'devin',\n                  'devin.exe', 'goose', 'goose.exe', 'warp', 'warp.exe', 'zed',\n                  'zed.exe', 'augment', 'augment.exe', 'supermaven', 'supermaven.exe')\n        OR p.cmdline LIKE '%ollama serve%'\n        OR p.cmdline LIKE '%claude-code%'\n        OR p.cmdline LIKE '%cursor-retrieval%'\n        OR p.cmdline LIKE '%codeium%'\n        OR p.cmdline LIKE '%github.copilot%'\n        OR p.cmdline LIKE '%llama-server%'\n        OR p.cmdline LIKE '%vllm.entrypoints%'\n        OR p.cmdline LIKE '%mcp-server%'\n        OR p.cmdline LIKE '%@modelcontextprotocol%'\n        OR p.cmdline LIKE '%openclaw%'\n        OR p.cmdline LIKE '%moltbot%'\n        OR p.cmdline LIKE '%clawdbot%'\n        OR p.cmdline LIKE '%gemini-cli%'\n        OR p.cmdline LIKE '%genaiscript%'\n        OR p.cmdline LIKE '%autogpt%'\n        OR p.cmdline LIKE '%crewai%'\n        OR p.cmdline LIKE '%api.openai.com%'\n        OR p.cmdline LIKE '%api.anthropic.com%'\n        OR p.cmdline LIKE '%generativelanguage.googleapis.com%'\n        OR p.cmdline LIKE '%api.cohere.ai%'\n        OR p.cmdline LIKE '%api.mistral.ai%'\n    );",
                 "interval": 3600,
                 "platform": "windows",
                 "timeout": 180,
@@ -2050,6 +1815,12 @@
                                 "risk_context",
                                 "windows"
                             ]
+                        }
+                    },
+                    {
+                        "key": "osquery.copilot_variant",
+                        "value": {
+                            "field": "copilot_variant"
                         }
                     },
                     {

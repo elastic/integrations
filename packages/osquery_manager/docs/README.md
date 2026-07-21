@@ -23,9 +23,9 @@ The integration ships three canonical platform packs for endpoint AI inventory:
 
 | Pack | Platform | Queries |
 |------|----------|---------|
-| `ai-asset-discovery-windows` | Windows | 27 |
-| `ai-asset-discovery-macos` | macOS | 29 |
-| `ai-asset-discovery-linux` | Linux | 28 |
+| `ai-asset-discovery-windows` | Windows | 24 |
+| `ai-asset-discovery-macos` | macOS | 24 |
+| `ai-asset-discovery-linux` | Linux | 23 |
 
 Assign the pack matching each agent's OS to your Osquery Manager policy in Fleet. Pack queries emit `event.action: osquery.ai_*` and `osquery.mcp_*` once scheduled pack queries run on assigned agents.
 
@@ -44,10 +44,9 @@ Some queries provide detection context rather than pure inventory:
 - `ai_config_file_changes` — recent MCP/AI config modifications (7200s lookback)
 - `ai_sensitive_file_access` (macOS/Linux) — AI processes with open handles to sensitive paths via `process_open_files`
 - `ai_sensitive_file_colocation` (Windows) — uid co-occurrence between AI processes and sensitive paths; **not access proof**
-- `ai_network_connections` — outbound API connections from AI processes (macOS/Linux)
-- `ai_process_network_summary` — broader AI-process socket inventory across remote endpoints
+- `ai_process_network_summary` — AI-process socket inventory across remote endpoints (includes API-host cmdline signals and `copilot_variant`)
 
-Outbound API connections (`ai_network_connections`) are distinct from the broader AI-process socket inventory (`ai_process_network_summary`), and macOS/Linux access evidence (`ai_sensitive_file_access`) is distinct from Windows colocation inventory (`ai_sensitive_file_colocation`).
+macOS/Linux access evidence (`ai_sensitive_file_access`) is distinct from Windows colocation inventory (`ai_sensitive_file_colocation`).
 
 ### Platform differences
 
