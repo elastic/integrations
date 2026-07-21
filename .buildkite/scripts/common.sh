@@ -108,7 +108,7 @@ with_go() {
   echo "--- Setting up the Go environment..."
   check_platform_architecture
   echo "GVM ${SETUP_GVM_VERSION} (platform ${platform_type_lowercase} arch ${arch_type}"
-  retry 5 curl -sL -o "${BIN_FOLDER}/gvm" "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
+  retry 5 curl -fsSL -o "${BIN_FOLDER}/gvm" "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
   chmod +x "${BIN_FOLDER}/gvm"
   eval "$(gvm "$(cat .go-version)")"
   go version
@@ -174,7 +174,7 @@ with_docker_compose_plugin() {
     local DOCKER_CONFIG="$HOME/.docker/cli-plugins"
     mkdir -p "$DOCKER_CONFIG"
 
-    retry 5 curl -SL -o "${DOCKER_CONFIG}/docker-compose" "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
+    retry 5 curl -fSL -o "${DOCKER_CONFIG}/docker-compose" "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
     chmod +x "${DOCKER_CONFIG}/docker-compose"
     docker compose version
 }
@@ -184,13 +184,13 @@ with_kubernetes() {
     check_platform_architecture
 
     echo "--- Install kind"
-    retry 5 curl -sSLo "${BIN_FOLDER}/kind" "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-${platform_type_lowercase}-${arch_type}"
+    retry 5 curl -fsSLo "${BIN_FOLDER}/kind" "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-${platform_type_lowercase}-${arch_type}"
     chmod +x "${BIN_FOLDER}/kind"
     kind version
     which kind
 
     echo "--- Install kubectl"
-    retry 5 curl -sSLo "${BIN_FOLDER}/kubectl" "https://dl.k8s.io/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
+    retry 5 curl -fsSLo "${BIN_FOLDER}/kubectl" "https://dl.k8s.io/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
     chmod +x "${BIN_FOLDER}/kubectl"
     kubectl version --client
     which kubectl
@@ -201,7 +201,7 @@ with_yq() {
     check_platform_architecture
     local binary="yq_${platform_type_lowercase}_${arch_type}"
 
-    retry 5 curl -sSL -o "${BIN_FOLDER}/yq.tar.gz" "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
+    retry 5 curl -fsSL -o "${BIN_FOLDER}/yq.tar.gz" "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
 
     tar -C "${BIN_FOLDER}" -xpf "${BIN_FOLDER}/yq.tar.gz" "./${binary}"
 
@@ -218,7 +218,7 @@ with_jq() {
     # filename for versions <=1.6 is jq-linux64
     local binary="jq-${platform_type_lowercase}-${arch_type}"
 
-    retry 5 curl -sL -o "${BIN_FOLDER}/jq" "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/${binary}"
+    retry 5 curl -fsSL -o "${BIN_FOLDER}/jq" "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/${binary}"
 
     chmod +x "${BIN_FOLDER}/jq"
     jq --version
@@ -234,7 +234,7 @@ with_github_cli() {
     local gh_tar_file="${gh_filename}.tar.gz"
     local gh_tar_full_path="${WORKSPACE}/tmp/${gh_tar_file}"
 
-    retry 5 curl -sL -o "${gh_tar_full_path}" "https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/${gh_tar_file}"
+    retry 5 curl -fsSL -o "${gh_tar_full_path}" "https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/${gh_tar_file}"
 
     # just extract the binary file from the tar.gz
     tar -C "${BIN_FOLDER}" -xpf "${gh_tar_full_path}" "${gh_filename}/bin/gh" --strip-components=2
