@@ -8,11 +8,19 @@ streams:
     enabled: false
     template_path: cel.yml.hbs
     vars:
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to look for threats on the first run. Supported units for this parameter are h/m/s.
+        default: 24h
+        multi: false
+        required: true
+        show_user: true
       - name: interval
         type: text
         title: Interval
         description: Duration between requests to the SentinelOne API. Supported units for this parameter are h/m/s.
-        default: 24h
+        default: 5m
         multi: false
         required: true
         show_user: true
@@ -20,6 +28,15 @@ streams:
         type: integer
         title: Batch Size
         description: Batch size for the response of the SentinelOne API. The maximum supported page size value is 1000.
+        default: 1000
+        multi: false
+        required: true
+        show_user: false
+      - name: max_executions
+        type: integer
+        title: Maximum Executions
+        description: >-
+          Maximum number of CEL program re-evaluations per collection interval. The threat event stream makes two API calls per worklist entry (threats + events), so large estates may need a higher budget than the input default of 1000.
         default: 1000
         multi: false
         required: true

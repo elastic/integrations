@@ -1,9 +1,9 @@
 name: okta
 title: Okta
-version: "3.14.1"
+version: "3.15.0"
 description: Collect and parse event logs from Okta API with Elastic Agent.
 type: integration
-format_version: "3.2.3"
+format_version: "3.6.1"
 categories: [security, iam]
 conditions:
   kibana:
@@ -27,25 +27,36 @@ policy_templates:
         enabled: true
       agentless:
         enabled: true
+        release: beta
+        is_default: true
         organization: security
         division: engineering
         team: security-service-integrations
     inputs:
       - type: httpjson
+        title: "Collect Okta logs via API"
+        description: "Collecting logs from Okta via API"
+        show_divider: false
+        sections:
+          - name: connection_settings
+            title: Connection Settings
+          - name: auth_settings
+            title: Authentication Settings
         vars:
-          - name: http_client_timeout
+          - name: url
             type: text
-            title: HTTP Client Timeout
-            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+            title: Okta System Log API URL
             multi: false
-            required: false
+            required: true
             show_user: true
+            section: connection_settings
+            description: This is the URL of your Okta System Log API. For example, https://dev-123456.okta.com/api/v1/logs.
           - name: interval
             type: text
             title: Interval
             multi: false
             required: true
-            show_user: true
+            show_user: false
             default: 60s
             description: Interval at which logs are pulled. Supported units for this parameter are h/m/s.
           - name: initial_interval
@@ -53,61 +64,43 @@ policy_templates:
             title: Initial Interval
             multi: false
             required: true
-            show_user: true
+            show_user: false
             default: 24h
             description: Initial Interval for first log pull. Supported units for this parameter are h/m/s.
-          - name: url
-            type: text
-            title: Okta System Log API URL
-            multi: false
-            required: true
-            show_user: true
-            description: This is the URL of your Okta System Log API. For example, https://dev-123456.okta.com/api/v1/logs.
           - name: api_key
             type: password
             title: API Key
             multi: false
             required: false
             show_user: true
-            description: |
-              This is the API Key of your Okta service application. This is required for standard api key based authentication and Okta Integration Network (OIN) app authentication.
-              Do not use this field if you are using standard OAuth2 authentication.
+            section: auth_settings
+            description: The API Key of your Okta service application.
             secret: true
-          - name: oin_app
-            type: bool
-            title: Use Okta Integration Network (OIN) Authentication
-            multi: false
-            required: false
-            show_user: true
-            description: Use the API Key as the OIN client secret.
           - name: okta_domain_url
             type: text
             title: Okta Domain URL
             multi: false
             required: false
             show_user: true
-            description: |
-              This is the URL of your Okta domain. For example, https://dev-123456.okta.com.
-              This is only required for OAuth2 authentication. This is required for standard OAuth2 authentication and OIN app authentication.
-              Do not use this field if you are using API Key based authentication without OIN authentication.
+            section: auth_settings
+            description: The URL of your Okta domain. For example, https://dev-123456.okta.com.
           - name: client_id
             type: text
             title: Client ID
             multi: false
             required: false
             show_user: true
-            description: |
-              This is the Client ID of your Okta service application. This is required for standard OAuth2 authentication and OIN app authentication.
-              Do not use this field if you are using API Key based authentication without OIN authentication.
+            section: auth_settings
+            description: The Client ID of your Okta service application.
           - name: jwk_json
             type: password
             title: JWK JSON
             multi: false
             required: false
             show_user: true
+            section: auth_settings
             description: |
-              This is the private JSON Web Key (JWK) of your Okta service application.
-              This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+              The private JSON Web Key (JWK) of your Okta service application.
               Only one of JWK JSON, PEM Encoded Key or JWK File may be used.
             secret: true
           - name: key_pem
@@ -116,9 +109,9 @@ policy_templates:
             multi: false
             required: false
             show_user: true
+            section: auth_settings
             description: |
-              This is the private key of your Okta service application in PEM format.
-              This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+              The private key of your Okta service application in PEM format.
               Only one of JWK JSON, PEM Encoded Key or JWK File may be used.
           - name: jwk_file
             type: text
@@ -126,9 +119,9 @@ policy_templates:
             multi: false
             required: false
             show_user: true
+            section: auth_settings
             description: |
-              This is the path to the file containing the private JSON Web Key (JWK) of your Okta service application.
-              This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+              The path to the file containing the private JSON Web Key (JWK) of your Okta service application.
               Only one of JWK JSON, PEM Encoded Key or JWK File may be used.
           - name: dpop_key_pem
             type: textarea
@@ -136,20 +129,41 @@ policy_templates:
             multi: false
             required: false
             show_user: true
-            description: |
-              This is the Demonstrating Proof of Possession key of your Okta service application in PEM format.
-              This is only required for OAuth2 authentication. If you have DPoP enabled in Okta and are authenticating using OAuth2.
+            section: auth_settings
+            description: >-
+              The Demonstrating Proof of Possession key of your Okta service application in PEM format.
+              Only required if DPoP is enabled in Okta.
           - name: okta_scopes
             type: text
             title: Okta Scopes
             multi: true
             required: false
             show_user: true
+            section: auth_settings
             default:
               - okta.logs.read
-            description: |
-              This is the list of 'okta.*' scopes that your Okta service application has access to.
-              This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+            description: The list of 'okta.*' scopes that your Okta service application has access to.
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL
+            multi: false
+            required: false
+            show_user: false
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
           - name: enable_request_tracer
             type: bool
             title: Enable request tracing
@@ -159,22 +173,95 @@ policy_templates:
             show_user: false
             description: >-
               The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
-          - name: ssl
-            type: yaml
-            title: SSL
-            multi: false
-            required: false
-            show_user: true
-            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
-          - name: proxy_url
+          - name: tags
             type: text
-            title: Proxy URL
+            title: Tags
+            multi: true
+            required: true
+            show_user: false
+            default:
+              - forwarded
+              - okta-system
+          - name: preserve_original_event
+            type: bool
+            title: Preserve original event
+            description: Preserves a raw copy of the original event, added to the field `event.original`
+            multi: false
+            required: true
+            show_user: false
+            default: false
+          - name: remove_flattened_debug
+            type: bool
+            title: Remove flattened debug data
+            description: >-
+              When set to false, the original `debugContext.debugData` object will be kept in `okta.debug_context.debug_data.flattened`. We recommend turning this on for new installations where nothing depends on `okta.debug_context.debug_data.flattened`.
             multi: false
             required: false
             show_user: false
-            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
-        title: "Collect Okta logs via API"
-        description: "Collecting logs from Okta via API"
+          - name: disable_keep_alive
+            type: bool
+            title: Disable HTTP Keep-Alives
+            description: Controls whether HTTP keep-alives are disabled.
+            multi: false
+            required: true
+            show_user: false
+            default: false
+          - name: processors
+            type: yaml
+            title: Processors
+            multi: false
+            required: false
+            show_user: false
+            description: >
+              Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+          - name: rate_limit_early_limit
+            type: text
+            title: Rate Limit Early Limit
+            description: Start rate-limiting before reaching the limit specified in the response. Values less than 1 are treated as a percentage of the limit (e.g. 0.9 means 90%). Values greater than or equal to 1 are treated as the target remaining value.
+            required: false
+            show_user: false
+            secret: false
+          - name: limit
+            type: integer
+            default: 1000
+            show_user: false
+            description: Sets the maximum number of results that are returned in the Okta API response. Maximum value is 1000.
+            hide_in_deployment_modes:
+              # This is not meant to be user-configurable, but it must be configurable for testing purposes so hide it.
+              # This works around system tests not allowing an assert.hit_count > 500.
+              - default
+              - agentless
+        var_groups:
+          - name: auth_method
+            title: Authentication Method
+            selector_title: Authentication Method
+            description: Choose how you want to authenticate with the Okta API.
+            required: true
+            options:
+              - name: api_key
+                title: API Key
+                description: Authenticate using a static API key from your Okta service application.
+                vars:
+                  - api_key
+              - name: oauth2
+                title: OAuth 2.0
+                description: Authenticate using standard OAuth 2.0 client credentials.
+                vars:
+                  - okta_domain_url
+                  - client_id
+                  - jwk_json
+                  - key_pem
+                  - jwk_file
+                  - dpop_key_pem
+                  - okta_scopes
+              - name: oin_app
+                title: OIN App (OAuth 2.0)
+                description: Authenticate via an Okta Integration Network app with OAuth 2.0.
+                vars:
+                  - okta_domain_url
+                  - client_id
+                  - api_key
+                  - dpop_key_pem
 owner:
   github: elastic/security-service-integrations
   type: elastic

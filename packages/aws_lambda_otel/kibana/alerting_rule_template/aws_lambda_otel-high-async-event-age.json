@@ -1,0 +1,48 @@
+{
+    "id": "aws_lambda_otel-high-async-event-age",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when async-invoked Lambda functions show high AsyncEventAge, indicating events are aging in the internal queue.",
+        "name": "[AWS Lambda OTel] High async event age",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws_lambda",
+            "otel"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Async Event Age\n\n### Triage Steps\n1. AsyncEventAge applies to asynchronously invoked functions (S3, SNS, EventBridge, etc.).\n2. Check for sustained errors causing retries that backlog the queue.\n3. Review throttling — rejected async invokes queue and retry.\n4. Compare `AsyncEventsReceived` traffic with successful `Invocations`.\n5. Inspect DLQ and destination configuration for failed event routing.\n\n### Escalation\nRising async event age is a silent backlog signal — events may eventually expire or flood retries."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE Namespace == \"AWS/Lambda\"\n    AND MetricName == \"AsyncEventAge\"\n    AND stat == \"Maximum\"\n| STATS max_async_age_ms = MAX(`metrics.amazonaws.com/AWS/Lambda/AsyncEventAge`)\n  BY FunctionName, cloud.region\n// Async queue age threshold (ms): events waiting too long to be processed\n| WHERE max_async_age_ms > 60000\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT max_async_age_ms DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "function_id",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

@@ -161,6 +161,19 @@ For more information on architectures that can be used for scaling this integrat
 
 The `firewall` data stream provides events from Check Point devices, including firewall traffic, VPN logs, audit logs, and system events.
 
+#### Gateway identification fields
+
+Check Point Security Gateways identify themselves in syslog payloads through two distinct fields, which the integration maps to ECS as follows:
+
+| Check Point field | Value | ECS target fields |
+|---|---|---|
+| `origin` | Gateway IP address (typed as `ipaddr` in Check Point's `LogFields.xml`) | `observer.ip` (and `observer.name`) |
+| `originsicname` (`CN=<hostname>,O=<management>..<random>`) | Gateway hostname extracted from the `CN` component of the SIC distinguished name | `observer.hostname` |
+
+The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Because the firewall is observed remotely over syslog, the gateway is represented through the `observer.*` field set rather than `host.*`.
+
+> **Note:** `observer.name` continues to hold the gateway IP (`origin`) for backward compatibility. To query the gateway by IP use `observer.ip`, and to query it by hostname use `observer.hostname`.
+
 #### firewall fields
 
 {{ fields "firewall" }}

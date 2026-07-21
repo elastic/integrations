@@ -1,0 +1,497 @@
+---
+description: Pipeline for parsing Doppel alerts based strictly on CSV mapping.
+
+processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String || ctx.division instanceof String || ctx.team instanceof String
+      tag: remove_agentless_metadata
+
+  - rename:
+      field: message
+      target_field: raw_message
+      ignore_missing: true
+
+  - set:
+      field: event.original
+      copy_from: raw_message
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - json:
+      field: raw_message
+      add_to_root: true
+      ignore_failure: true
+
+  - script:
+      if: ctx.tags instanceof List
+      lang: painless
+      ignore_failure: true
+      source: >
+        def flatTags = [];
+        for (def t : ctx.tags) {
+          if (t instanceof Map && t.containsKey('name')) {
+            flatTags.add(t.name);
+          } else {
+            flatTags.add(t.toString());
+          }
+        }
+        ctx.tags = flatTags;
+
+
+# --- SEVERITY CONVERSION ---
+  - script:
+      tag: convert_severity
+      if: ctx.severity instanceof String
+      lang: painless
+      source: >
+        def s = ctx.severity.toLowerCase();
+        if (ctx.event == null) { ctx.event = [:]; }
+        if (ctx.labels == null) { ctx.labels = [:]; }
+        
+        if (s == 'high') { 
+          ctx.event.severity = 1; 
+          ctx.labels.severity = 'High';
+        } else if (s == 'medium') { 
+          ctx.event.severity = 3; 
+          ctx.labels.severity = 'Medium';
+        } else if (s == 'low') { 
+          ctx.event.severity = 5; 
+          ctx.labels.severity = 'Low';
+        } else { 
+          ctx.event.severity = 5; 
+          ctx.labels.severity = 'Unknown';
+        }
+
+  # --- TIMESTAMP LOGIC 
+  - date:
+      if: ctx.last_activity_timestamp != null
+      field: last_activity_timestamp
+      target_field: "@timestamp"
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+        - "yyyy-MM-dd'T'HH:mm:ss"
+        - ISO8601
+      ignore_failure: true
+
+  - date:
+      if: ctx.last_activity_timestamp != null
+      field: last_activity_timestamp
+      target_field: "doppel.alert_updated_at"
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+        - "yyyy-MM-dd'T'HH:mm:ss"
+        - ISO8601
+      ignore_failure: true
+
+  - date:
+      if: ctx.created_at != null
+      field: created_at
+      target_field: "event.created"
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+        - "yyyy-MM-dd'T'HH:mm:ss"
+        - ISO8601
+      ignore_failure: true
+
+
+  # --- Message Logic ---
+  - set:
+      if: ctx.notes != null
+      field: doppel.notes
+      copy_from: notes
+      ignore_failure: true
+      ignore_empty_value: true
+
+  # --- MAPPING DIRECTLY 
+  - set:
+      field: event.id
+      copy_from: id
+      ignore_failure: true
+      ignore_empty_value: true 
+# --- Conditional Entity Mapping based on Product ---
+  - set: 
+      if: ctx.product == 'telco'
+      field: threat.indicator.name
+      copy_from: entity
+      ignore_failure: true
+      ignore_empty_value: true 
+
+  - set: 
+      if: ctx.product != 'telco'
+      field: threat.indicator.url.full
+      copy_from: entity
+      ignore_failure: true
+      ignore_empty_value: true
+      
+  - set:
+      field: organization.name
+      copy_from: brand
+      ignore_failure: true
+      ignore_empty_value: true
+ 
+  - set:
+      field: doppel.queue_state
+      copy_from: queue_state
+      ignore_failure: true
+      ignore_empty_value: true
+ 
+  - set:
+      field: doppel.entity_state
+      copy_from: entity_state
+      ignore_failure: true
+      ignore_empty_value: true
+ 
+  - set:
+      field: doppel.product
+      copy_from: product
+      ignore_failure: true
+      ignore_empty_value: true 
+
+  - set:
+      field: doppel.platform
+      copy_from: platform
+      ignore_failure: true
+      ignore_empty_value: true 
+
+  - set:
+      field: event.provider
+      copy_from: source
+      ignore_failure: true
+      ignore_empty_value: true
+ 
+  - set:
+      field: event.reference
+      copy_from: screenshot_url
+      ignore_failure: true
+      ignore_empty_value: true 
+
+  - set:
+      field: event.risk_score
+      copy_from: score
+      ignore_failure: true
+      ignore_empty_value: true 
+
+  - set:
+      field: doppel.assignee
+      copy_from: assignee
+      ignore_failure: true
+      ignore_empty_value: true 
+
+  - set:
+      field: event.url
+      copy_from: doppel_link
+      ignore_failure: true
+      ignore_empty_value: true
+ 
+  - set:
+      field: doppel.uploaded_by
+      copy_from: uploaded_by
+      ignore_failure: true
+      ignore_empty_value: true 
+
+  - set:
+      field: labels.audit_logs
+      copy_from: audit_logs
+      ignore_failure: true
+      ignore_empty_value: true 
+
+# --- Base Fallback: Preserve Raw Content ---
+  - set:
+      field: labels.entity_content
+      copy_from: entity_content
+      ignore_failure: true
+      ignore_empty_value: true
+
+  # --- Dynamic Entity Content Mapping ---
+  # 1. Domains (root_domain)
+  - set:
+      field: threat.indicator.url.domain
+      copy_from: entity_content.root_domain.domain
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: threat.indicator.ip
+      tag: set_threat_indicator_ip
+      copy_from: entity_content.root_domain.ip_address
+      ignore_empty_value: true
+      ignore_failure: true
+  - append:
+      field: related.ip
+      tag: append_threat_indicator_ip_to_related
+      value: '{{{threat.indicator.ip}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.ip != null
+
+  - set:
+      field: doppel.domain.registrar
+      copy_from: entity_content.root_domain.registrar
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: doppel.domain.hosting_provider
+      copy_from: entity_content.root_domain.hosting_provider
+      ignore_failure: true
+      ignore_empty_value: true
+
+  # 2. Telco
+  - set:
+      field: doppel.telco.country_code
+      copy_from: entity_content.telco.country_code
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: doppel.telco.provider
+      copy_from: entity_content.telco.telco_provider
+      ignore_failure: true
+      ignore_empty_value: true
+
+
+  # 3. Social Media User (Mapped to ECS User fields)
+  - set:
+      field: user.name
+      copy_from: entity_content.social_media_user.slug
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: user.full_name
+      copy_from: entity_content.social_media_user.profile_display_name
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: user.id
+      copy_from: entity_content.social_media_user.profile_id
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: doppel.social.profile_url
+      copy_from: entity_content.social_media_user.profile_display_url
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: doppel.social.profile_image_url
+      copy_from: entity_content.social_media_user.profile_image_url
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: doppel.social.num_followers
+      copy_from: entity_content.social_media_user.num_followers
+      ignore_failure: true
+      ignore_empty_value: true
+
+  # 4. Mobile App
+  - set:
+      field: doppel.app.title
+      copy_from: entity_content.mobile_app.title
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: doppel.app.platform
+      copy_from: entity_content.mobile_app.platform_name
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: doppel.app.bundle_id
+      copy_from: entity_content.mobile_app.bundle_id
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: doppel.app.developer_name
+      copy_from: entity_content.mobile_app.developer_name
+      ignore_failure: true
+      ignore_empty_value: true
+
+  # 5. Ecommerce
+  - set:
+      field: doppel.ecommerce.title
+      copy_from: entity_content.ecommerce.title
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: doppel.ecommerce.seller_name
+      copy_from: entity_content.ecommerce.seller_name
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: doppel.ecommerce.price
+      copy_from: entity_content.ecommerce.price
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: doppel.ecommerce.num_units
+      copy_from: entity_content.ecommerce.num_units
+      ignore_failure: true
+      ignore_empty_value: true
+
+  # 6. darkweb mapping
+  - set:
+      field: user.email
+      copy_from: entity_content.cred_leaks.email
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: doppel.darkweb.credential_url
+      copy_from: entity_content.cred_leaks.credential_url
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: doppel.darkweb.leak_name
+      copy_from: entity_content.cred_leaks.leak_name
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: doppel.darkweb.cred_leaks_password
+      value: "[REDACTED]"
+      if: ctx?.entity_content?.cred_leaks?.password != null
+
+  # --- Hardcoded ECS Values ---
+  - set:
+      field: event.kind
+      value: alert
+
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+
+  - set:
+      field: event.dataset
+      value: "doppel.alerts"
+
+  - set:
+      field: event.module
+      value: "doppel"
+
+  # --- Additional routing for dashboarding ---
+  - set:
+      field: url.original
+      copy_from: entity
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - set:
+      field: url.domain
+      copy_from: entity_content.root_domain.domain
+      ignore_failure: true
+      ignore_empty_value: true
+
+  - append:
+      field: event.category
+      tag: append_event_category_threat
+      value: threat
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_indicator
+      value: indicator
+      allow_duplicates: false
+
+  # --- (Ledger Style: Creates new row on update) ---
+  - fingerprint:
+      fields:
+        - event.id
+        - last_activity_timestamp
+      target_field: _id
+      method: SHA-256
+
+# --- Safely preserve Doppel's real tags ---
+  - set:
+      if: ctx.containsKey('tags') && ctx.tags != null
+      field: doppel.tags
+      copy_from: tags
+      ignore_failure: true
+      ignore_empty_value: true
+
+  # --- Give Elastic the root tags array for its system requirements ---
+  - set:
+      field: tags
+      value:
+        - preserve_original_event
+      ignore_failure: true
+
+  # --- Final Cleanup ---
+  - remove:
+      field:
+        - raw_message
+        - id
+        - entity
+        - brand
+        - queue_state
+        - entity_state
+        - severity
+        - product
+        - platform
+        - source
+        - notes
+        - screenshot_url
+        - score
+        - assignee
+        - doppel_link
+        - uploaded_by
+        - entity_content
+        - audit_logs
+        - last_activity_timestamp
+        - created_at
+      ignore_missing: true
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: remove_nulls
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure
+      value: preserve_original_event
+      allow_duplicates: false

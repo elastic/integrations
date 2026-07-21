@@ -2,79 +2,100 @@
 description: Pipeline for renaming object
 processors:
   - set:
+      tag: set_ecs_version_09ffccf1
       field: ecs.version
       value: 8.3.1
   - set:
+      tag: set_service_type_29e41209
       field: service.type
       value: elastic_package_registry
   - set:
+      tag: set_event_kind_495d69f0
       field: event.kind
       value: metric
   - rename:
+      tag: rename_prometheus_to_tmp_0195782f
       field: prometheus
       target_field: tmp
       ignore_missing: true
   - rename:
+      tag: rename_tmp_labels_to_package_registry_labels_c5436793
       field: tmp.labels
       target_field: package_registry.labels
       ignore_missing: true
   - rename:
+      tag: rename_tmp_epr_indexer_get_duration_seconds_to_package_registry_indexer_get_duration_seconds_299a3b98
       field: tmp.epr_indexer_get_duration_seconds
       target_field: package_registry.indexer.get_duration_seconds
       ignore_missing: true
   - rename:
+      tag: rename_tmp_epr_storage_indexer_update_index_error_total_to_package_registry_storage_indexer_update_index_error_total_7a86515e
       field: tmp.epr_storage_indexer_update_index_error_total
       target_field: package_registry.storage_indexer.update_index_error_total
       ignore_missing: true
   - rename:
+      tag: rename_tmp_epr_storage_indexer_update_index_success_total_to_package_registry_storage_indexer_update_index_success_total_726a6760
       field: tmp.epr_storage_indexer_update_index_success_total
       target_field: package_registry.storage_indexer.update_index_success_total
       ignore_missing: true
   - rename:
+      tag: rename_tmp_epr_storage_indexer_update_index_duration_seconds_to_package_registry_storage_indexer_update_index_duration_seconds_6e740cee
       field: tmp.epr_storage_indexer_update_index_duration_seconds
       target_field: package_registry.storage_indexer.update_index_duration_seconds
       ignore_missing: true
   - rename:
+      tag: rename_tmp_epr_in_flight_requests_value_to_package_registry_in_flight_requests_a18dd66e
       field: tmp.epr_in_flight_requests.value
       target_field: package_registry.in_flight_requests
       ignore_missing: true
   - rename:
+      tag: rename_tmp_epr_number_indexed_packages_value_to_package_registry_number_indexed_packages_e3981740
       field: tmp.epr_number_indexed_packages.value
       target_field: package_registry.number_indexed_packages
       ignore_missing: true
   - rename:
+      tag: rename_tmp_epr_storage_requests_total_to_package_registry_storage_requests_total_6744af9d
       field: tmp.epr_storage_requests_total
       target_field: package_registry.storage_requests_total
       ignore_missing: true
   - rename:
+      tag: rename_tmp_process_start_time_seconds_value_to_package_registry_start_time_seconds_b88d8934
       field: tmp.process_start_time_seconds.value
       target_field: package_registry.start_time_seconds
       ignore_missing: true
+      if: ctx.tmp?.process_start_time_seconds?.value != null
   - rename:
+      tag: rename_tmp_epr_http_request_duration_seconds_histogram_to_package_registry_http_request_duration_seconds_histogram_051ecfcc
       field: tmp.epr_http_request_duration_seconds.histogram
       target_field: package_registry.http.request_duration_seconds.histogram
       ignore_missing: true
   - rename:
+      tag: rename_tmp_epr_http_request_size_bytes_histogram_to_package_registry_http_request_size_bytes_histogram_1a3db84c
       field: tmp.epr_http_request_size_bytes.histogram
       target_field: package_registry.http.request_size_bytes.histogram
       ignore_missing: true
   - rename:
+      tag: rename_tmp_epr_http_response_size_bytes_histogram_to_package_registry_http_response_size_bytes_histogram_d3f174bc
       field: tmp.epr_http_response_size_bytes.histogram
       target_field: package_registry.http.response_size_bytes.histogram
       ignore_missing: true
   - rename:
+      tag: rename_tmp_epr_http_requests_total_to_package_registry_http_requests_total_d512301d
       field: tmp.epr_http_requests_total
       target_field: package_registry.http_requests_total
       ignore_missing: true
   - remove:
+      tag: remove_tmp_cbaa8f47
       field: tmp
       ignore_missing: true
   - date:
+      tag: date_package_registry_start_time_seconds_to_package_registry_start_time_9c1b13a2
       field: package_registry.start_time_seconds
       formats: ["UNIX"]
       target_field: package_registry.start_time
-      if: ctx?.package_registry?.containsKey("start_time_seconds")
+      if: ctx.package_registry?.start_time_seconds != null
   - script:
+      tag: script_1e179be8
       description: Get process uptime
       lang: painless
       source: >-
@@ -90,4 +111,8 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'

@@ -9,10 +9,11 @@ inputs:
         - config_version: 2
           data_stream:
             dataset: sentinel_one.threat_event
-          interval: 24h
+          interval: 5m
+          max_executions: 1000
           program: |-
             (
-              (has(state.?worklist.data) && size(state.worklist.data) > 0) ?
+              (has(state.?cursor.worklist.data) && size(state.cursor.worklist.data) > 0) ?
                 state
               :
                 state.with(
@@ -21,8 +22,17 @@ inputs:
                     state.url.trim_right("/") + "/web/api/v2.1/threats?" + {
                       "skipCount": ["true"],
                       "limit": [string(state.batch_size)],
+                      "sortBy": ["updatedAt"],
+                      "sortOrder": ["asc"],
+                      "updatedAt__gte": [
+                        state.?cursor.?list_updated_at_gte.orValue(
+                          state.?cursor.?last_timestamp.orValue(
+                            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+                          )
+                        )
+                      ],
                       ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
-                      ?"cursor": state.?next_page.token.optMap(v, [v]),
+                      ?"cursor": state.?cursor.?next_page.token.optMap(v, [v]),
                     }.format_query()
                   ).with(
                     {
@@ -33,11 +43,19 @@ inputs:
                   ).do_request().as(resp, (resp.StatusCode == 200) ?
                     resp.Body.decode_json().as(body,
                       {
-                        "worklist": body,
-                        "next_page": {
-                          ?"token": (body.?pagination.nextCursor.orValue(null) != null) ? optional.of(body.pagination.nextCursor) : optional.none(),
+                        "cursor": {
+                          "worklist": body,
+                          "next_page": {
+                            ?"token": (body.?pagination.nextCursor.orValue(null) != null) ? optional.of(body.pagination.nextCursor) : optional.none(),
+                          },
+                          "fetch_more": body.?pagination.nextCursor.orValue(null) != null,
+                          "list_updated_at_gte": state.?cursor.?list_updated_at_gte.orValue(
+                            state.?cursor.?last_timestamp.orValue(
+                              (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+                            )
+                          ),
+                          ?"last_timestamp": state.?cursor.last_timestamp,
                         },
-                        "fetch_more": body.?pagination.nextCursor.orValue(null) != null,
                       }
                     )
                   :
@@ -55,21 +73,20 @@ inputs:
                         },
                       },
                       "want_more": false,
-                      "offset": 0,
                     }
                   )
                 )
             ).as(state,
               state.with(
-                !has(state.worklist) ? // Exit early due to GET failure.
+                !has(state.?cursor.worklist) ?
                   state
-                : (has(state.worklist.data) && size(state.worklist.data) > 0) ?
+                : (has(state.cursor.worklist.data) && size(state.cursor.worklist.data) > 0) ?
                   request(
                     "GET",
-                    state.url.trim_right("/") + "/web/api/v2.1/threats/" + string(state.worklist.data[0].id) + "/explore/events?" + {
+                    state.url.trim_right("/") + "/web/api/v2.1/threats/" + string(state.cursor.worklist.data[0].id) + "/explore/events?" + {
                       "skipCount": ["true"],
                       "limit": [string(state.batch_size)],
-                      ?"cursor": state.?next_chain.token.optMap(v, [v]),
+                      ?"cursor": state.?cursor.next_chain.token.optMap(v, [v]),
                     }.format_query()
                   ).with(
                     {
@@ -79,26 +96,41 @@ inputs:
                     }
                   ).do_request().as(resp, (resp.StatusCode == 200) ?
                     resp.Body.decode_json().as(body,
-                      {
-                        "events": (has(body.data) && body.data.size() > 0) ?
-                          body.data.map(e,
-                            {
-                              "message": e.encode_json(),
-                            }
-                          )
-                        :
-                          [{"message": "retry"}],
-                        "next_chain": {
-                          ?"token": (body.?pagination.nextCursor.orValue(null) != null) ? optional.of(body.pagination.nextCursor) : optional.none(),
-                        },
-                        "worklist": {
-                          "data": (body.?pagination.nextCursor.orValue(null) != null) ? state.worklist.data : tail(state.worklist.data),
-                        },
-                        "want_more": state.?fetch_more.orValue(false) ?
-                          state.fetch_more
-                        :
-                          size(state.worklist.data) > 1 || (body.?pagination.nextCursor.orValue(null) != null),
-                      }
+                      (body.?pagination.nextCursor.orValue(null) != null).as(has_more_events,
+                        {
+                          "data": has_more_events ? state.cursor.worklist.data : tail(state.cursor.worklist.data),
+                        }.as(new_worklist,
+                          {
+                            "events": (has(body.data) && body.data.size() > 0) ?
+                              body.data.map(e,
+                                {
+                                  "message": e.encode_json(),
+                                }
+                              )
+                            :
+                              [{"message": "retry"}],
+                            "want_more": state.?cursor.fetch_more.orValue(false) ?
+                              state.cursor.fetch_more
+                            :
+                              size(state.cursor.worklist.data) > 1 || has_more_events,
+                            "cursor": {
+                              "worklist": new_worklist,
+                              "next_page": {
+                                ?"token": state.?cursor.next_page.token,
+                              },
+                              "next_chain": {
+                                ?"token": has_more_events ? optional.of(body.pagination.nextCursor) : optional.none(),
+                              },
+                              "fetch_more": state.?cursor.fetch_more.orValue(false),
+                              "list_updated_at_gte": state.cursor.list_updated_at_gte,
+                              ?"last_timestamp": has_more_events ?
+                                state.?cursor.last_timestamp
+                              :
+                                state.cursor.worklist.data[0].?threatInfo.updatedAt.or(state.?cursor.last_timestamp),
+                            },
+                          }
+                        )
+                      )
                     )
                   :
                     {
@@ -106,7 +138,7 @@ inputs:
                         "error": {
                           "code": string(resp.StatusCode),
                           "id": string(resp.Status),
-                          "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/threats/" + string(state.worklist.data[0].id) + "/explore/events: " + (
+                          "message": "GET " + state.url.trim_right("/") + "/web/api/v2.1/threats/" + string(state.cursor.worklist.data[0].id) + "/explore/events: " + (
                             (size(resp.Body) != 0) ?
                               string(resp.Body)
                             :
@@ -138,6 +170,7 @@ inputs:
           state:
             api_token: ${SECRET_0}
             batch_size: 1000
+            initial_interval: 24h
           tags:
             - forwarded
             - sentinel_one-threat_event

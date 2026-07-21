@@ -14,9 +14,11 @@ request.ssl: {{ssl}}
 {{#if http_client_timeout}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
+{{#if enable_rate_limit_headers}}
 request.rate_limit.limit: '[[ .last_response.header.Get "X-Rate-Limit-Limit" ]]'
 request.rate_limit.remaining: '[[ .last_response.header.Get "X-Rate-Limit-Remaining" ]]'
 request.rate_limit.reset: '[[ add (toInt (.last_response.header.Get "X-Rate-Limit-Reset")) ((now).Unix) ]]'
+{{/if}}
 {{#if proxy_url}}
 request.proxy_url: {{proxy_url}}
 {{/if}}

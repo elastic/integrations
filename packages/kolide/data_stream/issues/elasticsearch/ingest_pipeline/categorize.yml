@@ -1,0 +1,102 @@
+---
+description: >-
+  Pipeline for categorizing ECS event fields for Kolide issue events. Maps the
+  resolved event.action to event.kind/category using an exact lookup table.
+  Issues are security/compliance findings: event.kind: event with the
+  configuration category. Specific Kolide checks additionally carry a security
+  domain category (malware or vulnerability), keyed by check id (rule.id); the
+  base configuration category is always retained, and unlisted checks remain
+  configuration only. event.type is creation for a newly detected/open issue
+  and change for a resolved, pending-block, or blocked issue (resolved_at set,
+  blocks_device_at set, or the issues.resolved webhook action). event.action
+  becomes will_be_blocked once blocks_device_at is set but its deadline hasn't
+  passed yet, and blocked once the deadline has passed. event.outcome (open ->
+  failure, resolved -> success) is assigned in default.yml and is left
+  untouched here.
+processors:
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Map Kolide issue event.action to ECS categorization fields using exact lookups.
+      if: ctx.event?.action != null
+      params:
+        exact:
+          issue: { kind: event, category: ['configuration'] }
+          issues.new: { kind: event, category: ['configuration'] }
+          issues.resolved: { kind: event, category: ['configuration'] }
+        # Additional ECS event.category for specific Kolide-provided checks,
+        # keyed by numeric check id (rule.id / check_information.identifier).
+        # The base 'configuration' category is always retained; unlisted checks
+        # stay configuration only. Derived from the Kolide check catalog topics
+        # (topic 'malware' -> malware, 'vulnerabilities' -> vulnerability).
+        check_category:
+          '17': malware
+          '18': malware
+          '20': malware
+          '75639': malware
+          '41': vulnerability
+      source: |-
+        def action = ctx.event.action;
+        def m = params.exact.get(action);
+        if (m != null) {
+          ctx.event.kind = m.kind;
+          ctx.event.category = new ArrayList(m.category);
+        } else {
+          ctx.event.kind = 'event';
+          ctx.event.category = ['configuration'];
+        }
+
+        // Add a security-domain category (malware/vulnerability) for specific
+        // checks, keyed by check id; the base 'configuration' category is kept.
+        if (ctx.rule?.id != null) {
+          def domain = params.check_category.get(ctx.rule.id);
+          if (domain != null && !ctx.event.category.contains(domain)) {
+            ctx.event.category.add(domain);
+          }
+        }
+
+        // blocked/resolved issues are a change; a newly detected issue is a creation.
+        // blocked_device_at is a future deadline, not an immediate state: the device
+        // is only actually blocked once that deadline has passed relative to this event.
+        boolean pendingBlock = (ctx.kolide?.issues?.blocks_device_at != null);
+        boolean blocked = false;
+        if (pendingBlock && ctx['@timestamp'] != null) {
+          ZonedDateTime blockAt = ZonedDateTime.parse(ctx.kolide.issues.blocks_device_at);
+          ZonedDateTime eventTime = ZonedDateTime.parse(ctx['@timestamp']);
+          blocked = !blockAt.isAfter(eventTime);
+        }
+        boolean resolved = (ctx.kolide?.issues?.resolved_at != null) || (action == 'issues.resolved');
+        ctx.event.type = (pendingBlock || resolved) ? ['change'] : ['creation'];
+
+        // Persist the computed blocked state for the fingerprint processor in
+        // default.yml, so pending/blocked/resolved each fingerprint to a distinct _id.
+        ctx._tmp = ctx._tmp == null ? [:] : ctx._tmp;
+        ctx._tmp.blocked = blocked;
+
+        // Precedence: a resolved issue takes priority over a still-blocking one;
+        // a pending future block takes priority over a plain open issue.
+        if (action == 'issue') {
+          if (resolved) {
+            ctx.event.action = 'resolved';
+          } else if (blocked) {
+            ctx.event.action = 'blocked';
+          } else if (pendingBlock) {
+            ctx.event.action = 'will_be_blocked';
+          }
+        }
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

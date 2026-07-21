@@ -1,0 +1,123 @@
+# Validate the aidmaster destination pipeline, lookup index, and LOOKUP JOIN.
+#
+# Indexes pre-processed FDR documents (as they would appear after the default
+# ingest pipeline) directly into the data stream, then pushes the
+# aidmaster doc through the destination pipeline into the lookup index,
+# and verifies the lookup is populated and queryable via ES|QL LOOKUP JOIN.
+#
+# The transform checkpoint is non-deterministic across re-runs (Fleet
+# preserves it when fleet_transform_version is unchanged), so instead of
+# waiting for the continuous transform we manually exercise the destination
+# pipeline. The transform's source query and scheduling are validated by
+# the system tests.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:curl] skip 'Skipping test requiring absent curl command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install the package so transforms, pipelines, and index templates are created.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Index an aidmaster event into the FDR data stream. pipeline=_none
+# bypasses the FDR ingest pipeline (already tested by pipeline tests).
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X POST 'https://localhost:9200/logs-crowdstrike.fdr-default/_doc?refresh=true&pipeline=_none' -H 'Content-Type: application/json' -d @aidmaster_event.json
+stdout '"result":"created"'
+
+# Index a data event (ProcessRollup2) for the same host.
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X POST 'https://localhost:9200/logs-crowdstrike.fdr-default/_doc?refresh=true&pipeline=_none' -H 'Content-Type: application/json' -d @data_event.json
+stdout '"result":"created"'
+
+# Push the aidmaster doc through the destination pipeline directly
+# into the lookup index. This exercises the field renames, host.id
+# preservation, and keep logic without depending on transform checkpoints.
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X POST 'https://localhost:9200/crowdstrike_lookup.dest_aidmaster-1/_doc?refresh=true&pipeline='${CURRENT_VERSION}'-aidmaster_lookup_namespaced' -H 'Content-Type: application/json' -d @aidmaster_event.json
+stdout '"result":"created"'
+
+# Verify the lookup index is populated.
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X GET 'https://localhost:9200/crowdstrike_lookup.aidmaster/_count'
+cp stdout count.json
+exec jq -r '.count' count.json
+stdout '^[1-9]'
+
+# Verify the lookup document has the expected fields.
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X GET 'https://localhost:9200/crowdstrike_lookup.aidmaster/_search?size=10'
+cp stdout lookup_docs.json
+
+# Check the host.id is preserved.
+exec jq -r '.hits.hits[]._source.host.id' lookup_docs.json
+stdout '443de0bbc349316f0d394439c57beaba'
+
+# Check the hostname was renamed into the crowdstrike.info.host namespace.
+exec jq -r '.hits.hits[]._source.crowdstrike.info.host.hostname' lookup_docs.json
+stdout 'TESTHOST01'
+
+# Check the cid carried over under the crowdstrike.info.host namespace.
+exec jq -r '.hits.hits[]._source.crowdstrike.info.host.cid' lookup_docs.json
+stdout 'test-cid-000000000000000000000000'
+
+# Check _last_seen was populated (retention field).
+exec jq -r '.hits.hits[]._source.crowdstrike.info.host._last_seen' lookup_docs.json
+stdout '2025-04-01'
+
+# Run an ES|QL LOOKUP JOIN query to verify end-to-end enrichment.
+# LOOKUP JOIN requires ES 8.16+; alias resolution in LOOKUP JOIN
+# requires 8.19+. If the stack is too old the query returns an error
+# instead of a values array.
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X POST 'https://localhost:9200/_query' -H 'Content-Type: application/json' -d @esql_query.json
+cp stdout esql_result.json
+stdout '"values"'
+
+# The LOOKUP JOIN result should contain the enriched hostname.
+exec jq -r '[.values[][]] | map(select(. == "TESTHOST01")) | first' esql_result.json
+stdout 'TESTHOST01'
+
+-- aidmaster_event.json --
+{
+  "@timestamp": "2025-04-01T12:00:00.000Z",
+  "event": {
+    "action": "AIDMaster",
+    "category": ["host"],
+    "kind": "metric",
+    "type": ["info"],
+    "ingested": "2025-04-01T12:01:00.000Z"
+  },
+  "host": {
+    "id": "443de0bbc349316f0d394439c57beaba",
+    "hostname": "TESTHOST01",
+    "name": "TESTHOST01",
+    "domain": "TESTDOMAIN",
+    "os": { "type": "windows", "version": "10.0.19041" }
+  },
+  "observer": { "version": "7.20.16407.0" },
+  "crowdstrike": {
+    "cid": "test-cid-000000000000000000000000"
+  },
+  "log": {
+    "file": { "path": "/var/log/falcon/aidmaster" }
+  }
+}
+-- data_event.json --
+{
+  "@timestamp": "2025-04-01T12:05:00.000Z",
+  "event": {
+    "action": "ProcessRollup2",
+    "category": ["process"],
+    "kind": "event",
+    "type": ["start"],
+    "ingested": "2025-04-01T12:06:00.000Z"
+  },
+  "host": {
+    "id": "443de0bbc349316f0d394439c57beaba",
+    "os": { "type": "windows" }
+  },
+  "crowdstrike": {
+    "cid": "test-cid-000000000000000000000000",
+    "event_simpleName": "ProcessRollup2"
+  }
+}
+-- esql_query.json --
+{
+  "query": "FROM logs-crowdstrike.fdr-default | WHERE event.action == \"ProcessRollup2\" | LOOKUP JOIN crowdstrike_lookup.aidmaster ON host.id | KEEP event.action, host.id, crowdstrike.info.host.hostname | LIMIT 10"
+}

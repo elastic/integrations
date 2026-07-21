@@ -1672,15 +1672,21 @@ processors:
       target_field: qualys_vmdr.asset_host_detection.vulnerability.qds_factors.text
       ignore_missing: true
   # Handle KNOWLEDGE_BASE
-  - append:
-      field: error.message
-      if: ctx.json?.KNOWLEDGE_BASE == null || ctx.json.KNOWLEDGE_BASE.size() == 0
-      value: 'Qualys QID not found in the Knowledge Base'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_knowledge_base" }}'
       if: ctx.json?.KNOWLEDGE_BASE != null && ctx.json.KNOWLEDGE_BASE.size() > 0
       tag: pipeline_knowledge_base
       ignore_missing_pipeline: true
+  - set:
+      field: qualys_vmdr.asset_host_detection.knowledge_base.status
+      tag: set_knowledge_base_status_found
+      value: found
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base != null
+  - set:
+      field: qualys_vmdr.asset_host_detection.knowledge_base.status
+      tag: set_knowledge_base_status_not_found
+      value: not_found
+      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base == null
   - set:
       field: vulnerability.score.base
       tag: set_vulnerability_score_base_from_knowledge_base_cvss_v3_base
@@ -1776,10 +1782,10 @@ processors:
   - fingerprint:
       tag: fingerprint_event_original
       description: >
-        When deduplication is enabled, fingerprint the event.original value 
+        When deduplication is enabled, fingerprint the event.original value
         in attempt to prevent the same event from being indexed more than once.
       if: ctx.event?.original != null && ctx._conf?.enable_deduplication == true
-      fields: 
+      fields:
         - event.original
       target_field: _id
   - set:

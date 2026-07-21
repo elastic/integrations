@@ -60,49 +60,49 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": true,
                     "attributes": {
                         "layout": "vertical",
                         "links": [
                             {
+                                "destinationRefName": "link_elastic_agent-a148dc70-6b3c-11ed-98de-67bdecd21824_dashboard",
                                 "id": "elastic_agent-a148dc70-6b3c-11ed-98de-67bdecd21824",
-                                "order": 0,
                                 "label": "Overview",
-                                "type": "dashboardLink",
-                                "destinationRefName": "link_elastic_agent-a148dc70-6b3c-11ed-98de-67bdecd21824_dashboard"
+                                "order": 0,
+                                "type": "dashboardLink"
                             },
                             {
+                                "destinationRefName": "link_elastic_agent-0600ffa0-6b5e-11ed-98de-67bdecd21824_dashboard",
                                 "id": "elastic_agent-0600ffa0-6b5e-11ed-98de-67bdecd21824",
-                                "order": 1,
                                 "label": "Concerning Agents",
-                                "type": "dashboardLink",
-                                "destinationRefName": "link_elastic_agent-0600ffa0-6b5e-11ed-98de-67bdecd21824_dashboard"
+                                "order": 1,
+                                "type": "dashboardLink"
                             },
                             {
+                                "destinationRefName": "link_elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395_dashboard",
                                 "id": "elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395",
-                                "order": 2,
                                 "label": "Agent Metrics",
-                                "type": "dashboardLink",
-                                "destinationRefName": "link_elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395_dashboard"
+                                "order": 2,
+                                "type": "dashboardLink"
                             },
                             {
+                                "destinationRefName": "link_elastic_agent-1a4e7280-6b5e-11ed-98de-67bdecd21824_dashboard",
                                 "id": "elastic_agent-1a4e7280-6b5e-11ed-98de-67bdecd21824",
-                                "order": 3,
                                 "label": "Integrations",
-                                "type": "dashboardLink",
-                                "destinationRefName": "link_elastic_agent-1a4e7280-6b5e-11ed-98de-67bdecd21824_dashboard"
+                                "order": 3,
+                                "type": "dashboardLink"
                             },
                             {
+                                "destinationRefName": "link_elastic_agent-a8192f90-cd3f-11ed-869d-e7dc1b551cd2_dashboard",
                                 "id": "elastic_agent-a8192f90-cd3f-11ed-869d-e7dc1b551cd2",
-                                "order": 4,
                                 "label": "Input Metrics",
-                                "type": "dashboardLink",
-                                "destinationRefName": "link_elastic_agent-a8192f90-cd3f-11ed-869d-e7dc1b551cd2_dashboard"
+                                "order": 4,
+                                "type": "dashboardLink"
                             }
                         ],
                         "title": "Agent Health"
-                    }
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
                 },
                 "gridData": {
                     "h": 14,
@@ -2167,11 +2167,11 @@
                                 "type": "index-pattern"
                             }
                         ],
-                        "savedObjectId": null,
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "99f20cec-1684-4175-b773-02c3638f2a32": {
                                             "columnOrder": [
@@ -2184,7 +2184,9 @@
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X3",
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X4",
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X5",
-                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X6"
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X6",
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X7",
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X8"
                                             ],
                                             "columns": {
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054": {
@@ -2201,30 +2203,55 @@
                                                                 "decimals": 1
                                                             }
                                                         },
-                                                        "formula": "pick_max(\n  pick_max(\n    counter_rate(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/counter_rate(max(@timestamp)),\n    0\n  ),\n  defaults(max(system.process.cpu.total.pct),0)\n)",
+                                                        "formula": "pick_max(\n  pick_max(\n    counter_rate(\n      defaults(\n        divide(\n          max(system.process.cpu.total.time.ms),\n          ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        )\n        ,0)\n      )/counter_rate(max(@timestamp)),\n    0\n  ),\n  defaults(max(system.process.cpu.total.pct),0)\n)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X6"
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X8"
                                                     ],
                                                     "scale": "ratio"
                                                 },
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": null,
                                                     "isBucketed": false,
                                                     "label": "Part of  CPU Usage",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "reducedTimeRange": null,
-                                                    "sourceField": "system.process.cpu.total.time.ms",
-                                                    "timeScale": null,
-                                                    "timeShift": null
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.process.cpu.total.time.ms"
                                                 },
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "system.cpu.cores : *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of  CPU Usage",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  CPU Usage",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.cpu.cores"
+                                                },
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X3": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -2233,81 +2260,111 @@
                                                     "params": {
                                                         "tinymathAst": {
                                                             "args": [
-                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X0",
+                                                                {
+                                                                    "args": [
+                                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X0",
+                                                                        {
+                                                                            "args": [
+                                                                                {
+                                                                                    "args": [
+                                                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X1",
+                                                                                        0
+                                                                                    ],
+                                                                                    "location": {
+                                                                                        "max": 188,
+                                                                                        "min": 151
+                                                                                    },
+                                                                                    "name": "gt",
+                                                                                    "text": "count(kql='system.cpu.cores : *') \u003e 0",
+                                                                                    "type": "function"
+                                                                                },
+                                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X2",
+                                                                                1
+                                                                            ],
+                                                                            "location": {
+                                                                                "max": 259,
+                                                                                "min": 131
+                                                                            },
+                                                                            "name": "ifelse",
+                                                                            "text": "ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        ",
+                                                                            "type": "function"
+                                                                        }
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 269,
+                                                                        "min": 64
+                                                                    },
+                                                                    "name": "divide",
+                                                                    "text": "divide(\n          max(system.process.cpu.total.time.ms),\n          ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        )\n        ",
+                                                                    "type": "function"
+                                                                },
                                                                 0
                                                             ],
                                                             "location": {
-                                                                "max": 102,
+                                                                "max": 279,
                                                                 "min": 46
                                                             },
                                                             "name": "defaults",
-                                                            "text": "defaults(max(system.process.cpu.total.time.ms),0)\n      ",
+                                                            "text": "defaults(\n        divide(\n          max(system.process.cpu.total.time.ms),\n          ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        )\n        ,0)\n      ",
                                                             "type": "function"
                                                         }
                                                     },
                                                     "references": [
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X0"
-                                                    ]
-                                                },
-                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": null,
-                                                    "isBucketed": false,
-                                                    "label": "Part of  CPU Usage",
-                                                    "operationType": "counter_rate",
-                                                    "params": null,
-                                                    "references": [
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X1"
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X0",
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X1",
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X2"
                                                     ],
-                                                    "timeScale": "s",
-                                                    "timeShift": null
-                                                },
-                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X3": {
-                                                    "customLabel": true,
-                                                    "dataType": "date",
-                                                    "filter": null,
-                                                    "isBucketed": false,
-                                                    "label": "Part of  CPU Usage",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "reducedTimeRange": null,
-                                                    "sourceField": "@timestamp",
-                                                    "timeScale": null,
-                                                    "timeShift": null
+                                                    "scale": "ratio"
                                                 },
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X4": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": null,
                                                     "isBucketed": false,
                                                     "label": "Part of  CPU Usage",
                                                     "operationType": "counter_rate",
-                                                    "params": null,
                                                     "references": [
                                                         "36f3abb0-7261-43e6-bc2f-7ad492094054X3"
                                                     ],
-                                                    "timeScale": "s",
-                                                    "timeShift": null
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
                                                 },
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X5": {
                                                     "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": null,
+                                                    "dataType": "date",
                                                     "isBucketed": false,
                                                     "label": "Part of  CPU Usage",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "reducedTimeRange": null,
-                                                    "sourceField": "system.process.cpu.total.pct",
-                                                    "timeScale": null,
-                                                    "timeShift": null
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
                                                 },
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  CPU Usage",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X5"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of  CPU Usage",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.process.cpu.total.pct"
+                                                },
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X8": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -2320,35 +2377,35 @@
                                                                     "args": [
                                                                         {
                                                                             "args": [
-                                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X2",
-                                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X4"
+                                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X4",
+                                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X6"
                                                                             ],
                                                                             "location": {
-                                                                                "max": 133,
+                                                                                "max": 310,
                                                                                 "min": 26
                                                                             },
                                                                             "name": "divide",
-                                                                            "text": "counter_rate(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/counter_rate(max(@timestamp))",
+                                                                            "text": "counter_rate(\n      defaults(\n        divide(\n          max(system.process.cpu.total.time.ms),\n          ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        )\n        ,0)\n      )/counter_rate(max(@timestamp))",
                                                                             "type": "function"
                                                                         },
                                                                         0
                                                                     ],
                                                                     "location": {
-                                                                        "max": 144,
+                                                                        "max": 321,
                                                                         "min": 12
                                                                     },
                                                                     "name": "pick_max",
-                                                                    "text": "pick_max(\n    counter_rate(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/counter_rate(max(@timestamp)),\n    0\n  )",
+                                                                    "text": "pick_max(\n    counter_rate(\n      defaults(\n        divide(\n          max(system.process.cpu.total.time.ms),\n          ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        )\n        ,0)\n      )/counter_rate(max(@timestamp)),\n    0\n  )",
                                                                     "type": "function"
                                                                 },
                                                                 {
                                                                     "args": [
-                                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X5",
+                                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X7",
                                                                         0
                                                                     ],
                                                                     "location": {
-                                                                        "max": 194,
-                                                                        "min": 148
+                                                                        "max": 371,
+                                                                        "min": 325
                                                                     },
                                                                     "name": "defaults",
                                                                     "text": "defaults(max(system.process.cpu.total.pct),0)\n",
@@ -2356,19 +2413,20 @@
                                                                 }
                                                             ],
                                                             "location": {
-                                                                "max": 195,
+                                                                "max": 372,
                                                                 "min": 0
                                                             },
                                                             "name": "pick_max",
-                                                            "text": "pick_max(\n  pick_max(\n    counter_rate(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/counter_rate(max(@timestamp)),\n    0\n  ),\n  defaults(max(system.process.cpu.total.pct),0)\n)",
+                                                            "text": "pick_max(\n  pick_max(\n    counter_rate(\n      defaults(\n        divide(\n          max(system.process.cpu.total.time.ms),\n          ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        )\n        ,0)\n      )/counter_rate(max(@timestamp)),\n    0\n  ),\n  defaults(max(system.process.cpu.total.pct),0)\n)",
                                                             "type": "function"
                                                         }
                                                     },
                                                     "references": [
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X2",
                                                         "36f3abb0-7261-43e6-bc2f-7ad492094054X4",
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X5"
-                                                    ]
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X6",
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X7"
+                                                    ],
+                                                    "scale": "ratio"
                                                 },
                                                 "7bec9e2e-5d9c-4ca9-a665-5017478e1ede": {
                                                     "dataType": "string",
@@ -2411,6 +2469,7 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -4258,11 +4317,11 @@
                                 "type": "index-pattern"
                             }
                         ],
-                        "savedObjectId": null,
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "99f20cec-1684-4175-b773-02c3638f2a32": {
                                             "columnOrder": [
@@ -4275,7 +4334,9 @@
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X3",
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X4",
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X5",
-                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X6"
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X6",
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X7",
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X8"
                                             ],
                                             "columns": {
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054": {
@@ -4291,30 +4352,55 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "pick_max(\n  pick_max(\n    counter_rate(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/counter_rate(max(@timestamp)),\n    0\n  ),\n  defaults(max(system.process.cpu.total.pct),0)\n)",
+                                                        "formula": "pick_max(\n  pick_max(\n    counter_rate(\n      defaults(\n        divide(\n          max(system.process.cpu.total.time.ms),\n          ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        )\n        ,0)\n      )/counter_rate(max(@timestamp)),\n    0\n  ),\n  defaults(max(system.process.cpu.total.pct),0)\n)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X6"
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X8"
                                                     ],
                                                     "scale": "ratio"
                                                 },
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": null,
                                                     "isBucketed": false,
                                                     "label": "Part of CPU Usage",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "reducedTimeRange": null,
-                                                    "sourceField": "system.process.cpu.total.time.ms",
-                                                    "timeScale": null,
-                                                    "timeShift": null
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.process.cpu.total.time.ms"
                                                 },
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "system.cpu.cores : *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU Usage",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU Usage",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.cpu.cores"
+                                                },
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X3": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -4323,81 +4409,111 @@
                                                     "params": {
                                                         "tinymathAst": {
                                                             "args": [
-                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X0",
+                                                                {
+                                                                    "args": [
+                                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X0",
+                                                                        {
+                                                                            "args": [
+                                                                                {
+                                                                                    "args": [
+                                                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X1",
+                                                                                        0
+                                                                                    ],
+                                                                                    "location": {
+                                                                                        "max": 188,
+                                                                                        "min": 151
+                                                                                    },
+                                                                                    "name": "gt",
+                                                                                    "text": "count(kql='system.cpu.cores : *') \u003e 0",
+                                                                                    "type": "function"
+                                                                                },
+                                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X2",
+                                                                                1
+                                                                            ],
+                                                                            "location": {
+                                                                                "max": 259,
+                                                                                "min": 131
+                                                                            },
+                                                                            "name": "ifelse",
+                                                                            "text": "ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        ",
+                                                                            "type": "function"
+                                                                        }
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 269,
+                                                                        "min": 64
+                                                                    },
+                                                                    "name": "divide",
+                                                                    "text": "divide(\n          max(system.process.cpu.total.time.ms),\n          ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        )\n        ",
+                                                                    "type": "function"
+                                                                },
                                                                 0
                                                             ],
                                                             "location": {
-                                                                "max": 102,
+                                                                "max": 279,
                                                                 "min": 46
                                                             },
                                                             "name": "defaults",
-                                                            "text": "defaults(max(system.process.cpu.total.time.ms),0)\n      ",
+                                                            "text": "defaults(\n        divide(\n          max(system.process.cpu.total.time.ms),\n          ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        )\n        ,0)\n      ",
                                                             "type": "function"
                                                         }
                                                     },
                                                     "references": [
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X0"
-                                                    ]
-                                                },
-                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": null,
-                                                    "isBucketed": false,
-                                                    "label": "Part of CPU Usage",
-                                                    "operationType": "counter_rate",
-                                                    "params": null,
-                                                    "references": [
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X1"
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X0",
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X1",
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X2"
                                                     ],
-                                                    "timeScale": "s",
-                                                    "timeShift": null
-                                                },
-                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X3": {
-                                                    "customLabel": true,
-                                                    "dataType": "date",
-                                                    "filter": null,
-                                                    "isBucketed": false,
-                                                    "label": "Part of CPU Usage",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "reducedTimeRange": null,
-                                                    "sourceField": "@timestamp",
-                                                    "timeScale": null,
-                                                    "timeShift": null
+                                                    "scale": "ratio"
                                                 },
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X4": {
                                                     "customLabel": true,
                                                     "dataType": "number",
-                                                    "filter": null,
                                                     "isBucketed": false,
                                                     "label": "Part of CPU Usage",
                                                     "operationType": "counter_rate",
-                                                    "params": null,
                                                     "references": [
                                                         "36f3abb0-7261-43e6-bc2f-7ad492094054X3"
                                                     ],
-                                                    "timeScale": "s",
-                                                    "timeShift": null
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
                                                 },
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X5": {
                                                     "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": null,
+                                                    "dataType": "date",
                                                     "isBucketed": false,
                                                     "label": "Part of CPU Usage",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
-                                                    "reducedTimeRange": null,
-                                                    "sourceField": "system.process.cpu.total.pct",
-                                                    "timeScale": null,
-                                                    "timeShift": null
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
                                                 },
                                                 "36f3abb0-7261-43e6-bc2f-7ad492094054X6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU Usage",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X5"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU Usage",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.process.cpu.total.pct"
+                                                },
+                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X8": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -4410,35 +4526,35 @@
                                                                     "args": [
                                                                         {
                                                                             "args": [
-                                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X2",
-                                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X4"
+                                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X4",
+                                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X6"
                                                                             ],
                                                                             "location": {
-                                                                                "max": 133,
+                                                                                "max": 310,
                                                                                 "min": 26
                                                                             },
                                                                             "name": "divide",
-                                                                            "text": "counter_rate(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/counter_rate(max(@timestamp))",
+                                                                            "text": "counter_rate(\n      defaults(\n        divide(\n          max(system.process.cpu.total.time.ms),\n          ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        )\n        ,0)\n      )/counter_rate(max(@timestamp))",
                                                                             "type": "function"
                                                                         },
                                                                         0
                                                                     ],
                                                                     "location": {
-                                                                        "max": 144,
+                                                                        "max": 321,
                                                                         "min": 12
                                                                     },
                                                                     "name": "pick_max",
-                                                                    "text": "pick_max(\n    counter_rate(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/counter_rate(max(@timestamp)),\n    0\n  )",
+                                                                    "text": "pick_max(\n    counter_rate(\n      defaults(\n        divide(\n          max(system.process.cpu.total.time.ms),\n          ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        )\n        ,0)\n      )/counter_rate(max(@timestamp)),\n    0\n  )",
                                                                     "type": "function"
                                                                 },
                                                                 {
                                                                     "args": [
-                                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X5",
+                                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X7",
                                                                         0
                                                                     ],
                                                                     "location": {
-                                                                        "max": 194,
-                                                                        "min": 148
+                                                                        "max": 371,
+                                                                        "min": 325
                                                                     },
                                                                     "name": "defaults",
                                                                     "text": "defaults(max(system.process.cpu.total.pct),0)\n",
@@ -4446,19 +4562,20 @@
                                                                 }
                                                             ],
                                                             "location": {
-                                                                "max": 195,
+                                                                "max": 372,
                                                                 "min": 0
                                                             },
                                                             "name": "pick_max",
-                                                            "text": "pick_max(\n  pick_max(\n    counter_rate(\n      defaults(max(system.process.cpu.total.time.ms),0)\n      )/counter_rate(max(@timestamp)),\n    0\n  ),\n  defaults(max(system.process.cpu.total.pct),0)\n)",
+                                                            "text": "pick_max(\n  pick_max(\n    counter_rate(\n      defaults(\n        divide(\n          max(system.process.cpu.total.time.ms),\n          ifelse(\n            count(kql='system.cpu.cores : *') \u003e 0,\n            max(system.cpu.cores),\n            1\n          )\n        )\n        ,0)\n      )/counter_rate(max(@timestamp)),\n    0\n  ),\n  defaults(max(system.process.cpu.total.pct),0)\n)",
                                                             "type": "function"
                                                         }
                                                     },
                                                     "references": [
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X2",
                                                         "36f3abb0-7261-43e6-bc2f-7ad492094054X4",
-                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X5"
-                                                    ]
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X6",
+                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X7"
+                                                    ],
+                                                    "scale": "ratio"
                                                 },
                                                 "7bec9e2e-5d9c-4ca9-a665-5017478e1ede": {
                                                     "dataType": "string",
@@ -4502,6 +4619,7 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -9401,9 +9519,34 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-02-12T19:49:09.782Z",
+    "created_at": "2026-06-11T20:21:40.137Z",
     "id": "elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395",
     "references": [
+        {
+            "id": "elastic_agent-a148dc70-6b3c-11ed-98de-67bdecd21824",
+            "name": "443b1597-9d5f-4b9c-8848-643d0381b2f4:link_elastic_agent-a148dc70-6b3c-11ed-98de-67bdecd21824_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "elastic_agent-0600ffa0-6b5e-11ed-98de-67bdecd21824",
+            "name": "443b1597-9d5f-4b9c-8848-643d0381b2f4:link_elastic_agent-0600ffa0-6b5e-11ed-98de-67bdecd21824_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395",
+            "name": "443b1597-9d5f-4b9c-8848-643d0381b2f4:link_elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "elastic_agent-1a4e7280-6b5e-11ed-98de-67bdecd21824",
+            "name": "443b1597-9d5f-4b9c-8848-643d0381b2f4:link_elastic_agent-1a4e7280-6b5e-11ed-98de-67bdecd21824_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "elastic_agent-a8192f90-cd3f-11ed-869d-e7dc1b551cd2",
+            "name": "443b1597-9d5f-4b9c-8848-643d0381b2f4:link_elastic_agent-a8192f90-cd3f-11ed-869d-e7dc1b551cd2_dashboard",
+            "type": "dashboard"
+        },
         {
             "id": "metrics-*",
             "name": "ca491918-8011-4c39-b855-e13ae7b9b581:indexpattern-datasource-layer-2be7d580-9fee-48d0-ab61-4ba934a5dbe9",
@@ -9718,34 +9861,9 @@
             "id": "metrics-*",
             "name": "controlGroup_eb9c5004-7ad4-43f1-b707-54f4ee26b720:optionsListDataView",
             "type": "index-pattern"
-        },
-        {
-            "name": "443b1597-9d5f-4b9c-8848-643d0381b2f4:link_elastic_agent-a148dc70-6b3c-11ed-98de-67bdecd21824_dashboard",
-            "type": "dashboard",
-            "id": "elastic_agent-a148dc70-6b3c-11ed-98de-67bdecd21824"
-        },
-        {
-            "name": "443b1597-9d5f-4b9c-8848-643d0381b2f4:link_elastic_agent-0600ffa0-6b5e-11ed-98de-67bdecd21824_dashboard",
-            "type": "dashboard",
-            "id": "elastic_agent-0600ffa0-6b5e-11ed-98de-67bdecd21824"
-        },
-        {
-            "name": "443b1597-9d5f-4b9c-8848-643d0381b2f4:link_elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395_dashboard",
-            "type": "dashboard",
-            "id": "elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395"
-        },
-        {
-            "name": "443b1597-9d5f-4b9c-8848-643d0381b2f4:link_elastic_agent-1a4e7280-6b5e-11ed-98de-67bdecd21824_dashboard",
-            "type": "dashboard",
-            "id": "elastic_agent-1a4e7280-6b5e-11ed-98de-67bdecd21824"
-        },
-        {
-            "name": "443b1597-9d5f-4b9c-8848-643d0381b2f4:link_elastic_agent-a8192f90-cd3f-11ed-869d-e7dc1b551cd2_dashboard",
-            "type": "dashboard",
-            "id": "elastic_agent-a8192f90-cd3f-11ed-869d-e7dc1b551cd2"
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "8.9.0",
+    "typeMigrationVersion": "10.2.0",
     "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }

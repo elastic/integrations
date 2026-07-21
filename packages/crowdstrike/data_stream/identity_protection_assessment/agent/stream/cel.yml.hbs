@@ -1,0 +1,231 @@
+config_version: 2
+interval: {{interval}}
+max_executions: {{max_executions}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+  maxsize: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if proxy_headers}}
+resource.proxy_headers: {{proxy_headers}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+state:
+  initial_interval: {{initial_interval}}
+  min_remaining_points: 100
+{{#if data_sources}}
+  domains_query: "query GetDomains($dataSources: [DataSource!]) { domains(dataSources: $dataSources) }"
+  domains_variables:
+    dataSources:
+{{#each data_sources as |ds|}}
+      - {{ds}}
+{{/each}}
+{{else}}
+  domains_query: "{ domains }"
+{{/if}}
+  assessment_query: "query GetAssessment($domain: String!) { securityAssessment(domain: $domain) { overallScore overallScoreLevel assessmentFactors { riskFactorType likelihood severity } } }"
+redact:
+  fields: ~
+program: |-
+  (
+    // If the domains call already filled worklist, skip the domains request until the list is worked off.
+    (has(state.worklist) && size(state.worklist) > 0) ?
+      state
+    :
+      post_request(
+        state.url.trim_right("/") + "/identity-protection/combined/graphql/v1",
+        "application/json",
+        (
+          (has(state.domains_variables) && size(state.domains_variables.?dataSources.orValue([])) > 0) ?
+            {"query": string(state.domains_query), "variables": state.domains_variables}
+          :
+            {"query": string(state.domains_query)}
+        ).encode_json()
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          (size(body.?errors.orValue([])) > 0) ?
+            state.with(
+              {
+                "events": body.errors.map(error,
+                  {
+                    "error": {
+                      "code": string(error.?code.orValue("")),
+                      "id": string(error.?code.orValue("")),
+                      "message": string(error.?message.orValue("")),
+                    },
+                  }
+                ),
+                "want_more": false,
+              }
+            ).drop(["worklist", "next", "last_remaining"])
+          : (has(body.data) && has(body.data.domains)) ?
+            (
+              (size(body.data.domains) > 0) ?
+                state.with(
+                  {
+                    "worklist": body.data.domains.map(d, string(d)),
+                    // next is the array index into worklist; worklist is consumed from index 0.
+                    "next": 0,
+                    "last_remaining": int(body.?extensions.?remainingPoints.orValue(500000)),
+                  }
+                )
+              :
+                state.with(
+                  {
+                    "events": [],
+                    "want_more": false,
+                  }
+                ).drop(["worklist", "next", "last_remaining"])
+            )
+          :
+            state.with(
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": "graphql",
+                    "message": "POST:domains response missing data.domains",
+                  },
+                },
+                "want_more": false,
+              }
+            ).drop(["worklist", "next", "last_remaining"])
+        )
+      :
+        state.with(
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST:" + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      )
+  ).as(state,
+    (!has(state.worklist) || size(state.worklist) == 0) ?
+      state
+    : (int(state.?next.orValue(0)) >= size(state.worklist)) ?
+      state.with(
+        {
+          "events": [],
+          "want_more": false,
+        }
+      ).drop(["worklist", "next", "last_remaining"])
+    : (has(state.last_remaining) && int(state.last_remaining) < int(state.min_remaining_points)) ?
+      state.with(
+        {
+          "events": [],
+          "want_more": false,
+        }
+      )
+    :
+      post_request(
+        state.url.trim_right("/") + "/identity-protection/combined/graphql/v1",
+        "application/json",
+        {
+          "query": string(state.assessment_query),
+          "variables": {
+            "domain": string(state.worklist[int(state.next)]),
+          },
+        }.encode_json()
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          (size(body.?errors.orValue([])) > 0) ?
+            state.with(
+              {
+                "events": body.errors.map(error,
+                  {
+                    "error": {
+                      "code": string(error.?code.orValue("graphql")),
+                      "id": string(error.?code.orValue("graphql")),
+                      "message": string(error.?message.orValue("")),
+                    },
+                  }
+                ),
+                "last_remaining": int(body.?extensions.?remainingPoints.orValue(state.last_remaining)),
+                "next": int(state.next) + 1,
+                "want_more": int(state.next) + 1 < size(state.worklist),
+              }
+            )
+          :
+            state.with(
+              {
+                "events": [
+                  {
+                    "message": {
+                      "domain": string(state.worklist[int(state.next)]),
+                      "security_assessment": body.?data.?securityAssessment,
+                    }.encode_json(),
+                  },
+                ],
+                "last_remaining": int(body.?extensions.?remainingPoints.orValue(state.last_remaining)),
+                "next": int(state.next) + 1,
+                "want_more": int(state.next) + 1 < size(state.worklist),
+              }
+            )
+        )
+      :
+        state.with(
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST:" + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "last_remaining": state.last_remaining,
+            "next": int(state.next) + 1,
+            "want_more": int(state.next) + 1 < size(state.worklist),
+          }
+        )
+      )
+  )
+fields_under_root: true
+fields:
+  _conf:
+    enable_nested_assessment_factors: {{enable_nested_assessment_factors}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

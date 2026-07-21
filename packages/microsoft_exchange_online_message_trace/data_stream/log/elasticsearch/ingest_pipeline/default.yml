@@ -7,6 +7,12 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -222,10 +228,10 @@ processors:
         def destination_internal = 0;
         def source_internal = 0;
         for (local_domain in ctx._conf.local_domains) {
-          if (ctx.destination?.domain == local_domain){
+          if (ctx.destination?.domain instanceof String && ctx.destination.domain.equalsIgnoreCase(local_domain)){
             destination_internal = 1;
           }
-          if (ctx.source?.domain == local_domain){
+          if (ctx.source?.domain instanceof String && ctx.source.domain.equalsIgnoreCase(local_domain)){
             source_internal = 1;
           }
         }
