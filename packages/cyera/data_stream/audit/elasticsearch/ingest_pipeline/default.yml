@@ -1,0 +1,319 @@
+---
+description: Pipeline for processing audit logs.
+processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - fingerprint:
+      fields:
+        - json.frontegg_id
+        - json.createdAt
+      tag: fingerprint_audit
+      target_field: _id
+  - date:
+      field: json.createdAt
+      tag: date_createdAt
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx.json?.createdAt != null && ctx.json.createdAt != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.updatedAt
+      tag: date_updatedAt
+      target_field: cyera.audit.updated_at
+      formats:
+        - ISO8601
+      if: ctx.json?.updatedAt != null && ctx.json.updatedAt != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.action
+      tag: rename_action_to_event_action
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.description
+      tag: rename_description_to_message
+      target_field: message
+      ignore_missing: true
+  - rename:
+      field: json.email
+      tag: rename_email_to_user_email
+      target_field: user.email
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_user_email_into_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - convert:
+      field: json.ip
+      tag: convert_ip_to_source_ip
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_source_ip_into_related_ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - rename:
+      field: json.severity
+      tag: rename_severity_to_log_level
+      target_field: log.level
+      ignore_missing: true
+  - user_agent:
+      field: json.userAgent
+      tag: user_agent_audit_user_agent
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.userAgent != null
+  - rename:
+      field: json.environmentName
+      tag: rename_environmentName
+      target_field: cyera.audit.environment_name
+      ignore_missing: true
+  - rename:
+      field: json.frontegg_id
+      tag: rename_frontegg_id_to_event_id
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: json.tenantId
+      tag: rename_tenantId
+      target_field: cyera.audit.tenant_id
+      ignore_missing: true
+  - rename:
+      field: json.vendorId
+      tag: rename_vendorId
+      target_field: cyera.audit.vendor_id
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_set_ecs_categorization
+      description: Set ECS categorization fields based on the audit action.
+      if: ctx.event?.action != null
+      params:
+        exact:
+          User logged in:
+            category:
+              - authentication
+              - session
+            type:
+              - start
+            outcome: success
+          User logged out:
+            category:
+              - authentication
+              - session
+            type:
+              - end
+            outcome: success
+          Created API key:
+            category:
+              - iam
+            type:
+              - creation
+          Created personal API key:
+            category:
+              - iam
+            type:
+              - creation
+          Deleted API key:
+            category:
+              - iam
+            type:
+              - deletion
+          Deleted personal API key:
+            category:
+              - iam
+            type:
+              - deletion
+          Added user:
+            category:
+              - iam
+            type:
+              - user
+              - creation
+          Invited user:
+            category:
+              - iam
+            type:
+              - user
+              - creation
+          Accepted invitation:
+            category:
+              - iam
+            type:
+              - user
+              - info
+          Assigned roles:
+            category:
+              - iam
+            type:
+              - user
+              - change
+          Unassigned roles:
+            category:
+              - iam
+            type:
+              - user
+              - change
+          Updated profile:
+            category:
+              - iam
+            type:
+              - user
+              - change
+          Activated account:
+            category:
+              - iam
+            type:
+              - user
+              - change
+          Enabled MFA:
+            category:
+              - iam
+            type:
+              - user
+              - change
+          Disabled MFA:
+            category:
+              - iam
+            type:
+              - user
+              - change
+      source: |-
+        String action = ctx.event.action;
+        Map entry = params.exact.get(action);
+        if (entry == null) {
+          String a = action.toLowerCase();
+          if (a.contains('logged in') || a.contains('login') || a.contains('log in')) {
+            entry = ['category': ['authentication', 'session'], 'type': ['start'], 'outcome': a.contains('fail') ? 'failure' : 'success'];
+          } else if (a.contains('logged out') || a.contains('logout') || a.contains('log out')) {
+            entry = ['category': ['authentication', 'session'], 'type': ['end'], 'outcome': 'success'];
+          } else if (a.startsWith('removed user') || a.startsWith('deleted user')) {
+            entry = ['category': ['iam'], 'type': ['user', 'deletion']];
+          } else if (a.startsWith('added user') || a.startsWith('invited user')) {
+            entry = ['category': ['iam'], 'type': ['user', 'creation']];
+          }
+        }
+        if (entry == null) {
+          return;
+        }
+        if (entry.category != null) {
+          ctx.event.category = entry.category;
+        }
+        if (entry.type != null) {
+          ctx.event.type = entry.type;
+        }
+        if (entry.outcome != null) {
+          ctx.event.outcome = entry.outcome;
+        }
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

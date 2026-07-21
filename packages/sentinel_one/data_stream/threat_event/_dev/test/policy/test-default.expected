@@ -9,7 +9,7 @@ inputs:
         - config_version: 2
           data_stream:
             dataset: sentinel_one.threat_event
-          interval: 24h
+          interval: 5m
           max_executions: 1000
           program: |-
             (
@@ -22,8 +22,17 @@ inputs:
                     state.url.trim_right("/") + "/web/api/v2.1/threats?" + {
                       "skipCount": ["true"],
                       "limit": [string(state.batch_size)],
+                      "sortBy": ["updatedAt"],
+                      "sortOrder": ["asc"],
+                      "updatedAt__gte": [
+                        state.?cursor.?list_updated_at_gte.orValue(
+                          state.?cursor.?last_timestamp.orValue(
+                            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+                          )
+                        )
+                      ],
                       ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
-                      ?"cursor": state.?cursor.next_page.token.optMap(v, [v]),
+                      ?"cursor": state.?cursor.?next_page.token.optMap(v, [v]),
                     }.format_query()
                   ).with(
                     {
@@ -40,6 +49,12 @@ inputs:
                             ?"token": (body.?pagination.nextCursor.orValue(null) != null) ? optional.of(body.pagination.nextCursor) : optional.none(),
                           },
                           "fetch_more": body.?pagination.nextCursor.orValue(null) != null,
+                          "list_updated_at_gte": state.?cursor.?list_updated_at_gte.orValue(
+                            state.?cursor.?last_timestamp.orValue(
+                              (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+                            )
+                          ),
+                          ?"last_timestamp": state.?cursor.last_timestamp,
                         },
                       }
                     )
@@ -58,7 +73,6 @@ inputs:
                         },
                       },
                       "want_more": false,
-                      "cursor": {},
                     }
                   )
                 )
@@ -108,6 +122,11 @@ inputs:
                                 ?"token": has_more_events ? optional.of(body.pagination.nextCursor) : optional.none(),
                               },
                               "fetch_more": state.?cursor.fetch_more.orValue(false),
+                              "list_updated_at_gte": state.cursor.list_updated_at_gte,
+                              ?"last_timestamp": has_more_events ?
+                                state.?cursor.last_timestamp
+                              :
+                                state.cursor.worklist.data[0].?threatInfo.updatedAt.or(state.?cursor.last_timestamp),
                             },
                           }
                         )
@@ -134,7 +153,6 @@ inputs:
                   {
                     "events": [],
                     "want_more": false,
-                    "cursor": {},
                   }
               )
             )
@@ -152,6 +170,7 @@ inputs:
           state:
             api_token: ${SECRET_0}
             batch_size: 1000
+            initial_interval: 24h
           tags:
             - forwarded
             - sentinel_one-threat_event
