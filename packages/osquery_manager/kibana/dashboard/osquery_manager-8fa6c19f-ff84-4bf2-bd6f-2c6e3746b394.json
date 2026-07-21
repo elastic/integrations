@@ -65,7 +65,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "### Osquery — Query Profiles `Experimental`\n\n> ⚠️ **This dashboard uses an experimental data stream.** The `query_profile` data stream may change or be removed in a future release. Data only appears if profiling is enabled in your Fleet integration policy. [Learn how to enable profiling](https://www.elastic.co/docs/reference/integrations/osquery_manager) · [Open in Osquery](/app/osquery)\n\n#### How to use this dashboard\n\n**Query profiles** show how expensive each osquery query is per host. Each document is one execution, correlatable via `response_id`.\n\nSource types distinguish how a query was triggered:\n\n* **Live** — ad-hoc queries run on demand from the Osquery live queries interface\n* **Recurring rule** — RRULE-scheduled runs, managed via Kibana pack scheduling\n* **Scheduled** — native `osquery_schedule` metrics, configured in your pack\n\nTo enable profiling, add the following to the Advanced Osquery config block in your Fleet integration policy:\n\n```\n{\n  \"elastic_options\": {\n    \"profiling\": {\n      \"profiling_all\": true\n    }\n  }\n}\n```",
+                            "markdown": "### Osquery — Query Profiles `Experimental`\n\n> Query profiling is enabled by default. To disable it globally, add the following to the Advanced Osquery configuration in your Fleet integration policy:\n>\n> ```json\n> {\n>   \"elastic_options\": {\n>     \"profiling\": {\n>       \"profiling_all\": false\n>     }\n>   }\n> }\n> ```\n\n#### How to use this dashboard\n\n**Query profiles** show how expensive each osquery query is per host. Each document is one execution, correlatable via `response_id`.\n\nSource types distinguish how a query was triggered:\n\n* **Live** — ad-hoc queries run on demand from the Osquery live queries interface\n* **Recurring rule** — RRULE-scheduled runs, managed via Kibana pack scheduling\n* **Scheduled** — native `osquery_schedule` metrics, configured in your pack",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -89,7 +89,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Number of individual query executions profiled.",
+                        "description": "Number of profile events received. Each event represents one profiled query execution.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -140,11 +140,11 @@
                                 "metricAccessor": "e865a305-51ca-4731-8da7-bff57e14835c"
                             }
                         },
-                        "title": "Total executions",
+                        "title": "Profiled executions",
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Number of individual query executions profiled.",
+                    "description": "Number of profile events received. Each event represents one profiled query execution.",
                     "enhancements": {},
                     "hidePanelTitles": false,
                     "type": "lens"
@@ -157,7 +157,7 @@
                     "y": 12
                 },
                 "panelIndex": "f5b7359e-f21b-4744-88d7-64ce3002f147",
-                "title": "Total executions",
+                "title": "Profiled executions",
                 "type": "lens",
                 "version": "8.7.1"
             },
