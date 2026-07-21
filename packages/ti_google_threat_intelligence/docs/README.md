@@ -1016,6 +1016,9 @@ An example event for `ioc_stream` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| error.code | Error code describing the error. | keyword |
+| error.id | Unique identifier for the error. | keyword |
+| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | gti.ioc_stream.attributes.as_owner | The name of the Autonomous System (AS) owner that controls the IP address associated with the analyzed entity. | keyword |
