@@ -214,8 +214,17 @@ jobs:
               PR_NUM=$(echo "$PR_URL" | grep -oP '\d+$')
               STATUS="✅ #${PR_NUM}"
             else
-              SUGGESTED=$(jq -r '.suggested_command // empty' <<< "$RESULT" 2>/dev/null || true)
-              STATUS="⚠️ conflict: @${PR_AUTHOR} please resolve manually${SUGGESTED:+: \`${SUGGESTED}\`}"
+              # Before reporting a conflict, check if a concurrent run (e.g. a push
+              # event racing with this issue_comment event) already opened a PR for
+              # this working branch. A push rejection is not a real cherry-pick conflict.
+              CONCURRENT_PR=$(gh pr list --repo "$REPOSITORY" --head "$WORKING_BRANCH" \
+                --state all --json number --jq 'first.number // empty')
+              if [[ -n "$CONCURRENT_PR" ]]; then
+                STATUS="✅ #${CONCURRENT_PR}"
+              else
+                SUGGESTED=$(jq -r '.suggested_command // empty' <<< "$RESULT" 2>/dev/null || true)
+                STATUS="⚠️ conflict: @${PR_AUTHOR} please resolve manually${SUGGESTED:+: \`${SUGGESTED}\`}"
+              fi
             fi
 
             # Update the in-memory checklist body and patch the GitHub comment
