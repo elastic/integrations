@@ -169,8 +169,8 @@ Interval `1h` = 3600s, `24h` = 86400s.
 | 12 | `ai_vector_databases_*` | `osquery.ai_vector_databases` | process | 1h | ✅ | ✅ | ✅ | Running vector database servers (Chroma, Qdrant, Weaviate, Milvus, …) |
 | 13 | `ai_model_cache_size_*` | `osquery.ai_model_cache_size` | file | 24h | ✅ | ✅ | ✅ | AI model cache disk usage by directory (>100 MiB) |
 | 14 | `ai_config_file_changes_*` | `osquery.ai_config_file_changes` | file | 1h | ✅ | ✅ | ✅ | Recent MCP/AI config modifications (7200s lookback) |
-| 15 | `ai_sensitive_file_proximity_*` | `osquery.ai_sensitive_file_proximity` | process, file | mac/lin 1h · win 24h | ✅ | ✅ | ✅ | AI-process proximity to sensitive paths. macOS/Linux use open-file access evidence; Windows is uid co-occurrence inventory, **not** access proof |
-| 16 | `ai_process_network_summary_*` | `osquery.ai_process_network_summary` | network, process | 1h | ✅ | ✅ | ✅ | AI-process socket inventory (includes API-host cmdline signals) |
+| 15 | `ai_sensitive_file_proximity_*` | `osquery.ai_sensitive_file_proximity` | process, file | mac/lin 1h · win 24h | ✅ | ✅ | ✅ | AI-process proximity to sensitive paths; slice on `osquery.process_category`. macOS/Linux use open-file access evidence; Windows is uid co-occurrence inventory, **not** access proof |
+| 16 | `ai_process_network_summary_*` | `osquery.ai_process_network_summary` | network, process | 1h | ✅ | ✅ | ✅ | Outbound sockets for classified AI processes; slice on `osquery.process_category` (`llm_runtime`, `agent`, `mcp`) |
 | 17 | `ai_windows_services` | `osquery.ai_windows_services` | configuration | 24h | ✅ | — | — | AI auto-start Windows services |
 | 18 | `ai_scheduled_tasks_windows` | `osquery.ai_scheduled_tasks` | configuration | 24h | ✅ | — | — | AI scheduled tasks (Windows) |
 | 19 | `ai_dns_cache_windows` | `osquery.ai_dns_cache` | network | 1h | ✅ | — | — | AI service DNS lookups (Windows) |

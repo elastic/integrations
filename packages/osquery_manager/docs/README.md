@@ -44,7 +44,8 @@ Some queries provide detection context rather than pure inventory:
 - `ai_config_file_changes` — recent MCP/AI config modifications (7200s lookback)
 - `ai_sensitive_file_access` (macOS/Linux) — AI processes with open handles to sensitive paths via `process_open_files`
 - `ai_sensitive_file_colocation` (Windows) — uid co-occurrence between AI processes and sensitive paths; **not access proof**
-- `ai_process_network_summary` — AI-process socket inventory across remote endpoints (includes API-host cmdline signals)
+- `ai_process_network_summary` — outbound socket inventory for classified AI processes (`osquery.process_category` required); non-loopback sockets with active-ish TCP state; `is_rfc1918_destination` flags private IPv4 destinations (10/8, 172.16/12, 192.168/16)
+- `ai_sensitive_file_proximity` — emits `osquery.process_category` on macOS/Linux access evidence and Windows colocation rows
 
 macOS/Linux access evidence (`ai_sensitive_file_access`) is distinct from Windows colocation inventory (`ai_sensitive_file_colocation`).
 
@@ -65,7 +66,9 @@ Correlate osquery inventory with hook or OpenTelemetry activity streams by `host
 
 ### Copilot variant classification
 
-Install-time inventory queries (programs, apps, packages, browser/IDE extensions) classify Copilot-related hits into `osquery.copilot_variant` (`developer`, `productivity`, `browser`, `unknown`) where source fields support disambiguation — for example GitHub Copilot vs Microsoft 365 Copilot. Process queries (`ai_processes`, `ai_process_network_summary`) do **not** emit this field; use `osquery.process_category` or process name/cmdline instead. The field is sparse (mostly `NULL` outside Copilot hits) and variant taxonomies differ by source, so treat it as best-effort context on install inventory only.
+Process queries (`ai_processes`, `ai_process_network_summary`, `ai_listening_ports`, `ai_sensitive_file_proximity`) classify running processes via a shared `CASE` subquery joined on `pid`, mapped to `osquery.process_category` (`mcp`, `agent`, `llm_runtime`). Derived queries reference that subquery once rather than re-evaluating the full detection expression in both `SELECT` and `WHERE`.
+
+Install-time inventory queries (programs, apps, packages, browser/IDE extensions) classify Copilot-related hits into `osquery.copilot_variant` (`developer`, `productivity`, `browser`, `unknown`) where source fields support disambiguation — for example GitHub Copilot vs Microsoft 365 Copilot. Process queries do **not** emit `copilot_variant`; use `osquery.process_category` or process name/cmdline instead. The field is sparse (mostly `NULL` outside Copilot hits) and variant taxonomies differ by source, so treat it as best-effort context on install inventory only.
 
 ### Deferred follow-ups (not collected by this package)
 
