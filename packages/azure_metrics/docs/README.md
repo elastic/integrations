@@ -241,6 +241,16 @@ Examples:
 * `https://login.microsoftonline.com` for Azure PublicCloud
 * `https://login.microsoftonline.us` for Azure USGovernmentCloud
 
+`Resource Manager Audience` _string_
+: Optional. By default, the integration uses the associated Resource Manager Audience. To override, users can provide a specific resource manager audience to use a different Azure environment. This is required for sovereign clouds such as Azure GovCloud, where the public-cloud audience value is rejected by ARM even when the other endpoints are correctly configured.
+
+Examples:
+
+* `https://management.core.chinacloudapi.cn` for Azure ChinaCloud
+* `https://management.core.cloudapi.de` for Azure GermanCloud
+* `https://management.core.windows.net` for Azure PublicCloud
+* `https://management.core.usgovcloudapi.net` for Azure USGovernmentCloud
+
 `Enable Batch Api` _boolean_
 : Optional, by default is set to False. Set this to True when facing scalability issues. When configured, the azure batch api will be used
  to fetch metrics of multiple resources in one api call. 
