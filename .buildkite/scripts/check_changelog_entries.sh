@@ -5,6 +5,10 @@ source "${SCRIPT_DIR}/common.sh"
 
 CHANGELOG_SKIP_LABEL="${CHANGELOG_SKIP_LABEL:-"changelog-link-check:skip"}"
 
+# Global counter for sentinel (REPLACE_ME) links — set inside check_changelog_file,
+# read in main to distinguish hard (exit 1) vs soft (exit 2) failures.
+_sentinel_errors=0
+
 # Extracts the GitHub org/repo path from a remote URL.
 # Handles SSH (git@github.com:org/repo.git) and HTTPS formats.
 github_repo_path() {
@@ -52,6 +56,10 @@ check_changelog_file() {
         [[ -z "${link}" ]] && continue
         if [[ "${link}" =~ /issues/[0-9]+$ ]]; then
             echo "SKIP: '${link}' (issue link, not required to match PR)"
+        elif [[ "${link}" == *"REPLACE_ME"* ]]; then
+            echo "SENTINEL: '${link}' (placeholder not replaced — auto-fix may have failed)"
+            _sentinel_errors=$((_sentinel_errors + 1))
+            errors=$((errors + 1))
         elif [[ "${link}" != "${expected_pr_link}" ]]; then
             echo "ERROR: unexpected link: '${link}'"
             echo "       expected:         '${expected_pr_link}'"
@@ -180,7 +188,10 @@ main() {
             message+=$'\n\n'"[View Buildkite build](${BUILDKITE_BUILD_URL})"
             notify_changelog_mismatch "${message}" "${BUILDKITE_PULL_REQUEST}"
         fi
-        exit 1
+        if [[ "${_sentinel_errors}" -gt 0 ]]; then
+            exit 1
+        fi
+        exit 2
     fi
 
     echo ""
