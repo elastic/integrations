@@ -1,28 +1,60 @@
 ---
 description: Pipeline for backstage logs
 processors:
-  - json:
+  - rename:
       field: message
-      target_field: json
-      tag: parse_message_json
-      if: ctx.message != null
+      target_field: event.original
+      tag: rename_message_to_event_original
+      ignore_missing: true
+      if: ctx.event?.original == null
       description: >-
-        Parses the raw log line to populate the json scratch field used for the
-        audit dispatch decision below. Non-audit logs pass through with json.* fields intact.
+        Preserves the original log line in event.original.
+        The event.original field is not touched if the document already has one.
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: Removes the raw message once event.original holds the original log line.
   - json:
       field: event.original
       target_field: json
       tag: parse_event_original_json
-      if: ctx.json == null && ctx.event?.original != null
+      if: ctx.event?.original != null
       description: >-
-        Falls back to parsing `event.original` when the agent already moved the raw
-        line there (e.g. via the `preserve_original_event` tag) instead of `message`.
+        Parses the original log line into the json scratch field, used to read
+        isAuditEvent for the audit dispatch below.
   - pipeline:
       name: '{{ IngestPipeline "audit" }}'
       if: ctx.json?.isAuditEvent == true
       tag: execute_audit_pipeline
       description: >-
         Triggers the audit ingest pipeline for messages that contain isAuditEvent: true
+  # The processors below handle Backstage application logs (records without an
+  # isAuditEvent key, i.e. non-audit). Audit logs have already been routed to the
+  # audit pipeline (which removes json), so these only run for records still
+  # carrying the parsed json scratch object.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version_non_audit
+      value: "9.4.0"
+      if: ctx.json != null && ctx.json.isAuditEvent == null
+      description: Sets the ECS version for Backstage application logs.
+  - set:
+      field: event.kind
+      tag: set_event_kind_non_audit
+      value: event
+      if: ctx.json != null && ctx.json.isAuditEvent == null
+      description: Sets event.kind to event for Backstage application logs.
+  - rename:
+      field: json
+      target_field: backstage.log
+      tag: rename_non_audit_json_to_backstage_log
+      ignore_missing: true
+      if: ctx.json != null && ctx.json.isAuditEvent == null
+      description: >-
+        Moves the parsed Backstage application log fields under the backstage.log
+        namespace, retained as keywords without detailed ECS mapping.
 on_failure:
   - append:
       tag: append_pipeline_error_message

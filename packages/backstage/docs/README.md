@@ -19,6 +19,14 @@ The Backstage integration collects audit log events of the following types, depe
 * User and plugin activity: the acting user or service, the plugin and event name, HTTP method and URL, and whether the operation succeeded, failed, or is still in progress.
 * Severity-classified events: each event carries a Backstage-assigned severity level (`low`, `medium`, or `high`), mapped to `event.severity`.
 
+### Log scope
+
+This integration primarily targets Backstage **audit** logs — emitted by the `auditor` service as NDJSON (one JSON object per line) — which are fully normalized to ECS and `backstage.*` fields.
+
+For this initial release and the near term, general Backstage application logs (lines without an `isAuditEvent` key) written to the same file are also retained, but without the field-level detail audit logs receive: the original line is preserved in `event.original` and the parsed fields are kept as keywords under `backstage.log.*`. Customers with immediate needs for these logs are encouraged to configure custom processors or ingest pipelines in the meantime.
+
+Deeper mapping of these logs will be driven by customer requests and observed usage.
+
 ### Supported use cases
 
 Integrating Backstage audit logs with the Elastic Stack lets you:
@@ -71,8 +79,8 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 ### Common configuration issues
 
 - **No events collected**: Confirm the Backstage backend is emitting audit events (not every plugin calls the `auditor` service for every operation) and that the configured **Paths** match the actual log file location.
-- **Multi-line JSON not parsed**: If your Backstage deployment pretty-prints JSON log lines across multiple lines, enable the `multiline` parser under **Parsers**. Otherwise, partial lines are dropped by the pipeline's `isAuditEvent` check.
-- **Events silently dropped**: The ingest pipeline drops any line that doesn't contain an `isAuditEvent` key, so non-audit application logs mixed into the same file are expected to be filtered out.
+- **Multi-line JSON not parsed**: If your Backstage deployment pretty-prints JSON log lines across multiple lines, enable the `multiline` parser under **Parsers**. Otherwise each partial line fails JSON parsing.
+- **Application logs have limited fields**: Lines without an `isAuditEvent` key are retained but only minimally parsed — the original line is kept in `event.original` and the parsed fields land under `backstage.log.*` rather than being mapped to ECS. See [Log scope](#log-scope).
 - **Permission denied reading the log file**: Elastic Agent needs read access to the Backstage audit log file(s). If your environment writes them with restrictive ownership/permissions, deploy Elastic Agent as `root` (or a user with equivalent read access) on that host or container. This is a deployment-time decision, not a setting configurable through this integration.
 
 ## Scaling
@@ -106,7 +114,7 @@ To collect logs via Filestream, select **Collect logs via Filestream** and confi
 
 #### logs
 
-The `logs` data stream provides audit events from Backstage's `auditor` service, including catalog operations, user activity, and other plugin-specific audit events. Non-audit application logs are currently dropped; see [Common configuration issues](#common-configuration-issues).
+The `logs` data stream provides audit events from Backstage's `auditor` service, including catalog operations, user activity, and other plugin-specific audit events. General Backstage application logs (lines without an `isAuditEvent` key) are also retained with minimal parsing — original line in `event.original`, fields under `backstage.log.*` — rather than detailed ECS mapping; see [Log scope](#log-scope).
 
 ##### logs fields
 
@@ -121,6 +129,7 @@ The `logs` data stream provides audit events from Backstage's `auditor` service,
 | backstage.entity.ref | The Backstage catalog entity reference the audit event operated on. | keyword |
 | backstage.entity.refs | The Backstage catalog entity references returned by a batch entity lookup. | keyword |
 | backstage.entity.root_ref | The root entity reference for a Backstage catalog ancestry lookup. | keyword |
+| backstage.log | Fields parsed from Backstage application logs, retained as keywords without detailed ECS mapping. Promoted to ECS / explicit backstage.\* fields as support matures based on customer demand. | object |
 | backstage.meta | Serialized dump of any Backstage plugin metadata that did not match a known, explicitly-mapped field. Intended to be empty for all currently-known event shapes; exists only as a forward-compatible safety net for future Backstage plugin metadata. Well-known keys are promoted to explicit `backstage.\*` fields instead of living here. | text |
 | backstage.query.fields | The entity fields requested by the catalog query. | keyword |
 | backstage.query.filter | The raw catalog query filter condition(s), as Backstage's `key=value` comma-separated filter syntax (e.g. "kind=Resource,spec.type=github-repository"). Stored verbatim rather than parsed into structured sub-fields; there is no confirmed customer need yet for querying/aggregating on individual filter keys. Revisit with structured `backstage.query.filter.\*` sub-fields if that need materializes. | text |
@@ -154,7 +163,6 @@ The `logs` data stream provides audit events from Backstage's `auditor` service,
 | host.os.codename | OS codename, if any. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | input.type | Input type. | keyword |
-| json | Raw parsed fields from non-audit Backstage log lines (records without isAuditEvent). Dynamically mapped as keywords so the data is searchable without a bespoke mapping; audit logs remove this field after processing. | object |
 | log.file.device_id | Device ID of the log file this event came from. | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Path to the log file. | keyword |
