@@ -7,9 +7,8 @@ processors:
       tag: parse_message_json
       if: ctx.message != null
       description: >-
-        Parses the raw log line just enough to read isAuditEvent for the drop/dispatch
-        decision below. Field shaping (ecs.version, event.original, ...) is deferred to
-        the audit pipeline so it isn't wasted on lines this pipeline drops.
+        Parses the raw log line to populate the json scratch field used for the
+        audit dispatch decision below. Non-audit logs pass through with json.* fields intact.
   - json:
       field: event.original
       target_field: json
@@ -18,12 +17,6 @@ processors:
       description: >-
         Falls back to parsing `event.original` when the agent already moved the raw
         line there (e.g. via the `preserve_original_event` tag) instead of `message`.
-  - drop:
-      if: ctx.json?.isAuditEvent == null
-      tag: drop_if_not_audit_event
-      description: >-
-        Drops messages that do not contain the isAuditEvent: true key/value pair
-        Non-audit logs do not contain that key at all and are not currently supported
   - pipeline:
       name: '{{ IngestPipeline "audit" }}'
       if: ctx.json?.isAuditEvent == true

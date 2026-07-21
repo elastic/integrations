@@ -154,6 +154,7 @@ The `logs` data stream provides audit events from Backstage's `auditor` service,
 | host.os.codename | OS codename, if any. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | input.type | Input type. | keyword |
+| json | Raw parsed fields from non-audit Backstage log lines (records without isAuditEvent). Dynamically mapped as keywords so the data is searchable without a bespoke mapping; audit logs remove this field after processing. | object |
 | log.file.device_id | Device ID of the log file this event came from. | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Path to the log file. | keyword |
