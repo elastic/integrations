@@ -41,7 +41,7 @@ program: |
       "Header": {
         "x-apikey": [state.access_token],
         "x-tool": ["Elastic"],
-        "User-Agent": ["v1.0.0"], // Keep this in sync with 'version' in package level manifest.yml.
+        "User-Agent": ["v1.1.2"], // Keep this in sync with 'version' in package level manifest.yml.
       }
     }).do_request().as(resp, resp.StatusCode == 200 ?
       resp.Body.decode_json().as(body, {
@@ -54,6 +54,11 @@ program: |
       ),
       "cursor": {
         "last_timestamp": has(body.?meta.cursor) ? interval.start_time : interval.end_time,
+        // The consecutive-failure count for the current collection window is
+        // reset only when the window completes (no next-page cursor), so that
+        // a window that repeatedly fails part-way through pagination still
+        // reaches the skip threshold below.
+        "fail_count": has(body.?meta.cursor) ? int(state.?cursor.fail_count.orValue(0)) : 0,
       },
       "want_more": has(body.?meta.cursor),
       "next": {
@@ -62,21 +67,83 @@ program: |
       }
       })
     :
-      {
-        "events": {
-          "error": {
-            "code": string(resp.StatusCode),
-            "id": string(resp.Status),
-            "message": "GET " + state.url.trim_right("/") + "/api/v3/ioc_stream?: " + (
-              size(resp.Body) != 0 ?
-                string(resp.Body)
+      (int(state.?cursor.fail_count.orValue(0)) + (resp.StatusCode == 400 ? 1 : 0)).as(fails,
+        ("GET " + state.url.trim_right("/") + "/api/v3/ioc_stream?: " + (
+          size(resp.Body) != 0 ?
+            string(resp.Body)
+          :
+            string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+        )).as(err_msg,
+          resp.StatusCode != 400 ?
+            // Transient errors (5xx, 429, ...) retry the same window on the
+            // next interval. The single error object form marks the input
+            // DEGRADED and suppresses any cursor update, so the window and
+            // the accumulated failure count are retried from the last
+            // persisted cursor. Returning a cursor here would be dead code.
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": err_msg,
+                },
+              },
+              "want_more": false,
+              // Drop any in-flight page cursor so the retry of this window
+              // starts from a fresh first page instead of replaying a stale
+              // pagination cursor against a recomputed filter.
+              "next": {"interval": interval},
+            }
+          :
+            // An HTTP 400 on an unchanged request is deterministic: the API
+            // rejects something inside this collection window itself (for
+            // example, the API rejects any window containing an IOC whose URL
+            // identifier exceeds its internal 500-byte key limit, returning
+            // "Key name strings must be non-empty strings up to 500 bytes"
+            // for every request touching that window). Count consecutive 400s
+            // for the window and, once the threshold is reached, skip past the
+            // window to restore collection. The skip discards every event
+            // dated within [start_time, end_time] that was not already
+            // ingested from pages before the failing one — potentially the
+            // whole window when the first page is what fails — not just the
+            // record the API chokes on; there is no narrower recovery because
+            // the API only filters by date and rejects every request whose
+            // results would include the poisoned record.
+            // Both the retry notices and the final skip are published as error
+            // events (array form) so that the failure counter and, on skip,
+            // the advanced cursor are persisted to the registry across
+            // restarts, and so the failure trail is visible in the data
+            // stream.
+            {
+              "events": [{
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": (
+                    fails >= 3 ?
+                      "skipping collection window " + interval.start_time + " to " + interval.end_time + " after " + string(fails) + " consecutive HTTP 400 responses, remaining events in this window are not collected: "
+                    :
+                      "will retry collection window " + interval.start_time + " to " + interval.end_time + " (consecutive HTTP 400 failure " + string(fails) + " of 3): "
+                  ) + err_msg,
+                },
+              }],
+              "want_more": false,
+              // Drop any in-flight page cursor: it belongs to the failed
+              // window and must not leak into the next request.
+              "next": {"interval": interval},
+              "cursor": fails >= 3 ?
+                {
+                  "last_timestamp": interval.end_time,
+                  "fail_count": 0,
+                }
               :
-                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-            ),
-          },
-        },
-        "want_more": false,
-      }
+                {
+                  "last_timestamp": interval.start_time,
+                  "fail_count": fails,
+                },
+            }
+        )
+      )
     )
   ))
 tags:
