@@ -64,6 +64,12 @@ processors:
      ignore_missing: true
      if: ctx.azure?.signinlogs?.time == null
      description: 'Fallback to handle special cases for log category: use `created_date_time` as `time` if `time` is not already set.'
+  - set:
+      field: azure.signinlogs.time
+      copy_from: azure.signinlogs.properties.created_date_time
+      override: true
+      ignore_empty_value: true
+      description: 'For SignInLogs, `properties.createdDateTime` is the actual sign-in event time; the top-level `time` is a processing timestamp that arrives slightly later. Override `time` so the single date processor below always uses the most accurate value.'
   - date:
       field: azure.signinlogs.time
       # Order is prioritized by observed frequency for this log
@@ -71,7 +77,7 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
