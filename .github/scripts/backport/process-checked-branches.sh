@@ -31,11 +31,13 @@ echo "$ITEMS" | jq -c '.[]' | while IFS= read -r item; do
     continue
   fi
 
-  # Derive the major.minor version from the branch name (e.g. backport-aws-6.14 → 6.14)
-  VERSION=$(echo "$BRANCH" | grep -oP '\d+\.\d+$' || true)
+  # Derive the version suffix from the branch name, mirroring workingBranchName in apply.go:
+  #   strings.TrimPrefix(branchName, "backport-"+pkg+"-")
+  # e.g. backport-aws-6.14 → "6.14", backport-kubernetes-1.x → "1.x"
+  VERSION_SUFFIX="${BRANCH#backport-${PKG}-}"
 
   # Dedup: skip if a working branch for this exact (package, version, sha) already has a PR
-  WORKING_BRANCH="auto-backport/${PKG}-${VERSION}-${SHORT_SHA}"
+  WORKING_BRANCH="auto-backport/${PKG}-${VERSION_SUFFIX}-${SHORT_SHA}"
   EXISTING=$(gh pr list --repo "$REPOSITORY" --head "$WORKING_BRANCH" --state all --json number --jq 'length')
   if [[ "${EXISTING:-0}" -gt 0 ]]; then
     echo "PR already exists for $WORKING_BRANCH — skipping"
