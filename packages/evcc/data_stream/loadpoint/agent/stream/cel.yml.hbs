@@ -1,0 +1,75 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}/api/state
+program: |
+  request("GET", state.url).do_request().as(resp,
+    resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": body.?loadpoints.orValue([]).map(lp, {
+          "site_title": body.?siteTitle.orValue(null),
+          "title": lp.?title.orValue(null),
+          "mode": lp.?mode.orValue(null),
+          "charging": lp.?charging.orValue(null),
+          "connected": lp.?connected.orValue(null),
+          "enabled": lp.?enabled.orValue(null),
+          "connected_duration": lp.?connectedDuration.orValue(null),
+          "charge_power": lp.?chargePower.orValue(null),
+          "charged_energy": lp.?chargedEnergy.orValue(null),
+          "charge_duration": lp.?chargeDuration.orValue(null),
+          "charge_remaining_duration": lp.?chargeRemainingDuration.orValue(null),
+          "charge_remaining_energy": lp.?chargeRemainingEnergy.orValue(null),
+          "effective_limit_soc": lp.?effectiveLimitSoc.orValue(null),
+          "effective_min_current": lp.?effectiveMinCurrent.orValue(null),
+          "effective_max_current": lp.?effectiveMaxCurrent.orValue(null),
+          "charger_status_reason": lp.?chargerStatusReason.orValue(null),
+          "last_24h_energy": lp.?last24hEnergy.orValue(null),
+          "last_7d_energy": lp.?last7dEnergy.orValue(null),
+          "vehicle_name": lp.?vehicleName.orValue(null),
+          "vehicle_soc": lp.?vehicleSoc.orValue(null),
+          "vehicle_range": lp.?vehicleRange.orValue(null),
+        }).map(e, {"message": e.encode_json()}),
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url + ": " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

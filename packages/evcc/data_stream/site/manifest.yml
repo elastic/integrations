@@ -1,0 +1,60 @@
+title: "evcc site metrics"
+type: metrics
+streams:
+  - input: cel
+    title: Collect evcc site metrics
+    description: Collect site-level power, energy, battery, and statistics metrics from the evcc REST API.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: How often the evcc API is polled.
+        required: true
+        show_user: true
+        default: 30s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: The request tracer logs HTTP requests and responses to the agent's local filesystem for debugging. Enabling this compromises security and should only be used for debugging.
+        default: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        required: false
+        show_user: false
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - evcc-site
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        required: false
+        show_user: false
+        description: Processors to apply to events before ingest parsing.
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
