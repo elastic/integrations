@@ -1,10 +1,14 @@
 title: "Prometheus Metrics"
 type: metrics
+# dataset is the default form. this overrides the dataset set on the required input.
+# if not defined, fleet overrides the dataset with the default (package.stream_type)
+dataset: elastic_package_registry.metrics
 streams:
-  - input: prometheus/metrics
+  - package: prometheus_input
     enabled: true
     title: Elastic Package Registry metrics
     description: Collect Prometheus metrics from Elastic Package Registry
+    template_path: stream.yml.hbs
     vars:
       - name: period
         type: text
@@ -50,3 +54,19 @@ streams:
         multi: true
         show_user: false
         default: []
+      - name: metrics_path
+        type: text
+        title: Metrics Path
+        multi: false
+        show_user: false
+        default: /metrics
+        required: true
+      - name: rate_counters
+        type: bool
+        title: Rate Counters
+        description: >
+          Preferred value is false for Elastic Package Registry metrics.
+
+        multi: false
+        show_user: false
+        default: false

@@ -39,7 +39,8 @@ func ParseCheckedBranches(body string) map[string]bool {
 	if !strings.Contains(body, marker) {
 		return checked
 	}
-	for line := range strings.SplitSeq(body, "\n") {
+	// strings.SplitSeq requires go1.23; go.mod pins go1.22 for backport compatibility with older base commits.
+	for _, line := range strings.Split(body, "\n") {
 		if m := checkedLineRe.FindStringSubmatch(strings.TrimRight(line, "\r")); m != nil {
 			checked[m[1]] = true
 		}
@@ -65,11 +66,11 @@ func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
 	fmt.Fprintln(&b, marker)
 	fmt.Fprintln(&b, "## Backport branches")
 	fmt.Fprintln(&b)
-	fmt.Fprintln(&b, "Only branches for packages touched by this PR's current diff are shown.")
+	fmt.Fprintln(&b, "> [!IMPORTANT]")
+	fmt.Fprintln(&b, "> Only branches for packages touched by this PR's current diff are shown.")
+	fmt.Fprintln(&b, "> This comment is updated automatically on each push — manual edits will be overwritten.")
 	fmt.Fprintln(&b)
-	fmt.Fprintln(&b, "Consider backporting this change to the branches listed below.")
-	fmt.Fprintln(&b)
-	fmt.Fprintln(&b, "This comment is updated automatically on each push — manual edits will be overwritten.")
+	fmt.Fprintln(&b, "Active backport branches for the packages touched by this PR:")
 
 	for _, p := range pkgs {
 		if len(p.Branches) == 0 {
