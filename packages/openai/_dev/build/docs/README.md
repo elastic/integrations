@@ -162,18 +162,6 @@ Because each project's peak can fall in a different minute, this sum-of-peaks is
 
 OpenAI enforces rate limits **per project**, so there is no single org-wide throttle boundary to divide against. The rollup therefore presents its limit columns as a **synthetic aggregate** (each project's limit stabilized as the max over the window, then summed across projects) and labels both the limit and utilization columns accordingly (`limit (aggregate)`, `utilization (approx.)`). Use these for relative comparison and trend-spotting across models; the exact throttle distance for any individual project still lives in the per-project panel and the alert.
 
-### Alert
-
-The **[OpenAI] Rate limit headroom low** rule fires when peak 1-minute token usage (TPM) reaches 80% or more of the configured limit for a project and model. It is grouped by `project_id::model` and re-examines the most recent 15-minute window every 5 minutes.
-
-The rule keys on the **peak** minute in that window, so even a single 1-minute spike at or above the threshold is enough to fire it — usage does not have to stay high. Because the 15-minute look-back is three times the 5-minute schedule, one breaching minute stays in view across the three consecutive runs that the `alertDelay` of 3 requires, so it satisfies the delay on its own. The net effect is that the alert fires roughly 10–15 minutes after a breaching minute rather than only on sustained pressure; the delay suppresses an alert from a breach seen on just one or two runs, not from a single high minute.
-
-> **Scope:** this rule tracks **token** utilization (TPM) only. Request-per-minute (RPM) and image-per-minute headroom appear on the dashboard panels but are **not** alerted — a project can approach its RPM or image limit without firing this rule. Use the panels to watch those dimensions.
-
-> **Dependency:** the comparison needs a current limit. If the `rate_limits` stream stops collecting (for example, an expired admin key or a projects-list API error), the limit ages out of the window, every utilization becomes null, and this rule silently stops firing rather than alerting on the gap. If you rely on the alert, also monitor the freshness of `event.dataset: openai.rate_limits`.
-
-To tune the threshold, edit the `WHERE tpm_utilization >= 0.8` line in the rule's ES|QL query.
-
 ## Metrics reference
 
 **ECS Field Reference**
