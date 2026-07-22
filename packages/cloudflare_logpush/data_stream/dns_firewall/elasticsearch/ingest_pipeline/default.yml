@@ -336,17 +336,44 @@ processors:
             tag: append_error_message_510a49ca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: dns.response_code
-      copy_from: cloudflare_logpush.dns_firewall.response.code
-      ignore_empty_value: true
-      tag: set_dns_response_code
-  - set:
-      field: dns.response_code
-      copy_from: cloudflare_logpush.dns_firewall.upstream.response_code
-      ignore_empty_value: true
-      if: ctx.cloudflare_logpush?.dns_firewall?.response?.code == null
-      tag: set_dns_upstream_response_code
+  - script:
+      lang: painless
+      tag: script_map_dns_response_code
+      params:
+        "0": NoError
+        "1": FormErr
+        "2": ServFail
+        "3": NXDomain
+        "4": NotImp
+        "5": Refused
+        "6": YXDomain
+        "7": YXRRSet
+        "8": NXRRSet
+        "9": NotAuth
+        "10": NotZone
+        "11": DSOTYPENI
+        "16": BADVERS
+        "17": BADKEY
+        "18": BADTIME
+        "19": BADMODE
+        "20": BADNAME
+        "21": BADALG
+        "22": BADTRUNC
+        "23": BADCOOKIE
+      source: |
+        ctx.dns = ctx.dns ?: [:];
+        def code1 = ctx.cloudflare_logpush?.dns_firewall?.response?.code;
+        def code2 = ctx.cloudflare_logpush?.dns_firewall?.upstream?.response_code;
+        if (code1 != null && params.containsKey(code1)) {
+          ctx.dns.response_code = params[code1];
+        } else if (code2 != null && params.containsKey(code2)) {
+          ctx.dns.response_code = params[code2];
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_2f5264e2
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Custom fields
   - rename:

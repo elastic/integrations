@@ -20,7 +20,7 @@ This package includes one pre-built Kibana dashboard:
 
 | Name | Description |
 |---|---|
-| [AWS OTel] Lambda | AWS Lambda dashboard for CloudWatch metrics collected by the OpenTelemetry Collector. |
+| [AWS Lambda OTel] Metrics | AWS Lambda dashboard for CloudWatch metrics collected by the OpenTelemetry Collector. |
 
 ## Alerting Rule Templates
 {{alertRuleTemplates}}

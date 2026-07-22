@@ -626,12 +626,6 @@ processors:
       value: '{{{#crowdstrike.id}}}{{{ crowdstrike.id }}}{{{/crowdstrike.id}}}|{{{#crowdstrike.aid}}}{{{ crowdstrike.aid }}}{{{/crowdstrike.aid}}}|{{{#crowdstrike.cid}}}{{{ crowdstrike.cid }}}{{{/crowdstrike.cid}}}'
       override: false
   - set:
-      tag: construct_message_from_event_simpleName_649b7fba
-      field: message
-      copy_from: crowdstrike.event_simpleName
-      override: false
-      ignore_empty_value: true
-  - set:
       tag: set_event_action_from_event_simpleName_0069f759
       field: event.action
       copy_from: crowdstrike.event_simpleName
@@ -1264,11 +1258,6 @@ processors:
 
   # Library fields.
   - set:
-      tag: set_event_action_735cfe72
-      if: ctx._temp?.isDriver == true
-      field: event.action
-      value: load
-  - set:
       tag: set_dll_pe_original_file_name_7a4c66c0
       if: (ctx._temp?.isLibrary == true || ctx._temp?.isDriver == true) && ctx.host?.os?.type == 'windows'
       field: dll.pe.original_file_name
@@ -1416,36 +1405,27 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - script:
-      tag: script_set_event_action_and_type_29345ceb
+      tag: script_set_event_type_29345ceb
       if: ctx.crowdstrike?.RegOperationType != null
       params:
         op_types:
           "1":
-            action: modification
             type: change
           "2":
-            action: deletion
             type: deletion
           "3":
-            action: creation
             type: creation
           "4":
-            action: deletion
             type: deletion
           "5":
-            action: modification
             type: change
           "6":
-            action: load
             type: info
           "7":
-            action: modification
             type: change
           "8":
-            action: open
             type: access
           "9":
-            action: query
             type: access
       source: |-
         def op = params.get('op_types')[ctx.crowdstrike.RegOperationType];
@@ -1453,7 +1433,6 @@ processors:
           ctx.event = ctx.event ?: [:];
           ctx.event.type = [];
           ctx.event.type.add(op.type);
-          ctx.event.action = op.action;
         }
   - script:
       tag: script_set_registry_data_type_e45a255a
@@ -1596,30 +1575,53 @@ processors:
       ignore_empty_value: true
       ignore_failure: true
   - set:
-      tag: set_user_name_e3f940d5
+      tag: set_temp_is_active_directory_event
       if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory')
+      field: _temp.is_active_directory_event
+      value: true
+  - set:
+      tag: set_user_name_e3f940d5
+      if: ctx._temp?.is_active_directory_event == true
       field: user.name
       copy_from: crowdstrike.SourceAccountSamAccountName
       ignore_empty_value: true
   - set:
       tag: set_user_email_4558e3d3
       if: |-
-        ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory') &&
+        ctx._temp?.is_active_directory_event == true &&
         ctx.crowdstrike?.SourceAccountUserName instanceof String && ctx.crowdstrike.SourceAccountUserName.contains('@')
       field: user.email
       copy_from: crowdstrike.SourceAccountUserName
       ignore_empty_value: true
   - set:
       tag: set_user_id_12584d3a
-      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory')
+      if: ctx._temp?.is_active_directory_event == true
       field: user.id
       copy_from: crowdstrike.SourceEndpointAccountObjectSid
       ignore_empty_value: true
   - set:
       tag: set_user_domain_acdd7f9f
-      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory')
+      if: ctx._temp?.is_active_directory_event == true
       field: user.domain
       copy_from: crowdstrike.SourceAccountDomain
+      ignore_empty_value: true
+  - set:
+      tag: set_user_name_0d315d08
+      if: ctx._temp?.is_active_directory_event == true && ctx.user?.name == null
+      field: user.name
+      copy_from: crowdstrike.SamAccountName
+      ignore_empty_value: true
+  - set:
+      tag: set_user_id_0da27179
+      if: ctx._temp?.is_active_directory_event == true && ctx.user?.id == null
+      field: user.id
+      copy_from: crowdstrike.AccountObjectSid
+      ignore_empty_value: true
+  - set:
+      tag: set_user_domain_bc24f2dc
+      if: ctx._temp?.is_active_directory_event == true && ctx.user?.domain == null
+      field: user.domain
+      copy_from: crowdstrike.AccountDomain
       ignore_empty_value: true
   - set:
       tag: set_user_name_d3e6a828
@@ -1991,37 +1993,42 @@ processors:
 
   # DNS fields.
   - set:
+      tag: set_temp_is_dns_request
+      if: ctx.event?.action != null && ctx.event.action.toLowerCase().contains('dnsrequest')
+      field: _temp.is_dns_request
+      value: true
+  - set:
       tag: set_dns_type_2198a4ce
-      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
+      if: ctx._temp?.is_dns_request == true
       field: dns.type
       value: query
   - set:
       tag: set_network_protocol_6995faae
-      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
+      if: ctx._temp?.is_dns_request == true
       field: network.protocol
       value: dns
   - registered_domain:
       tag: registered_domain_crowdstrike_DomainName_into_dns_question_8498515b
-      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
+      if: ctx._temp?.is_dns_request == true
       field: crowdstrike.DomainName
       target_field: dns.question
       ignore_missing: true
   - rename:
       tag: rename_dns_question_domain_to_dns_question_name_699a0f98
-      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
+      if: ctx._temp?.is_dns_request == true
       field: dns.question.domain
       target_field: dns.question.name
       ignore_missing: true
   - rename:
       tag: rename_crowdstrike_DomainName_to_dns_question_name_5cc610bf
-      if: ctx.event?.action != null && ctx.dns?.question?.name == null && ctx.event.action.contains("DnsRequest")
+      if: ctx._temp?.is_dns_request == true && ctx.dns?.question?.name == null
       field: crowdstrike.DomainName
       target_field: dns.question.name
       ignore_missing: true
   - script:
       description: Map decimal DNS request type to its name.
       tag: dns_request_type_to_name_d668973b
-      if: ctx.event?.action != null && ctx.crowdstrike?.RequestType != null && !ctx.crowdstrike.RequestType.isEmpty() && ctx.event.action.contains("DnsRequest")
+      if: ctx._temp?.is_dns_request == true && ctx.crowdstrike?.RequestType != null && !ctx.crowdstrike.RequestType.isEmpty()
       params:
         "1": A
         "2": NS
@@ -2255,11 +2262,6 @@ processors:
       field: file.hash.sha256
       copy_from: crowdstrike.SHA256HashData
       ignore_empty_value: true
-  - set:
-      tag: set_event_action_526984f8
-      if: ctx.event?.action != null && ctx.event.action.endsWith('Written') && ctx.host?.os?.type == 'windows'
-      field: event.action
-      value: creation
 
   # Device Fields.
   - set:
@@ -2395,6 +2397,11 @@ processors:
   - split:
       tag: split_crowdstrike_GrandparentProcessPatternIdList_f5f8d60e
       field: crowdstrike.GrandparentProcessPatternIdList
+      separator: ','
+      ignore_missing: true
+  - split:
+      tag: split_crowdstrike_SessionPatternIdList_526a5d25
+      field: crowdstrike.SessionPatternIdList
       separator: ','
       ignore_missing: true
   - script:

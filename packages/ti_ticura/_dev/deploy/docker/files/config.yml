@@ -1,13 +1,30 @@
 rules:
+  # Each feed is served in TWO steps, matching the Ticura API contract:
+  #   1. GET <feed>?targetFormat=ECSV1&mode=url  -> 200 {"downloadUrl": "<blob URL>"}
+  #   2. GET <blob URL>                          -> 200 application/x-ndjson (the feed)
+  # The integration's CEL program resolves the URL in step 1 and downloads the
+  # feed directly in step 2 (no redirect). {{ hostname }}:{{ env "PORT" }}
+  # resolve to this mock's address so the agent can reach the blob path.
+
   # ── Standard feed (10 indicators, all IOC types) ─────────────────────────
   # Used by: test-default-config.yml, test-tracer-config.yml,
-  #          test-preserve-original-config.yml
+  #          test-preserve-original-config.yml, test-fields-config.yml
   - path: /v1/feeds/download/full
     methods: ["GET"]
     query_params:
       targetFormat: "ECSV1"
+      mode: "url"
     request_headers:
       x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"downloadUrl": "http://{{ hostname }}:{{ env "PORT" }}/v1/feeds/download/blob"}
+  - path: /v1/feeds/download/blob
+    methods: ["GET"]
     responses:
       - status_code: 200
         headers:
@@ -23,8 +40,18 @@ rules:
     methods: ["GET"]
     query_params:
       targetFormat: "ECSV1"
+      mode: "url"
     request_headers:
       x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"downloadUrl": "http://{{ hostname }}:{{ env "PORT" }}/v1/feeds/expired/blob"}
+  - path: /v1/feeds/expired/blob
+    methods: ["GET"]
     responses:
       - status_code: 200
         headers:
@@ -40,8 +67,18 @@ rules:
     methods: ["GET"]
     query_params:
       targetFormat: "ECSV1"
+      mode: "url"
     request_headers:
       x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"downloadUrl": "http://{{ hostname }}:{{ env "PORT" }}/v1/feeds/malformed/blob"}
+  - path: /v1/feeds/malformed/blob
+    methods: ["GET"]
     responses:
       - status_code: 200
         headers:
@@ -60,8 +97,18 @@ rules:
     methods: ["GET"]
     query_params:
       targetFormat: "ECSV1"
+      mode: "url"
     request_headers:
       x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"downloadUrl": "http://{{ hostname }}:{{ env "PORT" }}/v1/feeds/update/blob"}
+  - path: /v1/feeds/update/blob
+    methods: ["GET"]
     responses:
       - status_code: 200
         headers:

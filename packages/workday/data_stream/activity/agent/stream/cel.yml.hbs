@@ -42,7 +42,9 @@ program: |-
     state.url.trim_right("/").as(base_url,
       state.with(
         (
-          (state.?cursor.access_token.orValue("") == "") ?
+          (!has(state.?cursor.access_token) ||
+           !has(state.?cursor.token_expiry) ||
+           timestamp(state.cursor.token_expiry) < now - duration("30s")) ?
             post_request(
               state.token_url,
               "application/x-www-form-urlencoded",
@@ -58,6 +60,17 @@ program: |-
                   {
                     "ok": true,
                     "access_token": ao.access_token,
+                    // Workday's "Enforce 60 Minute Access Token Expiry"
+                    // is a server-side admin setting. When disabled, the
+                    // token endpoint returns expires_in:-1 and tokens are
+                    // "valid for several hours". Default to 60m in that
+                    // case. This is conservative but well within the actual
+                    // lifetime.
+                    "token_expiry":
+                      (!has(ao.expires_in) || int(ao.expires_in) < 0) ?
+                        (now + duration("3540s")).format(time_layout.RFC3339)
+                      :
+                        (now + duration(string(int(ao.expires_in) - 60) + "s")).format(time_layout.RFC3339),
                   }
                 )
               :
@@ -72,6 +85,7 @@ program: |-
             {
               "ok": true,
               "access_token": state.cursor.access_token,
+              "token_expiry": state.cursor.token_expiry,
             }
         ).as(tok,
           !tok.ok ?
@@ -116,6 +130,7 @@ program: |-
                         "want_more": has_more,
                         "cursor": {
                           "access_token": tok.access_token,
+                          "token_expiry": tok.token_expiry,
                           ?"max_ingested_time": has_more ?
                             (
                               has(state.?cursor.max_ingested_time) ?
@@ -152,11 +167,11 @@ program: |-
                     "error": {
                       "code": string(resp.StatusCode),
                       "id": resp.Status,
-                      "message": "GET " + base_url + "/activityLogging: token expired, retrying",
+                      "message": "GET " + base_url + "/activityLogging: token expired",
                     },
                   },
-                  "want_more": true,
-                  "offset": state.offset,
+                  "want_more": false,
+                  "offset": 0,
                 }
               :
                 {

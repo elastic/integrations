@@ -1,0 +1,1248 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies prompts sent to an Amazon Bedrock AgentCore runtime that attempt to harvest credentials or coerce the agent into exfiltrating data. The runtime application logs capture the caller-supplied prompt; this rule flags prompts that reference the cloud instance metadata service (169.254.169.254, the ECS task metadata address, or the \"latest/meta-data\" / \"security-credentials\" paths), prompts that name AWS access or secret keys directly, and prompt-injection or jailbreak language (\"ignore previous instructions\", \"developer mode\", \"do anything now\") combined with intent to reveal secrets, system prompts, or send data to an external endpoint. Asking an agent to read instance metadata credentials or to exfiltrate secrets is rarely legitimate and indicates an attempt to weaponize the agent for credential theft, even when the model refuses the request.",
+        "false_positives": [
+            "Security testing, red-team exercises, or guardrail validation may intentionally send prompt-injection or credential-harvesting payloads to an agent. Confirm the source session and caller, and exclude approved testing identities after validation.",
+            "Developer or documentation content that legitimately discusses the instance metadata service or AWS key formats could match. Review the prompt in \"aws.bedrock_agentcore.request_payload.prompt\" to confirm intent."
+        ],
+        "from": "now-30m",
+        "interval": "10m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS Bedrock AgentCore Runtime Prompt Targeting Credentials or Instance Metadata",
+        "note": "## Triage and analysis\n\n### Investigating AWS Bedrock AgentCore Runtime Prompt Targeting Credentials or Instance Metadata\n\nAmazon Bedrock AgentCore runtimes execute agents that can call tools, run code, and reach network resources. A prompt that instructs the agent to read the cloud instance metadata service, return AWS credentials, or send data to an external endpoint is an attempt to turn the agent into a confused deputy for credential theft and exfiltration. The agent may refuse, but the attempt itself is a strong indicator of targeting; a more capable or misconfigured agent (one with code execution or outbound network access) could comply.\n\nThis rule inspects the caller-supplied prompt recorded in the AgentCore runtime application logs and fires on instance-metadata or credential-endpoint references, explicit AWS key references, or jailbreak/override language paired with secret-extraction or exfiltration intent.\n\n### Possible investigation steps\n\n- Review the full prompt in \"aws.bedrock_agentcore.request_payload.prompt\" to determine whether it targets instance metadata, names credentials, or attempts a jailbreak with exfiltration intent.\n- Identify the agent in \"aws.bedrock_agentcore.agent_name\"/\"aws.bedrock_agentcore.resource_arn\" and the session in \"aws.bedrock_agentcore.session_id\"; pivot on the session for the surrounding prompts in the same conversation.\n- Determine the caller path to the runtime (front-end application, gateway, or direct InvokeAgentRuntime) and whether the source is expected.\n- Assess the agent's capabilities: whether it has code execution, outbound network access, or tools that could fetch metadata or reach external endpoints, which raises the impact if the agent had complied.\n- Correlate with the execution role's activity in CloudTrail for any credential use outside the runtime around the same time.\n\n### False positive analysis\n\n- Security testing and guardrail validation can deliberately send these payloads. Confirm the caller and exclude approved testing identities after validation.\n- Content that legitimately discusses the metadata service or AWS key formats can match; review the prompt to confirm intent.\n\n### Response and remediation\n\n- If the activity is unauthorized, identify the source application or identity driving the prompts and block it; review the conversation session for related attempts.\n- Verify the agent did not return credentials or reach the metadata service; if the agent has code execution, ensure the instance metadata service requires session tokens (IMDSv2) and that the execution role is least privilege.\n- Add or tune AgentCore guardrails to block instance-metadata and credential-exfiltration prompts, and monitor the agent's execution role for use outside the runtime.\n",
+        "query": "from logs-aws_bedrock_agentcore.runtime_application_logs-* metadata _id, _version, _index\n| eval Esql_priv.aws_bedrock_agentcore_request_payload_prompt_lower = to_lower(aws.bedrock_agentcore.request_payload.prompt)\n| where aws.bedrock_agentcore.operation == \"InvokeAgentRuntime\" and (\n    Esql_priv.aws_bedrock_agentcore_request_payload_prompt_lower rlike \"\"\".*(169\\.254\\.169\\.254|169\\.254\\.170\\.2|/latest/meta-data|/latest/api/token|security-credentials).*\"\"\"\n    or Esql_priv.aws_bedrock_agentcore_request_payload_prompt_lower rlike \"\"\".*(aws_secret_access_key|aws_access_key_id|secret access key|access key id).*\"\"\"\n    or (\n        Esql_priv.aws_bedrock_agentcore_request_payload_prompt_lower rlike \"\"\".*(ignore (all )?(your )?(previous|prior|above) instructions|disregard (your |the )?(previous |above )?instructions|developer mode|do anything now|jailbreak).*\"\"\"\n        and Esql_priv.aws_bedrock_agentcore_request_payload_prompt_lower rlike \"\"\".*(system prompt|reveal|exfiltrate|credential|secret|password|api key|token|send .* to https?://).*\"\"\"\n    )\n  )\n| keep _id, _version, _index, @timestamp, aws.*, cloud.*, event.*\n",
+        "references": [
+            "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability.html",
+            "https://unit42.paloaltonetworks.com/bypass-of-aws-sandbox-network-isolation-mode/"
+        ],
+        "related_integrations": [
+            {
+                "package": "aws_bedrock_agentcore",
+                "version": ">=0.0.1"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.agent_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.conversation_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.endpoint_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.operation",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.operation_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.prompt",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.prompt_hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.provider_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.request_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.request_payload.actor_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.request_payload.prompt",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.request_payload_object",
+                "type": "unsupported"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.resource_arn",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.response_payload_object",
+                "type": "unsupported"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.service_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.session_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.bedrock_agentcore.severity_number",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudwatch.message",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.account.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.account.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.availability_zone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.attributes.known_redirects",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.attributes.managed",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.attributes.mfa_enabled",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.attributes.oauth_consent_restriction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.attributes.permissions",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.attributes.storage_class",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.last_seen_timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.lifecycle.last_activity",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.administers.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.depends_on.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.owns.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.relationships.supervises.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.source",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.sub_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.entity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "cloud.image.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.instance.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.instance.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.machine.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.account.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.account.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.availability_zone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.attributes.known_redirects",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.attributes.managed",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.attributes.mfa_enabled",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.attributes.oauth_consent_restriction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.attributes.permissions",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.attributes.storage_class",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.last_seen_timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.lifecycle.last_activity",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.administers.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.depends_on.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.owns.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.relationships.supervises.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.source",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.sub_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.entity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.instance.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.instance.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.machine.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.project.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.project.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.region",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.origin.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.project.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.project.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.region",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.account.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.account.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.availability_zone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.attributes.known_redirects",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.attributes.managed",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.attributes.mfa_enabled",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.attributes.oauth_consent_restriction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.attributes.permissions",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.attributes.storage_class",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.last_seen_timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.lifecycle.last_activity",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.administers.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.depends_on.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.owns.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.entity.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.service.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.relationships.supervises.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.source",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.sub_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.entity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.instance.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.instance.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.machine.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.project.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.project.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.region",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.target.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.agent_id_status",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.created",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.duration",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.end",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.ingested",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.original",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.reason",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.risk_score",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "event.risk_score_norm",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "event.sequence",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.severity",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.timezone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.url",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "9c2f1d6a-4e8b-4c7a-9f3d-2b6e1a0c5d44",
+        "setup": "This rule requires Amazon Bedrock AgentCore runtime application logs collected via the Elastic AWS Bedrock AgentCore integration (observability logs delivered to S3 and ingested into the aws_bedrock_agentcore.runtime_application_logs dataset). See https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability.html for enabling AgentCore observability.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: Amazon Bedrock",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.005",
+                                "name": "Cloud Instance Metadata API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "9c2f1d6a-4e8b-4c7a-9f3d-2b6e1a0c5d44_1",
+    "type": "security-rule"
+}

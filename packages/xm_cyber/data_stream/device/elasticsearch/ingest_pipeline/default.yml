@@ -1,0 +1,692 @@
+---
+description: Pipeline for processing XM Cyber device inventory events.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 9.4.0
+  - terminate:
+      description: Error message set and no data to process.
+      tag: terminate_data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+
+  # drop CEL token-refresh placeholder before JSON parsing
+  - drop:
+      description: Drop the CEL token-refresh placeholder event before JSON parsing.
+      tag: drop_cel_retry_placeholder
+      if: ctx.message instanceof String && ctx.message == 'retry'
+
+  # remove agentless metadata
+  - remove:
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+
+  # parse the event JSON
+  - rename:
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - remove:
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      tag: remove_message
+      if: ctx.event?.original != null
+      field: message
+      ignore_missing: true
+  - json:
+      tag: json_event_original_into_xm_cyber_device
+      field: event.original
+      target_field: xm_cyber.device
+      if: ctx.event?.original != null
+
+  # ----- event.kind / event.category / event.type (ECS-oriented; detailed ECS host.* mapping deferred) -----
+  - set:
+      tag: set_event_kind_event
+      field: event.kind
+      value: event
+  - append:
+      tag: append_event_category_host
+      field: event.category
+      value: host
+  - append:
+      tag: append_event_type_info
+      field: event.type
+      value: info
+  - script:
+      description: >
+        Convert field names from camelCase to snake_case recursively under xm_cyber.device (including nested apps and active_cves_safe_version entries).
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      source: |-
+        String camelToSnake(String str) {
+            def result = "";
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (Character.isUpperCase(c)) {
+                    if (i > 0 && Character.isLowerCase(str.charAt(i - 1))) {
+                        result += "_";
+                    }
+                    result += Character.toLowerCase(c);
+                } else {
+                    result += c;
+                }
+            }
+            return result;
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              String newKey = camelToSnake(entry.getKey());
+              newObj[newKey] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        if (ctx.xm_cyber?.device != null) {
+          ctx.xm_cyber.device = convertToSnakeCase(ctx.xm_cyber.device);
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_script_camel_to_snake
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ----- _id fingerprint from device_id (after snake_case normalization) -----
+  - fingerprint:
+      tag: fingerprint_with_device_id
+      fields:
+        - xm_cyber.device.device_id
+      target_field: _id
+      ignore_missing: true
+
+  # ----- Date fields (ISO8601) -----
+  - date:
+      tag: date_last_scan
+      field: xm_cyber.device.last_scan
+      target_field: xm_cyber.device.last_scan
+      formats:
+        - ISO8601
+      if: ctx.xm_cyber?.device?.last_scan != null && ctx.xm_cyber.device.last_scan != ''
+      on_failure:
+        - remove:
+            tag: remove_last_scan_on_failure
+            field: xm_cyber.device.last_scan
+            ignore_missing: true
+        - append:
+            tag: append_error_message_last_scan
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_last_compromised
+      field: xm_cyber.device.last_compromised
+      target_field: xm_cyber.device.last_compromised
+      formats:
+        - ISO8601
+      if: ctx.xm_cyber?.device?.last_compromised != null && ctx.xm_cyber.device.last_compromised != ''
+      on_failure:
+        - remove:
+            tag: remove_last_compromised_on_failure
+            field: xm_cyber.device.last_compromised
+            ignore_missing: true
+        - append:
+            tag: append_error_message_last_compromised
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ----- Convert: long (top-level) -----
+  - convert:
+      tag: convert_choke_point_score_long
+      field: xm_cyber.device.choke_point_score
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.choke_point_score != ''
+      on_failure:
+        - remove:
+            tag: remove_choke_point_score_on_failure
+            field: xm_cyber.device.choke_point_score
+            ignore_missing: true
+        - append:
+            tag: append_error_message_choke_point_score
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_critical_vulnerabilities_long
+      field: xm_cyber.device.critical_vulnerabilities
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.critical_vulnerabilities != ''
+      on_failure:
+        - remove:
+            tag: remove_critical_vulnerabilities_on_failure
+            field: xm_cyber.device.critical_vulnerabilities
+            ignore_missing: true
+        - append:
+            tag: append_error_message_critical_vulnerabilities
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_high_vulnerabilities_long
+      field: xm_cyber.device.high_vulnerabilities
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.high_vulnerabilities != ''
+      on_failure:
+        - remove:
+            tag: remove_high_vulnerabilities_on_failure
+            field: xm_cyber.device.high_vulnerabilities
+            ignore_missing: true
+        - append:
+            tag: append_error_message_high_vulnerabilities
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_medium_vulnerabilities_long
+      field: xm_cyber.device.medium_vulnerabilities
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.medium_vulnerabilities != ''
+      on_failure:
+        - remove:
+            tag: remove_medium_vulnerabilities_on_failure
+            field: xm_cyber.device.medium_vulnerabilities
+            ignore_missing: true
+        - append:
+            tag: append_error_message_medium_vulnerabilities
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_low_vulnerabilities_long
+      field: xm_cyber.device.low_vulnerabilities
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.low_vulnerabilities != ''
+      on_failure:
+        - remove:
+            tag: remove_low_vulnerabilities_on_failure
+            field: xm_cyber.device.low_vulnerabilities
+            ignore_missing: true
+        - append:
+            tag: append_error_message_low_vulnerabilities
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_unknown_vulnerabilities_long
+      field: xm_cyber.device.unknown_vulnerabilities
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.unknown_vulnerabilities != ''
+      on_failure:
+        - remove:
+            tag: remove_unknown_vulnerabilities_on_failure
+            field: xm_cyber.device.unknown_vulnerabilities
+            ignore_missing: true
+        - append:
+            tag: append_error_message_unknown_vulnerabilities
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_enitity_vulnerabilities_long
+      field: xm_cyber.device.enitity_vulnerabilities
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.enitity_vulnerabilities != ''
+      on_failure:
+        - remove:
+            tag: remove_enitity_vulnerabilities_on_failure
+            field: xm_cyber.device.enitity_vulnerabilities
+            ignore_missing: true
+        - append:
+            tag: append_error_message_enitity_vulnerabilities
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_affected_entities_long
+      field: xm_cyber.device.affected_entities
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.affected_entities != ''
+      on_failure:
+        - remove:
+            tag: remove_affected_entities_on_failure
+            field: xm_cyber.device.affected_entities
+            ignore_missing: true
+        - append:
+            tag: append_error_message_affected_entities
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_critical_assets_at_risk_long
+      field: xm_cyber.device.critical_assets_at_risk
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.critical_assets_at_risk != ''
+      on_failure:
+        - remove:
+            tag: remove_critical_assets_at_risk_on_failure
+            field: xm_cyber.device.critical_assets_at_risk
+            ignore_missing: true
+        - append:
+            tag: append_error_message_critical_assets_at_risk
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_risk_score_long
+      field: xm_cyber.device.risk_score
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.risk_score != ''
+      on_failure:
+        - remove:
+            tag: remove_risk_score_on_failure
+            field: xm_cyber.device.risk_score
+            ignore_missing: true
+        - append:
+            tag: append_error_message_risk_score
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_products_long
+      field: xm_cyber.device.products
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.products != ''
+      on_failure:
+        - remove:
+            tag: remove_products_on_failure
+            field: xm_cyber.device.products
+            ignore_missing: true
+        - append:
+            tag: append_error_message_products
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ----- Convert: double (max CVSS) -----
+  - convert:
+      tag: convert_max_cvss_v2_double
+      field: xm_cyber.device.max_cvss_v2
+      type: double
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.max_cvss_v2 != ''
+      on_failure:
+        - remove:
+            tag: remove_max_cvss_v2_on_failure
+            field: xm_cyber.device.max_cvss_v2
+            ignore_missing: true
+        - append:
+            tag: append_error_message_max_cvss_v2
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_max_cvss_v3_double
+      field: xm_cyber.device.max_cvss_v3
+      type: double
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.max_cvss_v3 != ''
+      on_failure:
+        - remove:
+            tag: remove_max_cvss_v3_on_failure
+            field: xm_cyber.device.max_cvss_v3
+            ignore_missing: true
+        - append:
+            tag: append_error_message_max_cvss_v3
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_max_cvss_v31_double
+      field: xm_cyber.device.max_cvss_v31
+      type: double
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.max_cvss_v31 != ''
+      on_failure:
+        - remove:
+            tag: remove_max_cvss_v31_on_failure
+            field: xm_cyber.device.max_cvss_v31
+            ignore_missing: true
+        - append:
+            tag: append_error_message_max_cvss_v31
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_max_cvss_v4_double
+      field: xm_cyber.device.max_cvss_v4
+      type: double
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.max_cvss_v4 != ''
+      on_failure:
+        - remove:
+            tag: remove_max_cvss_v4_on_failure
+            field: xm_cyber.device.max_cvss_v4
+            ignore_missing: true
+        - append:
+            tag: append_error_message_max_cvss_v4
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ----- Convert: boolean -----
+  - convert:
+      tag: convert_is_choke_point_boolean
+      field: xm_cyber.device.is_choke_point
+      type: boolean
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.is_choke_point != ''
+      on_failure:
+        - remove:
+            tag: remove_is_choke_point_on_failure
+            field: xm_cyber.device.is_choke_point
+            ignore_missing: true
+        - append:
+            tag: append_error_message_is_choke_point
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_is_critical_asset_boolean
+      field: xm_cyber.device.is_critical_asset
+      type: boolean
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.is_critical_asset != ''
+      on_failure:
+        - remove:
+            tag: remove_is_critical_asset_on_failure
+            field: xm_cyber.device.is_critical_asset
+            ignore_missing: true
+        - append:
+            tag: append_error_message_is_critical_asset
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ----- ECS vulnerability.* (device aggregate max CVSS; not a single CVE record) -----
+  # Priority matches per-CVE pipeline: max_cvss_v4 > max_cvss_v31 > max_cvss_v3 > max_cvss_v2
+  - set:
+      tag: set_vulnerability_score_base_from_max_cvss_v4
+      field: vulnerability.score.base
+      copy_from: xm_cyber.device.max_cvss_v4
+      ignore_empty_value: true
+  - set:
+      tag: set_vulnerability_score_version_from_max_cvss_v4
+      field: vulnerability.score.version
+      value: '4.0'
+      if: ctx.xm_cyber?.device?.max_cvss_v4 != null
+  - set:
+      tag: set_vulnerability_score_base_from_max_cvss_v31
+      field: vulnerability.score.base
+      copy_from: xm_cyber.device.max_cvss_v31
+      ignore_empty_value: true
+      if: ctx.vulnerability?.score?.base == null
+  - set:
+      tag: set_vulnerability_score_version_from_max_cvss_v31
+      field: vulnerability.score.version
+      value: '3.1'
+      if: ctx.vulnerability?.score?.version == null && ctx.xm_cyber?.device?.max_cvss_v31 != null
+  - set:
+      tag: set_vulnerability_score_base_from_max_cvss_v3
+      field: vulnerability.score.base
+      copy_from: xm_cyber.device.max_cvss_v3
+      ignore_empty_value: true
+      if: ctx.vulnerability?.score?.base == null
+  - set:
+      tag: set_vulnerability_score_version_from_max_cvss_v3
+      field: vulnerability.score.version
+      value: '3.0'
+      if: ctx.vulnerability?.score?.version == null && ctx.xm_cyber?.device?.max_cvss_v3 != null
+  - set:
+      tag: set_vulnerability_score_base_from_max_cvss_v2
+      field: vulnerability.score.base
+      copy_from: xm_cyber.device.max_cvss_v2
+      ignore_empty_value: true
+      if: ctx.vulnerability?.score?.base == null
+  - set:
+      tag: set_vulnerability_score_version_from_max_cvss_v2
+      field: vulnerability.score.version
+      value: '2.0'
+      if: ctx.vulnerability?.score?.version == null && ctx.xm_cyber?.device?.max_cvss_v2 != null
+  - set:
+      tag: set_vulnerability_classification_cvss
+      field: vulnerability.classification
+      value: CVSS
+      if: ctx.vulnerability?.score?.base != null
+  - script:
+      tag: script_vulnerability_id_from_active_cves
+      lang: painless
+      description: Collect unique CVE identifiers from every apps[].active_cves list into vulnerability.id and record the identifier scheme in vulnerability.enumeration.
+      if: ctx.xm_cyber?.device?.apps instanceof List
+      source: |-
+        def cves = new TreeSet();
+        for (def app : ctx.xm_cyber.device.apps) {
+          if (app instanceof Map && app.active_cves instanceof List) {
+            for (def cve : app.active_cves) {
+              if (cve != null && cve != '') {
+                cves.add(cve);
+              }
+            }
+          }
+        }
+        if (!cves.isEmpty()) {
+          if (ctx.vulnerability == null) {
+            ctx.vulnerability = new HashMap();
+          }
+          ctx.vulnerability.id = new ArrayList(cves);
+          ctx.vulnerability.enumeration = 'CVE';
+        }
+
+  # ----- ECS host.* / device.* (inventory; device.* is beta per ECS) -----
+  - set:
+      tag: set_host_name_from_fqdn
+      field: host.name
+      copy_from: xm_cyber.device.fqdn
+      ignore_empty_value: true
+  - set:
+      tag: set_host_hostname_from_device_name
+      field: host.hostname
+      copy_from: xm_cyber.device.device_name
+      ignore_empty_value: true
+  - set:
+      tag: set_host_id_from_device_id
+      field: host.id
+      copy_from: xm_cyber.device.device_id
+      ignore_empty_value: true
+  - set:
+      tag: set_host_domain_from_domain
+      field: host.domain
+      copy_from: xm_cyber.device.domain
+      ignore_empty_value: true
+  - set:
+      tag: set_host_os_full_from_os
+      field: host.os.full
+      copy_from: xm_cyber.device.os
+      ignore_empty_value: true
+  - set:
+      tag: set_host_type_from_device_type
+      field: host.type
+      copy_from: xm_cyber.device.device_type
+      ignore_empty_value: true
+  - convert:
+      tag: convert_ip_address_to_ip
+      field: xm_cyber.device.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.xm_cyber?.device?.ip_address != ''
+      on_failure:
+        - remove:
+            field: xm_cyber.device.ip_address
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      tag: append_host_ip_from_ip_address
+      field: host.ip
+      value: '{{{xm_cyber.device.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.xm_cyber?.device?.ip_address != null && ctx.xm_cyber.device.ip_address != ''
+  - append:
+      tag: append_related_ip_from_ip_address
+      field: related.ip
+      value: '{{{xm_cyber.device.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.xm_cyber?.device?.ip_address != null && ctx.xm_cyber.device.ip_address != ''
+  - set:
+      tag: set_device_id_from_device_id
+      field: device.id
+      copy_from: xm_cyber.device.device_id
+      ignore_empty_value: true
+  - set:
+      tag: set_device_type_from_device_type
+      field: device.type
+      copy_from: xm_cyber.device.device_type
+      ignore_empty_value: true
+
+  # ----- @timestamp from last_scan -----
+  - set:
+      tag: set_at_timestamp_from_last_scan
+      field: '@timestamp'
+      copy_from: xm_cyber.device.last_scan
+      ignore_empty_value: true
+
+  # ----- apps[]: normalize numeric counters (choke_point_found_on stays keyword per fields.yml) -----
+  - foreach:
+      tag: foreach_apps_device_found_on_long
+      field: xm_cyber.device.apps
+      if: ctx.xm_cyber?.device?.apps instanceof List
+      processor:
+        convert:
+          field: _ingest._value.device_found_on
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.device_found_on
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_apps_affected_critical_assets_long
+      field: xm_cyber.device.apps
+      if: ctx.xm_cyber?.device?.apps instanceof List
+      processor:
+        convert:
+          field: _ingest._value.affected_critical_assets
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.affected_critical_assets
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_apps_products_critical_assets_at_risk_long
+      field: xm_cyber.device.apps
+      if: ctx.xm_cyber?.device?.apps instanceof List
+      processor:
+        convert:
+          field: _ingest._value.products_critical_assets_at_risk
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.products_critical_assets_at_risk
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_apps_product_vulnerabilities_long
+      field: xm_cyber.device.apps
+      if: ctx.xm_cyber?.device?.apps instanceof List
+      processor:
+        convert:
+          field: _ingest._value.product_vulnerabilities
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.product_vulnerabilities
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ----- Remove duplicate vendor fields that have been mapped to ECS -----
+  - remove:
+      description: Remove vendor-specific fields that are duplicated to ECS.
+      tag: remove_fields_mapped_to_ecs
+      ignore_missing: true
+      field:
+        - xm_cyber.device.device_id
+        - xm_cyber.device.device_name
+        - xm_cyber.device.fqdn
+        - xm_cyber.device.domain
+        - xm_cyber.device.os
+        - xm_cyber.device.device_type
+        - xm_cyber.device.ip_address
+        - xm_cyber.device.last_scan
+
+  # ----- Drop null/empty leaf values from the document -----
+  - script:
+      tag: script_to_drop_null_values
+      description: Drop null/empty leaf values from the document.
+      lang: painless
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - append:
+      tag: append_preserve_on_collector_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: pipeline_on_failure_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: pipeline_on_failure_preserve_original
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -24,13 +24,15 @@ source:
         - exists:
             field: error.message
 dest:
-  index: "logs-ti_google_threat_intelligence_latest.dest_ip_ioc-1"
+  index: "logs-ti_google_threat_intelligence_latest.dest_ip_ioc-2"
   pipeline: '{{ ingestPipelineName "ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline" }}'
   aliases:
     - alias: "logs-ti_google_threat_intelligence_latest.ip_ioc"
       move_on_creation: true
 latest:
   unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
     - event.dataset
     - threat.indicator.ip
   sort: "@timestamp"
@@ -55,7 +57,7 @@ _meta:
   managed: false
   # Bump this version to delete, reinstall, and restart the transform during
   # package installation.
-  fleet_transform_version: 0.8.0
+  fleet_transform_version: 0.9.0
   # We are currently using multiple source indices in this transform because system tests do not support
   # executing queries defined within the transform. This causes test failures, so we've raised the issue here:
   # https://github.com/elastic/elastic-package/issues/2676
