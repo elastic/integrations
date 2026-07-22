@@ -13,7 +13,7 @@ inputs:
           program: |
             request("GET",
               state.url.trim_right("/") + "/web/api/v2.1/application-management/risks?" + {
-                ?"cursor": state.?next.page.optMap(v, [v]),
+                ?"cursor": state.?cursor.next.page.optMap(v, [v]),
                 ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
                 "limit": [string(state.batch_size)],
               }.format_query()
@@ -29,8 +29,10 @@ inputs:
                 "api_token": state.api_token,
                 "batch_size": state.batch_size,
                 ?"site_ids": state.?site_ids,
-                "next": {
-                  ?"page": body.?pagination.?nextCursor.orValue(null) != null ? optional.of(body.pagination.nextCursor) : optional.none(),
+                "cursor": {
+                  "next": {
+                    ?"page": body.?pagination.?nextCursor.orValue(null) != null ? optional.of(body.pagination.nextCursor) : optional.none(),
+                  },
                 },
                 "want_more": body.?pagination.?nextCursor.orValue(null) != null,
               })
@@ -49,6 +51,7 @@ inputs:
                   },
                 },
                 "want_more": false,
+                "cursor": {},
                 "api_token": state.api_token,
                 "batch_size": state.batch_size,
                 ?"site_ids": state.?site_ids,

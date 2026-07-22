@@ -1,8 +1,8 @@
-# Custom Kafka Integration
+# Kafka Log Consumer
 
 ## Overview
 
-The Custom Kafka integration is an **input** package for Elastic Agent. It runs the Filebeat **Kafka** input so agents can **consume** records from Apache Kafka topics and ship them to Elasticsearch. Use it when applications or pipelines already publish logs or events to Kafka and you want Elastic to read from those topics without an intermediate forwarder.
+The Kafka Log Consumer is an **input** package for Elastic Agent. It runs the Filebeat **Kafka** input so agents can **consume** records from Apache Kafka topics and ship them to Elasticsearch. Use it when applications or pipelines already publish logs or events to Kafka and you want Elastic to read from those topics without an intermediate forwarder.
 
 ### Compatibility
 
@@ -55,8 +55,8 @@ Elastic Agent runs the Kafka input and forwards events to Elasticsearch. Install
 ### Set up steps in Kibana
 
 1. Go to **Management → Integrations**.
-2. Search for **Custom Kafka Logs** and open it.
-3. Click **Add Custom Kafka Logs** (or add the integration to an existing policy).
+2. Search for **Kafka Log Consumer** and open it.
+3. Click **Add Kafka Log Consumer** (or add the integration to an existing policy).
 4. Configure the main options:
    - **Hosts**: Bootstrap servers for the Kafka cluster.
    - **Topics**: Topics to subscribe to.

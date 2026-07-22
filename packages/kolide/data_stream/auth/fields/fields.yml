@@ -1,0 +1,47 @@
+- name: kolide.auth
+  type: group
+  description: Custom fields for Kolide SSO authentication sessions, collected from the REST API (GET /auth_logs) and webhooks (auth_logs.success / auth_logs.failure).
+  fields:
+    - name: session_id
+      type: keyword
+      description: Identifier of the authentication session. Shared across all sub-events split from the same session so they can be correlated. From the API/webhook record `id`.
+    - name: agent_version
+      type: keyword
+      description: Version of the Kolide agent (launcher) reported during the session. From API `agent_version` or webhook `launcher_version`.
+    - name: result
+      type: keyword
+      description: 'Outcome of the authentication as reported by the API. One of: Success, Fail.'
+    - name: initial_status
+      type: keyword
+      description: 'Device trust posture at the start of the session. One of: all_good, will_block, blocked, unknown.'
+    - name: url
+      type: keyword
+      description: API URL of the full auth_log record (webhook only).
+    - name: okta
+      type: group
+      fields:
+        - name: app_name
+          type: keyword
+          description: Okta app name from the SAML request.
+        - name: app_instance_id
+          type: keyword
+          description: Okta app instance identifier from the SAML request.
+    - name: issues_displayed
+      type: nested
+      description: Issues shown to the user during the session (API only). An array of objects; modeled as nested so each issue's id, title, blocking_status, and link stay associated.
+      fields:
+        - name: id
+          type: keyword
+          description: Canonical identifier of the displayed issue.
+        - name: title
+          type: keyword
+          description: Short description of the displayed issue.
+        - name: blocking_status
+          type: keyword
+          description: 'Blocking status of the issue. One of: blocked, will_block.'
+        - name: link
+          type: keyword
+          description: API URL of the issue.
+    - name: downloaded_packages
+      type: keyword
+      description: Names of packages downloaded to the device during the authentication session.

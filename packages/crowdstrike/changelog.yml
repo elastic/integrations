@@ -1,4 +1,61 @@
 # newer versions go on top
+- version: "4.3.1"
+  changes:
+    - description: Use an inclusive lower bound (>=) on the updated_timestamp cursor filter in the vulnerability and alert data streams to prevent records sharing a boundary timestamp from being permanently skipped at page or error boundaries.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20190
+- version: "4.3.0"
+  changes:
+    - description: Add ECS categorization and field mappings for new FDR event types including IDP telemetry, Active Directory account changes, DBus/systemd events, network containment, host firewall, sensor diagnostics, and container activity.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20079
+    - description: Map Active Directory events to ECS user fields from SamAccountName, AccountObjectSid, and AccountDomain, and add DNS enrichment for DNSRequestDetectInfo events.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20079
+- version: "4.2.0"
+  changes:
+    - description: Add support for OverwatchGenericDetectionSummaryEvent in the Falcon data stream.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19969
+- version: "4.1.0"
+  changes:
+    - description: >-
+        Expose the CrowdStrike Falcon Event Streams retry settings (maximum attempts, infinite retries, minimum and maximum wait) as configurable options so the streaming input can be tuned to recover from repeated connection failures without requiring an agent restart.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20025
+- version: "4.0.0"
+  changes:
+    - description: >-
+        Restore FDR event.action to the CrowdStrike event_simpleName value (e.g. DriverLoad, AsepKeyUpdate, NewExecutableWritten) instead of overwriting it with generic terms. Remove redundant message field copy from event_simpleName. Add missing creation type to MachOFileWritten events.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19927
+    - description: >-
+        FDR event.action values have changed. Custom queries, dashboards, or rules that filter on the previous generic values (load, modification, creation, deletion, open, query) in event.action must be updated to use the CrowdStrike event_simpleName instead. The message field is no longer populated from event_simpleName; use crowdstrike.event_simpleName for the same data.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/19927
+- version: "3.26.1"
+  changes:
+    - description: Remove incorrect unlimited maximum executions documentation.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/19809
+- version: "3.26.0"
+  changes:
+    - description: Add support for NG-SIEM correlation-detection alerts in the Alert data stream.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19494
+    - description: Populate `event.duration` ECS field from `event.start` and `event.end` fields in the Alert data streams.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19494
+- version: "3.25.0"
+  changes:
+    - description: >-
+        Deprecate FDR ingest-time cache enrichment (enrich_metadata, keep_metadata, metadata_ttl, metadata_cache_capacity, metadata_cache_write_interval). These settings will be removed in a future major version. Use query-time LOOKUP JOIN enrichment instead.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19696
+    - description: >-
+        Change the default for keep_metadata from false to true so that metadata events (aidmaster, userinfo) are indexed by default, enabling the LOOKUP JOIN transforms to have source data. Existing installations retain their previous setting on upgrade; if it was false, set it to true to enable query-time enrichment.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19696
 - version: "3.24.0"
   changes:
     - description: Make max_executions configurable for all CEL data streams to allow high-volume environments to complete pagination within a single interval.

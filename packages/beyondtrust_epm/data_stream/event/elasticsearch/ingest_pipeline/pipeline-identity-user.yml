@@ -1,0 +1,919 @@
+---
+description: Pipeline for processing identity and user fields (user, group, email, user_agent).
+processors:
+  - set:
+      field: group.name
+      tag: set_group_name_from_event_EPMWinMac_PrivilegedGroup_Name
+      copy_from: beyondtrust_epm.event.EPMWinMac.PrivilegedGroup.Name
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_extension
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: email.attachments.file.extension
+          tag: append_email_attachments_file_extension_into_email_attachments_file_extension
+          value: '{{{_ingest._value.file.extension}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_md5
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: email.attachments.file.hash.md5
+          tag: append_email_attachments_file_hash_md5_into_email_attachments_file_hash_md5
+          value: '{{{_ingest._value.file.hash.md5}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_md5
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_email_attachments_file_hash_md5_into_related_hash
+          value: '{{{_ingest._value.file.hash.md5}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_sha1
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: email.attachments.file.hash.sha1
+          tag: append_email_attachments_file_hash_sha1_into_email_attachments_file_hash_sha1
+          value: '{{{_ingest._value.file.hash.sha1}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_sha1
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_email_attachments_file_hash_sha1_into_related_hash
+          value: '{{{_ingest._value.file.hash.sha1}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_sha256
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: email.attachments.file.hash.sha256
+          tag: append_email_attachments_file_hash_sha256_into_email_attachments_file_hash_sha256
+          value: '{{{_ingest._value.file.hash.sha256}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_sha256
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_email_attachments_file_hash_sha256_into_related_hash
+          value: '{{{_ingest._value.file.hash.sha256}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_sha384
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: email.attachments.file.hash.sha384
+          tag: append_email_attachments_file_hash_sha384_into_email_attachments_file_hash_sha384
+          value: '{{{_ingest._value.file.hash.sha384}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_sha384
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_email_attachments_file_hash_sha384_into_related_hash
+          value: '{{{_ingest._value.file.hash.sha384}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_sha512
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: email.attachments.file.hash.sha512
+          tag: append_email_attachments_file_hash_sha512_into_email_attachments_file_hash_sha512
+          value: '{{{_ingest._value.file.hash.sha512}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_sha512
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_email_attachments_file_hash_sha512_into_related_hash
+          value: '{{{_ingest._value.file.hash.sha512}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_ssdeep
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: email.attachments.file.hash.ssdeep
+          tag: append_email_attachments_file_hash_ssdeep_into_email_attachments_file_hash_ssdeep
+          value: '{{{_ingest._value.file.hash.ssdeep}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_ssdeep
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_email_attachments_file_hash_ssdeep_into_related_hash
+          value: '{{{_ingest._value.file.hash.ssdeep}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_tlsh
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: email.attachments.file.hash.tlsh
+          tag: append_email_attachments_file_hash_tlsh_into_email_attachments_file_hash_tlsh
+          value: '{{{_ingest._value.file.hash.tlsh}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_hash_tlsh
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_email_attachments_file_hash_tlsh_into_related_hash
+          value: '{{{_ingest._value.file.hash.tlsh}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_mime_type
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: email.attachments.file.mime_type
+          tag: append_email_attachments_file_mime_type_into_email_attachments_file_mime_type
+          value: '{{{_ingest._value.file.mime_type}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_name
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: email.attachments.file.name
+          tag: append_email_attachments_file_name_into_email_attachments_file_name
+          value: '{{{_ingest._value.file.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_size
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        convert:
+          field: _ingest._value.file.size
+          tag: convert_email_attachments_file_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.file.size
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments_file_size
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        append:
+          field: email.attachments.file.size
+          tag: append_email_attachments_file_size_into_email_attachments_file_size
+          value: '{{{_ingest._value.file.size}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.bcc.address
+      tag: foreach_email_bcc_address
+      if: ctx.beyondtrust_epm?.event?.email?.bcc?.address instanceof List
+      processor:
+        append:
+          field: email.bcc.address
+          tag: append_email_bcc_address_into_email_bcc_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.cc.address
+      tag: foreach_email_cc_address
+      if: ctx.beyondtrust_epm?.event?.email?.cc?.address instanceof List
+      processor:
+        append:
+          field: email.cc.address
+          tag: append_email_cc_address_into_email_cc_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: email.content_type
+      tag: set_email_content_type_from_event_email_content_type
+      copy_from: beyondtrust_epm.event.email.content_type
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.email.delivery_timestamp
+      tag: date_email_delivery_timestamp
+      if: ctx.beyondtrust_epm?.event?.email?.delivery_timestamp != null && ctx.beyondtrust_epm.event.email.delivery_timestamp != ''
+      target_field: beyondtrust_epm.event.email.delivery_timestamp
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.email.delivery_timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: email.delivery_timestamp
+      tag: set_email_delivery_timestamp_from_event_email_delivery_timestamp
+      copy_from: beyondtrust_epm.event.email.delivery_timestamp
+      ignore_empty_value: true
+  - set:
+      field: email.direction
+      tag: set_email_direction_from_event_email_direction
+      copy_from: beyondtrust_epm.event.email.direction
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.email.from.address
+      tag: foreach_email_from_address
+      if: ctx.beyondtrust_epm?.event?.email?.from?.address instanceof List
+      processor:
+        append:
+          field: email.from.address
+          tag: append_email_from_address_into_email_from_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: email.local_id
+      tag: set_email_local_id_from_event_email_local_id
+      copy_from: beyondtrust_epm.event.email.local_id
+      ignore_empty_value: true
+  - set:
+      field: email.message_id
+      tag: set_email_message_id_from_event_email_message_id
+      copy_from: beyondtrust_epm.event.email.message_id
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.email.origination_timestamp
+      tag: date_email_origination_timestamp
+      if: ctx.beyondtrust_epm?.event?.email?.origination_timestamp != null && ctx.beyondtrust_epm.event.email.origination_timestamp != ''
+      target_field: beyondtrust_epm.event.email.origination_timestamp
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.email.origination_timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: email.origination_timestamp
+      tag: set_email_origination_timestamp_from_event_email_origination_timestamp
+      copy_from: beyondtrust_epm.event.email.origination_timestamp
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.email.reply_to.address
+      tag: foreach_email_reply_to_address
+      if: ctx.beyondtrust_epm?.event?.email?.reply_to?.address instanceof List
+      processor:
+        append:
+          field: email.reply_to.address
+          tag: append_email_reply_to_address_into_email_reply_to_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: email.sender.address
+      tag: set_email_sender_address_from_event_email_sender_address
+      copy_from: beyondtrust_epm.event.email.sender.address
+      ignore_empty_value: true
+  - set:
+      field: email.subject
+      tag: set_email_subject_from_event_email_subject
+      copy_from: beyondtrust_epm.event.email.subject
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.email.to.address
+      tag: foreach_email_to_address
+      if: ctx.beyondtrust_epm?.event?.email?.to?.address instanceof List
+      processor:
+        append:
+          field: email.to.address
+          tag: append_email_to_address_into_email_to_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: email.x_mailer
+      tag: set_email_x_mailer_from_event_email_x_mailer
+      copy_from: beyondtrust_epm.event.email.x_mailer
+      ignore_empty_value: true
+  - set:
+      field: group.domain
+      tag: set_group_domain_from_event_group_domain
+      copy_from: beyondtrust_epm.event.group.domain
+      ignore_empty_value: true
+  - set:
+      field: group.id
+      tag: set_group_id_from_event_group_id
+      copy_from: beyondtrust_epm.event.group.id
+      ignore_empty_value: true
+  - append:
+      field: group.name
+      tag: append_beyondtrust_epm_event_group_name_into_group_name
+      if: ctx.beyondtrust_epm?.event?.group?.name != null
+      value: '{{{beyondtrust_epm.event.group.name}}}'
+      allow_duplicates: false
+  - convert:
+      field: beyondtrust_epm.event.user.DefaultTimezoneOffset
+      tag: convert_user_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.user.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.user.LocalIdentifier
+      tag: convert_user_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.user.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.user.changes.DefaultTimezoneOffset
+      tag: convert_user_changes_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.user.changes.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.user.changes.LocalIdentifier
+      tag: convert_user_changes_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.user.changes.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.changes.domain
+      tag: set_user_changes_domain_from_event_user_changes_domain
+      copy_from: beyondtrust_epm.event.user.changes.domain
+      ignore_empty_value: true
+  - set:
+      field: user.changes.email
+      tag: set_user_changes_email_from_event_user_changes_email
+      copy_from: beyondtrust_epm.event.user.changes.email
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_user_changes_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.user?.changes?.email != null
+      value: '{{{beyondtrust_epm.event.user.changes.email}}}'
+      allow_duplicates: false
+  - set:
+      field: user.changes.full_name
+      tag: set_user_changes_full_name_from_event_user_changes_full_name
+      copy_from: beyondtrust_epm.event.user.changes.full_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_user_changes_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.user?.changes?.full_name != null
+      value: '{{{beyondtrust_epm.event.user.changes.full_name}}}'
+      allow_duplicates: false
+  - set:
+      field: user.changes.group.domain
+      tag: set_user_changes_group_domain_from_event_user_changes_group_domain
+      copy_from: beyondtrust_epm.event.user.changes.group.domain
+      ignore_empty_value: true
+  - set:
+      field: user.changes.group.id
+      tag: set_user_changes_group_id_from_event_user_changes_group_id
+      copy_from: beyondtrust_epm.event.user.changes.group.id
+      ignore_empty_value: true
+  - set:
+      field: user.changes.group.name
+      tag: set_user_changes_group_name_from_event_user_changes_group_name
+      copy_from: beyondtrust_epm.event.user.changes.group.name
+      ignore_empty_value: true
+  - set:
+      field: user.changes.hash
+      tag: set_user_changes_hash_from_event_user_changes_hash
+      copy_from: beyondtrust_epm.event.user.changes.hash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_user_changes_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.user?.changes?.hash != null
+      value: '{{{beyondtrust_epm.event.user.changes.hash}}}'
+      allow_duplicates: false
+  - set:
+      field: user.changes.id
+      tag: set_user_changes_id_from_event_user_changes_id
+      copy_from: beyondtrust_epm.event.user.changes.id
+      ignore_empty_value: true
+  - set:
+      field: user.changes.name
+      tag: set_user_changes_name_from_event_user_changes_name
+      copy_from: beyondtrust_epm.event.user.changes.name
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.user.changes.roles
+      tag: foreach_user_changes_roles
+      if: ctx.beyondtrust_epm?.event?.user?.changes?.roles instanceof List
+      processor:
+        append:
+          field: user.changes.roles
+          tag: append_user_changes_roles_into_user_changes_roles
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: user.domain
+      tag: set_user_domain_from_event_user_domain
+      copy_from: beyondtrust_epm.event.user.domain
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.user.effective.DefaultTimezoneOffset
+      tag: convert_user_effective_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.user.effective.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.user.effective.LocalIdentifier
+      tag: convert_user_effective_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.user.effective.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.effective.domain
+      tag: set_user_effective_domain_from_event_user_effective_domain
+      copy_from: beyondtrust_epm.event.user.effective.domain
+      ignore_empty_value: true
+  - set:
+      field: user.effective.email
+      tag: set_user_effective_email_from_event_user_effective_email
+      copy_from: beyondtrust_epm.event.user.effective.email
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_user_effective_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.user?.effective?.email != null
+      value: '{{{beyondtrust_epm.event.user.effective.email}}}'
+      allow_duplicates: false
+  - set:
+      field: user.effective.full_name
+      tag: set_user_effective_full_name_from_event_user_effective_full_name
+      copy_from: beyondtrust_epm.event.user.effective.full_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_user_effective_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.user?.effective?.full_name != null
+      value: '{{{beyondtrust_epm.event.user.effective.full_name}}}'
+      allow_duplicates: false
+  - set:
+      field: user.effective.group.domain
+      tag: set_user_effective_group_domain_from_event_user_effective_group_domain
+      copy_from: beyondtrust_epm.event.user.effective.group.domain
+      ignore_empty_value: true
+  - set:
+      field: user.effective.group.id
+      tag: set_user_effective_group_id_from_event_user_effective_group_id
+      copy_from: beyondtrust_epm.event.user.effective.group.id
+      ignore_empty_value: true
+  - set:
+      field: user.effective.group.name
+      tag: set_user_effective_group_name_from_event_user_effective_group_name
+      copy_from: beyondtrust_epm.event.user.effective.group.name
+      ignore_empty_value: true
+  - set:
+      field: user.effective.hash
+      tag: set_user_effective_hash_from_event_user_effective_hash
+      copy_from: beyondtrust_epm.event.user.effective.hash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_user_effective_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.user?.effective?.hash != null
+      value: '{{{beyondtrust_epm.event.user.effective.hash}}}'
+      allow_duplicates: false
+  - set:
+      field: user.effective.id
+      tag: set_user_effective_id_from_event_user_effective_id
+      copy_from: beyondtrust_epm.event.user.effective.id
+      ignore_empty_value: true
+  - set:
+      field: user.effective.name
+      tag: set_user_effective_name_from_event_user_effective_name
+      copy_from: beyondtrust_epm.event.user.effective.name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_user_effective_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.user?.effective?.name != null
+      value: '{{{beyondtrust_epm.event.user.effective.name}}}'
+      allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.user.effective.roles
+      tag: foreach_user_effective_roles
+      if: ctx.beyondtrust_epm?.event?.user?.effective?.roles instanceof List
+      processor:
+        append:
+          field: user.effective.roles
+          tag: append_user_effective_roles_into_user_effective_roles
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: user.email
+      tag: set_user_email_from_event_user_email
+      copy_from: beyondtrust_epm.event.user.email
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_user_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.user?.email != null
+      value: '{{{beyondtrust_epm.event.user.email}}}'
+      allow_duplicates: false
+  - set:
+      field: user.full_name
+      tag: set_user_full_name_from_event_user_full_name
+      copy_from: beyondtrust_epm.event.user.full_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_user_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.user?.full_name != null
+      value: '{{{beyondtrust_epm.event.user.full_name}}}'
+      allow_duplicates: false
+  - set:
+      field: user.group.domain
+      tag: set_user_group_domain_from_event_user_group_domain
+      copy_from: beyondtrust_epm.event.user.group.domain
+      ignore_empty_value: true
+  - set:
+      field: user.group.id
+      tag: set_user_group_id_from_event_user_group_id
+      copy_from: beyondtrust_epm.event.user.group.id
+      ignore_empty_value: true
+  - set:
+      field: user.group.name
+      tag: set_user_group_name_from_event_user_group_name
+      copy_from: beyondtrust_epm.event.user.group.name
+      ignore_empty_value: true
+  - set:
+      field: user.hash
+      tag: set_user_hash_from_event_user_hash
+      copy_from: beyondtrust_epm.event.user.hash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_user_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.user?.hash != null
+      value: '{{{beyondtrust_epm.event.user.hash}}}'
+      allow_duplicates: false
+  - set:
+      field: user.id
+      tag: set_user_id_from_event_user_id
+      copy_from: beyondtrust_epm.event.user.id
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_event_user_name
+      copy_from: beyondtrust_epm.event.user.name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_user_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.user?.name != null
+      value: '{{{beyondtrust_epm.event.user.name}}}'
+      allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.user.roles
+      tag: foreach_user_roles
+      if: ctx.beyondtrust_epm?.event?.user?.roles instanceof List
+      processor:
+        append:
+          field: user.roles
+          tag: append_user_roles_into_user_roles
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - convert:
+      field: beyondtrust_epm.event.user.target.DefaultTimezoneOffset
+      tag: convert_user_target_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.user.target.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.user.target.LocalIdentifier
+      tag: convert_user_target_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.user.target.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.target.domain
+      tag: set_user_target_domain_from_event_user_target_domain
+      copy_from: beyondtrust_epm.event.user.target.domain
+      ignore_empty_value: true
+  - set:
+      field: user.target.email
+      tag: set_user_target_email_from_event_user_target_email
+      copy_from: beyondtrust_epm.event.user.target.email
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_user_target_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.user?.target?.email != null
+      value: '{{{beyondtrust_epm.event.user.target.email}}}'
+      allow_duplicates: false
+  - set:
+      field: user.target.full_name
+      tag: set_user_target_full_name_from_event_user_target_full_name
+      copy_from: beyondtrust_epm.event.user.target.full_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_user_target_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.user?.target?.full_name != null
+      value: '{{{beyondtrust_epm.event.user.target.full_name}}}'
+      allow_duplicates: false
+  - set:
+      field: user.target.group.domain
+      tag: set_user_target_group_domain_from_event_user_target_group_domain
+      copy_from: beyondtrust_epm.event.user.target.group.domain
+      ignore_empty_value: true
+  - set:
+      field: user.target.group.id
+      tag: set_user_target_group_id_from_event_user_target_group_id
+      copy_from: beyondtrust_epm.event.user.target.group.id
+      ignore_empty_value: true
+  - set:
+      field: user.target.group.name
+      tag: set_user_target_group_name_from_event_user_target_group_name
+      copy_from: beyondtrust_epm.event.user.target.group.name
+      ignore_empty_value: true
+  - set:
+      field: user.target.hash
+      tag: set_user_target_hash_from_event_user_target_hash
+      copy_from: beyondtrust_epm.event.user.target.hash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_user_target_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.user?.target?.hash != null
+      value: '{{{beyondtrust_epm.event.user.target.hash}}}'
+      allow_duplicates: false
+  - set:
+      field: user.target.id
+      tag: set_user_target_id_from_event_user_target_id
+      copy_from: beyondtrust_epm.event.user.target.id
+      ignore_empty_value: true
+  - set:
+      field: user.target.name
+      tag: set_user_target_name_from_event_user_target_name
+      copy_from: beyondtrust_epm.event.user.target.name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_user_target_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.user?.target?.name != null
+      value: '{{{beyondtrust_epm.event.user.target.name}}}'
+      allow_duplicates: false
+  - set:
+      field: user_agent.device.name
+      tag: set_user_agent_device_name_from_event_user_agent_device_name
+      copy_from: beyondtrust_epm.event.user_agent.device.name
+      ignore_empty_value: true
+  - set:
+      field: user_agent.name
+      tag: set_user_agent_name_from_event_user_agent_name
+      copy_from: beyondtrust_epm.event.user_agent.name
+      ignore_empty_value: true
+  - set:
+      field: user_agent.original
+      tag: set_user_agent_original_from_event_user_agent_original
+      copy_from: beyondtrust_epm.event.user_agent.original
+      ignore_empty_value: true
+  - set:
+      field: user_agent.os.family
+      tag: set_user_agent_os_family_from_event_user_agent_os_family
+      copy_from: beyondtrust_epm.event.user_agent.os.family
+      ignore_empty_value: true
+  - set:
+      field: user_agent.os.full
+      tag: set_user_agent_os_full_from_event_user_agent_os_full
+      copy_from: beyondtrust_epm.event.user_agent.os.full
+      ignore_empty_value: true
+  - set:
+      field: user_agent.os.kernel
+      tag: set_user_agent_os_kernel_from_event_user_agent_os_kernel
+      copy_from: beyondtrust_epm.event.user_agent.os.kernel
+      ignore_empty_value: true
+  - set:
+      field: user_agent.os.name
+      tag: set_user_agent_os_name_from_event_user_agent_os_name
+      copy_from: beyondtrust_epm.event.user_agent.os.name
+      ignore_empty_value: true
+  - set:
+      field: user_agent.os.platform
+      tag: set_user_agent_os_platform_from_event_user_agent_os_platform
+      copy_from: beyondtrust_epm.event.user_agent.os.platform
+      ignore_empty_value: true
+  - set:
+      field: user_agent.os.type
+      tag: set_user_agent_os_type_from_event_user_agent_os_type
+      copy_from: beyondtrust_epm.event.user_agent.os.type
+      ignore_empty_value: true
+  - set:
+      field: user_agent.os.version
+      tag: set_user_agent_os_version_from_event_user_agent_os_version
+      copy_from: beyondtrust_epm.event.user_agent.os.version
+      ignore_empty_value: true
+  - set:
+      field: user_agent.version
+      tag: set_user_agent_version_from_event_user_agent_version
+      copy_from: beyondtrust_epm.event.user_agent.version
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_client_user_DomainIdentifier
+      copy_from: beyondtrust_epm.event.client.user.DomainIdentifier
+      ignore_empty_value: true
+      override: false
+  - set:
+      field: user.domain
+      tag: set_user_domain_from_client_user_DomainNetBIOSName
+      copy_from: beyondtrust_epm.event.client.user.DomainNetBIOSName
+      ignore_empty_value: true
+      override: false
+  - foreach:
+      field: email.attachments.file.size
+      tag: foreach_email_attachments_file_size_convert_to_long
+      if: ctx.email?.attachments instanceof List && ctx.email.attachments != null && ctx.email.attachments.size() > 0
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_ecs_email_attachments_file_size_elements_to_long
+          type: long
+          ignore_missing: true
+          ignore_failure: true
+  - append:
+      field: event.category
+      tag: append_event_category_email
+      if: >-
+        ctx.email != null
+        && (ctx.event?.category == null || !ctx.event.category.contains('email'))
+      value: email
+      allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.email.attachments
+      tag: foreach_email_attachments
+      if: ctx.beyondtrust_epm?.event?.email?.attachments instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.file.extension
+            - _ingest._value.file.hash.md5
+            - _ingest._value.file.hash.sha1
+            - _ingest._value.file.hash.sha256
+            - _ingest._value.file.hash.sha384
+            - _ingest._value.file.hash.sha512
+            - _ingest._value.file.hash.ssdeep
+            - _ingest._value.file.hash.tlsh
+            - _ingest._value.file.mime_type
+            - _ingest._value.file.name
+            - _ingest._value.file.size
+          tag: remove_fields_mapped_with_ecs_from_email_attachments
+          ignore_missing: true
+  - remove:
+      field:
+        - beyondtrust_epm.event.EPMWinMac.PrivilegedGroup.Name
+        - beyondtrust_epm.event.email.bcc.address
+        - beyondtrust_epm.event.email.cc.address
+        - beyondtrust_epm.event.email.content_type
+        - beyondtrust_epm.event.email.delivery_timestamp
+        - beyondtrust_epm.event.email.direction
+        - beyondtrust_epm.event.email.from.address
+        - beyondtrust_epm.event.email.local_id
+        - beyondtrust_epm.event.email.message_id
+        - beyondtrust_epm.event.email.origination_timestamp
+        - beyondtrust_epm.event.email.reply_to.address
+        - beyondtrust_epm.event.email.sender.address
+        - beyondtrust_epm.event.email.subject
+        - beyondtrust_epm.event.email.to.address
+        - beyondtrust_epm.event.email.x_mailer
+        - beyondtrust_epm.event.group.domain
+        - beyondtrust_epm.event.group.id
+        - beyondtrust_epm.event.group.name
+        - beyondtrust_epm.event.user.changes.domain
+        - beyondtrust_epm.event.user.changes.email
+        - beyondtrust_epm.event.user.changes.full_name
+        - beyondtrust_epm.event.user.changes.group.domain
+        - beyondtrust_epm.event.user.changes.group.id
+        - beyondtrust_epm.event.user.changes.group.name
+        - beyondtrust_epm.event.user.changes.hash
+        - beyondtrust_epm.event.user.changes.id
+        - beyondtrust_epm.event.user.changes.name
+        - beyondtrust_epm.event.user.changes.roles
+        - beyondtrust_epm.event.user.domain
+        - beyondtrust_epm.event.user.effective.domain
+        - beyondtrust_epm.event.user.effective.email
+        - beyondtrust_epm.event.user.effective.full_name
+        - beyondtrust_epm.event.user.effective.group.domain
+        - beyondtrust_epm.event.user.effective.group.id
+        - beyondtrust_epm.event.user.effective.group.name
+        - beyondtrust_epm.event.user.effective.hash
+        - beyondtrust_epm.event.user.effective.id
+        - beyondtrust_epm.event.user.effective.name
+        - beyondtrust_epm.event.user.effective.roles
+        - beyondtrust_epm.event.user.email
+        - beyondtrust_epm.event.user.full_name
+        - beyondtrust_epm.event.user.group.domain
+        - beyondtrust_epm.event.user.group.id
+        - beyondtrust_epm.event.user.group.name
+        - beyondtrust_epm.event.user.hash
+        - beyondtrust_epm.event.user.id
+        - beyondtrust_epm.event.user.name
+        - beyondtrust_epm.event.user.roles
+        - beyondtrust_epm.event.user.target.domain
+        - beyondtrust_epm.event.user.target.email
+        - beyondtrust_epm.event.user.target.full_name
+        - beyondtrust_epm.event.user.target.group.domain
+        - beyondtrust_epm.event.user.target.group.id
+        - beyondtrust_epm.event.user.target.group.name
+        - beyondtrust_epm.event.user.target.hash
+        - beyondtrust_epm.event.user.target.id
+        - beyondtrust_epm.event.user.target.name
+        - beyondtrust_epm.event.user_agent.device.name
+        - beyondtrust_epm.event.user_agent.name
+        - beyondtrust_epm.event.user_agent.original
+        - beyondtrust_epm.event.user_agent.os.family
+        - beyondtrust_epm.event.user_agent.os.full
+        - beyondtrust_epm.event.user_agent.os.kernel
+        - beyondtrust_epm.event.user_agent.os.name
+        - beyondtrust_epm.event.user_agent.os.platform
+        - beyondtrust_epm.event.user_agent.os.type
+        - beyondtrust_epm.event.user_agent.os.version
+        - beyondtrust_epm.event.user_agent.version
+      tag: remove_fields_mapped_with_ecs
+      ignore_missing: true

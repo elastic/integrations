@@ -29,7 +29,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-aws.sqs.otel-*\n// Exclude DLQs — DLQ depth is covered by a separate alert\n| WHERE Namespace == \"AWS/SQS\"\n    AND MetricName == \"ApproximateAgeOfOldestMessage\"\n    AND stat == \"Maximum\"\n    AND QueueName NOT LIKE \"*-dlq\"\n| STATS max_age_seconds = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`)\n    BY QueueName, cloud.region\n// Tune to your SLA: 300s = 5 minutes (real-time); batch queues may need hours\n| WHERE max_age_seconds > 300"
+        "esql": "FROM metrics-aws.sqs.otel-*\n// Exclude DLQs — DLQ depth is covered by a separate alert\n| WHERE Namespace == \"AWS/SQS\"\n    AND MetricName == \"ApproximateAgeOfOldestMessage\"\n    AND stat == \"Maximum\"\n    AND QueueName NOT LIKE \"*dlq*\"\n| STATS max_age_seconds = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`)\n    BY QueueName, cloud.region\n// Tune to your SLA: 300s = 5 minutes (real-time); batch queues may need hours\n| WHERE max_age_seconds > 300"
       },
       "size": 0,
       "threshold": [

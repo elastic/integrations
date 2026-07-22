@@ -1,4 +1,19 @@
 # newer versions go on top
+- version: "1.44.2"
+  changes:
+    - description: Fix `daily_refetch` never re-triggering after the first poll. The `last_daily_refetch` cursor value template could not read its own previous value (httpjson evaluates cursor templates with an empty cursor context), so it was reset to the current time on every poll and the 24h elapsed-time check never fired. The refetch marker is now carried through the request's url.params so it survives cursor evaluation.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20018
+- version: "1.44.1"
+  changes:
+    - description: Fix transform destination to use keyword for data_stream.namespace, allowing multi-namespace deployments.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20002
+- version: "1.44.0"
+  changes:
+    - description: Enable Agentless deployment.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19702
 - version: "1.43.1"
   changes:
     - description: Disable `X-Rate-Limit-*` response header parsing by default. The agent went DEGRADED on MISP instances that do not have rate limiting enabled. A new `enable_rate_limit_headers` toggle (default off) lets users opt in when their MISP role enforces rate limits.

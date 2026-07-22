@@ -2,12 +2,14 @@ source:
   index:
     - logs-ti_socradar_taxii.indicator-*
 dest:
-  index: logs-ti_socradar_taxii_latest.indicator-1
+  index: logs-ti_socradar_taxii_latest.indicator-2
   aliases:
     - alias: logs-ti_socradar_taxii_latest.indicator
       move_on_creation: true
 latest:
   unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
     - event.dataset
     - ti_socradar_taxii.stix.id
   sort: '@timestamp'
@@ -23,6 +25,6 @@ retention_policy:
     max_age: 1m
 _meta:
   managed: true
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.2.0
 settings:
   unattended: true
