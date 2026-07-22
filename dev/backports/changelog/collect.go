@@ -210,10 +210,12 @@ func syncPRExists(workingBranch string) (bool, error) {
 	return len(prs) > 0, nil
 }
 
-// changedChangelogs returns the paths of changelog.yml files that changed
-// between before and after.
+// changedChangelogs returns the paths of changelog.yml files introduced
+// between the common ancestor of before/after and after — scoping the result
+// to what the PR itself adds, ignoring commits pushed to the base branch
+// after the PR was branched.
 func changedChangelogs(git gitutil.Git, before, after string) ([]string, error) {
-	out, err := git.Output("diff", "--name-only", before+".."+after, "--", "**/changelog.yml")
+	out, err := git.Output("diff", "--name-only", before+"..."+after, "--", "**/changelog.yml")
 	if err != nil {
 		return nil, err
 	}
@@ -235,9 +237,11 @@ func manifestName(pkgDir string) (string, error) {
 	return manifest.Name, nil
 }
 
-// gitDiff returns the unified diff for path between before and after.
+// gitDiff returns the unified diff for path using the three-dot notation
+// (git diff before...after), which diffs against the common ancestor of
+// before and after rather than before itself.
 func gitDiff(git gitutil.Git, before, after, path string) (string, error) {
-	out, err := git.Output("diff", before+".."+after, "--", path)
+	out, err := git.Output("diff", before+"..."+after, "--", path)
 	if err != nil {
 		return "", err
 	}
