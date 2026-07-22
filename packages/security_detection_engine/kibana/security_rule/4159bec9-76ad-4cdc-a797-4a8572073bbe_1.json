@@ -1,0 +1,299 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects creation of a GKE CertificateSigningRequest (CSR) whose decoded subject requests a highly privileged Kubernetes identity in the Common Name (CN), such as system:masters, system:kube-controller-manager, or system:admin. This rule is scoped to identities with cluster-admin-equivalent or control-plane impersonation value. Attackers who can create and approve CSRs can use this technique to clone credentials for powerful identities and obtain durable cluster access. This signal applies to any actor, including compromised node identities that use legitimate kubelet signers but request a privileged CN.",
+        "false_positives": [
+            "Legitimate GKE automation does not request certificates for system:masters, system:kube-controller-manager, or system:admin as the CSR subject. Node bootstrap and kubelet rotation use system:node:* identities instead. Alerts should be rare; tune exclusions only for documented custom PKI workflows that intentionally mint these identities."
+        ],
+        "from": "now-6m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "gcp.audit.resource_name",
+                "Esql.csr_request",
+                "Esql.csr_pem",
+                "Esql.csr_der",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GKE Certificate Signing Request for Privileged Identity",
+        "note": "## Triage and analysis\n\n### Investigating GKE Certificate Signing Request for Privileged Identity\n\nThis rule uses `JSON_EXTRACT(_source, \"$.gcp.audit.request.spec.request\")` to read the outer base64 CSR from CSR\ncreate events, double-decodes it to DER in `Esql.csr_der`, and matches privileged Common Names. It is scoped to\nidentities with cluster-admin-equivalent or control-plane impersonation value (`system:masters`, `system:kube-controller-manager`,\nand `system:admin`). The alert includes `Esql.csr_pem` and `Esql.csr_der` so the requested identity is visible without\nmanual decoding.\n\nTo validate manually from the create event:\n\n```bash\n# Full decoded PEM block\necho \"<gcp.audit.request.spec.request>\" | base64 -d\n\n# Parsed CSR details (subject, key type/size, extensions, signature)\necho \"<gcp.audit.request.spec.request>\" | base64 -d | openssl req -noout -text\n\n# Subject only\necho \"<gcp.audit.request.spec.request>\" | base64 -d | openssl req -noout -subject\n```\n\nMatched privileged identities:\n\n- `system:masters` (cluster-admin group)\n- `system:kube-controller-manager`\n- `system:admin`\n\n### Possible investigation steps\n\n- Identify `client.user.email`, `source.ip`, and whether the actor is expected to request certificates for these\n  identities.\n- Review `gcp.audit.request.spec.signerName` to determine which certificate authority would sign the request.\n- Check for self-approval or controller approval on the same `gcp.audit.resource_name` within a short window.\n- Correlate with secret reads, RBAC changes, or TokenRequest activity from the same actor.\n\n### False positive analysis\n\n- Known control-plane and kube-system identities do not legitimately create CSRs for these subjects in GKE; any match\n  warrants review.\n\n### Related rules\n\n- GKE Certificate Signing Request API Client Signer Requested - 1e344fba-a2f7-462b-aaec-d6c8f80d5a28\n- GKE Certificate Signing Request Self-Approved - e155e658-3dcd-4d27-a4e5-1d8da6704b0e\n- GKE Client Certificate Signing Request Created or Approved - ec67ab57-945a-4edb-84f8-1d7a51f46544\n\n### Response and remediation\n\n- Deny or delete the CSR, revoke issued credentials if already signed, and tighten CSR create/approval RBAC.\n\n",
+        "query": "from logs-gcp.audit-* metadata _id, _index, _version, _source\n| where data_stream.dataset == \"gcp.audit\"\n    and service.name == \"k8s.io\"\n    and event.outcome == \"success\"\n    and event.action == \"io.k8s.certificates.v1.certificatesigningrequests.create\"\n| eval Esql.csr_request = json_extract(_source, \"$.gcp.audit.request.spec.request\")\n| where Esql.csr_request is not null\n| eval Esql.csr_pem = from_base64(Esql.csr_request)\n| eval Esql.csr_body_b64 = replace(\n    replace(\n      replace(\n        replace(Esql.csr_pem, \"-----BEGIN CERTIFICATE REQUEST-----\", \"\"),\n        \"-----END CERTIFICATE REQUEST-----\", \"\"),\n      \"\\r\", \"\"),\n    \"\\n\", \"\")\n| eval Esql.csr_der = from_base64(Esql.csr_body_b64)\n| where Esql.csr_der like \"*system:masters*\"\n    or Esql.csr_der like \"*system:kube-controller-manager*\"\n    or Esql.csr_der like \"*system:admin*\"\n| keep _id, _index, _version, @timestamp, client.user.email, gcp.audit.resource_name, source.ip, user_agent.original, Esql.*, event.*, gcp.audit.request, gcp.audit.response, data_stream.namespace\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/",
+            "https://kubernetes.io/docs/concepts/security/rbac-good-practices/",
+            "https://raesene.github.io/blog/2022/12/21/Kubernetes-persistence-with-Tocan-and-Teisteanas/",
+            "https://stratus-red-team.cloud/attack-techniques/kubernetes/k8s.persistence.create-client-certificate/",
+            "https://rhinosecuritylabs.com/cloud-security/kubelet-tls-bootstrap-privilege-escalation/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.agent_id_status",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.created",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.duration",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.end",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.ingested",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.original",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.reason",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.reference",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.risk_score",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "event.risk_score_norm",
+                "type": "float"
+            },
+            {
+                "ecs": true,
+                "name": "event.sequence",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.severity",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.timezone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.url",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.request",
+                "type": "unsupported"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.resource_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.response",
+                "type": "unsupported"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "4159bec9-76ad-4cdc-a797-4a8572073bbe",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required. Request body capture for CSR create events (`gcp.audit.request.spec.request`) typically requires RequestResponse audit level on CertificateSigningRequest resources.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: GCP Audit Logs",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "4159bec9-76ad-4cdc-a797-4a8572073bbe_1",
+    "type": "security-rule"
+}
