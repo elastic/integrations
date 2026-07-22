@@ -44,9 +44,24 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Check PR is merged
+        id: pr-check
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          STATE=$(gh pr view "$ISSUE_NUMBER" --repo "$REPOSITORY" --json state --jq '.state')
+          if [[ "$STATE" == "MERGED" ]]; then
+            echo "merged=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "PR #$ISSUE_NUMBER is not merged (state: $STATE) — skipping"
+          fi
+
       - name: Check actor permission
         id: actor-check
-        if: github.event_name == 'issue_comment'
+        if: github.event_name == 'issue_comment' && steps.pr-check.outputs.merged == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
@@ -60,27 +75,12 @@ jobs:
             echo "Actor $ACTOR lacks write/admin permission ($PERMISSION) — skipping"
           fi
 
-      - name: Check PR is merged
-        id: pr-check
-        if: github.event_name == 'issue_comment' && steps.actor-check.outputs.permitted == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY: ${{ github.repository }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-        run: |
-          STATE=$(gh pr view "$ISSUE_NUMBER" --repo "$REPOSITORY" --json state --jq '.state')
-          if [[ "$STATE" == "MERGED" ]]; then
-            echo "merged=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "PR #$ISSUE_NUMBER is not merged (state: $STATE) — skipping"
-          fi
-
       - name: Resolve merge SHA and PR metadata
         id: resolve
         if: >-
           ${{
             github.event_name == 'push' ||
-            steps.pr-check.outputs.merged == 'true'
+            steps.actor-check.outputs.permitted == 'true'
           }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
