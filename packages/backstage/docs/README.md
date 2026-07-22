@@ -23,7 +23,7 @@ The Backstage integration collects audit log events of the following types, depe
 
 This integration primarily targets Backstage **audit** logs — emitted by the `auditor` service as NDJSON (one JSON object per line) — which are fully normalized to ECS and `backstage.*` fields.
 
-General Backstage application logs — valid JSON lines where `isAuditEvent` is not `true` — written to the same file are also retained. The original line is preserved in `event.original`. Common fields such as messages, service names, log levels, timestamps, tracing IDs, URLs, user agents, HTTP methods, and HTTP response values are mapped to ECS. Other parsed fields remain under `backstage.log.*` as keywords. Audit-specific fields are not mapped for these records.
+Backstage application logs — valid JSON lines where `isAuditEvent` is either absent or is not set to `true` — are also retained. The original line is preserved in `event.original`. Common fields such as messages, service names, log levels, timestamps, tracing IDs, URLs, user agents, HTTP methods, and HTTP response values are mapped to ECS. Other parsed fields remain under `backstage.log.*` as keywords. Audit-specific fields are not mapped for these records.
 
 Deeper mapping of these logs will be driven by customer requests and observed usage.
 
@@ -80,7 +80,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 - **No events collected**: Confirm the Backstage backend is emitting audit events (not every plugin calls the `auditor` service for every operation) and that the configured **Paths** match the actual log file location.
 - **Multi-line JSON not parsed**: If your Backstage deployment pretty-prints JSON log lines across multiple lines, enable the `multiline` parser under **Parsers**. Otherwise each partial line fails JSON parsing.
-- **Application logs have limited vendor-specific mapping**: Valid JSON lines where `isAuditEvent` is not `true` are retained. Common fields are mapped to ECS, the original line is kept in `event.original`, and other parsed fields land under `backstage.log.*` as keywords. Audit-specific fields are not mapped for these records. See [Log scope](#log-scope).
+- **Application logs have limited mapping**: For this release and the short term future, application logs have limited mappings. This is by design to limit the scope of our initial release which focuses on audit logs (see [Log scope](#log-scope)). In the meantime, you can create some custom processors to mitigate this, the original log line is kept in `event.original`, and other parsed fields land under `backstage.log.*` as keywords. Should this not be sufficient, please contact us so we can review your requests and improve the mappings of backstage application logs. 
 - **Permission denied reading the log file**: Elastic Agent needs read access to the Backstage audit log file(s). If your environment writes them with restrictive ownership/permissions, deploy Elastic Agent as `root` (or a user with equivalent read access) on that host or container. This is a deployment-time decision, not a setting configurable through this integration.
 
 ## Scaling
@@ -114,7 +114,7 @@ To collect logs via Filestream, select **Collect logs via Filestream** and confi
 
 #### logs
 
-The `logs` data stream provides audit events from Backstage's `auditor` service, including catalog operations, user activity, and other plugin-specific audit events. General Backstage application logs where `isAuditEvent` is not `true` are also retained with common fields mapped to ECS, the original line in `event.original`, and other parsed fields under `backstage.log.*` as keywords; see [Log scope](#log-scope).
+The `logs` data stream provides application logs, with a focus on audit events from Backstage's `auditor` service, including catalog operations, user activity, and other plugin-specific audit events. General Backstage application logs where `isAuditEvent` is not `true` are also retained with common fields mapped to ECS, the original line in `event.original`, and other parsed fields under `backstage.log.*` as keywords; see [Log scope](#log-scope).
 
 ##### logs fields
 
