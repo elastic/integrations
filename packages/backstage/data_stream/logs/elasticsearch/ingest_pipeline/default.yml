@@ -25,36 +25,24 @@ processors:
         Parses the original log line into the json scratch field, used to read
         isAuditEvent for the audit dispatch below.
   - pipeline:
+      name: '{{ IngestPipeline "common" }}'
+      tag: execute_common_pipeline
+      if: ctx.json != null
+      description: >-
+        Applies ECS mappings shared by Backstage audit and application logs
+        before dispatching to their format-specific pipelines.
+  - pipeline:
       name: '{{ IngestPipeline "audit" }}'
       if: ctx.json?.isAuditEvent == true
       tag: execute_audit_pipeline
       description: >-
         Triggers the audit ingest pipeline for messages that contain isAuditEvent: true
-  # The processors below handle Backstage application logs (records without an
-  # isAuditEvent key, i.e. non-audit). Audit logs have already been routed to the
-  # audit pipeline (which removes json), so these only run for records still
-  # carrying the parsed json scratch object.
-  - set:
-      field: ecs.version
-      tag: set_ecs_version_non_audit
-      value: "9.4.0"
-      if: ctx.json != null && ctx.json.isAuditEvent == null
-      description: Sets the ECS version for Backstage application logs.
-  - set:
-      field: event.kind
-      tag: set_event_kind_non_audit
-      value: event
-      if: ctx.json != null && ctx.json.isAuditEvent == null
-      description: Sets event.kind to event for Backstage application logs.
-  - rename:
-      field: json
-      target_field: backstage.log
-      tag: rename_non_audit_json_to_backstage_log
-      ignore_missing: true
-      if: ctx.json != null && ctx.json.isAuditEvent == null
+  - pipeline:
+      name: '{{ IngestPipeline "application" }}'
+      tag: execute_application_pipeline
+      if: ctx.json != null && ctx.json.isAuditEvent != true
       description: >-
-        Moves the parsed Backstage application log fields under the backstage.log
-        namespace, retained as keywords without detailed ECS mapping.
+        Processes Backstage application logs that are not audit events.
 on_failure:
   - append:
       tag: append_pipeline_error_message

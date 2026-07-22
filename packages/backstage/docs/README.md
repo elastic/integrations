@@ -129,7 +129,7 @@ The `logs` data stream provides audit events from Backstage's `auditor` service,
 | backstage.entity.ref | The Backstage catalog entity reference the audit event operated on. | keyword |
 | backstage.entity.refs | The Backstage catalog entity references returned by a batch entity lookup. | keyword |
 | backstage.entity.root_ref | The root entity reference for a Backstage catalog ancestry lookup. | keyword |
-| backstage.log | Fields parsed from Backstage application logs, retained as keywords without detailed ECS mapping. Promoted to ECS / explicit backstage.\* fields as support matures based on customer demand. | object |
+| backstage.log | Backstage application fields without an explicit ECS or backstage mapping. Common fields such as message, service, level, timestamps, tracing, HTTP requests, URLs, and user agents are promoted to their ECS fields. | object |
 | backstage.meta | Serialized dump of any Backstage plugin metadata that did not match a known, explicitly-mapped field. Intended to be empty for all currently-known event shapes; exists only as a forward-compatible safety net for future Backstage plugin metadata. Well-known keys are promoted to explicit `backstage.\*` fields instead of living here. | text |
 | backstage.query.fields | The entity fields requested by the catalog query. | keyword |
 | backstage.query.filter | The raw catalog query filter condition(s), as Backstage's `key=value` comma-separated filter syntax (e.g. "kind=Resource,spec.type=github-repository"). Stored verbatim rather than parsed into structured sub-fields; there is no confirmed customer need yet for querying/aggregating on individual filter keys. Revisit with structured `backstage.query.filter.\*` sub-fields if that need materializes. | text |
@@ -162,6 +162,9 @@ The `logs` data stream provides audit events from Backstage's `auditor` service,
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
+| http.response.body.bytes | Size in bytes of the response body. | long |
+| http.response.status_code | HTTP response status code. | long |
+| http.version | HTTP version. | keyword |
 | input.type | Input type. | keyword |
 | log.file.device_id | Device ID of the log file this event came from. | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
@@ -171,6 +174,7 @@ The `logs` data stream provides audit events from Backstage's `auditor` service,
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
@@ -207,65 +211,34 @@ An example event for `logs` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-07-16T15:40:27.001Z",
+    "@timestamp": "2026-05-22T20:29:50.000Z",
     "agent": {
-        "ephemeral_id": "583e11b6-f0ac-49d8-b373-b0db09338971",
-        "id": "0a039fc8-ac99-4ffa-92c3-f639c49f2e15",
-        "name": "elastic-agent-31354",
+        "ephemeral_id": "b6f7f04c-455b-42d5-b136-74d8c3b94e91",
+        "id": "fc0682fb-67a4-4fb0-9c34-6afff6399b91",
+        "name": "elastic-agent-66047",
         "type": "filebeat",
         "version": "9.3.3"
     },
-    "backstage": {
-        "query": {
-            "fields": [
-                "metadata",
-                "kind",
-                "spec.profile"
-            ],
-            "filter": [
-                "kind=group,relations.hasMember=user:default/alice.johnson"
-            ],
-            "type": "all"
-        },
-        "severity_level": "low"
-    },
     "data_stream": {
         "dataset": "backstage.logs",
-        "namespace": "26579",
+        "namespace": "82087",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "0a039fc8-ac99-4ffa-92c3-f639c49f2e15",
+        "id": "fc0682fb-67a4-4fb0-9c34-6afff6399b91",
         "snapshot": false,
         "version": "9.3.3"
     },
     "event": {
-        "action": "entity-fetch:initiated",
         "agent_id_status": "verified",
-        "category": [
-            "api"
-        ],
-        "code": "entity-fetch",
         "dataset": "backstage.logs",
-        "ingested": "2026-07-17T05:02:30Z",
+        "ingested": "2026-07-22T01:34:35Z",
         "kind": "event",
         "module": "backstage",
-        "original": "{\"actor\":{\"actorId\":\"user:default/alice.johnson\",\"hostname\":\"backstage.example.internal\",\"ip\":\"::ffff:192.168.0.1\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\"},\"eventId\":\"entity-fetch\",\"isAuditEvent\":true,\"level\":\"info\",\"message\":\"catalog.entity-fetch\",\"meta\":{\"query\":{\"fields\":[\"metadata\",\"kind\",\"spec.profile\"],\"filter\":[\"kind=group,relations.hasMember=user:default/alice.johnson\"]},\"queryType\":\"all\"},\"plugin\":\"catalog\",\"request\":{\"method\":\"GET\",\"url\":\"/api/catalog/entities?fields=metadata,kind,spec.profile&filter=kind%3Dgroup%2Crelations.hasMember%3Duser%3Adefault%2Falice.johnson\"},\"service\":\"backstage\",\"severityLevel\":\"low\",\"span_id\":\"a1b2c3d4e5f60718\",\"status\":\"initiated\",\"timestamp\":\"2026-07-16T15:40:27.001Z\",\"trace_flags\":\"01\",\"trace_id\":\"1a2b3c4d5e6f70819aebfcdd0e1f2a3b\"}",
-        "outcome": "unknown",
-        "provider": "catalog",
-        "severity": 3,
-        "type": [
-            "access",
-            "start"
-        ]
-    },
-    "http": {
-        "request": {
-            "method": "GET"
-        }
+        "original": "{\"level\":\"info\",\"message\":\"Listening on port 7007\",\"service\":\"backstage\",\"timestamp\":\"2026-05-22T20:29:50.000Z\"}"
     },
     "input": {
         "type": "filestream"
@@ -273,59 +246,21 @@ An example event for `logs` looks as following:
     "log": {
         "file": {
             "device_id": "43",
-            "inode": "392",
+            "inode": "878",
             "path": "/tmp/service_logs/test-audit-events.log"
         },
         "level": "info",
-        "offset": 0
+        "offset": 5910
     },
-    "message": "catalog.entity-fetch",
-    "related": {
-        "hosts": [
-            "backstage.example.internal"
-        ],
-        "ip": [
-            "192.168.0.1"
-        ],
-        "user": [
-            "user:default/alice.johnson"
-        ]
-    },
-    "source": {
-        "ip": "192.168.0.1"
-    },
-    "span": {
-        "id": "a1b2c3d4e5f60718"
+    "message": "Listening on port 7007",
+    "service": {
+        "name": "backstage"
     },
     "tags": [
         "forwarded",
         "backstage-logs",
         "preserve_original_event"
-    ],
-    "trace": {
-        "id": "1a2b3c4d5e6f70819aebfcdd0e1f2a3b"
-    },
-    "url": {
-        "original": "/api/catalog/entities?fields=metadata,kind,spec.profile&filter=kind%3Dgroup%2Crelations.hasMember%3Duser%3Adefault%2Falice.johnson",
-        "path": "/api/catalog/entities",
-        "query": "fields=metadata,kind,spec.profile&filter=kind=group,relations.hasMember=user:default/alice.johnson"
-    },
-    "user": {
-        "id": "user:default/alice.johnson"
-    },
-    "user_agent": {
-        "device": {
-            "name": "Mac"
-        },
-        "name": "Chrome",
-        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
-        "os": {
-            "full": "Mac OS X 10.15.7",
-            "name": "Mac OS X",
-            "version": "10.15.7"
-        },
-        "version": "150.0.0.0"
-    }
+    ]
 }
 ```
 

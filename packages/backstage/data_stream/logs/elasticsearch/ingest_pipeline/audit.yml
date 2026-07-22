@@ -1,31 +1,6 @@
 ---
 description: Pipeline for backstage audit logs
 processors:
-  - set:
-      tag: set_ecs_version
-      field: ecs.version
-      value: "9.4.0"
-      description: Sets the ECS version this pipeline targets.
-  - rename:
-      field: message
-      tag: rename_message_to_event_original
-      target_field: event.original
-      ignore_missing: true
-      description: >-
-        Renames the original `message` field to `event.original` to store a copy of the original message.
-        The `event.original` field is not touched if the document already has one.
-      if: ctx.event?.original == null
-  - remove:
-      field: message
-      tag: remove_message
-      ignore_missing: true
-      description: The `message` field is no longer required if the document has an `event.original` field.
-      if: ctx.event?.original != null
-  - set:
-      tag: set_event_kind
-      field: event.kind
-      value: event
-      description: Sets `event.kind` to `event` for Backstage audit events.
   - append:
       tag: append_event_category_api
       field: event.category
@@ -71,20 +46,6 @@ processors:
       value: failure
       description: Sets `event.outcome` to `failure` for failed Backstage audit operations.
       if: 'ctx.json?.status == "failed"'
-  - date:
-      field: json.timestamp
-      target_field: "@timestamp"
-      formats:
-        - ISO8601
-      tag: extract_audit_timestamp
-      description: Parses the audit `json.timestamp` (ISO8601) into `@timestamp`.
-      if: ctx.json?.timestamp != null
-  - rename:
-      field: json.message
-      target_field: message
-      ignore_missing: true
-      tag: rename_json_message
-      description: Promotes the audit `json.message` to the top-level `message` field.
   - rename:
       field: json.severityLevel
       target_field: backstage.severity_level
@@ -131,26 +92,6 @@ processors:
         group of related operations (e.g., `entity-fetch`, `location-mutate`), used here as the event
         identification code per ECS conventions.
   - rename:
-      tag: rename_json_level_to_log_level_69028571
-      field: json.level
-      target_field: log.level
-      description: >-
-        Maps the Backstage logger `json.level` (e.g., `info`, `warn`, `error`) to the ECS `log.level` field.
-        This reflects the Winston log level at which the audit event was emitted, distinct from `backstage.severity_level`.
-      if: ctx.json?.level != null
-  - rename:
-      field: json.trace_id
-      target_field: trace.id
-      ignore_missing: true
-      tag: rename_trace_id
-      description: Maps the OpenTelemetry trace identifier emitted by Backstage's instrumented logger to the ECS `trace.id` field.
-  - rename:
-      field: json.span_id
-      target_field: span.id
-      ignore_missing: true
-      tag: rename_span_id
-      description: Maps the OpenTelemetry span identifier emitted by Backstage's instrumented logger to the ECS `span.id` field.
-  - rename:
       field: json.name
       target_field: error.type
       ignore_missing: true
@@ -162,28 +103,6 @@ processors:
       ignore_missing: true
       tag: rename_error_stack_trace
       description: Maps the stack trace present on failed Backstage operations to the ECS `error.stack_trace` field.
-  - uri_parts:
-      field: json.request.url
-      target_field: url
-      tag: decode_request_uri
-      description: >-
-        Decodes the path/query of the requested URL against backstage. Backstage's
-        request.url is path-only (no scheme/host), which uri_parts parses natively
-        as a relative reference, so scheme/domain are simply absent rather than needing
-        to be faked and stripped.
-      if: ctx.json?.request?.url != null
-  - set:
-      field: url.original
-      copy_from: json.request.url
-      tag: set_url_original_from_source
-      description: Restores `url.original` to the unmodified path-only URL observed in the Backstage audit event.
-      if: ctx.json?.request?.url != null
-  - rename:
-      field: json.actor.userAgent
-      target_field: user_agent.original
-      ignore_missing: true
-      tag: rename_actor_user_agent
-      description: Maps the raw user agent string from the Backstage actor to `user_agent.original` for subsequent parsing by the `user_agent` processor.
   - rename:
       field: json.actor.actorId
       target_field: user.id
@@ -197,18 +116,6 @@ processors:
       tag: append_actor_id_related_user
       description: Appends the Backstage actor identifier to `related.user` to support correlation across all user-related fields.
       if: ctx.user?.id != null
-  - user_agent:
-      field: user_agent.original
-      tag: actor_user_agent
-      ignore_missing: true
-      description: Parses the raw `user_agent.original` string into structured ECS `user_agent.*` fields (name, version, OS, device).
-      if: ctx.user_agent?.original != null
-  - rename:
-      field: json.request.method
-      target_field: http.request.method
-      ignore_missing: true
-      tag: rename_http_request_method
-      description: Maps the HTTP method of the inbound Backstage API request (e.g., `GET`, `POST`) to the ECS `http.request.method` field.
   - append:
       field: related.hosts
       value: "{{{json.actor.hostname}}}"
@@ -388,16 +295,11 @@ processors:
         ctx.backstage = ctx.backstage == null ? new HashMap() : ctx.backstage;
         ctx.backstage.meta = ctx.json.meta.toString();
   - remove:
-      field: [json, url.extension, url.domain, url.scheme]
+      field: json
       ignore_missing: true
       tag: remove_temporary_fields
       description: >-
-        Removes the parsed `json` container now that all fields have been extracted;
-        `url.extension`, which uri_parts sometimes infers from dotted path segments (e.g.
-        usernames like `alice.johnson`) even though this API only serves REST endpoints,
-        never files; and `url.domain`/`url.scheme`, which uri_parts always sets (to `null`
-        rather than omitting) since Backstage's request.url is path-only and never has a
-        scheme/host to parse.
+        Removes the parsed `json` container now that all audit fields have been extracted.
 on_failure:
   - append:
       tag: append_pipeline_error_message
