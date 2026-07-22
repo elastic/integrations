@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: '9.3.0'
+      value: '8.17.0'
   - set:
       field: observer.product
       tag: set_observer_product
@@ -394,7 +394,6 @@ processors:
           field: cloud.instance.id
           tag: append_cloud_instance_id_from_triggering_events
           value: '{{{_ingest._value.raw_audit_log_record.common.vm_external_id}}}'
-          if: ctx._ingest?._value?.raw_audit_log_record?.common?.vm_external_id != null
           allow_duplicates: false
           on_failure:
             - append:
@@ -410,7 +409,6 @@ processors:
           field: host.name
           tag: append_host_name_from_triggering_events
           value: '{{{_ingest._value.raw_audit_log_record.common.host_info.hostname}}}'
-          if: ctx._ingest?._value?.raw_audit_log_record?.common?.host_info?.hostname != null
           allow_duplicates: false
           on_failure:
             - append:
@@ -426,7 +424,6 @@ processors:
           field: file.path
           tag: append_file_path_from_triggering_events
           value: '{{{_ingest._value.raw_audit_log_record.alert.file_event_details.name}}}'
-          if: ctx._ingest?._value?.raw_audit_log_record?.alert?.file_event_details?.name != null
           allow_duplicates: false
           on_failure:
             - append:
@@ -442,7 +439,6 @@ processors:
           field: event.action
           tag: append_event_action_from_triggering_events
           value: '{{{_ingest._value.raw_audit_log_record.alert.event.kind}}}'
-          if: ctx._ingest?._value?.raw_audit_log_record?.alert?.event?.kind != null
           allow_duplicates: false
           on_failure:
             - append:
@@ -549,12 +545,21 @@ processors:
       value: '{{{wiz.defend_v2.primary_actor.email}}}'
       if: ctx.wiz?.defend_v2?.primary_actor?.email != null
       allow_duplicates: false
-  - append:
-      field: related.hosts
-      tag: append_related_hosts_from_host_name
-      value: '{{{host.name}}}'
-      if: ctx.host?.name != null
-      allow_duplicates: false
+  - foreach:
+      field: host.name
+      tag: foreach_host_name_into_related_hosts
+      if: ctx.host?.name instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_related_hosts_from_host_name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                tag: append_related_hosts_failure_into_error_message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - remove:
       field:

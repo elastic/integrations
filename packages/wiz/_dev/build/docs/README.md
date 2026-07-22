@@ -28,7 +28,6 @@ This integration supports using Elastic Agent or agentless ingestion of data.
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-The minimum **kibana.version** required is **8.19.2** or **9.1.2**.
 This module has been tested against the **Wiz API Version v1**.
 
 ## Agentless-enabled integration
@@ -57,14 +56,14 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ### Required scopes
 
-    | Data Stream   | Scope         |
-    | ------------- | ------------- |
-    | Audit         | admin:audit   |
-    | Issue         | read:issues   |
-    | Vulnerability | read:vulnerabilities |
-    | Cloud Configuration Finding | read:cloud_configuration |
-    | Cloud Configuration Finding Full Posture | read:cloud_configuration |
-    | Defend v2 | read:detections, read:cloud_events_cloud, read:cloud_events_sensor, read:security_scans |
+    | Data Stream                              | Scope                                                                                |
+    | ---------------------------------------- | ------------------------------------------------------------------------------------ |
+    | Audit                                    | admin:audit                                                                          |
+    | Cloud Configuration Finding              | read:cloud_configuration                                                             |
+    | Cloud Configuration Finding Full Posture | read:cloud_configuration                                                             |
+    | Defend v2                                | read:detections, read:cloud_events_cloud, read:cloud_events_sensor, read:security_scans |
+    | Issue                                    | read:issues                                                                          |
+    | Vulnerability                            | read:vulnerabilities                                                                 |
 
 ### Collect logs (Defend) via HTTP Endpoint
 

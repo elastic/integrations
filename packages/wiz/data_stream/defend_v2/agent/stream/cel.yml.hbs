@@ -27,8 +27,8 @@ state:
   want_more: false
   batch_size: {{batch_size}}
   query: >-
-    query DetectionsTableV2($filterBy: DetectionFilters $first: Int $after: String $orderBy: DetectionOrder){
-       detections(filterBy: $filterBy first: $first after: $after orderBy: $orderBy) {
+    query DetectionsTableV2($filterBy: DetectionFilters $first: Int $after: String){
+       detections(filterBy: $filterBy first: $first after: $after) {
          nodes {
            type
            origins
@@ -192,25 +192,25 @@ program: |
       },
     }).do_request().as(resp, resp.StatusCode == 200 ?
         resp.Body.decode_json().as(body, {
-          "events": body.?data.?detections.?nodes.orValue([]).map(e, {
+          "events": body.?data.detections.nodes.orValue([]).map(e, {
             "message": e.encode_json(),
           }),
           "cursor": {
-            ?"last_timestamp": body.?data.?detections.nodes.orValue([]).size() > 0 ?
-                optional.of(string(body.?data.?detections.nodes.orValue([]).map(e, timestamp(e.updatedAt)).max()))
+            ?"last_timestamp": body.?data.detections.nodes.orValue([]).size() > 0 ?
+                optional.of(string(body.?data.detections.nodes.orValue([]).map(e, timestamp(e.updatedAt)).max()))
               :
                 state.?cursor.last_timestamp,
           },
           "start_time": start_time,
           "end_cursor": {
-            ?"value": body.?data.?detections.?pageInfo.hasNextPage.orValue(false) &&
-                body.?data.?detections.?pageInfo.endCursor.orValue(null) != null ?
-                body.?data.?detections.?pageInfo.endCursor
+            ?"value": body.?data.detections.pageInfo.hasNextPage.orValue(false) &&
+                body.?data.detections.pageInfo.endCursor.orValue(null) != null ?
+                body.?data.detections.pageInfo.endCursor
               :
                 optional.none()
           },
-          "want_more": body.?data.?detections.?pageInfo.hasNextPage.orValue(false) &&
-              body.?data.?detections.?pageInfo.endCursor.orValue(null) != null,
+          "want_more": body.?data.detections.pageInfo.hasNextPage.orValue(false) &&
+              body.?data.detections.pageInfo.endCursor.orValue(null) != null,
         })
       :
         {
