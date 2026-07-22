@@ -268,7 +268,6 @@ processors:
       pattern: '\s*\|\s*[^/]*'
       replacement: ''
       ignore_missing: true
-      if: ctx.island_browser?.device?.internal_ip != null
       description: >-
         The Island API can return internalIpAddress as a "/"-separated list of
         "<ip> | <adapter>" pairs (one per NIC). Strip the adapter labels so only
@@ -279,18 +278,26 @@ processors:
       tag: split_internal_ip_address
       separator: '\s*/\s*'
       ignore_missing: true
-      if: ctx._temp1 != null
       description: Split the cleaned "/"-separated list into individual IP addresses.
   - convert:
       field: island_browser.device.internal_ip_address
       tag: convert_internal_ip_address_to_ip
       type: ip
       ignore_missing: true
-      if: ctx.island_browser?.device?.internal_ip_address != null
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_flatten_single_internal_ip
+      description: >-
+        Represent a single internal IP as a scalar rather than a single-element
+        list, so devices with one NIC match the shape used for devices that
+        report a single IP directly.
+      if: ctx.island_browser?.device?.internal_ip_address instanceof List && ctx.island_browser.device.internal_ip_address.size() == 1
+      source: >-
+        ctx.island_browser.device.internal_ip_address = ctx.island_browser.device.internal_ip_address.get(0);
   - foreach:
       field: island_browser.device.internal_ip_address
       tag: foreach_append_internal_ips_to_related_ip
