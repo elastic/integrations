@@ -23,7 +23,7 @@ The Backstage integration collects audit log events of the following types, depe
 
 This integration primarily targets Backstage **audit** logs — emitted by the `auditor` service as NDJSON (one JSON object per line) — which are fully normalized to ECS and `backstage.*` fields.
 
-For this initial release and the near term, general Backstage application logs (lines without an `isAuditEvent` key) written to the same file are also retained, but without the field-level detail audit logs receive: the original line is preserved in `event.original` and the parsed fields are kept as keywords under `backstage.log.*`. Customers with immediate needs for these logs are encouraged to configure custom processors or ingest pipelines in the meantime.
+General Backstage application logs — valid JSON lines where `isAuditEvent` is not `true` — written to the same file are also retained. The original line is preserved in `event.original`. Common fields such as messages, service names, log levels, timestamps, tracing IDs, URLs, user agents, HTTP methods, and HTTP response values are mapped to ECS. Other parsed fields remain under `backstage.log.*` as keywords. Audit-specific fields are not mapped for these records.
 
 Deeper mapping of these logs will be driven by customer requests and observed usage.
 
@@ -80,7 +80,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 - **No events collected**: Confirm the Backstage backend is emitting audit events (not every plugin calls the `auditor` service for every operation) and that the configured **Paths** match the actual log file location.
 - **Multi-line JSON not parsed**: If your Backstage deployment pretty-prints JSON log lines across multiple lines, enable the `multiline` parser under **Parsers**. Otherwise each partial line fails JSON parsing.
-- **Application logs have limited fields**: Lines without an `isAuditEvent` key are retained but only minimally parsed — the original line is kept in `event.original` and the parsed fields land under `backstage.log.*` rather than being mapped to ECS. See [Log scope](#log-scope).
+- **Application logs have limited vendor-specific mapping**: Valid JSON lines where `isAuditEvent` is not `true` are retained. Common fields are mapped to ECS, the original line is kept in `event.original`, and other parsed fields land under `backstage.log.*` as keywords. Audit-specific fields are not mapped for these records. See [Log scope](#log-scope).
 - **Permission denied reading the log file**: Elastic Agent needs read access to the Backstage audit log file(s). If your environment writes them with restrictive ownership/permissions, deploy Elastic Agent as `root` (or a user with equivalent read access) on that host or container. This is a deployment-time decision, not a setting configurable through this integration.
 
 ## Scaling
@@ -114,7 +114,7 @@ To collect logs via Filestream, select **Collect logs via Filestream** and confi
 
 #### logs
 
-The `logs` data stream provides audit events from Backstage's `auditor` service, including catalog operations, user activity, and other plugin-specific audit events. General Backstage application logs (lines without an `isAuditEvent` key) are also retained with minimal parsing — original line in `event.original`, fields under `backstage.log.*` — rather than detailed ECS mapping; see [Log scope](#log-scope).
+The `logs` data stream provides audit events from Backstage's `auditor` service, including catalog operations, user activity, and other plugin-specific audit events. General Backstage application logs where `isAuditEvent` is not `true` are also retained with common fields mapped to ECS, the original line in `event.original`, and other parsed fields under `backstage.log.*` as keywords; see [Log scope](#log-scope).
 
 ##### logs fields
 
@@ -129,6 +129,7 @@ The `logs` data stream provides audit events from Backstage's `auditor` service,
 | backstage.entity.ref | The Backstage catalog entity reference the audit event operated on. | keyword |
 | backstage.entity.refs | The Backstage catalog entity references returned by a batch entity lookup. | keyword |
 | backstage.entity.root_ref | The root entity reference for a Backstage catalog ancestry lookup. | keyword |
+| backstage.is_audit_event | Indicates that the record was emitted by Backstage's auditor service. | boolean |
 | backstage.log | Backstage application fields without an explicit ECS or backstage mapping. Common fields such as message, service, level, timestamps, tracing, HTTP requests, URLs, and user agents are promoted to their ECS fields. | object |
 | backstage.meta | Serialized dump of any Backstage plugin metadata that did not match a known, explicitly-mapped field. Intended to be empty for all currently-known event shapes; exists only as a forward-compatible safety net for future Backstage plugin metadata. Well-known keys are promoted to explicit `backstage.\*` fields instead of living here. | text |
 | backstage.query.fields | The entity fields requested by the catalog query. | keyword |
@@ -213,29 +214,29 @@ An example event for `logs` looks as following:
 {
     "@timestamp": "2026-05-22T20:29:50.000Z",
     "agent": {
-        "ephemeral_id": "b6f7f04c-455b-42d5-b136-74d8c3b94e91",
-        "id": "fc0682fb-67a4-4fb0-9c34-6afff6399b91",
-        "name": "elastic-agent-66047",
+        "ephemeral_id": "12f8632d-bbcf-4122-adef-78716b64cabd",
+        "id": "3e840a08-e3ad-4d99-b572-4edaf08fe173",
+        "name": "elastic-agent-66019",
         "type": "filebeat",
         "version": "9.3.3"
     },
     "data_stream": {
         "dataset": "backstage.logs",
-        "namespace": "82087",
+        "namespace": "52354",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "fc0682fb-67a4-4fb0-9c34-6afff6399b91",
+        "id": "3e840a08-e3ad-4d99-b572-4edaf08fe173",
         "snapshot": false,
         "version": "9.3.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "backstage.logs",
-        "ingested": "2026-07-22T01:34:35Z",
+        "ingested": "2026-07-22T04:05:02Z",
         "kind": "event",
         "module": "backstage",
         "original": "{\"level\":\"info\",\"message\":\"Listening on port 7007\",\"service\":\"backstage\",\"timestamp\":\"2026-05-22T20:29:50.000Z\"}"
@@ -246,7 +247,7 @@ An example event for `logs` looks as following:
     "log": {
         "file": {
             "device_id": "43",
-            "inode": "878",
+            "inode": "882",
             "path": "/tmp/service_logs/test-audit-events.log"
         },
         "level": "info",
