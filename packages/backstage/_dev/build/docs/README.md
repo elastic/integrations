@@ -1,4 +1,4 @@
-{{- generatedHeader }}
+{{ generatedHeader }}
 
 # Backstage Integration for Elastic
 
