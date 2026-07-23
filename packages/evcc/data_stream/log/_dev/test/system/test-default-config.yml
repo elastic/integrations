@@ -1,0 +1,28 @@
+wait_for_data_timeout: 5m
+service: journald
+input: journald
+data_stream:
+  vars:
+    paths:
+      - "/run/service_logs/test.journal"
+    include_matches:
+      - systemd.unit=evcc.service
+    tags: [forwarded]
+assert:
+  min_count: 6
+agent:
+  base_image: systemd # Related issue: https://github.com/elastic/integrations/issues/10998
+  runtime: docker
+  provisioning_script:
+    language: "sh"
+    contents: |
+      set -eu
+      if grep fedora /etc/os-release > /dev/null ; then
+        microdnf update -y
+        microdnf install -y systemd
+        microdnf clean all
+      else
+        apt-get update
+        DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes systemd
+        apt-get clean all
+      fi

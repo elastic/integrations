@@ -1,0 +1,261 @@
+---
+description: Pipeline for parsing evcc application logs collected via journald.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - rename:
+      field: message
+      target_field: event.original
+      tag: rename_message_to_event_original
+      ignore_missing: true
+      description: >-
+        Renames the original `message` field to `event.original` to store a copy of the original message.
+        A clean, human-readable `message` is re-derived from the parsed log line further down this pipeline.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document already has an `event.original` field.
+      if: ctx.event?.original != null
+
+  #
+  # evcc emits two on-disk log shapes:
+  #   1. its own leveled logger:  [<component>] <LEVEL> yyyy/MM/dd HH:mm:ss <text>
+  #   2. a raw trace from an internal retry/backoff helper, with no component or level:
+  #      yyyy-MM-dd HH:mm:ss.ffffff +zzzz TZ m=+<uptime> !! <duration> <text>
+  #
+  - grok:
+      field: event.original
+      tag: grok_envelope
+      ignore_failure: true
+      patterns:
+        - '^\[%{DATA:evcc.log.component}\]\s+%{LOGLEVEL:log.level}\s+%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}(?:\s+%{GREEDYDATA:message})?$'
+        - '^%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME} %{DATA} %{DATA} m=\+%{NUMBER} !!\s*%{NOTSPACE:evcc.log._trace_duration}\s+%{GREEDYDATA:message}$'
+  - trim:
+      field: evcc.log.component
+      tag: trim_component
+      ignore_missing: true
+  - grok:
+      field: evcc.log.component
+      tag: grok_loadpoint_index
+      ignore_failure: true
+      if: ctx.evcc?.log?.component != null
+      patterns:
+        - '^lp-%{INT:evcc.log.loadpoint:int}$'
+
+  # Normalize evcc's log levels to ECS convention (warning, not warn; critical, not fatal).
+  - lowercase:
+      field: log.level
+      tag: lowercase_log_level
+      ignore_missing: true
+  - set:
+      field: log.level
+      tag: normalize_warn_to_warning
+      value: warning
+      if: ctx.log?.level == 'warn'
+  - set:
+      field: log.level
+      tag: normalize_fatal_to_critical
+      value: critical
+      if: ctx.log?.level == 'fatal'
+
+  # Convert the raw-trace format's Go duration string (e.g. "576ms") into ECS event.duration (nanoseconds).
+  - script:
+      tag: convert_trace_duration_to_nanos
+      lang: painless
+      if: ctx.evcc?.log?._trace_duration != null
+      source: >-
+        String s = ctx.evcc.log._trace_duration;
+        int i = 0;
+        while (i < s.length() && (Character.isDigit(s.charAt(i)) || s.substring(i, i + 1).equals("."))) {
+          i++;
+        }
+        if (i > 0) {
+          double value = Double.parseDouble(s.substring(0, i));
+          String unit = i < s.length() ? s.substring(i) : '';
+          double factor = 1.0;
+          if (unit.equals('us') || unit.equals('µs')) {
+            factor = 1000.0;
+          } else if (unit.equals('ms')) {
+            factor = 1000000.0;
+          } else if (unit.equals('s')) {
+            factor = 1000000000.0;
+          }
+          ctx.event = ctx.event != null ? ctx.event : new HashMap();
+          ctx.event.duration = (long) (value * factor);
+        }
+  - remove:
+      field: evcc.log._trace_duration
+      tag: remove_trace_duration_temp_field
+      ignore_missing: true
+
+  #
+  # Best-effort enrichment of the free-text message. Every alternative below is anchored (^...$) against
+  # a known evcc message shape observed in production logs. ignore_failure is set because the vast majority
+  # of messages (DEBUG-level telemetry: power/current/SoC readings) intentionally do not match any of
+  # these patterns -- that numeric telemetry is already collected in structured form by this integration's
+  # site and loadpoint metrics data streams, so it is deliberately left as plain `message` text here rather
+  # than duplicating it into dozens of additional mapped fields.
+  #
+  - grok:
+      field: message
+      tag: grok_enrich_message
+      ignore_failure: true
+      if: ctx.message != null
+      patterns:
+        - '^vehicle %{DATA:evcc.log.vehicle_metric}: Get "%{DATA:url.original}": %{GREEDYDATA:evcc.log.error_reason}$'
+        - '^wake-up vehicle: unexpected status: %{NUMBER:http.response.status_code:int} \(%{DATA:evcc.log.http_status_text}\)$'
+        - '^vehicle %{DATA:evcc.log.vehicle_metric}: unexpected status: %{NUMBER:http.response.status_code:int} \(%{DATA:evcc.log.http_status_text}\)(?: \(ignored by estimator\))?$'
+        - '^%{WORD:evcc.log.subsystem} %{INT:evcc.log.device_index:int} %{WORD:evcc.log.reading}: add\[%{INT:evcc.log.device_sub_index:int}\]: read failed: dial tcp %{IP:destination.ip}:%{POSINT:destination.port:int}: %{GREEDYDATA:evcc.log.error_reason}$'
+        - '^%{WORD:evcc.log.subsystem} %{INT:evcc.log.device_index:int} %{WORD:evcc.log.reading}: read failed: dial tcp %{IP:destination.ip}:%{POSINT:destination.port:int}: %{GREEDYDATA:evcc.log.error_reason}$'
+        - '^add\[%{INT:evcc.log.device_sub_index:int}\]: read failed: dial tcp %{IP:destination.ip}:%{POSINT:destination.port:int}: %{GREEDYDATA:evcc.log.error_reason}$'
+        - '^add\[%{INT:evcc.log.device_sub_index:int}\]: read failed: %{GREEDYDATA:evcc.log.error_reason}$'
+        - '^charger logic error: current mismatch \(got %{NUMBER:evcc.log.current_actual:float}A, expected %{NUMBER:evcc.log.current_expected:float}A\) - make sure your interval is at least %{INT:evcc.log.min_interval_sec:int}s$'
+        - '^charger logic error: phases mismatch \(got %{INT:evcc.log.phases_actual:int}, expected %{INT:evcc.log.phases_expected:int}\)$'
+        - '^charger logic error: disabled but charging$'
+        - '^charger enable: timeout$'
+        - '^set charge current limit %{NUMBER:evcc.log.current_limit:float}A: timeout$'
+        - '^grid power: outdated$'
+        - '^energy meter does not respond$'
+        - '^car connected$'
+        - '^car disconnected$'
+        - '^start charging ->$'
+        - '^stop charging <-$'
+        - '^new version available: %{DATA:evcc.log.available_version}$'
+  - set:
+      field: evcc.log.ignored_by_estimator
+      tag: set_ignored_by_estimator
+      value: true
+      if: ctx.message != null && ctx.message.endsWith('(ignored by estimator)')
+  - gsub:
+      field: evcc.log.error_reason
+      tag: strip_ignored_by_estimator_suffix
+      pattern: ' \(ignored by estimator\)$'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      field: evcc.log.vehicle_metric
+      tag: normalize_vehicle_metric_slug
+      pattern: ' '
+      replacement: '_'
+      ignore_missing: true
+  - uri_parts:
+      field: url.original
+      tag: parse_vehicle_api_url
+      ignore_failure: true
+      if: ctx.url?.original != null
+  - append:
+      field: related.ip
+      tag: append_destination_ip_to_related
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+
+  # Derive ECS event.action/category/type/outcome from whichever enrichment fields matched above.
+  - script:
+      tag: derive_event_action
+      lang: painless
+      source: >-
+        ctx.event = ctx.event != null ? ctx.event : new HashMap();
+        if (ctx.evcc?.log?.vehicle_metric != null) {
+          ctx.event.action = 'vehicle-' + ctx.evcc.log.vehicle_metric.replace('_', '-');
+          ctx.event.category = ['web'];
+          ctx.event.type = ['error'];
+          ctx.event.outcome = 'failure';
+        } else if (ctx.evcc?.log?.http_status_text != null) {
+          ctx.event.action = 'vehicle-wake-up';
+          ctx.event.category = ['web'];
+          ctx.event.type = ['error'];
+          ctx.event.outcome = 'failure';
+        } else if (ctx.destination?.ip != null) {
+          ctx.event.action = 'device-read-failed';
+          ctx.event.category = ['network'];
+          ctx.event.type = ['connection'];
+          ctx.event.outcome = 'failure';
+        } else if (ctx.message != null && ctx.message.startsWith('add[') && ctx.evcc?.log?.error_reason != null) {
+          ctx.event.action = 'device-read-failed';
+          ctx.event.outcome = 'failure';
+        } else if (ctx.evcc?.log?.current_actual != null) {
+          ctx.event.action = 'charger-current-mismatch';
+        } else if (ctx.evcc?.log?.phases_actual != null) {
+          ctx.event.action = 'charger-phases-mismatch';
+        } else if (ctx.message == 'charger logic error: disabled but charging') {
+          ctx.event.action = 'charger-disabled-but-charging';
+        } else if (ctx.message == 'charger enable: timeout') {
+          ctx.event.action = 'charger-enable-timeout';
+          ctx.event.outcome = 'failure';
+        } else if (ctx.evcc?.log?.current_limit != null) {
+          ctx.event.action = 'charge-current-limit-timeout';
+          ctx.event.outcome = 'failure';
+        } else if (ctx.message == 'grid power: outdated') {
+          ctx.event.action = 'grid-power-outdated';
+          ctx.event.outcome = 'failure';
+        } else if (ctx.message == 'energy meter does not respond') {
+          ctx.event.action = 'energy-meter-unresponsive';
+          ctx.event.category = ['network'];
+          ctx.event.type = ['connection'];
+          ctx.event.outcome = 'failure';
+        } else if (ctx.message == 'car connected') {
+          ctx.event.action = 'car-connected';
+          ctx.event.category = ['session'];
+          ctx.event.type = ['start'];
+          ctx.event.outcome = 'success';
+        } else if (ctx.message == 'car disconnected') {
+          ctx.event.action = 'car-disconnected';
+          ctx.event.category = ['session'];
+          ctx.event.type = ['end'];
+          ctx.event.outcome = 'success';
+        } else if (ctx.message == 'start charging ->') {
+          ctx.event.action = 'charging-started';
+          ctx.event.category = ['session'];
+          ctx.event.type = ['start'];
+          ctx.event.outcome = 'success';
+        } else if (ctx.message == 'stop charging <-') {
+          ctx.event.action = 'charging-stopped';
+          ctx.event.category = ['session'];
+          ctx.event.type = ['end'];
+          ctx.event.outcome = 'success';
+        } else if (ctx.evcc?.log?.available_version != null) {
+          ctx.event.action = 'update-available';
+          ctx.event.category = ['package'];
+          ctx.event.type = ['info'];
+        }
+
+  # Safety net: if the envelope grok did not match at all (an unforeseen future log shape), force-keep
+  # the raw line in event.original regardless of the preserve_original_event setting, and fall back to
+  # it for `message` too so the field is never empty.
+  - append:
+      field: tags
+      tag: preserve_original_on_unparsed_envelope
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.message == null
+  - set:
+      field: message
+      tag: fallback_message_from_original
+      copy_from: event.original
+      if: ctx.message == null && ctx.event?.original != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure
+      value: preserve_original_event
+      allow_duplicates: false
