@@ -272,6 +272,7 @@ An example event for `log` looks as following:
 | process.pid | Process id. | long |
 | process.working_directory | The working directory of the process. | keyword |
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -299,6 +300,7 @@ An example event for `log` looks as following:
 | user.filesystem.id | One or multiple unique identifiers of the user. | keyword |
 | user.filesystem.name | Short name or login of the user. | keyword |
 | user.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.group.name | Name of the group. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |

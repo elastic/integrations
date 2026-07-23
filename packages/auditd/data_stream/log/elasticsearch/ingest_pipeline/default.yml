@@ -2077,6 +2077,80 @@ processors:
       ignore_failure: true
       field: auditd.log.ouid
       target_field: user.owner.id
+  # Map ENRICHED format username/group fields (UID="root", EUID=..., etc.) to ECS.
+  # Only set when the target is unset, and skip placeholder values like "unset" / "?".
+  - set:
+      field: user.name
+      copy_from: auditd.log.UID
+      override: false
+      ignore_empty_value: true
+      if: ctx.auditd?.log?.UID != null && !['?', 'unset'].contains(ctx.auditd.log.UID)
+  - set:
+      field: user.group.name
+      copy_from: auditd.log.GID
+      override: false
+      ignore_empty_value: true
+      if: ctx.auditd?.log?.GID != null && !['?', 'unset'].contains(ctx.auditd.log.GID)
+  - set:
+      field: user.audit.name
+      copy_from: auditd.log.AUID
+      override: false
+      ignore_empty_value: true
+      if: ctx.auditd?.log?.AUID != null && !['?', 'unset'].contains(ctx.auditd.log.AUID)
+  - set:
+      field: user.audit.group.name
+      copy_from: auditd.log.AGID
+      override: false
+      ignore_empty_value: true
+      if: ctx.auditd?.log?.AGID != null && !['?', 'unset'].contains(ctx.auditd.log.AGID)
+  - set:
+      field: user.effective.name
+      copy_from: auditd.log.EUID
+      override: false
+      ignore_empty_value: true
+      if: ctx.auditd?.log?.EUID != null && !['?', 'unset'].contains(ctx.auditd.log.EUID)
+  - set:
+      field: user.effective.group.name
+      copy_from: auditd.log.EGID
+      override: false
+      ignore_empty_value: true
+      if: ctx.auditd?.log?.EGID != null && !['?', 'unset'].contains(ctx.auditd.log.EGID)
+  - set:
+      field: user.filesystem.name
+      copy_from: auditd.log.FSUID
+      override: false
+      ignore_empty_value: true
+      if: ctx.auditd?.log?.FSUID != null && !['?', 'unset'].contains(ctx.auditd.log.FSUID)
+  - set:
+      field: user.filesystem.group.name
+      copy_from: auditd.log.FSGID
+      override: false
+      ignore_empty_value: true
+      if: ctx.auditd?.log?.FSGID != null && !['?', 'unset'].contains(ctx.auditd.log.FSGID)
+  - set:
+      field: user.saved.name
+      copy_from: auditd.log.SUID
+      override: false
+      ignore_empty_value: true
+      if: ctx.auditd?.log?.SUID != null && !['?', 'unset'].contains(ctx.auditd.log.SUID)
+  - set:
+      field: user.saved.group.name
+      copy_from: auditd.log.SGID
+      override: false
+      ignore_empty_value: true
+      if: ctx.auditd?.log?.SGID != null && !['?', 'unset'].contains(ctx.auditd.log.SGID)
+  - set:
+      field: user.owner.name
+      copy_from: auditd.log.OUID
+      override: false
+      ignore_empty_value: true
+      if: ctx.auditd?.log?.OUID != null && !['?', 'unset'].contains(ctx.auditd.log.OUID)
+  - set:
+      field: user.owner.group.name
+      copy_from: auditd.log.OGID
+      override: false
+      ignore_empty_value: true
+      if: ctx.auditd?.log?.OGID != null && !['?', 'unset'].contains(ctx.auditd.log.OGID)
   - rename:
       ignore_failure: true
       field: auditd.log.comm
@@ -2281,6 +2355,41 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+  - append:
+      field: related.user
+      value: "{{{ user.name }}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null && ctx.user.name != ''
+  - append:
+      field: related.user
+      value: "{{{ user.audit.name }}}"
+      allow_duplicates: false
+      if: ctx.user?.audit?.name != null && ctx.user.audit.name != ''
+  - append:
+      field: related.user
+      value: "{{{ user.effective.name }}}"
+      allow_duplicates: false
+      if: ctx.user?.effective?.name != null && ctx.user.effective.name != ''
+  - append:
+      field: related.user
+      value: "{{{ user.filesystem.name }}}"
+      allow_duplicates: false
+      if: ctx.user?.filesystem?.name != null && ctx.user.filesystem.name != ''
+  - append:
+      field: related.user
+      value: "{{{ user.saved.name }}}"
+      allow_duplicates: false
+      if: ctx.user?.saved?.name != null && ctx.user.saved.name != ''
+  - append:
+      field: related.user
+      value: "{{{ user.owner.name }}}"
+      allow_duplicates: false
+      if: ctx.user?.owner?.name != null && ctx.user.owner.name != ''
+  - append:
+      field: related.user
+      value: "{{{ user.target.name }}}"
+      allow_duplicates: false
+      if: ctx.user?.target?.name != null && ctx.user.target.name != ''
   - remove:
       field:
         - auditd.log.kv
