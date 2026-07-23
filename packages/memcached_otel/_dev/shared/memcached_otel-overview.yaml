@@ -1,0 +1,384 @@
+# Memcached OTel Overview Dashboard
+# Monitors memcached instances via the memcachedreceiver OTel collector.
+# Covers: traffic, hit ratio, evictions, connections, memory, CPU.
+
+dashboards:
+  - id: memcached_otel-overview
+    name: '[Memcached OTel] Overview'
+    description: >-
+      Overview of Memcached cache health and performance: hit ratio, evictions,
+      connections, memory usage, command throughput, and CPU.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      margins: true
+      titles: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+    filters:
+      - field: data_stream.dataset
+        equals: memcachedreceiver.otel
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: host.name
+    panels:
+      # ─── Overview ────────────────────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Memcached OTel] Overview
+
+            This dashboard monitors Memcached cache health and performance:
+            - **Hit ratio** — cache effectiveness (higher is better; spec bug: OTel reports miss ratio, we show 100 - miss)
+            - **Evictions** — memory pressure indicator (rising evictions = memory saturated)
+            - **Connections** — current open connections and connection rate
+            - **Memory** — bytes used for item storage
+            - **Command throughput** — get/set/flush/touch rates
+            - **CPU usage** — cumulative CPU time (rate indicates load)
+
+      # ─── KPI Row ────────────────────────────────────────────────────
+      - title: Hit Ratio (get)
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - |-
+              WHERE memcached.operation_hit_ratio IS NOT NULL
+                AND (operation == "get" OR attributes.operation == "get")
+            - STATS miss_ratio = AVG(memcached.operation_hit_ratio)
+            - EVAL hit_ratio = (100 - miss_ratio) / 100
+          primary:
+            field: hit_ratio
+            label: Hit Ratio (get)
+            format:
+              type: percent
+              decimals: 1
+
+      - title: Eviction Rate
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - WHERE memcached.evictions IS NOT NULL
+            - STATS eviction_rate = SUM(RATE(memcached.evictions))
+          primary:
+            field: eviction_rate
+            label: Evictions/sec
+            format:
+              type: number
+              decimals: 1
+              suffix: "/sec"
+
+      - title: Current Connections
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - WHERE memcached.connections.current IS NOT NULL
+            - STATS connections = MAX(LAST_OVER_TIME(memcached.connections.current))
+          primary:
+            field: connections
+            label: Connections
+            format:
+              type: number
+              decimals: 0
+
+      - title: Memory Used
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - WHERE memcached.bytes IS NOT NULL
+            - STATS bytes_used = MAX(LAST_OVER_TIME(memcached.bytes))
+          primary:
+            field: bytes_used
+            label: Bytes
+            format:
+              type: bytes
+
+      # ─── Section: Traffic ────────────────────────────────────────────
+      - title: Traffic
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Traffic'
+
+      - title: Command Throughput by Type
+        description: Per-second rate of get, set, flush, touch commands.
+        size: {w: 24, h: 10}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - WHERE memcached.commands IS NOT NULL
+            - EVAL cmd = COALESCE(attributes.command, command, "unknown")
+            - STATS cmd_rate = SUM(RATE(memcached.commands))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), cmd
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: cmd_rate
+              label: Commands/sec
+              format:
+                type: number
+                decimals: 1
+                suffix: "/sec"
+          breakdown:
+            field: cmd
+          legend:
+            visible: show
+            position: right
+
+      - title: Network I/O
+        description: Bytes sent and received per second.
+        size: {w: 24, h: 10}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - WHERE memcached.network IS NOT NULL
+            - EVAL dir = COALESCE(attributes.direction, direction, "unknown")
+            - STATS bytes_rate = SUM(RATE(memcached.network))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dir
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: bytes_rate
+              label: Bytes/sec
+              format:
+                type: bytes
+                suffix: "/sec"
+          breakdown:
+            field: dir
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Health ─────────────────────────────────────────────
+      - title: Health
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Health'
+
+      - title: Hit Ratio Over Time (get)
+        description: True hit ratio = 100 - miss_ratio (OTel bug). Higher is better.
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - |-
+              WHERE memcached.operation_hit_ratio IS NOT NULL
+                AND (operation == "get" OR attributes.operation == "get")
+            - STATS miss_ratio = AVG(memcached.operation_hit_ratio)
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL hit_ratio = (100 - miss_ratio) / 100
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: hit_ratio
+              label: Hit Ratio %
+              format:
+                type: percent
+                decimals: 1
+
+      - title: Eviction Rate Over Time
+        description: Rising evictions indicate memory pressure.
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - WHERE memcached.evictions IS NOT NULL
+            - STATS eviction_rate = SUM(RATE(memcached.evictions))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: eviction_rate
+              label: Evictions/sec
+              format:
+                type: number
+                decimals: 1
+                suffix: "/sec"
+
+      # ─── Section: Resources ──────────────────────────────────────────
+      - title: Resources
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Resources'
+
+      - title: Connections Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - WHERE memcached.connections.current IS NOT NULL
+            - STATS connections = MAX(LAST_OVER_TIME(memcached.connections.current))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: connections
+              label: Connections
+              format:
+                type: number
+                decimals: 0
+
+      - title: Memory Used Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - WHERE memcached.bytes IS NOT NULL
+            - STATS bytes_used = MAX(LAST_OVER_TIME(memcached.bytes))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: bytes_used
+              label: Bytes
+              format:
+                type: bytes
+
+      - title: CPU Usage Rate
+        description: Per-second rate of cumulative CPU time (system + user).
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - WHERE memcached.cpu.usage IS NOT NULL
+            - STATS cpu_rate = SUM(RATE(memcached.cpu.usage))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: cpu_rate
+              label: CPU sec/sec
+              format:
+                type: number
+                decimals: 2
+                suffix: "/sec"
+
+      - title: Operations by Type (hit vs miss)
+        description: Cumulative operations split by hit and miss.
+        size: {w: 24, h: 10}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - WHERE memcached.operations IS NOT NULL
+            - EVAL op_type = COALESCE(attributes.type, type, "unknown")
+            - STATS op_rate = SUM(RATE(memcached.operations))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), op_type
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: op_rate
+              label: Ops/sec
+              format:
+                type: number
+                decimals: 1
+                suffix: "/sec"
+          breakdown:
+            field: op_type
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Detail ──────────────────────────────────────────────
+      - title: Detail
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Detail'
+
+      - title: Instances by Memory Used
+        description: Top instances by current memory usage.
+        size: {w: 24, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - WHERE memcached.bytes IS NOT NULL
+            - EVAL instance = COALESCE(host.name, service.instance.id, "unknown")
+            - STATS bytes_used = MAX(LAST_OVER_TIME(memcached.bytes)),
+                    items = MAX(LAST_OVER_TIME(memcached.current_items))
+              BY instance
+            - SORT bytes_used DESC
+            - LIMIT 50
+          dimensions:
+            - field: instance
+              label: Instance
+          metrics:
+            - field: bytes_used
+              label: Memory Used
+              format:
+                type: bytes
+            - field: items
+              label: Items
+              format:
+                type: number
+                decimals: 0
+
+      - title: Instances by Eviction Rate
+        description: Instances with highest eviction rate (memory pressure).
+        size: {w: 24, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-memcachedreceiver.otel*
+            - WHERE memcached.evictions IS NOT NULL
+            - EVAL instance = COALESCE(host.name, service.instance.id, "unknown")
+            - STATS eviction_rate = SUM(RATE(memcached.evictions)) BY instance
+            - WHERE eviction_rate > 0
+            - SORT eviction_rate DESC
+            - LIMIT 50
+          dimensions:
+            - field: instance
+              label: Instance
+          metrics:
+            - field: eviction_rate
+              label: Evictions/sec
+              format:
+                type: number
+                decimals: 2
+                suffix: "/sec"

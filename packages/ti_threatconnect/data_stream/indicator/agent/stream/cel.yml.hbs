@@ -90,7 +90,7 @@ program: |
               "Timestamp": [string(int(now))],
           }
       }))).do_request().as(resp, resp.StatusCode == 200 ?
-          bytes(resp.Body).decode_json().as(body, {
+          resp.Body.decode_json_string_numbers().as(body, {
               "events": body.data.map(e, {
                   "message": e.encode_json(),
               }),

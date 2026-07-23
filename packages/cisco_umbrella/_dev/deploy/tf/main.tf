@@ -18,35 +18,35 @@ resource "aws_s3_object" "cisco_umbrella_auditlogs" {
   bucket = aws_s3_bucket.cisco_umbrella.id
   key    = "auditlogs.log"
   source = "./files/test-umbrella-auditlogs.log"
-  depends_on = [aws_sqs_queue.cisco_umbrella_queue]
+  depends_on = [aws_s3_bucket_notification.bucket_notification]
 }
 
 resource "aws_s3_object" "cisco_umbrella_dnslogs" {
   bucket = aws_s3_bucket.cisco_umbrella.id
   key    = "dnslogs.log"
   source = "./files/test-umbrella-dnslogs.log"
-  depends_on = [aws_sqs_queue.cisco_umbrella_queue]
+  depends_on = [aws_s3_bucket_notification.bucket_notification]
 }
 
 resource "aws_s3_object" "cisco_umbrella_firewalllogs" {
   bucket = aws_s3_bucket.cisco_umbrella.id
   key    = "firewalllogs.log"
   source = "./files/test-umbrella-firewalllogs.log"
-  depends_on = [aws_sqs_queue.cisco_umbrella_queue]
+  depends_on = [aws_s3_bucket_notification.bucket_notification]
 }
 
 resource "aws_s3_object" "cisco_umbrella_intrusionlogs" {
   bucket = aws_s3_bucket.cisco_umbrella.id
   key    = "intrusionlogs.log"
   source = "./files/test-umbrella-intrusionlogs.log"
-  depends_on = [aws_sqs_queue.cisco_umbrella_queue]
+  depends_on = [aws_s3_bucket_notification.bucket_notification]
 }
 
 resource "aws_s3_object" "cisco_umbrella_proxylogs" {
   bucket = aws_s3_bucket.cisco_umbrella.id
   key    = "proxylogs.log"
   source = "./files/test-umbrella-proxylogs.log"
-  depends_on = [aws_sqs_queue.cisco_umbrella_queue]
+  depends_on = [aws_s3_bucket_notification.bucket_notification]
 }
 
 resource "aws_sqs_queue" "cisco_umbrella_queue" {

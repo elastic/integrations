@@ -1,10 +1,15 @@
-service: google-cloud-storage-emulator
+deployer: docker
+service: gcs-mock
 input: gcs
 vars:
   project_id: testproject
   alternative_host: "http://{{Hostname}}:{{Port}}"
+  number_of_workers: 1
+  service_account_key: "{\"type\":\"service_account\",\"project_id\":\"testproject\"}"
   data_stream.dataset: google_cloud_storage.gcs
   buckets: |
     - name: testbucket
       poll: true
       poll_interval: 15s
+assert:
+  hit_count: 1

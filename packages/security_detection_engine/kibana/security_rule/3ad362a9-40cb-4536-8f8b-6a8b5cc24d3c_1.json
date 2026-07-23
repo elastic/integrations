@@ -1,0 +1,120 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects applications making a curl request to a known public IP address lookup web service. Malware commonly performs this action during reconnaissance to assess potential targets and identify the victim's external IP address.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "External IP Address Discovery via Curl",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating External IP Address Discovery via Curl\n\nThis rule detects macOS processes launching curl (or nscurl) to query common public \u201cwhat is my IP\u201d and geolocation services, often from unusual parent applications or untrusted/unsigned code. Attackers use this to learn the victim\u2019s outward-facing address and network context to guide follow-on targeting, routing, or staging decisions. A typical pattern is a script or dropped binary spawning curl with a short command that hits ipify/ipinfo/ifconfig-style endpoints immediately after execution.\n\n### Possible investigation steps\n\n- Review the full process tree and timeline around the curl execution to identify the initiating app/script, preceding download or execution activity, and any rapid follow-on discovery or persistence commands.  \n- Examine the curl/nscurl command line and stdout/stderr capture (if available) to confirm the external-IP lookup intent and whether results were written to disk, environment variables, or passed to subsequent processes.  \n- Correlate with network telemetry for the same host and time window to verify the outbound connection, destination IP/ASN, DNS resolution, TLS/SNI details, and any additional unexpected egress to non-lookup infrastructure.  \n- Validate the provenance of the parent executable by checking its path, quarantine/notarization status, signature trust, and recent file creation/modification events to assess whether it was dropped or launched from a user-writable location.  \n- Hunt for repeat occurrences across the endpoint (and fleet) that share the same parent, script content, or destination services, then check for associated indicators like new launch agents/daemons, cron jobs, or suspicious login items.\n\n### False positive analysis\n\n- A user or admin runs a short shell one-liner (bash/zsh with an http-containing command line) that uses curl to quickly confirm the Mac\u2019s external IP during routine troubleshooting, VPN verification, or connectivity checks.  \n- A legitimate but unsigned/not-yet-trusted macOS app launched from /Applications, a mounted /Volumes installer/dmg, or a temporary /private/var/folders path performs an external IP lookup via curl as part of initialization, telemetry, or network diagnostics.\n\n### Response and remediation\n\n- Isolate the affected Mac from the network if the curl/nscurl external-IP lookup is spawned by an unsigned/untrusted parent or from user-writable paths (e.g., /private/var/folders, mounted /Volumes) to prevent follow-on command-and-control.  \n- Quarantine and remove the initiating artifact (app/script/binary) and any associated installers or DMGs, then block its hash and the specific lookup domains contacted (e.g., ipinfo.io, api.ipify.org, ifconfig.me) at egress/DNS to stop repeat discovery.  \n- Hunt for and delete persistence created around the event (LaunchAgents/LaunchDaemons, login items, cron entries) and terminate any remaining suspicious processes that inherit environment/output from the curl call.  \n- Reset exposed credentials and invalidate active sessions if the same parent process also accessed browsers, keychain, SSH keys, or configuration files shortly before/after the lookup, and rotate VPN/API tokens used on the host.  \n- Reimage or restore the endpoint from a known-good snapshot if additional unknown binaries, repeated external-IP lookups, or unexpected outbound connections are observed after cleanup, then validate with a follow-up scan and a clean process baseline.  \n- Escalate to IR leadership immediately if the external-IP lookup is followed by downloads/execution, persistence creation, or connections to newly registered/rare domains, and harden by restricting curl execution for non-admin contexts and tightening macOS app execution controls (Gatekeeper/notarization).\n",
+        "query": "process where host.os.type == \"macos\" and event.type == \"start\" and event.action == \"exec\" and\n  ((process.parent.executable like (\"/Applications/*\", \"/Volumes/*\", \"/private/var/folders/*\")) or\n   (process.parent.name in (\"bash\", \"sh\", \"zsh\") and process.parent.command_line like \"*http*\") or\n   (process.parent.code_signature.trusted == false or process.code_signature.exists == false)) and\n  process.name in (\"curl\", \"nscurl\") and\n  process.args_count <= 5 and\n  process.command_line like (\"*ip-api.com*\", \"*ipwho.is*\", \"*checkip.dyndns.org*\", \"*api.ipify.org*\",\n                             \"*whatismyip.akamai.com*\", \"*ifcfg.me*\", \"*ifconfig.me*\", \"*ident.me*\",\n                             \"*icanhazip.com*\", \"*ipecho.net*\", \"*api.myip.com*\", \"*checkip.amazonaws.com*\",\n                             \"*wtfismyip.com*\", \"*iplogger.*\", \"*freegeoip.net*\", \"*ipinfo.io*\",\n                             \"*geoplugin.net*\", \"*httpbin.org*\", \"*myip.opendns.com*\")\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "3ad362a9-40cb-4536-8f8b-6a8b5cc24d3c",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1016",
+                        "name": "System Network Configuration Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1016/",
+                        "subtechnique": [
+                            {
+                                "id": "T1016.001",
+                                "name": "Internet Connection Discovery",
+                                "reference": "https://attack.mitre.org/techniques/T1016/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "3ad362a9-40cb-4536-8f8b-6a8b5cc24d3c_1",
+    "type": "security-rule"
+}

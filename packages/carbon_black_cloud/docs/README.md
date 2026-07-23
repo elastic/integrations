@@ -2,10 +2,10 @@
 
 The VMware Carbon Black Cloud integration collects and parses data from the Carbon Black Cloud REST APIs and AWS S3 bucket.
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ## Version 1.21+ Update Disclaimer
 Starting from version 1.21, if using multiple AWS data streams simultaneously configured to use AWS SQS, separate SQS queues should be configured per
@@ -990,13 +990,13 @@ An example event for `asset_vulnerability_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-06-02T14:58:13.698Z",
+    "@timestamp": "2025-12-16T06:00:33.931Z",
     "agent": {
-        "ephemeral_id": "cec373bd-24d4-48f5-9a22-d7630b36e420",
-        "id": "afe3350e-e0ea-4c70-8249-090c14d9d593",
-        "name": "elastic-agent-11440",
+        "ephemeral_id": "6604f82d-c649-4b54-b5b7-f180dd6f63c7",
+        "id": "62d26a97-24c8-4d91-a482-7dce2566959d",
+        "name": "elastic-agent-61579",
         "type": "filebeat",
-        "version": "8.18.1"
+        "version": "8.19.4"
     },
     "carbon_black_cloud": {
         "asset_vulnerability_summary": {
@@ -1016,21 +1016,21 @@ An example event for `asset_vulnerability_summary` looks as following:
     },
     "data_stream": {
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "namespace": "93728",
+        "namespace": "10094",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "afe3350e-e0ea-4c70-8249-090c14d9d593",
+        "id": "62d26a97-24c8-4d91-a482-7dce2566959d",
         "snapshot": false,
-        "version": "8.18.1"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "ingested": "2025-06-02T14:58:16Z",
+        "ingested": "2025-12-16T06:00:36Z",
         "kind": "state",
         "original": "{\"cve_ids\":null,\"device_id\":8,\"highest_risk_score\":10,\"host_name\":\"DESKTOP-008\",\"last_sync_ts\":\"2022-01-17T08:33:37.384932Z\",\"name\":\"DESKTOP-008KK\",\"os_info\":{\"os_arch\":\"64-bit\",\"os_name\":\"Microsoft Windows 10 Education\",\"os_type\":\"WINDOWS\",\"os_version\":\"10.0.17763\"},\"severity\":\"CRITICAL\",\"sync_status\":\"COMPLETED\",\"sync_type\":\"SCHEDULED\",\"type\":\"ENDPOINT\",\"vm_id\":\"\",\"vm_name\":\"\",\"vuln_count\":1770}"
     },

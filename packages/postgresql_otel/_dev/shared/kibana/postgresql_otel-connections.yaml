@@ -1,0 +1,215 @@
+---
+# PostgreSQL OpenTelemetry Connections Dashboard
+# Connection capacity, utilization, and backend distribution per database.
+#
+# Metrics reference: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/postgresqlreceiver
+dashboards:
+  - id: postgresql_otel-connections
+    name: '[PostgreSQL OTel] Connections'
+    description: Connection capacity, utilization, and backend distribution per database.
+    controls:
+      - type: options
+        label: Instance
+        data_view: metrics-*
+        field: resource.attributes.service.instance.id
+      - type: options
+        label: Database
+        data_view: metrics-*
+        field: resource.attributes.postgresql.database.name
+    panels:
+      # Navigation links bar
+      - size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: postgresql_otel-overview
+            - label: Connections
+              dashboard: postgresql_otel-connections
+            - label: Workload
+              dashboard: postgresql_otel-workload
+            - label: Query Performance
+              dashboard: postgresql_otel-query-performance
+            - label: I/O Health
+              dashboard: postgresql_otel-io-health
+            - label: Locks
+              dashboard: postgresql_otel-locks
+            - label: Active Queries
+              dashboard: postgresql_otel-active-queries
+
+      # Markdown description panel
+      - size: {w: 16, h: 8}
+        position: {x: 0, y: 2}
+        markdown:
+          content: |
+            ## [PostgreSQL OTel] Connections
+
+            This dashboard monitors connection capacity and utilization:
+            - Active backends vs max_connections
+            - Connection utilization percentage
+            - Backend distribution by database
+            - Connection trends over time
+
+      # Active Connections (lnsMetric)
+      - title: Active Connections
+        hide_title: true
+        size: {w: 16, h: 4}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.backends IS NOT NULL
+            | STATS connections = SUM(LAST_OVER_TIME(postgresql.backends))
+          primary:
+            field: connections
+            label: Active
+            format:
+              type: number
+              decimals: 0
+
+      # Max Connections (lnsMetric)
+      - title: Max Connections
+        hide_title: true
+        size: {w: 16, h: 4}
+        position: {x: 32, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.connection.max IS NOT NULL
+            | STATS max_conn = MAX(LAST_OVER_TIME(postgresql.connection.max))
+          primary:
+            field: max_conn
+            label: Max
+            format:
+              type: number
+              decimals: 0
+
+      # Connection Utilization (lnsMetric, percent)
+      - title: Connection Utilization
+        hide_title: true
+        size: {w: 16, h: 4}
+        position: {x: 16, y: 6}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.backends IS NOT NULL OR postgresql.connection.max IS NOT NULL
+            | STATS backends = SUM(LAST_OVER_TIME(postgresql.backends)), max_conn = MAX(LAST_OVER_TIME(postgresql.connection.max))
+            | EVAL utilization = CASE(max_conn > 0, TO_DOUBLE(backends) / TO_DOUBLE(max_conn), 0)
+          primary:
+            field: utilization
+            label: Utilization
+            format:
+              type: percent
+              decimals: 1
+
+      # Databases (lnsMetric)
+      - title: Databases
+        hide_title: true
+        size: {w: 16, h: 4}
+        position: {x: 32, y: 6}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.database.count IS NOT NULL
+            | STATS db_count = MAX(postgresql.database.count)
+          primary:
+            field: db_count
+            label: Databases
+            format:
+              type: number
+              decimals: 0
+
+      # Connection Utilization Gauge (lnsGauge)
+      - title: Connection Utilization Gauge
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 10}
+        esql:
+          type: gauge
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.backends IS NOT NULL OR postgresql.connection.max IS NOT NULL
+            | STATS backends = SUM(LAST_OVER_TIME(postgresql.backends)), max_conn = MAX(LAST_OVER_TIME(postgresql.connection.max))
+            | EVAL utilization = CASE(max_conn > 0, TO_DOUBLE(backends) / TO_DOUBLE(max_conn), 0), min_val = 0.0, max_val = 1.0, goal_val = 0.8
+          metric:
+            field: utilization
+            label: Utilization
+            format:
+              type: percent
+              decimals: 2
+          minimum:
+            field: min_val
+          maximum:
+            field: max_val
+          goal:
+            field: goal_val
+          color:
+            range_type: percent
+            range_min: 0
+            range_max: 1
+            thresholds:
+              - up_to: 0.8
+                color: "#54b399"
+              - up_to: 0.95
+                color: "#d6bf57"
+              - up_to: 1
+                color: "#cc5642"
+          appearance:
+            shape: arc
+            ticks_position: bands
+
+      # Backends by Database (lnsPie, donut)
+      - title: Backends by Database
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 10}
+        esql:
+          type: pie
+          query: |
+            FROM metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.backends IS NOT NULL
+            | STATS backends = MAX(postgresql.backends) BY resource.attributes.postgresql.database.name
+            | SORT backends DESC
+            | LIMIT 10
+          metrics:
+            - field: backends
+              label: backends
+              format:
+                type: number
+                decimals: 0
+          breakdowns:
+            - field: resource.attributes.postgresql.database.name
+              label: Database
+          appearance:
+            donut: medium
+
+      # Connections Over Time by Database (lnsXY area)
+      - title: Connections Over Time by Database
+        size: {w: 48, h: 12}
+        position: {x: 0, y: 20}
+        esql:
+          type: area
+          mode: stacked
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.backends IS NOT NULL
+            | STATS connections = MAX(LAST_OVER_TIME(postgresql.backends)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.postgresql.database.name
+            | SORT time_bucket ASC
+          legend:
+            visible: show
+            position: right
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: connections
+              label: Connections
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: resource.attributes.postgresql.database.name

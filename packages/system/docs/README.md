@@ -12,6 +12,14 @@ Then, you could view real-time updates to disk space used on your system in Kiba
 You could also set up a new rule in the Elastic Observability Metrics app to alert you when the percent free is
 less than 10% of the total disk space.
 
+## Choosing the right integration for Windows event logs
+
+If you're collecting Windows event logs, note that there are three related integrations:
+
+- **System integration** (this integration): Collects logs from the Windows `Application`, `System`, and `Security` channels with specialized ingest pipelines optimized for observability use cases.
+- **[Windows integration](https://www.elastic.co/docs/reference/integrations/windows)**: Collects logs from Windows-specific channels like PowerShell, Sysmon, Windows Defender, and AppLocker with specialized security-focused ingest pipelines. Use this for security monitoring and advanced Windows telemetry.
+- **[Custom Windows event log package](https://www.elastic.co/docs/reference/integrations/winlog)**: Collects logs from any user-defined Windows event log channel. Use this when you need to collect from channels not covered by the System or Windows integrations. Note that this integration does not include specialized ingest pipelines—you'll need to create custom pipelines if additional processing is required.
+  
 ## Data streams
 
 The System integration collects two types of data: logs and metrics.
@@ -903,6 +911,31 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |
 | winlog.record_id | The record ID of the event log record. The first record written to an event log is record number 1, and other records are numbered sequentially. If the record number reaches the maximum value (2^32^ for the Event Logging API and 2^64^ for the Windows Event Log API), the next record number will be 0. | keyword |
 | winlog.related_activity_id | A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier. | keyword |
+| winlog.scheduled_task.actions.arguments | Command-line arguments configured for the `exec` action command. The value may contain environment variables. | wildcard |
+| winlog.scheduled_task.actions.arguments.text | Multi-field of `winlog.scheduled_task.actions.arguments`. | match_only_text |
+| winlog.scheduled_task.actions.class_id | COM class identifier (CLSID) invoked by a `com_handler` action. This identifies the configured COM component, not a file or observed process. | keyword |
+| winlog.scheduled_task.actions.command | Executable file or document configured for an `exec` action. The value may contain environment variables; command-line arguments are stored separately in `winlog.scheduled_task.actions.arguments`. | wildcard |
+| winlog.scheduled_task.actions.command.text | Multi-field of `winlog.scheduled_task.actions.command`. | match_only_text |
+| winlog.scheduled_task.actions.context | Task-local principal identifier whose security context applies to this action. It references `winlog.scheduled_task.principals.id` and is not a Windows account identifier. | keyword |
+| winlog.scheduled_task.actions.definition | Versioned canonical representation of one configured action as a pipe-separated sequence with fixed key order: `v=1`, `type=\<value\>`, `context=\<value\>`, `command=\<value\>`, `arguments=\<value\>`, `working_directory=\<value\>`, and `class_id=\<value\>`. An empty value means the source element was omitted or empty after normalization. Percent signs, pipe separators, equals signs, C0 controls, and DEL are escaped as uppercase `%HH`; printable Unicode, backslashes, `\*`, and `?` remain literal and may need query-language escaping. Put every same-action condition in one predicate. For example, one KQL predicate can require an `exec` type, `powershell.exe` command, and `EncodedCommand` argument so they must occur in the same action. Separate predicates may match different actions. Use the component fields for single-attribute searches; use this field when multiple attributes must belong to the same action. | wildcard |
+| winlog.scheduled_task.actions.type | Normalized action type: `exec` runs a command-line operation; `com_handler` invokes a COM handler. | keyword |
+| winlog.scheduled_task.actions.working_directory | Working directory configured for the `exec` action. The value may contain environment variables. | wildcard |
+| winlog.scheduled_task.actions.working_directory.text | Multi-field of `winlog.scheduled_task.actions.working_directory`. | match_only_text |
+| winlog.scheduled_task.name | Full task path from `winlog.event_data.TaskName`, in `\folder\task` form. | keyword |
+| winlog.scheduled_task.principals.group.identifier | User-group identifier from `Principal/GroupId` required to run task actions associated with this principal. | keyword |
+| winlog.scheduled_task.principals.id | Task-local identifier for this principal. `winlog.scheduled_task.actions.context` can reference this value; it is not a Windows account identifier. | keyword |
+| winlog.scheduled_task.principals.logon.type | Method Task Scheduler uses to establish the principal's security context, such as `Password`, `S4U`, `InteractiveToken`, or `ServiceAccount`. This field is populated only when `Principal/LogonType` exists in the XML. | keyword |
+| winlog.scheduled_task.principals.run_level | Requested privilege level for task execution, such as `LeastPrivilege` or `HighestAvailable`. This setting does not prove that an execution was elevated. | keyword |
+| winlog.scheduled_task.principals.user.identifier | User identifier from `Principal/UserId` required to run task actions associated with this principal. | keyword |
+| winlog.scheduled_task.settings.enabled | Whether the task definition is enabled. This field is populated only when the XML contains `Settings/Enabled`; otherwise Task Scheduler defaults the setting to `true`. It is separate from `event.action`, which identifies the audited lifecycle operation. | boolean |
+| winlog.scheduled_task.settings.hidden | Whether the task is hidden from default Task Scheduler views. This field is populated only when the XML contains `Settings/Hidden`; otherwise Task Scheduler defaults the setting to `false`. Hidden tasks remain registered and can still run. | boolean |
+| winlog.scheduled_task.triggers.definition | Versioned canonical representation of one configured trigger as a pipe-separated sequence with fixed key order: `v=1`, `type=\<value\>`, `enabled=\<value\>`, `interval=\<value\>`, `duration=\<value\>`, and `stop_at_duration_end=\<value\>`. An empty value means the source element was omitted or empty after normalization. An empty `stop_at_duration_end=` means the element was omitted; when repetition applies, Task Scheduler defaults the omitted value to `false`. This remains distinct from explicit `stop_at_duration_end=false`. Percent signs, pipe separators, equals signs, C0 controls, and DEL are escaped as uppercase `%HH`; printable Unicode, backslashes, `\*`, and `?` remain literal and may need query-language escaping. Put every same-trigger condition in one predicate. For example, one KQL predicate can require a `time` type, an `enabled` value of `false`, and a `PT30M` interval so they must occur in the same trigger. Separate predicates may match different triggers. Use the component fields for single-attribute searches; use this field when multiple attributes must belong to the same trigger. | wildcard |
+| winlog.scheduled_task.triggers.enabled | Whether the trigger is effectively enabled. If the trigger XML has no `Enabled` element, Task Scheduler treats the trigger as enabled. | boolean |
+| winlog.scheduled_task.triggers.repetition.duration | How long the repetition pattern remains active, represented as an XML duration such as `PT1H` for one hour. If `Duration` is absent, the pattern repeats indefinitely. | keyword |
+| winlog.scheduled_task.triggers.repetition.interval | Time between repeated task starts, represented as an XML duration such as `PT5M` for five minutes. | keyword |
+| winlog.scheduled_task.triggers.repetition.stop_at_duration_end | Whether Task Scheduler stops a running task instance when the repetition duration ends. This field is populated only when the XML contains `StopAtDurationEnd`; otherwise Task Scheduler defaults the setting to `false`. | boolean |
+| winlog.scheduled_task.triggers.type | Normalized trigger type: `boot`, `wnf_state_change`, `time`, `calendar`, `logon`, `registration`, `session_state_change`, `event`, or `idle`. | keyword |
+| winlog.scheduled_task.uri | URI from `RegistrationInfo/URI` in the task XML. Compare it with `winlog.scheduled_task.name` when investigating inconsistent task identity. | keyword |
 | winlog.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
 | winlog.time_created | Time event was created | date |
 | winlog.trustAttribute |  | keyword |
@@ -1571,7 +1604,8 @@ An example event for `ntp` looks as following:
 ### Process
 
 The System `process` data stream provides process statistics. One document is
-provided for each process.
+provided for each process. 
+Refer to the [Configuration](beats://reference/metricbeat/metricbeat-metricset-system-process.md##_configuration_12) section for more details on how to change the process configuration.
 
 #### Supported operating systems
 
@@ -1752,6 +1786,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.process.memory.rss.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float | percent | gauge |
 | system.process.memory.share | The shared memory the process uses. | long | byte | gauge |
 | system.process.memory.size | The total virtual memory the process has. On Windows this represents the Commit Charge (the total amount of memory that the memory manager has committed for a running process) value in bytes for this process. | long | byte | gauge |
+| system.process.memory.swap | The swap memory used by the process (supported only on Linux kernel version 2.6.34+). | long | byte | gauge |
 | system.process.num_threads | Number of threads in the process | integer |  |  |
 | system.process.state | The process state. For example: "running". | keyword |  |  |
 
@@ -1916,4 +1951,38 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | system.uptime.duration.ms | The OS uptime in milliseconds. | long | ms | counter |
+
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[System] CPU Utilization**
+
+
+
+**[System] Disk I/O Saturation**
+
+
+
+**[System] High Disk I/O Latency**
+
+
+
+**[System] High Network Error Rate**
+
+
+
+**[System] High Packet Drop Rate**
+
+
+
+**[System] Memory Utilization**
+
+
 

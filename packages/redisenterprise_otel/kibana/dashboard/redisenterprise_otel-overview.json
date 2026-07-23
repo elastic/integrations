@@ -1,0 +1,2975 @@
+{
+    "attributes": {
+        "title": "[Redis Enterprise OTel] Cluster Overview",
+        "description": "High-level health and performance overview of the Redis Enterprise cluster, covering database status, node infrastructure, and key operational KPIs.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "d909c110-ab40-cbf5-b044-ffb55a6a2108",
+                                "order": 0,
+                                "label": "Cluster Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_d909c110-ab40-cbf5-b044-ffb55a6a2108_dashboard"
+                            },
+                            {
+                                "id": "9d48e6b6-9576-6f06-adaf-cdf9bc9f51c7",
+                                "order": 1,
+                                "label": "Node Health",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_9d48e6b6-9576-6f06-adaf-cdf9bc9f51c7_dashboard"
+                            },
+                            {
+                                "id": "73617ad1-47cc-0b77-bf5d-f2ad65656835",
+                                "order": 2,
+                                "label": "Database Performance",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_73617ad1-47cc-0b77-bf5d-f2ad65656835_dashboard"
+                            },
+                            {
+                                "id": "21d19d73-1020-30bf-68f2-9edfcf1637ae",
+                                "order": 3,
+                                "label": "Proxy & Listener",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_21d19d73-1020-30bf-68f2-9edfcf1637ae_dashboard"
+                            },
+                            {
+                                "id": "473fc7a1-e826-dbab-1124-08631f4d4d46",
+                                "order": 4,
+                                "label": "Shard Diagnostics",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_473fc7a1-e826-dbab-1124-08631f4d4d46_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [Redis Enterprise OTel] Cluster Overview\n\nTop-level health view of the Redis Enterprise cluster:\n- Database and node availability status\n- Aggregate operations throughput and latency\n- Memory utilisation across databases\n- Connection counts and eviction activity\n- Infrastructure CPU and memory trends\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "19b02a33-f3e1-0bf9-8f3d-f17828f4b6f4",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "19b02a33-f3e1-0bf9-8f3d-f17828f4b6f4"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Databases Up",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "9b9ab777-9da3-0e01-f404-440b18b3eba6",
+                                "layerType": "data",
+                                "metricAccessor": "32b1ffe9-45f6-b85a-7414-ac41c5af9458",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_up IS NOT NULL\n| STATS bdb_status = MAX(bdb_up) BY bdb\n| STATS databases_up = SUM(bdb_status), total_databases = COUNT(*)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "9b9ab777-9da3-0e01-f404-440b18b3eba6": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_up IS NOT NULL\n| STATS bdb_status = MAX(bdb_up) BY bdb\n| STATS databases_up = SUM(bdb_status), total_databases = COUNT(*)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "databases_up",
+                                                    "columnId": "32b1ffe9-45f6-b85a-7414-ac41c5af9458",
+                                                    "label": "Databases Up",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "databases_up",
+                                                    "columnId": "32b1ffe9-45f6-b85a-7414-ac41c5af9458",
+                                                    "label": "Databases Up",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "9695e92f-97ca-0d48-6b22-6dd2e3e4df7b",
+                "gridData": {
+                    "x": 24,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "9695e92f-97ca-0d48-6b22-6dd2e3e4df7b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Nodes Up",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "f65a3c67-4e13-10b5-1ff4-4c28a95d76f9",
+                                "layerType": "data",
+                                "metricAccessor": "575a8422-243c-544c-20eb-88e03e91b99a",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_up IS NOT NULL\n| STATS node_status = MAX(node_up) BY node\n| STATS nodes_up = SUM(node_status), total_nodes = COUNT(*)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f65a3c67-4e13-10b5-1ff4-4c28a95d76f9": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_up IS NOT NULL\n| STATS node_status = MAX(node_up) BY node\n| STATS nodes_up = SUM(node_status), total_nodes = COUNT(*)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "nodes_up",
+                                                    "columnId": "575a8422-243c-544c-20eb-88e03e91b99a",
+                                                    "label": "Nodes Up",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "nodes_up",
+                                                    "columnId": "575a8422-243c-544c-20eb-88e03e91b99a",
+                                                    "label": "Nodes Up",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "84b416ed-5fe2-a0d6-5a3c-b1ab75be0d45",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "84b416ed-5fe2-a0d6-5a3c-b1ab75be0d45"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total Ops/sec",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "e35c5501-efe9-e189-0748-fd019ea4ffed",
+                                "layerType": "data",
+                                "metricAccessor": "21c1e6ef-3ee9-1796-e0e0-b646ec43724c",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_instantaneous_ops_per_sec IS NOT NULL\n| STATS avg_ops = AVG(bdb_instantaneous_ops_per_sec) BY bdb\n| STATS total_ops_per_sec = SUM(avg_ops)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "e35c5501-efe9-e189-0748-fd019ea4ffed": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_instantaneous_ops_per_sec IS NOT NULL\n| STATS avg_ops = AVG(bdb_instantaneous_ops_per_sec) BY bdb\n| STATS total_ops_per_sec = SUM(avg_ops)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_ops_per_sec",
+                                                    "columnId": "21c1e6ef-3ee9-1796-e0e0-b646ec43724c",
+                                                    "label": "Total Ops/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_ops_per_sec",
+                                                    "columnId": "21c1e6ef-3ee9-1796-e0e0-b646ec43724c",
+                                                    "label": "Total Ops/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "43f0d47f-c4ae-e2c2-d8a9-d26cd50aac42",
+                "gridData": {
+                    "x": 40,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "43f0d47f-c4ae-e2c2-d8a9-d26cd50aac42"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Avg Latency",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "52270fd7-74d7-4ef0-961b-b7475b4fbf20",
+                                "layerType": "data",
+                                "metricAccessor": "4010aa15-bf47-3b70-ae0c-25d739cace14",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_avg_latency IS NOT NULL\n| STATS avg_latency = AVG(bdb_avg_latency)\n| EVAL avg_latency_ms = avg_latency * 1000"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "52270fd7-74d7-4ef0-961b-b7475b4fbf20": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_avg_latency IS NOT NULL\n| STATS avg_latency = AVG(bdb_avg_latency)\n| EVAL avg_latency_ms = avg_latency * 1000"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "avg_latency_ms",
+                                                    "columnId": "4010aa15-bf47-3b70-ae0c-25d739cace14",
+                                                    "label": "Avg Latency (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 3,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "avg_latency_ms",
+                                                    "columnId": "4010aa15-bf47-3b70-ae0c-25d739cace14",
+                                                    "label": "Avg Latency (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 3,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "9c230b72-2ca3-8299-bf91-d09fec23d384",
+                "gridData": {
+                    "x": 16,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "9c230b72-2ca3-8299-bf91-d09fec23d384"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total Memory Used",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "63cf984c-fc16-7c36-1880-9df6c14b6630",
+                                "layerType": "data",
+                                "metricAccessor": "eff14a80-3468-01fa-7e12-d0d525453db7",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_used_memory IS NOT NULL\n| STATS avg_mem = AVG(bdb_used_memory) BY bdb\n| STATS total_memory = SUM(avg_mem)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "63cf984c-fc16-7c36-1880-9df6c14b6630": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_used_memory IS NOT NULL\n| STATS avg_mem = AVG(bdb_used_memory) BY bdb\n| STATS total_memory = SUM(avg_mem)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_memory",
+                                                    "columnId": "eff14a80-3468-01fa-7e12-d0d525453db7",
+                                                    "label": "Total Memory Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_memory",
+                                                    "columnId": "eff14a80-3468-01fa-7e12-d0d525453db7",
+                                                    "label": "Total Memory Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "b8b97c2f-3fbd-8716-dc5e-8bfc5a3a51f1",
+                "gridData": {
+                    "x": 24,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "b8b97c2f-3fbd-8716-dc5e-8bfc5a3a51f1"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total Connections",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "4964de13-9fa7-dc8f-e5bd-dab14c2f447c",
+                                "layerType": "data",
+                                "metricAccessor": "09e8c941-8281-7c75-f3fc-33292013633c",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_conns IS NOT NULL\n| STATS avg_conns = AVG(bdb_conns) BY bdb\n| STATS total_connections = SUM(avg_conns)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "4964de13-9fa7-dc8f-e5bd-dab14c2f447c": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_conns IS NOT NULL\n| STATS avg_conns = AVG(bdb_conns) BY bdb\n| STATS total_connections = SUM(avg_conns)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_connections",
+                                                    "columnId": "09e8c941-8281-7c75-f3fc-33292013633c",
+                                                    "label": "Total Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_connections",
+                                                    "columnId": "09e8c941-8281-7c75-f3fc-33292013633c",
+                                                    "label": "Total Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "fa63511c-103a-c020-6d9d-513108b4c8c2",
+                "gridData": {
+                    "x": 32,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "fa63511c-103a-c020-6d9d-513108b4c8c2"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Evicted Objects",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "841e5afa-09ff-abcc-5562-e7a9ed7a9168",
+                                "layerType": "data",
+                                "metricAccessor": "ad76e2e6-d419-37b3-d772-2146be3167d5",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_evicted_objects IS NOT NULL\n| STATS avg_evictions = AVG(bdb_evicted_objects) BY bdb\n| STATS total_evictions = SUM(avg_evictions)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "841e5afa-09ff-abcc-5562-e7a9ed7a9168": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_evicted_objects IS NOT NULL\n| STATS avg_evictions = AVG(bdb_evicted_objects) BY bdb\n| STATS total_evictions = SUM(avg_evictions)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_evictions",
+                                                    "columnId": "ad76e2e6-d419-37b3-d772-2146be3167d5",
+                                                    "label": "Evicted Objects",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_evictions",
+                                                    "columnId": "ad76e2e6-d419-37b3-d772-2146be3167d5",
+                                                    "label": "Evicted Objects",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "80d6de8c-9752-4f09-a5d4-715a17e35ae8",
+                "gridData": {
+                    "x": 40,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "80d6de8c-9752-4f09-a5d4-715a17e35ae8"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Shards Used",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "53da4312-88fa-b732-859b-530f10aa8468",
+                                "layerType": "data",
+                                "metricAccessor": "d48c99e4-10f0-fae7-3416-f441dc75469a",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_shards_used IS NOT NULL\n| STATS avg_shards = AVG(bdb_shards_used) BY bdb\n| STATS total_shards = SUM(avg_shards)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "53da4312-88fa-b732-859b-530f10aa8468": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_shards_used IS NOT NULL\n| STATS avg_shards = AVG(bdb_shards_used) BY bdb\n| STATS total_shards = SUM(avg_shards)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_shards",
+                                                    "columnId": "d48c99e4-10f0-fae7-3416-f441dc75469a",
+                                                    "label": "Shards Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_shards",
+                                                    "columnId": "d48c99e4-10f0-fae7-3416-f441dc75469a",
+                                                    "label": "Shards Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "98dd998b-7197-65f6-2395-6f3b86cdb1e8",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 48,
+                    "h": 3,
+                    "i": "98dd998b-7197-65f6-2395-6f3b86cdb1e8"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Service Health"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "fd99a632-a36f-2706-d42d-28555998c894",
+                "gridData": {
+                    "x": 0,
+                    "y": 17,
+                    "w": 24,
+                    "h": 12,
+                    "i": "fd99a632-a36f-2706-d42d-28555998c894"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Database Latency Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "1b1ad61e-a8d3-7222-a01f-053706b7ffa0",
+                                        "accessors": [
+                                            "1c57e976-7c12-0b4d-a2a7-214703294dc4"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "647c0393-015f-a23d-a9f9-1bdbac0f37c9",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Avg Latency (s)",
+                                "yLeftTitle": "Avg Latency (s)",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_avg_latency IS NOT NULL\n| STATS avg_latency = AVG(bdb_avg_latency) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), bdb\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "1b1ad61e-a8d3-7222-a01f-053706b7ffa0": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_avg_latency IS NOT NULL\n| STATS avg_latency = AVG(bdb_avg_latency) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), bdb\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "avg_latency",
+                                                    "columnId": "1c57e976-7c12-0b4d-a2a7-214703294dc4",
+                                                    "label": "Avg Latency (s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 4,
+                                                                "suffix": " s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "bdb",
+                                                    "columnId": "647c0393-015f-a23d-a9f9-1bdbac0f37c9",
+                                                    "label": "bdb",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "avg_latency",
+                                                    "columnId": "1c57e976-7c12-0b4d-a2a7-214703294dc4",
+                                                    "label": "Avg Latency (s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 4,
+                                                                "suffix": " s"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "bdb",
+                                                    "columnId": "647c0393-015f-a23d-a9f9-1bdbac0f37c9",
+                                                    "label": "bdb",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c4af3281-35b3-3023-fdf2-daafde3546be",
+                "gridData": {
+                    "x": 24,
+                    "y": 17,
+                    "w": 24,
+                    "h": 12,
+                    "i": "c4af3281-35b3-3023-fdf2-daafde3546be"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Database Ops/sec Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "51b01d05-6c3f-9630-9f0e-0b32ae859c21",
+                                        "accessors": [
+                                            "e94d7d49-6175-255e-db5f-90af53186a08"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "647c0393-015f-a23d-a9f9-1bdbac0f37c9",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Operations / sec",
+                                "yLeftTitle": "Operations / sec",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_instantaneous_ops_per_sec IS NOT NULL\n| STATS ops_per_sec = AVG(bdb_instantaneous_ops_per_sec) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), bdb\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "51b01d05-6c3f-9630-9f0e-0b32ae859c21": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_instantaneous_ops_per_sec IS NOT NULL\n| STATS ops_per_sec = AVG(bdb_instantaneous_ops_per_sec) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), bdb\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "ops_per_sec",
+                                                    "columnId": "e94d7d49-6175-255e-db5f-90af53186a08",
+                                                    "label": "Ops/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "bdb",
+                                                    "columnId": "647c0393-015f-a23d-a9f9-1bdbac0f37c9",
+                                                    "label": "bdb",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "ops_per_sec",
+                                                    "columnId": "e94d7d49-6175-255e-db5f-90af53186a08",
+                                                    "label": "Ops/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "bdb",
+                                                    "columnId": "647c0393-015f-a23d-a9f9-1bdbac0f37c9",
+                                                    "label": "bdb",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6cf68f01-431f-24e5-8d88-a29a6099a8e7",
+                "gridData": {
+                    "x": 0,
+                    "y": 29,
+                    "w": 24,
+                    "h": 12,
+                    "i": "6cf68f01-431f-24e5-8d88-a29a6099a8e7"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Database Memory Utilisation",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "95364592-f7e1-fc86-7a56-14e41385b677",
+                                        "accessors": [
+                                            "29828b26-a668-80fa-8f14-cf03ff023d52"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "3d31700c-0c73-d41d-084e-c4aad0a7c941",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "bar_stacked",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Memory Utilisation %",
+                                "yLeftTitle": "Memory Utilisation %",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_used_memory IS NOT NULL AND bdb_memory_limit IS NOT NULL\n| STATS used_memory = AVG(bdb_used_memory), memory_limit = AVG(bdb_memory_limit) BY bdb\n| EVAL utilization_pct = ROUND((used_memory / memory_limit) * 100, 1)\n| SORT utilization_pct DESC\n| LIMIT 20"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "95364592-f7e1-fc86-7a56-14e41385b677": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_used_memory IS NOT NULL AND bdb_memory_limit IS NOT NULL\n| STATS used_memory = AVG(bdb_used_memory), memory_limit = AVG(bdb_memory_limit) BY bdb\n| EVAL utilization_pct = ROUND((used_memory / memory_limit) * 100, 1)\n| SORT utilization_pct DESC\n| LIMIT 20"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "utilization_pct",
+                                                    "columnId": "29828b26-a668-80fa-8f14-cf03ff023d52",
+                                                    "label": "Memory Utilisation %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "bdb",
+                                                    "columnId": "3d31700c-0c73-d41d-084e-c4aad0a7c941",
+                                                    "label": "bdb",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "utilization_pct",
+                                                    "columnId": "29828b26-a668-80fa-8f14-cf03ff023d52",
+                                                    "label": "Memory Utilisation %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "bdb",
+                                                    "columnId": "3d31700c-0c73-d41d-084e-c4aad0a7c941",
+                                                    "label": "bdb",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "b09a17e4-e543-76b4-a27e-80cc6a4666af",
+                "gridData": {
+                    "x": 24,
+                    "y": 29,
+                    "w": 24,
+                    "h": 12,
+                    "i": "b09a17e4-e543-76b4-a27e-80cc6a4666af"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Database Cache Hit Rate",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "5354f31a-1be3-2fa1-b8fb-8e14ba797c5f",
+                                        "accessors": [
+                                            "67eb8c67-2ea4-62cb-43c6-40b1f9f8e2ff"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "3d31700c-0c73-d41d-084e-c4aad0a7c941",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "bar_stacked",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Cache Hit Rate %",
+                                "yLeftTitle": "Cache Hit Rate %",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_read_hits IS NOT NULL\n| STATS hits = AVG(bdb_read_hits), misses = AVG(bdb_read_misses) BY bdb\n| EVAL hit_rate = ROUND((hits / (hits + misses)) * 100, 1)\n| SORT hit_rate ASC\n| LIMIT 20"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "5354f31a-1be3-2fa1-b8fb-8e14ba797c5f": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_read_hits IS NOT NULL\n| STATS hits = AVG(bdb_read_hits), misses = AVG(bdb_read_misses) BY bdb\n| EVAL hit_rate = ROUND((hits / (hits + misses)) * 100, 1)\n| SORT hit_rate ASC\n| LIMIT 20"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "hit_rate",
+                                                    "columnId": "67eb8c67-2ea4-62cb-43c6-40b1f9f8e2ff",
+                                                    "label": "Cache Hit Rate %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "bdb",
+                                                    "columnId": "3d31700c-0c73-d41d-084e-c4aad0a7c941",
+                                                    "label": "bdb",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "hit_rate",
+                                                    "columnId": "67eb8c67-2ea4-62cb-43c6-40b1f9f8e2ff",
+                                                    "label": "Cache Hit Rate %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "bdb",
+                                                    "columnId": "3d31700c-0c73-d41d-084e-c4aad0a7c941",
+                                                    "label": "bdb",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "3269c47a-ec54-5695-3410-d279133a6604",
+                "gridData": {
+                    "x": 0,
+                    "y": 41,
+                    "w": 48,
+                    "h": 3,
+                    "i": "3269c47a-ec54-5695-3410-d279133a6604"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Infrastructure Health"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "3b77f967-4e48-e58d-0f5d-823ec105b16c",
+                "gridData": {
+                    "x": 0,
+                    "y": 44,
+                    "w": 24,
+                    "h": 12,
+                    "i": "3b77f967-4e48-e58d-0f5d-823ec105b16c"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Node CPU Utilisation Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "a6968c4a-aea9-2980-0b3f-35cfb09751c3",
+                                        "accessors": [
+                                            "fa373a60-d129-34b7-c78a-adc2de260544"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "cd32883a-bb71-e58d-50ee-64ef84d97a41",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "CPU Used (cores)",
+                                "yLeftTitle": "CPU Used (cores)",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_cpu_user IS NOT NULL\n| EVAL cpu_used = node_cpu_user + node_cpu_system\n| STATS avg_cpu = AVG(cpu_used) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "a6968c4a-aea9-2980-0b3f-35cfb09751c3": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_cpu_user IS NOT NULL\n| EVAL cpu_used = node_cpu_user + node_cpu_system\n| STATS avg_cpu = AVG(cpu_used) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "avg_cpu",
+                                                    "columnId": "fa373a60-d129-34b7-c78a-adc2de260544",
+                                                    "label": "CPU Used (cores)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "node",
+                                                    "columnId": "cd32883a-bb71-e58d-50ee-64ef84d97a41",
+                                                    "label": "node",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "avg_cpu",
+                                                    "columnId": "fa373a60-d129-34b7-c78a-adc2de260544",
+                                                    "label": "CPU Used (cores)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "node",
+                                                    "columnId": "cd32883a-bb71-e58d-50ee-64ef84d97a41",
+                                                    "label": "node",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "a34b9372-6703-4aae-a2fe-40d04cd66875",
+                "gridData": {
+                    "x": 24,
+                    "y": 44,
+                    "w": 24,
+                    "h": 12,
+                    "i": "a34b9372-6703-4aae-a2fe-40d04cd66875"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Node Free Memory Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "2c73fca8-0363-a708-5378-b30212233fe1",
+                                        "accessors": [
+                                            "9312ffb7-ed11-3076-12ef-cbe08aa34c01"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "cd32883a-bb71-e58d-50ee-64ef84d97a41",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Free Memory (bytes)",
+                                "yLeftTitle": "Free Memory (bytes)",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_free_memory IS NOT NULL\n| STATS free_memory = AVG(node_free_memory) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "2c73fca8-0363-a708-5378-b30212233fe1": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_free_memory IS NOT NULL\n| STATS free_memory = AVG(node_free_memory) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "free_memory",
+                                                    "columnId": "9312ffb7-ed11-3076-12ef-cbe08aa34c01",
+                                                    "label": "Free Memory",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "node",
+                                                    "columnId": "cd32883a-bb71-e58d-50ee-64ef84d97a41",
+                                                    "label": "node",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "free_memory",
+                                                    "columnId": "9312ffb7-ed11-3076-12ef-cbe08aa34c01",
+                                                    "label": "Free Memory",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "node",
+                                                    "columnId": "cd32883a-bb71-e58d-50ee-64ef84d97a41",
+                                                    "label": "node",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "089895fd-a5b6-db45-66ce-798b0d5d3d0f",
+                "gridData": {
+                    "x": 0,
+                    "y": 56,
+                    "w": 48,
+                    "h": 3,
+                    "i": "089895fd-a5b6-db45-66ce-798b0d5d3d0f"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Detail"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "13e885e2-8272-bc10-06a3-2969be350b83",
+                "gridData": {
+                    "x": 0,
+                    "y": 59,
+                    "w": 48,
+                    "h": 15,
+                    "i": "13e885e2-8272-bc10-06a3-2969be350b83"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Database Status",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "b49cb8b3-407f-4d51-b34c-e073102e5ae7",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "b402368f-2bcb-356f-e5c6-c8ae4ca55463",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "4e1a9ecc-49ec-44ad-e42a-35441c3e9d51",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "aff1c1d5-1ac7-2d3c-1653-a632fe5883c9",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "5786073b-2da2-704b-ca23-d92f7bab0b55",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "0eb6acc4-c3e4-723b-51d8-27c6404204fc",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "97d2b495-16ed-1089-cafb-344019f283e5",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "ac279d0d-8453-3d1c-bf67-210e5eb4601b",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "e68cd5c2-1e37-110f-f1a8-c81dea257e1e",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "4c7f901e-fead-e7b4-7dbf-42b52860f188",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_up IS NOT NULL\n| STATS Status = MAX(bdb_up), `Avg Latency (s)` = AVG(bdb_avg_latency), `Ops/sec` = AVG(bdb_instantaneous_ops_per_sec), `Used Memory` = AVG(bdb_used_memory), `Memory Limit` = AVG(bdb_memory_limit), Connections = AVG(bdb_conns), `Shards Used` = AVG(bdb_shards_used) BY bdb\n| EVAL `Memory %` = COALESCE(ROUND((`Used Memory` / `Memory Limit`) * 100, 1), 0.0)\n| EVAL Status = COALESCE(Status, 0), `Avg Latency (s)` = COALESCE(`Avg Latency (s)`, 0.0), `Ops/sec` = COALESCE(`Ops/sec`, 0.0), `Used Memory` = COALESCE(`Used Memory`, 0), `Memory Limit` = COALESCE(`Memory Limit`, 0), Connections = COALESCE(Connections, 0), `Shards Used` = COALESCE(`Shards Used`, 0)\n| SORT bdb ASC\n| LIMIT 100"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "4c7f901e-fead-e7b4-7dbf-42b52860f188": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_up IS NOT NULL\n| STATS Status = MAX(bdb_up), `Avg Latency (s)` = AVG(bdb_avg_latency), `Ops/sec` = AVG(bdb_instantaneous_ops_per_sec), `Used Memory` = AVG(bdb_used_memory), `Memory Limit` = AVG(bdb_memory_limit), Connections = AVG(bdb_conns), `Shards Used` = AVG(bdb_shards_used) BY bdb\n| EVAL `Memory %` = COALESCE(ROUND((`Used Memory` / `Memory Limit`) * 100, 1), 0.0)\n| EVAL Status = COALESCE(Status, 0), `Avg Latency (s)` = COALESCE(`Avg Latency (s)`, 0.0), `Ops/sec` = COALESCE(`Ops/sec`, 0.0), `Used Memory` = COALESCE(`Used Memory`, 0), `Memory Limit` = COALESCE(`Memory Limit`, 0), Connections = COALESCE(Connections, 0), `Shards Used` = COALESCE(`Shards Used`, 0)\n| SORT bdb ASC\n| LIMIT 100"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "bdb",
+                                                    "columnId": "b49cb8b3-407f-4d51-b34c-e073102e5ae7",
+                                                    "label": "Database",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "Status",
+                                                    "columnId": "b402368f-2bcb-356f-e5c6-c8ae4ca55463",
+                                                    "label": "Up",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Avg Latency (s)",
+                                                    "columnId": "4e1a9ecc-49ec-44ad-e42a-35441c3e9d51",
+                                                    "label": "Avg Latency (s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 5
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Ops/sec",
+                                                    "columnId": "aff1c1d5-1ac7-2d3c-1653-a632fe5883c9",
+                                                    "label": "Ops/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Used Memory",
+                                                    "columnId": "5786073b-2da2-704b-ca23-d92f7bab0b55",
+                                                    "label": "Used Memory",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Memory Limit",
+                                                    "columnId": "0eb6acc4-c3e4-723b-51d8-27c6404204fc",
+                                                    "label": "Memory Limit",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Memory %",
+                                                    "columnId": "97d2b495-16ed-1089-cafb-344019f283e5",
+                                                    "label": "Memory %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Connections",
+                                                    "columnId": "ac279d0d-8453-3d1c-bf67-210e5eb4601b",
+                                                    "label": "Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Shards Used",
+                                                    "columnId": "e68cd5c2-1e37-110f-f1a8-c81dea257e1e",
+                                                    "label": "Shards",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "bdb",
+                                                    "columnId": "b49cb8b3-407f-4d51-b34c-e073102e5ae7",
+                                                    "label": "Database",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "Status",
+                                                    "columnId": "b402368f-2bcb-356f-e5c6-c8ae4ca55463",
+                                                    "label": "Up",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Avg Latency (s)",
+                                                    "columnId": "4e1a9ecc-49ec-44ad-e42a-35441c3e9d51",
+                                                    "label": "Avg Latency (s)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 5
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Ops/sec",
+                                                    "columnId": "aff1c1d5-1ac7-2d3c-1653-a632fe5883c9",
+                                                    "label": "Ops/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Used Memory",
+                                                    "columnId": "5786073b-2da2-704b-ca23-d92f7bab0b55",
+                                                    "label": "Used Memory",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Memory Limit",
+                                                    "columnId": "0eb6acc4-c3e4-723b-51d8-27c6404204fc",
+                                                    "label": "Memory Limit",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Memory %",
+                                                    "columnId": "97d2b495-16ed-1089-cafb-344019f283e5",
+                                                    "label": "Memory %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Connections",
+                                                    "columnId": "ac279d0d-8453-3d1c-bf67-210e5eb4601b",
+                                                    "label": "Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Shards Used",
+                                                    "columnId": "e68cd5c2-1e37-110f-f1a8-c81dea257e1e",
+                                                    "label": "Shards",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "dbd24c00-e53b-4173-9bc8-d9c53b6b9714",
+                "gridData": {
+                    "x": 0,
+                    "y": 74,
+                    "w": 48,
+                    "h": 15,
+                    "i": "dbd24c00-e53b-4173-9bc8-d9c53b6b9714"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Node Status",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "3504b8f7-b1f8-2bc1-c8aa-39b714f07059",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "b402368f-2bcb-356f-e5c6-c8ae4ca55463",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "16e483db-a0c5-671e-993c-00c87727e17f",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "7648408b-2190-b589-5eb9-36adf506b2f7",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "ddb47eed-8efb-e111-2d06-0f08424a4454",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "83e633e5-f362-9330-6832-fd389acdbcf1",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "9763952a-498f-f3fa-9c23-4d6f8e7054e6",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "ac279d0d-8453-3d1c-bf67-210e5eb4601b",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "459d7807-5f09-cbbe-a22f-065a4f4b84cb",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_up IS NOT NULL\n| EVAL cpu_used = COALESCE(node_cpu_user, 0.0) + COALESCE(node_cpu_system, 0.0)\n| STATS Status = MAX(node_up), `CPU Used (cores)` = AVG(cpu_used), `Free Memory` = AVG(node_free_memory), `Available Memory` = AVG(node_available_memory), `Ephemeral Storage` = AVG(node_ephemeral_storage_avail), `Persistent Storage` = AVG(node_persistent_storage_avail), Connections = AVG(node_conns), Requests = AVG(node_total_req) BY node\n| EVAL Status = COALESCE(Status, 0), `CPU Used (cores)` = COALESCE(`CPU Used (cores)`, 0.0), `Free Memory` = COALESCE(`Free Memory`, 0), `Available Memory` = COALESCE(`Available Memory`, 0), `Ephemeral Storage` = COALESCE(`Ephemeral Storage`, 0), `Persistent Storage` = COALESCE(`Persistent Storage`, 0), Connections = COALESCE(Connections, 0), Requests = COALESCE(Requests, 0)\n| SORT node ASC\n| LIMIT 100"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "459d7807-5f09-cbbe-a22f-065a4f4b84cb": {
+                                            "query": {
+                                                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_up IS NOT NULL\n| EVAL cpu_used = COALESCE(node_cpu_user, 0.0) + COALESCE(node_cpu_system, 0.0)\n| STATS Status = MAX(node_up), `CPU Used (cores)` = AVG(cpu_used), `Free Memory` = AVG(node_free_memory), `Available Memory` = AVG(node_available_memory), `Ephemeral Storage` = AVG(node_ephemeral_storage_avail), `Persistent Storage` = AVG(node_persistent_storage_avail), Connections = AVG(node_conns), Requests = AVG(node_total_req) BY node\n| EVAL Status = COALESCE(Status, 0), `CPU Used (cores)` = COALESCE(`CPU Used (cores)`, 0.0), `Free Memory` = COALESCE(`Free Memory`, 0), `Available Memory` = COALESCE(`Available Memory`, 0), `Ephemeral Storage` = COALESCE(`Ephemeral Storage`, 0), `Persistent Storage` = COALESCE(`Persistent Storage`, 0), Connections = COALESCE(Connections, 0), Requests = COALESCE(Requests, 0)\n| SORT node ASC\n| LIMIT 100"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "node",
+                                                    "columnId": "3504b8f7-b1f8-2bc1-c8aa-39b714f07059",
+                                                    "label": "Node",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "Status",
+                                                    "columnId": "b402368f-2bcb-356f-e5c6-c8ae4ca55463",
+                                                    "label": "Up",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "CPU Used (cores)",
+                                                    "columnId": "16e483db-a0c5-671e-993c-00c87727e17f",
+                                                    "label": "CPU Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Free Memory",
+                                                    "columnId": "7648408b-2190-b589-5eb9-36adf506b2f7",
+                                                    "label": "Free Memory",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Available Memory",
+                                                    "columnId": "ddb47eed-8efb-e111-2d06-0f08424a4454",
+                                                    "label": "Available Memory",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Ephemeral Storage",
+                                                    "columnId": "83e633e5-f362-9330-6832-fd389acdbcf1",
+                                                    "label": "Ephemeral Storage",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Persistent Storage",
+                                                    "columnId": "9763952a-498f-f3fa-9c23-4d6f8e7054e6",
+                                                    "label": "Persistent Storage",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Connections",
+                                                    "columnId": "ac279d0d-8453-3d1c-bf67-210e5eb4601b",
+                                                    "label": "Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "node",
+                                                    "columnId": "3504b8f7-b1f8-2bc1-c8aa-39b714f07059",
+                                                    "label": "Node",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "Status",
+                                                    "columnId": "b402368f-2bcb-356f-e5c6-c8ae4ca55463",
+                                                    "label": "Up",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "CPU Used (cores)",
+                                                    "columnId": "16e483db-a0c5-671e-993c-00c87727e17f",
+                                                    "label": "CPU Used",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Free Memory",
+                                                    "columnId": "7648408b-2190-b589-5eb9-36adf506b2f7",
+                                                    "label": "Free Memory",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Available Memory",
+                                                    "columnId": "ddb47eed-8efb-e111-2d06-0f08424a4454",
+                                                    "label": "Available Memory",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Ephemeral Storage",
+                                                    "columnId": "83e633e5-f362-9330-6832-fd389acdbcf1",
+                                                    "label": "Ephemeral Storage",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Persistent Storage",
+                                                    "columnId": "9763952a-498f-f3fa-9c23-4d6f8e7054e6",
+                                                    "label": "Persistent Storage",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "Connections",
+                                                    "columnId": "ac279d0d-8453-3d1c-bf67-210e5eb4601b",
+                                                    "label": "Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "redisenterprise.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "redisenterprise.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": true,
+        "timeFrom": "now-15m",
+        "timeTo": "now",
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "12dedbcb-c475-3f3c-dd1f-4569cc7cb318": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "12dedbcb-c475-3f3c-dd1f-4569cc7cb318",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "cluster",
+                        "title": "Cluster",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "redisenterprise_otel-overview",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "redisenterprise_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_d909c110-ab40-cbf5-b044-ffb55a6a2108_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "redisenterprise_otel-node-health",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_9d48e6b6-9576-6f06-adaf-cdf9bc9f51c7_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "redisenterprise_otel-database-performance",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_73617ad1-47cc-0b77-bf5d-f2ad65656835_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "redisenterprise_otel-proxy-listener",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_21d19d73-1020-30bf-68f2-9edfcf1637ae_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "redisenterprise_otel-shard-diagnostics",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_473fc7a1-e826-dbab-1124-08631f4d4d46_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_12dedbcb-c475-3f3c-dd1f-4569cc7cb318:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

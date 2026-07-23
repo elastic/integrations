@@ -161,6 +161,19 @@ For more information on architectures that can be used for scaling this integrat
 
 The `firewall` data stream provides events from Check Point devices, including firewall traffic, VPN logs, audit logs, and system events.
 
+#### Gateway identification fields
+
+Check Point Security Gateways identify themselves in syslog payloads through two distinct fields, which the integration maps to ECS as follows:
+
+| Check Point field | Value | ECS target fields |
+|---|---|---|
+| `origin` | Gateway IP address (typed as `ipaddr` in Check Point's `LogFields.xml`) | `observer.ip` (and `observer.name`) |
+| `originsicname` (`CN=<hostname>,O=<management>..<random>`) | Gateway hostname extracted from the `CN` component of the SIC distinguished name | `observer.hostname` |
+
+The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Because the firewall is observed remotely over syslog, the gateway is represented through the `observer.*` field set rather than `host.*`.
+
+> **Note:** `observer.name` continues to hold the gateway IP (`origin`) for backward compatibility. To query the gateway by IP use `observer.ip`, and to query it by hostname use `observer.hostname`.
+
 #### firewall fields
 
 **Exported fields**
@@ -181,6 +194,7 @@ The `firewall` data stream provides events from Check Point devices, including f
 | checkpoint.analyzed_on | Check Point ThreatCloud / emulator name. | keyword |
 | checkpoint.answer_rdata | List of answer resource records to the questioned domains. | keyword |
 | checkpoint.anti_virus_type | Anti virus type. | keyword |
+| checkpoint.app_category | Application category. | keyword |
 | checkpoint.app_desc | Application description. | keyword |
 | checkpoint.app_id | Application ID. | integer |
 | checkpoint.app_package | Unique identifier of the application on the protected mobile device. | keyword |
@@ -488,6 +502,14 @@ The `firewall` data stream provides events from Check Point devices, including f
 | checkpoint.packet_capture_name |  | keyword |
 | checkpoint.packet_capture_time |  | keyword |
 | checkpoint.packet_capture_unique_id | Identifier of the packet capture files. | keyword |
+| checkpoint.packets | Raw packets field value when present in vendor logs and not converted to numeric packet counts. | keyword |
+| checkpoint.packets_data_is_sampled | Indicates whether the packets data is sampled (true when the original log contained "(sample only)" prefix). | boolean |
+| checkpoint.packets_dropped.destination.ip | Destination IP address of the dropped packet. | ip |
+| checkpoint.packets_dropped.destination.port | Destination port of the dropped packet. | long |
+| checkpoint.packets_dropped.interface.name | Interface name where the packet was dropped. | keyword |
+| checkpoint.packets_dropped.network.iana_number | IANA protocol number of the dropped packet. | keyword |
+| checkpoint.packets_dropped.source.ip | Source IP address of the dropped packet. | ip |
+| checkpoint.packets_dropped.source.port | Source port of the dropped packet. | long |
 | checkpoint.parent_file_hash | Archive's hash in case of extracted files. | keyword |
 | checkpoint.parent_file_name | Archive's name in case of extracted files. | keyword |
 | checkpoint.parent_file_uid | Archive's UID in case of extracted files. | keyword |
@@ -534,12 +556,14 @@ The `firewall` data stream provides events from Check Point devices, including f
 | checkpoint.rule_action | Action of the matched rule in the access policy. | keyword |
 | checkpoint.rulebase_id | Layer number. | integer |
 | checkpoint.scan_direction | Scan direction. | keyword |
+| checkpoint.scan_ended | Scan end time. | keyword |
 | checkpoint.scan_hosts_day | Number of unique hosts during the last day. | integer |
 | checkpoint.scan_hosts_hour | Number of unique hosts during the last hour. | integer |
 | checkpoint.scan_hosts_week | Number of unique hosts during the last week. | integer |
 | checkpoint.scan_id | Sequential number of scan. | keyword |
 | checkpoint.scan_mail | Number of emails that were scanned by "AB malicious activity" engine. | integer |
 | checkpoint.scan_results | "Infected"/description of a failure. | keyword |
+| checkpoint.scan_started | Scan start time. | keyword |
 | checkpoint.scheme | Describes the scheme used for the log. | keyword |
 | checkpoint.scope | IP related to the attack. | keyword |
 | checkpoint.script_value_for_one_time_scripts |  | keyword |
@@ -708,6 +732,8 @@ The `firewall` data stream provides events from Check Point devices, including f
 | destination.service.name | Name of the service data is collected from. | keyword |
 | destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | destination.user.email | User email address. | keyword |
+| destination.user.full_name | User's full name, if available. | keyword |
+| destination.user.full_name.text | Multi-field of `destination.user.full_name`. | match_only_text |
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
@@ -787,6 +813,7 @@ The `firewall` data stream provides events from Check Point devices, including f
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
+| observer.hostname | Hostname of the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
@@ -832,6 +859,8 @@ The `firewall` data stream provides events from Check Point devices, including f
 | source.port | Port of the source. | long |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | source.user.email | User email address. | keyword |
+| source.user.full_name | User's full name, if available. | keyword |
+| source.user.full_name.text | Multi-field of `source.user.full_name`. | match_only_text |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
@@ -842,6 +871,8 @@ The `firewall` data stream provides events from Check Point devices, including f
 | url.original.text | Multi-field of `url.original`. | match_only_text |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
+| user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
 | user.group.name | Name of the group. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
@@ -966,7 +997,7 @@ To collect logs via TCP, select **Collect logs via TCP** and configure the follo
 To enable encrypted connections, configure the following SSL settings:
 
 **SSL Settings:**
-- Enable SSL*- Toggle to enable SSL/TLS encryption
+- Enable SSL - Toggle to enable SSL/TLS encryption
 - Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
 - Certificate Key - Path to the private key file (`.key`)
 - Certificate Authorities - Path to CA certificate file for client certificate validation (optional)

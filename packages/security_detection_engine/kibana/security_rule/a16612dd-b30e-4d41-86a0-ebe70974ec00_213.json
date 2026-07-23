@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the creation of an LSASS process clone via PssCaptureSnapShot where the parent process is the initial LSASS process instance. This may indicate an attempt to evade detection and dump LSASS memory for credential access.",
+        "from": "now-9m",
+        "index": [
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.parent.entity_id",
+                "process.parent.pid",
+                "process.parent.name",
+                "process.parent.executable",
+                "process.parent.command_line"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential LSASS Clone Creation via PssCaptureSnapShot",
+        "note": "## Triage and analysis\n\n### Investigating Potential LSASS Clone Creation via PssCaptureSnapShot\n\n#### Possible investigation steps\n\n- Does the alert-local 4688 event show the LSASS-clone pattern?\n  - Focus: `event.code`, `process.executable`, `process.parent.executable`, `host.id`, `@timestamp`.\n  - Implication: treat the alert as clone creation when both paths resolve to lsass.exe on one host; lower suspicion only when the tuple maps to stable EDR, forensic, or debugging workflow.\n  - Hint: pivot with `host.id` plus `process.entity_id`; if absent, use `host.id`, `process.pid`, and a tight alert-time window.\n\n- Do surrounding 4688 events reveal the setup or dump-conversion chain?\n  - Focus: same-host 4688 around `@timestamp`, especially `process.executable`, `process.command_line`, `process.parent.executable`, `user.id`, and terms such as \"PssCaptureSnapshot\", \"MiniDumpWriteDump\", \"comsvcs\", \"rundll32\", \"WerFault\", \"procdump\", \"createdump\", archive utilities, or cleanup commands. !{investigate{\"description\":\"\",\"label\":\"Same-host 4688 process creation events\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4688\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when shells, PowerShell, dump helpers, archive tools, cleanup, or remote-admin launchers appear without the same recognized collection workflow; absence of helpers leaves the clone unresolved, not benign.\n\n- If file telemetry exists, did the clone create dumps, archives, or renamed outputs?\n  - Focus: same-host file or child-process telemetry for `file.path`, `file.Ext.original.path` matching \".dmp\", \".zip\", \".7z\", or renamed outputs. !{investigate{\"description\":\"\",\"label\":\"File activity on the affected host\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}. If unavailable, use surrounding 4688 commands with output files or archive utilities.\n  - Implication: escalate when dump paths, archive names, or cleanup commands appear around clone creation. Missing file telemetry is unresolved, not benign.\n\n- Do authentication events show follow-on remote use, explicit credentials, or unusual logons?\n  - Why: clone creation often precedes credential use; later auth can show post-dump pivoting.\n  - Focus: same-host 4624, 4648, and 4625 around `@timestamp`, using `winlog.event_data.TargetUserName`, `winlog.logon.type`, and `source.ip`. !{investigate{\"description\":\"\",\"label\":\"Authentication events on the affected host\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4624\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4648\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4625\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the host or user quickly shows new remote-interactive, service, or explicit-credential logons from unusual sources. If auth telemetry is missing, record the gap and keep the finding unresolved.\n\n- Does same-user or same-host activity repeat the evidence pattern?\n  - Focus: same-user 48h alerts for helper commands, dump/archive names, or post-clone authentication. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: if user scope is sparse or the host is shared, review same-host alerts for process, output, and authentication evidence. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope when helper-command, output, or authentication patterns repeat around clone windows; no repeat keeps response local but does not clear the clone.\n\n- Escalate for unauthorized LSASS clone creation, dump preparation, post-clone credential use, or clone creation on domain controllers, jump hosts, or privileged admin systems; close only when the alert tuple and recovery evidence bind to one recognized EDR, forensic, or debugging workflow with no conflicting dump-conversion, output, or authentication evidence; preserve artifacts and escalate when answers are mixed or visibility is incomplete.\n\n### False positive analysis\n\n- Recognized EDR/forensic collection or bounded lab validation can create snapshot-based clones. Require the alert tuple, helper command line, `user.id`, `host.id`, dump-output pattern, and no unexpected 4624 or 4648 activity inside that workflow; use records only to corroborate unresolved telemetry.\n- Before creating an exception, validate that the same `host.id` and `user.id` cohort repeats the same process identity, helper-command, output-path, and authentication pattern across prior alerts from this rule. Avoid exceptions on \"lsass.exe\", `event.code`, or `host.id` alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document the collection workflow identity, launcher path, actor, host scope, dump-output pattern, and follow-on authentication pattern. Create an exception only if that pattern recurs across prior alerts.\n- If suspicious but unconfirmed, preserve the alert 4688 event, surrounding helper-process events, command lines, dump/archive paths, rename evidence, affected identities, and post-clone authentication records before containment. Apply reversible containment first, such as heightened monitoring or temporary restrictions on remote admin access; escalate to host isolation only when dump artifacts or post-clone authentication confirm likely credential exposure and the host role can tolerate interruption.\n- If confirmed malicious, preserve the alert event, helper-process chain, dump/archive paths, rename evidence, and affected identities before containment. Then isolate the host through endpoint response; if unavailable, escalate with preserved evidence. Block confirmed remote-auth or transfer sources before cleanup.\n- On domain controllers, jump hosts, or privileged admin systems, scope which local, cached, service, or domain credentials may have been exposed, then reset or rotate affected credentials before removing collected artifacts.\n- Before eradication, review related hosts and users for the same helper-process pattern, dump path, `winlog.logon.type`, or `source.ip` indicators. Then remove dump files, archives, helper tools, and persistence, and remediate the access or privilege path that enabled clone creation.\n- Post-incident hardening: restrict memory-acquisition and dump tooling to recognized admin cohorts, retain supplemental file telemetry where its absence limited the case, and document the confirmed workflow or malicious pattern for future triage.\n",
+        "query": "process where host.os.type == \"windows\" and event.code:\"4688\" and\n  process.executable : \"?:\\\\Windows\\\\System32\\\\lsass.exe\" and\n  process.parent.executable : \"?:\\\\Windows\\\\System32\\\\lsass.exe\"\n",
+        "references": [
+            "https://www.matteomalvica.com/blog/2019/12/02/win-defender-atp-cred-bypass/",
+            "https://medium.com/@Achilles8284/the-birth-of-a-process-part-2-97c6fb9c42a2"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "a16612dd-b30e-4d41-86a0-ebe70974ec00",
+        "setup": "## Setup\n\nAudit Process Creation and Command Line must be enabled to generate the events used by this rule.\nSetup instructions: https://ela.st/audit-process-creation\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.001",
+                                "name": "LSASS Memory",
+                                "reference": "https://attack.mitre.org/techniques/T1003/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 213
+    },
+    "id": "a16612dd-b30e-4d41-86a0-ebe70974ec00_213",
+    "type": "security-rule"
+}

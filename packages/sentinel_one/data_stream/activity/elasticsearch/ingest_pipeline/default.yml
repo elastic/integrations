@@ -13,23 +13,28 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_ecs_version_b777da29
       field: ecs.version
-      value: '8.11.0'
+      value: '9.3.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - fingerprint:
+      tag: fingerprint_ff462919
       fields:
         - json.createdAt
         - json.updatedAt
@@ -37,74 +42,92 @@ processors:
       target_field: _id
       ignore_missing: true
   - append:
+      tag: append_event_category_a37bbda6
       field: event.category
       value: threat
       if: ctx.json?.threatId != null && ctx.json.threatId != '' && ['exploit','pua'].contains(ctx.json.data?.threatClassification?.toLowerCase())
   - append:
+      tag: append_event_type_873a4709
       field: event.type
       value: indicator
       if: ctx.json?.threatId != null && ctx.json.threatId != '' && ['exploit','pua'].contains(ctx.json.data?.threatClassification?.toLowerCase())
   - append:
+      tag: append_event_category_86948d13
       field: event.category
       value: malware
       if: ctx.json?.threatId != null && ctx.json.threatId != '' && ['malware','ransomware','trojan','downloader'].contains(ctx.json.data?.threatClassification?.toLowerCase())
   - append:
+      tag: append_event_type_43f74706
       field: event.type
       value: info
       if: ctx.json?.threatId != null && ctx.json.threatId != '' && ['malware','ransomware','trojan','downloader'].contains(ctx.json.data?.threatClassification?.toLowerCase())
   - append:
+      tag: append_event_category_ec0698f3
       field: event.category
       value: authentication
       if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && (ctx.json.primaryDescription.toLowerCase().contains('logged in') || ctx.json.primaryDescription.toLowerCase().contains('logged out') || ctx.json.primaryDescription.toLowerCase().contains('failed to log in'))
   - append:
+      tag: append_event_type_1a22d333
       field: event.type
       value: start
       if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && ctx.json.primaryDescription.toLowerCase().contains('logged in')
   - set:
+      tag: set_event_outcome_bd547018
       field: event.outcome
       value: success
       if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && ctx.json.primaryDescription.toLowerCase().contains('logged in')
   - append:
+      tag: append_event_type_a83694f7
       field: event.type
       value: end
       if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && ctx.json.primaryDescription.toLowerCase().contains('logged out')
   - append:
+      tag: append_event_category_0c6e6515
       field: event.category
       value: configuration
       if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && (ctx.json.primaryDescription.toLowerCase().contains('created') || ctx.json.primaryDescription.toLowerCase().contains('added') || ctx.json.primaryDescription.toLowerCase().contains('deleted') || ctx.json.primaryDescription.toLowerCase().contains('edited') || ctx.json.primaryDescription.toLowerCase().contains('updated') || ctx.json.primaryDescription.toLowerCase().contains('modified') || ctx.json.primaryDescription.toLowerCase().contains('enabled') || ctx.json.primaryDescription.toLowerCase().contains('recovery email'))
   - append:
+      tag: append_event_type_ddd58c1a
       field: event.type
       value: creation
       if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && (ctx.json.primaryDescription.toLowerCase().contains('created') || ctx.json.primaryDescription.toLowerCase().contains('added'))
   - append:
+      tag: append_event_type_7cc21117
       field: event.type
       value: deletion
       if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && ctx.json.primaryDescription.toLowerCase().contains('deleted')
   - append:
+      tag: append_event_type_002fa2d2
       field: event.type
       value: change
       if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && (ctx.json.primaryDescription.toLowerCase().contains('edited') || ctx.json.primaryDescription.toLowerCase().contains('updated') || ctx.json.primaryDescription.toLowerCase().contains('modified'))
   - append:
+      tag: append_event_category_151c78d4
       field: event.category
       value: email
       if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && (ctx.json.primaryDescription.toLowerCase().contains('verification email'))
   - set:
+      tag: set_event_outcome_c0c4b32b
       field: event.outcome
       value: failure
       if: ctx.json?.primaryDescription != null && (ctx.json.threatId == null || ctx.json.threatId == '') && ctx.json.primaryDescription.toLowerCase().contains('failed to log in')
   - set:
+      tag: set_event_kind_6313ab2f
       field: event.kind
       value: alert
       if: ctx.json?.data?.confidenceLevel != null && (['suspicious', 'malicious'].contains(ctx.json.data.confidenceLevel.toLowerCase()))
   - set:
+      tag: set_event_kind_9640f873
       field: event.kind
       value: event
       if: ctx.event.kind == null
   - append:
+      tag: append_event_type_0f3be4dc
       field: event.type
       value: info
       if: ctx.event.type == null && (ctx.json.threatId == null || ctx.json.threatId == '') && ctx.json?.primaryDescription != null
   - date:
+      tag: date_json_updatedAt_to_sentinel_one_activity_updated_at_d5e30bab
       field: json.updatedAt
       if: ctx.json?.updatedAt != null
       target_field: sentinel_one.activity.updated_at
@@ -112,319 +135,395 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_3672aac4
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_description_to_sentinel_one_activity_description_value_3c0420e2
       field: json.description
       target_field: sentinel_one.activity.description_value
       ignore_missing: true
   - rename:
+      tag: rename_json_hash_to_process_hash_sha1_da8a568e
       field: json.hash
       target_field: process.hash.sha1
       ignore_missing: true
   - append:
+      tag: append_related_hash_8db6a16a
       field: related.hash
       value: '{{{process.hash.sha1}}}'
       if: ctx.process?.hash?.sha1 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_osFamily_to_observer_os_family_e5d18d5c
       field: json.osFamily
       target_field: observer.os.family
       ignore_missing: true
   - rename:
+      tag: rename_json_agentUpdatedVersion_to_observer_version_7af845f4
       field: json.agentUpdatedVersion
       target_field: observer.version
       ignore_missing: true
   - rename:
+      tag: rename_json_groupId_to_user_group_id_d788173d
       field: json.groupId
       target_field: user.group.id
       ignore_missing: true
   - set:
+      tag: set_group_id_08a5ea66
       field: group.id
       copy_from: user.group.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_groupName_to_user_group_name_0fc9d445
       field: json.groupName
       target_field: user.group.name
       ignore_missing: true
   - set:
+      tag: set_group_name_14782032
       field: group.name
       copy_from: user.group.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_accountId_to_sentinel_one_activity_account_id_4a9cc55c
       field: json.accountId
       target_field: sentinel_one.activity.account.id
       ignore_missing: true
   - rename:
+      tag: rename_json_userId_to_user_id_03eca452
       field: json.userId
       target_field: user.id
       ignore_missing: true
   - rename:
+      tag: rename_json_accountName_to_sentinel_one_account_name_48758981
       field: json.accountName
       target_field: sentinel_one.account.name
       ignore_missing: true
   - rename:
+      tag: rename_json_agentId_to_sentinel_one_activity_agent_id_379a4a54
       field: json.agentId
       target_field: sentinel_one.activity.agent.id
       ignore_missing: true
   - set:
+      tag: set_host_id_4eea25b2
       field: host.id
       copy_from: sentinel_one.activity.agent.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_comments_to_sentinel_one_activity_comments_d32bd9ae
       field: json.comments
       target_field: sentinel_one.activity.comments
       ignore_missing: true
   - date:
+      tag: date_json_createdAt_2a5ac5b2
       field: json.createdAt
       if: ctx.json?.createdAt != null
       formats:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_788daec1
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_primaryDescription_to_sentinel_one_activity_description_primary_62890654
       field: json.primaryDescription
       target_field: sentinel_one.activity.description.primary
       ignore_missing: true
   - set:
+      tag: set_message_55dd24d8
       field: message
       copy_from: sentinel_one.activity.description.primary
       if: ctx.sentinel_one?.activity?.description?.primary != null
   - rename:
+      tag: rename_json_secondaryDescription_to_sentinel_one_activity_description_secondary_027433b0
       field: json.secondaryDescription
       target_field: sentinel_one.activity.description.secondary
       ignore_missing: true
   - rename:
+      tag: rename_json_id_to_sentinel_one_activity_id_523b828a
       field: json.id
       target_field: sentinel_one.activity.id
       ignore_missing: true
   - set:
+      tag: set_event_id_10782afb
       field: event.id
       copy_from: sentinel_one.activity.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_siteId_to_sentinel_one_site_id_82ffc1d5
       field: json.siteId
       target_field: sentinel_one.site.id
       ignore_missing: true
   - rename:
+      tag: rename_json_siteName_to_sentinel_one_site_name_88e6b0dd
       field: json.siteName
       target_field: sentinel_one.site.name
       ignore_missing: true
   - rename:
+      tag: rename_json_threatId_to_sentinel_one_activity_threat_id_05249b7e
       field: json.threatId
       target_field: sentinel_one.activity.threat.id
       ignore_missing: true
   - convert:
+      tag: convert_json_activityType_to_sentinel_one_activity_type_77a0c965
       field: json.activityType
       target_field: sentinel_one.activity.type
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_activityType_f42bb04b
             field: json.activityType
             ignore_missing: true
         - append:
+            tag: append_error_message_cc7bc06a
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_data_accountId_to_sentinel_one_activity_data_account_id_6938dd10
       field: json.data.accountId
       target_field: sentinel_one.activity.data.account.id
       type: string
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_data_accountId_585ba971
             field: json.data.accountId
             ignore_missing: true
         - append:
+            tag: append_error_message_2c594d5d
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_data_accountName_to_sentinel_one_activity_data_account_name_b031fb0a
       field: json.data.accountName
       target_field: sentinel_one.activity.data.account.name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_fullScopeDetails_to_sentinel_one_activity_data_fullscope_details_98fcaf84
       field: json.data.fullScopeDetails
       target_field: sentinel_one.activity.data.fullscope.details
       ignore_missing: true
   - rename:
+      tag: rename_json_data_fullScopeDetailsPath_to_sentinel_one_activity_data_fullscope_details_path_fe94f081
       field: json.data.fullScopeDetailsPath
       target_field: sentinel_one.activity.data.fullscope.details_path
       ignore_missing: true
   - rename:
+      tag: rename_json_data_groupName_to_sentinel_one_activity_data_group_name_e8cea817
       field: json.data.groupName
       target_field: sentinel_one.activity.data.group_name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_scopeLevel_to_sentinel_one_activity_data_scope_level_c3d8ec62
       field: json.data.scopeLevel
       target_field: sentinel_one.activity.data.scope.level
       ignore_missing: true
   - rename:
+      tag: rename_json_data_scopeName_to_sentinel_one_activity_data_scope_name_eaecb486
       field: json.data.scopeName
       target_field: sentinel_one.activity.data.scope.name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_siteName_to_sentinel_one_activity_data_site_name_c82a2124
       field: json.data.siteName
       target_field: sentinel_one.activity.data.site.name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_username_to_user_full_name_41ebea8e
       field: json.data.username
       target_field: user.full_name
       ignore_missing: true
   - append:
+      tag: append_related_user_a621a20e
       field: related.user
       value: '{{{user.full_name}}}'
       if: ctx.user?.full_name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_data_byUser_to_sentinel_one_activity_data_user_name_0fb8977e
       field: json.data.byUser
       target_field: sentinel_one.activity.data.user.name
       ignore_missing: true
   - append:
+      tag: append_related_user_fa1ce605
       field: related.user
       value: '{{{sentinel_one.activity.data.user.name}}}'
       if: ctx.sentinel_one?.activity?.data?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_data_role_to_sentinel_one_activity_data_role_98ffbe14
       field: json.data.role
       target_field: sentinel_one.activity.data.role
       ignore_missing: true
   - rename:
+      tag: rename_json_data_roleName_to_sentinel_one_activity_data_role_name_de7b4027
       field: json.data.roleName
       target_field: sentinel_one.activity.data.role_name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_scopeLevelName_to_sentinel_one_activity_data_scope_level_name_0887e627
       field: json.data.scopeLevelName
       target_field: sentinel_one.activity.data.scope_level.name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_userScope_to_sentinel_one_activity_data_user_scope_dafa0680
       field: json.data.userScope
       target_field: sentinel_one.activity.data.user.scope
       ignore_missing: true
   - convert:
+      tag: convert_json_data_newValue_to_sentinel_one_activity_data_new_value_1fbcd0ff
       field: json.data.newValue
       target_field: sentinel_one.activity.data.new.value
       type: string
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_data_newValue_4a52ee17
             field: json.data.newValue
             ignore_missing: true
         - append:
+            tag: append_error_message_5300b034
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_data_externalIp_025d5d36
       field: json.data.externalIp
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_data_externalIp_29932d5f
             field: json.data.externalIp
             ignore_missing: true
         - append:
+            tag: append_error_message_64791d45
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - geoip:
+      tag: geoip_json_data_externalIp_to_host_geo_0b668d4c
       field: json.data.externalIp
       target_field: host.geo
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2e92dba7
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_data_ipAddress_f8eb5a18
       field: json.data.ipAddress
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_data_ipAddress_592d62f2
             field: json.data.ipAddress
             ignore_missing: true
         - append:
+            tag: append_error_message_38a02acf
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - geoip:
+      tag: geoip_json_data_ipAddress_to_host_geo_bc93e622
       field: json.data.ipAddress
       target_field: host.geo
       ignore_missing: true
       if: ctx.host?.geo == null
       on_failure:
         - append:
+            tag: append_error_message_fbd90971
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_host_ip_c57a3cfc
       field: host.ip
       value: '{{{json.data.ipAddress}}}'
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_host_ip_001ecc69
       field: host.ip
       value: '{{{json.data.externalIp}}}'
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_61a4ee85
       field: related.ip
       value: '{{{json.data.ipAddress}}}'
       if: ctx.json?.data?.ipAddress != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_f5f2389f
       field: related.ip
       value: '{{{json.data.externalIp}}}'
       if: ctx.json?.data?.externalIp != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_data_reason_to_sentinel_one_activity_data_reason_bfe596b8
       field: json.data.reason
       target_field: sentinel_one.activity.data.reason
       ignore_missing: true
   - rename:
+      tag: rename_json_data_source_to_sentinel_one_activity_data_source_81e30262
       field: json.data.source
       target_field: sentinel_one.activity.data.source
       ignore_missing: true
   - rename:
+      tag: rename_json_data_recoveryEmail_to_user_email_72d1ca10
       field: json.data.recoveryEmail
       target_field: user.email
       ignore_missing: true
   - rename:
+      tag: rename_json_data_computerName_to_host_name_ca5710b5
       field: json.data.computerName
       target_field: host.name
       ignore_missing: true
   - append:
+      tag: append_related_hosts_0c50b474
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_data_system_to_sentinel_one_activity_data_system_860fc3c2
       field: json.data.system
       target_field: sentinel_one.activity.data.system
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_data_system_17a627e4
             field: json.data.system
             ignore_missing: true
         - append:
+            tag: append_error_message_4c7c6d29
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_data_uuid_to_sentinel_one_activity_data_uuid_8929ec1e
       field: json.data.uuid
       target_field: sentinel_one.activity.data.uuid
       ignore_missing: true
   - rename:
+      tag: rename_json_data_group_to_sentinel_one_activity_data_group_76f470fa
       field: json.data.group
       target_field: sentinel_one.activity.data.group
       ignore_missing: true
   - rename:
+      tag: rename_json_data_optionalGroups_to_sentinel_one_activity_data_optionals_groups_96cb6966
       field: json.data.optionalGroups
       target_field: sentinel_one.activity.data.optionals_groups
       ignore_missing: true
   - date:
+      tag: date_json_data_createdAt_to_sentinel_one_activity_data_created_at_1c9f8b95
       field: json.data.createdAt
       if: ctx.json?.data?.createdAt != null
       target_field: sentinel_one.activity.data.created_at
@@ -432,23 +531,28 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_18a7919e
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_data_status_to_sentinel_one_activity_data_status_89bb96a4
       field: json.data.status
       target_field: sentinel_one.activity.data.status
       ignore_missing: true
   - rename:
+      tag: rename_json_data_fileContentHash_to_file_hash_sha1_a342b3c4
       field: json.data.fileContentHash
       target_field: file.hash.sha1
       ignore_missing: true
   - append:
+      tag: append_related_hash_b7dc7c76
       field: related.hash
       value: '{{{file.hash.sha1}}}'
       if: ctx.file?.hash?.sha1 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_data_osFamily_to_host_os_family_0d5bcde8
       field: json.data.osFamily
       target_field: host.os.family
       ignore_missing: true
@@ -474,82 +578,102 @@ processors:
           }
         }
   - rename:
+      tag: rename_json_data_confidenceLevel_to_sentinel_one_activity_data_confidence_level_6e4d8584
       field: json.data.confidenceLevel
       target_field: sentinel_one.activity.data.confidence.level
       ignore_missing: true
   - rename:
+      tag: rename_json_data_escapedMaliciousProcessArguments_to_sentinel_one_activity_data_malicious_process_arguments_90076ccb
       field: json.data.escapedMaliciousProcessArguments
       target_field: sentinel_one.activity.data.malicious.process.arguments
       ignore_missing: true
   - rename:
+      tag: rename_json_data_fileDisplayName_to_file_name_bd143636
       field: json.data.fileDisplayName
       target_field: file.name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_filePath_to_file_path_3beaf38e
       field: json.data.filePath
       target_field: file.path
       ignore_missing: true
   - rename:
+      tag: rename_json_data_threatClassification_to_sentinel_one_threat_classification_name_083e75c9
       field: json.data.threatClassification
       target_field: sentinel_one.threat_classification.name
       ignore_missing: true
   - rename:
+      tag: rename_json_data_threatClassificationSource_to_sentinel_one_threat_classification_source_1a4e5262
       field: json.data.threatClassificationSource
       target_field: sentinel_one.threat_classification.source
       ignore_missing: true
   - rename:
+      tag: rename_json_data_globalStatus_to_sentinel_one_activity_data_global_status_ea33374c
       field: json.data.globalStatus
       target_field: sentinel_one.activity.data.global.status
       ignore_missing: true
   - rename:
+      tag: rename_json_data_newStatus_to_sentinel_one_activity_data_new_status_697bccd8
       field: json.data.newStatus
       target_field: sentinel_one.activity.data.new.status
       ignore_missing: true
   - rename:
+      tag: rename_json_data_originalStatus_to_sentinel_one_activity_data_original_status_96d79aec
       field: json.data.originalStatus
       target_field: sentinel_one.activity.data.original.status
       ignore_missing: true
   - rename:
+      tag: rename_json_data_downloadUrl_to_sentinel_one_activity_data_downloaded_url_17f4f26d
       field: json.data.downloadUrl
       target_field: sentinel_one.activity.data.downloaded.url
       ignore_missing: true
   - rename:
+      tag: rename_json_data_description_to_sentinel_one_activity_data_description_e2dbed4e
       field: json.data.description
       target_field: sentinel_one.activity.data.description
       ignore_missing: true
   - rename:
+      tag: rename_json_data_policy_to_sentinel_one_activity_data_policy_3ae31b8c
       field: json.data.policy
       target_field: sentinel_one.activity.data.policy
       ignore_missing: true
   - convert:
+      tag: convert_json_data_policyName_to_sentinel_one_activity_data_policy_name_e54fc1d0
       field: json.data.policyName
       target_field: sentinel_one.activity.data.policy_name
       type: string
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_data_policyName_a63abb42
             field: json.data.policyName
             ignore_missing: true
         - append:
+            tag: append_error_message_9b6582f7
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_data_changedKeys_to_sentinel_one_activity_data_changed_keys_e4bb7cd5
       field: json.data.changedKeys
       target_field: sentinel_one.activity.data.changed_keys
       ignore_missing: true
   - rename:
+      tag: rename_json_data_newConfidenceLevel_to_sentinel_one_activity_data_new_confidence_level_7384d4a7
       field: json.data.newConfidenceLevel
       target_field: sentinel_one.activity.data.new.confidence_level
       ignore_missing: true
   - rename:
+      tag: rename_json_data_oldConfidenceLevel_to_sentinel_one_activity_data_old_confidence_level_4ebf5a49
       field: json.data.oldConfidenceLevel
       target_field: sentinel_one.activity.data.old.confidence_level
       ignore_missing: true
   - rename:
+      tag: rename_json_data_attr_to_sentinel_one_activity_data_attr_02c92772
       field: json.data.attr
       target_field: sentinel_one.activity.data.attr
       ignore_missing: true
   - remove:
+      tag: remove_989167c4
       field:
         - json.data.accountId
         - json.data.newValue
@@ -559,13 +683,51 @@ processors:
         - json.data.policyName
       ignore_missing: true
   - rename:
+      field: json.data.ruledescription
+      tag: rename_ruledescription_to_rule_description
+      target_field: sentinel_one.activity.rule_description
+      ignore_missing: true
+  - rename:
+      field: json.data.ruleid
+      tag: rename_ruleid_to_rule_id
+      target_field: sentinel_one.activity.rule_id
+      ignore_missing: true
+  - rename:
+      field: json.data.rulename
+      tag: rename_rulename_to_rule_name
+      target_field: sentinel_one.activity.rule_name
+      ignore_missing: true
+  - set:
+      field: rule.description
+      tag: set_rule_description_from_rule_description
+      copy_from: sentinel_one.activity.rule_description
+      ignore_empty_value: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_rule_id
+      copy_from: sentinel_one.activity.rule_id
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_rule_name
+      copy_from: sentinel_one.activity.rule_name
+      ignore_empty_value: true
+  - rename:
+      field: json.data.severity
+      tag: rename_severity_to_activity_severity
+      target_field: sentinel_one.activity.severity
+      ignore_missing: true
+  - rename:
+      tag: rename_json_data_to_sentinel_one_activity_data_flattened_87171ab1
       field: json.data
       target_field: sentinel_one.activity.data.flattened
       ignore_missing: true
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - script:
+      tag: script_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -592,4 +754,4 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

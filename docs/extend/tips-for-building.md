@@ -226,7 +226,7 @@ Sample logs can be placed in `_dev/deploy/docker/sample_logs/integration.log`:
 <13>1 2024-03-08T10:14:08+00:00 integration-1 serverd - - - ﻿id=firewall time="2024-03-08 10:14:08" fw="integration-1" tz=+0000 startime="2024-03-08 10:14:08" error=0 user="admin" address=192.168.197.1 sessionid=1 msg="example syslog line" logtype="server"
 <13>1 2024-03-08T10:14:08+00:00 integration-1 serverd - - - ﻿id=firewall time="2024-03-08 10:14:08" fw="integration-1" tz=+0000 startime="2024-03-08 10:14:08" error=0 user="admin" address=192.168.197.1 sessionid=1 msg="example syslog line 2" logtype="server"
 ```
-Together, these two files will start a service which write the sample logs to a UDP socket on port 5144. The Elastic Agent will listen to the data on this port, and process it in a system test.
+Together, these two files will start a service which writes the sample logs to a UDP socket on port 5144. The Elastic Agent will listen to the data on this port, and process it in a system test.
 
 ### Kibana support
 
@@ -576,6 +576,31 @@ elastic-package test [pipeline|static|asset|policy|system] -v -g
     ::::{note}
     The package version with such condition as above will be only available in Kibana version >=8.7.0
     ::::
+
+6. If a package relies on features available only in a specific Elastic Agent version, use an agent version condition. There are two approaches depending on your needs:
+
+    **Package-level** — restricts all inputs; requires Kibana 9.4 or later:
+
+    ```yaml
+    conditions:
+      kibana
+        version: '^9.4.0'
+      agent:
+        version: '^9.3.0'
+    ```
+
+    **Input template-level** — conditionally renders a configuration block for agents that satisfy the version constraint (in a `.hbs` stream template):
+
+    ```handlebars
+    {{#semverSatisfies _meta.agent.version "^9.3.0"}}
+    program: |
+      ...
+    {{/semverSatisfies}}
+    ```
+
+    Use the package-level approach when all inputs require the newer agent. Use the template-level approach when only part of the configuration uses newer agent capabilities and you want the package to remain usable with older agents.
+
+    See [Agent version conditions](agent-version-conditions.md) for full details.
 
 
     ::::{note}

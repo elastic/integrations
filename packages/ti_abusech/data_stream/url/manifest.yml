@@ -8,11 +8,11 @@ streams:
       - name: url
         type: text
         title: URL
-        description: Base URL of the abuse.ch URLhaus API to collect actively distributing malware URLs.
+        description: Base URL of the abuse.ch URLhaus API to collect recently added malware URLs.
         multi: false
         required: true
         show_user: false
-        default: https://urlhaus.abuse.ch/downloads/json
+        default: https://urlhaus-api.abuse.ch/v1/urls/recent/
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
@@ -34,8 +34,19 @@ streams:
         multi: false
         required: true
         show_user: true
-        default: 1h
-        description: Duration between requests to the URLhaus API. Supported units for this parameter are h/m/s. Example `24h`. As data dump is generated every 5 minutes, it should be greater than 5 minutes.
+        default: 10m
+        description: >-
+          Duration between requests to the URLhaus API. The API returns at most 1000 URLs added in the last 3 days,
+          so the interval must be short enough to avoid exceeding that limit. Too long an interval risks missing URLs;
+          too short an interval re-collects the same URLs without benefit. Supported units: h/m/s. Example `10m`.
+      - name: ioc_expiration_duration
+        type: text
+        title: IOC Expiration Duration
+        multi: false
+        required: true
+        show_user: true
+        default: "90d"
+        description: Indicator is expired after this duration since it was first seen. Supported units for this parameter are d/h/m. Example `10d`. Default value is `90d` i.e., 90 days.
       - name: ssl
         type: yaml
         title: SSL Configuration

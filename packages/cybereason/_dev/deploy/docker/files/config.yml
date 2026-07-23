@@ -1,0 +1,1418 @@
+rules:
+  - path: /login.html
+    methods: ["POST"]
+    query_params:
+      username: ["user"]
+      password: ["password"]
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 302
+        headers:
+          Set-Cookie: 
+            - "JSESSIONID=ABC123DEF456789; Path=/; HttpOnly; Secure"
+          Location:
+            - "/request1"
+        body: ""
+  # Handle the redirect location
+  - path: /request1
+    methods: ["GET"]
+    responses:
+      - status_code: 302
+        headers:
+          Location:
+            - "/request2"
+        body: ""
+  - path: /request2
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+        body: ""
+  # logon_session data stream
+  - path: /rest/visualsearch/query/simple
+    methods: ["POST"]
+    request_body: /.*"requestedType":"LogonSession".*/
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Cookie:
+        - "JSESSIONID=ABC123DEF456789"
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+            {
+              "data": {
+                "resultIdToElementDataMap": {
+                  "id": {
+                    "simpleValues": {
+                      "logonType": {
+                        "totalValues": 1,
+                        "values": [
+                          "SLT_RemoteInteractive"
+                        ]
+                      },
+                      "creationTime": {
+                        "totalValues": 1,
+                        "values": [
+                          "1710332435086"
+                        ]
+                      },
+                      "group": {
+                        "totalValues": 1,
+                        "values": [
+                          "00000000-0000-0000-0000-000000000000"
+                        ]
+                      },
+                      "elementDisplayName": {
+                        "totalValues": 1,
+                        "values": [
+                          "Unknown host > desktop-f2nf4st"
+                        ]
+                      }
+                    },
+                    "elementValues": {
+                      "user": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "User",
+                            "guid": "AAAAGKxw2bFBmcGU",
+                            "name": "desktop-f2nf4st\\eden",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {
+                              "user": "myd"
+                            },
+                            "simpleValues": {
+                              "usersimple": "value"
+                            }
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "remoteMachine": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "Remote",
+                            "guid": "AAAAGKxw2bFBmcGUssss",
+                            "name": "desktop-f2nf4stmjremote",
+                            "hasSuspicions": true,
+                            "hasMalops": false,
+                            "elementValues": {
+                              "remote": "myd"
+                            },
+                            "simpleValues": {
+                              "remotesimple": "value"
+                            }
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "ownerMachine": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "Machine",
+                            "guid": "_MlzCxCi55eyTiwX",
+                            "name": "desktop-f2nf4st",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {
+                              "ownermachine": "myd"
+                            },
+                            "simpleValues": {
+                              "machinesimple": "value"
+                            }
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "processes": {
+                        "totalValues": 320,
+                        "elementValues": [
+                          {
+                            "elementType": "MachineProcess",
+                            "guid": "_MlzCxCi55eyTiwXYX",
+                            "name": "desktop-f2nf4stgy",
+                            "hasSuspicions": true,
+                            "hasMalops": true,
+                            "elementValues": {
+                              "process": "myd"
+                            },
+                            "simpleValues": {
+                              "processsimple": "value"
+                            }
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      }
+                    },
+                    "suspicions": {
+                      "xyz": "dhyg"
+                    },
+                    "filterData": {
+                      "sortInGroupValue": "hyefilter",
+                      "groupByValue": "{guid=AAAAGKxw2bFBmcGU, __typename=User, elementDisplayName=desktop-f2nf4st\\eden, group=7af5074f-ab26-43b3-b0f1-acc962920615, hasSuspicions=false, hasMalops=false}"
+                    },
+                    "isMalicious": false,
+                    "suspicionCount": 0,
+                    "guidString": "_MlzC6rnLebZ2aBh",
+                    "labelsIds": "l1",
+                    "malopPriority": "HIGH",
+                    "suspect": false,
+                    "malicious": false
+                  }
+                },
+                "suspicionsMap": {
+                  "suspicions": "map"
+                },
+                "evidenceMap": {
+                  "evidence": "map"
+                }
+              }
+            }
+          `}}
+  # malop_connection data stream
+  - path: /rest/visualsearch/query/simple
+    methods: ["POST"]
+    request_body: /.*"requestedType":"Connection".*/
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Cookie:
+        - "JSESSIONID=ABC123DEF456789"
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+            {
+              "data": {
+                "resultIdToElementDataMap": {
+                  "id": {
+                    "simpleValues": {
+                      "remoteAddressCountryName": {
+                        "totalValues": 1,
+                        "values": [
+                          "United States"
+                        ]
+                      },
+                      "aggregatedReceivedBytesCount": {
+                        "totalValues": 1,
+                        "values": [
+                          "6811"
+                        ]
+                      },
+                      "endTime": {
+                        "totalValues": 1,
+                        "values": [
+                          "1710330940803"
+                        ]
+                      },
+                      "state": {
+                        "totalValues": 1,
+                        "values": [
+                          "CONNECTION_OPEN"
+                        ]
+                      },
+                      "portType": {
+                        "totalValues": 1,
+                        "values": [
+                          "SERVICE_HTTP"
+                        ]
+                      },
+                      "transportProtocol": {
+                        "totalValues": 1,
+                        "values": [
+                          "TCP"
+                        ]
+                      },
+                      "accessedByMalwareEvidence": {
+                        "totalValues": 1,
+                        "values": [
+                          "false"
+                        ]
+                      },
+                      "group": {
+                        "totalValues": 1,
+                        "values": [
+                          "72a61eac-6f79-4670-8607-a1334ddd2ff0"
+                        ]
+                      },
+                      "elementDisplayName": {
+                        "totalValues": 1,
+                        "values": [
+                          "81.2.69.192:50394 > 81.2.69.142:443"
+                        ]
+                      },
+                      "aggregatedTransmittedBytesCount": {
+                        "totalValues": 1,
+                        "values": [
+                          "4098"
+                        ]
+                      },
+                      "localPort": {
+                        "totalValues": 1,
+                        "values": [
+                          "50394"
+                        ]
+                      },
+                      "serverAddress": {
+                        "totalValues": 1,
+                        "values": [
+                          "0.0.0.0"
+                        ]
+                      },
+                      "serverPort": {
+                        "totalValues": 1,
+                        "values": [
+                          "443"
+                        ]
+                      },
+                      "calculatedCreationTime": {
+                        "totalValues": 1,
+                        "values": [
+                          "1710330879973"
+                        ]
+                      },
+                      "remotePort": {
+                        "totalValues": 1,
+                        "values": [
+                          "443"
+                        ]
+                      },
+                      "direction": {
+                        "totalValues": 1,
+                        "values": [
+                          "OUTGOING"
+                        ]
+                      }
+                    },
+                    "elementValues": {
+                      "ownerMachine": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "Machine",
+                            "guid": "7vCmFBCi55eyTiwX",
+                            "name": "dim-win10",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {
+                              "pole": "bye"
+                            },
+                            "simpleValues": {}
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "dnsQuery": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "Machine",
+                            "guid": "7vCmFBCi55eyTiwX",
+                            "name": "dim-win10",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {},
+                            "simpleValues": {}
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "ownerProcess": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "Process",
+                            "guid": "7vCmFPstj36nuaBO",
+                            "name": "backgroundtaskhost.exe",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {
+                              "user": {
+                                "totalValues": 1,
+                                "elementValues": [
+                                  {
+                                    "elementType": "User",
+                                    "guid": "AAAAGGZ3xLXVm27e",
+                                    "name": "cy\\cymulator",
+                                    "hasSuspicions": false,
+                                    "hasMalops": false,
+                                    "elementValues": {},
+                                    "simpleValues": {
+                                      "ok": "lope"
+                                    }
+                                  }
+                                ],
+                                "totalSuspicious": 0,
+                                "totalMalicious": 0,
+                                "guessedTotal": 0
+                              }
+                            },
+                            "simpleValues": {}
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "ownerProcess.user": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "User",
+                            "guid": "AAAAGGZ3xLXVm27e",
+                            "name": "cy\\cymulator",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {},
+                            "simpleValues": {}
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      }
+                    },
+                    "suspicions": {
+                      "malop": "connection"
+                    },
+                    "filterData": {
+                      "sortInGroupValue": "filter",
+                      "groupByValue": "81.2.69.192:50394 > 81.2.69.142:443"
+                    },
+                    "isMalicious": false,
+                    "suspicionCount": 0,
+                    "guidString": "7vCmFD3khy-bwG9X",
+                    "labelsIds": "labelids",
+                    "malopPriority": "MEDIUM",
+                    "suspect": false,
+                    "malicious": false
+                  }
+                },
+                "suspicionsMap": {
+                  "suspicions": "map"
+                },
+                "evidenceMap": {
+                  "evidence": "map"
+                }
+              }
+            }
+          `}}
+  # malop_process data stream
+  - path: /rest/visualsearch/query/simple
+    methods: ["POST"]
+    request_body: /.*"requestedType":"MalopProcess".*/
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Cookie:
+        - "JSESSIONID=ABC123DEF456789"
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+            {
+              "data": {
+                "resultIdToElementDataMap": {
+                  "id": {
+                    "simpleValues": {
+                      "hasRansomwareSuspendedProcesses": {
+                        "totalValues": 1,
+                        "values": [
+                          "false"
+                        ]
+                      },
+                      "decisionFeatureSet": {
+                        "totalValues": 1,
+                        "values": [
+                          "Process.maliciousByCodeInjection(Malop decision)"
+                        ]
+                      },
+                      "decisionFeature": {
+                        "totalValues": 1,
+                        "values": [
+                          "Process.maliciousByCodeInjection(Malop decision)"
+                        ]
+                      },
+                      "detectionType": {
+                        "totalValues": 1,
+                        "values": [
+                          "PROCESS_INJECTION"
+                        ]
+                      },
+                      "malopActivityTypes": {
+                        "totalValues": 2,
+                        "values": [
+                          "NONE_MALOP_ACTIVITY_TYPE",
+                          "MALICIOUS_INFECTION"
+                        ]
+                      },
+                      "creationTime": {
+                        "totalValues": 1,
+                        "values": [
+                          "1703790106501"
+                        ]
+                      },
+                      "isBlocked": {
+                        "totalValues": 1,
+                        "values": [
+                          "false"
+                        ]
+                      },
+                      "rootCauseElementTypes": {
+                        "totalValues": 1,
+                        "values": [
+                          "Process"
+                        ]
+                      },
+                      "rootCauseElementCompanyProduct": {
+                        "totalValues": 1,
+                        "values": [
+                          "product"
+                        ]
+                      },
+                      "rootCauseElementHashes": {
+                        "totalValues": 1,
+                        "values": [
+                          "nbvgyui765tghnxxx"
+                        ]
+                      },
+                      "iconBase64": {
+                        "totalValues": 1,
+                        "values": [
+                          "base"
+                        ]
+                      },
+                      "malopStartTime": {
+                        "totalValues": 1,
+                        "values": [
+                          "1703789975356"
+                        ]
+                      },
+                      "rootCauseElementNames": {
+                        "totalValues": 1,
+                        "values": [
+                          "injected (chain of injections)"
+                        ]
+                      },
+                      "totalNumberOfIncomingConnections": {
+                        "totalValues": 1,
+                        "values": [
+                          768
+                        ]
+                      },
+                      "totalNumberOfOutgoingConnections": {
+                        "totalValues": 1,
+                        "values": [
+                          23
+                        ]
+                      },
+                      "totalReceivedBytes": {
+                        "totalValues": 1,
+                        "values": [
+                          76
+                        ]
+                      },
+                      "totalTransmittedBytes": {
+                        "totalValues": 1,
+                        "values": [
+                          90
+                        ]
+                      },
+                      "malopLastUpdateTime": {
+                        "totalValues": 1,
+                        "values": [
+                          "1703790231785"
+                        ]
+                      },
+                      "allRansomwareProcessesSuspended": {
+                        "totalValues": 1,
+                        "values": [
+                          "false"
+                        ]
+                      }
+                    },
+                    "elementValues": {
+                      "suspects": {
+                        "totalValues": 10,
+                        "elementValues": [
+                          {
+                            "elementType": "Process",
+                            "guid": "zpP735vQl83mbAFk",
+                            "name": "injected (chain of injections)",
+                            "hasSuspicions": true,
+                            "hasMalops": true,
+                            "elementValues": {
+                              "type": "suspects"
+                            },
+                            "simpleValues": {
+                              "hasMalops": {
+                                "totalValues": 1,
+                                "values": [
+                                  "true"
+                                ]
+                              },
+                              "guid": {
+                                "totalValues": 1,
+                                "values": [
+                                  "zpP735vQl83mbAFk"
+                                ]
+                              },
+                              "hasSuspicions": {
+                                "totalValues": 1,
+                                "values": [
+                                  "true"
+                                ]
+                              },
+                              "group": {
+                                "totalValues": 1,
+                                "values": [
+                                  "72a61eac-6f79-4670-8607-a1334ddd2ff0"
+                                ]
+                              },
+                              "elementDisplayName": {
+                                "totalValues": 1,
+                                "values": [
+                                  "injected (chain of injections)"
+                                ]
+                              }
+                            }
+                          }
+                        ],
+                        "totalSuspicious": 10,
+                        "totalMalicious": 10,
+                        "guessedTotal": 0
+                      },
+                      "filesToRemediate": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "File",
+                            "guid": "zpP7358Lbsf7z787",
+                            "name": "x64cymulateprocesshider.exe",
+                            "hasSuspicions": true,
+                            "hasMalops": false,
+                            "elementValues": {
+                              "files": "remediate"
+                            },
+                            "simpleValues": {
+                              "hasMalops": {
+                                "totalValues": 1,
+                                "values": [
+                                  "false"
+                                ]
+                              },
+                              "guid": {
+                                "totalValues": 1,
+                                "values": [
+                                  "zpP7358Lbsf7z787"
+                                ]
+                              },
+                              "hasSuspicions": {
+                                "totalValues": 1,
+                                "values": [
+                                  "true"
+                                ]
+                              },
+                              "group": {
+                                "totalValues": 1,
+                                "values": [
+                                  "72a61eac-6f79-4670-8607-a1334ddd2ff0"
+                                ]
+                              },
+                              "elementDisplayName": {
+                                "totalValues": 1,
+                                "values": [
+                                  "x64cymulateprocesshider.exe"
+                                ]
+                              }
+                            }
+                          }
+                        ],
+                        "totalSuspicious": 1,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "primaryRootCauseElements": {
+                        "totalValues": 10,
+                        "elementValues": [
+                          {
+                            "elementType": "Process",
+                            "guid": "zpP73wfcKRFKvnZa",
+                            "name": "injected (chain of injections)",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {},
+                            "simpleValues": {
+                              "guid": {
+                                "totalValues": 1,
+                                "values": [
+                                  "zpP73wfcKRFKvnZa"
+                                ]
+                              },
+                              "group": {
+                                "totalValues": 1,
+                                "values": [
+                                  "72a61eac-6f79-4670-8607-a1334ddd2ff0"
+                                ]
+                              },
+                              "elementDisplayName": {
+                                "totalValues": 1,
+                                "values": [
+                                  "injected (chain of injections)"
+                                ]
+                              }
+                            }
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "affectedUsers": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "User",
+                            "guid": "AAAAGAJYAICT5xYW",
+                            "name": "cybereason\\theavengers",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {
+                              "values": "element"
+                            },
+                            "simpleValues": {
+                              "hasMalops": {
+                                "totalValues": 1,
+                                "values": [
+                                  "false"
+                                ]
+                              },
+                              "guid": {
+                                "totalValues": 1,
+                                "values": [
+                                  "AAAAGAJYAICT5xYW"
+                                ]
+                              },
+                              "hasSuspicions": {
+                                "totalValues": 1,
+                                "values": [
+                                  "false"
+                                ]
+                              },
+                              "group": {
+                                "totalValues": 1,
+                                "values": [
+                                  "72a61eac-6f79-4670-8607-a1334ddd2ff0"
+                                ]
+                              },
+                              "elementDisplayName": {
+                                "totalValues": 1,
+                                "values": [
+                                  "cybereason\\theavengers"
+                                ]
+                              }
+                            }
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "rootCauseElements": {
+                        "totalValues": 10,
+                        "elementValues": [
+                          {
+                            "elementType": "Process",
+                            "guid": "zpP735vQl83mbAFk",
+                            "name": "injected (chain of injections)",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {
+                              "element": "root"
+                            },
+                            "simpleValues": {
+                              "guid": {
+                                "totalValues": 1,
+                                "values": [
+                                  "zpP735vQl83mbAFk"
+                                ]
+                              },
+                              "group": {
+                                "totalValues": 1,
+                                "values": [
+                                  "72a61eac-6f79-4670-8607-a1334ddd2ff0"
+                                ]
+                              },
+                              "elementDisplayName": {
+                                "totalValues": 1,
+                                "values": [
+                                  "injected (chain of injections)"
+                                ]
+                              }
+                            }
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "affectedMachines": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "Machine",
+                            "guid": "zpP73xCi55eyTiwX",
+                            "name": "cybereason",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {
+                              "element": "values"
+                            },
+                            "simpleValues": {
+                              "hasMalops": {
+                                "totalValues": 1,
+                                "values": [
+                                  "false"
+                                ]
+                              },
+                              "guid": {
+                                "totalValues": 1,
+                                "values": [
+                                  "zpP73xCi55eyTiwX"
+                                ]
+                              },
+                              "hasSuspicions": {
+                                "totalValues": 1,
+                                "values": [
+                                  "false"
+                                ]
+                              },
+                              "group": {
+                                "totalValues": 1,
+                                "values": [
+                                  "72a61eac-6f79-4670-8607-a1334ddd2ff0"
+                                ]
+                              },
+                              "elementDisplayName": {
+                                "totalValues": 1,
+                                "values": [
+                                  "cybereason"
+                                ]
+                              }
+                            }
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      }
+                    },
+                    "suspicions": {
+                      "connectingToBlackListAddressSuspicion": 1710261170916
+                    },
+                    "filterData": {
+                      "sortInGroupValue": "hello",
+                      "groupByValue": "NONE_MALOP_ACTIVITY_TYPE"
+                    },
+                    "isMalicious": false,
+                    "suspicionCount": 0,
+                    "guidString": "AAAA0xquIk3X9oQ_",
+                    "labelsIds": "lbl2",
+                    "malopPriority": "LOW",
+                    "suspect": false,
+                    "malicious": false
+                  }
+                },
+                "suspicionsMap": {
+                  "suspicions": "map"
+                },
+                "evidenceMap": {
+                  "evidence": "map"
+                }
+              }
+            }
+          `}}
+  # malware data stream
+  - path: /rest/malware/query
+    methods: ["POST"]
+    request_body: /.*"offset":2.*/
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Cookie:
+        - "JSESSIONID=ABC123DEF456789"
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+            {
+              "data":{
+                "malwares":[
+                  {
+                    "guid": "-116218732.7910817006083139531",
+                    "timestamp": 1710147417000,
+                    "name": "cymulatelm64.exe",
+                    "type": "UnknownMalware",
+                    "elementType": "File",
+                    "machineName": "dim-win10",
+                    "status": "Detected",
+                    "needsAttention": false,
+                    "referenceGuid": "-286218732.7910817006083139531",
+                    "referenceElementType": "File",
+                    "score": 0.7721870783056456,
+                    "detectionValue": "62b9e0dfd0ef2cd88fdcd412523c7d9f",
+                    "detectionValueType": "DVT_FILE",
+                    "detectionEngine": "StaticAnalysis",
+                    "malwareDataModel": {
+                      "@class": ".BaseFileMalwareDataModel",
+                      "type": "UnknownMalware",
+                      "detectionName": "IL:Trojan.MSILZilla.30425",
+                      "filePath": "c:\\programdata\\cymulate\\hopper\\boot64_1da739212534cbd666bc903c25b812e0\\cymulatelm64.exe",
+                      "processName": "remotefxvgpudisablement.exe",
+                      "url": "https://malware_data_model",
+                      "detectionRule": "Formatting (1106)",
+                      "module": "Formatting (1106)",
+                      "description": "EXECUTE_MALICIOUS_ACTIVITY"
+                    },
+                    "id": {
+                      "guid": "-116218732.7910817006083139531",
+                      "timestamp": 1710147417001,
+                      "malwareType": "UnknownMalware",
+                      "elementType": "File"
+                    },
+                    "schedulerScan": false
+                  }
+                ],
+                "hasMoreResults": false
+              }
+            }
+          `}}
+  - path: /rest/malware/query
+    methods: ["POST"]
+    request_body: /.*"offset":1.*/
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Cookie:
+        - "JSESSIONID=ABC123DEF456789"
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+            {
+              "data":{
+                "malwares":[
+                  {
+                    "guid": "-186218732.7910817006083139531",
+                    "timestamp": 1710147417000,
+                    "name": "cymulatelm64.exe",
+                    "type": "UnknownMalware",
+                    "elementType": "File",
+                    "machineName": "dim-win10",
+                    "status": "Detected",
+                    "needsAttention": false,
+                    "referenceGuid": "-286218732.7910817006083139531",
+                    "referenceElementType": "File",
+                    "score": 0.7721870783056456,
+                    "detectionValue": "62b9e0dfd0ef2cd88fdcd412523c7d9f",
+                    "detectionValueType": "DVT_FILE",
+                    "detectionEngine": "StaticAnalysis",
+                    "malwareDataModel": {
+                      "@class": ".BaseFileMalwareDataModel",
+                      "type": "UnknownMalware",
+                      "detectionName": "IL:Trojan.MSILZilla.30425",
+                      "filePath": "c:\\programdata\\cymulate\\hopper\\boot64_1da739212534cbd666bc903c25b812e0\\cymulatelm64.exe",
+                      "processName": "remotefxvgpudisablement.exe",
+                      "url": "https://malware_data_model",
+                      "detectionRule": "Formatting (1106)",
+                      "module": "Formatting (1106)",
+                      "description": "EXECUTE_MALICIOUS_ACTIVITY"
+                    },
+                    "id": {
+                      "guid": "-186218732.7910817006083139531",
+                      "timestamp": 1710147417001,
+                      "malwareType": "UnknownMalware",
+                      "elementType": "File"
+                    },
+                    "schedulerScan": false
+                  }
+                ],
+                "hasMoreResults": true
+              }
+            }
+          `}}
+  - path: /rest/malware/query
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Cookie:
+        - "JSESSIONID=ABC123DEF456789"
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+            {
+              "data":{
+                "malwares":[
+                  {
+                    "guid": "-286218732.7910817006083139531",
+                    "timestamp": 1710147417000,
+                    "name": "cymulatelm64.exe",
+                    "type": "UnknownMalware",
+                    "elementType": "File",
+                    "machineName": "dim-win10",
+                    "status": "Detected",
+                    "needsAttention": false,
+                    "referenceGuid": "-286218732.7910817006083139531",
+                    "referenceElementType": "File",
+                    "score": 0.7721870783056456,
+                    "detectionValue": "62b9e0dfd0ef2cd88fdcd412523c7d9f",
+                    "detectionValueType": "DVT_FILE",
+                    "detectionEngine": "StaticAnalysis",
+                    "malwareDataModel": {
+                      "@class": ".BaseFileMalwareDataModel",
+                      "type": "UnknownMalware",
+                      "detectionName": "IL:Trojan.MSILZilla.30425",
+                      "filePath": "c:\\programdata\\cymulate\\hopper\\boot64_1da739212534cbd666bc903c25b812e0\\cymulatelm64.exe",
+                      "processName": "remotefxvgpudisablement.exe",
+                      "url": "https://malware_data_model",
+                      "detectionRule": "Formatting (1106)",
+                      "module": "Formatting (1106)",
+                      "description": "EXECUTE_MALICIOUS_ACTIVITY"
+                    },
+                    "id": {
+                      "guid": "-286218732.7910817006083139531",
+                      "timestamp": 1710147417000,
+                      "malwareType": "UnknownMalware",
+                      "elementType": "File"
+                    },
+                    "schedulerScan": false
+                  }
+                ],
+                "hasMoreResults": true
+              }
+            }
+          `}}
+  # poll_malop data stream
+  - path: /rest/detection/inbox
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Cookie:
+        - "JSESSIONID=ABC123DEF456789"
+    responses:
+      - status_code: 200
+        headers:
+          Set-Cookie: 
+            - "JSESSIONID=ABC123DEF456789; Path=/; HttpOnly; Secure"
+        body: |-
+          {{ minify_json `
+            {
+              "malops": [
+                {
+                  "@class": ".MalopInboxModel",
+                  "guid": "AAAA05JzW7vmNhCD",
+                  "closerName": "Closer Name",
+                  "displayName": "register-cimprovider.exe",
+                  "rootCauseElementType": "Process",
+                  "primaryRootCauseName": "register-cimprovider.exe",
+                  "rootCauseElementNamesCount": 1,
+                  "detectionEngines": [
+                    "EDR"
+                  ],
+                  "detectionTypes": [
+                    "calc_Custom_Rule"
+                  ],
+                  "malopDetectionType": "CUSTOM_RULE",
+                  "creationTime": 1694821955604,
+                  "lastUpdateTime": 1709579576110,
+                  "iconBase64": "muhk",
+                  "priority": "HIGH",
+                  "group": "72a61eac-6f79-4670-8607-a1334ddd2ff0",
+                  "rootCauseElementHashes": "f7b32703e444fdc75c09840afa3dcda8286f3b24",
+                  "status": "Active",
+                  "severity": "High",
+                  "machines": [
+                    {
+                      "@class": ".MachineInboxModel",
+                      "guid": "lbnnvBCi55eyTiwX",
+                      "displayName": "d3dock-poc",
+                      "osType": "WINDOWS",
+                      "connected": false,
+                      "isolated": false,
+                      "lastConnected": 1704608610725,
+                      "empty": true
+                    },
+                    {
+                      "@class": ".MachineInboxModel",
+                      "guid": "zpP73xCi55eyTiwX",
+                      "displayName": "cybereason",
+                      "osType": "linux",
+                      "connected": true,
+                      "isolated": true,
+                      "lastConnected": 1710750650941,
+                      "empty": true
+                    },
+                    {
+                      "@class": ".MachineInboxModel",
+                      "guid": "7vCmFBCi55eyTiwX",
+                      "displayName": "dim-win10",
+                      "osType": "xyz",
+                      "connected": false,
+                      "isolated": false,
+                      "lastConnected": 1710692494714,
+                      "empty": true
+                    }
+                  ],
+                  "users": [
+                    {
+                      "guid": "AAAAGGHyKbMGbI4y",
+                      "displayName": "d3dock-poc\\administrator",
+                      "admin": false,
+                      "localSystem": false,
+                      "domainUser": false
+                    },
+                    {
+                      "guid": "AAAAGK97gKTvmLc3",
+                      "displayName": "cybereason\\system",
+                      "admin": false,
+                      "localSystem": true,
+                      "domainUser": false
+                    },
+                    {
+                      "guid": "AAAAGGZ3xLXVm27e",
+                      "displayName": "cy\\cymulator",
+                      "admin": false,
+                      "localSystem": false,
+                      "domainUser": false
+                    }
+                  ],
+                  "containers": [
+                    "Testing"
+                  ],
+                  "labels": [
+                    "IT-Pending",
+                    "Testing"
+                  ],
+                  "decisionStatuses": [
+                    "Testing"
+                  ],
+                  "malopCloseTime": 1700721915015,
+                  "escalated": false,
+                  "malopStatus": "Active",
+                  "malopSeverity": "High",
+                  "edr": true,
+                  "malopType": "CUSTOM_RULE",
+                  "malopPriority": "LOW",
+                  "closed": false,
+                  "empty": true
+                }
+              ]
+            }
+          `}}
+  # suspicions_process data stream
+  - path: /rest/visualsearch/query/simple
+    methods: ["POST"]
+    request_body: /.*"requestedType":"Process".*/
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Cookie:
+        - "JSESSIONID=ABC123DEF456789"
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+            {
+              "data": {
+                "resultIdToElementDataMap": {
+                  "id": {
+                    "simpleValues": {
+                      "commandLine": {
+                        "totalValues": 1,
+                        "values": [
+                          "\"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --no-appcompat-clear --mojo-platform-channel-handle=2744 --field-trial-handle=2328,i,5521555393418764293,4286640738456912470,262144 --variations-seed-version /prefetch:3"
+                        ]
+                      },
+                      "group": {
+                        "totalValues": 1,
+                        "values": [
+                          "72a61eac-6f79-4670-8607-a1334ddd2ff0"
+                        ]
+                      },
+                      "imageFile.maliciousClassificationType": {
+                        "totalValues": 1,
+                        "values": [
+                          "indifferent"
+                        ]
+                      },
+                      "ransomwareAutoRemediationSuspended": {
+                        "totalValues": 1,
+                        "values": [
+                          "false"
+                        ]
+                      },
+                      "imageFile.fileHash.iconBase64": {
+                        "totalValues": 1,
+                        "values": [
+                          "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"
+                        ]
+                      },
+                      "executionPrevented": {
+                        "totalValues": 1,
+                        "values": [
+                          "false"
+                        ]
+                      },
+                      "isWhiteListClassification": {
+                        "totalValues": 1,
+                        "values": [
+                          "false"
+                        ]
+                      },
+                      "imageFile.md5String": {
+                        "totalValues": 1,
+                        "values": [
+                          "5ac5ddc4c27ecc203b2ed62bbe8fb8b9"
+                        ]
+                      },
+                      "creationTime": {
+                        "totalValues": 1,
+                        "values": [
+                          "1710232835122"
+                        ]
+                      },
+                      "endTime": {
+                        "totalValues": 1,
+                        "values": [
+                          "1710256407872"
+                        ]
+                      },
+                      "imageFile.sha1String": {
+                        "totalValues": 1,
+                        "values": [
+                          "a3c06b947549921d60d59917575df5ee5dfc472a"
+                        ]
+                      },
+                      "isImageFileSignedAndVerified": {
+                        "totalValues": 1,
+                        "values": [
+                          "true"
+                        ]
+                      },
+                      "iconBase64": {
+                        "totalValues": 1,
+                        "values": [
+                          "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"
+                        ]
+                      },
+                      "imageFile.productName": {
+                        "totalValues": 1,
+                        "values": [
+                          "Microsoft Edge"
+                        ]
+                      },
+                      "elementDisplayName": {
+                        "totalValues": 1,
+                        "values": [
+                          "msedge.exe"
+                        ]
+                      },
+                      "imageFile.companyName": {
+                        "totalValues": 1,
+                        "values": [
+                          "Microsoft Corporation"
+                        ]
+                      },
+                      "productType": {
+                        "totalValues": 1,
+                        "values": [
+                          "BROWSER"
+                        ]
+                      }
+                    },
+                    "elementValues": {
+                      "children": {
+                        "totalValues": 0,
+                        "elementValues": [],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "calculatedUser": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "User",
+                            "guid": "AAAAGGZ3xLXVm27e",
+                            "name": "cy\\cymulator",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {},
+                            "simpleValues": {}
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "ownerMachine": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "Machine",
+                            "guid": "7vCmFBCi55eyTiwX",
+                            "name": "dim-win10",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {},
+                            "simpleValues": {}
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "parentProcess": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "Process",
+                            "guid": "7vCmFMsvYy739EW5",
+                            "name": "msedge.exe",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {},
+                            "simpleValues": {}
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      },
+                      "imageFile": {
+                        "totalValues": 1,
+                        "elementValues": [
+                          {
+                            "elementType": "File",
+                            "guid": "7vCmFKxNAQXpBIkL",
+                            "name": "msedge.exe",
+                            "hasSuspicions": false,
+                            "hasMalops": false,
+                            "elementValues": {
+                              "fileHash": {
+                                "totalValues": 1,
+                                "elementValues": [
+                                  {
+                                    "elementType": "FileHash",
+                                    "guid": "AAAAHuaPtU7zGEJc",
+                                    "name": "a3c06b947549921d60d59917575df5ee5dfc472a",
+                                    "hasSuspicions": false,
+                                    "hasMalops": false,
+                                    "elementValues": {},
+                                    "simpleValues": {
+                                      "iconBase64": {
+                                        "totalValues": 1,
+                                        "values": [
+                                          "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"
+                                        ]
+                                      }
+                                    }
+                                  }
+                                ],
+                                "totalSuspicious": 0,
+                                "totalMalicious": 0,
+                                "guessedTotal": 0
+                              }
+                            },
+                            "simpleValues": {
+                              "sha1String": {
+                                "totalValues": 1,
+                                "values": [
+                                  "a3c06b947549921d60d59917575df5ee5dfc472a"
+                                ]
+                              },
+                              "maliciousClassificationType": {
+                                "totalValues": 1,
+                                "values": [
+                                  "indifferent"
+                                ]
+                              },
+                              "md5String": {
+                                "totalValues": 1,
+                                "values": [
+                                  "5ac5ddc4c27ecc203b2ed62bbe8fb8b9"
+                                ]
+                              },
+                              "productName": {
+                                "totalValues": 1,
+                                "values": [
+                                  "Microsoft Edge"
+                                ]
+                              },
+                              "companyName": {
+                                "totalValues": 1,
+                                "values": [
+                                  "Microsoft Corporation"
+                                ]
+                              }
+                            }
+                          }
+                        ],
+                        "totalSuspicious": 0,
+                        "totalMalicious": 0,
+                        "guessedTotal": 0
+                      }
+                    },
+                    "suspicions": {
+                      "connectingToBlackListAddressSuspicion": 1710232863248
+                    },
+                    "filterData": {
+                      "sortInGroupValue": "",
+                      "groupByValue": "msedge.exe"
+                    },
+                    "isMalicious": true,
+                    "suspicionCount": 1,
+                    "guidString": "7vCmFCPB0XpbELrD",
+                    "labelsIds": null,
+                    "malopPriority": null,
+                    "suspect": true,
+                    "malicious": true
+                  }
+                },
+                "suspicionsMap": {
+                  "connectingToBlackListAddressSuspicion": {
+                    "potentialEvidence": [
+                      "hasBlackListConnectionEvidence"
+                    ],
+                    "firstTimestamp": 1710232863248,
+                    "totalSuspicions": 4
+                  }
+                },
+                "evidenceMap": {
+                  "evidence": "map"
+                }
+              }
+            }
+          `}}

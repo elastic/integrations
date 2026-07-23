@@ -1,0 +1,48 @@
+{
+  "id": "aws_sqs_otel-high-backlog",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when a queue's visible message backlog stays above the configured depth across the evaluation window, indicating consumers are not keeping up with producers. Pair with the oldest-message-age alert/SLO, which captures processing lag directly.",
+    "name": "[AWS SQS OTel] High backlog",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_sqs",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## High Backlog\n\nA sustained high `ApproximateNumberOfMessagesVisible` means messages are accumulating because consumers cannot drain the queue fast enough. With `alertDelay.active: 3` the rule only fires after the backlog stays above the threshold for ~3 consecutive evaluations, so brief spikes that recover on their own are ignored.\n\n### Triage Steps\n1. Check whether `NumberOfMessagesSent` spiked (producer surge) or `NumberOfMessagesDeleted` dropped (consumer slowdown).\n2. Review consumer auto-scaling — are workers scaling up with load?\n3. Inspect `ApproximateAgeOfOldestMessage` to assess timeliness impact — it is the headline lag signal and has its own alert/SLO.\n4. Check for downstream dependency failures throttling consumer throughput.\n5. Consider temporarily throttling producers if backlog threatens SLA.\n\n### Customisation\n- Tune `backlog > 1000` to set the visible-message depth that is unhealthy for your workload. A healthy queue with consumers keeping up stays low; pick a value above your normal steady-state peak.\n- Tune `alertDelay.active` to require the backlog to persist for more or fewer evaluations before firing.\n- Adjust the `QueueName NOT LIKE \"*dlq*\"` filter if your dead-letter naming convention differs (e.g. `*deadletter*`)."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.sqs.otel-*\n| WHERE Namespace == \"AWS/SQS\"\n    AND MetricName == \"ApproximateNumberOfMessagesVisible\"\n    AND stat == \"Average\"\n    AND QueueName NOT LIKE \"*dlq*\"\n| STATS backlog = AVG(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)\n    BY QueueName, cloud.region\n// Tune: sustained visible backlog depth that indicates consumers are not keeping up\n| WHERE backlog > 1000"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "QueueName",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

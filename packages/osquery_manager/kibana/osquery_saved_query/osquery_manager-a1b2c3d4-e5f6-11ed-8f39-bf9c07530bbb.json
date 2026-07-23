@@ -1,0 +1,166 @@
+{
+    "attributes": {
+        "created_at": "2026-01-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Comprehensive PowerShell forensic monitoring query using hybrid approach: powershell_events table for Event ID 4104 (Script Block Logging) with automatic script reconstruction, plus windows_eventlog for Event ID 4103 (Module Logging) and Event ID 4688 (Process Creation). Detects obfuscated commands, fileless malware, and captures parent/child process relationships.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "process"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.powershell_history"
+                }
+            },
+            {
+                "key": "event.created",
+                "value": {
+                    "field": "event_time"
+                }
+            },
+            {
+                "key": "event.code",
+                "value": {
+                    "field": "eventid"
+                }
+            },
+            {
+                "key": "event.provider",
+                "value": {
+                    "field": "provider_name"
+                }
+            },
+            {
+                "key": "log.level",
+                "value": {
+                    "field": "level"
+                }
+            },
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "process.thread.id",
+                "value": {
+                    "field": "tid"
+                }
+            },
+            {
+                "key": "powershell.provider.name",
+                "value": {
+                    "field": "ps_provider_name"
+                }
+            },
+            {
+                "key": "powershell.context_info",
+                "value": {
+                    "field": "context_info"
+                }
+            },
+            {
+                "key": "powershell.payload",
+                "value": {
+                    "field": "payload"
+                }
+            },
+            {
+                "key": "powershell.file.script_block_id",
+                "value": {
+                    "field": "script_block_id"
+                }
+            },
+            {
+                "key": "powershell.file.script_block_count",
+                "value": {
+                    "field": "script_block_count"
+                }
+            },
+            {
+                "key": "powershell.file.script_block_text",
+                "value": {
+                    "field": "script_text"
+                }
+            },
+            {
+                "key": "file.name",
+                "value": {
+                    "field": "script_name"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "script_path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "command_line"
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "process_name"
+                }
+            },
+            {
+                "key": "process.parent.name",
+                "value": {
+                    "field": "parent_process_name"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "powershell",
+                        "execution",
+                        "windows"
+                    ]
+                }
+            }
+        ],
+        "id": "powershell_history_windows_elastic",
+        "interval": "300",
+        "platform": "windows",
+        "timeout": 180,
+        "query": "-- Comprehensive PowerShell Forensic Monitoring Query (Hybrid Approach)\n-- Uses powershell_events for Event ID 4104 (Script Block Logging) with automatic reconstruction\n-- Uses windows_eventlog for Event ID 4103 (Module Logging) and 4688 (Process Creation)\n-- Focus: Fileless malware detection, obfuscated command tracking\n-- Last updated: 2025-12-09\n--\n-- PREREQUISITES:\n-- 1. Windows Script Block Logging must be enabled (GPO or registry)\n-- 2. Elastic Agent osquery integration requires this config in Fleet policy:\n--    { \"options\": { \"disable_events\": \"false\", \"enable_powershell_events_subscriber\": \"true\", \"enable_windows_events_subscriber\": \"true\" } }\n--\n-- PERFORMANCE TIP: For large environments, add time filter to powershell_events:\n-- WHERE time > (strftime('%s', 'now') - 86400)  -- last 24 hours\n\n-- Part 1: Script Block Logging (Event ID 4104) via powershell_events\n-- Benefits: Automatic script reconstruction across fragmented blocks\nSELECT\n    datetime AS event_time,\n    time,\n    4104 AS eventid,\n    'Microsoft-Windows-PowerShell' AS provider_name,\n    NULL AS level,\n    NULL AS task,\n    NULL AS computer_name,\n    'Microsoft-Windows-PowerShell/Operational' AS channel,\n    NULL AS pid,\n    NULL AS tid,\n    NULL AS data,\n    NULL AS ps_provider_name,\n    NULL AS context_info,\n    NULL AS payload,\n    script_block_id,\n    script_block_count,\n    script_text,\n    script_name,\n    script_path,\n    NULL AS command_line,\n    NULL AS process_name,\n    NULL AS parent_process_name\nFROM powershell_events\n\nUNION ALL\n\n-- Part 2: Module Logging (Event ID 4103) via windows_eventlog\n-- Captures obfuscated command context and payload\nSELECT\n    datetime AS event_time,\n    NULL AS time,\n    eventid,\n    provider_name,\n    level,\n    task,\n    computer_name,\n    channel,\n    pid,\n    tid,\n    data,\n    json_extract(data, '$.EventData.ProviderName') AS ps_provider_name,\n    json_extract(data, '$.EventData.ContextInfo') AS context_info,\n    json_extract(data, '$.EventData.Payload') AS payload,\n    NULL AS script_block_id,\n    NULL AS script_block_count,\n    NULL AS script_text,\n    NULL AS script_name,\n    NULL AS script_path,\n    NULL AS command_line,\n    NULL AS process_name,\n    NULL AS parent_process_name\nFROM windows_eventlog\nWHERE \n    channel = 'Microsoft-Windows-PowerShell/Operational'\n    AND eventid = 4103\n\nUNION ALL\n\n-- Part 3: Process Creation (Event ID 4688) via windows_eventlog\n-- Captures command line and parent/child process relationships\nSELECT\n    datetime AS event_time,\n    NULL AS time,\n    eventid,\n    provider_name,\n    level,\n    task,\n    computer_name,\n    channel,\n    pid,\n    tid,\n    data,\n    NULL AS ps_provider_name,\n    NULL AS context_info,\n    NULL AS payload,\n    NULL AS script_block_id,\n    NULL AS script_block_count,\n    NULL AS script_text,\n    NULL AS script_name,\n    NULL AS script_path,\n    json_extract(data, '$.EventData.CommandLine') AS command_line,\n    json_extract(data, '$.EventData.NewProcessName') AS process_name,\n    json_extract(data, '$.EventData.ParentProcessName') AS parent_process_name\nFROM windows_eventlog\nWHERE \n    channel = 'Security'\n    AND eventid = 4688\n    AND data LIKE '%powershell%'\n\nORDER BY event_time DESC;",
+        "tags": [
+            "PowerShell",
+            "Execution",
+            "Fileless Malware",
+            "Script Block Logging",
+            "Module Logging",
+            "Process Auditing"
+        ],
+        "updated_at": "2026-01-27T00:00:00.000Z",
+        "updated_by": "elastic",
+        "version": "1.0.0"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-a1b2c3d4-e5f6-11ed-8f39-bf9c07530bbb",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-01-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

@@ -1,0 +1,149 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies PowerShell script block content that combines Base64 decoding with .NET decompression (Deflate/GZip). Attackers use this pattern to deobfuscate and reconstruct payloads in memory to evade defenses.",
+        "false_positives": [
+            "Legitimate PowerShell Scripts which makes use of compression and encoding."
+        ],
+        "filters": [
+            {
+                "meta": {
+                    "negate": true
+                },
+                "query": {
+                    "wildcard": {
+                        "file.path": {
+                            "case_insensitive": true,
+                            "value": "?:\\\\ProgramData\\\\Microsoft\\\\Windows Defender Advanced Threat Protection\\\\Downloads\\\\*"
+                        }
+                    }
+                }
+            }
+        ],
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.powershell*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "PowerShell Suspicious Payload Encoded and Compressed",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This guide was created by humans with the assistance of generative AI. While its contents have been manually curated to include the most valuable information, always validate assumptions and adjust procedures to match your internal runbooks and incident triage and response policies.\n\n### Investigating PowerShell Suspicious Payload Encoded and Compressed\n\nThis rule flags PowerShell script blocks that decode Base64 data and decompress it using .NET Deflate or GZip streams. This pattern is frequently used to conceal secondary script content or payloads until runtime. Focus on reconstructing the full script, recovering the decoded content, and identifying any follow-on execution on the host.\n\n#### Key alert fields to review\n\n- `user.name`, `user.domain`, `user.id`: Account execution context for correlation, prioritization, and scoping.\n- `host.name`, `host.id`: Host execution context for correlation, prioritization, and scoping.\n- `file.path`, `file.directory`, `file.name`: File-origin context when the script block is sourced from an on-disk file.\n- `powershell.file.script_block_text`: Script block content that matched the detection logic.\n- `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`: Script block metadata to pivot to other fragments or reconstruct full script content when split across multiple events.\n- `powershell.file.script_block_entropy_bits`: Shannon entropy of the script block. Higher values may indicate obfuscation.\n- `powershell.file.script_block_surprisal_stdev`: Standard deviation of surprisal across the script block. Low values indicate uniform randomness. High values indicate mixed patterns and variability.\n- `powershell.file.script_block_unique_symbols`: Count of distinct characters present in the script block.\n- `powershell.file.script_block_length`: Script block length (size) context.\n\n#### Possible investigation steps\n\n- Establish scope and priority using alert context:\n  - Review `host.name` / `host.id` to identify the affected endpoint and its role (workstation, server, jump host).\n  - Review `user.name` / `user.domain` / `user.id` to determine whether the account is expected to run PowerShell on this host and whether it is privileged or widely used.\n  - Check whether this user-host pairing is common or rare in your environment to help prioritize.\n\n- Identify script provenance and how it was introduced:\n  - Review `file.path`, `file.directory`, and `file.name` to determine whether the script block was sourced from an on-disk file.\n  - If `file.path` is present, assess whether the location aligns with normal administrative or automation activity for this host, or whether it appears user-writable, temporary, or otherwise unusual for the account and system role.\n  - If `file.path` is not present or is not informative, treat the content as potentially interactive or dynamically generated and prioritize reconstructing full script content.\n\n- Interpret the entropy indicators to guide analysis focus:\n  - Use `powershell.file.script_block_length` with `powershell.file.script_block_entropy_bits` to understand whether the alert is driven by a large embedded blob versus smaller obfuscation fragments.\n  - Use `powershell.file.script_block_surprisal_stdev` to distinguish between:\n    - Uniformly random-looking blocks (often consistent with compressed/encrypted data).\n    - Mixed content (often consistent with a readable wrapper that transforms and then executes an embedded payload).\n  - Use `powershell.file.script_block_unique_symbols` to identify whether the content resembles a limited alphabet encoding (for example, Base64-like) versus broader character sets.\n\n- Review and reconstruct script content before making a determination:\n  - Review `powershell.file.script_block_text` to identify:\n    - Large contiguous encoded strings, byte arrays, or character arrays.\n    - Transform routines (decode, decrypt, decompress) that produce secondary content.\n    - Secondary execution patterns where transformed content is immediately evaluated or invoked.\n    - Embedded external references (URLs, domains, IPs) or instructions to write content to disk.\n\n- Rebuild full content when script blocks are split across events:\n  - Pivot on `powershell.file.script_block_id` to collect all related fragments.\n  - Order fragments using `powershell.sequence` and validate completeness using `powershell.total`.\n  - Perform content review on the reconstructed output, not on individual fragments, to avoid missing loader logic or the embedded payload boundaries.\n\n- Extract indicators and correlate with adjacent telemetry to confirm impact:\n  - From `powershell.file.script_block_text` (and any safely decoded or decompressed content), extract indicators such as domains, URLs, IPs, file names/paths, and distinctive strings.\n  - Correlate on the same `host.id` and approximate timeframe with available endpoint telemetry to identify the PowerShell host process and its launch source (parent process or initiating mechanism). Use that context to assess whether execution is user-initiated, automation-driven, or suspicious.\n  - Correlate on the same `host.id` and timeframe with available network, file, registry, and authentication telemetry to identify follow-on activity consistent with script execution (downloads, file writes, persistence changes, or unusual sign-ins).\n\n- Expand scope to detect related activity:\n  - Search for additional high-entropy script blocks on the same `host.id` and `user.id` before and after the alert.\n  - Identify other hosts where the same `file.name` / `file.path` appears with similar suspicious content characteristics.\n  - Look for repeated substrings or structural similarities in `powershell.file.script_block_text` across different alerts to identify shared tooling or campaigns.\n\n### False positive analysis\n\n- Benign activity can produce high-entropy script blocks when scripts embed packaged resources or data blobs (for example, installers, large configuration payloads, certificates, or compressed content used by administrative tooling).\n- Indicators that support a benign determination:\n  - Consistent `file.path` / `file.name` associated with a known internal automation package or vendor tool across many hosts.\n  - Stable and expected `user.name` / `user.id` usage (for example, dedicated automation accounts) with predictable host targeting.\n  - Repeated, consistent script structure over time where decoding or decompression results in recognizable administrative logic rather than staging or secondary execution.\n- If the alert is verified benign:\n  - Document the owning team/tool, expected hosts, and typical execution cadence.\n  - Suppress recurring noise by scoping on stable attributes available in the alert (for example, `user.id`, `host.id`, and `file.path`) while preserving visibility for new or unusual sources.\n\n### Response and remediation\n\n- If malicious or suspicious activity is confirmed:\n  - Contain the affected host to limit further execution and lateral movement.\n  - Preserve evidence from the alert, including `powershell.file.script_block_text`, reconstructed content (using `powershell.file.script_block_id` / `powershell.sequence` / `powershell.total`), and associated context (`user.*`, `host.*`, `file.*`, and entropy metrics).\n  - Use extracted indicators from the script content to hunt for related activity across the environment and to identify additional affected hosts or accounts.\n  - Remediate any identified persistence or staging artifacts associated with the activity and remove malicious content from affected systems.\n  - If account compromise is suspected, reset credentials for `user.id` / `user.name` and review access paths and recent authentication activity for that account.\n\n- If benign activity is confirmed:\n  - Record the business justification and expected behavior for the script source, including the relevant `file.path` (when present) and the associated `user.id`.\n  - Monitor for deviations from the established benign baseline, such as new script sources, new hosts, or materially different `powershell.file.script_block_text` structure or entropy characteristics.\n",
+        "query": "event.category:process and host.os.type:windows and\n  powershell.file.script_block_entropy_bits >= 4.5 and\n  powershell.file.script_block_text : (\n    (\n      \"System.IO.Compression.DeflateStream\" or\n      \"System.IO.Compression.GzipStream\" or\n      \"IO.Compression.DeflateStream\" or\n      \"IO.Compression.GzipStream\"\n    ) and\n    FromBase64String\n  ) and\n  not user.id : \"S-1-5-18\"\n",
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_entropy_bits",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "81fe9dc6-a2d7-4192-a2d8-eed98afc766a",
+        "setup": "## Setup\n\nPowerShell Script Block Logging must be enabled to generate the events used by this rule (e.g., 4104).\nSetup instructions: https://ela.st/powershell-logging-setup\n\nThis rule uses the following fields that require the Windows Integration v3.3.0 and up: `powershell.file.script_block_entropy_bits`.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Data Source: PowerShell Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1027",
+                        "name": "Obfuscated Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1027/"
+                    },
+                    {
+                        "id": "T1140",
+                        "name": "Deobfuscate/Decode Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1140/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 318
+    },
+    "id": "81fe9dc6-a2d7-4192-a2d8-eed98afc766a_318",
+    "type": "security-rule"
+}

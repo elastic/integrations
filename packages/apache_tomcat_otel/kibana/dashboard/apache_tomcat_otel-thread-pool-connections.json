@@ -1,0 +1,2956 @@
+{
+    "attributes": {
+        "title": "[Tomcat OTel] Thread Pool & Connections",
+        "description": "Thread pool saturation and connection management for Apache Tomcat connectors, including utilization ratios and capacity limits.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "5909ede8-2eec-8644-b2c1-c28c00240a56",
+                                "order": 1,
+                                "label": "Request Processing",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_5909ede8-2eec-8644-b2c1-c28c00240a56_dashboard"
+                            },
+                            {
+                                "id": "9dfd6ff5-60a6-d609-8f72-50cec07261e9",
+                                "order": 2,
+                                "label": "Thread Pool & Connections",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_9dfd6ff5-60a6-d609-8f72-50cec07261e9_dashboard"
+                            },
+                            {
+                                "id": "6632c321-6dab-2198-f8fe-27c3e8abc5da",
+                                "order": 3,
+                                "label": "JVM Memory & GC",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_6632c321-6dab-2198-f8fe-27c3e8abc5da_dashboard"
+                            },
+                            {
+                                "id": "82660977-7ef5-2f6d-e57c-f38685be84e1",
+                                "order": 4,
+                                "label": "Sessions & Applications",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_82660977-7ef5-2f6d-e57c-f38685be84e1_dashboard"
+                            },
+                            {
+                                "id": "2d7fbb7d-cfa4-5417-4c1b-cbcecf53130f",
+                                "order": 5,
+                                "label": "JVM & OS Resources",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_2d7fbb7d-cfa4-5417-4c1b-cbcecf53130f_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [Tomcat OTel] Thread Pool & Connections\n\nThis dashboard monitors thread pool saturation and connection management:\n- Busy vs. idle thread counts per connector\n- Thread pool utilization as a ratio of maxThreads\n- Active connections and keep-alive connection counts\n- Connection utilization as a ratio of maxConnections\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "c6d72bc0-ae65-de19-45ad-b0db799870a4",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "c6d72bc0-ae65-de19-45ad-b0db799870a4"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Busy Threads",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "d45fe8ac-9a3a-f135-d1d8-5d640ee18a79",
+                                "layerType": "data",
+                                "metricAccessor": "3cbbf0ad-cd73-6288-12a9-4ec9e0e297c3",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL\n| STATS busy_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "d45fe8ac-9a3a-f135-d1d8-5d640ee18a79": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL\n| STATS busy_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "busy_threads",
+                                                    "columnId": "3cbbf0ad-cd73-6288-12a9-4ec9e0e297c3",
+                                                    "label": "Busy Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "busy_threads",
+                                                    "columnId": "3cbbf0ad-cd73-6288-12a9-4ec9e0e297c3",
+                                                    "label": "Busy Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c501c1cd-74c3-2aec-c4f4-0672f4405745",
+                "gridData": {
+                    "x": 24,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "c501c1cd-74c3-2aec-c4f4-0672f4405745"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total Threads",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "85bf3df5-e81d-b9c0-8375-608f72421178",
+                                "layerType": "data",
+                                "metricAccessor": "d2e9c2a4-d6b7-ac9d-e7b5-9636cb133039",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadCount IS NOT NULL\n| STATS total_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadCount))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "85bf3df5-e81d-b9c0-8375-608f72421178": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadCount IS NOT NULL\n| STATS total_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadCount))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_threads",
+                                                    "columnId": "d2e9c2a4-d6b7-ac9d-e7b5-9636cb133039",
+                                                    "label": "Total Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_threads",
+                                                    "columnId": "d2e9c2a4-d6b7-ac9d-e7b5-9636cb133039",
+                                                    "label": "Total Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c282b309-662a-694e-65aa-d49f1c0d3e5b",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "c282b309-662a-694e-65aa-d49f1c0d3e5b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Max Threads",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "cca0f63b-7dbc-2560-0055-e5b15bc9ca87",
+                                "layerType": "data",
+                                "metricAccessor": "87dd804f-1f34-85ef-4c14-4eed390ff18b",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_maxThreads IS NOT NULL\n| STATS max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "cca0f63b-7dbc-2560-0055-e5b15bc9ca87": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_maxThreads IS NOT NULL\n| STATS max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "max_threads",
+                                                    "columnId": "87dd804f-1f34-85ef-4c14-4eed390ff18b",
+                                                    "label": "Max Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "max_threads",
+                                                    "columnId": "87dd804f-1f34-85ef-4c14-4eed390ff18b",
+                                                    "label": "Max Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c3ff262f-6ed7-ee3e-eefd-4039730eaab7",
+                "gridData": {
+                    "x": 40,
+                    "y": 2,
+                    "w": 8,
+                    "h": 6,
+                    "i": "c3ff262f-6ed7-ee3e-eefd-4039730eaab7"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Thread Utilization",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "d7247a85-b0b5-305d-a758-3f023fab171d",
+                                "layerType": "data",
+                                "metricAccessor": "1d0cacce-6cf5-4918-0c3d-782fdf75e45b",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL\n| STATS busy = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads))\n| EVAL thread_util = CASE(max_threads > 0, busy / max_threads, 0)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "d7247a85-b0b5-305d-a758-3f023fab171d": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL\n| STATS busy = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads))\n| EVAL thread_util = CASE(max_threads > 0, busy / max_threads, 0)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "thread_util",
+                                                    "columnId": "1d0cacce-6cf5-4918-0c3d-782fdf75e45b",
+                                                    "label": "Thread Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "thread_util",
+                                                    "columnId": "1d0cacce-6cf5-4918-0c3d-782fdf75e45b",
+                                                    "label": "Thread Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "5fdb6293-8a1b-1c8f-cf27-c8f93591db05",
+                "gridData": {
+                    "x": 16,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "5fdb6293-8a1b-1c8f-cf27-c8f93591db05"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Active Connections",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "f16a49f1-b805-f42c-6a8f-008862b03ac6",
+                                "layerType": "data",
+                                "metricAccessor": "6e5104f2-a091-21fb-73e8-f9db07949a43",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_connectionCount IS NOT NULL\n| STATS connections = SUM(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f16a49f1-b805-f42c-6a8f-008862b03ac6": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_connectionCount IS NOT NULL\n| STATS connections = SUM(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "connections",
+                                                    "columnId": "6e5104f2-a091-21fb-73e8-f9db07949a43",
+                                                    "label": "Active Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "connections",
+                                                    "columnId": "6e5104f2-a091-21fb-73e8-f9db07949a43",
+                                                    "label": "Active Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "77df583a-fab0-6096-18e9-a954da2195ef",
+                "gridData": {
+                    "x": 24,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "77df583a-fab0-6096-18e9-a954da2195ef"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Max Connections",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "4519fb32-13b3-410b-9274-d03b2de1892b",
+                                "layerType": "data",
+                                "metricAccessor": "d2875f42-1364-eaee-6325-21fbbf104102",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_maxConnections IS NOT NULL\n| STATS max_connections = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "4519fb32-13b3-410b-9274-d03b2de1892b": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_maxConnections IS NOT NULL\n| STATS max_connections = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "max_connections",
+                                                    "columnId": "d2875f42-1364-eaee-6325-21fbbf104102",
+                                                    "label": "Max Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "max_connections",
+                                                    "columnId": "d2875f42-1364-eaee-6325-21fbbf104102",
+                                                    "label": "Max Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "40c5fb57-f6db-a3bc-cc89-5a3c26c9515c",
+                "gridData": {
+                    "x": 32,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "40c5fb57-f6db-a3bc-cc89-5a3c26c9515c"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Keep-Alive Connections",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "662dcc24-d4b6-69f2-df68-e81142a787ce",
+                                "layerType": "data",
+                                "metricAccessor": "93918707-56e5-cceb-616c-944a5cb273b7",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_keepAliveCount IS NOT NULL\n| STATS keepalive = SUM(LAST_OVER_TIME(Catalina_ThreadPool_keepAliveCount))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "662dcc24-d4b6-69f2-df68-e81142a787ce": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_keepAliveCount IS NOT NULL\n| STATS keepalive = SUM(LAST_OVER_TIME(Catalina_ThreadPool_keepAliveCount))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "keepalive",
+                                                    "columnId": "93918707-56e5-cceb-616c-944a5cb273b7",
+                                                    "label": "Keep-Alive",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "keepalive",
+                                                    "columnId": "93918707-56e5-cceb-616c-944a5cb273b7",
+                                                    "label": "Keep-Alive",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "d00f1df8-0bc0-1fa2-8b82-e604932ec567",
+                "gridData": {
+                    "x": 40,
+                    "y": 8,
+                    "w": 8,
+                    "h": 6,
+                    "i": "d00f1df8-0bc0-1fa2-8b82-e604932ec567"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Connection Utilization",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "25f8f582-7941-e1be-100f-5b62ff8b75cd",
+                                "layerType": "data",
+                                "metricAccessor": "3aba85be-0b7f-d2e0-ed52-5c433843af6b",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_connectionCount IS NOT NULL\n| STATS conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), max_conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections))\n| EVAL conn_util = CASE(max_conns > 0, conns / max_conns, 0)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "25f8f582-7941-e1be-100f-5b62ff8b75cd": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_connectionCount IS NOT NULL\n| STATS conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), max_conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections))\n| EVAL conn_util = CASE(max_conns > 0, conns / max_conns, 0)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "conn_util",
+                                                    "columnId": "3aba85be-0b7f-d2e0-ed52-5c433843af6b",
+                                                    "label": "Connection Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "conn_util",
+                                                    "columnId": "3aba85be-0b7f-d2e0-ed52-5c433843af6b",
+                                                    "label": "Connection Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "98dd998b-7197-65f6-2395-6f3b86cdb1e8",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 48,
+                    "h": 3,
+                    "i": "98dd998b-7197-65f6-2395-6f3b86cdb1e8"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Thread Pool"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "cf711be4-c8c6-6408-42f3-76200ec86301",
+                "gridData": {
+                    "x": 0,
+                    "y": 17,
+                    "w": 24,
+                    "h": 12,
+                    "i": "cf711be4-c8c6-6408-42f3-76200ec86301"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Thread Counts Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "dc77e285-4195-9b3e-eec5-0683addd961a",
+                                        "accessors": [
+                                            "ad1ad131-4a52-edc8-e7b9-c7903001f248",
+                                            "8487ad49-2918-c91d-f1d9-c1c87875c678",
+                                            "cb295c7a-8e59-ad87-967d-8a7e319ff74b"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL\n| STATS busy = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), total = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadCount)), max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "dc77e285-4195-9b3e-eec5-0683addd961a": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL\n| STATS busy = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), total = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadCount)), max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "busy",
+                                                    "columnId": "ad1ad131-4a52-edc8-e7b9-c7903001f248",
+                                                    "label": "Busy",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "8487ad49-2918-c91d-f1d9-c1c87875c678",
+                                                    "label": "Current",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "max_threads",
+                                                    "columnId": "cb295c7a-8e59-ad87-967d-8a7e319ff74b",
+                                                    "label": "Max",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "busy",
+                                                    "columnId": "ad1ad131-4a52-edc8-e7b9-c7903001f248",
+                                                    "label": "Busy",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "8487ad49-2918-c91d-f1d9-c1c87875c678",
+                                                    "label": "Current",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "max_threads",
+                                                    "columnId": "cb295c7a-8e59-ad87-967d-8a7e319ff74b",
+                                                    "label": "Max",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "f3c72600-acb1-c4be-af9d-1055b48a0a2a",
+                "gridData": {
+                    "x": 0,
+                    "y": 29,
+                    "w": 48,
+                    "h": 3,
+                    "i": "f3c72600-acb1-c4be-af9d-1055b48a0a2a"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Current Utilization"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "b1c8af0f-eb1a-def6-893b-649a7d2e4bc4",
+                "gridData": {
+                    "x": 24,
+                    "y": 17,
+                    "w": 24,
+                    "h": 12,
+                    "i": "b1c8af0f-eb1a-def6-893b-649a7d2e4bc4"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Thread Pool Utilization % Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "8a0e3c22-725d-edbb-4426-29b11fc3bc69",
+                                        "accessors": [
+                                            "548acbf7-80df-d206-cf3f-28f3c99e9746"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL\n| STATS busy = MAX(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), max_threads = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| EVAL utilization = CASE(max_threads > 0, ROUND(busy / max_threads * 100, 1), 0)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8a0e3c22-725d-edbb-4426-29b11fc3bc69": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL\n| STATS busy = MAX(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), max_threads = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| EVAL utilization = CASE(max_threads > 0, ROUND(busy / max_threads * 100, 1), 0)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "utilization",
+                                                    "columnId": "548acbf7-80df-d206-cf3f-28f3c99e9746",
+                                                    "label": "Utilization %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "utilization",
+                                                    "columnId": "548acbf7-80df-d206-cf3f-28f3c99e9746",
+                                                    "label": "Utilization %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "48141f74-9ebe-290b-7219-ea32cdc9f1e1",
+                "gridData": {
+                    "x": 0,
+                    "y": 32,
+                    "w": 48,
+                    "h": 3,
+                    "i": "48141f74-9ebe-290b-7219-ea32cdc9f1e1"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Connections"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "319269d5-a9bf-dda1-c0b3-7671ffdc0da4",
+                "gridData": {
+                    "x": 0,
+                    "y": 35,
+                    "w": 24,
+                    "h": 12,
+                    "i": "319269d5-a9bf-dda1-c0b3-7671ffdc0da4"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Connection Count Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "126074cc-3358-58be-875b-b9863889f25d",
+                                        "accessors": [
+                                            "3e53cc75-572f-801a-09fc-6544dbb1256a",
+                                            "aa93b42c-1457-8c8d-08cc-69298cc75d05",
+                                            "22137ebf-2a62-eb03-3787-184f1d7679eb"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_connectionCount IS NOT NULL\n| STATS connections = MAX(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), keepalive = MAX(LAST_OVER_TIME(Catalina_ThreadPool_keepAliveCount)), max_connections = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "126074cc-3358-58be-875b-b9863889f25d": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_connectionCount IS NOT NULL\n| STATS connections = MAX(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), keepalive = MAX(LAST_OVER_TIME(Catalina_ThreadPool_keepAliveCount)), max_connections = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "connections",
+                                                    "columnId": "3e53cc75-572f-801a-09fc-6544dbb1256a",
+                                                    "label": "Active",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "keepalive",
+                                                    "columnId": "aa93b42c-1457-8c8d-08cc-69298cc75d05",
+                                                    "label": "Keep-Alive",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "max_connections",
+                                                    "columnId": "22137ebf-2a62-eb03-3787-184f1d7679eb",
+                                                    "label": "Max",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "connections",
+                                                    "columnId": "3e53cc75-572f-801a-09fc-6544dbb1256a",
+                                                    "label": "Active",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "keepalive",
+                                                    "columnId": "aa93b42c-1457-8c8d-08cc-69298cc75d05",
+                                                    "label": "Keep-Alive",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "max_connections",
+                                                    "columnId": "22137ebf-2a62-eb03-3787-184f1d7679eb",
+                                                    "label": "Max",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "bef30c05-98de-1be4-413e-a069b6afc0dc",
+                "gridData": {
+                    "x": 24,
+                    "y": 35,
+                    "w": 24,
+                    "h": 12,
+                    "i": "bef30c05-98de-1be4-413e-a069b6afc0dc"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Connection Utilization % Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "f86abdaa-bea0-6412-12e6-401071fcf9e1",
+                                        "accessors": [
+                                            "548acbf7-80df-d206-cf3f-28f3c99e9746"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_connectionCount IS NOT NULL\n| STATS conns = MAX(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), max_conns = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| EVAL utilization = CASE(max_conns > 0, ROUND(conns / max_conns * 100, 1), 0)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f86abdaa-bea0-6412-12e6-401071fcf9e1": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_connectionCount IS NOT NULL\n| STATS conns = MAX(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), max_conns = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name\n| EVAL utilization = CASE(max_conns > 0, ROUND(conns / max_conns * 100, 1), 0)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "utilization",
+                                                    "columnId": "548acbf7-80df-d206-cf3f-28f3c99e9746",
+                                                    "label": "Utilization %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "utilization",
+                                                    "columnId": "548acbf7-80df-d206-cf3f-28f3c99e9746",
+                                                    "label": "Utilization %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "abd1a85f-5c84-5baa-1363-00682803c1ae",
+                                                    "label": "attributes.name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "631d3b45-b342-63d6-22a1-723eae2cce50",
+                "gridData": {
+                    "x": 0,
+                    "y": 47,
+                    "w": 48,
+                    "h": 3,
+                    "i": "631d3b45-b342-63d6-22a1-723eae2cce50"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Current Utilization"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "13e577a2-ad9b-ea59-9685-251fb4726737",
+                "gridData": {
+                    "x": 0,
+                    "y": 50,
+                    "w": 24,
+                    "h": 10,
+                    "i": "13e577a2-ad9b-ea59-9685-251fb4726737"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Thread Pool Utilization",
+                        "visualizationType": "lnsGauge",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "1ecb1349-6796-1d25-665e-7ff255e452c3",
+                                "layerType": "data",
+                                "metricAccessor": "dd5f32b9-7f5a-2698-a8b8-4275ffd5af68",
+                                "minAccessor": "94c8b873-aebf-1c7b-bef9-5da61f7d990e",
+                                "maxAccessor": "5ab04406-6615-1dfd-11b5-f485d68ae5ee",
+                                "goalAccessor": "a7813011-1876-53f4-1cfa-9302ca95d0f1",
+                                "shape": "arc",
+                                "ticksPosition": "auto",
+                                "labelMajorMode": "auto",
+                                "colorMode": "palette",
+                                "palette": {
+                                    "name": "custom",
+                                    "type": "palette",
+                                    "params": {
+                                        "steps": 3,
+                                        "name": "custom",
+                                        "reverse": false,
+                                        "rangeType": "number",
+                                        "rangeMin": 0.0,
+                                        "rangeMax": 100.0,
+                                        "progression": "fixed",
+                                        "stops": [
+                                            {
+                                                "color": "#54b399",
+                                                "stop": 60.0
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 80.0
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 100.0
+                                            }
+                                        ],
+                                        "colorStops": [
+                                            {
+                                                "color": "#54b399",
+                                                "stop": 0.0
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 60.0
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 80.0
+                                            }
+                                        ],
+                                        "continuity": "above",
+                                        "maxSteps": 3
+                                    }
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL\n| STATS busy = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads))\n| EVAL thread_util = CASE(max_threads > 0, ROUND(busy / max_threads * 100, 1), 0)\n| EVAL gauge_min = 0\n| EVAL gauge_max = 100\n| EVAL gauge_goal = 80"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "1ecb1349-6796-1d25-665e-7ff255e452c3": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL\n| STATS busy = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads))\n| EVAL thread_util = CASE(max_threads > 0, ROUND(busy / max_threads * 100, 1), 0)\n| EVAL gauge_min = 0\n| EVAL gauge_max = 100\n| EVAL gauge_goal = 80"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "thread_util",
+                                                    "columnId": "dd5f32b9-7f5a-2698-a8b8-4275ffd5af68",
+                                                    "label": "Thread Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "gauge_min",
+                                                    "columnId": "94c8b873-aebf-1c7b-bef9-5da61f7d990e",
+                                                    "label": "gauge_min",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_max",
+                                                    "columnId": "5ab04406-6615-1dfd-11b5-f485d68ae5ee",
+                                                    "label": "gauge_max",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_goal",
+                                                    "columnId": "a7813011-1876-53f4-1cfa-9302ca95d0f1",
+                                                    "label": "gauge_goal",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "thread_util",
+                                                    "columnId": "dd5f32b9-7f5a-2698-a8b8-4275ffd5af68",
+                                                    "label": "Thread Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "gauge_min",
+                                                    "columnId": "94c8b873-aebf-1c7b-bef9-5da61f7d990e",
+                                                    "label": "gauge_min",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_max",
+                                                    "columnId": "5ab04406-6615-1dfd-11b5-f485d68ae5ee",
+                                                    "label": "gauge_max",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_goal",
+                                                    "columnId": "a7813011-1876-53f4-1cfa-9302ca95d0f1",
+                                                    "label": "gauge_goal",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "a44df56a-9322-ad12-58a7-51e4cfd81c0f",
+                "gridData": {
+                    "x": 24,
+                    "y": 50,
+                    "w": 24,
+                    "h": 10,
+                    "i": "a44df56a-9322-ad12-58a7-51e4cfd81c0f"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Connection Utilization",
+                        "visualizationType": "lnsGauge",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "191e0c64-d9ea-9c47-0027-0d40eb2c0398",
+                                "layerType": "data",
+                                "metricAccessor": "b2d3edc8-ede7-bcbd-d565-d15acd0792de",
+                                "minAccessor": "94c8b873-aebf-1c7b-bef9-5da61f7d990e",
+                                "maxAccessor": "5ab04406-6615-1dfd-11b5-f485d68ae5ee",
+                                "goalAccessor": "a7813011-1876-53f4-1cfa-9302ca95d0f1",
+                                "shape": "arc",
+                                "ticksPosition": "auto",
+                                "labelMajorMode": "auto",
+                                "colorMode": "palette",
+                                "palette": {
+                                    "name": "custom",
+                                    "type": "palette",
+                                    "params": {
+                                        "steps": 3,
+                                        "name": "custom",
+                                        "reverse": false,
+                                        "rangeType": "number",
+                                        "rangeMin": 0.0,
+                                        "rangeMax": 100.0,
+                                        "progression": "fixed",
+                                        "stops": [
+                                            {
+                                                "color": "#54b399",
+                                                "stop": 50.0
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 80.0
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 100.0
+                                            }
+                                        ],
+                                        "colorStops": [
+                                            {
+                                                "color": "#54b399",
+                                                "stop": 0.0
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 50.0
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 80.0
+                                            }
+                                        ],
+                                        "continuity": "above",
+                                        "maxSteps": 3
+                                    }
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_connectionCount IS NOT NULL\n| STATS conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), max_conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections))\n| EVAL conn_util = CASE(max_conns > 0, ROUND(conns / max_conns * 100, 1), 0)\n| EVAL gauge_min = 0\n| EVAL gauge_max = 100\n| EVAL gauge_goal = 80"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "191e0c64-d9ea-9c47-0027-0d40eb2c0398": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_connectionCount IS NOT NULL\n| STATS conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), max_conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections))\n| EVAL conn_util = CASE(max_conns > 0, ROUND(conns / max_conns * 100, 1), 0)\n| EVAL gauge_min = 0\n| EVAL gauge_max = 100\n| EVAL gauge_goal = 80"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "conn_util",
+                                                    "columnId": "b2d3edc8-ede7-bcbd-d565-d15acd0792de",
+                                                    "label": "Connection Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "gauge_min",
+                                                    "columnId": "94c8b873-aebf-1c7b-bef9-5da61f7d990e",
+                                                    "label": "gauge_min",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_max",
+                                                    "columnId": "5ab04406-6615-1dfd-11b5-f485d68ae5ee",
+                                                    "label": "gauge_max",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_goal",
+                                                    "columnId": "a7813011-1876-53f4-1cfa-9302ca95d0f1",
+                                                    "label": "gauge_goal",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "conn_util",
+                                                    "columnId": "b2d3edc8-ede7-bcbd-d565-d15acd0792de",
+                                                    "label": "Connection Utilization",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "gauge_min",
+                                                    "columnId": "94c8b873-aebf-1c7b-bef9-5da61f7d990e",
+                                                    "label": "gauge_min",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_max",
+                                                    "columnId": "5ab04406-6615-1dfd-11b5-f485d68ae5ee",
+                                                    "label": "gauge_max",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "gauge_goal",
+                                                    "columnId": "a7813011-1876-53f4-1cfa-9302ca95d0f1",
+                                                    "label": "gauge_goal",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "107a458b-d381-ada1-1880-296d7e1cd090",
+                "gridData": {
+                    "x": 0,
+                    "y": 60,
+                    "w": 48,
+                    "h": 3,
+                    "i": "107a458b-d381-ada1-1880-296d7e1cd090"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Thread Pool Configuration"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "51ccdef7-3781-e732-8802-cd43c27d5435",
+                "gridData": {
+                    "x": 0,
+                    "y": 63,
+                    "w": 48,
+                    "h": 15,
+                    "i": "51ccdef7-3781-e732-8802-cd43c27d5435"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Thread Pool Configuration Summary",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "64482e4a-0d16-5a48-bd10-37fb6fc673d3",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "d79943bf-c66c-79c9-c854-7c3f3d9026ac",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "2831a562-c384-15cd-f58c-bd695e10dcba",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "cfc9711d-bf4e-bf6b-1d61-9eecae6d6c94",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "dbd1ce90-6f74-a94a-3292-a75ed360430f",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "7675e570-83ad-5718-a2dd-3c38e3aa44a8",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "b654276a-3b78-999c-2ba1-bc5759514fc6",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "3c2278f7-f6ff-46bf-545e-d8ea488b1a1c",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "63bbe2bc-0bdf-27d3-01a0-384308e4f0a5",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "511cdcd3-2852-a39a-1e76-85cf409e54eb",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "b5ab9d59-1727-8d6e-bb70-6abac8cf7304",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_maxThreads IS NOT NULL\n| STATS busy = MAX(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), current = MAX(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadCount)), max_threads = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads)), min_spare = MAX(LAST_OVER_TIME(Catalina_ThreadPool_minSpareThreads)), connections = MAX(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), max_conns = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections)), keepalive = MAX(LAST_OVER_TIME(Catalina_ThreadPool_keepAliveCount)), accept_count = MAX(LAST_OVER_TIME(Catalina_ThreadPool_acceptCount)) BY attributes.name\n| EVAL thread_util = CASE(max_threads > 0, ROUND(busy / max_threads * 100, 1), 0)\n| EVAL conn_util = CASE(max_conns > 0, ROUND(connections / max_conns * 100, 1), 0)\n| SORT attributes.name ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "b5ab9d59-1727-8d6e-bb70-6abac8cf7304": {
+                                            "query": {
+                                                "esql": "TS metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_maxThreads IS NOT NULL\n| STATS busy = MAX(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), current = MAX(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadCount)), max_threads = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads)), min_spare = MAX(LAST_OVER_TIME(Catalina_ThreadPool_minSpareThreads)), connections = MAX(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), max_conns = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections)), keepalive = MAX(LAST_OVER_TIME(Catalina_ThreadPool_keepAliveCount)), accept_count = MAX(LAST_OVER_TIME(Catalina_ThreadPool_acceptCount)) BY attributes.name\n| EVAL thread_util = CASE(max_threads > 0, ROUND(busy / max_threads * 100, 1), 0)\n| EVAL conn_util = CASE(max_conns > 0, ROUND(connections / max_conns * 100, 1), 0)\n| SORT attributes.name ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "64482e4a-0d16-5a48-bd10-37fb6fc673d3",
+                                                    "label": "Connector",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "busy",
+                                                    "columnId": "d79943bf-c66c-79c9-c854-7c3f3d9026ac",
+                                                    "label": "Busy",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "current",
+                                                    "columnId": "2831a562-c384-15cd-f58c-bd695e10dcba",
+                                                    "label": "Current",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "max_threads",
+                                                    "columnId": "cfc9711d-bf4e-bf6b-1d61-9eecae6d6c94",
+                                                    "label": "Max Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "thread_util",
+                                                    "columnId": "dbd1ce90-6f74-a94a-3292-a75ed360430f",
+                                                    "label": "Thread Util %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "connections",
+                                                    "columnId": "7675e570-83ad-5718-a2dd-3c38e3aa44a8",
+                                                    "label": "Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "max_conns",
+                                                    "columnId": "b654276a-3b78-999c-2ba1-bc5759514fc6",
+                                                    "label": "Max Conns",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "conn_util",
+                                                    "columnId": "3c2278f7-f6ff-46bf-545e-d8ea488b1a1c",
+                                                    "label": "Conn Util %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "keepalive",
+                                                    "columnId": "63bbe2bc-0bdf-27d3-01a0-384308e4f0a5",
+                                                    "label": "Keep-Alive",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "accept_count",
+                                                    "columnId": "511cdcd3-2852-a39a-1e76-85cf409e54eb",
+                                                    "label": "Accept Queue",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "attributes.name",
+                                                    "columnId": "64482e4a-0d16-5a48-bd10-37fb6fc673d3",
+                                                    "label": "Connector",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "busy",
+                                                    "columnId": "d79943bf-c66c-79c9-c854-7c3f3d9026ac",
+                                                    "label": "Busy",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "current",
+                                                    "columnId": "2831a562-c384-15cd-f58c-bd695e10dcba",
+                                                    "label": "Current",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "max_threads",
+                                                    "columnId": "cfc9711d-bf4e-bf6b-1d61-9eecae6d6c94",
+                                                    "label": "Max Threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "thread_util",
+                                                    "columnId": "dbd1ce90-6f74-a94a-3292-a75ed360430f",
+                                                    "label": "Thread Util %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "connections",
+                                                    "columnId": "7675e570-83ad-5718-a2dd-3c38e3aa44a8",
+                                                    "label": "Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "max_conns",
+                                                    "columnId": "b654276a-3b78-999c-2ba1-bc5759514fc6",
+                                                    "label": "Max Conns",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "conn_util",
+                                                    "columnId": "3c2278f7-f6ff-46bf-545e-d8ea488b1a1c",
+                                                    "label": "Conn Util %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "keepalive",
+                                                    "columnId": "63bbe2bc-0bdf-27d3-01a0-384308e4f0a5",
+                                                    "label": "Keep-Alive",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "accept_count",
+                                                    "columnId": "511cdcd3-2852-a39a-1e76-85cf409e54eb",
+                                                    "label": "Accept Queue",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "tomcat.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "tomcat.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": false,
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "a18657f3-9386-7419-0c1e-db380f1b3b06": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "a18657f3-9386-7419-0c1e-db380f1b3b06",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "resource.attributes.host.name",
+                        "title": "Host",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "apache_tomcat_otel-thread-pool-connections",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-request-processing",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_5909ede8-2eec-8644-b2c1-c28c00240a56_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-thread-pool-connections",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_9dfd6ff5-60a6-d609-8f72-50cec07261e9_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-jvm-memory-gc",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_6632c321-6dab-2198-f8fe-27c3e8abc5da_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-sessions-servlets",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_82660977-7ef5-2f6d-e57c-f38685be84e1_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "apache_tomcat_otel-jvm-os-resources",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_2d7fbb7d-cfa4-5417-4c1b-cbcecf53130f_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_a18657f3-9386-7419-0c1e-db380f1b3b06:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

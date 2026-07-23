@@ -1,0 +1,782 @@
+{
+    "attributes": {
+        "description": "Forensic pack for lateral movement and C2 communication detection — DNS cache/events, ARP cache, network interfaces, RDP, WMI, and BITS.",
+        "name": "forensic-lateral-movement-c2",
+        "version": 1,
+        "queries": [
+            {
+                "id": "dns_cache_snapshot_windows_elastic",
+                "query": "-- Windows DNS Cache Snapshot\n-- Enumerates recently resolved domains from the DNS resolver cache\n-- Limitation: Shows domain names and record types, but NOT resolved IP addresses\n-- Cache entries expire based on TTL (max 24 hours by default)\nSELECT\n    name AS query_name,\n    type AS query_type,\n    flags\nFROM dns_cache\nWHERE name != ''\n    -- Filter out reverse DNS lookups (PTR records for IP-to-name resolution)\n    AND name NOT LIKE '%.in-addr.arpa'\n    AND name NOT LIKE '%.ip6.arpa'\n    -- Filter out Active Directory service location records\n    AND name NOT LIKE '_ldap%'\n    AND name NOT LIKE '_kerberos%'\n    AND name NOT LIKE '_gc%'\n    -- Filter out local names\n    AND name NOT LIKE 'localhost%'\n    AND name NOT LIKE 'wpad%'\nORDER BY name",
+                "interval": 900,
+                "platform": "windows",
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.dns_cache"
+                        }
+                    },
+                    {
+                        "key": "dns.question.name",
+                        "value": {
+                            "field": "query_name"
+                        }
+                    },
+                    {
+                        "key": "dns.question.type",
+                        "value": {
+                            "field": "query_type"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "network",
+                                "dns",
+                                "windows",
+                                "threat_hunting"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "dns_event_log_windows_elastic",
+                "query": "-- Windows DNS Client Event Log with Process Context\n-- Queries DNS query completion events from the DNS Client Operational log\n-- Enriches with process path, cmdline, and hashes when process is still running\n-- PREREQUISITE: DNS Client Operational logging must be enabled:\n--   wevtutil sl Microsoft-Windows-DNS-Client/Operational /e:true\n-- Or via Group Policy: Computer Config > Admin Templates > Network > DNS Client > Turn on logging\n-- Event ID 3008 = DNS query completed\nSELECT\n    w.datetime AS event_time,\n    w.eventid AS event_code,\n    w.pid,\n    JSON_EXTRACT(w.data, '$.EventData.QueryName') AS query_name,\n    JSON_EXTRACT(w.data, '$.EventData.QueryType') AS query_type,\n    JSON_EXTRACT(w.data, '$.EventData.QueryResults') AS answer,\n    p.name AS process_name,\n    p.path AS process_path,\n    p.cmdline AS process_cmdline,\n    h.md5,\n    h.sha256\nFROM windows_eventlog w\nLEFT JOIN processes p ON w.pid = p.pid\nLEFT JOIN hash h ON h.path = p.path\nWHERE w.channel = 'Microsoft-Windows-DNS-Client/Operational'\n    AND w.eventid = 3008",
+                "interval": 900,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.dns_event_log"
+                        }
+                    },
+                    {
+                        "key": "event.code",
+                        "value": {
+                            "field": "event_code"
+                        }
+                    },
+                    {
+                        "key": "dns.question.name",
+                        "value": {
+                            "field": "query_name"
+                        }
+                    },
+                    {
+                        "key": "dns.question.type",
+                        "value": {
+                            "field": "query_type"
+                        }
+                    },
+                    {
+                        "key": "dns.answers.data",
+                        "value": {
+                            "field": "answer"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "process_name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "process_path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "process_cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "network",
+                                "dns",
+                                "windows",
+                                "event_log",
+                                "requires_config"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "arp_cache_elastic",
+                "query": "-- ARP Cache with Local Interface Information\n-- Provides complete network neighbor context by joining ARP cache with interface details\n-- Source: arp_cache + interface_details + interface_addresses tables\n-- Cross-platform: Windows uses MAC in arp_cache.interface, Linux/macOS use interface name\n\nWITH arp_entries AS (\n    SELECT\n        a.address AS remote_address,\n        CASE WHEN a.mac IS NULL OR a.mac = '' OR LOWER(a.mac) LIKE '%incomplete%' THEN NULL ELSE UPPER(REPLACE(a.mac, ':', '-')) END AS remote_mac,\n        a.interface AS interface_identifier,\n        CASE\n            WHEN a.permanent = '1' THEN 'persistent'\n            ELSE 'active'\n        END AS entry_state,\n        CASE\n            WHEN a.address LIKE '%:%' THEN 'ipv6'\n            ELSE 'ipv4'\n        END AS address_family\n    FROM arp_cache a\n),\nlocal_interfaces AS (\n    SELECT\n        id.interface AS interface_index,\n        CASE WHEN id.mac IS NULL OR id.mac = '' OR LOWER(id.mac) LIKE '%incomplete%' THEN NULL ELSE UPPER(REPLACE(id.mac, ':', '-')) END AS local_mac,\n        ia.address AS local_address,\n        CASE\n            WHEN ia.address LIKE '%:%' THEN 'ipv6'\n            ELSE 'ipv4'\n        END AS address_family\n    FROM interface_details id\n    LEFT JOIN interface_addresses ia ON id.interface = ia.interface\n    WHERE id.mac IS NOT NULL\n        AND ia.address IS NOT NULL\n)\nSELECT\n    ae.remote_address,\n    ae.remote_mac,\n    COALESCE(li.interface_index, ae.interface_identifier) AS interface_name,\n    ae.entry_state,\n    ae.address_family,\n    li.local_address,\n    li.local_mac\nFROM arp_entries ae\nLEFT JOIN local_interfaces li ON\n    (ae.interface_identifier = li.interface_index OR LOWER(ae.interface_identifier) = LOWER(li.local_mac))\n    AND ae.address_family = li.address_family\nORDER BY interface_name, ae.remote_address;",
+                "interval": 3600,
+                "platform": "linux,darwin,windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.arp_cache"
+                        }
+                    },
+                    {
+                        "key": "destination.ip",
+                        "value": {
+                            "field": "remote_address"
+                        }
+                    },
+                    {
+                        "key": "destination.mac",
+                        "value": {
+                            "field": "remote_mac"
+                        }
+                    },
+                    {
+                        "key": "source.ip",
+                        "value": {
+                            "field": "local_address"
+                        }
+                    },
+                    {
+                        "key": "source.mac",
+                        "value": {
+                            "field": "local_mac"
+                        }
+                    },
+                    {
+                        "key": "interface.name",
+                        "value": {
+                            "field": "interface_name"
+                        }
+                    },
+                    {
+                        "key": "network.type",
+                        "value": {
+                            "field": "address_family"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "network",
+                                "arp_cache",
+                                "asset_inventory"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "network_interfaces_windows_elastic",
+                "query": "-- Windows network interface inventory with DHCP/DNS configuration\n-- Source: interface_details + interface_addresses\n-- Use case: Asset discovery, rogue DHCP detection, DNS hijacking, unauthorized adapters\nWITH interface_info AS (\n    SELECT\n        id.interface AS interface_name,\n        id.friendly_name,\n        id.description,\n        UPPER(REPLACE(id.mac, ':', '-')) AS mac_address,\n        id.mtu,\n        id.speed AS link_speed,\n        id.flags,\n        CASE WHEN id.last_change > 0 THEN datetime(id.last_change, 'unixepoch') ELSE NULL END AS last_change_time,\n        id.ibytes AS bytes_received,\n        id.obytes AS bytes_sent,\n        id.ipackets AS packets_received,\n        id.opackets AS packets_sent,\n        id.enabled,\n        id.dhcp_enabled,\n        id.dhcp_server,\n        CASE WHEN id.dhcp_lease_obtained IS NOT NULL AND id.dhcp_lease_obtained != '' THEN SUBSTR(id.dhcp_lease_obtained, 1, 4) || '-' || SUBSTR(id.dhcp_lease_obtained, 5, 2) || '-' || SUBSTR(id.dhcp_lease_obtained, 7, 2) || 'T' || SUBSTR(id.dhcp_lease_obtained, 9, 2) || ':' || SUBSTR(id.dhcp_lease_obtained, 11, 2) || ':' || SUBSTR(id.dhcp_lease_obtained, 13, 2) || 'Z' ELSE NULL END AS dhcp_lease_obtained_time,\n        CASE WHEN id.dhcp_lease_expires IS NOT NULL AND id.dhcp_lease_expires != '' THEN SUBSTR(id.dhcp_lease_expires, 1, 4) || '-' || SUBSTR(id.dhcp_lease_expires, 5, 2) || '-' || SUBSTR(id.dhcp_lease_expires, 7, 2) || 'T' || SUBSTR(id.dhcp_lease_expires, 9, 2) || ':' || SUBSTR(id.dhcp_lease_expires, 11, 2) || ':' || SUBSTR(id.dhcp_lease_expires, 13, 2) || 'Z' ELSE NULL END AS dhcp_lease_expires_time,\n        id.dns_server_search_order,\n        id.dns_domain,\n        id.dns_host_name,\n        id.connection_status\n    FROM interface_details id\n)\nSELECT\n    i.interface_name,\n    i.friendly_name,\n    i.description,\n    i.mac_address,\n    ia.address AS ip_address,\n    ia.mask AS netmask,\n    ia.type AS address_type,\n    i.mtu,\n    i.link_speed,\n    i.flags,\n    i.last_change_time,\n    i.bytes_received,\n    i.bytes_sent,\n    i.packets_received,\n    i.packets_sent,\n    i.enabled,\n    i.dhcp_enabled,\n    i.dhcp_server,\n    i.dhcp_lease_obtained_time,\n    i.dhcp_lease_expires_time,\n    i.dns_server_search_order,\n    i.dns_domain,\n    i.dns_host_name,\n    i.connection_status\nFROM interface_info i\nLEFT JOIN interface_addresses ia ON i.interface_name = ia.interface\nORDER BY i.interface_name, ia.address",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.network_interfaces"
+                        }
+                    },
+                    {
+                        "key": "source.bytes",
+                        "value": {
+                            "field": "bytes_sent"
+                        }
+                    },
+                    {
+                        "key": "source.packets",
+                        "value": {
+                            "field": "packets_sent"
+                        }
+                    },
+                    {
+                        "key": "destination.bytes",
+                        "value": {
+                            "field": "bytes_received"
+                        }
+                    },
+                    {
+                        "key": "destination.packets",
+                        "value": {
+                            "field": "packets_received"
+                        }
+                    },
+                    {
+                        "key": "interface.alias",
+                        "value": {
+                            "field": "friendly_name"
+                        }
+                    },
+                    {
+                        "key": "interface.name",
+                        "value": {
+                            "field": "interface_name"
+                        }
+                    },
+                    {
+                        "key": "source.ip",
+                        "value": {
+                            "field": "ip_address"
+                        }
+                    },
+                    {
+                        "key": "source.mac",
+                        "value": {
+                            "field": "mac_address"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "network_discovery",
+                                "asset_inventory",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "network_interfaces_linux_darwin_elastic",
+                "query": "-- Linux/macOS network interface inventory with IPv6 configuration\n-- Source: interface_details + interface_addresses + interface_ipv6\n-- Use case: Asset discovery, IPv6 routing attacks, forwarding misconfiguration, ICMP redirect vulnerabilities\nWITH interface_info AS (\n    SELECT\n        id.interface AS interface_name,\n        id.friendly_name,\n        id.description,\n        UPPER(REPLACE(id.mac, ':', '-')) AS mac_address,\n        id.mtu,\n        id.link_speed,\n        id.flags,\n        datetime(id.last_change, 'unixepoch') AS last_change_time,\n        id.ibytes AS bytes_received,\n        id.obytes AS bytes_sent,\n        id.ipackets AS packets_received,\n        id.opackets AS packets_sent\n    FROM interface_details id\n),\nipv6_config AS (\n    SELECT\n        interface,\n        hop_limit,\n        forwarding_enabled,\n        redirect_accept\n    FROM interface_ipv6\n)\nSELECT\n    i.interface_name,\n    i.friendly_name,\n    i.description,\n    i.mac_address,\n    ia.address AS ip_address,\n    ia.mask AS netmask,\n    ia.broadcast AS broadcast_address,\n    ia.type AS address_type,\n    i.mtu,\n    i.link_speed,\n    i.flags,\n    i.last_change_time,\n    i.bytes_received,\n    i.bytes_sent,\n    i.packets_received,\n    i.packets_sent,\n    ic.hop_limit,\n    ic.forwarding_enabled,\n    ic.redirect_accept\nFROM interface_info i\nLEFT JOIN interface_addresses ia ON i.interface_name = ia.interface\nLEFT JOIN ipv6_config ic ON i.interface_name = ic.interface\nORDER BY i.interface_name, ia.address",
+                "interval": 3600,
+                "platform": "linux,darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.network_interfaces"
+                        }
+                    },
+                    {
+                        "key": "source.bytes",
+                        "value": {
+                            "field": "bytes_sent"
+                        }
+                    },
+                    {
+                        "key": "source.packets",
+                        "value": {
+                            "field": "packets_sent"
+                        }
+                    },
+                    {
+                        "key": "destination.bytes",
+                        "value": {
+                            "field": "bytes_received"
+                        }
+                    },
+                    {
+                        "key": "destination.packets",
+                        "value": {
+                            "field": "packets_received"
+                        }
+                    },
+                    {
+                        "key": "interface.name",
+                        "value": {
+                            "field": "interface_name"
+                        }
+                    },
+                    {
+                        "key": "source.ip",
+                        "value": {
+                            "field": "ip_address"
+                        }
+                    },
+                    {
+                        "key": "source.mac",
+                        "value": {
+                            "field": "mac_address"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "network_discovery",
+                                "asset_inventory",
+                                "linux",
+                                "macos"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "rdp_authentication_windows_elastic",
+                "query": "-- Windows RDP Authentication and Session Events\n-- Coverage: Security, System, and TerminalServices event logs\n--\n-- Security Channel Events:\n--   4624 (LogonType 3,7,10): Successful logon\n--   4625: Failed logon\n--   4634: Logoff\n--   4647: User-initiated logoff\n--   4778: Session reconnect\n--   4779: Session disconnect\n--\n-- TerminalServices-LocalSessionManager/Operational:\n--   21: RDP Local Connected\n--   22: RDP Remote Connected\n--   23: RDP Session Logoff\n--   24: RDP Local Disconnected\n--   25: RDP Remote Reconnection\n--   39: RDP Remote Disconnected (Formal)\n--   40: RDP Remote Disconnected (Reason)\n--\n-- TerminalServices-RemoteConnectionManager/Operational:\n--   1149: RDP Initiation Successful\n--\n-- System Channel:\n--   9009: Desktop Window Manager Closed\n\n-- Part 1: Security Channel - Authentication Events\nSELECT\n    datetime AS event_time,\n    computer_name,\n    'Security' AS channel,\n    eventid,\n    provider_name,\n    level,\n    json_extract(data, '$.EventData.TargetDomainName') AS domain_name,\n    json_extract(data, '$.EventData.TargetUserName') AS user_name,\n    json_extract(data, '$.EventData.LogonType') AS logon_type,\n    json_extract(data, '$.EventData.IpAddress') AS source_ip,\n    json_extract(data, '$.EventData.IpPort') AS source_port,\n    json_extract(data, '$.EventData.WorkstationName') AS workstation_name,\n    json_extract(data, '$.EventData.LogonProcessName') AS logon_process,\n    json_extract(data, '$.EventData.AuthenticationPackageName') AS auth_package,\n    json_extract(data, '$.EventData.TargetLogonId') AS logon_id,\n    json_extract(data, '$.EventData.SubjectUserName') AS subject_user,\n    json_extract(data, '$.EventData.SubjectDomainName') AS subject_domain,\n    json_extract(data, '$.EventData.Status') AS status_code,\n    json_extract(data, '$.EventData.SubStatus') AS sub_status_code,\n    json_extract(data, '$.EventData.FailureReason') AS failure_reason,\n    CASE\n        WHEN eventid = 4624 AND json_extract(data, '$.EventData.LogonType') = '10' THEN 'RDP_LOGON_SUCCESSFUL_NEW'\n        WHEN eventid = 4624 AND json_extract(data, '$.EventData.LogonType') = '3' THEN 'LOGON_SUCCESSFUL_NETWORK'\n        WHEN eventid = 4624 AND json_extract(data, '$.EventData.LogonType') = '7' THEN 'LOGON_SUCCESSFUL_UNLOCK'\n        WHEN eventid = 4625 AND json_extract(data, '$.EventData.LogonType') = '10' THEN 'RDP_LOGON_FAILED'\n        WHEN eventid = 4625 AND json_extract(data, '$.EventData.LogonType') = '3' THEN 'LOGON_FAILED_NETWORK'\n        WHEN eventid = 4634 THEN 'LOGOFF_DISCONNECT'\n        WHEN eventid = 4647 THEN 'USER_INITIATED_LOGOFF'\n        WHEN eventid = 4778 THEN 'SESSION_RECONNECTED'\n        WHEN eventid = 4779 THEN 'SESSION_DISCONNECTED'\n        ELSE 'UNKNOWN_' || eventid\n    END AS event_description,\n    pid,\n    data\nFROM windows_eventlog\nWHERE \n    channel = 'Security'\n    AND (\n        (eventid IN (4624, 4634) AND json_extract(data, '$.EventData.LogonType') IN ('3', '7', '10'))\n        OR eventid IN (4778, 4625, 4779, 4647)\n    )\n\nUNION ALL\n\n-- Part 2: TerminalServices-LocalSessionManager - RDP Session Events\nSELECT\n    datetime AS event_time,\n    computer_name,\n    'Microsoft-Windows-TerminalServices-LocalSessionManager/Operational' AS channel,\n    eventid,\n    provider_name,\n    level,\n    COALESCE(\n        SUBSTR(json_extract(data, '$.UserData.EventXML.User'), 1, INSTR(json_extract(data, '$.UserData.EventXML.User'), '\\\\') - 1),\n        json_extract(data, '$.UserData.EventXML.Param2')\n    ) AS domain_name,\n    COALESCE(\n        SUBSTR(json_extract(data, '$.UserData.EventXML.User'), INSTR(json_extract(data, '$.UserData.EventXML.User'), '\\\\') + 1),\n        json_extract(data, '$.UserData.EventXML.Param1')\n    ) AS user_name,\n    NULL AS logon_type,\n    COALESCE(\n        json_extract(data, '$.UserData.EventXML.Address'),\n        json_extract(data, '$.UserData.EventXML.Param3')\n    ) AS source_ip,\n    NULL AS source_port,\n    NULL AS workstation_name,\n    NULL AS logon_process,\n    NULL AS auth_package,\n    json_extract(data, '$.UserData.EventXML.SessionID') AS logon_id,\n    NULL AS subject_user,\n    NULL AS subject_domain,\n    NULL AS status_code,\n    NULL AS sub_status_code,\n    json_extract(data, '$.UserData.EventXML.Reason') AS failure_reason,\n    CASE eventid\n        WHEN 21 THEN 'RDP_LOCAL_CONNECTED'\n        WHEN 22 THEN 'RDP_REMOTE_CONNECTED'\n        WHEN 23 THEN 'RDP_SESSION_LOGOFF'\n        WHEN 24 THEN 'RDP_LOCAL_DISCONNECTED'\n        WHEN 25 THEN 'RDP_REMOTE_RECONNECTION'\n        WHEN 39 THEN 'RDP_REMOTE_DISCONNECTED_FORMAL'\n        WHEN 40 THEN 'RDP_REMOTE_DISCONNECTED_REASON'\n        ELSE 'UNKNOWN_TSL_' || eventid\n    END AS event_description,\n    pid,\n    data\nFROM windows_eventlog\nWHERE \n    channel = 'Microsoft-Windows-TerminalServices-LocalSessionManager/Operational'\n    AND eventid IN (21, 22, 23, 24, 25, 39, 40)\n\nUNION ALL\n\n-- Part 3: TerminalServices-RemoteConnectionManager - RDP Initiation\nSELECT\n    datetime AS event_time,\n    computer_name,\n    'Microsoft-Windows-TerminalServices-RemoteConnectionManager/Operational' AS channel,\n    eventid,\n    provider_name,\n    level,\n    json_extract(data, '$.UserData.EventXML.Param2') AS domain_name,\n    json_extract(data, '$.UserData.EventXML.Param1') AS user_name,\n    NULL AS logon_type,\n    json_extract(data, '$.UserData.EventXML.Param3') AS source_ip,\n    NULL AS source_port,\n    NULL AS workstation_name,\n    NULL AS logon_process,\n    NULL AS auth_package,\n    NULL AS logon_id,\n    NULL AS subject_user,\n    NULL AS subject_domain,\n    NULL AS status_code,\n    NULL AS sub_status_code,\n    NULL AS failure_reason,\n    'RDP_INITIATION_SUCCESSFUL' AS event_description,\n    pid,\n    data\nFROM windows_eventlog\nWHERE \n    channel = 'Microsoft-Windows-TerminalServices-RemoteConnectionManager/Operational'\n    AND eventid = 1149\n\nUNION ALL\n\n-- Part 4: System Channel - Desktop Window Manager Closed\nSELECT\n    datetime AS event_time,\n    computer_name,\n    'System' AS channel,\n    eventid,\n    provider_name,\n    level,\n    NULL AS domain_name,\n    NULL AS user_name,\n    NULL AS logon_type,\n    NULL AS source_ip,\n    NULL AS source_port,\n    NULL AS workstation_name,\n    NULL AS logon_process,\n    NULL AS auth_package,\n    NULL AS logon_id,\n    NULL AS subject_user,\n    NULL AS subject_domain,\n    NULL AS status_code,\n    NULL AS sub_status_code,\n    NULL AS failure_reason,\n    'DESKTOPWINDOWMANAGER_CLOSED' AS event_description,\n    pid,\n    data\nFROM windows_eventlog\nWHERE \n    channel = 'System'\n    AND eventid = 9009\n\nORDER BY event_time DESC;",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "session"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.rdp_authentication"
+                        }
+                    },
+                    {
+                        "key": "event.code",
+                        "value": {
+                            "field": "eventid"
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "event_time"
+                        }
+                    },
+                    {
+                        "key": "log.level",
+                        "value": {
+                            "field": "level"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "user_name"
+                        }
+                    },
+                    {
+                        "key": "user.domain",
+                        "value": {
+                            "field": "domain_name"
+                        }
+                    },
+                    {
+                        "key": "event.reason",
+                        "value": {
+                            "field": "event_description"
+                        }
+                    },
+                    {
+                        "key": "source.ip",
+                        "value": {
+                            "field": "source_ip"
+                        }
+                    },
+                    {
+                        "key": "source.port",
+                        "value": {
+                            "field": "source_port"
+                        }
+                    },
+                    {
+                        "key": "winlog.channel",
+                        "value": {
+                            "field": "channel"
+                        }
+                    },
+                    {
+                        "key": "winlog.logon.type",
+                        "value": {
+                            "field": "logon_type"
+                        }
+                    },
+                    {
+                        "key": "winlog.logon.id",
+                        "value": {
+                            "field": "logon_id"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.WorkstationName",
+                        "value": {
+                            "field": "workstation_name"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.LogonProcessName",
+                        "value": {
+                            "field": "logon_process"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.AuthenticationPackageName",
+                        "value": {
+                            "field": "auth_package"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.SubjectUserName",
+                        "value": {
+                            "field": "subject_user"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.SubjectDomainName",
+                        "value": {
+                            "field": "subject_domain"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.Status",
+                        "value": {
+                            "field": "status_code"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.SubStatus",
+                        "value": {
+                            "field": "sub_status_code"
+                        }
+                    },
+                    {
+                        "key": "winlog.event_data.FailureReason",
+                        "value": {
+                            "field": "failure_reason"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "rdp",
+                                "authentication",
+                                "lateral_movement",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "wmi_persistence_event_subscriptions_windows_elastic",
+                "query": "-- WMI Persistence Event Subscriptions - Complete Coverage (T1546.003)\n-- Detects bound subscriptions and orphaned components for full forensic visibility\n-- Timestamps converted to UTC ISO 8601 format per ECS standardization\n\nWITH wmi_subscriptions AS (\n    -- Part 1: Bound subscriptions (complete filter-consumer chains)\n    SELECT\n        'bound' AS status,\n        filter.name AS filter_name,\n        filter.query AS filter_query,\n        filter.query_language,\n        filter.class AS filter_class,\n        COALESCE(cli.name, script.name) AS consumer_name,\n        CASE\n            WHEN cli.name IS NOT NULL THEN 'CommandLineEventConsumer'\n            WHEN script.name IS NOT NULL THEN 'ActiveScriptEventConsumer'\n            ELSE 'Unknown'\n        END AS consumer_type,\n        COALESCE(cli.class, script.class) AS consumer_class,\n        COALESCE(cli.relative_path, script.relative_path) AS consumer_relative_path,\n        cli.command_line_template,\n        cli.executable_path,\n        script.scripting_engine,\n        script.script_file_name,\n        script.script_text,\n        COALESCE(\n            NULLIF(cli.executable_path, ''),\n            NULLIF(cli.command_line_template, ''),\n            NULLIF(script.script_file_name, '')\n        ) AS hashable_path\n    FROM wmi_filter_consumer_binding binding\n    LEFT JOIN wmi_event_filters filter ON binding.filter = filter.relative_path\n    LEFT JOIN wmi_cli_event_consumers cli ON binding.consumer = cli.relative_path\n    LEFT JOIN wmi_script_event_consumers script ON binding.consumer = script.relative_path\n\n    UNION ALL\n\n    -- Part 2: Orphaned CLI consumers (possible residual malware)\n    SELECT\n        'orphaned_consumer' AS status,\n        '' AS filter_name,\n        '' AS filter_query,\n        '' AS query_language,\n        '' AS filter_class,\n        cli.name AS consumer_name,\n        'CommandLineEventConsumer' AS consumer_type,\n        cli.class AS consumer_class,\n        cli.relative_path AS consumer_relative_path,\n        cli.command_line_template,\n        cli.executable_path,\n        '' AS scripting_engine,\n        '' AS script_file_name,\n        '' AS script_text,\n        COALESCE(NULLIF(cli.executable_path, ''), NULLIF(cli.command_line_template, '')) AS hashable_path\n    FROM wmi_cli_event_consumers cli\n    WHERE NOT EXISTS (\n        SELECT 1 FROM wmi_filter_consumer_binding binding\n        WHERE binding.consumer = cli.relative_path\n    )\n\n    UNION ALL\n\n    -- Part 3: Orphaned Script consumers (possible residual malware)\n    SELECT\n        'orphaned_consumer' AS status,\n        '' AS filter_name,\n        '' AS filter_query,\n        '' AS query_language,\n        '' AS filter_class,\n        script.name AS consumer_name,\n        'ActiveScriptEventConsumer' AS consumer_type,\n        script.class AS consumer_class,\n        script.relative_path AS consumer_relative_path,\n        '' AS command_line_template,\n        '' AS executable_path,\n        script.scripting_engine,\n        script.script_file_name,\n        script.script_text,\n        NULLIF(script.script_file_name, '') AS hashable_path\n    FROM wmi_script_event_consumers script\n    WHERE NOT EXISTS (\n        SELECT 1 FROM wmi_filter_consumer_binding binding\n        WHERE binding.consumer = script.relative_path\n    )\n\n    UNION ALL\n\n    -- Part 4: Orphaned filters (possible residual malware)\n    SELECT\n        'orphaned_filter' AS status,\n        filter.name AS filter_name,\n        filter.query AS filter_query,\n        filter.query_language,\n        filter.class AS filter_class,\n        '' AS consumer_name,\n        '' AS consumer_type,\n        '' AS consumer_class,\n        '' AS consumer_relative_path,\n        '' AS command_line_template,\n        '' AS executable_path,\n        '' AS scripting_engine,\n        '' AS script_file_name,\n        '' AS script_text,\n        '' AS hashable_path\n    FROM wmi_event_filters filter\n    WHERE NOT EXISTS (\n        SELECT 1 FROM wmi_filter_consumer_binding binding\n        WHERE binding.filter = filter.relative_path\n    )\n)\n\nSELECT\n    ws.status,\n    ws.filter_name,\n    ws.filter_query,\n    ws.query_language,\n    ws.filter_class,\n    ws.consumer_name,\n    ws.consumer_type,\n    ws.consumer_class,\n    ws.consumer_relative_path,\n    ws.command_line_template,\n    ws.executable_path,\n    ws.scripting_engine,\n    ws.script_file_name,\n    ws.script_text,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status,\n    -- File timestamps converted to UTC ISO 8601 with readable aliases (ECS standard)\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    f.size AS file_size\nFROM wmi_subscriptions ws\nLEFT JOIN hash h ON h.path = ws.hashable_path AND ws.hashable_path != ''\nLEFT JOIN authenticode a ON a.path = ws.hashable_path AND ws.hashable_path != ''\nLEFT JOIN file f ON f.path = ws.hashable_path AND ws.hashable_path != ''",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.wmi_persistence"
+                        }
+                    },
+                    {
+                        "key": "file.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "file.created",
+                        "value": {
+                            "field": "created_time"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "file.ctime",
+                        "value": {
+                            "field": "changed_time"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "file_size"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "persistence",
+                                "wmi",
+                                "event_subscription",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "bits_monitoring_windows_elastic",
+                "query": "-- Monitor BITS (Background Intelligent Transfer Service) file transfers\n-- Source: Windows Event Log (Microsoft-Windows-Bits-Client/Operational)\n-- Event ID 59: BITS transfer completion events\n-- Focus: External/suspicious download sources (filters out known-good vendors and private IPs)\n\nWITH extracted AS (\n    SELECT\n        datetime AS event_time,\n        provider_name,\n        eventid AS event_id,\n        json_extract(data, '$.EventData.url') AS url_full,\n        -- Robust Host Extraction:\n        -- 1. Remove protocol headers\n        -- 2. Split by slash to get the domain\n        -- 3. Split by colon to remove ports (e.g. :8080) if present\n        split(\n            split(\n                replace(\n                    replace(json_extract(data, '$.EventData.url'), 'https://', ''),\n                    'http://', ''\n                ),\n                '/', 0\n            ),\n            ':', 0\n        ) AS url_domain,\n        json_extract(data, '$.EventData.name') AS filename,\n        json_extract(data, '$.EventData.processId') AS pid,\n        json_extract(data, '$.EventData.threadId') AS tid\n    FROM windows_eventlog\n    WHERE channel = 'Microsoft-Windows-Bits-Client/Operational'\n      AND eventid = 59\n)\n\nSELECT *\nFROM extracted\nWHERE regex_match(\n    url_domain,\n    '^(.*\\\\.)?(office365\\\\.com|office\\\\.net|windowsupdate\\\\.com|live\\\\.com|mozilla\\\\.com|adobe\\\\.com|microsoft\\\\.com|google\\\\.com|oracle\\\\.com|hp\\\\.com|aka\\\\.ms|gvt1\\\\.com|oneclient\\\\.sfx\\\\.ms)$|^(10\\\\.|192\\\\.168\\\\.|172\\\\.(1[6-9]|2[0-9]|3[0-1])\\\\.).*',\n    0\n) IS NULL;",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "connection",
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.bits_monitoring"
+                        }
+                    },
+                    {
+                        "key": "event.code",
+                        "value": {
+                            "field": "event_id"
+                        }
+                    },
+                    {
+                        "key": "event.provider",
+                        "value": {
+                            "field": "provider_name"
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "event_time"
+                        }
+                    },
+                    {
+                        "key": "url.full",
+                        "value": {
+                            "field": "url_full"
+                        }
+                    },
+                    {
+                        "key": "url.domain",
+                        "value": {
+                            "field": "url_domain"
+                        }
+                    },
+                    {
+                        "key": "event.reason",
+                        "value": {
+                            "field": "filename"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "process.thread.id",
+                        "value": {
+                            "field": "tid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "network",
+                                "persistence",
+                                "defense_evasion",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-f1d4e5a6-b7c8-4d9e-1f0a-2b3c4d5e6f7a",
+    "references": [],
+    "type": "osquery-pack-asset"
+}

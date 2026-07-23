@@ -1,0 +1,228 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: crowdstrike
+      name: test-default-crowdstrike
+      streams:
+        - auth.oauth2:
+            client.id: test_client_id
+            client.secret: ${SECRET_0}
+            token_url: http://host.tld/oauth2/token
+          config_version: 2
+          data_stream:
+            dataset: crowdstrike.identity_protection_assessment
+          fields:
+            _conf:
+                enable_nested_assessment_factors: false
+          fields_under_root: true
+          interval: 24h
+          max_executions: 1000
+          program: |-
+            (
+              // If the domains call already filled worklist, skip the domains request until the list is worked off.
+              (has(state.worklist) && size(state.worklist) > 0) ?
+                state
+              :
+                post_request(
+                  state.url.trim_right("/") + "/identity-protection/combined/graphql/v1",
+                  "application/json",
+                  (
+                    (has(state.domains_variables) && size(state.domains_variables.?dataSources.orValue([])) > 0) ?
+                      {"query": string(state.domains_query), "variables": state.domains_variables}
+                    :
+                      {"query": string(state.domains_query)}
+                  ).encode_json()
+                ).do_request().as(resp, (resp.StatusCode == 200) ?
+                  resp.Body.decode_json().as(body,
+                    (size(body.?errors.orValue([])) > 0) ?
+                      state.with(
+                        {
+                          "events": body.errors.map(error,
+                            {
+                              "error": {
+                                "code": string(error.?code.orValue("")),
+                                "id": string(error.?code.orValue("")),
+                                "message": string(error.?message.orValue("")),
+                              },
+                            }
+                          ),
+                          "want_more": false,
+                        }
+                      ).drop(["worklist", "next", "last_remaining"])
+                    : (has(body.data) && has(body.data.domains)) ?
+                      (
+                        (size(body.data.domains) > 0) ?
+                          state.with(
+                            {
+                              "worklist": body.data.domains.map(d, string(d)),
+                              // next is the array index into worklist; worklist is consumed from index 0.
+                              "next": 0,
+                              "last_remaining": int(body.?extensions.?remainingPoints.orValue(500000)),
+                            }
+                          )
+                        :
+                          state.with(
+                            {
+                              "events": [],
+                              "want_more": false,
+                            }
+                          ).drop(["worklist", "next", "last_remaining"])
+                      )
+                    :
+                      state.with(
+                        {
+                          "events": {
+                            "error": {
+                              "code": string(resp.StatusCode),
+                              "id": "graphql",
+                              "message": "POST:domains response missing data.domains",
+                            },
+                          },
+                          "want_more": false,
+                        }
+                      ).drop(["worklist", "next", "last_remaining"])
+                  )
+                :
+                  state.with(
+                    {
+                      "events": {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "POST:" + (
+                            (size(resp.Body) != 0) ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      },
+                      "want_more": false,
+                    }
+                  )
+                )
+            ).as(state,
+              (!has(state.worklist) || size(state.worklist) == 0) ?
+                state
+              : (int(state.?next.orValue(0)) >= size(state.worklist)) ?
+                state.with(
+                  {
+                    "events": [],
+                    "want_more": false,
+                  }
+                ).drop(["worklist", "next", "last_remaining"])
+              : (has(state.last_remaining) && int(state.last_remaining) < int(state.min_remaining_points)) ?
+                state.with(
+                  {
+                    "events": [],
+                    "want_more": false,
+                  }
+                )
+              :
+                post_request(
+                  state.url.trim_right("/") + "/identity-protection/combined/graphql/v1",
+                  "application/json",
+                  {
+                    "query": string(state.assessment_query),
+                    "variables": {
+                      "domain": string(state.worklist[int(state.next)]),
+                    },
+                  }.encode_json()
+                ).do_request().as(resp, (resp.StatusCode == 200) ?
+                  resp.Body.decode_json().as(body,
+                    (size(body.?errors.orValue([])) > 0) ?
+                      state.with(
+                        {
+                          "events": body.errors.map(error,
+                            {
+                              "error": {
+                                "code": string(error.?code.orValue("graphql")),
+                                "id": string(error.?code.orValue("graphql")),
+                                "message": string(error.?message.orValue("")),
+                              },
+                            }
+                          ),
+                          "last_remaining": int(body.?extensions.?remainingPoints.orValue(state.last_remaining)),
+                          "next": int(state.next) + 1,
+                          "want_more": int(state.next) + 1 < size(state.worklist),
+                        }
+                      )
+                    :
+                      state.with(
+                        {
+                          "events": [
+                            {
+                              "message": {
+                                "domain": string(state.worklist[int(state.next)]),
+                                "security_assessment": body.?data.?securityAssessment,
+                              }.encode_json(),
+                            },
+                          ],
+                          "last_remaining": int(body.?extensions.?remainingPoints.orValue(state.last_remaining)),
+                          "next": int(state.next) + 1,
+                          "want_more": int(state.next) + 1 < size(state.worklist),
+                        }
+                      )
+                  )
+                :
+                  state.with(
+                    {
+                      "events": {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "POST:" + (
+                            (size(resp.Body) != 0) ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      },
+                      "last_remaining": state.last_remaining,
+                      "next": int(state.next) + 1,
+                      "want_more": int(state.next) + 1 < size(state.worklist),
+                    }
+                  )
+                )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields: null
+          resource.ssl: null
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: true
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+            maxsize: 5
+          resource.url: http://host.tld
+          state:
+            assessment_query: 'query GetAssessment($domain: String!) { securityAssessment(domain: $domain) { overallScore overallScoreLevel assessmentFactors { riskFactorType likelihood severity } } }'
+            domains_query: '{ domains }'
+            initial_interval: 24h
+            min_remaining_points: 100
+          tags:
+            - preserve_original_event
+            - forwarded
+            - crowdstrike-identity-protection-assessment
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-crowdstrike.identity_protection_assessment-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

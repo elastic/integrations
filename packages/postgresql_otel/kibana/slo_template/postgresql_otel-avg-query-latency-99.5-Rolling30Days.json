@@ -1,0 +1,30 @@
+{
+  "attributes": {
+    "name": "[PostgreSQL OTel] Average query latency 99.5% rolling 30 days",
+    "description": "This SLO tracks the average query execution latency of PostgreSQL via OTel db.server.top_query events (pg_stat_statements), ensuring that 99.5% of 1-minute time intervals show average per-query execution time below 200 milliseconds over a rolling period of 30 days to maintain responsive database performance for applications.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "logs-*",
+        "filter": "data_stream.dataset: \"postgresqlreceiver.otel\" AND event_name: \"db.server.top_query\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "sum", "field": "attributes.postgresql.total_exec_time"},
+            {"name": "B", "aggregation": "sum", "field": "attributes.postgresql.calls"}
+          ],
+          "equation": "A/B",
+          "comparator": "LT",
+          "threshold": 200
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {"duration": "30d", "type": "rolling"},
+    "objective": {"target": 0.995, "timesliceTarget": 0.95, "timesliceWindow": "1m"},
+    "tags": ["postgresql", "otel"],
+    "groupBy": ["resource.attributes.service.instance.id"]
+  },
+  "id": "postgresql_otel-avg-query-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}

@@ -18,7 +18,7 @@ This integration is compatible with Amazon Bedrock AgentCore CloudWatch metrics 
 The Amazon Bedrock AgentCore integration collects runtime metrics and observability data from your intelligent agents.
 
 Data streams:
- - `metrics`: Collects Amazon Bedrock AgentCore runtime metrics including invocations, sessions, latency, performance indicators, error rates, throttling metrics, token counts, target execution metrics, and authorization metrics from the following AgentCore components: Agent runtime, Gateways, Memory, and Identity.
+ - `metrics`: Collects Amazon Bedrock AgentCore runtime metrics including invocations, sessions, latency, performance indicators, error rates, throttling metrics, token counts, target execution metrics, and authorization metrics from the following AgentCore components: Agent runtime, Gateway, Memory, Identity, Browser Tool and Code Interpreter.
 
 ## What do I need to use this integration?
 
@@ -34,6 +34,17 @@ For more details about these requirements, check the [AWS integration documentat
 * Elastic Agent must be installed. For detailed guidance, follow these [instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 * You can install only one Elastic Agent per host.
 * Elastic Agent is required to collect metrics from CloudWatch and ship the data to Elastic, where the events will then be processed through the integration's ingest pipelines.
+
+### How to find the `log_group_arn` (for log-based datasets)
+
+Some datasets in this integration require the ARN of the CloudWatch log group where your AgentCore logs are stored. You can find it by:
+
+- Opening CloudWatch in the AWS Console
+- Going to Logs > Log groups
+- Selecting the log group used by your AgentCore deployment
+- Copying the Log group ARN shown
+
+You can then use this ARN when configuring any log-based dataset.
 
 ## Setup
 
@@ -65,3 +76,35 @@ The metrics include the following dimensions for enhanced filtering and analysis
 
 {{event "metrics"}}
 {{fields "metrics"}}
+
+## Alerting Rule Template
+{{alertRuleTemplates}}
+
+## Logs
+
+### Runtime Application Logs
+
+Amazon Bedrock AgentCore runtime application logs provide detailed insights into agent execution, decision-making processes, and operational events. The integration collects comprehensive log data from your intelligent agents to help you understand agent behavior and troubleshoot issues.
+
+For more details about enabling logs for AgentCore, check the [Amazon Bedrock AgentCore Observability Guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html).
+
+{{event "runtime_application_logs"}}
+{{fields "runtime_application_logs"}}
+
+### Memory Application Logs
+
+Amazon Bedrock AgentCore Memory application logs provide detailed insights into memory operations, including data storage, retrieval, and updates performed by your agents. These logs help you monitor memory usage, track changes to stored knowledge, and troubleshoot issues related to agent memory management.
+
+For more details about enabling logs for AgentCore Memory, see the [Amazon Bedrock AgentCore Observability Guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html).
+
+{{event "memory_application_logs"}}
+{{fields "memory_application_logs"}}
+
+### Gateway Application Logs
+
+Amazon Bedrock AgentCore Gateway application logs provide detailed insights into API requests, message routing, and interaction between agents and external systems. These logs help you monitor gateway operations, troubleshoot connectivity issues, and understand the flow of agent communications.
+
+For more details about enabling logs for the AgentCore Gateway, see the [Amazon Bedrock AgentCore Observability Guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html).
+
+{{event "gateway_application_logs"}}
+{{fields "gateway_application_logs"}}

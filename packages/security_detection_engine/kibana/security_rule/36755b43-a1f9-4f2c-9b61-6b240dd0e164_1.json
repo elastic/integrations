@@ -1,0 +1,118 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects executable file downloads via wget to suspicious locations such as /tmp or /Users/Shared. Threat actors commonly use wget to download malicious payloads and additional tools for post-exploitation.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.network-*",
+            "logs-endpoint.events.file-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Executable File Download via Wget",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Executable File Download via Wget\n\nThis rule detects wget pulling down a Mach-O executable and writing it into commonly abused transient or shared directories on macOS, which often signals payload staging during ingress tool transfer. Attackers frequently run wget from a shell or scripted installer to fetch a second-stage binary into /tmp or /Users/Shared, then immediately execute it to establish command and control or deploy additional tooling.\n\n### Possible investigation steps\n\n- Pivot from the detected wget process to identify its parent process, user context, and full command line to determine whether it was launched by an interactive shell, script, or installer package.  \n- Review the network connection details from the wget execution (remote IP/domain, URL path, TLS certificate/SNI if available) and assess reputation plus whether it aligns with known internal software distribution.  \n- Inspect the downloaded Mach-O at the destination path by collecting its hash, signature/notarization status, and basic static traits (strings, embedded URLs, ad-hoc signing) to quickly judge legitimacy.  \n- Check for immediate follow-on activity from the same host such as execution of the new file, creation of persistence (LaunchAgents/Daemons, cron, login items), or additional tool downloads within the next few minutes.  \n- Scope for reuse by searching across endpoints for the same downloaded hash, filename, URL, or destination directory pattern to determine blast radius and whether this is a recurring delivery mechanism.\n\n### False positive analysis\n\n- An administrator or developer uses wget in a script to fetch an internal build or test Mach-O binary and stages it in /tmp or /Users/Shared for immediate execution during troubleshooting or CI-style workflows.  \n- A legitimate installation or update routine invokes wget to download a helper executable to a transient directory (for unpacking or preflight checks) before moving it into an application bundle, causing a short-lived write to /tmp-like paths.\n\n### Response and remediation\n\n- Isolate the affected macOS host from the network and terminate the active `wget` process to stop additional payload transfers or execution.  \n- Quarantine the downloaded Mach-O from `/tmp`, `/private/tmp`, `/var/tmp`, or `/Users/Shared` and preserve a copy plus the originating `wget` command/URL for analysis before removal.  \n- Hunt on the host for immediate follow-on execution of the downloaded file and remove any persistence artifacts created around the same time, such as new LaunchAgents/LaunchDaemons, login items, or cron entries pointing to the staged path.  \n- Block the observed download URL/domain/IP at egress controls and add allowlisting controls for approved internal distribution sources to reduce future misuse of `wget` for tool transfer.  \n- Escalate to incident response if the staged Mach-O is executed, unsigned/ad-hoc signed, establishes outbound connections to unapproved infrastructure, or the same hash/URL is found on multiple endpoints.  \n- Harden endpoints by restricting `wget` usage where possible, enforcing Gatekeeper/notarization and least-privilege execution, and adding monitoring/controls for executable writes and executions from world-writable directories.\n",
+        "query": "sequence by process.entity_id with maxspan=30s\n  [network where host.os.type == \"macos\" and event.type == \"start\" and process.name == \"wget\"]\n  [file where host.os.type == \"macos\" and event.action == \"modification\" and \n    process.name == \"wget\" and \n    file.path like (\"/tmp/*\", \"/private/tmp/*\", \"/private/var/tmp/*\", \"/var/tmp/*\", \"/Users/Shared/*\") and\n    file.Ext.header_bytes like~ (\"cffaedfe*\", \"cafebabe*\")]\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1105/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "file.Ext.header_bytes",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "36755b43-a1f9-4f2c-9b61-6b240dd0e164",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1204",
+                        "name": "User Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1204/",
+                        "subtechnique": [
+                            {
+                                "id": "T1204.002",
+                                "name": "Malicious File",
+                                "reference": "https://attack.mitre.org/techniques/T1204/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 1
+    },
+    "id": "36755b43-a1f9-4f2c-9b61-6b240dd0e164_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,106 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects execution of curl or wget from processes whose title aligns with **`runc init`**, a common fingerprint for workloads running inside **OCI/runc-backed containers** on Linux hosts instrumented with Auditd Manager. After breaking out of an application container or abusing a privileged workload, attackers often pull ingress tooling (stagers, scripts, implants) or stage exfiltration with minimal HTTP clients. Those utilities are also used benignly in images, so context matters; the `runc init` anchor narrows the signal to the container runtime boundary where unexpected download clients are more worthy of review than the same binaries on a bare-metal admin shell.",
+        "false_positives": [
+            "Base images, entrypoints, or init wrappers may legitimately invoke curl or wget during container startup (package installs, health checks); baseline trusted images and exclude stable image digests or namespaces when noisy.",
+            "Developer-oriented containers and CI build pods can run curl/wget from PID 1 descendants under runc; correlate with build pipelines and approved registries."
+        ],
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Curl or Wget Execution from Container Context",
+        "note": "## Triage and analysis\n\n### Investigating Curl or Wget Execution from Container Context\n\nThe rule matches Auditd-backed process events where `process.title` is `runc init` and the executed program is\ncurl/wget (by `process.name`) or the argument vector suggests curl or wget paths. Use it to spot ingress tool \ntransfer or scripted downloads from inside a container as seen at the host audit layer.\n\n### Possible investigation steps\n\n- Reconstruct the full command line from `process.args` / `process.command_line` and identify URLs, output paths, and\n  flags such as `-O`, `--post-file`, or TLS bypass (`-k`).\n- Map the event to the container: cgroup, `container.id`, `kubernetes.pod.*`, or runtime metadata if present on the\n  document; identify the image, namespace, and workload owner.\n- Review egress from the host or pod network policy logs for destinations contacted shortly after the execution.\n- Compare against recent image or manifest changes for the workload to rule out intentional startup scripts.\n\n### False positive analysis\n\n- Package managers and bootstrap scripts in official images may run curl/wget once at start; document and exclude when\n  verified.\n- Security scanners or health checks running in sidecars could match; validate agent type and schedule.\n\n### Response and remediation\n\n- If unauthorized, isolate the node or workload, revoke credentials available to the container, inspect for dropped\n  binaries or cron/systemd additions, and rotate any secrets the container could reach.\n",
+        "query": "host.os.type:linux and \ndata_stream.dataset:\"auditd_manager.auditd\" and\nevent.action:(\"executed\" or \"exec\") and\nprocess.title:\"runc init\" and\n(\n  process.name:(curl or wget) or\n  process.args:(* curl* or */bin/curl* or *wget*)\n)\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1105/",
+            "https://gtfobins.github.io/gtfobins/curl/",
+            "https://gtfobins.github.io/gtfobins/wget/"
+        ],
+        "related_integrations": [
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            },
+            {
+                "integration": "auditd",
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.title",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e7b2c3d4-5a6b-4e8f-9c0d-1a2b3e4f5a6b",
+        "setup": "## Setup\n\nThis rule requires data from **Auditd Manager** (or legacy Auditbeat shipping comparable ECS fields).\n\n### Auditd Manager Integration Setup\nThe Auditd Manager integration receives audit events from the Linux Audit Framework. With `auditd_manager`,\nadministrators can define audit rules, track system events, and generate reports.\n\n#### Steps to deploy Auditd Manager\n- In Kibana, open **Add integrations**, search for **Auditd Manager**, and add it to an agent policy deployed on Linux\n  hosts that should emit syscall audit data.\n- For integration details, see the [Auditd Manager documentation](https://docs.elastic.co/integrations/auditd_manager).\n\n#### Rule-specific notes\n- Ensure syscall coverage includes **execve** (or equivalent) for processes inside containers so `curl`, `wget`, and\n  argument lists are captured on the host.\n- Confirm that **`process.title`** (or the mapped proctitle field) reflects **`runc init`** for your runtime; other\n  runtimes may use different titles\u2014tune the predicate if you standardize on `crun`, `containerd-shim`, etc.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Tactic: Execution",
+            "Domain: Containers",
+            "Data Source: Auditd Manager",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "e7b2c3d4-5a6b-4e8f-9c0d-1a2b3e4f5a6b_1",
+    "type": "security-rule"
+}

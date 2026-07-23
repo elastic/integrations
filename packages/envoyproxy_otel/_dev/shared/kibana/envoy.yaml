@@ -1,0 +1,829 @@
+# Envoy Proxy monitoring dashboards
+# Spec: build/spec.md
+# Index: metrics-statsdreceiver-default
+
+dashboards:
+- id: envoyproxy_otel-envoy-overview
+  name: '[Envoy Proxy] Overview'
+  description: >-
+    Proxy health, downstream traffic, and upstream status at a glance.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  filters:
+  - field: data_stream.dataset
+    equals: statsdreceiver
+  controls:
+  - type: options
+    label: Host
+    data_view: metrics-*
+    field: host.name
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: envoyproxy_otel-envoy-overview
+      - label: Downstream & HTTP
+        dashboard: envoyproxy_otel-envoy-downstream
+      - label: Upstream & Proxy Health
+        dashboard: envoyproxy_otel-envoy-upstream-proxy
+
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [Envoy Proxy] Overview
+
+        This dashboard provides a health summary for Envoy Proxy:
+        - Proxy liveness and server state
+        - Downstream request volume and error rate
+        - Active connection counts
+        - Cluster manager status
+
+  - title: Server Live
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.server.live IS NOT NULL
+      - STATS live = MAX(envoy.server.live)
+      primary:
+        field: live
+        label: Server Live
+        format:
+          type: number
+          decimals: 0
+
+  - title: Active Clusters
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.cluster_manager.active_clusters IS NOT NULL
+      - STATS clusters = MAX(envoy.cluster_manager.active_clusters)
+      primary:
+        field: clusters
+        label: Active clusters
+        format:
+          type: number
+          decimals: 0
+
+  - title: Total Downstream Requests
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_rq_total IS NOT NULL
+      - STATS total = MAX(envoy.http.ingress_http.downstream_rq_total)
+      primary:
+        field: total
+        label: Requests (cumulative)
+        format:
+          type: number
+          compact: true
+
+  - title: Active Downstream Connections
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_cx_active IS NOT NULL
+      - STATS active = MAX(envoy.http.ingress_http.downstream_cx_active)
+      primary:
+        field: active
+        label: Active connections
+        format:
+          type: number
+          decimals: 0
+
+  - title: Server Uptime
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.server.uptime IS NOT NULL
+      - STATS uptime = MAX(envoy.server.uptime)
+      primary:
+        field: uptime
+        label: Uptime (s)
+        format:
+          type: number
+          compact: true
+
+  - title: Total Listeners Active
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.listener_manager.total_listeners_active IS NOT NULL
+      - STATS listeners = MAX(envoy.listener_manager.total_listeners_active)
+      primary:
+        field: listeners
+        label: Active listeners
+        format:
+          type: number
+          decimals: 0
+
+  - title: Downstream Requests Over Time
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_rq_total IS NOT NULL
+      - STATS requests = MAX(envoy.http.ingress_http.downstream_rq_total) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: requests
+        label: Total requests (cumulative)
+        format:
+          type: number
+          decimals: 0
+
+  - title: Downstream Response Codes Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_rq_2xx IS NOT NULL OR envoy.http.ingress_http.downstream_rq_completed IS NOT NULL
+      - STATS rq_2xx = MAX(envoy.http.ingress_http.downstream_rq_2xx), rq_completed = MAX(envoy.http.ingress_http.downstream_rq_completed) 
+        BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rq_2xx
+        label: 2xx
+      - field: rq_completed
+        label: Completed
+      legend:
+        visible: show
+        position: right
+
+  - title: Active Connections Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_cx_active IS NOT NULL OR envoy.server.total_connections IS NOT NULL
+      - STATS downstream_active = MAX(envoy.http.ingress_http.downstream_cx_active), server_total = MAX(envoy.server.total_connections) BY 
+        time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: downstream_active
+        label: Downstream (ingress)
+      - field: server_total
+        label: Server total
+      legend:
+        visible: show
+        position: right
+
+  - title: Cluster Manager Status
+    size: {w: 48, h: 10}
+    esql:
+      type: line
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.cluster_manager.active_clusters IS NOT NULL OR envoy.cluster_manager.warming_clusters IS NOT NULL
+      - STATS active = MAX(envoy.cluster_manager.active_clusters), warming = MAX(envoy.cluster_manager.warming_clusters) BY time_bucket = 
+        BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: active
+        label: Active clusters
+      - field: warming
+        label: Warming clusters
+      legend:
+        visible: show
+        position: right
+
+- id: envoyproxy_otel-envoy-downstream
+  name: '[Envoy Proxy] Downstream & HTTP'
+  description: >-
+    Downstream traffic, latency, HTTP metrics, and connection handling.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  filters:
+  - field: data_stream.dataset
+    equals: statsdreceiver
+  controls:
+  - type: options
+    label: Host
+    data_view: metrics-*
+    field: host.name
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: envoyproxy_otel-envoy-overview
+      - label: Downstream & HTTP
+        dashboard: envoyproxy_otel-envoy-downstream
+      - label: Upstream & Proxy Health
+        dashboard: envoyproxy_otel-envoy-upstream-proxy
+
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [Envoy Proxy] Downstream & HTTP
+
+        Downstream (client-facing) metrics:
+        - Request rate and completed requests
+        - Active connections and bytes transferred
+        - Request latency (downstream_rq_time)
+        - HTTP response code distribution
+
+  - title: Downstream Requests Completed
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_rq_completed IS NOT NULL
+      - STATS completed = MAX(envoy.http.ingress_http.downstream_rq_completed)
+      primary:
+        field: completed
+        label: Completed requests
+        format:
+          type: number
+          compact: true
+
+  - title: Downstream 2xx Responses
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_rq_2xx IS NOT NULL
+      - STATS rq_2xx = MAX(envoy.http.ingress_http.downstream_rq_2xx)
+      primary:
+        field: rq_2xx
+        label: 2xx responses
+        format:
+          type: number
+          compact: true
+
+  - title: Downstream Connections Total
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_cx_total IS NOT NULL
+      - STATS total = MAX(envoy.http.ingress_http.downstream_cx_total)
+      primary:
+        field: total
+        label: Connections total
+        format:
+          type: number
+          compact: true
+
+  - title: Bytes Transmitted
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_cx_tx_bytes_total IS NOT NULL
+      - STATS bytes = MAX(envoy.http.ingress_http.downstream_cx_tx_bytes_total)
+      primary:
+        field: bytes
+        label: Bytes TX (cumulative)
+        format:
+          type: bytes
+          decimals: 2
+
+  - title: Bytes Received
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_cx_rx_bytes_total IS NOT NULL
+      - STATS bytes = MAX(envoy.http.ingress_http.downstream_cx_rx_bytes_total)
+      primary:
+        field: bytes
+        label: Bytes RX (cumulative)
+        format:
+          type: bytes
+          decimals: 2
+
+  - title: Request Latency (p50)
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_rq_time IS NOT NULL
+      - STATS p50 = PERCENTILE(envoy.http.ingress_http.downstream_rq_time, 50)
+      primary:
+        field: p50
+        label: Latency p50 (ms)
+        format:
+          type: number
+          decimals: 2
+          suffix: " ms"
+
+  - title: Downstream Requests Over Time
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_rq_total IS NOT NULL
+      - STATS requests = MAX(envoy.http.ingress_http.downstream_rq_total) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: requests
+        label: Total requests (cumulative)
+        format:
+          type: number
+          decimals: 0
+
+  - title: Request Latency Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_rq_time IS NOT NULL
+      - STATS p50 = PERCENTILE(envoy.http.ingress_http.downstream_rq_time, 50), p95 = PERCENTILE(envoy.http.ingress_http.downstream_rq_time,
+        95), p99 = PERCENTILE(envoy.http.ingress_http.downstream_rq_time, 99) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: p50
+        label: p50 (ms)
+      - field: p95
+        label: p95 (ms)
+      - field: p99
+        label: p99 (ms)
+      legend:
+        visible: show
+        position: right
+
+  - title: Connection Duration (downstream_cx_length_ms)
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_cx_length_ms IS NOT NULL
+      - STATS avg_length = AVG(envoy.http.ingress_http.downstream_cx_length_ms), p95 = 
+        PERCENTILE(envoy.http.ingress_http.downstream_cx_length_ms, 95) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: avg_length
+        label: Avg length (ms)
+      - field: p95
+        label: p95 (ms)
+      legend:
+        visible: show
+        position: right
+
+  - title: Response Code Ratio (2xx / Completed)
+    size: {w: 24, h: 12}
+    esql:
+      type: gauge
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_rq_2xx IS NOT NULL AND envoy.http.ingress_http.downstream_rq_completed IS NOT NULL AND 
+        envoy.http.ingress_http.downstream_rq_completed > 0
+      - EVAL ratio = 100 * (envoy.http.ingress_http.downstream_rq_2xx / envoy.http.ingress_http.downstream_rq_completed)
+      - STATS pct = AVG(ratio) | EVAL _gauge_min = 0, _gauge_max = 100, _gauge_goal = 95
+      metric:
+        field: pct
+        label: 2xx / Completed (%)
+        format:
+          type: percent
+          decimals: 1
+      minimum:
+        field: _gauge_min
+      maximum:
+        field: _gauge_max
+      goal:
+        field: _gauge_goal
+      appearance:
+        shape: arc
+        ticks_position: auto
+
+  - title: Bytes Transferred Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_cx_rx_bytes_total IS NOT NULL OR envoy.http.ingress_http.downstream_cx_tx_bytes_total IS 
+        NOT NULL
+      - STATS rx = MAX(envoy.http.ingress_http.downstream_cx_rx_bytes_total), tx = MAX(envoy.http.ingress_http.downstream_cx_tx_bytes_total)
+        BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rx
+        label: Bytes RX
+        format:
+          type: bytes
+      - field: tx
+        label: Bytes TX
+        format:
+          type: bytes
+      legend:
+        visible: show
+        position: right
+
+  - title: Downstream HTTP Summary
+    size: {w: 48, h: 12}
+    esql:
+      type: datatable
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.http.ingress_http.downstream_cx_total IS NOT NULL
+      - STATS cx_total = MAX(envoy.http.ingress_http.downstream_cx_total), cx_active = MAX(envoy.http.ingress_http.downstream_cx_active), 
+        rq_total = MAX(envoy.http.ingress_http.downstream_rq_total), rq_completed = MAX(envoy.http.ingress_http.downstream_rq_completed), 
+        rq_2xx = MAX(envoy.http.ingress_http.downstream_rq_2xx)
+      - LIMIT 20
+      metrics:
+      - field: cx_total
+        label: Connections total
+      - field: cx_active
+        label: Connections active
+      - field: rq_total
+        label: Requests total
+      - field: rq_completed
+        label: Requests completed
+      - field: rq_2xx
+        label: 2xx responses
+
+- id: envoyproxy_otel-envoy-upstream-proxy
+  name: '[Envoy Proxy] Upstream & Proxy Health'
+  description: >-
+    Server health, memory, listener manager, and cluster lifecycle.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  filters:
+  - field: data_stream.dataset
+    equals: statsdreceiver
+  controls:
+  - type: options
+    label: Host
+    data_view: metrics-*
+    field: host.name
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: envoyproxy_otel-envoy-overview
+      - label: Downstream & HTTP
+        dashboard: envoyproxy_otel-envoy-downstream
+      - label: Upstream & Proxy Health
+        dashboard: envoyproxy_otel-envoy-upstream-proxy
+
+  - hide_title: true
+    size: {w: 16, h: 8}
+    markdown:
+      content: |
+        ## [Envoy Proxy] Upstream & Proxy Health
+
+        Proxy and cluster health:
+        - Server liveness and memory usage
+        - Listener manager status
+        - Cluster manager lifecycle
+        - Per-cluster metrics (when available)
+
+  - title: Server Live
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.server.live IS NOT NULL
+      - STATS live = MAX(envoy.server.live)
+      primary:
+        field: live
+        label: Live (1=yes)
+        format:
+          type: number
+          decimals: 0
+
+  - title: Server State
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.server.state IS NOT NULL
+      - STATS state = MAX(envoy.server.state)
+      primary:
+        field: state
+        label: State (0=LIVE)
+        format:
+          type: number
+          decimals: 0
+
+  - title: Memory Allocated
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.server.memory_allocated IS NOT NULL
+      - STATS mem = MAX(envoy.server.memory_allocated)
+      primary:
+        field: mem
+        label: Allocated (bytes)
+        format:
+          type: bytes
+          decimals: 2
+
+  - title: Memory Heap Size
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.server.memory_heap_size IS NOT NULL
+      - STATS heap = MAX(envoy.server.memory_heap_size)
+      primary:
+        field: heap
+        label: Heap size (bytes)
+        format:
+          type: bytes
+          decimals: 2
+
+  - title: Workers Started
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.listener_manager.workers_started IS NOT NULL
+      - STATS workers = MAX(envoy.listener_manager.workers_started)
+      primary:
+        field: workers
+        label: Workers started
+        format:
+          type: number
+          decimals: 0
+
+  - title: Concurrency
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.server.concurrency IS NOT NULL
+      - STATS concurrency = MAX(envoy.server.concurrency)
+      primary:
+        field: concurrency
+        label: Worker threads
+        format:
+          type: number
+          decimals: 0
+
+  - title: Memory Utilization
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.server.memory_allocated IS NOT NULL AND envoy.server.memory_heap_size IS NOT NULL AND envoy.server.memory_heap_size > 0
+      - STATS allocated = MAX(envoy.server.memory_allocated), heap = MAX(envoy.server.memory_heap_size)
+      - EVAL pct = allocated / heap
+      primary:
+        field: pct
+        label: Memory %
+        format:
+          type: percent
+          decimals: 1
+
+  - title: TLS Certificate Expiry
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.server.days_until_first_cert_expiring IS NOT NULL
+      - STATS days = MAX(envoy.server.days_until_first_cert_expiring)
+      primary:
+        field: days
+        label: Days until first cert expires
+        format:
+          type: number
+          decimals: 0
+
+  - title: Memory Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.server.memory_allocated IS NOT NULL OR envoy.server.memory_heap_size IS NOT NULL OR envoy.server.memory_physical_size IS
+        NOT NULL
+      - STATS allocated = MAX(envoy.server.memory_allocated), heap = MAX(envoy.server.memory_heap_size), physical = 
+        MAX(envoy.server.memory_physical_size) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: allocated
+        label: Allocated
+        format:
+          type: bytes
+      - field: heap
+        label: Heap size
+        format:
+          type: bytes
+      - field: physical
+        label: Physical
+        format:
+          type: bytes
+      legend:
+        visible: show
+        position: right
+
+  - title: Runtime Config Loads
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.runtime.load_success IS NOT NULL OR envoy.runtime.override_dir_not_exists IS NOT NULL
+      - STATS load_success = MAX(envoy.runtime.load_success), override_missing = MAX(envoy.runtime.override_dir_not_exists) BY time_bucket =
+        BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: load_success
+        label: Load success
+      - field: override_missing
+        label: Override dir missing
+      legend:
+        visible: show
+        position: right
+
+  - title: Listener Manager Over Time
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.listener_manager.total_listeners_active IS NOT NULL OR envoy.listener_manager.total_listeners_warming IS NOT NULL
+      - STATS active = MAX(envoy.listener_manager.total_listeners_active), warming = MAX(envoy.listener_manager.total_listeners_warming) BY 
+        time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: active
+        label: Active listeners
+      - field: warming
+        label: Warming listeners
+      legend:
+        visible: show
+        position: right
+
+  - title: Cluster Manager Over Time
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-statsdreceiver-default
+      - WHERE data_stream.dataset == "statsdreceiver"
+      - WHERE envoy.cluster_manager.active_clusters IS NOT NULL OR envoy.cluster_manager.warming_clusters IS NOT NULL OR 
+        envoy.cluster_manager.cluster_added IS NOT NULL
+      - STATS active = MAX(envoy.cluster_manager.active_clusters), warming = MAX(envoy.cluster_manager.warming_clusters), added = 
+        MAX(envoy.cluster_manager.cluster_added) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: active
+        label: Active clusters
+      - field: warming
+        label: Warming clusters
+      - field: added
+        label: Clusters added (cumulative)
+      legend:
+        visible: show
+        position: right

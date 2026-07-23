@@ -4,6 +4,10 @@
     - name: api
       type: group
       fields:
+        - name: api_error
+          type: flattened
+        - name: content_length
+          type: long
         - name: db_write_count
           type: long
         - name: db_main_txn_count
@@ -16,16 +20,45 @@
           type: float
         - name: db_cached_count
           type: long
+        - name: db_ci_replica_txn_max_duration_s
+          type: double
+        - name: db_ci_replica_write_count
+          type: long
         - name: db_ci_cached_count
           type: long
         - name: db_ci_count
           type: long
+        - name: db_ci_txn_max_duration_s
+          type: double
+        - name: db_ci_write_count
+          type: long
+        - name: meta
+          type: group
+          fields:
+            - name: feature_category
+              type: keyword
+            - name: client_id
+              type: keyword
+            - name: caller_id
+              type: keyword
+            - name: remote_ip
+              type: ip
+            - name: user
+              type: keyword
+            - name: gl_user_id
+              type: keyword
+            - name: organization_id
+              type: keyword
+            - name: project
+              type: keyword
+            - name: root_namespace
+              type: keyword
+            - name: user_id
+              type: long
         - name: mem_objects
           type: long
         - name: db_txn_count
           type: long
-        - name: meta.feature_category
-          type: keyword
         - name: mem_total_bytes
           type: long
         - name: db_ci_replica_wal_cached_count
@@ -40,19 +73,25 @@
           type: float
         - name: db_primary_wal_count
           type: long
-        - name: meta.client_id
-          type: keyword
         - name: db_replica_wal_count
           type: long
         - name: mem_mallocs
           type: long
         - name: db_replica_count
           type: long
+        - name: db_main_replica_txn_max_duration_s
+          type: double
         - name: db_main_replica_duration_s
           type: float
         - name: db_main_count
           type: long
+        - name: db_main_replica_write_count
+          type: long
+        - name: db_main_txn_max_duration_s
+          type: double
         - name: db_ci_replica_cached_count
+          type: long
+        - name: db_main_write_count
           type: long
         - name: worker_id
           type: keyword
@@ -72,11 +111,15 @@
           type: long
         - name: db_ci_replica_wal_count
           type: long
+        - name: db_primary_txn_max_duration_s
+          type: double
         - name: db_ci_replica_txn_duration_s
           type: float
         - name: db_ci_txn_count
           type: long
         - name: db_primary_cached_count
+          type: long
+        - name: db_primary_write_count
           type: long
         - name: db_main_replica_txn_duration_s
           type: float
@@ -84,24 +127,24 @@
           type: float
         - name: db_main_replica_count
           type: long
+        - name: db_replica_txn_max_duration_s
+          type: double
         - name: db_replica_duration_s
           type: float
+        - name: db_replica_write_count
+          type: long
         - name: target_duration_s
           type: float
         - name: db_replica_wal_cached_count
           type: long
         - name: db_count
           type: long
-        - name: meta.caller_id
-          type: keyword
         - name: db_main_replica_txn_count
           type: long
         - name: db_main_wal_count
           type: long
         - name: db_main_cached_count
           type: long
-        - name: meta.remote_ip
-          type: ip
         - name: db_replica_txn_count
           type: long
         - name: db_main_replica_cached_count
@@ -126,16 +169,24 @@
           type: long
         - name: correlation_id
           type: keyword
+        - name: exclusive_lock_hold_duration_s
+          type: double
+        - name: exclusive_lock_requested_count
+          type: long
+        - name: exclusive_lock_wait_duration_s
+          type: double
         - name: time
           type: keyword
         - name: db_ci_txn_duration_s
           type: float
         - name: db_main_duration_s
           type: float
+        - name: gitaly_duration_s
+          type: double
+        - name: host
+          type: keyword
         - name: redis_calls
           type: long
-        - name: meta.user
-          type: keyword
         - name: redis_read_bytes
           type: long
         - name: redis_sessions_calls
@@ -152,9 +203,35 @@
           type: long
         - name: redis_sessions_allowed_cross_slot_calls
           type: long
+        - name: db
+          type: double
+        - name: duration
+          type: float
+        - name: gitaly_calls
+          type: long
+        - name: gitaly_duration
+          type: float
+        - name: queue_duration
+          type: float
+        - name: view
+          type: double
         - name: params
           type: group
           fields:
+            - name: key
+              type: keyword
+            - name: value
+              type: keyword
+            - name: action
+              type: keyword
+            - name: changes
+              type: keyword
+            - name: key_id
+              type: keyword
+            - name: name
+              type: keyword
+            - name: secret_token
+              type: keyword
             - name: info
               type: group
               fields:
@@ -193,6 +270,12 @@
               type: keyword
             - name: last_update
               type: keyword
+        - name: path
+          type: keyword
+        - name: path_traversal_check_duration_s
+          type: double
+        - name: pid
+          type: keyword
         - name: redis_sessions_duration_s
           type: float
         - name: redis_duration_s
@@ -206,9 +289,49 @@
         - name: rate_limiting_gates
           type: group
           fields: []
+        - name: redis_queues_calls
+          type: long
+        - name: redis_queues_duration_s
+          type: double
+        - name: redis_queues_metadata_calls
+          type: long
+        - name: redis_queues_metadata_duration_s
+          type: double
+        - name: redis_queues_metadata_read_bytes
+          type: long
+        - name: redis_queues_metadata_write_bytes
+          type: long
+        - name: redis_queues_read_bytes
+          type: long
+        - name: redis_queues_write_bytes
+          type: long
+        - name: redis_rate_limiting_calls
+          type: long
+        - name: redis_rate_limiting_duration_s
+          type: double
+        - name: redis_rate_limiting_read_bytes
+          type: long
+        - name: redis_rate_limiting_write_bytes
+          type: long
+        - name: redis_repository_cache_allowed_cross_slot_calls
+          type: long
+        - name: redis_repository_cache_calls
+          type: long
+        - name: redis_repository_cache_duration_s
+          type: double
+        - name: redis_repository_cache_read_bytes
+          type: long
+        - name: redis_repository_cache_write_bytes
+          type: long
         - name: redis_allowed_cross_slot_calls
           type: long
-        - name: meta.user_id
+        - name: redis_shared_state_calls
+          type: long
+        - name: redis_shared_state_duration_s
+          type: double
+        - name: redis_shared_state_read_bytes
+          type: long
+        - name: redis_shared_state_write_bytes
           type: long
         - name: redis_feature_flag_duration_s
           type: float
@@ -221,7 +344,7 @@
         - name: token_type
           type: keyword
         - name: redis_cache_duration_s
-          type: float
+          type: double
         - name: redis_cache_write_bytes
           type: long
         - name: redis_cache_read_bytes

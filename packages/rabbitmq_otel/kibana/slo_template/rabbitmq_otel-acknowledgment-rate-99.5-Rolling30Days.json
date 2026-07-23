@@ -1,0 +1,71 @@
+{
+  "attributes": {
+    "name": "[RabbitMQ OTel] Message acknowledgment rate 99.5% rolling 30 days",
+    "description": "This SLO tracks the proportion of delivered messages that are acknowledged by consumers within each timeslice. Low acknowledgment rate indicates consumer failures, slow processing, or application issues. Target: 99.5% of 5-minute windows show (acked delta / delivered delta) >= 99.5% over a rolling 30-day period.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"rabbitmqreceiver.otel\" and resource.attributes.rabbitmq.queue.name: *",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "rabbitmq.message.acknowledged",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "rabbitmq.message.acknowledged",
+              "filter": ""
+            },
+            {
+              "name": "C",
+              "aggregation": "max",
+              "field": "rabbitmq.message.delivered",
+              "filter": ""
+            },
+            {
+              "name": "D",
+              "aggregation": "min",
+              "field": "rabbitmq.message.delivered",
+              "filter": ""
+            }
+          ],
+          "equation": "(A-B)/(C-D)",
+          "comparator": "GTE",
+          "threshold": 0.995
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "5m"
+    },
+    "tags": [
+      "rabbitmq",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.rabbitmq.queue.name",
+      "resource.attributes.rabbitmq.vhost.name"
+    ]
+  },
+  "id": "rabbitmq_otel-acknowledgment-rate-99.5-Rolling30Days",
+  "type": "slo_template",
+  "artifacts": {
+    "dashboards": [
+      { "id": "rabbitmq_otel-overview" },
+      { "id": "rabbitmq_otel-queues" }
+    ]
+  }
+}

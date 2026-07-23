@@ -1,0 +1,112 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when TCC access is granted for multiple user folders like Desktop, Downloads and Documents in quick succession. Many information stealers require TCC permissions to access these locations and will prompt users to grant access for data exfiltration.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Suspicious TCC Access Granted for User Folders",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious TCC Access Granted for User Folders\n\nThe Transparency, Consent, and Control (TCC) framework is macOS's privacy protection mechanism that controls application access to sensitive resources like the Desktop, Documents, and Downloads folders. Threat actors may manipulate the TCC database to grant unauthorized access to these protected locations, enabling data theft without triggering user consent prompts. This detection rule identifies when scripting interpreters or command-line tools create multiple TCC permission grants in rapid succession, indicating potential automated TCC manipulation.\n\n### Possible investigation steps\n\n- Review the Effective_process.name and Effective_process.executable fields to identify which process is creating TCC permission grants and assess whether this is expected behavior.\n- Examine the Tcc.service values to understand which protected folders (Desktop, Documents, Downloads) were granted access and evaluate the sensitivity of data in those locations.\n- Investigate the Effective_process.parent.executable and command_line to trace how the TCC-modifying process was launched and identify the initial execution vector.\n- Review the timing and count of TCC grants to determine if this is an automated batch operation characteristic of malicious activity.\n- Check the TCC.db database directly using sqlite3 to review all permission grants and identify any unauthorized entries.\n- Correlate with file access events to determine if the granted permissions were subsequently used to access sensitive data.\n- Review the user.name associated with the activity and verify whether they would have legitimate reasons to grant these permissions.\n\n### False positive analysis\n\n- Legitimate applications during first launch or installation may request TCC access, but typically through standard user prompts rather than direct database modification. Verify if application installation was expected.\n- Enterprise MDM solutions may configure TCC permissions during device setup or policy enforcement. Confirm with IT operations if MDM deployments were scheduled.\n- Automation and scripting workflows may require TCC access for legitimate file operations. Review with the script owner to confirm legitimacy.\n- System administration tasks may involve TCC manipulation for specific operational requirements. Verify with IT staff before dismissing.\n\n### Response and remediation\n\n- Immediately revoke the unauthorized TCC access grants by removing the malicious entries from the TCC.db database or resetting TCC permissions for the affected application.\n- Terminate the suspicious process that created the TCC grants and prevent it from restarting.\n- Isolate the affected macOS system to prevent potential data exfiltration using the newly granted permissions.\n- Conduct a forensic review of file access events to determine if sensitive data was accessed using the unauthorized TCC permissions.\n- Scan the system for additional malware, persistence mechanisms, or indicators of compromise.\n- Reset TCC permissions to their default state using tccutil reset or by deleting and recreating the TCC.db database.\n- Review other systems in the environment for similar TCC manipulation activity.\n- Escalate to the incident response team for comprehensive investigation if data theft is suspected.\n",
+        "query": "FROM logs-endpoint.events.*\n| WHERE host.os.type == \"macos\" \n    AND event.action == \"tcc_modify\" \n    AND Tcc.right == \"allowed\"\n    AND Tcc.update_type == \"create\"\n    AND Tcc.service IN (\"SystemPolicyDocumentsFolder\", \"SystemPolicyDownloadsFolder\", \"SystemPolicyDesktopFolder\")\n    AND Effective_process.name RLIKE \"(bash|zsh|sh|osascript|python.*|perl.*|ruby.*|node|Terminal|iTerm2|ghostty)\"\n| STATS \n    Esql.grant_count = COUNT(*),\n    Esql.unique_folders = COUNT_DISTINCT(Tcc.service),  \n    Esql.folders = VALUES(Tcc.service)\n  BY Effective_process.entity_id, Effective_process.executable, host.name, user.name\n| WHERE Esql.unique_folders >= 2\n| KEEP Esql.*, Effective_process.entity_id, Effective_process.executable, host.name, user.name\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Effective_process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Effective_process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.folders",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.grant_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.unique_folders",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "ffd8b5e9-aa63-42b3-aead-6fdb170da9a3",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Tactic: Collection",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.006",
+                                "name": "TCC Manipulation",
+                                "reference": "https://attack.mitre.org/techniques/T1548/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1005",
+                        "name": "Data from Local System",
+                        "reference": "https://attack.mitre.org/techniques/T1005/"
+                    }
+                ]
+            }
+        ],
+        "type": "esql",
+        "version": 1
+    },
+    "id": "ffd8b5e9-aa63-42b3-aead-6fdb170da9a3_1",
+    "type": "security-rule"
+}

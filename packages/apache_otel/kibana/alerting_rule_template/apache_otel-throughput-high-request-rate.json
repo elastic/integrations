@@ -1,0 +1,43 @@
+{
+  "id": "apache_otel-throughput-high-request-rate",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "description": "Alerts when the request rate exceeds 1000 requests/minute on a host. High rates can be legitimate traffic, but should be corroborated against capacity and security signals.",
+    "name": "[Apache OTel] High request rate",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "Apache",
+      "OTEL",
+      "Throughput"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Apache high request rate\n\n### What fired\nComputed request rate (delta of `apache.requests` divided by elapsed seconds) exceeded 1000 requests/minute.\n\n### Why it matters\nA sudden traffic increase can legitimately precede a marketing event or cause a DoS-style overload. Either way, the server's remaining capacity headroom must be verified against worker pool utilisation and load averages.\n\n### Triage\n1. Overview dashboard: correlate request rate with busy-worker ratio and load averages.\n2. Inspect `apache.traffic` rate \u2014 abnormal request-to-byte ratio may indicate an attack.\n3. Look for spikes in error-adjacent signals (async connection accumulation, `no-requests-received` preceding the spike, etc.).\n4. Use upstream CDN/WAF logs if available to identify source IPs / patterns.\n\n### Remediation\n- If legitimate, scale horizontally or raise `MaxRequestWorkers`.\n- If attack, engage WAF / rate-limit at the edge.\n\n### Tuning\n- 1000 req/min is a reasonable small-to-mid tier threshold. Adjust to your baseline \u2014 compare against the 95th-percentile traffic over the past 7 days.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the request rate exceeds the threshold.\n// High request rate may indicate unexpected traffic spikes or potential DDoS attacks.\n// Uses delta calculation for counter metric (requests is cumulative).\n// The alert is grouped by host name.\n// You can adjust the threshold value by modifying the request_rate in the WHERE clause (default: > 1000 requests/min).\nFROM metrics-apachereceiver.otel-*\n| STATS max_requests = MAX(metrics.apache.requests), min_requests = MIN(metrics.apache.requests),\n        first_ts = MIN(@timestamp), last_ts = MAX(@timestamp)\n  BY resource.attributes.host.name\n| EVAL request_delta = max_requests - min_requests\n| EVAL request_delta = CASE(request_delta >= 0, request_delta, 0)\n| EVAL elapsed_sec = TO_DOUBLE(TO_LONG(last_ts) - TO_LONG(first_ts)) / 1000\n| WHERE elapsed_sec >= 60\n| EVAL request_rate = (request_delta / elapsed_sec) * 60\n| WHERE request_rate > 1000\n| EVAL request_rate = ROUND(request_rate, 2)\n| KEEP resource.attributes.host.name, request_delta, request_rate, elapsed_sec\n| SORT request_rate DESC"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

@@ -1,0 +1,66 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a burst of DHCP DISCOVER messages with an unusually high number of distinct client hardware addresses observed on the same capture segment within a short window. Attackers flood DISCOVER requests with spoofed or random MAC addresses to exhaust the DHCP lease pool, often as a precursor to deploying a rogue DHCP server.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential DHCP Starvation via High Client MAC Cardinality",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential DHCP Starvation via High Client MAC Cardinality\n\nDHCP starvation floods a segment with DISCOVER messages that use many distinct client hardware addresses to consume\navailable leases. This rule keys on high DHCP DISCOVER volume paired with high `client_mac` cardinality seen by the\nsame network capture sensor, which is the wire-level starvation pattern and does not depend on host operating system.\n\n### Possible investigation steps\n\n- Review `Esql.count_distinct_client_macs` and sample values in `Esql.values_client_macs` to confirm the burst is not a\n  single client retrying with one address.\n- Identify the L2 segment or VLAN monitored by `Esql.observer` and check DHCP server logs for pool exhaustion, NAK spikes,\n  or lease-denial events during the same window.\n- Look for follow-on rogue DHCP OFFER/ACK activity on the segment, including the Multiple DHCP Servers Responding to the\n  Same Transaction rule.\n- Locate the transmitting host using switch CAM tables if Ethernet source addresses are available in raw capture exports.\n\n### False positive analysis\n\n- Large Wi-Fi reconnect or onboarding events can temporarily increase DISCOVER volume. Compare against historical\n  baselines for the same `Esql.observer` and time of day before treating as malicious.\n- Virtualization or VDI provisioning bursts may generate many distinct client MAC addresses during imaging. Exclude known\n  provisioning VLANs or sensors when the workflow is confirmed.\n\n### Response and remediation\n\n- Enable or verify DHCP snooping and rate limits on the affected access switches.\n- Block or isolate the source host if link-layer evidence confirms a single transmitter is generating the flood.\n- Restore DHCP service capacity and monitor for rogue OFFER/ACK responses after the starvation attempt.\n",
+        "query": "from logs-network_traffic.dhcpv4-*, packetbeat-*\n| eval\n    Esql.message_type = TO_LOWER(COALESCE(network_traffic.dhcpv4.option.message_type, dhcpv4.option.message_type)),\n    Esql.client_mac = COALESCE(network_traffic.dhcpv4.client_mac, dhcpv4.client_mac),\n    Esql.observer_hostname = COALESCE(host.name, observer.hostname)\n| where Esql.message_type == \"discover\" and Esql.client_mac is not null and Esql.observer_hostname is not null\n| eval Esql.time_window = DATE_TRUNC(1 minute, @timestamp)\n| stats\n    Esql.dhcpv4_discover_count = COUNT(*),\n    Esql.dhcpv4_client_mac_count_distinct = COUNT_DISTINCT(Esql.client_mac),\n    Esql.dhcpv4_client_mac_values = MV_SLICE(VALUES(Esql.client_mac), 0, 10)\n  by Esql.time_window, Esql.observer_hostname\n| where Esql.dhcpv4_discover_count >= 75 and Esql.dhcpv4_client_mac_count_distinct >= 50\n| keep Esql.observer_hostname, Esql.time_window, Esql.dhcpv4_discover_count, Esql.dhcpv4_client_mac_count_distinct, Esql.dhcpv4_client_mac_values\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1498/",
+            "https://www.leviathansecurity.com/blog/tunnelvision",
+            "https://wazuh.com/blog/monitoring-dhcp-starvation-attack-with-suricata-and-wazuh/"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "b5f94e78-fb4d-4f4b-879e-e51ea667d09c",
+        "setup": "## Setup\n\nThis rule requires the Elastic network_traffic (Packetbeat) integration capturing DHCP (UDP 67/68) on the broadcast\nsegment where clients acquire leases, either Packetbeat running on the segment or a SPAN/mirror feeding it.\n\nZeek and flow-only firewall sources are intentionally not supported: this rule requires per-DISCOVER DHCP transaction\nfields and client hardware address values (`client_mac`) to measure high client MAC cardinality in a short time window.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Network",
+            "Use Case: Threat Detection",
+            "Use Case: Network Security Monitoring",
+            "Tactic: Impact",
+            "Data Source: Network Traffic",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1498",
+                        "name": "Network Denial of Service",
+                        "reference": "https://attack.mitre.org/techniques/T1498/",
+                        "subtechnique": [
+                            {
+                                "id": "T1498.001",
+                                "name": "Direct Network Flood",
+                                "reference": "https://attack.mitre.org/techniques/T1498/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "b5f94e78-fb4d-4f4b-879e-e51ea667d09c_1",
+    "type": "security-rule"
+}

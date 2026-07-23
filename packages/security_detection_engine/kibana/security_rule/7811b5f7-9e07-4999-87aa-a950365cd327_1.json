@@ -1,0 +1,118 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects control-plane mutations to AWS Bedrock knowledge bases and their backing RAG data sources via CloudTrail. An adversary with access to Bedrock Agent APIs can poison the corpus that RAG-enabled models treat as authoritative by ingesting attacker-controlled documents (IngestKnowledgeBaseDocuments, StartIngestionJob), deleting legitimate documents (DeleteKnowledgeBaseDocuments), or repointing/altering the data source itself (CreateDataSource, UpdateDataSource, DeleteDataSource, UpdateKnowledgeBase). Because downstream applications and users trust model answers grounded in this stored data, tampering with the corpus is a stored data manipulation that can drive misinformation, fraud, or manipulated decisions at inference time. This is a New Terms rule that looks for the first time a given identity ARN performs one of these knowledge base or data source mutations within the history window.",
+        "false_positives": [
+            "Legitimate knowledge base maintenance, content onboarding, and scheduled re-ingestion performed by data engineering teams, MLOps automation, or infrastructure-as-code pipelines will generate these events. Validate the calling identity, user agent, and source IP against known automation and approved operators. If a known maintenance workflow is causing noise, it can be exempted from this rule."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.provider",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Bedrock Knowledge Base or RAG Data Source Tampering",
+        "new_terms_fields": [
+            "cloud.account.id"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating AWS Bedrock Knowledge Base or RAG Data Source Tampering\n\nAWS Bedrock knowledge bases provide Retrieval-Augmented Generation (RAG) by grounding model responses in a stored\ncorpus that is synchronized from a configured data source. Because RAG-enabled applications present these grounded\nanswers as authoritative, an adversary who can ingest, delete, or repoint the underlying corpus can poison the answers\nreturned to downstream users and systems. This rule detects control-plane changes to knowledge bases and data sources\nthat could enable such corpus poisoning.\n\n#### Possible investigation steps\n\n- **Identify the actor and context**\n  - Review `aws.cloudtrail.user_identity.arn`, `aws.cloudtrail.user_identity.type`, and\n    `aws.cloudtrail.user_identity.access_key_id`.\n  - Examine `source.ip`, `user_agent.original`, and `aws.cloudtrail.user_identity.invoked_by` to determine whether the\n    change came from an approved operator, automation, or an unexpected origin.\n  - Confirm a related change request exists (content update, data source migration, scheduled ingestion).\n- **Validate the specific action**\n  - Inspect `event.action` and `aws.cloudtrail.flattened.request_parameters` to identify the knowledge base, data\n    source, and any S3 bucket / ingestion configuration referenced.\n  - For `CreateDataSource` / `UpdateDataSource`, verify the data source location (e.g., S3 bucket) is org-owned and not\n    attacker-controlled.\n  - For `IngestKnowledgeBaseDocuments` / `StartIngestionJob`, review what content was ingested and from where.\n  - For `DeleteKnowledgeBaseDocuments` / `DeleteDataSource`, determine whether legitimate content was removed.\n- **Correlate activity**\n  - Look for prior enumeration of Bedrock resources or anomalous IAM/STS activity from the same identity.\n  - Review `cloud.account.id` and `cloud.region` to confirm the change occurred where expected.\n\n### False positive analysis\n\n- **Planned content maintenance**: Routine ingestion, document updates, and re-syncs by data teams or MLOps automation\n  are expected. Validate against change tickets and known automation roles.\n- **Infrastructure-as-code**: Pipelines may create or update data sources during deployments. Confirm the source IP and\n  ARN match expected automation.\n\n### Response and remediation\n\n- If unauthorized, suspend or disable the implicated knowledge base and data source to prevent further poisoned\n  retrieval, and revert the corpus to a known-good state.\n- Disable or rotate the credentials identified in `aws.cloudtrail.user_identity.access_key_id` if compromise is\n  suspected.\n- Audit recent ingestion jobs and document changes, and validate the integrity of the data source location.\n- Restrict Bedrock Agent knowledge base and data source mutation permissions to a small set of trusted roles.\n",
+        "query": "data_stream.dataset: \"aws.cloudtrail\" and\n    event.provider: \"bedrock.amazonaws.com\" and\n    event.action: (\n        \"IngestKnowledgeBaseDocuments\" or\n        \"DeleteKnowledgeBaseDocuments\" or\n        \"UpdateKnowledgeBase\" or\n        \"CreateDataSource\" or\n        \"UpdateDataSource\" or\n        \"DeleteDataSource\" or\n        \"StartIngestionJob\" or\n        \"DeleteKnowledgeBase\"\n    ) and\n    event.outcome: \"success\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_Operations_Agents_for_Amazon_Bedrock.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "7811b5f7-9e07-4999-87aa-a950365cd327",
+        "setup": "## Setup\n\nThis rule requires the AWS CloudTrail integration. The data source and knowledge base configuration actions are management \nevents (captured by default), but the direct document operations (`IngestKnowledgeBaseDocuments`, `DeleteKnowledgeBaseDocuments`) \nare Bedrock CloudTrail **data events** that are off by default. Without Bedrock data-event logging enabled on the trail, this rule \nprovides only **partial coverage** \u2014 it will see config changes but not direct document ingestion/deletion, the primary poisoning \nvector. Enable Bedrock data-event logging for full coverage.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: LLM",
+            "Data Source: AWS",
+            "Data Source: AWS CloudTrail",
+            "Data Source: Amazon Web Services",
+            "Data Source: Amazon Bedrock",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Tactic: Impact"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1565",
+                        "name": "Data Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1565/",
+                        "subtechnique": [
+                            {
+                                "id": "T1565.001",
+                                "name": "Stored Data Manipulation",
+                                "reference": "https://attack.mitre.org/techniques/T1565/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "7811b5f7-9e07-4999-87aa-a950365cd327_1",
+    "type": "security-rule"
+}

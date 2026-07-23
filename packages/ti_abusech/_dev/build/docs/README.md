@@ -21,7 +21,7 @@ This integration collects threat intelligence indicators into the following data
 - `malwarebazaar`: Collects malware payloads from MalwareBazaar via [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
 - `sslblacklist`: Collects SSL certificate based threat indicators blacklisted on SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
 - `threatfox`: Collects threat indicators from ThreatFox via [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
-- `url`: Collects malware URL based threat indicators from URLhaus via [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
+- `url`: Collects recently added malware URL based threat indicators from URLhaus via [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent). The API returns at most 1000 entries from the last 3 days. The **Interval** setting must be short enough to avoid exceeding the 1000-entry limit between polls; otherwise the oldest URLs added in that window will be lost.
 
 ### Supported use cases
 
@@ -94,6 +94,14 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Troubleshooting
 
+- **Upgrading to v4.0.0**: Version 4.0.0 switches the URL data stream from the full export ZIP endpoint (`/downloads/json`) to the incremental JSON API (`/v1/urls/recent/`). When upgrading from a previous version, the URL setting in your integration policy retains the old value and must be updated manually:
+    1. In Kibana, navigate to **Fleet** > **Agent policies**.
+    2. Select the policy containing the abuse.ch integration.
+    3. Edit the abuse.ch integration.
+    4. Under the **Malware URLs** data stream, change the **URL** setting from `https://urlhaus.abuse.ch/downloads/json` to `https://urlhaus-api.abuse.ch/v1/urls/recent/`.
+    5. Select **Save integration**.
+
+    If the URL is not updated, the integration will log an error: `the URL is set to the deprecated full export endpoint (/downloads/json) which is no longer supported`. Additionally, the `labels.interval` field has been removed from URL data stream documents. If you have saved queries, detection rules, or dashboards that reference this field, remove those references. A new **IOC Expiration Duration** setting (default `90d`) now controls how long indicators remain active. Review this value and adjust it to match your organization's retention requirements.
 - When creating the **Auth Key** inside the [abuse.ch authentication](https://auth.abuse.ch/) portal, make sure you connect at least one additional authentication provider to ensure seemless access to the abuse.ch platform.
 - Check for captured ingestion errors inside Kibana. Ingestion errors, including API errors, are captured into `error.message` field.
     1. Navigate to **Analytics** > **Discover**.
@@ -181,11 +189,11 @@ This integration datasets use the following APIs:
 - `malwarebazaar`: [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
 - `sslblacklist`: [SSLBL API](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
 - `threatfox`: [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
-- `url`: [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
+- `url`: [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent).
 
 ### Expiration of Indicators of Compromise (IOCs)
 
-All abuse.ch datasets now support indicator expiration. For the `URL` dataset, a full list of active threat indicators are ingested at every interval. For other datasets, namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the threat indicators are expired after the duration `IOC Expiration Duration` is configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to make sure only active threat indicators are available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired threat indicators. The indicator match rules and dashboards are updated to list only active threat indicators.
+All abuse.ch datasets now support indicator expiration. The `URL`, `Malware`, `MalwareBazaar`, and `ThreatFox` datasets expire threat indicators after the duration configured in the `IOC Expiration Duration` setting (default `90d`). An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to make sure only active threat indicators are available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired threat indicators. The indicator match rules and dashboards are updated to list only active threat indicators.
 Destinations indices are aliased to `logs-ti_abusech_latest.<data_stream_name>`.
 
 | Source Data stream                  | Destination Index Pattern                        | Destination Alias                       |

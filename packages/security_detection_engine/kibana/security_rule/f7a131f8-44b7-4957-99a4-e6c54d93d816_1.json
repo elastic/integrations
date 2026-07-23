@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the execution of kubeletctl on Linux hosts. Kubeletctl is a command-line tool that can be used to interact with the Kubelet API directly, simplifying access to Kubelet endpoints that can be used for discovery and, in some cases, lateral movement within Kubernetes environments.",
+        "false_positives": [
+            "Administrators or developers may execute kubeletctl during legitimate troubleshooting or incident response to validate Kubelet API connectivity or enumerate pods. Confirm the user/session and change window before escalating."
+        ],
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*",
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Kubeletctl Execution",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Kubeletctl Execution\n\nThis alert flags kubeletctl execution on a Linux host. Kubeletctl provides direct access to the node\u2019s Kubelet API and can\nbe used to enumerate pods and nodes and attempt actions such as exec/attach/portForward. A common attacker pattern is\nrunning `kubeletctl scan` to find reachable Kubelet endpoints, then using `pods` or `exec/attach` for follow-on access.\n\n### Possible investigation steps\n\n- Review the full command line to identify the intended operation (scan/pods/exec/attach/portForward) and the target\n  Kubelet endpoint (node IP/hostname and port via `-s`/`--server`).\n- Correlate with host and container telemetry for connections to Kubelet ports (commonly 10250/10255) and look for\n  scanning patterns across multiple nodes.\n- Check whether Kubernetes credentials were accessed or used (service account tokens, kubeconfigs, client certs) and\n  correlate with Kubernetes audit logs for follow-on actions.\n\n### False positive analysis\n\n- Approved operational debugging or incident response activity that uses kubeletctl for diagnostics.\n\n### Response and remediation\n\n- Restrict access to Kubelet ports at the network layer and harden Kubelet authentication/authorization.\n- Rotate/revoke any exposed Kubernetes credentials and investigate for follow-on discovery or execution attempts.\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action in (\"exec\", \"executed\") and \n(\n  process.name == \"kubeletctl\" or\n  (process.args in (\"run\", \"exec\", \"scan\", \"pods\", \"runningpods\", \"attach\", \"portForward\", \"cri\", \"pid2pod\") and process.args:(\"*:10250*\", \"*:10255*\"))\n)\n",
+        "references": [
+            "https://www.cyberark.com/resources/threat-research-blog/using-kubelet-client-to-attack-the-kubernetes-cluster",
+            "https://github.com/cyberark/kubeletctl"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "f7a131f8-44b7-4957-99a4-e6c54d93d816",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Container",
+            "Domain: Kubernetes",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend",
+            "Data Source: Auditd Manager",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1609",
+                        "name": "Container Administration Command",
+                        "reference": "https://attack.mitre.org/techniques/T1609/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "f7a131f8-44b7-4957-99a4-e6c54d93d816_1",
+    "type": "security-rule"
+}

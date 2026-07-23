@@ -1,0 +1,75 @@
+{
+    "attributes": {
+        "created_at": "2026-01-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Collects browser history from all supported browsers, filtering out common legitimate domains to reduce noise for forensic investigations. IMPORTANT: Requires Elastic Agent v9.3.0+. Automatically discovers Chrome, Edge, Firefox, and Safari histories without ATC configuration. Returns potentially suspicious URLs with timestamps, titles, browser names, user profiles, and navigation context. Cross-platform (Windows, macOS, Linux).",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["web"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["access"]
+                }
+            },
+            {
+                "key": "event.created",
+                "value": {
+                    "field": "event_time"
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.browser_history_suspicious"
+                }
+            },
+            {
+                "key": "url.full",
+                "value": {
+                    "field": "url"
+                }
+            },
+            {
+                "key": "url.domain",
+                "value": {
+                    "field": "domain"
+                }
+            },
+            {
+                "key": "user_agent.name",
+                "value": {
+                    "field": "browser"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": ["osquery", "browser_history", "forensics", "threat_hunting", "filtered"]
+                }
+            }
+        ],
+        "id": "browser_history_suspicious_elastic",
+        "interval": "3600",
+        "platform": "linux,darwin,windows",
+        "query": "-- Browser history from Elastic osquery extension\n-- Supports: Chrome, Edge, Firefox, Safari\n-- Filters out common legitimate domains (allowlist) to surface suspicious/malicious activity\n-- NOTE: Avoids regex_match() to prevent Windows failures due to the 256-byte regex limit\nWITH\n  allow_suffix(suffix) AS (\n    VALUES\n      -- Search engines\n      ('google.com'), ('googleapis.com'), ('gstatic.com'), ('bing.com'), ('yahoo.com'), ('duckduckgo.com'), ('baidu.com'), ('yandex.ru'),\n      -- Microsoft ecosystem\n      ('microsoft.com'), ('microsoftonline.com'), ('office.com'), ('office365.com'), ('windows.net'), ('windows.com'), ('live.com'), ('outlook.com'), ('azure.com'), ('visualstudio.com'),\n      -- Apple ecosystem\n      ('apple.com'), ('icloud.com'), ('itunes.com'),\n      -- Amazon/AWS\n      ('amazon.com'), ('amazonaws.com'), ('aws.amazon.com'),\n      -- Social media\n      ('facebook.com'), ('fb.com'), ('instagram.com'), ('twitter.com'), ('x.com'), ('linkedin.com'), ('reddit.com'), ('pinterest.com'), ('tiktok.com'), ('snapchat.com'), ('whatsapp.com'), ('discord.com'), ('telegram.org'),\n      -- Video/Streaming\n      ('youtube.com'), ('youtu.be'), ('netflix.com'), ('hulu.com'), ('disneyplus.com'), ('twitch.tv'), ('vimeo.com'), ('spotify.com'), ('soundcloud.com'),\n      -- Shopping/Commerce\n      ('ebay.com'), ('walmart.com'), ('target.com'), ('bestbuy.com'), ('etsy.com'), ('shopify.com'), ('paypal.com'), ('stripe.com'),\n      -- News/Media\n      ('cnn.com'), ('bbc.com'), ('bbc.co.uk'), ('nytimes.com'), ('reuters.com'), ('wsj.com'), ('theguardian.com'), ('forbes.com'), ('bloomberg.com'),\n      -- Cloud/Storage\n      ('dropbox.com'), ('box.com'), ('onedrive.com'), ('drive.google.com'),\n      -- CDN/Infrastructure\n      ('cloudflare.com'), ('akamai.net'), ('akamaized.net'), ('fastly.net'), ('cloudfront.net'), ('azureedge.net'), ('cdnjs.com'), ('jsdelivr.net'), ('unpkg.com'),\n      -- Developer/Tech\n      ('github.com'), ('github.io'), ('gitlab.com'), ('stackoverflow.com'), ('stackexchange.com'), ('npmjs.com'), ('docker.com'), ('atlassian.com'), ('atlassian.net'), ('jira.com'), ('bitbucket.org'), ('mozilla.org'), ('mozilla.com'),\n      -- Business tools\n      ('slack.com'), ('zoom.us'), ('zoom.com'), ('teams.microsoft.com'), ('salesforce.com'), ('hubspot.com'), ('zendesk.com'), ('intercom.com'), ('notion.so'),\n      -- Security vendors\n      ('elastic.co'), ('splunk.com'), ('crowdstrike.com'), ('virustotal.com'), ('malwarebytes.com'), ('norton.com'), ('mcafee.com'), ('kaspersky.com'),\n      -- Other common legitimate\n      ('wikipedia.org'), ('wikimedia.org'), ('archive.org'), ('w3.org'), ('jquery.com'), ('bootstrapcdn.com'), ('fontawesome.com'), ('fonts.googleapis.com'), ('recaptcha.net'), ('googletagmanager.com'), ('google-analytics.com'), ('doubleclick.net'), ('googlesyndication.com')\n  ),\n  -- Handle ccTLD variants that were previously expressed as regex (e.g. google.co.[a-z]{2})\n  allow_glob(pattern) AS (\n    VALUES\n      ('google.co.[a-z][a-z]'), ('*.google.co.[a-z][a-z]'),\n      ('amazon.co.[a-z][a-z]'), ('*.amazon.co.[a-z][a-z]')\n  )\nSELECT\n  datetime AS event_time,\n  url,\n  title,\n  browser,\n  user AS username,\n  domain,\n  transition_type\nFROM elastic_browser_history\nWHERE\n  NOT (\n    EXISTS (\n      SELECT 1\n      FROM allow_suffix s\n      WHERE lower(domain) = s.suffix\n         OR lower(domain) LIKE '%.' || s.suffix\n    )\n    OR EXISTS (\n      SELECT 1\n      FROM allow_glob g\n      WHERE lower(domain) GLOB g.pattern\n    )\n  )\nORDER BY event_time DESC;",
+        "updated_at": "2026-01-27T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-b352f3c9-c630-47ec-83bb-5887fe0bb874",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-01-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

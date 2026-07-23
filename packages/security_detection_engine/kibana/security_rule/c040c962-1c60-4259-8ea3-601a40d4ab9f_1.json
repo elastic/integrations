@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the first occurrence of a non-system GKE identity establishing an exec session into a pod. kubectl exec enables interactive command execution inside workloads and is a common post-compromise technique to access secrets and expand access.",
+        "false_positives": [
+            "Administrators routinely exec into pods for troubleshooting. Baseline expected users and target pods, then exclude known break-glass identities."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE User Exec into Pod",
+        "new_terms_fields": [
+            "user.email",
+            "orchestrator.resource.name"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating GKE User Exec into Pod\n\nThis new-terms rule alerts on the first exec into a given pod by a user identity in the lookback window.\n\n### Investigation steps\n\n- Review `user.email`, `orchestrator.resource.name`, `source.ip`, and `user_agent.original`.\n- Determine whether the target pod holds sensitive data or cluster credentials.\n- Correlate with secret access or RBAC changes from the same identity.\n\n### False positives\n\n- Approved admin debugging; exclude stable operator identities after review.",
+        "query": "data_stream.dataset:gcp.audit and event.action:(\"io.k8s.core.v1.pods.exec.create\" or \"io.k8s.core.v1.pods.exec.get\") and\nnot user.email:system\\:*\n",
+        "references": [
+            "https://kubernetes.io/docs/tasks/debug/debug-application/get-shell-running-container/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c040c962-1c60-4259-8ea3-601a40d4ab9f",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1609",
+                        "name": "Container Administration Command",
+                        "reference": "https://attack.mitre.org/techniques/T1609/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "c040c962-1c60-4259-8ea3-601a40d4ab9f_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,646 @@
+---
+# Canonical schema reference for Azure AD Graph activity logs:
+#   https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadgraphactivitylogs
+#
+# Note: the event-hub envelope shape differs from the Log Analytics column
+# projection documented at the URL above. Event-hub payloads use `httpMethod`
+# / `httpStatusCode` / `issuedAt` (and nest `callerIpAddress` under
+# `properties`), while the Log Analytics view exposes `RequestMethod` /
+# `ResponseStatusCode` / `TokenIssuedAt` and adds projection-only columns
+# like `AADTenantId`, `_SubscriptionId`, `SourceSystem`, `Type`, `Level`,
+# `Location` (envelope-level), `ResultSignature`, etc. This pipeline targets
+# the event-hub shape; projection-only columns are not handled because they
+# never appear in events streamed via diagnostic settings.
+description: Pipeline for parsing azure AAD Graph activity logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+      tag: set-ecs_version
+  - set:
+      field: event.kind
+      value: event
+      tag: set-event_kind
+  - append:
+      field: event.type
+      value: access
+      tag: append-event_type
+  - rename:
+      field: azure
+      target_field: azure-eventhub
+      ignore_missing: true
+      tag: rename-azure
+  - remove:
+      field: routing.category
+      ignore_missing: true
+      description: Remove the routing.category field if it exists.
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+      tag: rename-message
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+      tag: remove-message
+  - json:
+      field: event.original
+      target_field: azure.aadgraphactivitylogs
+      tag: json-event_original
+  - script:
+      description: Convert Azure JSON keys to snake case.
+      tag: azure-json-keys-to-snake-case
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def out = [:];
+
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            out.put(k, v);
+          }
+
+          return out;
+        }
+
+        ctx.azure['aadgraphactivitylogs'] = keysToSnakeCase(ctx.azure.aadgraphactivitylogs);
+  # Drop Microsoft's internal UDI plumbing fields. They are present on every
+  # AAD Graph event in the diagnostic stream (Windows .NET ticks timestamp,
+  # region scope, internal tenant id, internal unique id) and carry no
+  # detection value.
+  - remove:
+      field:
+        - azure.aadgraphactivitylogs.properties.__udi_required_fields_event_time
+        - azure.aadgraphactivitylogs.properties.__udi_required_fields_region_scope
+        - azure.aadgraphactivitylogs.properties.__udi_required_fields_tenant_id
+        - azure.aadgraphactivitylogs.properties.__udi_required_fields_unique_id
+      ignore_missing: true
+      tag: remove-udi_required_fields
+  - date:
+      field: azure.aadgraphactivitylogs.properties.time_generated
+      target_field: '@timestamp'
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.time_generated != null
+      tag: date-timestamp_from_time_generated
+      # ISO8601 is the canonical event-hub shape. Other formats are kept as
+      # defensive fallbacks for tenant variants seen in sibling Azure
+      # categories.
+      formats:
+        - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
+  # In the live event-hub shape this field is named `issuedAt` and uses the
+  # M/d/yyyy h:mm:ss a format (e.g. "5/11/2026 12:35:58 PM"). Rename to
+  # token_issued_at so downstream consumers see a consistent name.
+  - rename:
+      field: azure.aadgraphactivitylogs.properties.issued_at
+      target_field: azure.aadgraphactivitylogs.properties.token_issued_at
+      ignore_missing: true
+      tag: rename-properties_issued_at
+  - date:
+      field: azure.aadgraphactivitylogs.properties.token_issued_at
+      target_field: azure.aadgraphactivitylogs.properties.token_issued_at
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.token_issued_at != null
+      tag: date-token_issued_at
+      formats:
+        - "M/d/yyyy h:mm:ss a"
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # In the live event-hub shape callerIpAddress is nested under properties.
+  - convert:
+      field: azure.aadgraphactivitylogs.properties.caller_ip_address
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      tag: convert-properties_caller_ip_address
+      on_failure:
+        - rename:
+            field: azure.aadgraphactivitylogs.properties.caller_ip_address
+            target_field: source.address
+            ignore_missing: true
+            tag: rename-properties_caller_ip_address
+            on_failure:
+              - append:
+                  field: error.message
+                  value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: azure.aadgraphactivitylogs.properties.caller_ip_address
+      if: 'ctx.source?.ip != null'
+      tag: remove-properties_caller_ip_address
+      ignore_missing: true
+  - set:
+      field: client.ip
+      value: '{{source.ip}}'
+      tag: set-client_ip
+      ignore_empty_value: true
+  - set:
+      field: service.id
+      copy_from: azure.aadgraphactivitylogs.properties.service_principal_id
+      tag: set_service_id
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      copy_from: azure.aadgraphactivitylogs.properties.service_principal_id
+      tag: set_user_id_from_service_principal_id
+      if: ctx.user?.id == null
+      ignore_empty_value: true
+  - set:
+      field: device.id
+      copy_from: azure.aadgraphactivitylogs.properties.device_id
+      tag: set_device_id
+      ignore_empty_value: true
+  - set:
+      field: session.id
+      copy_from: azure.aadgraphactivitylogs.properties.session_id
+      tag: set_session_id
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append-related_ip
+      value: '{{source.ip}}'
+      allow_duplicates: false
+      if: 'ctx.source?.ip != null'
+  - convert:
+      field: azure.aadgraphactivitylogs.duration_ms
+      target_field: event.duration
+      type: long
+      if: ctx.azure?.aadgraphactivitylogs?.duration_ms != null
+      tag: convert-duration_ms
+      ignore_failure: true
+  - convert:
+      field: azure.aadgraphactivitylogs.properties.duration_ms
+      target_field: event.duration
+      type: long
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.duration_ms != null && ctx.event?.duration == null
+      tag: convert-properties-duration_ms
+      ignore_failure: true
+  - script:
+      lang: painless
+      source: |
+        if (ctx.event.duration!= null) {
+          ctx.event.duration = ctx.event.duration * 1000000;
+        }
+      ignore_failure: true
+      tag: script-duration
+  - remove:
+      field:
+        - azure.aadgraphactivitylogs.duration_ms
+        - azure.aadgraphactivitylogs.properties.duration_ms
+      tag: remove-duration_ms
+      if: ctx.event?.duration != null
+      ignore_missing: true
+  - rename:
+      field: azure.aadgraphactivitylogs.location
+      target_field: destination.geo.region_name
+      ignore_missing: true
+      tag: rename-location
+  - rename:
+      field: azure.aadgraphactivitylogs.properties.location
+      target_field: destination.geo.region_name
+      if: ctx.destination?.geo?.region_name == null && ctx.azure?.aadgraphactivitylogs?.properties?.location != null
+      tag: rename-properties-location
+  - remove:
+      field:
+        - azure.aadgraphactivitylogs.location
+        - azure.aadgraphactivitylogs.properties.location
+      tag: remove-location
+      if: ctx.destination?.geo?.region_name != null
+      ignore_missing: true
+  - convert:
+      field: azure.aadgraphactivitylogs.operation_name
+      target_field: event.action
+      type: string
+      ignore_missing: true
+      tag: convert-operation_name
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: azure.aadgraphactivitylogs.tenant_id
+      target_field: azure.tenant_id
+      ignore_missing: true
+      tag: rename-tenant_id
+  - rename:
+      field: azure.aadgraphactivitylogs.properties.tenant_id
+      target_field: azure.tenant_id
+      ignore_missing: true
+      if: ctx.azure?.tenant_id == null
+      tag: rename-properties_tenant_id
+  - remove:
+      field:
+        - azure.aadgraphactivitylogs.tenant_id
+        - azure.aadgraphactivitylogs.properties.tenant_id
+      tag: remove-tenant_id
+      if: ctx.azure?.tenant_id != null
+      ignore_missing: true
+  - rename:
+      field: azure.aadgraphactivitylogs.properties.request_id
+      target_field: http.request.id
+      ignore_missing: true
+      tag: rename-properties_request_id
+  - rename:
+      field: azure.aadgraphactivitylogs.properties.http_method
+      target_field: http.request.method
+      ignore_missing: true
+      tag: rename-properties_http_method
+  - uri_parts:
+      field: azure.aadgraphactivitylogs.properties.request_uri
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.request_uri != null
+      keep_original: true
+      tag: uri_parts-properties-request_uri
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: azure.aadgraphactivitylogs.properties.request_uri
+      tag: remove-properties_request_uri
+      if: ctx.url?.original != null
+      ignore_missing: true
+  - rename:
+      field: azure.aadgraphactivitylogs.properties.response_size_bytes
+      target_field: http.response.bytes
+      ignore_missing: true
+      tag: rename-properties_response_bytes
+  - rename:
+      field: azure.aadgraphactivitylogs.properties.http_status_code
+      target_field: http.response.status_code
+      ignore_missing: true
+      tag: rename-properties_http_status_code
+  # `roles` and `wids` arrive as comma-delimited strings with frequent leading
+  # whitespace and trailing commas (e.g. " Group.Read.All," or
+  # " 0997a1d0-...,"). Normalize first (strip surrounding whitespace/commas)
+  # then split on comma. `scopes` is space-separated per the MS Graph
+  # convention and is left as-is.
+  - gsub:
+      field: azure.aadgraphactivitylogs.properties.roles
+      pattern: '^[\s,]+|[\s,]+$'
+      replacement: ''
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.roles != null && ctx.azure.aadgraphactivitylogs.properties.roles != ''
+      tag: gsub-properties_roles
+      ignore_missing: true
+  - split:
+      field: azure.aadgraphactivitylogs.properties.roles
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.roles != null && ctx.azure.aadgraphactivitylogs.properties.roles != ''
+      separator: '\s*,\s*'
+      tag: split-properties_roles
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: azure.aadgraphactivitylogs.properties.scopes
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.scopes != null && ctx.azure.aadgraphactivitylogs.properties.scopes != ''
+      separator: ' '
+      tag: split-properties_scopes
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - gsub:
+      field: azure.aadgraphactivitylogs.properties.wids
+      pattern: '^[\s,]+|[\s,]+$'
+      replacement: ''
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.wids != null && ctx.azure.aadgraphactivitylogs.properties.wids != ''
+      tag: gsub-properties_wids
+      ignore_missing: true
+  - split:
+      field: azure.aadgraphactivitylogs.properties.wids
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.wids != null && ctx.azure.aadgraphactivitylogs.properties.wids != ''
+      separator: '\s*,\s*'
+      tag: split-properties_wids
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - user_agent:
+      field: azure.aadgraphactivitylogs.properties.user_agent
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.user_agent != null && ctx.azure.aadgraphactivitylogs.properties.user_agent != ''
+      tag: user_agent-properties_user_agent
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: azure.aadgraphactivitylogs.properties.user_agent
+      tag: remove-properties_user_agent
+      if: ctx.user_agent != null
+      ignore_missing: true
+  - rename:
+      field: azure.aadgraphactivitylogs.properties.user_id
+      target_field: user.id
+      tag: rename-properties_user_id
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.user_id != null && ctx.azure.aadgraphactivitylogs.properties.user_id != ''
+  - set:
+      field: client.user.id
+      value: '{{user.id}}'
+      tag: set-client_user_id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{user.id}}'
+      tag: append-related_user
+      allow_duplicates: false
+      if: 'ctx.user?.id != null'
+  - rename:
+      field: azure.aadgraphactivitylogs.properties._billed_size
+      target_field: azure.aadgraphactivitylogs.properties.billed_size
+      if: ctx.azure?.aadgraphactivitylogs?.properties?._billed_size != null
+      tag: rename-properties_billed_size
+  - rename:
+      field: azure.aadgraphactivitylogs.properties._is_billable
+      target_field: azure.aadgraphactivitylogs.properties.is_billable
+      if: ctx.azure?.aadgraphactivitylogs?.properties?._is_billable != null
+      tag: rename-properties_is_billable
+  - convert:
+      field: azure.aadgraphactivitylogs.properties.is_billable
+      type: boolean
+      tag: convert-properties_is_billable
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: azure.aadgraphactivitylogs.properties.client_auth_method
+      type: integer
+      tag: convert-properties_client_auth_method
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: azure.aadgraphactivitylogs.properties.time_generated
+      target_field: azure.aadgraphactivitylogs.properties.time_generated
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.time_generated != null
+      tag: date-properties_time_generated
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
+        - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # ECS enrichment. Runs after url.path, http.request.method, and
+  # http.response.status_code are populated. Derives a semantic event.action
+  # from method + directory collection (the operation_name field from the
+  # diagnostic stream is the literal string "AAD Graph Activity" and isn't
+  # useful for detection by itself), and sets event.category / event.type /
+  # event.outcome / event.id following ECS conventions used by sibling Entra
+  # datasets (signinlogs, auditlogs).
+  - set:
+      field: event.category
+      value:
+        - iam
+        - web
+      tag: set-event_category
+  - set:
+      field: event.type
+      value:
+        - access
+        - info
+      tag: set-event_type-info
+      if: ctx.http?.request?.method == null || ctx.http.request.method == 'GET' || ctx.http.request.method == 'HEAD'
+  - set:
+      field: event.type
+      value:
+        - access
+        - change
+      tag: set-event_type-change
+      if: ctx.http?.request?.method == 'POST' || ctx.http?.request?.method == 'PATCH' || ctx.http?.request?.method == 'PUT'
+  - set:
+      field: event.type
+      value:
+        - access
+        - deletion
+      tag: set-event_type-deletion
+      if: ctx.http?.request?.method == 'DELETE'
+  - set:
+      field: event.outcome
+      value: success
+      tag: set-event_outcome-success
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 200 && ctx.http.response.status_code < 300
+  - set:
+      field: event.outcome
+      value: failure
+      tag: set-event_outcome-failure
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
+  - set:
+      field: event.outcome
+      value: unknown
+      tag: set-event_outcome-unknown
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 300 && ctx.http.response.status_code < 400
+  - set:
+      field: event.id
+      copy_from: http.request.id
+      tag: set-event_id
+      ignore_empty_value: true
+
+  # actor_type and app_id stay in azure.aadgraphactivitylogs.properties.* —
+  # ECS doesn't have clean canonical fields for "OAuth client/app id" or for
+  # "person vs service principal" (sibling integrations like AWS CloudTrail
+  # and Okta also keep these in their dataset namespaces). Both fields are
+  # declared in fields/fields.yml and are top-level queryable.
+  #
+  # We do append app_id to related.user so cross-event correlation pivots on
+  # the OAuth-client dimension work alongside the user.id pivot. This is the
+  # same pattern the M365/O365 integration uses for application_id.
+  - append:
+      field: related.user
+      value: '{{{azure.aadgraphactivitylogs.properties.app_id}}}'
+      tag: append-related_user-app_id
+      allow_duplicates: false
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.app_id != null && ctx.azure.aadgraphactivitylogs.properties.app_id != ''
+  - script:
+      lang: painless
+      tag: derive-event_action
+      description: >-
+        Derive event.action from HTTP method + directory collection in the
+        request URI. Examples:
+        GET /v2/{tid}/users -> users-read,
+        GET /v2/{tid}/directoryRoles -> directory-roles-read,
+        PATCH /v2/{tid}/applications/{id} -> applications-update,
+        POST /v2/{tid}/$batch -> batch-execute.
+        Leaves the prior event.action (operation_name) in place if the URI
+        doesn't match the expected shape.
+      source: |
+        String path = ctx.url?.path;
+        String method = ctx.http?.request?.method;
+        if (path == null || method == null) { return; }
+        String[] parts = path.splitOnToken('/');
+        // Observed AAD Graph request URI shapes:
+        //   /v2/{tid-or-myorganization}/{collection}/...  -> collection at parts[3]
+        //   /{tid-or-myorganization}/$batch (or other)    -> collection at parts[2]
+        if (parts.length < 3) { return; }
+        String collection;
+        if (parts.length >= 4 && parts[1] == 'v2') {
+          collection = parts[3];
+        } else {
+          collection = parts[2];
+        }
+        if (collection == null || collection.isEmpty()) { return; }
+        if (collection.startsWith('$')) { collection = collection.substring(1); }
+        // CamelCase -> hyphen-lower (servicePrincipals -> service-principals)
+        StringBuilder hyphenated = new StringBuilder();
+        for (int i = 0; i < collection.length(); i++) {
+          char c = collection.charAt(i);
+          if (i > 0 && Character.isUpperCase(c) && !Character.isUpperCase(collection.charAt(i - 1))) {
+            hyphenated.append('-');
+          }
+          hyphenated.append(Character.toLowerCase(c));
+        }
+        String verb;
+        if (method == 'GET' || method == 'HEAD') { verb = 'read'; }
+        else if (method == 'POST') { verb = 'execute'; }
+        else if (method == 'PATCH' || method == 'PUT') { verb = 'update'; }
+        else if (method == 'DELETE') { verb = 'delete'; }
+        else { verb = method.toLowerCase(); }
+        ctx.event.action = hyphenated.toString() + '-' + verb;
+      ignore_failure: true
+
+  - pipeline:
+      name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+      tag: pipeline-azure-shared-pipeline
+  # url.original is populated by the uri_parts processor above
+  # (keep_original: true) and carries the same value that
+  # properties.request_uri held before it was removed.
+  - fingerprint:
+      fields:
+        - url.original
+        - http.request.id
+        - azure.tenant_id
+        - azure.aadgraphactivitylogs.properties.time_generated
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint-id
+  - set:
+      field: cloud.account.id
+      value: '{{azure.tenant_id}}'
+      tag: set-cloud_account_id
+      ignore_empty_value: true
+  - set:
+      field: cloud.region
+      value: '{{destination.geo.region_name}}'
+      tag: set-cloud_region
+      ignore_empty_value: true
+  - set:
+      field: cloud.service.name
+      value: 'Azure AD Graph'
+      tag: set-cloud_service_name
+      ignore_empty_value: true
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

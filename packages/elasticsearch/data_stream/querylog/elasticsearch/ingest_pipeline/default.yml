@@ -1,0 +1,23 @@
+---
+description: Pipeline for parsing elasticsearch query logs.
+processors:
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-json" }}'
+  - set:
+      copy_from: "@timestamp"
+      field: event.created
+  - set:
+      field: host.name
+      value: "{{elasticsearch.node.name}}"
+      ignore_empty_value: true
+  - set:
+      field: host.id
+      value: "{{elasticsearch.node.id}}"
+      ignore_empty_value: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

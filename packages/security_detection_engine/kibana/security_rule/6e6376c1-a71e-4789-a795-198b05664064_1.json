@@ -1,0 +1,131 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects Microsoft Entra ID sign-ins consistent with Tycoon2FA phishing-as-a-service (PhaaS) adversary-in-the-middle (AiTM) activity: the Microsoft Authentication Broker requesting tokens for Microsoft Graph or Exchange Online, or the Office web client application authenticating to itself, combined with Node.js-style user agents (node, axios, undici). Tycoon 2FA bypasses MFA by relaying authentication and capturing session material, often targeting Microsoft 365 and Gmail. Baseline legitimate automation and developer tooling before tuning.",
+        "false_positives": [
+            "Legitimate Node.js or undici-based automation, health checks, or internal services that use the Microsoft Authentication Broker or the same first-party application IDs against Graph or Exchange may match. Developers using axios or undici with delegated flows can also resemble this pattern."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-azure.signinlogs-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "source.geo.country_name",
+                "event.outcome",
+                "azure.signinlogs.properties.user_principal_name",
+                "azure.signinlogs.properties.session_id",
+                "azure.signinlogs.properties.app_display_name",
+                "azure.signinlogs.properties.app_id",
+                "azure.signinlogs.properties.resource_display_name",
+                "azure.signinlogs.properties.resource_id",
+                "azure.signinlogs.properties.authentication_protocol",
+                "azure.tenant_id"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Entra ID Potential AiTM Sign-In via OfficeHome (Tycoon2FA)",
+        "note": "## Triage and analysis\n\n### Investigating Entra ID Potential AiTM Sign-In via OfficeHome (Tycoon2FA)\n\nReview user.name, azure.signinlogs.properties.user_principal_name, azure.signinlogs.properties.app_id,\nazure.signinlogs.properties.resource_id, user_agent.original, source.ip, source.geo fields, and\nazure.signinlogs.properties.session_id.\n\nConfirm whether the user intentionally signed in and whether Node.js-style user agents (node, axios, undici) are\nexpected for Microsoft Authentication Broker or Office web client flows in your environment.\n\n### Possible investigation steps\n\n- Correlate the session with Microsoft Graph activity logs and mailbox audit for follow-on data access.\n- Review conditional access outcomes and MFA detail for the same session.\n- Hunt for other sign-ins from the same source IP with unusual user agents or rapid OAuth patterns.\n\n### Response and remediation\n\n- If malicious, revoke refresh tokens for the user, reset credentials per policy, and review application consent.\n- Block or monitor the source IP and escalate per incident procedures.\n",
+        "query": "data_stream.dataset:\"azure.signinlogs\" and event.category:\"authentication\" and\nevent.action:\"Sign-in activity\" and\n(\n    (\n        azure.signinlogs.properties.app_id:\"29d9ed98-a469-4536-ade2-f981bc1d605e\" and\n        azure.signinlogs.properties.resource_id:(\n            \"00000002-0000-0ff1-ce00-000000000000\" or \"00000003-0000-0000-c000-000000000000\"\n        )\n    ) or\n    (\n        azure.signinlogs.properties.app_id:\"4765445b-32c6-49b0-83e6-1d93765276ca\" and\n        azure.signinlogs.properties.resource_id:\"4765445b-32c6-49b0-83e6-1d93765276ca\"\n    )\n) and user_agent.original:(node or axios* or undici)\n",
+        "references": [
+            "https://any.run/malware-trends/tycoon/"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": "^1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.app_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.resource_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "6e6376c1-a71e-4789-a795-198b05664064",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Microsoft Entra ID",
+            "Data Source: Microsoft Entra ID Sign-in Logs",
+            "Use Case: Threat Detection",
+            "Threat: Tycoon2FA",
+            "Tactic: Initial Access",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1539",
+                        "name": "Steal Web Session Cookie",
+                        "reference": "https://attack.mitre.org/techniques/T1539/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "6e6376c1-a71e-4789-a795-198b05664064_1",
+    "type": "security-rule"
+}

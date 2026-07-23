@@ -1,0 +1,138 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the first time, within a lookback window, an identity performs AWS Organizations or IAM account enumeration APIs. Attackers with compromised credentials often map the organization (accounts, OUs, roots, delegated admins) and account-level metadata (aliases, summary) using the AWS CLI or SDKs. This is a New Terms rule detecting a rare occurrence of the `cloud.account.id` and `user.name` pair for these actions.",
+        "false_positives": [
+            "Organization and security administrators, billing tooling, landing-zone automation, and delegated administrator workflows may call these APIs legitimately. Interactive or one-off use from unusual principals warrants review."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-10d",
+        "index": [
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "event.action",
+                "event.outcome",
+                "event.provider",
+                "cloud.account.id",
+                "cloud.region"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Account Discovery By Rare User",
+        "new_terms_fields": [
+            "cloud.account.id",
+            "user.name"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating AWS Account Discovery By Rare User\n\nAWS Organizations and IAM expose read APIs that reveal organization structure, member accounts, delegation, and\naccount-level aliases. Threat actors and tools such as Pacu (`organizations__enum`) chain these calls to understand\nmulti-account layout after credential access.\n\nThis rule uses [New Terms](https://www.elastic.co/guide/en/security/current/rules-ui-create.html#create-new-terms-rule) to detect when an identity makes a discovery API call that has not been seen in the configured history window.\n\n### Possible investigation steps\n\n**Identify the actor and session context**\n- Confirm who `user.name` and `aws.cloudtrail.user_identity.arn` represent (human, workload role, automation).\n\n**Analyze the source and origin**\n- Review source.ip, geolocation, and whether the call aligns with normal egress for that principal.\n- Inspect user_agent.original for CLI, Boto3/Botocore, consoles, or unfamiliar tooling.\n\n**Correlate with additional events**\n- Correlate with STS*(`GetCallerIdentity`, `AssumeRole`) and broader discovery or privilege changes in the same session.\n- If the principal is new or rarely used, review IAM policies and recent key rotation.\n\n### False positive analysis\n\n- Documented org-admin or security roles in the management account; add exceptions by ARN if needed.\n- Centralized compliance or CSPM that enumerates org structure on a schedule.\n\n### Response and remediation\n\n- If unexpected, rotate credentials for the implicated principal, review CloudTrail for follow-on API activity, and\n  tighten least privilege on Organizations/IAM read APIs where appropriate.\n\n### Additional information\n\n- **[AWS IR Playbooks](https://github.com/aws-samples/aws-incident-response-playbooks)**\n",
+        "query": "event.dataset: \"aws.cloudtrail\"\n    and event.outcome: \"success\"\n    and source.ip:*\n    and not aws.cloudtrail.session_credential_from_console: \"true\"\n    and not aws.cloudtrail.user_identity.type: \"AWSService\"\n    and (\n        (\n            event.provider: \"organizations.amazonaws.com\"\n            and event.action: (\n                \"DescribeOrganization\" or \"DescribeOrgnanizationalUnit\" or \"ListAccounts\" or \"ListRoots\"\n                or \"ListOrganizationalUnitsForParent\" or \"ListAccountsForParent\" or \"ListPolicies\"\n                or \"ListAWSServiceAccessForOrganization\" or \"ListDelegatedAdministrators\"\n                or \"ListDelegatedServicesForAccount\" or \"DescribeResourcePolicy\"\n            )\n        )\n        or (\n            event.provider: \"iam.amazonaws.com\"\n            and event.action: (\"ListAccountAliases\" or \"GetAccountSummary\")\n        )\n    )\n",
+        "references": [
+            "https://kudelskisecurity.com/research/investigating-two-variants-of-the-trivy-supply-chain-compromise",
+            "https://github.com/RhinoSecurityLabs/pacu/blob/master/pacu/modules/organizations__enum/main.py"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.session_credential_from_console",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "444c8fad-874f-4f59-b0ea-cf26cea478bd",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS CloudTrail",
+            "Data Source: AWS Organizations",
+            "Data Source: AWS IAM",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1087",
+                        "name": "Account Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1087/",
+                        "subtechnique": [
+                            {
+                                "id": "T1087.004",
+                                "name": "Cloud Account",
+                                "reference": "https://attack.mitre.org/techniques/T1087/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1580",
+                        "name": "Cloud Infrastructure Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1580/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "444c8fad-874f-4f59-b0ea-cf26cea478bd_1",
+    "type": "security-rule"
+}

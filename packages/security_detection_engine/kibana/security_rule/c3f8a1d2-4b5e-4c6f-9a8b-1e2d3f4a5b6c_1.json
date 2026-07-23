@@ -1,0 +1,129 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a Windows host where two or more distinct remote monitoring and management (RMM) or remote-access tool vendors are observed starting processes within the same eight-minute window. Legitimate MSP environments may run multiple tools, but this pattern can also indicate compromise, shadow IT, or attacker staging of redundant access. Processes are mapped to a single vendor label so multiple binaries from the same vendor do not inflate the count.",
+        "from": "now-9m",
+        "interval": "8m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Multiple Remote Management Tool Vendors on Same Host",
+        "note": "## Triage and analysis\n\n### Investigating Multiple Remote Management Tool Vendors on Same Host\n\nThis rule aggregates process start events by `host.id`, host name, and a nine-minute time bucket. Data can come from\nElastic Defend, Sysmon, Winlogbeat, Windows Security / forwarded events, Microsoft Defender for Endpoint, SentinelOne,\nCrowdStrike FDR, or Elastic Endgame\u2014where ECS process fields are populated. Each known RMM-related process name maps\nto one **vendor** label (e.g. TeamViewer, AnyDesk, ScreenConnect). If **two or more different vendor labels** appear in\nthe same bucket, the rule signals.\n\n### Possible investigation steps\n\n- Open **Esql.vendors_seen** and **Esql.processes_name_values** on the alert to see which tools fired in the window.\n- Confirm whether the host is an MSP-managed jump box, helpdesk workstation, or lab where multiple RMM stacks are expected.\n- For servers or standard user endpoints, treat as higher risk: review install source, code signatures, and recent logons.\n- Correlate with other alerts (ingress tool transfer, suspicious scripting, new persistence) on the same `host.id`.\n- Check asset inventory and change tickets for approved RMM software.\n\n### False positive analysis\n\n- **MSP / IT tooling**: A technician machine with two approved agents (e.g. RMM + remote support) may match. Tune with\n  host or organizational unit exceptions, or raise the vendor threshold if your environment standardizes on a known pair.\n- **Vendor rebrands or bundles**: Rare overlaps during migrations can briefly show two vendors; validate timeline and packages.\n\n### Response and remediation\n\n- If unauthorized or unexplained: isolate the host, inventory installed remote-access software, remove unapproved tools,\n  and reset credentials that may have been exposed. Enforce a single approved RMM stack per asset class where possible.\n",
+        "query": "from logs-endpoint.events.process-*, endgame-*, logs-crowdstrike.fdr*, logs-m365_defender.event-*, logs-sentinel_one_cloud_funnel.*, logs-system.security*, logs-windows.sysmon_operational-*, logs-windows.forwarded*, winlogbeat-* metadata _id, _version, _index\n| where (host.os.type == \"windows\" or host.os.family == \"windows\")\n    and event.category == \"process\"\n    and event.type == \"start\"\n    and process.name is not null\n| eval Esql.rmm_vendor = case(\n    process.name == \"AeroAdmin.exe\", \"AeroAdmin\",\n    process.name == \"AnyDesk.exe\", \"AnyDesk\",\n    process.name == \"AteraAgent.exe\", \"Atera\",\n    process.name == \"AweSun.exe\", \"AweSun\",\n    process.name like \"aweray_remote*.exe\", \"AweSun\",\n    process.name == \"apc_Admin.exe\", \"APC\",\n    process.name == \"apc_host.exe\", \"APC\",\n    process.name == \"BASupSrvc.exe\", \"BeyondTrust\",\n    process.name == \"bomgar-scc.exe\", \"BeyondTrust\",\n    process.name == \"Remote Support.exe\", \"BeyondTrust\",\n    process.name == \"B4-Service.exe\", \"BeyondTrust\",\n    process.name == \"CagService.exe\", \"BarracudaRMM\",\n    process.name == \"domotzagent.exe\", \"Domotz\",\n    process.name == \"domotz-windows-x64-10.exe\", \"Domotz\",\n    process.name == \"dwagsvc.exe\", \"DWService\",\n    process.name == \"DWRCC.exe\", \"DWService\",\n    process.name like \"fleetdeck_commander*.exe\", \"FleetDeck\",\n    process.name == \"getscreen.exe\", \"GetScreen\",\n    process.name == \"g2aservice.exe\", \"GoTo\",\n    process.name == \"GoToAssistService.exe\", \"GoTo\",\n    process.name == \"gotohttp.exe\", \"GoTo\",\n    process.name == \"GoToResolveProcessChecker.exe\", \"GoTo\",\n    process.name == \"GoToResolveUnattended.exe\", \"GoTo\",\n    process.name == \"ImperoClientSVC.exe\", \"Impero\",\n    process.name == \"ImperoServerSVC.exe\", \"Impero\",\n    process.name == \"ISLLight.exe\", \"ISLOnline\",\n    process.name == \"ISLLightClient.exe\", \"ISLOnline\",\n    process.name == \"jumpcloud-agent.exe\", \"JumpCloud\",\n    process.name == \"level.exe\", \"Level\",\n    process.name == \"LvAgent.exe\", \"Level\",\n    process.name == \"LMIIgnition.exe\", \"LogMeIn\",\n    process.name == \"LogMeIn.exe\", \"LogMeIn\",\n    process.name == \"ManageEngine_Remote_Access_Plus.exe\", \"ManageEngine\",\n    process.name == \"MeshAgent.exe\", \"MeshCentral\",\n    process.name == \"meshagent.exe\", \"MeshCentral\",\n    process.name == \"Mikogo-Service.exe\", \"Mikogo\",\n    process.name == \"NinjaRMMAgent.exe\", \"NinjaOne\",\n    process.name == \"NinjaRMMAgenPatcher.exe\", \"NinjaOne\",\n    process.name == \"ninjarmm-cli.exe\", \"NinjaOne\",\n    process.name == \"parsec.exe\", \"Parsec\",\n    process.name == \"PService.exe\", \"Pulseway\",\n    process.name == \"r_server.exe\", \"Radmin\",\n    process.name == \"radmin.exe\", \"Radmin\",\n    process.name == \"radmin3.exe\", \"Radmin\",\n    process.name == \"rserver3.exe\", \"Radmin\",\n    process.name == \"vncserver.exe\", \"RealVNC\",\n    process.name == \"vncviewer.exe\", \"RealVNC\",\n    process.name == \"winvnc.exe\", \"RealVNC\",\n    process.name == \"ROMServer.exe\", \"RealVNC\",\n    process.name == \"ROMViewer.exe\", \"RealVNC\",\n    process.name == \"RemotePC.exe\", \"RemotePC\",\n    process.name == \"RemotePCDesktop.exe\", \"RemotePC\",\n    process.name == \"RemotePCService.exe\", \"RemotePC\",\n    process.name == \"RemoteDesktopManager.exe\", \"Devolutions\",\n    process.name == \"RCClient.exe\", \"RPCSuite\",\n    process.name == \"RCService.exe\", \"RPCSuite\",\n    process.name == \"RPCSuite.exe\", \"RPCSuite\",\n    process.name == \"rustdesk.exe\", \"RustDesk\",\n    process.name == \"rutserv.exe\", \"RemoteUtilities\",\n    process.name == \"rutview.exe\", \"RemoteUtilities\",\n    process.name == \"saazapsc.exe\", \"Kaseya\",\n    process.name like \"ScreenConnect*.exe\", \"ScreenConnect\",\n    process.name == \"ScreenConnect.ClientService.exe\", \"ScreenConnect\",\n    process.name == \"Splashtop-streamer.exe\", \"Splashtop\",\n    process.name == \"strwinclt.exe\", \"Splashtop\",\n    process.name == \"SRService.exe\", \"Splashtop\",\n    process.name == \"smpcview.exe\", \"Splashtop\",\n    process.name == \"spclink.exe\", \"Splashtop\",\n    process.name == \"rfusclient.exe\", \"Splashtop\",\n    process.name == \"Supremo.exe\", \"Supremo\",\n    process.name == \"SupremoService.exe\", \"Supremo\",\n    process.name == \"Syncro.Overmind.Service.exe\", \"Splashtop\",\n    process.name == \"SyncroLive.Agent.Runner.exe\", \"Splashtop\",\n    process.name == \"Syncro.Installer.exe\", \"Splashtop\",\n    process.name == \"tacticalrmm.exe\", \"TacticalRMM\",\n    process.name == \"tailscale.exe\", \"Tailscale\",\n    process.name == \"tailscaled.exe\", \"Tailscale\",\n    process.name == \"teamviewer.exe\", \"TeamViewer\",\n    process.name == \"ticlientcore.exe\", \"Tiflux\",\n    process.name == \"TiAgent.exe\", \"Tiflux\",\n    process.name == \"ToDesk_Service.exe\", \"ToDesk\",\n    process.name == \"twingate.exe\", \"Twingate\",\n    process.name == \"tvn.exe\", \"TightVNC\",\n    process.name == \"tvnserver.exe\", \"TightVNC\",\n    process.name == \"tvnviewer.exe\", \"TightVNC\",\n    process.name == \"winwvc.exe\", \"TightVNC\",\n    process.name like \"UltraVNC*.exe\", \"UltraVNC\",\n    process.name like \"UltraViewer*.exe\", \"UltraViewer\",\n    process.name like \"AA_v*.exe\", \"AnyAssist\",\n    process.name == \"Velociraptor.exe\", \"Velociraptor\",\n    process.name == \"ToolsIQ.exe\", \"ToolsIQ\",\n    process.name == \"session_win.exe\", \"ZohoAssist\",\n    process.name == \"Zaservice.exe\", \"ZohoAssist\",\n    process.name == \"ZohoURS.exe\", \"ZohoAssist\",\n    \"\"\n  )\n| where Esql.rmm_vendor != \"\" and Esql.rmm_vendor is not NULL\n| stats Esql.vendor_count = count_distinct(Esql.rmm_vendor),\n        Esql.vendors_seen = values(Esql.rmm_vendor),\n        Esql.processes_executable_values = values(process.executable),\n        Esql.first_seen = min(@timestamp),\n        Esql.last_seen = max(@timestamp)\n  by host.name, host.id\n| where Esql.vendor_count >= 2\n| sort Esql.vendor_count desc\n| keep host.id, host.name, Esql.*\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1219/",
+            "https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-025a"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.first_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.last_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.processes_executable_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.vendor_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.vendors_seen",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c3f8a1d2-4b5e-4c6f-9a8b-1e2d3f4a5b6c",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: CrowdStrike",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Elastic Endgame",
+            "Data Source: Winlogbeat"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1219",
+                        "name": "Remote Access Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1219/",
+                        "subtechnique": [
+                            {
+                                "id": "T1219.002",
+                                "name": "Remote Desktop Software",
+                                "reference": "https://attack.mitre.org/techniques/T1219/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "c3f8a1d2-4b5e-4c6f-9a8b-1e2d3f4a5b6c_1",
+    "type": "security-rule"
+}

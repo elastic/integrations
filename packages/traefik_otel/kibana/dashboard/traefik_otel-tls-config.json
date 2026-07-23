@@ -1,0 +1,1330 @@
+{
+    "attributes": {
+        "title": "[Traefik OTel] TLS & Config",
+        "description": "TLS certificate expiry, TLS traffic distribution, and configuration reload health.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "a9efa0ad-f96b-dcc8-40bc-8baeb1f9bfe6",
+                                "order": 1,
+                                "label": "Services",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_a9efa0ad-f96b-dcc8-40bc-8baeb1f9bfe6_dashboard"
+                            },
+                            {
+                                "id": "92879ad7-afcb-ee9b-f6e2-4ba77750122c",
+                                "order": 2,
+                                "label": "TLS & Config",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_92879ad7-afcb-ee9b-f6e2-4ba77750122c_dashboard"
+                            },
+                            {
+                                "id": "dc43befd-c620-33e3-534a-9831cb678557",
+                                "order": 3,
+                                "label": "Process",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_dc43befd-c620-33e3-534a-9831cb678557_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [Traefik OTel] TLS & Config\n\nThis dashboard monitors TLS and configuration health:\n- TLS certificate expiry (certificates expiring soon)\n- TLS traffic by version and cipher\n- Configuration reload success and failure tracking\n- TLS request volume over time\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "8d4a937f-f276-f205-d041-e1d8b78c22b7",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "8d4a937f-f276-f205-d041-e1d8b78c22b7"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "TLS Certs Near Expiry",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "7eeb3065-b873-4697-6fb7-c4ba6e319183",
+                                "layerType": "data",
+                                "metricAccessor": "de0dcbf7-d28d-26bf-f34a-cc6cdadd5e1b",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_tls_certs_not_after IS NOT NULL\n| EVAL now_epoch = TO_DOUBLE(NOW()) / 1000\n| EVAL days_until_expiry = (traefik_tls_certs_not_after - now_epoch) / 86400\n| WHERE days_until_expiry <= 30\n| STATS certs_near_expiry = COUNT(*)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "7eeb3065-b873-4697-6fb7-c4ba6e319183": {
+                                            "query": {
+                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_tls_certs_not_after IS NOT NULL\n| EVAL now_epoch = TO_DOUBLE(NOW()) / 1000\n| EVAL days_until_expiry = (traefik_tls_certs_not_after - now_epoch) / 86400\n| WHERE days_until_expiry <= 30\n| STATS certs_near_expiry = COUNT(*)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "certs_near_expiry",
+                                                    "columnId": "de0dcbf7-d28d-26bf-f34a-cc6cdadd5e1b",
+                                                    "label": "Certs < 30d",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "certs_near_expiry",
+                                                    "columnId": "de0dcbf7-d28d-26bf-f34a-cc6cdadd5e1b",
+                                                    "label": "Certs < 30d",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "050c6674-228f-9f6e-964c-d7c20ddacf60",
+                "gridData": {
+                    "x": 24,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "050c6674-228f-9f6e-964c-d7c20ddacf60"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "TLS Request Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "83931d67-3b12-4680-0e38-897455a8a794",
+                                "layerType": "data",
+                                "metricAccessor": "b841bafe-2a7f-80b9-e324-812c6af3f5ba",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_tls_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_requests_tls_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)\n| EVAL duration_sec = DATE_DIFF(\"seconds\", min_ts, max_ts)\n| EVAL tls_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)\n| KEEP tls_rate"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "83931d67-3b12-4680-0e38-897455a8a794": {
+                                            "query": {
+                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_tls_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_requests_tls_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)\n| EVAL duration_sec = DATE_DIFF(\"seconds\", min_ts, max_ts)\n| EVAL tls_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)\n| KEEP tls_rate"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "tls_rate",
+                                                    "columnId": "b841bafe-2a7f-80b9-e324-812c6af3f5ba",
+                                                    "label": "TLS Req/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/sec"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "tls_rate",
+                                                    "columnId": "b841bafe-2a7f-80b9-e324-812c6af3f5ba",
+                                                    "label": "TLS Req/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/sec"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "d7518293-1c0c-2cdd-ee55-ceabd789b31a",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "d7518293-1c0c-2cdd-ee55-ceabd789b31a"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Config Reloads",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "f6c244a6-782e-f1af-fe1d-f3ed703ef826",
+                                "layerType": "data",
+                                "metricAccessor": "87a4438a-06a9-79fd-4d48-4f3991e2beb9",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_config_reloads_total IS NOT NULL\n| STATS reloads = MAX(traefik_config_reloads_total)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f6c244a6-782e-f1af-fe1d-f3ed703ef826": {
+                                            "query": {
+                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_config_reloads_total IS NOT NULL\n| STATS reloads = MAX(traefik_config_reloads_total)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "reloads",
+                                                    "columnId": "87a4438a-06a9-79fd-4d48-4f3991e2beb9",
+                                                    "label": "Total Reloads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "reloads",
+                                                    "columnId": "87a4438a-06a9-79fd-4d48-4f3991e2beb9",
+                                                    "label": "Total Reloads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "db041b95-f9af-7a20-b31d-aaf02a137751",
+                "gridData": {
+                    "x": 40,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "db041b95-f9af-7a20-b31d-aaf02a137751"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Last Reload Success",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "f297594d-393a-04b7-5e04-981297e6f133",
+                                "layerType": "data",
+                                "metricAccessor": "4ad7eaea-74a4-b0ab-c6bb-e19134ea47ba",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_config_last_reload_success IS NOT NULL\n| STATS last_success = MAX(traefik_config_last_reload_success)\n| EVAL now_sec = TO_DOUBLE(NOW()) / 1000\n| EVAL age_seconds = now_sec - last_success"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f297594d-393a-04b7-5e04-981297e6f133": {
+                                            "query": {
+                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_config_last_reload_success IS NOT NULL\n| STATS last_success = MAX(traefik_config_last_reload_success)\n| EVAL now_sec = TO_DOUBLE(NOW()) / 1000\n| EVAL age_seconds = now_sec - last_success"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "age_seconds",
+                                                    "columnId": "4ad7eaea-74a4-b0ab-c6bb-e19134ea47ba",
+                                                    "label": "Ago",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "age_seconds",
+                                                    "columnId": "4ad7eaea-74a4-b0ab-c6bb-e19134ea47ba",
+                                                    "label": "Ago",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "515f76e1-6c7b-2820-5d34-29ec7a963616",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 48,
+                    "h": 12,
+                    "i": "515f76e1-6c7b-2820-5d34-29ec7a963616"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "TLS Request Rate Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "ed8695b1-edbe-072d-2c19-ac236ed70386",
+                                        "accessors": [
+                                            "14b99dfb-3ccf-db2f-9bdb-0b699b9f69e9"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "bb2bd3b5-cc28-b7c7-4261-01de90ec368d",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_tls_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_requests_tls_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.tls_version\n| EVAL bucket_secs = GREATEST(DATE_DIFF(\"seconds\", min_ts, max_ts), 1)\n| EVAL tls_rate = total / bucket_secs\n| KEEP time_bucket, attributes.tls_version, tls_rate\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ed8695b1-edbe-072d-2c19-ac236ed70386": {
+                                            "query": {
+                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_tls_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_requests_tls_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.tls_version\n| EVAL bucket_secs = GREATEST(DATE_DIFF(\"seconds\", min_ts, max_ts), 1)\n| EVAL tls_rate = total / bucket_secs\n| KEEP time_bucket, attributes.tls_version, tls_rate\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "tls_rate",
+                                                    "columnId": "14b99dfb-3ccf-db2f-9bdb-0b699b9f69e9",
+                                                    "label": "TLS Req/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.tls_version",
+                                                    "columnId": "bb2bd3b5-cc28-b7c7-4261-01de90ec368d",
+                                                    "label": "attributes.tls_version",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "tls_rate",
+                                                    "columnId": "14b99dfb-3ccf-db2f-9bdb-0b699b9f69e9",
+                                                    "label": "TLS Req/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "attributes.tls_version",
+                                                    "columnId": "bb2bd3b5-cc28-b7c7-4261-01de90ec368d",
+                                                    "label": "attributes.tls_version",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "b6bdb612-8826-06eb-91bb-d3039d1f4263",
+                "gridData": {
+                    "x": 0,
+                    "y": 26,
+                    "w": 16,
+                    "h": 10,
+                    "i": "b6bdb612-8826-06eb-91bb-d3039d1f4263"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "TLS Traffic by Version",
+                        "visualizationType": "lnsPie",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "da970c0b-a67d-96d3-5bc5-5316b772090d",
+                                        "layerType": "data",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        },
+                                        "primaryGroups": [
+                                            "f829bd58-d14d-a53a-e33a-77425aac261b"
+                                        ],
+                                        "metrics": [
+                                            "4e2ef6d4-9ed5-11f0-d7c7-85a05d74fde2"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "categoryDisplay": "default",
+                                        "legendDisplay": "default",
+                                        "legendPosition": "right",
+                                        "nestedLegend": false,
+                                        "emptySizeRatio": 0.5
+                                    }
+                                ],
+                                "shape": "donut"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_tls_total IS NOT NULL\n| STATS tls_requests = SUM(traefik_entrypoint_requests_tls_total) BY attributes.tls_version\n| SORT tls_requests DESC\n| LIMIT 10"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "da970c0b-a67d-96d3-5bc5-5316b772090d": {
+                                            "query": {
+                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_tls_total IS NOT NULL\n| STATS tls_requests = SUM(traefik_entrypoint_requests_tls_total) BY attributes.tls_version\n| SORT tls_requests DESC\n| LIMIT 10"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "tls_requests",
+                                                    "columnId": "4e2ef6d4-9ed5-11f0-d7c7-85a05d74fde2",
+                                                    "label": "tls_requests",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.tls_version",
+                                                    "columnId": "f829bd58-d14d-a53a-e33a-77425aac261b",
+                                                    "label": "TLS Version",
+                                                    "customLabel": true
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "tls_requests",
+                                                    "columnId": "4e2ef6d4-9ed5-11f0-d7c7-85a05d74fde2",
+                                                    "label": "tls_requests",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.tls_version",
+                                                    "columnId": "f829bd58-d14d-a53a-e33a-77425aac261b",
+                                                    "label": "TLS Version",
+                                                    "customLabel": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "61a2417d-0753-4648-e57b-9e6f5e87ef6b",
+                "gridData": {
+                    "x": 16,
+                    "y": 26,
+                    "w": 32,
+                    "h": 12,
+                    "i": "61a2417d-0753-4648-e57b-9e6f5e87ef6b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Certificate Expiry (Days Remaining)",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "a75489c6-4016-b355-5699-3b9a24112373",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "fbd872e6-b7e3-9d35-dcfe-b948a1e77919",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "1542a1a8-10c4-010a-55e9-4c86c3a75d31",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "467ad8ac-e351-a0c7-e7de-2a6b43473960",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_tls_certs_not_after IS NOT NULL\n| EVAL now_epoch = TO_DOUBLE(NOW()) / 1000\n| EVAL days_remaining = (traefik_tls_certs_not_after - now_epoch) / 86400\n| STATS days_remaining = AVG(days_remaining) BY attributes.cn, attributes.serial\n| SORT days_remaining ASC\n| LIMIT 50"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "467ad8ac-e351-a0c7-e7de-2a6b43473960": {
+                                            "query": {
+                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_tls_certs_not_after IS NOT NULL\n| EVAL now_epoch = TO_DOUBLE(NOW()) / 1000\n| EVAL days_remaining = (traefik_tls_certs_not_after - now_epoch) / 86400\n| STATS days_remaining = AVG(days_remaining) BY attributes.cn, attributes.serial\n| SORT days_remaining ASC\n| LIMIT 50"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "attributes.cn",
+                                                    "columnId": "a75489c6-4016-b355-5699-3b9a24112373",
+                                                    "label": "Common Name",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.serial",
+                                                    "columnId": "fbd872e6-b7e3-9d35-dcfe-b948a1e77919",
+                                                    "label": "Serial",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "days_remaining",
+                                                    "columnId": "1542a1a8-10c4-010a-55e9-4c86c3a75d31",
+                                                    "label": "Days Left",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "attributes.cn",
+                                                    "columnId": "a75489c6-4016-b355-5699-3b9a24112373",
+                                                    "label": "Common Name",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.serial",
+                                                    "columnId": "fbd872e6-b7e3-9d35-dcfe-b948a1e77919",
+                                                    "label": "Serial",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "days_remaining",
+                                                    "columnId": "1542a1a8-10c4-010a-55e9-4c86c3a75d31",
+                                                    "label": "Days Left",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "0baf3142-e019-8b0d-07ae-30c3511824b2",
+                "gridData": {
+                    "x": 0,
+                    "y": 38,
+                    "w": 24,
+                    "h": 10,
+                    "i": "0baf3142-e019-8b0d-07ae-30c3511824b2"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Config Reload Rate Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "8303432c-9414-c7f0-f513-9fd97a332047",
+                                        "accessors": [
+                                            "bb31e96b-3852-b3e9-38fb-aa106812f841"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_config_reloads_total IS NOT NULL\n| STATS total = SUM(traefik_config_reloads_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| EVAL bucket_secs = GREATEST(DATE_DIFF(\"seconds\", min_ts, max_ts), 1)\n| EVAL reload_rate = total / bucket_secs\n| KEEP time_bucket, reload_rate\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8303432c-9414-c7f0-f513-9fd97a332047": {
+                                            "query": {
+                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_config_reloads_total IS NOT NULL\n| STATS total = SUM(traefik_config_reloads_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| EVAL bucket_secs = GREATEST(DATE_DIFF(\"seconds\", min_ts, max_ts), 1)\n| EVAL reload_rate = total / bucket_secs\n| KEEP time_bucket, reload_rate\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "reload_rate",
+                                                    "columnId": "bb31e96b-3852-b3e9-38fb-aa106812f841",
+                                                    "label": "Reloads/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 3
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "reload_rate",
+                                                    "columnId": "bb31e96b-3852-b3e9-38fb-aa106812f841",
+                                                    "label": "Reloads/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 3
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "d7a13c89-8e38-2141-cf13-99b5c564e3dc",
+                "gridData": {
+                    "x": 24,
+                    "y": 38,
+                    "w": 24,
+                    "h": 10,
+                    "i": "d7a13c89-8e38-2141-cf13-99b5c564e3dc"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Top TLS Ciphers",
+                        "visualizationType": "lnsPie",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "7c67f00e-37fa-3890-f8b2-95d6010eb9b4",
+                                        "layerType": "data",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        },
+                                        "primaryGroups": [
+                                            "62cf8458-8831-81eb-de11-ffe41a7d26a1"
+                                        ],
+                                        "metrics": [
+                                            "4e2ef6d4-9ed5-11f0-d7c7-85a05d74fde2"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "categoryDisplay": "default",
+                                        "legendDisplay": "default",
+                                        "legendPosition": "right",
+                                        "nestedLegend": false,
+                                        "emptySizeRatio": 0.5
+                                    }
+                                ],
+                                "shape": "donut"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_tls_total IS NOT NULL\n| STATS tls_requests = SUM(traefik_entrypoint_requests_tls_total) BY attributes.tls_cipher\n| SORT tls_requests DESC\n| LIMIT 10"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "7c67f00e-37fa-3890-f8b2-95d6010eb9b4": {
+                                            "query": {
+                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_tls_total IS NOT NULL\n| STATS tls_requests = SUM(traefik_entrypoint_requests_tls_total) BY attributes.tls_cipher\n| SORT tls_requests DESC\n| LIMIT 10"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "tls_requests",
+                                                    "columnId": "4e2ef6d4-9ed5-11f0-d7c7-85a05d74fde2",
+                                                    "label": "tls_requests",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.tls_cipher",
+                                                    "columnId": "62cf8458-8831-81eb-de11-ffe41a7d26a1",
+                                                    "label": "TLS Cipher",
+                                                    "customLabel": true
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "tls_requests",
+                                                    "columnId": "4e2ef6d4-9ed5-11f0-d7c7-85a05d74fde2",
+                                                    "label": "tls_requests",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.tls_cipher",
+                                                    "columnId": "62cf8458-8831-81eb-de11-ffe41a7d26a1",
+                                                    "label": "TLS Cipher",
+                                                    "customLabel": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "traefik.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "traefik.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": false,
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "fe98772b-264a-3eea-cada-9bdcfb1bffa9": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "fe98772b-264a-3eea-cada-9bdcfb1bffa9",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "host.name",
+                        "title": "Host",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "traefik_otel-tls-config",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "traefik_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "traefik_otel-services",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_a9efa0ad-f96b-dcc8-40bc-8baeb1f9bfe6_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "traefik_otel-tls-config",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_92879ad7-afcb-ee9b-f6e2-4ba77750122c_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "traefik_otel-process",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_dc43befd-c620-33e3-534a-9831cb678557_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_fe98772b-264a-3eea-cada-9bdcfb1bffa9:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

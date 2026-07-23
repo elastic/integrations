@@ -1,0 +1,146 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
+resource.url: https://securityhub.{{aws_region}}.{{tld}}
+
+auth.aws:
+{{#if access_key_id}}
+  access_key_id: {{access_key_id}}
+{{/if}}
+{{#if secret_access_key}}
+  secret_access_key: {{secret_access_key}}
+{{/if}}
+{{#if session_token}}
+  session_token: {{session_token}}
+{{/if}}
+{{#if shared_credential_file}}
+  shared_credential_file: {{shared_credential_file}}
+{{/if}}
+{{#if credential_profile_name}}
+  credential_profile_name: {{credential_profile_name}}
+{{/if}}
+{{#if role_arn}}
+  role_arn: {{role_arn}}
+{{/if}}
+{{#if external_id}}
+  external_id: {{external_id}}
+{{/if}}
+{{#if assume_role_duration}}
+  assume_role.duration: {{assume_role_duration}}
+{{/if}}
+{{#if assume_role_expiry_window}}
+  assume_role.expiry_window: {{assume_role_expiry_window}}
+{{/if}}
+
+state:
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields: ~
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      {
+        "start_time": state.start_time,
+        "end_time": state.end_time,
+      }
+    :
+      {
+        "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+        "end_time": now.format(time_layout.RFC3339),
+      }
+  ).as(time_range,
+    post_request(
+      state.url.trim_right("/") + "/findingsv2",
+      "application/json",
+      {
+        "Filters": {
+          "CompositeFilters": [{
+            "DateFilters": [{
+              "FieldName": "finding_info.modified_time_dt",
+              "Filter": {
+                "Start": time_range.start_time,
+                "End": time_range.end_time
+              }
+            }]
+          }]
+        },
+        "MaxResults": state.batch_size,
+        ?"NextToken": state.?next_token,
+        "SortCriteria": [{"Field":"finding_info.modified_time_dt","SortOrder":"asc"}]
+      }.encode_json()
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": body.Findings.map(e, {
+          "message": e.encode_json(),
+        }),
+        "initial_interval": state.initial_interval,
+        "batch_size": state.batch_size,
+        "start_time": time_range.start_time,
+        "end_time": time_range.end_time,
+        ?"next_token": body.?NextToken,
+        "want_more": body.?NextToken.orValue(null) != null,
+        "cursor": {
+          "last_timestamp": (
+            body.?NextToken.orValue(null) != null ?
+              time_range.start_time
+            :
+              time_range.end_time
+          ),
+        }
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST " + state.url.trim_right("/") + "/findingsv2: " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "initial_interval": state.initial_interval,
+        "batch_size": state.batch_size,
+        "want_more": false,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -26,11 +26,11 @@ The Claroty xDome integration collects three types of logs.
 
 ## Requirements
 
-### Agentless-enabled integration
+### Elastic Managed-enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent-based installation
 
@@ -1427,7 +1427,6 @@ An example event for `vulnerability` looks as following:
 | claroty_xdome.vulnerability.note | The notes added to the vulnerability. | keyword |
 | claroty_xdome.vulnerability.priority_group | The Vulnerability Priority Group can be used to prioritize vulnerabilities based on the suggested order of hierarchical groups, determined by each vulnerabilities impact, exploitability characteristics, relevance state and remediation information. Device filters dynamically change the groups. | keyword |
 | claroty_xdome.vulnerability.published_date | The date the vulnerability was published. | date |
-| claroty_xdome.vulnerability.recommendations | Actionable recommendations retrieved from the vendor, CERT advisory and the platform.Such as security updates, upgrades and additional Workarounds to minimize the risk. | keyword |
 | claroty_xdome.vulnerability.sources.name |  | keyword |
 | claroty_xdome.vulnerability.sources.url |  | keyword |
 | claroty_xdome.vulnerability.type | Type such as "Application", "Clinical", "IoT" or "Platform". | keyword |

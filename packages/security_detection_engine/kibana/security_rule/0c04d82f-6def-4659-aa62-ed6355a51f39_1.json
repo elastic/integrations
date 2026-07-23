@@ -1,0 +1,98 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects successful GKE secret get or list operations where the user agent matches scripting runtimes, minimal HTTP clients, or offensive-distribution fingerprints rather than typical kubectl or controller traffic.",
+        "false_positives": [
+            "Approved scripts, CI jobs, or penetration tests may use generic HTTP clients. Validate tickets and identity scope before treating as compromise."
+        ],
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Secret get or list with Suspicious User Agent",
+        "note": "## Triage and analysis\n\n### Investigating GKE Secret get or list with Suspicious User Agent\n\nReview `user.email`, `user_agent.original`, targeted secret resource, and `source.ip`.\n\n### Investigation steps\n\n- Confirm whether the identity should access secrets with this client fingerprint.\n- Pivot on source IP for other API bursts, exec, or RBAC changes.\n\n### False positives\n\n- Internal automation using generic libraries; exclude stable service accounts after review.",
+        "query": "data_stream.dataset:gcp.audit and service.name:\"k8s.io\" and event.outcome:success and\nevent.action:(\"io.k8s.core.v1.secrets.list\" or \"io.k8s.core.v1.secrets.get\") and user_agent.original:(\n  curl* or python* or Python* or wget* or Go-http* or perl* or java* or node* or php* or *distrib#kali* or *kali-amd64* or\n  *kali-arm64* or Bun* or axios* or undici*\n)\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1552/007/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "0c04d82f-6def-4659-aa62-ed6355a51f39",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "0c04d82f-6def-4659-aa62-ed6355a51f39_1",
+    "type": "security-rule"
+}

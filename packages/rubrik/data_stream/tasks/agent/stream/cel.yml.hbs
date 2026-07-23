@@ -107,16 +107,7 @@ program: |-
           "variables": {
               "chartView": "OBJECT_BACKUP_TASK_SUMMARY_BY_SLA_CHART",
               "reportRoom": "REPORT_ROOM_NONE",
-              "filter": [
-                {{#if filters}}
-                  {{#each filters}}
-                    {
-                      "field": "{{field}}",
-                      "texts": [{{#each values}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]
-                    }{{#unless @last}},{{/unless}}
-                  {{/each}}
-                {{/if}}
-              ]
+              "filter": [],
             }
         }.encode_json(),
       }
@@ -128,10 +119,19 @@ program: |-
               {
                 "slaDomainId": childNode.name.serializedValue,
                 "slaDomainName": childNode.name.displayValue,
-                "succeededTasksValue": chartDataNode.name.serializedValue == "succeeded_tasks" ? childNode.value.intValue : null,
-                "failedTasksValue": chartDataNode.name.serializedValue == "failed_tasks" ? childNode.value.intValue : null,
-                "canceledTasksValue": chartDataNode.name.serializedValue == "canceled_tasks" ? childNode.value.intValue : null,
-                "missedTasksValue": chartDataNode.name.serializedValue == "missed_tasks" ? childNode.value.intValue : null,
+                
+                "succeededTasksValue": chartDataNode.name.serializedValue == "succeeded_tasks" ? 
+                  (("longValue" in childNode.value) ? childNode.value.longValue : childNode.value.intValue) : null,
+                
+                "failedTasksValue": chartDataNode.name.serializedValue == "failed_tasks" ? 
+                  (("longValue" in childNode.value) ? childNode.value.longValue : childNode.value.intValue) : null,
+                
+                "canceledTasksValue": chartDataNode.name.serializedValue == "canceled_tasks" ? 
+                  (("longValue" in childNode.value) ? childNode.value.longValue : childNode.value.intValue) : null,
+                
+                "missedTasksValue": chartDataNode.name.serializedValue == "missed_tasks" ? 
+                  (("longValue" in childNode.value) ? childNode.value.longValue : childNode.value.intValue) : null,
+
                 "metricType": chartDataNode.name.serializedValue
               }
             )

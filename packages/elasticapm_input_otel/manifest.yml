@@ -1,0 +1,86 @@
+format_version: 3.6.0
+name: elasticapm_input_otel
+title: "Elastic APM Intake OpenTelemetry Input Package"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Receive APM data from Elastic APM agents using the Elastic APM Intake receiver"
+type: input
+categories:
+  - monitoring
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logo_apm.svg
+    title: Elastic APM logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: elasticapmintakereceiver
+    title: Elastic APM Intake
+    description: Receive APM data from Elastic APM agents using the OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    dynamic_signal_types: true
+    vars:
+      - name: endpoint
+        type: text
+        title: Endpoint
+        required: true
+        description: The address to receive APM data from Elastic APM agents. Use `localhost:8200` for same-host agents; use `0.0.0.0:8200` (or a specific bind IP) to accept connections from remote agents.
+        default: localhost:8200
+        show_user: true
+      - name: tls_enabled
+        type: bool
+        title: Enable TLS
+        required: false
+        description: Enable TLS to encrypt data in transit between APM agents and the receiver. When enabled, both the TLS Certificate File and TLS Key File must be provided.
+        default: false
+        show_user: true
+      - name: tls_cert_file
+        type: text
+        title: TLS Certificate File
+        required: false
+        description: Path to the TLS certificate file for encrypted connections. Required when TLS is enabled.
+        show_user: false
+      - name: tls_key_file
+        type: text
+        title: TLS Key File
+        required: false
+        description: Path to the TLS key file for encrypted connections. Required when TLS is enabled.
+        show_user: false
+      - name: tls_client_ca_file
+        type: text
+        title: TLS Client CA File (mTLS)
+        required: false
+        description: Path to the CA certificate file for validating client certificates (mutual TLS). Optional; when set with TLS enabled, only clients presenting a certificate signed by this CA are accepted.
+        show_user: false
+      - name: auth_enabled
+        type: bool
+        title: Enable API key authentication
+        required: false
+        description: Validate Elastic APM API keys using the apikeyauth extension. When enabled, APM agents must send a valid API key (e.g. via ELASTIC_APM_API_KEY) and the Elasticsearch endpoint below must be provided.
+        default: false
+        show_user: true
+      - name: auth_elasticsearch_endpoint
+        type: text
+        title: Elasticsearch endpoint for API key validation
+        required: false
+        description: Elasticsearch URL used by the apikeyauth extension to validate API keys (e.g. https://your-cluster.es.io:9200). Required when API key authentication is enabled; if missing, the receiver will fail to start.
+        show_user: true
+      - name: data_stream.dataset
+        type: text
+        title: Data Stream Dataset
+        required: false
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html) are allowed.
+        default: generic
+        show_user: false
+owner:
+  github: elastic/ecosystem
+  type: elastic

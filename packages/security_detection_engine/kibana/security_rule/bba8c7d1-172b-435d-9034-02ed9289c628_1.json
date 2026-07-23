@@ -1,0 +1,136 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a scripting interpreter makes an outbound network connection to an Ethereum blockchain endpoint for command and control purposes. Adversaries may leverage Ethereum blockchain infrastructure as a covert C2 channel to receive commands and exfiltrate data, as observed in campaigns like SleepyDuck malware.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.network-*",
+            "logs-endpoint.events.file-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Etherhiding C2 via Blockchain Connection",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Etherhiding C2 via Blockchain Connection\n\nEtherhiding is an advanced command and control technique where threat actors store malicious configurations, commands, or payload URLs within blockchain transactions on platforms like Ethereum or Binance Smart Chain. This approach provides a highly resilient and censorship-resistant C2 infrastructure since blockchain data cannot be taken down or modified. This detection rule identifies script interpreters or suspicious processes connecting to blockchain API endpoints that may be retrieving attacker-controlled data from the blockchain.\n\n### Possible investigation steps\n\n- Review the process.name and process.executable fields to identify which application is making blockchain API requests and assess whether cryptocurrency or Web3 functionality is expected on this system.\n- Examine the destination.domain and dns.question.name fields to identify the specific blockchain API endpoint being queried, such as Infura, Alchemy, or public RPC endpoints.\n- Analyze the process.command_line and process.args to understand what code or script is executing and look for hardcoded contract addresses or wallet addresses that may be querying blockchain data.\n- Investigate the process.parent.executable and parent process chain to determine how the blockchain-querying process was launched and identify the initial execution vector.\n- Review network connection payloads if available to identify the specific blockchain queries being made and extract any contract addresses or transaction hashes being queried.\n- Search threat intelligence sources for the identified contract addresses or wallet addresses to determine if they are associated with known malicious campaigns.\n- Correlate with file modification events on the same host to identify if the blockchain data is being written to disk or used to configure malware.\n\n### False positive analysis\n\n- Cryptocurrency wallet applications and browser extensions legitimately access blockchain APIs to display balances and transaction history. Verify if the user has approved cryptocurrency applications.\n- Web3 developers and blockchain application developers may use blockchain APIs during development and testing. Confirm with development teams if such activities are expected.\n- Decentralized application (dApp) browsers and related tools access blockchain data as part of normal operations. Verify if these tools are sanctioned for business use.\n- NFT marketplaces and related applications may query blockchain data for asset verification. Confirm if such applications are approved.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS system from the network to prevent further C2 communication or payload retrieval.\n- Terminate the suspicious process making blockchain API connections and prevent it from restarting.\n- Extract and analyze the blockchain contract addresses or transaction data being queried to understand the malicious payload or configuration.\n- Conduct a thorough malware analysis of the responsible application to identify its full capabilities and persistence mechanisms.\n- Block the identified blockchain API endpoints at the network perimeter if they are not required for legitimate business purposes.\n- Search for similar blockchain API connections across other endpoints to identify potential lateral movement or additional compromised systems.\n- Escalate to the security operations team for comprehensive incident response if the activity confirms an active Etherhiding-based attack.\n",
+        "query": "sequence by process.entity_id with maxspan=15s\n  [network where host.os.type == \"macos\" and event.type == \"start\" and\n    (process.name in (\"bash\", \"sh\", \"zsh\", \"osascript\", \"node\", \"Cursor\") or\n    process.name like (\"python*\", \"ruby*\", \"perl*\", \"tclsh*\")) and\n    destination.domain like (\"eth-mainnet*\", \"ethereum*\", \"eth.*.com\")]\n  [file where host.os.type == \"macos\" and event.action == \"modification\" and file.extension in (\"js\", \"py\", \"sh\")]\n",
+        "references": [
+            "https://secureannex.com/blog/sleepyduck-malware/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "bba8c7d1-172b-435d-9034-02ed9289c628",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1102",
+                        "name": "Web Service",
+                        "reference": "https://attack.mitre.org/techniques/T1102/",
+                        "subtechnique": [
+                            {
+                                "id": "T1102.002",
+                                "name": "Bidirectional Communication",
+                                "reference": "https://attack.mitre.org/techniques/T1102/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            },
+                            {
+                                "id": "T1059.006",
+                                "name": "Python",
+                                "reference": "https://attack.mitre.org/techniques/T1059/006/"
+                            },
+                            {
+                                "id": "T1059.007",
+                                "name": "JavaScript",
+                                "reference": "https://attack.mitre.org/techniques/T1059/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 1
+    },
+    "id": "bba8c7d1-172b-435d-9034-02ed9289c628_1",
+    "type": "security-rule"
+}

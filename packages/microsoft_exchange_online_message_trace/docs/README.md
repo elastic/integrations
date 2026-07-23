@@ -4,76 +4,71 @@ This integration is for Microsoft Exchange Online Message Trace logs. It include
 
 - `log` dataset: supports Microsoft Exchange Online Message Trace logs.
 
-## Basic Auth Deprecation notification
-The basic authentication configuration fields have been removed from this integration as Microsoft has deprecated and disabled basic authentication for Exchange Online. See the [deprecation notification](https://learn.microsoft.com/en-us/exchange/clients-and-mobile-in-exchange-online/deprecation-of-basic-authentication-exchange-online) for details.
+## Agentless Enabled Integration
 
-## Office 365 Account Requirements
-At a minimum, your Office 365 service account should include a role with Message Tracking and View‑Only Recipients permissions, assigned to the Office 365 user account
-that will be used for the integration. Assign these permissions using the [Exchange admin center](https://admin.exchange.microsoft.com).
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-## Logs
-Logs are either gathered via the rest API or via a logfile. [Log Documentation](https://docs.microsoft.com/en-us/previous-versions/office/developer/o365-enterprise-developers/jj984335(v=office.15))
+## Migration from the Legacy Message Trace API to the Graph API
 
-## Microsoft Exchange Online Message Trace API
-The `log` dataset collects the Microsoft Exchange Online Message Trace logs. To search for ingested logs in Elasticsearch you need to query using `datastream.dataset: microsoft_exchange_online_message_trace.log`. This integration will poll the Microsoft Exchange Online Message Trace legacy API (https://reports.office365.com/ecp/reportingwebservice/reporting.svc/MessageTrace) to pull Message Trace logs and ingest them via the ingest pipelines.
+Microsoft has announced the deprecation on March 18th, 2026 of the legacy Message Trace API support in the Reporting Webservice.
 
-## Configuring with OAuth2
-In order to continue using the Microsoft Exchange Online Message Trace you will need to enable and configure OAuth2 authentication via your service app.
-- ### Service App Configuration  
-    1) In the [Azure portal](https://portal.azure.com/), create a Microsoft Entra App (service app) Registration. For details please refer to the official [Microsoft Documentation](https://learn.microsoft.com/en-us/entra/identity-platform/howto-create-service-principal-portal).
-    2) In most cases under the `Redirect URI` section, you would want to configure the value `Web` for the `app type` and `http://localhost` for the `Redirect URI`, unless there are some specific requirements on your end.
-    3) Assign the application at least one Microsoft Entra (Azure AD) role that will enable it to access the Reporting Web Service:
-        - Security Reader
-        - Global Reader
-    4) The App Registration should contain the following API permissions: Office 365 Exchange Online > `ReportingWebService.Read.All` (application). See [Specify the permissions your app requires to access the Reporting Web Service](https://learn.microsoft.com/en-gb/previous-versions/office/developer/o365-enterprise-developers/jj984325(v=office.15)#specify-the-permissions-your-app-requires-to-access-the-reporting-web-service).
+This integration has been updated to use the new Graph-based message trace API.  New credential setup will be required, as described below.
 
-- ### Configuring OAuth2 Credentials
-  Once you have your service app registered and configured, you can now configure your OAuth2 credentials as follows:- 
-    1) Generate a client secret for your registered service app. Copy and store the `client secret value` with you as this will be required for your OAuth2 credentials.
-    2) Fill in the following fields with the appropriate values from your `configured service app`:-
-        
-        - **Client ID**: The `client_id` of your `service app` to pass in the OAuth request parameter.
-        - **Client secret**:  The `client_secret`  of your `service app` that you generated earlier, to pass in the OAuth request parameter.
-        - **Tenant ID**: The Directory ID (tenant identifier) of your `service app` in your Microsoft Entra ID(Azure Active Directory).
-  
-  
-  With these values now configured, the OAuth2 configuration for the integration should be ideally complete. For more details, please check the 
-  official doc for [Getting Started with Reporting Web Service](https://learn.microsoft.com/en-gb/previous-versions/office/developer/o365-enterprise-developers/jj984325(v=office.15)#get-started-with-reporting-web-service).
+The new Message Trace experience includes an updated PowerShell cmdlet, `Get-MessageTraceV2`, in General Availability since June 3rd, 2025, which can be used to collect data with a manual script, to be ingested from a log file. However, the Graph-based message trace API is preferred.
 
-### NOTE
-- To configure `Local Domains` you can check your [Microsoft Admin Exchange Center](https://admin.exchange.microsoft.com/) for the domains
+## Setup
+
+### Graph API setup
+
+To collect message trace logs from Microsoft's Graph API, you need to:
+- Create an Entra app and record the Directory ID (tenant ID) and Application ID (client ID).
+- Add the `ExchangeMessageTrace.Read.All` permission of type `Application` and grant admin consent for it.
+- Create a client secret and record it.
+- Create a service principal for Microsoft's internal Message Trace app in the tenant.
+
+  The Graph-based Message Trace API is backed by a Microsoft first-party application with App ID `8bd644d1-64a1-4d4b-ae52-2e0cbf64e373`. This is a Microsoft-owned application, separate from your own app registration. Every tenant must provision a service principal for it before the API will accept authenticated requests. Without this step, the API returns a 401 error referencing this App ID.
+
+  Run the following PowerShell commands once in your tenant to provision it:
+
+  ```powershell
+  Connect-MgGraph -Scopes "Application.ReadWrite.All"
+  Import-Module Microsoft.Graph.Applications
+  $params = @{ appId = "8bd644d1-64a1-4d4b-ae52-2e0cbf64e373" }
+  New-MgServicePrincipal -BodyParameter $params
+  ```
+
+  Provisioning may take several hours to propagate. During that time, 401 errors will continue.
+
+For more details, refer to Microsoft's [Graph-based message trace API onboarding guide](https://learn.microsoft.com/en-us/exchange/monitoring/trace-an-email-message/graph-api-message-trace).
+
+After that is done, you can configure the Microsoft Exchange Online Message Trace integration using the Tenant ID, Client ID and Client Secret.
+
+These are different from the OAuth credentials used previously with the legacy Message Trace API in the Reporting Webservice.
+
+### Integration settings
+
+To configure `Local Domains` you can check your [Microsoft Admin Exchange Center](https://admin.exchange.microsoft.com/) for the domains
 available in your organization. They are usually under the sections [Accepted Domains](https://admin.exchange.microsoft.com/#/accepteddomains) and [Remote Domains](https://admin.exchange.microsoft.com/#/remotedomains).
 
-- The default `Interval` is configured to `1h` and `Initial Interval` to `48h`, you can however change these to your required values. The look-back 
-  value of `Initial Interval` should not exceed `200 hours` as this might cause unexpected errors with the API.
+### Log file collection 
 
-- The default `Minimum Age` is configured to `1h`, you can however change these to your required values. The `Minimum Age` was introduced to allow a sliding 
-  window to exist in combination with the `Initial Interval`. If you do not require a sliding window you can set this to `0s` which will cause the `Minimum Age` to 
-  always default to the `current time (now)`.
+It is possible to collect data using a PowerShell script and have the integration ingest it from a log file. However, the Graph API-based method above is preferred.
 
-- The default `Additional Look-back Time` value is configured for `1h`. 
-  This is intended to capture events that may not have been initially present due to eventual consistency.
-  This value does not need to exceed [`24h`](https://learn.microsoft.com/en-us/previous-versions/office/developer/o365-enterprise-developers/jj984335(v=office.15)#data-granularity-persistence-and-availability).
-    - Note: The larger this value is, the less likely events will be missed, however, this will cause the integration to take longer to pull all events, making newer events take longer to become present.
+**Disclaimer:** You may need to adapt the authentication method of the script
+below to match your environment. For more information about authentication
+methods available in PowerShell, please see the
+[guides here](https://learn.microsoft.com/en-us/powershell/exchange/connect-to-exchange-online-powershell?view=exchange-ps).
+Note that basic authentication (with `-Authentication Basic`) is no longer
+supported.
 
-- The default value of `Batch Size` is set to 1000. This means for every request Httpjson will paginate with a value of 1000 results per page. The 
-   maximum page size supported by the Message Trace API is `2000`. The API will return an empty `value` array when there are no more logs to pull and the
-   pagination will terminate with an error that can be ignored.
-
-## Logfile collection 
-
-**Disclaimer:**  With basic authentication support now disabled, the PowerShell script provided below will not work as is. However, you can 
-see the [guides here](https://learn.microsoft.com/en-us/powershell/exchange/connect-to-exchange-online-powershell?view=exchange-ps) on how 
-to connect to PowerShell using different authentication techniques using the EXO V2 and V3 modules. With a combination of the script below
-and the alternate authentication methods mentioned in the guide, you can possibly perform the logfile collection as usual.
-<br>
-
-The following sample Powershell script may be used to get the logs and put them into a JSON file that can then be
-consumed by the logfile input:
+The following example PowerShell script can be adapted to fetch the logs and
+write them into a JSON file that the integration can consume (via the logfile
+input).
 
 Prerequisites:
 
-Install the Exchange Online Management module by running the following command: 
+Install the Exchange Online Management module by running the following command:
 
 ````powershell
 Install-Module -Name ExchangeOnlineManagement
@@ -85,10 +80,11 @@ Import the Exchange Online Management module by running the following command:
 Import-Module -Name ExchangeOnlineManagement
 ````
 
-This script would have to be triggered at a certain interval, in accordance with the look-back interval specified.
-In this example script, the look back would be 24 hours, so the interval would need to be daily.
-According to the [Documentation](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetrace?view=exchange-ps),
-it is only possible to get up to 1k pages. If this should be an issue, try reducing the `$looback` or increasing `$pageSize`.
+This script would have to be triggered at a certain interval, in accordance
+with the look-back interval specified.  In this example script, the look back
+is 24 hours, so the interval would need to be daily. For more information about
+the `Get-MessageTraceV2` cmdlet, please refer to its
+[documentation](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-messagetracev2?view=exchange-ps).
 
 ```powershell
 # Username and Password
@@ -96,8 +92,8 @@ $username = "USERNAME@DOMAIN.TLD"
 $password = "PASSWORD"
 # Lookback in Hours
 $lookback = "-24"
-# Page Size, should be no problem with 1k
-$pageSize = "1000"
+# Results per request (maximum 5000)
+$resultSize = "5000"
 # Output of the json file
 # This would then be ingested via the integration
 $output_location = "C:\temp\messageTrace.json"
@@ -108,23 +104,46 @@ $startDate = (Get-Date).AddHours($lookback)
 $endDate = Get-Date
 
 Connect-ExchangeOnline -Credential $Credential
+
 $paginate = 1
-$page = 1
 $output = @()
+
+# Initialize V2-style pagination cursor values
+$startingRecipientAddress = $null
+$currentEndDate = $endDate
+
 while ($paginate -eq 1)
 {
-    $messageTrace = Get-MessageTrace -PageSize $pageSize -StartDate $startDate -EndDate $endDate -Page $page
-    $page
+    if ($startingRecipientAddress) {
+        $messageTrace = Get-MessageTraceV2 -ResultSize $resultSize -StartDate $startDate -EndDate $currentEndDate -StartingRecipientAddress $startingRecipientAddress
+    }
+    else {
+        $messageTrace = Get-MessageTraceV2 -ResultSize $resultSize -StartDate $startDate -EndDate $currentEndDate
+    }
+
     if (!$messageTrace)
     {
         $paginate = 0
     }
     else
     {
-        $page++
         $output = $output + $messageTrace
+
+        # If we got fewer than ResultSize rows, we've reached the end
+        if ($messageTrace.Count -lt [int]$resultSize)
+        {
+            $paginate = 0
+        }
+        else
+        {
+            # Prepare the cursor data for the next query
+            $last = $messageTrace[-1]
+            $startingRecipientAddress = $last.RecipientAddress
+            $currentEndDate = $last.Received
+        }
     }
 }
+
 if (Test-Path $output_location)
 {
     Remove-Item $output_location
@@ -132,66 +151,69 @@ if (Test-Path $output_location)
 foreach ($event in $output)
 {
     $event.StartDate = [Xml.XmlConvert]::ToString(($event.StartDate), [Xml.XmlDateTimeSerializationMode]::Utc)
-    $event.EndDate = [Xml.XmlConvert]::ToString(($event.EndDate), [Xml.XmlDateTimeSerializationMode]::Utc)
-    $event.Received = [Xml.XmlConvert]::ToString(($event.Received), [Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.EndDate   = [Xml.XmlConvert]::ToString(($event.EndDate),   [Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.Received  = [Xml.XmlConvert]::ToString(($event.Received),  [Xml.XmlDateTimeSerializationMode]::Utc)
     $event = $event | ConvertTo-Json -Compress
     Add-Content $output_location $event -Encoding UTF8
 }
 ```
+
 An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-21T17:25:36.969Z",
+    "@timestamp": "2025-11-29T14:22:31.109Z",
     "agent": {
-        "ephemeral_id": "11edfb81-b112-45ba-8f01-6e7483e450fa",
-        "id": "1c0788e9-492a-441e-acab-fc8c56281cf1",
-        "name": "elastic-agent-22259",
+        "ephemeral_id": "5348c840-193d-4e9d-8849-bb4d2c6b88f0",
+        "id": "ed6593d9-b251-42d5-9c26-b5222d3a9ce1",
+        "name": "elastic-agent-79838",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "microsoft_exchange_online_message_trace.log",
-        "namespace": "71098",
+        "namespace": "75301",
         "type": "logs"
     },
     "destination": {
-        "domain": "contoso.com",
-        "registered_domain": "contoso.com",
+        "domain": "elastic595.onmicrosoft.com",
+        "registered_domain": "onmicrosoft.com",
+        "subdomain": "elastic595",
         "top_level_domain": "com",
         "user": {
-            "domain": "contoso.com",
-            "email": "linus@contoso.com",
-            "id": "linus@contoso.com",
-            "name": "linus"
+            "domain": "elastic595.onmicrosoft.com",
+            "email": "dan.o'connor@elastic595.onmicrosoft.com",
+            "id": "dan.o'connor@elastic595.onmicrosoft.com",
+            "name": "dan.o'connor"
         }
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1c0788e9-492a-441e-acab-fc8c56281cf1",
+        "id": "ed6593d9-b251-42d5-9c26-b5222d3a9ce1",
         "snapshot": false,
         "version": "8.19.4"
     },
     "email": {
         "attachments": {
             "file": {
-                "size": 22761
+                "size": 298412
             }
         },
-        "delivery_timestamp": "2022-10-21T17:25:36.969376Z",
+        "delivery_timestamp": "2025-11-29T14:22:31.109Z",
+        "direction": "external",
         "from": {
             "address": [
-                "noreply@azure.microsoft.com"
+                "MSSecurity-noreply@microsoft.com"
             ]
         },
-        "local_id": "a5e6dc0f-23df-4b20-d240-08dab38944a1",
-        "message_id": "<GVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM>",
-        "subject": "testmail 2",
+        "local_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "message_id": "<7a8b9c0d-e1f2-3456-7890-abcdef123456@az.northeurope.microsoft.com>",
+        "subject": "Microsoft Entra ID Protection Weekly Digest",
         "to": {
             "address": [
-                "linus@contoso.com"
+                "dan.o'connor@elastic595.onmicrosoft.com"
             ]
         }
     },
@@ -201,63 +223,60 @@ An example event for `log` looks as following:
             "email"
         ],
         "dataset": "microsoft_exchange_online_message_trace.log",
-        "ingested": "2025-10-06T13:13:06Z",
-        "original": "{\"Organization\":\"contoso.com\",\"MessageId\":\"\\u003cGVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM\\u003e\",\"Received\":\"2022-10-21T17:25:36.969376Z\",\"SenderAddress\":\"noreply@azure.microsoft.com\",\"RecipientAddress\":\"linus@contoso.com\",\"Subject\":\"testmail 2\",\"Status\":\"Delivered\",\"ToIP\":null,\"FromIP\":\"40.107.23.54\",\"Size\":22761,\"MessageTraceId\":\"a5e6dc0f-23df-4b20-d240-08dab38944a1\",\"StartDate\":\"2022-10-21T09:40:10Z\",\"EndDate\":\"2022-10-22T09:40:10Z\",\"Index\":0}",
+        "ingested": "2026-06-05T13:14:47Z",
+        "original": "{\"fromIP\":\"2a02:cf41:d675:a90d:c0ef:b23f:f053:947e\",\"id\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"messageId\":\"\\u003c7a8b9c0d-e1f2-3456-7890-abcdef123456@az.northeurope.microsoft.com\\u003e\",\"receivedDateTime\":\"2025-11-29T14:22:31.109Z\",\"recipientAddress\":\"dan.o'connor@elastic595.onmicrosoft.com\",\"senderAddress\":\"MSSecurity-noreply@microsoft.com\",\"size\":298412,\"status\":\"delivered\",\"subject\":\"Microsoft Entra ID Protection Weekly Digest\",\"toIP\":\"\"}",
         "outcome": "success",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "log"
-    },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/microsoft_exchange_online_message_trace_test.ndjson.log"
-        },
-        "offset": 0
+        "type": "cel"
     },
     "microsoft": {
         "online_message_trace": {
-            "EndDate": "2022-10-22T09:40:10Z",
-            "FromIP": "40.107.23.54",
-            "Index": 0,
-            "MessageId": "<GVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM>",
-            "MessageTraceId": "a5e6dc0f-23df-4b20-d240-08dab38944a1",
-            "Organization": "contoso.com",
-            "Received": "2022-10-21T17:25:36.969376Z",
-            "RecipientAddress": "linus@contoso.com",
-            "SenderAddress": "noreply@azure.microsoft.com",
-            "Size": 22761,
-            "StartDate": "2022-10-21T09:40:10Z",
-            "Status": "Delivered",
-            "Subject": "testmail 2"
+            "FromIP": "2a02:cf41:d675:a90d:c0ef:b23f:f053:947e",
+            "MessageId": "<7a8b9c0d-e1f2-3456-7890-abcdef123456@az.northeurope.microsoft.com>",
+            "MessageTraceId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "Received": "2025-11-29T14:22:31.109Z",
+            "RecipientAddress": "dan.o'connor@elastic595.onmicrosoft.com",
+            "SenderAddress": "MSSecurity-noreply@microsoft.com",
+            "Size": 298412,
+            "Status": "delivered",
+            "Subject": "Microsoft Entra ID Protection Weekly Digest"
         }
     },
     "related": {
         "user": [
-            "linus@contoso.com",
-            "noreply@azure.microsoft.com",
-            "linus",
-            "noreply"
+            "dan.o'connor@elastic595.onmicrosoft.com",
+            "MSSecurity-noreply@microsoft.com",
+            "dan.o'connor",
+            "MSSecurity-noreply"
         ]
     },
     "source": {
-        "domain": "azure.microsoft.com",
-        "ip": "40.107.23.54",
+        "domain": "microsoft.com",
+        "geo": {
+            "continent_name": "Europe",
+            "country_iso_code": "NO",
+            "country_name": "Norway",
+            "location": {
+                "lat": 62,
+                "lon": 10
+            }
+        },
+        "ip": "2a02:cf41:d675:a90d:c0ef:b23f:f053:947e",
         "registered_domain": "microsoft.com",
-        "subdomain": "azure",
         "top_level_domain": "com",
         "user": {
-            "domain": "azure.microsoft.com",
-            "email": "noreply@azure.microsoft.com",
-            "id": "noreply@azure.microsoft.com",
-            "name": "noreply"
+            "domain": "microsoft.com",
+            "email": "MSSecurity-noreply@microsoft.com",
+            "id": "MSSecurity-noreply@microsoft.com",
+            "name": "MSSecurity-noreply"
         }
     },
     "tags": [
         "preserve_original_event",
-        "microsoft-defender-endpoint",
         "forwarded"
     ]
 }
@@ -271,6 +290,8 @@ An example event for `log` looks as following:
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.size | Attachment file size in bytes. | long |
 | event.dataset | Event dataset | constant_keyword |
 | input.type |  | keyword |
 | log.offset |  | long |
@@ -288,3 +309,4 @@ An example event for `log` looks as following:
 | microsoft.online_message_trace.Status | The status of the message in the Office 365 email system. This corresponds to the Detail field of the last processing step recorded for the message.\</p\>\</td\> | keyword |
 | microsoft.online_message_trace.Subject | The subject line of the message, if one was present for the message.\</p\>\</td\> | keyword |
 | microsoft.online_message_trace.ToIP | The IPv4 or IPv6 address that the Office 365 email system sent the message to.\</p\>\</td\> | keyword |
+

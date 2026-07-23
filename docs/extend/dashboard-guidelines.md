@@ -91,7 +91,7 @@ Kibana dashboards offer the possibility to apply margins between visualizations,
 
 ## Visualization Best Practices [_visualization_best_practices]
 
-Following are recommended best practices for designing Kibana vizualizations.
+Following are recommended best practices for designing Kibana visualizations.
 
 
 ### Lens vs TSVB visualizations [_lens_vs_tsvb_visualizations]

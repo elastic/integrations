@@ -1,0 +1,136 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects an MSI installer execution followed by the execution of commonly abused Remote Management Software like ScreenConnect. This behavior may indicate abuse where an attacker triggers an MSI install then connects via a guest link with a known session key.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Remote Management Access Launch After MSI Install",
+        "note": "## Triage and analysis\n\n### Investigating Remote Management Access Launch After MSI Install\n\nThis rule fires when the same host runs msiexec with an install argument (/i) and within one minute starts a pre-configured RMM software.\n\n### Possible investigation steps\n\n- Confirm the sequence on the host: first event should be msiexec.exe with process.args containing \"/i\"; second should be a remote management software.\n- Review the source of the MSI file using file events.\n- Check whether use of RMM software is approved for this host.\n- Check network events to validate which remote host the RMM software connects to.\n- Correlate with other alerts for the same host (initial access, persistence, C2).\n\n### False positive analysis\n\n- Legitimate IT/MSP deployment of RMM for support.\n\n### Response and remediation\n\n- If unauthorized RMM use or abuse is confirmed: isolate the host, terminate the ScreenConnect client, remove or block the installation, and investigate how the MSI was delivered and who operates the relay.\n",
+        "query": "sequence by host.id with maxspan=1m\n [process where host.os.type == \"windows\" and event.type == \"start\" and process.name : \"msiexec.exe\" and \n  process.args : (\"/i*\", \"-i*\") and process.parent.name : (\"explorer.exe\", \"sihost.exe\")]\n [process where host.os.type == \"windows\" and event.type == \"start\" and\n  (\n   (process.name : \"ScreenConnect.ClientService.exe\" and process.command_line : \"*?e=Access&y=Guest&h*&k=*\") or\n   (process.name : \"Syncro.Installer.exe\" and process.args : \"--config-json\" and process.args : \"--key\") or \n    process.name : (\"tvnserver.exe\", \"winvnc.exe\") \n  )]\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1219/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1b5e9d4a-7c2f-4e8b-a3d6-0f9c8e2b1a4d",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Crowdstrike",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Elastic Endgame"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1219",
+                        "name": "Remote Access Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1219/",
+                        "subtechnique": [
+                            {
+                                "id": "T1219.002",
+                                "name": "Remote Desktop Software",
+                                "reference": "https://attack.mitre.org/techniques/T1219/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "1b5e9d4a-7c2f-4e8b-a3d6-0f9c8e2b1a4d_2",
+    "type": "security-rule"
+}

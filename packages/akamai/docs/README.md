@@ -35,6 +35,9 @@ See [Akamai API get started](https://techdocs.akamai.com/siem-integration/refere
 | akamai.siem.client_data.telemetry_type | Specifies the telemetry type in use. | long |
 | akamai.siem.client_reputation | Client IP scores for Client Reputation. | keyword |
 | akamai.siem.config_id | ID of the Security Configuration applied to the request. | keyword |
+| akamai.siem.identity.ja4 | A JA4 TLS client fingerprint value. | keyword |
+| akamai.siem.identity.tls_fingerprint_v2 | A client TLS fingerprint V2 value. | keyword |
+| akamai.siem.identity.tls_fingerprint_v3 | A client TLS fingerprint V3 value. | keyword |
 | akamai.siem.policy_id | ID of the Firewall policy applied to the request. | keyword |
 | akamai.siem.request.headers | HTTP Request headers | flattened |
 | akamai.siem.response.headers | HTTP response headers | flattened |
@@ -79,11 +82,11 @@ An example event for `siem` looks as following:
 {
     "@timestamp": "2016-08-11T13:45:33.026Z",
     "agent": {
-        "ephemeral_id": "0141275b-4c93-4f80-af66-e78e49d1ac2b",
-        "id": "9f1b0ff2-268e-45b7-a318-b5ac07ed663d",
-        "name": "elastic-agent-37151",
+        "ephemeral_id": "ca186677-5301-4e63-8aa5-1ded49198d1f",
+        "id": "9d70aadf-eebc-4a79-9154-d09492f8ce88",
+        "name": "elastic-agent-72124",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "akamai": {
         "siem": {
@@ -184,16 +187,16 @@ An example event for `siem` looks as following:
     },
     "data_stream": {
         "dataset": "akamai.siem",
-        "namespace": "23956",
+        "namespace": "72529",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9f1b0ff2-268e-45b7-a318-b5ac07ed663d",
+        "id": "9d70aadf-eebc-4a79-9154-d09492f8ce88",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -202,7 +205,7 @@ An example event for `siem` looks as following:
         ],
         "dataset": "akamai.siem",
         "id": "2ab418ac8515f33",
-        "ingested": "2025-10-08T10:34:19Z",
+        "ingested": "2026-01-09T09:24:59Z",
         "kind": "event",
         "start": "2016-08-11T13:45:33.026Z"
     },

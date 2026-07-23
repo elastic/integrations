@@ -1,0 +1,28 @@
+---
+description: Benchmark 100000 intelligence events ingested.
+input: cel
+vars: ~
+data_stream:
+  name: intelligence
+  vars:
+    username: test_username
+    api_key: test_api_key
+    url: http://svc-intelligence:8080
+    interval: 5m
+    initial_interval: 24h
+    page_size: 3
+    enable_request_tracer: true
+    preserve_original_event: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: intelligence
+  generator:
+    total_events: 100000
+    template:
+      path: ./intelligence-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./intelligence-benchmark/config.yml
+    fields:
+      path: ./intelligence-benchmark/fields.yml

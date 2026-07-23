@@ -1,0 +1,21 @@
+input: httpjson
+service: m365-defender-incident-http
+skip_ignored_fields:
+  - m365_defender.incident.alert.recommended_actions
+vars:
+  login_url: http://{{Hostname}}:{{Port}}
+  client_id: xxxx
+  client_secret: xxxx
+  tenant_id: tenant_id
+data_stream:
+  vars:
+    request_url: http://{{Hostname}}:{{Port}}
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+    enable_request_tracer: true
+    batch_size: 2
+    oauth_endpoint_params: |
+      grant_type: refresh_token
+      refresh_token: 'refresh_token_123'
+assert:
+  hit_count: 4

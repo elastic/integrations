@@ -1,0 +1,54 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: cloudflare_logpush
+      name: test-http-endpoint-cloudflare_logpush
+      streams:
+        - data_stream:
+            dataset: cloudflare_logpush.page_shield_events
+          listen_address: 0.0.0.0
+          listen_port: 9560
+          preserve_duplicate_custom_fields: true
+          preserve_original_event: true
+          processors:
+            - decode_json_fields:
+                fields:
+                    - message
+                max_depth: 10
+                overwrite_keys: true
+                process_array: true
+                target: ""
+          publisher_pipeline.disable_host: true
+          retry_after: 10
+          secret.header: X-Secret-Header
+          secret.value: ${SECRET_0}
+          ssl: null
+          tags:
+            - preserve_original_event
+            - preserve_duplicate_custom_fields
+            - forwarded
+          tracer:
+            enabled: true
+            filename: ../../logs/http_endpoint/http-request-trace-*.ndjson
+            maxbackups: 5
+          url: /cloudflare_logpush/page_shield_events
+      type: http_endpoint
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-cloudflare_logpush.page_shield_events-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

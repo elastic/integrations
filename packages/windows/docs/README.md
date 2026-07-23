@@ -8,6 +8,14 @@ Then visualize that data in Kibana, create alerts to notify you if something goe
 For example, if you wanted to know if a Windows service unexpectedly stops running, you could install the Windows integration to send service metrics to Elastic.
 Then, you could view real-time changes to service status in Kibana's _[Metrics Windows] Services_ dashboard.
 
+## Choosing the right integration for Windows event logs
+
+If you're collecting Windows event logs, note that there are three related integrations:
+
+- **[System integration](https://www.elastic.co/docs/reference/integrations/system)**: Collects logs from the Windows `Application`, `System`, and `Security` channels with specialized ingest pipelines optimized for observability use cases.
+- **Windows integration** (this integration): Collects logs from Windows-specific channels like PowerShell, Sysmon, Windows Defender, and AppLocker with specialized security-focused ingest pipelines. Use this for security monitoring and advanced Windows telemetry.
+- **[Custom Windows event log package](https://www.elastic.co/docs/reference/integrations/winlog)**: Collects logs from any user-defined Windows event log channel without specialized pipelines.
+  
 ## Data streams
 
 The Windows integration collects two types of data: logs and metrics.
@@ -254,6 +262,7 @@ An example event for `applocker_exe_and_dll` looks as following:
 | file.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
 | file.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | file.pe.product | Internal product name of the file, provided at compile-time. | keyword |
+| file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | file.x509.subject.country | List of country \(C) code | keyword |
 | file.x509.subject.locality | List of locality names (L) | keyword |
 | file.x509.subject.organization | List of organizations (O) of subject. | keyword |
@@ -2153,6 +2162,7 @@ An example event for `powershell_operational` looks as following:
 | powershell.engine.previous_state | Previous state of the PowerShell engine. | keyword |
 | powershell.engine.version | Version of the PowerShell engine version used to execute the command. | keyword |
 | powershell.file.script_block_entropy_bits | Randomness measure of the script using Shannon entropy over Unicode characters (0-20 bits). Entropy values outside the expected range may indicate random or obfuscated code. | float |
+| powershell.file.script_block_entropy_normalized | Normalized entropy in the range [0,1], computed as entropy_bits divided by log2(script_block_length). | float |
 | powershell.file.script_block_hash | A hash of the script to be used in rules. | keyword |
 | powershell.file.script_block_id | Id of the executed script block. | keyword |
 | powershell.file.script_block_length | Total number of characters in the script. | long |

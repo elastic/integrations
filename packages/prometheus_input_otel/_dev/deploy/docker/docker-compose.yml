@@ -1,0 +1,22 @@
+services:
+  prometheus_input_otel:
+    image: prom/prometheus:v3.5.1
+    ports:
+      - "9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-lifecycle'
+
+  prometheus_basic_auth:
+    image: prom/prometheus:v3.5.1
+    ports:
+      - "9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./config/web-basic-auth.yml:/etc/prometheus/web-basic-auth.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.config.file=/etc/prometheus/web-basic-auth.yml'
+      - '--web.enable-lifecycle'

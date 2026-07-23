@@ -28,6 +28,12 @@ processors:
       if: ctx.json != null
   - grok:
       field: event.original
+      tag: grok_event_original_to_remove_braces
+      patterns:
+        - "^\\[%{GREEDYDATA:event.original}\\]$"
+      if: ctx.event?.original != null && ctx.event?.original.startsWith('[')
+  - grok:
+      field: event.original
       patterns:
         - "%{TIMESTAMP_ISO8601:_tmp.timestamp} %{LOGLEVEL:log.level}%{SPACE}\\[%{JAVACLASS:log.logger}\\] \\(%{DATA:process.thread.name}\\) (?<message>(.|\r|\n)*)"
       tag: grok_event_original
@@ -58,9 +64,35 @@ processors:
       tag: blat_json_to_ctx
       if: ctx.json instanceof Map
       source: |-
-        for (def e: ctx.json.entrySet()) {
-          ctx[e.getKey()] = e.getValue();
+
+        def mergeMaps(Map map1, Map map2) {
+          for (def key : map2.keySet()) {
+            if (!map1.containsKey(key)
+                || map1[key] == null
+                || map1[key] == ""
+                || (map1[key] instanceof Map && map1[key].isEmpty())) {
+              // If map1's value is absent or empty, use map2's.
+              map1[key] = map2[key];
+            } else if (map1[key] != map2[key]) {
+              if (map1[key] instanceof Map && map2[key] instanceof Map) {
+                // If values in map1 and map2 for key are both maps, merge them.
+                map1[key] = mergeMaps(map1[key], map2[key]);
+              } else if (map1[key] instanceof List) {
+                // If map1's value is a list, merge map2's value, remove any duplicates.
+                def combined = new LinkedHashSet(map1[key]);
+                if (map2[key] instanceof List) {
+                  combined.addAll(map2[key]);
+                } else if (map2[key] != null) {
+                  combined.add(map2[key]);
+                }
+                map1[key] = new ArrayList(combined);
+              }
+            }
+          }
+          return map1;
         }
+        mergeMaps(ctx, ctx.json);
+
   - pipeline:
       name: '{{ IngestPipeline "events" }}'
       if: "ctx.log?.logger == 'org.keycloak.events'"

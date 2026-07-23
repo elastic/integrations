@@ -1,0 +1,342 @@
+---
+# Oracle Database OTel - Resource Capacity, Sessions & Locking
+# Dashboard 2 of 6 - Connection capacity and resource contention
+# Data source: metrics-oracledbreceiver.otel-*
+dashboards:
+  - id: oracle_otel-resource-capacity
+    minimum_kibana_version: '8.14.0'
+    name: '[Metrics Oracle] Resource Capacity, Sessions & Locking'
+    description: Deep dive into connection capacity and resource contention. Are we approaching limits? How are sessions distributed?
+    controls:
+      - type: options
+        label: Oracle Instance
+        data_view: metrics-*
+        field: oracledb.instance.name
+    filters:
+      - field: data_stream.dataset
+        equals: oracledbreceiver.otel
+    panels:
+      - title: Navigation Links
+        description: Links to all Oracle Database OTel dashboards.
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: oracle_otel-overview
+            - label: Resource Capacity, Sessions & Locking
+              dashboard: oracle_otel-resource-capacity
+            - label: SQL Execution, I/O & Cache Performance
+              dashboard: oracle_otel-sql-execution
+            - label: Transaction Health & Storage Management
+              dashboard: oracle_otel-transaction-health
+            - label: Active Query Analysis
+              dashboard: oracle_otel-active-query-analysis
+            - label: Query Performance & Plans
+              dashboard: oracle_otel-query-performance
+
+      - title: Dashboard Introduction
+        size: {w: 48, h: 3}
+        markdown:
+          content: |
+            # Oracle Database
+
+            This dashboard offers insights into resource capacity, session distribution, and lock contention for your Oracle Database instance, including
+
+            - Process and session utilisation against configured limits
+            - Active transaction count and transaction usage trends over time
+            - DML lock and enqueue lock utilisation
+            - Session distribution by type (user vs background) and status (active vs inactive)
+            - Process, session, transaction, and lock usage vs limit trends over time
+            - Enqueue resource usage over time
+
+      - title: Process Utilisation
+        hide_title: true
+        description: Active OS process count as a percentage of the configured PROCESSES limit.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.processes.usage IS NOT NULL OR oracledb.processes.limit IS NOT NULL
+            | EVAL ts_sec = DATE_TRUNC(1 second, @timestamp)
+            | STATS usage = MAX(oracledb.processes.usage), limit_val = MAX(oracledb.processes.limit) BY ts_sec
+            | WHERE usage IS NOT NULL AND limit_val IS NOT NULL AND limit_val > 0
+            | SORT ts_sec DESC
+            | LIMIT 1
+            | EVAL utilisation_pct = ROUND(TO_DOUBLE(usage) / TO_DOUBLE(limit_val), 3)
+          primary:
+            field: utilisation_pct
+            label: Process Utilisation
+            format:
+              type: percent
+              decimals: 1
+
+      - title: Session Utilisation
+        hide_title: true
+        description: Total active session count across all types as a percentage of the configured session limit.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.sessions.usage IS NOT NULL OR oracledb.sessions.limit IS NOT NULL
+            | EVAL ts_sec = DATE_TRUNC(1 second, @timestamp)
+            | STATS total_usage = SUM(oracledb.sessions.usage), limit_val = MAX(oracledb.sessions.limit) BY ts_sec
+            | WHERE limit_val IS NOT NULL AND total_usage IS NOT NULL AND limit_val > 0
+            | SORT ts_sec DESC
+            | LIMIT 1
+            | EVAL utilisation_pct = ROUND(TO_DOUBLE(total_usage) / TO_DOUBLE(limit_val), 3)
+          primary:
+            field: utilisation_pct
+            label: Session Utilisation
+            format:
+              type: percent
+              decimals: 1
+
+      - title: Active Transaction Count
+        description: Current number of active transactions.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.transactions.usage IS NOT NULL
+            | STATS txn_usage = MAX(LAST_OVER_TIME(oracledb.transactions.usage))
+          primary:
+            field: txn_usage
+            label: Active Transactions
+            format:
+              type: number
+              decimals: 0
+
+      - title: Active DML Locks
+        hide_title: true
+        description: Current count of active DML (Data Manipulation Language) locks.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.dml_locks.usage IS NOT NULL
+            | EVAL ts_sec = DATE_TRUNC(1 second, @timestamp)
+            | STATS dml_locks = MAX(oracledb.dml_locks.usage) BY ts_sec
+            | SORT ts_sec DESC
+            | LIMIT 1
+          primary:
+            field: dml_locks
+            label: Active DML Locks
+            format:
+              type: number
+              decimals: 0
+
+      - title: Enqueue Lock Utilisation
+        hide_title: true
+        description: Active enqueue lock count as a percentage of the configured limit.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.enqueue_locks.usage IS NOT NULL OR oracledb.enqueue_locks.limit IS NOT NULL
+            | EVAL ts_sec = DATE_TRUNC(1 second, @timestamp)
+            | STATS usage = MAX(oracledb.enqueue_locks.usage), limit_val = MAX(oracledb.enqueue_locks.limit) BY ts_sec
+            | WHERE usage IS NOT NULL AND limit_val IS NOT NULL AND limit_val > 0
+            | SORT ts_sec DESC
+            | LIMIT 1
+            | EVAL utilisation_pct = ROUND(TO_DOUBLE(usage) / TO_DOUBLE(limit_val), 3)
+          primary:
+            field: utilisation_pct
+            label: Enqueue Lock Utilisation
+            format:
+              type: percent
+              decimals: 1
+
+      - title: Process Usage vs Limit Over Time
+        description: OS process count and configured PROCESSES limit plotted over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.processes.usage IS NOT NULL OR oracledb.processes.limit IS NOT NULL
+            | STATS usage = MAX(LAST_OVER_TIME(oracledb.processes.usage)), limit_val = MAX(LAST_OVER_TIME(oracledb.processes.limit)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: usage
+              label: Usage
+            - field: limit_val
+              label: Limit
+
+      - title: Session Usage vs Limit Over Time
+        description: Total session count and configured session limit plotted over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            FROM metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.sessions.usage IS NOT NULL OR oracledb.sessions.limit IS NOT NULL
+            | EVAL ts_sec = DATE_TRUNC(1 second, @timestamp)
+            | STATS usage_sec = SUM(oracledb.sessions.usage), limit_sec = MAX(oracledb.sessions.limit) BY ts_sec
+            | STATS usage = AVG(usage_sec), limit_val = MAX(limit_sec) BY time_bucket = BUCKET(ts_sec, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: usage
+              label: Total Sessions
+            - field: limit_val
+              label: Limit
+
+      - title: Total Sessions Over Time
+        description: Aggregate session count over time, summing all session types and statuses.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            FROM metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.sessions.usage IS NOT NULL
+            | EVAL ts_sec = DATE_TRUNC(1 second, @timestamp)
+            | STATS total_per_sec = SUM(oracledb.sessions.usage) BY ts_sec
+            | STATS total_sessions = AVG(total_per_sec) BY time_bucket = BUCKET(ts_sec, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: total_sessions
+              label: Total Sessions
+
+      - title: Sessions by Type
+        description: Session count over time broken down by session_type attribute (USER vs BACKGROUND). Stacked area showing the composition of total sessions.
+        size: {w: 24, h: 8}
+        esql:
+          type: area
+          mode: stacked
+          query: |
+            FROM metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.sessions.usage IS NOT NULL
+            | EVAL ts_sec = DATE_TRUNC(1 second, @timestamp)
+            | STATS session_total = SUM(oracledb.sessions.usage) BY ts_sec, session_type = attributes.session_type
+            | STATS session_count = AVG(session_total) BY time_bucket = BUCKET(ts_sec, 20, ?_tstart, ?_tend), session_type
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: session_count
+              label: Sessions
+          breakdown:
+            field: session_type
+
+      - title: Sessions by Status
+        description: Session count over time broken down by session_status attribute (ACTIVE vs INACTIVE). Stacked area showing the composition of total sessions.
+        size: {w: 24, h: 8}
+        esql:
+          type: area
+          mode: stacked
+          query: |
+            FROM metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.sessions.usage IS NOT NULL
+            | EVAL ts_sec = DATE_TRUNC(1 second, @timestamp)
+            | STATS session_total = SUM(oracledb.sessions.usage) BY ts_sec, session_status = attributes.session_status
+            | STATS session_count = AVG(session_total) BY time_bucket = BUCKET(ts_sec, 20, ?_tstart, ?_tend), session_status
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: session_count
+              label: Sessions
+          breakdown:
+            field: session_status
+
+      - title: Transaction Usage vs Limit Over Time
+        description: Active transaction count and configured transaction limit plotted over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.transactions.usage IS NOT NULL OR oracledb.transactions.limit IS NOT NULL
+            | STATS usage = MAX(LAST_OVER_TIME(oracledb.transactions.usage)), limit_val = MAX(LAST_OVER_TIME(oracledb.transactions.limit)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: usage
+              label: Usage
+            - field: limit_val
+              label: Limit
+
+      - title: DML Lock Usage vs Limit Over Time
+        description: Active DML lock count and configured limit plotted over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.dml_locks.usage IS NOT NULL OR oracledb.dml_locks.limit IS NOT NULL
+            | STATS usage = MAX(oracledb.dml_locks.usage), raw_limit = MAX(oracledb.dml_locks.limit) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | EVAL limit_val = CASE(raw_limit > 0, raw_limit, NULL)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: usage
+              label: Usage
+            - field: limit_val
+              label: Limit
+
+      - title: Enqueue Lock Usage vs Limit Over Time
+        description: Active enqueue lock count and configured limit plotted over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.enqueue_locks.usage IS NOT NULL OR oracledb.enqueue_locks.limit IS NOT NULL
+            | STATS usage = MAX(LAST_OVER_TIME(oracledb.enqueue_locks.usage)), limit_val = MAX(LAST_OVER_TIME(oracledb.enqueue_locks.limit)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: usage
+              label: Usage
+            - field: limit_val
+              label: Limit
+
+      - title: Enqueue Resource Usage vs Limit Over Time
+        description: Active enqueue resource count and configured limit plotted over time.
+        size: {w: 48, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.enqueue_resources.usage IS NOT NULL OR oracledb.enqueue_resources.limit IS NOT NULL
+            | STATS usage = MAX(LAST_OVER_TIME(oracledb.enqueue_resources.usage)), limit_val = MAX(LAST_OVER_TIME(oracledb.enqueue_resources.limit)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: usage
+              label: Usage
+            - field: limit_val
+              label: Limit

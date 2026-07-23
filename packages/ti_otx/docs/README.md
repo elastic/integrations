@@ -2,6 +2,11 @@
 
 This integration is for [Alienvault OTX](https://otx.alienvault.com/api). It retrieves indicators for all pulses subscribed to a specific user account on OTX
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Configuration
 
 To use this package, it is required to have an account on [Alienvault OTX](https://otx.alienvault.com/). Once an account has been created, and at least 1 pulse has been subscribed to, the API key can be retrieved from your [user profile dashboard](https://otx.alienvault.com/api). In the top right corner there should be an OTX KEY.
@@ -47,37 +52,37 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-03-08T02:55:33.690Z",
+    "@timestamp": "2025-12-23T02:57:10.418Z",
     "agent": {
-        "ephemeral_id": "8edc1f21-05cd-4fa5-aadc-66e64f44856a",
-        "id": "f29e7d89-991e-4f0a-838f-9c2eb93d876e",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "1ed024a0-03a1-4af1-81cc-61327fde650f",
+        "id": "95bc2845-dad2-4e11-9388-12706c5c9db1",
+        "name": "elastic-agent-88018",
         "type": "filebeat",
-        "version": "8.12.1"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "ti_otx.threat",
-        "namespace": "ep",
+        "namespace": "88824",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f29e7d89-991e-4f0a-838f-9c2eb93d876e",
+        "id": "95bc2845-dad2-4e11-9388-12706c5c9db1",
         "snapshot": false,
-        "version": "8.12.1"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2024-03-08T02:55:33.690Z",
+        "created": "2025-12-23T02:57:10.418Z",
         "dataset": "ti_otx.threat",
-        "ingested": "2024-03-08T02:55:45Z",
+        "ingested": "2025-12-23T02:57:13Z",
         "kind": "enrichment",
-        "original": "{\"count\":40359,\"next\":\"https://otx.alienvault.com/api/v1/indicators/export?types=domain%2CIPv4%2Chostname%2Curl%2CFileHash-SHA256\\u0026modified_since=2020-11-29T01%3A10%3A00+00%3A00\\u0026page=2\",\"previous\":null,\"results\":{\"content\":\"\",\"description\":null,\"id\":1251,\"indicator\":\"info.3000uc.com\",\"title\":null,\"type\":\"hostname\"}}",
+        "original": "{\"count\":2,\"next\":\"http://bf11511981f4:8080/api/v1/indicators/export?types=domain%2CIPv4%2Chostname%2Curl%2CFileHash-SHA256\\u0026modified_since=2020-11-29T01%3A10%3A00+00%3A00\\u0026page=2\",\"previous\":null,\"results\":{\"content\":\"\",\"description\":null,\"id\":1251,\"indicator\":\"info.3000uc.com\",\"title\":null,\"type\":\"hostname\"}}",
         "type": [
             "indicator"
         ]

@@ -51,7 +51,7 @@ resource "aws_s3_object" "object" {
   bucket = aws_s3_bucket.bucket.id
   key    = "api-gateway-http"
   source = "./files/test-apigateway-http.log"
-  depends_on = [aws_sqs_queue.queue]
+  depends_on = [aws_s3_bucket_notification.bucket_notification]
 }
 
 output "queue_url" {

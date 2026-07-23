@@ -1,0 +1,24 @@
+---
+description: Benchmark 100000 agent events ingested
+input: httpjson
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_token: xxxx
+  enable_request_tracer: true
+data_stream:
+  name: agent
+  vars:
+    preserve_original_event: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: sentinel_one
+  generator:
+    total_events: 10000
+    template:
+      path: ./agent-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./agent-benchmark/config.yml
+    fields:
+      path: ./agent-benchmark/fields.yml

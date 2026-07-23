@@ -1,0 +1,44 @@
+title: Mock counter metrics
+type: metrics
+streams:
+  - input: cel
+    title: Mock counter metrics
+    enabled: false
+    description: >-
+      Generate mock counter metrics at a configurable rate.
+      Data is generated entirely within the agent; the EPR endpoint is not called.
+    template_path: cel.yml.hbs
+    vars:
+      - name: mode
+        type: select
+        title: Mode
+        description: "Rate pattern: 'constant' for steady rate, 'spike' for periodic bursts."
+        default: constant
+        required: true
+        show_user: true
+        options:
+          - text: Constant
+            value: constant
+          - text: Spike
+            value: spike
+      - name: events_per_second
+        type: integer
+        title: Events per second
+        description: Number of counter events to generate per second. In spike mode this is the baseline rate between spikes. Maximum allowed value is 200.
+        default: 10
+        required: true
+        show_user: true
+      - name: spike_events
+        type: integer
+        title: Events per spike burst (spike mode)
+        description: Number of events generated in each spike burst. Maximum allowed value is 200.
+        default: 100
+        required: true
+        show_user: false
+      - name: spike_every_seconds
+        type: integer
+        title: Spike every N seconds (spike mode)
+        description: How often a spike occurs, in seconds.
+        default: 60
+        required: true
+        show_user: false

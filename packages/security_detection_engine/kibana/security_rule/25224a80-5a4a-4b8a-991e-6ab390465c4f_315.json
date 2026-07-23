@@ -1,0 +1,166 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies suspicious file creations in the startup folder of a remote system. An adversary could abuse this to move laterally by dropping a malicious script or executable that will be executed after a reboot or user logon.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file-*",
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.type",
+                "host.id",
+                "user.id",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "file.extension",
+                "process.entity_id",
+                "process.pid",
+                "process.name",
+                "process.executable",
+                "process.command_line",
+                "process.parent.name"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Lateral Movement via Startup Folder",
+        "note": "## Triage and analysis\n\n### Investigating Lateral Movement via Startup Folder\n\n#### Possible investigation steps\n\n- What remote Startup-folder write did the alert capture?\n  - Focus: `file.path`, `file.extension`, `process.name`, `process.pid`, and `process.executable`.\n  - Implication: escalate when a remote writer plants a scriptable or executable item, especially in ProgramData Startup; lower suspicion only when the Startup item, writer, user, and host identify one bounded deployment or support component.\n- What does the planted Startup item contain or point to?\n  - Focus: `file.name`, `file.size`, `file.Ext.header_bytes`, and `file.Ext.windows.zone_identifier`.\n  - Implication: escalate on shortcuts, scripts, archives, executables, renamed payloads, or content/header mismatches that could run at logon; lower suspicion when a bounded installer or support shortcut has content and provenance matching the same named tool.\n- Does writer and user context identify the same support or deployment component?\n  - Focus: `user.id`, `user.domain`, `process.command_line`, and `process.parent.name`.\n  - Hint: for PID 4 SMB writes, recover surrounding SMB connection events to identify `source.ip`; for \"mstsc.exe\" writes, validate the RDP drive-redirection source through Terminal Services or RDP session logs when available. Missing SMB/RDP telemetry is unresolved, not benign. !{investigate{\"description\":\"\",\"label\":\"SMB connection events on the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.action\",\"queryType\":\"phrase\",\"value\":\"connection_accepted\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"destination.port\",\"queryType\":\"phrase\",\"value\":\"445\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the account, host, parent, or command line does not explain remote RDP/SMB Startup persistence; lower suspicion when command line, parent, and user-host pairing point to the same bounded component.\n- Did the same Startup directory show staging, renames, or cleanup?\n  - Focus: file events in the same Startup directory on `host.id`, especially `file.directory`, `file.path`, `file.name`, and `file.Ext.original.path`. !{investigate{\"description\":\"\",\"label\":\"File events in the same Startup directory\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"file.directory\",\"queryType\":\"phrase\",\"value\":\"{{file.directory}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: use the directory view to separate one bounded write from broader Startup-folder staging.\n  - Implication: escalate on multiple writes, renames, mixed payload types, or cleanup artifacts; a single stable artifact narrows scope but does not clear the alert until execution and workflow fit are resolved.\n- Has the Startup item executed on the host?\n  - Focus: process starts on `host.id` where `process.executable` matches the written `file.path`, then review `process.command_line` and `user.id`. !{investigate{\"description\":\"\",\"label\":\"Process events where the Startup item later executed\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.executable\",\"queryType\":\"phrase\",\"value\":\"{{file.path}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h/h\",\"relativeTo\":\"now\"}}\n  - Hint: for shortcuts or scripts, exact path matching may miss the launched target; inspect the artifact and search same-host process starts for the referenced interpreter or target path.\n  - Implication: escalate when the item or referenced target executes, especially under a different user than the writer; no execution yet lowers immediacy, but clears only when writer, artifact, and directory evidence already prove a benign tool.\n- If local evidence is suspicious or incomplete, are there related same-host alerts?\n  - Focus: related alerts for the same `host.id` involving remote services, credentials, execution, discovery, or persistence. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: related alerts broaden the case from one Startup write to an intrusion path; no related alerts or an unavailable pivot narrows scope only and cannot close contradictory artifact, writer, or execution evidence.\n- Escalate for remotely planted Startup persistence or later execution; close only when writer mechanism, path, artifact, directory, execution, and alert pivots bind to one bounded benign component without contradiction; preserve artifacts and escalate when evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Software deployment, break-fix support, enterprise agents, or line-of-business applications can place bounded installers, shortcuts, support utilities, or stable per-user/all-users components in Startup through RDP or SMB. Confirm that `file.path`, `file.name`, `file.extension`, writer process or command line, `user.id`, `host.id`, directory view, and later direct or shortcut-target execution all identify the same bounded component, with no extra staging files or suspicious same-host alerts. Do not close on a role, ticket, or partial field match when current telemetry does not bind writer, artifact, and execution behavior together.\n- Build exceptions from the minimum confirmed workflow pattern: the specific `file.path`, writer `process.name` or `process.pid`, `user.id`, `host.id`, and bounded later-execution or quiet-directory evidence that distinguishes the benign case. Avoid exceptions on the Startup folder path alone, on \"mstsc.exe\" alone, or on PID 4 alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document the exact `file.path`, writer `process.name` or `process.pid`, `user.id`, `host.id`, and quiet-directory or later-execution evidence that established the bounded workflow. Create an exception only when that same evidence set distinguishes the benign workflow from remote Startup-folder abuse.\n- If suspicious but unconfirmed, preserve a copy of the written Startup item, the Startup directory listing, and case exports for the relevant file events, writer process metadata, later execution records, user-host identifiers, and related-alert context before containment.\n- Apply reversible containment before destructive action: quarantine the Startup item after preserving it, restrict further RDP or SMB administrative access to the host, or heighten monitoring on the affected `host.id`. Isolate the host only when later execution or related alerts show broader compromise and the host role can tolerate disruption.\n- If confirmed malicious, record any later-executed process identifiers and command lines, preserve the Startup item and same-directory artifacts, then isolate the host when feasible, terminate malicious execution, and remove the Startup item, shortcuts, scripts, and staging artifacts identified during the investigation.\n- Before deleting artifacts or resetting credentials, scope other hosts and accounts for the same `file.name`, `file.path`, writer `process.command_line`, or later `process.executable` pattern. Reset or reissue credentials only when related alerts or later execution indicate likely account misuse.\n- Post-incident hardening: restrict unnecessary RDP drive redirection, tighten SMB administrative write access, monitor Startup folder changes on remote-access targets, and retain the file/process telemetry needed to distinguish repeat deployment workflows from repeat abuse.",
+        "query": "file where host.os.type == \"windows\" and event.type in (\"creation\", \"change\") and\n\n /* via RDP TSClient mounted share or SMB */\n  (process.name : \"mstsc.exe\" or process.pid == 4) and\n\n   file.path : (\"?:\\\\Users\\\\*\\\\AppData\\\\Roaming\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\\\\*\",\n                \"?:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\\\\*\")\n",
+        "references": [
+            "https://www.mdsec.co.uk/2017/06/rdpinception/",
+            "https://www.elastic.co/security-labs/hunting-for-lateral-movement-using-event-query-language"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pid",
+                "type": "long"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "25224a80-5a4a-4b8a-991e-6ab390465c4f",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 11 - File Create](https://ela.st/sysmon-event-11-setup)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.001",
+                                "name": "Remote Desktop Protocol",
+                                "reference": "https://attack.mitre.org/techniques/T1021/001/"
+                            },
+                            {
+                                "id": "T1021.002",
+                                "name": "SMB/Windows Admin Shares",
+                                "reference": "https://attack.mitre.org/techniques/T1021/002/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1570",
+                        "name": "Lateral Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1570/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/",
+                        "subtechnique": [
+                            {
+                                "id": "T1547.001",
+                                "name": "Registry Run Keys / Startup Folder",
+                                "reference": "https://attack.mitre.org/techniques/T1547/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 315
+    },
+    "id": "25224a80-5a4a-4b8a-991e-6ab390465c4f_315",
+    "type": "security-rule"
+}

@@ -1,0 +1,55 @@
+{
+  "attributes": {
+    "name": "[SQL Server OTel] Blocked processes 99.5% rolling 30 days",
+    "description": "This SLO tracks SQL Server blocked processes via OTel metrics, ensuring that 99.5% of 1-minute time intervals show zero blocked processes over a rolling period of 30 days. Non-zero blocked processes indicate active blocking chains; users experience query hangs and timeouts.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"sqlserverreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "sqlserver.processes.blocked"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LTE",
+          "threshold": 0
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "sqlserver",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.service.instance.id"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-concurrency-errors"
+        }
+      ]
+    }
+  },
+  "id": "microsoft_sqlserver_otel-blocked-processes-99.5-Rolling30Days",
+  "type": "slo_template"
+}

@@ -1,0 +1,52 @@
+{
+  "attributes": {
+    "name": "[Memcached OTel] Get hit ratio 99.5% rolling 30 days",
+    "description": "This SLO tracks the cache hit ratio for get operations via OTel metrics. The memcachedreceiver reports operation_hit_ratio as miss ratio (see OTel contrib #30695), so we target miss ratio ≤ 5% (equivalent to hit ratio ≥ 95%). A timeslice is good when the average miss ratio over 1 minute is at or below 5%. Ensures 99.5% of 1-minute windows meet this target over a rolling 30 days, protecting application latency and backing-store load.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"memcachedreceiver.otel\" and (operation: \"get\" or attributes.operation: \"get\")",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "memcached.operation_hit_ratio"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LTE",
+          "threshold": 5
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "memcached",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.service.instance.id"
+    ]
+  },
+  "artifacts": {
+    "dashboards": [
+      {
+        "id": "memcached_otel-overview"
+      }
+    ]
+  },
+  "id": "memcached_otel-get-hit-ratio-99.5-Rolling30Days",
+  "type": "slo_template"
+}

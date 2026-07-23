@@ -1,0 +1,108 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies synchronous command execution on a virtual machine (VM) or virtual machine scale set (VMSS) in Azure via the action-based Run Command (\"runCommand/action\"). A Virtual Machine Contributor role lets you manage virtual machines, but not access them, nor access the virtual network or storage account they\u2019re connected to. However, commands can be run on the VM via the Run Command feature, which execute as System (Windows) or root (Linux). Other roles, such as certain Administrator roles, may be able to execute commands on a VM as well.",
+        "false_positives": [
+            "Command execution on a virtual machine may be done by a system or network administrator. Verify whether the username, hostname, and/or resource name should be making changes in your environment. Command execution from unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-azure.activitylogs-*",
+            "filebeat-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Azure Compute VM Command Executed",
+        "new_terms_fields": [
+            "azure.activitylogs.identity.authorization.evidence.principal_id",
+            "azure.resource.name",
+            "source.as.number"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating Azure Compute VM Command Executed\n\nAzure Virtual Machines (VMs) allow users to run applications and services in the cloud. While roles like Virtual Machine Contributor can manage VMs, they typically can't access them directly. However, commands can be executed remotely via PowerShell, running as System. Adversaries may exploit this to execute unauthorized commands. The detection rule monitors Azure activity logs for command execution events, flagging successful operations to identify potential misuse.\n\n### Possible investigation steps\n\n- Review the Azure activity logs to identify the specific user or service principal that initiated the command execution event, focusing on the operation_name values \"MICROSOFT.COMPUTE/VIRTUALMACHINES/RUNCOMMAND/ACTION\" and \"MICROSOFT.COMPUTE/VIRTUALMACHINESCALESETS/VIRTUALMACHINES/RUNCOMMAND/ACTION\".\n- Identify the VM in question via the `azure.resource.name` field. This can aid with pivoting into endpoint analysis of the commands executed.\n- Check the event.outcome field to confirm the success of the command execution and gather details about the command executed.\n- Investigate the role and permissions of the user or service principal involved to determine if they have legitimate reasons to execute commands on the VM.\n- Analyze the context of the command execution, including the time and frequency of the events, to identify any unusual patterns or anomalies.\n- Correlate the command execution event with other logs or alerts from the same time period to identify any related suspicious activities or potential lateral movement.\n- If unauthorized access is suspected, review the VM's security settings and access controls to identify and mitigate any vulnerabilities or misconfigurations.\n\n### False positive analysis\n\n- Routine maintenance tasks executed by IT administrators can trigger the rule. To manage this, create exceptions for known maintenance scripts or scheduled tasks that are regularly executed.\n- Automated deployment processes that use PowerShell scripts to configure or update VMs may be flagged. Identify these processes and exclude them from the rule to prevent unnecessary alerts.\n- Security tools or monitoring solutions that perform regular checks on VMs might execute commands that are benign. Whitelist these tools by identifying their specific command patterns and excluding them from detection.\n- Development and testing environments often involve frequent command executions for testing purposes. Consider excluding these environments from the rule or setting up a separate monitoring policy with adjusted thresholds.\n- Ensure that any exclusion or exception is documented and reviewed periodically to maintain security posture and adapt to any changes in the environment or processes.\n\n### Response and remediation\n\n- Immediately isolate the affected virtual machine from the network to prevent further unauthorized command execution and potential lateral movement.\n- Review the Azure activity logs to identify the source of the command execution and determine if it was authorized or part of a larger attack pattern.\n- Revoke any unnecessary permissions from users or roles that have the ability to execute commands on virtual machines, focusing on those with Virtual Machine Contributor roles.\n- Conduct a thorough investigation of the executed commands to assess any changes or impacts on the system, and restore the VM to a known good state if necessary.\n- Implement additional monitoring and alerting for similar command execution activities, ensuring that any future unauthorized attempts are detected promptly.\n- Escalate the incident to the security operations team for further analysis and to determine if additional systems or data may have been compromised.\n- Review and update access control policies and role assignments to ensure that only necessary permissions are granted, reducing the risk of similar incidents in the future.\n",
+        "query": "data_stream.dataset:azure.activitylogs and\n    azure.activitylogs.operation_name:(\n        \"MICROSOFT.COMPUTE/VIRTUALMACHINES/RUNCOMMAND/ACTION\" or\n        \"MICROSOFT.COMPUTE/VIRTUALMACHINESCALESETS/VIRTUALMACHINES/RUNCOMMAND/ACTION\"\n    ) and event.outcome:(Success or success) and\n    azure.activitylogs.identity.authorization.evidence.principal_id: * and\n    source.as.number: * and\n    azure.resource.name: *\n",
+        "references": [
+            "https://adsecurity.org/?p=4277",
+            "https://posts.specterops.io/attacking-azure-azure-ad-and-introducing-powerzure-ca70b330511a",
+            "https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#virtual-machine-contributor",
+            "https://www.netspi.com/blog/technical-blog/adversary-simulation/7-ways-to-execute-command-on-azure-virtual-machine-virtual-machine-scale-sets/",
+            "https://hackingthe.cloud/azure/run-command-abuse/",
+            "https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command-managed"
+        ],
+        "related_integrations": [
+            {
+                "integration": "activitylogs",
+                "package": "azure",
+                "version": "^1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.identity.authorization.evidence.principal_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.operation_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.resource.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.number",
+                "type": "long"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "60884af6-f553-4a6c-af13-300047455491",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Endpoint",
+            "Data Source: Azure",
+            "Data Source: Azure Activity Logs",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1651",
+                        "name": "Cloud Administration Command",
+                        "reference": "https://attack.mitre.org/techniques/T1651/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 109
+    },
+    "id": "60884af6-f553-4a6c-af13-300047455491_109",
+    "type": "security-rule"
+}

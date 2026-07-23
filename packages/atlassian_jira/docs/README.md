@@ -2,6 +2,11 @@
 
 The Jira integration collects audit logs from the audit log files or the [audit API](https://confluence.atlassian.com/jiracore/audit-log-improvements-for-developers-1019401815.html).
 
+## Elastic Managed enabled integration
+
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Authentication Set-Up
 
 When setting up the Atlassian Jira Integration for Atlassian Cloud you will need to use the "Jira User Identifier" and "Jira API Token" fields in the integration configuration. These will allow connection to the [Atlassian Cloud REST API](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/) via [Basic Authentication](https://developer.atlassian.com/server/jira/platform/basic-authentication/).
@@ -49,24 +54,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-22T00:05:08.514Z",
     "agent": {
-        "ephemeral_id": "4a05fc27-d72e-43ab-aa6e-e19105807ecd",
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "83a814ad-eee1-4f9d-b854-e39fd5e1472e",
+        "id": "c57be62c-8f34-45aa-b639-58f4f8de312a",
+        "name": "elastic-agent-44957",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "atlassian_jira.audit",
-        "namespace": "ep",
+        "namespace": "61685",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "c57be62c-8f34-45aa-b639-58f4f8de312a",
+        "snapshot": false,
+        "version": "8.19.4"
     },
     "event": {
         "action": "jira.auditing.group.created",
@@ -75,7 +80,7 @@ An example event for `audit` looks as following:
             "iam"
         ],
         "dataset": "atlassian_jira.audit",
-        "ingested": "2023-05-09T21:23:48Z",
+        "ingested": "2025-12-17T10:23:22Z",
         "kind": "event",
         "original": "{\"affectedObjects\":[{\"name\":\"jira-software-users\",\"type\":\"GROUP\"}],\"auditType\":{\"action\":\"Group created\",\"actionI18nKey\":\"jira.auditing.group.created\",\"area\":\"USER_MANAGEMENT\",\"category\":\"group management\",\"categoryI18nKey\":\"jira.auditing.category.groupmanagement\",\"level\":\"BASE\"},\"author\":{\"id\":\"-2\",\"name\":\"Anonymous\",\"type\":\"user\"},\"changedValues\":[],\"extraAttributes\":[],\"method\":\"Browser\",\"source\":\"10.50.33.72\",\"system\":\"http://jira.internal:8088\",\"timestamp\":{\"epochSecond\":1637539508,\"nano\":514000000},\"version\":\"1.0\"}",
         "type": [
@@ -87,25 +92,24 @@ An example event for `audit` looks as following:
         "name": "jira-software-users"
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "cff3d165179d4aef9596ddbb263e3adb",
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-44957",
         "ip": [
-            "172.23.0.7"
+            "172.19.0.2",
+            "172.18.0.4"
         ],
         "mac": [
-            "02-42-AC-17-00-07"
+            "6A-DA-3D-D5-D0-6F",
+            "82-F3-70-C9-7C-F6"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-44957",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.47-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "kernel": "6.12.54-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "input": {

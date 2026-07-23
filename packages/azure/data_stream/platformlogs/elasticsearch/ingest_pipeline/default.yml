@@ -8,6 +8,10 @@ processors:
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
+  - remove:
+      field: routing.category
+      ignore_missing: true
+      description: Remove the routing.category field if it exists.
   - script:
       source: ctx.message = ctx.message.replace(params.empty_field_name, '')
       params:
@@ -41,8 +45,17 @@ processors:
   - date:
       field: timestamp
       target_field: '@timestamp'
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
         - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
       ignore_failure: true
       description: 'Use the `timestamp` field to set the `@timestamp` field to workaround the invalid field names in the Azure Native ISV logs.'
   - remove:
@@ -134,16 +147,32 @@ processors:
       field: azure.platformlogs.time
       target_field: '@timestamp'
       ignore_failure: true
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
         - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
         - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - date:
       field: azure.platformlogs.EventTimeString
       target_field: '@timestamp'
       ignore_failure: true
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - remove:
       field: azure.platformlogs.time
       ignore_missing: true
@@ -371,8 +400,26 @@ processors:
       field: azure.platformlogs.resultDescription
       target_field: azure.platformlogs.result_description
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
-- set:
-    field: error.message
-    value: |-
-      Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

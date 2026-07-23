@@ -1,0 +1,269 @@
+---
+# [PostgreSQL OTel] Workload Dashboard
+# Converted from Kibana JSON to kb-yaml-to-lens YAML format
+# Transaction throughput, tuple operations, and function call rates.
+#
+# Data source: metrics-postgresqlreceiver.otel-*
+dashboards:
+  - id: postgresql_otel-workload
+    name: '[PostgreSQL OTel] Workload'
+    description: Transaction throughput, tuple operations, and function call rates.
+    controls:
+      - type: options
+        label: Instance
+        data_view: metrics-*
+        field: resource.attributes.service.instance.id
+      - type: options
+        label: Database
+        data_view: metrics-*
+        field: resource.attributes.postgresql.database.name
+    panels:
+      # Navigation links bar
+      - title: Navigation
+        size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: postgresql_otel-overview
+            - label: Connections
+              dashboard: postgresql_otel-connections
+            - label: Workload
+              dashboard: postgresql_otel-workload
+            - label: Query Performance
+              dashboard: postgresql_otel-query-performance
+            - label: I/O Health
+              dashboard: postgresql_otel-io-health
+            - label: Locks
+              dashboard: postgresql_otel-locks
+            - label: Active Queries
+              dashboard: postgresql_otel-active-queries
+
+      # Markdown description
+      - title: ''
+        hide_title: true
+        size: {w: 16, h: 14}
+        position: {x: 0, y: 2}
+        markdown:
+          content: |
+            ## [PostgreSQL OTel] Workload
+
+            This dashboard monitors workload throughput:
+            - Transaction commit and rollback rates
+            - Tuple operations (insert, update, delete, fetch, return)
+            - Function call rates
+            - Rollback-to-commit ratio
+
+      # Commits/sec (lnsMetric)
+      - title: Commits/sec
+        hide_title: true
+        size: {w: 8, h: 4}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.commits IS NOT NULL
+            | STATS commit_rate = SUM(RATE(postgresql.commits))
+          primary:
+            field: commit_rate
+            label: Commits/sec
+            format:
+              type: number
+              decimals: 1
+
+      # Rollbacks/sec (lnsMetric)
+      - title: Rollbacks/sec
+        hide_title: true
+        size: {w: 8, h: 4}
+        position: {x: 24, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.rollbacks IS NOT NULL
+            | STATS rollback_rate = SUM(RATE(postgresql.rollbacks))
+          primary:
+            field: rollback_rate
+            label: Rollbacks/sec
+            format:
+              type: number
+              decimals: 1
+
+      # Tuples Inserted/sec (lnsMetric)
+      - title: Tuples Inserted/sec
+        hide_title: true
+        size: {w: 8, h: 4}
+        position: {x: 32, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.tup_inserted IS NOT NULL
+            | STATS tup_rate = SUM(RATE(postgresql.tup_inserted))
+          primary:
+            field: tup_rate
+            label: Inserts/sec
+            format:
+              type: number
+              decimals: 2
+              compact: true
+
+      # Tuples Returned/sec (lnsMetric)
+      - title: Tuples Returned/sec
+        hide_title: true
+        size: {w: 8, h: 4}
+        position: {x: 40, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.tup_returned IS NOT NULL
+            | STATS tup_rate = SUM(RATE(postgresql.tup_returned))
+          primary:
+            field: tup_rate
+            label: Returned/sec
+            format:
+              type: number
+              decimals: 2
+              compact: true
+
+      # Transaction Rate Over Time (lnsXY line, 2 metrics: commits + rollbacks)
+      - title: Transaction Rate Over Time
+        size: {w: 32, h: 10}
+        position: {x: 16, y: 6}
+        esql:
+          type: line
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | STATS commits = SUM(RATE(postgresql.commits)), rollbacks = SUM(RATE(postgresql.rollbacks)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: time_bucket
+            data_type: date
+          metrics:
+            - field: commits
+              label: Commits/sec
+              format:
+                type: number
+                decimals: 2
+            - field: rollbacks
+              label: Rollbacks/sec
+              format:
+                type: number
+                decimals: 2
+          legend:
+            visible: show
+            position: right
+          appearance:
+            y_left_axis:
+              title: Transactions/sec
+
+      # Tuple Throughput Over Time (lnsXY line, 1 metric: total)
+      - title: Tuple Throughput Over Time
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 16}
+        esql:
+          type: line
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.tup_inserted IS NOT NULL OR postgresql.tup_updated IS NOT NULL OR postgresql.tup_deleted IS NOT NULL OR postgresql.tup_fetched IS NOT NULL OR postgresql.tup_returned IS NOT NULL
+            | STATS inserted = SUM(RATE(postgresql.tup_inserted)), updated = SUM(RATE(postgresql.tup_updated)), deleted = SUM(RATE(postgresql.tup_deleted)), fetched = SUM(RATE(postgresql.tup_fetched)), returned = SUM(RATE(postgresql.tup_returned)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | EVAL total = inserted + updated + deleted + fetched + returned
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: time_bucket
+            data_type: date
+          metrics:
+            - field: total
+              label: Tuples/sec
+              format:
+                type: number
+                decimals: 2
+          legend:
+            visible: show
+            position: right
+
+      # Tuple Operations by Type (lnsXY line, 5 metrics: inserted, updated, deleted, fetched, returned)
+      - title: Tuple Operations by Type
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 16}
+        esql:
+          type: line
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.tup_inserted IS NOT NULL OR postgresql.tup_updated IS NOT NULL OR postgresql.tup_deleted IS NOT NULL OR postgresql.tup_fetched IS NOT NULL OR postgresql.tup_returned IS NOT NULL
+            | STATS inserted = SUM(RATE(postgresql.tup_inserted)), updated = SUM(RATE(postgresql.tup_updated)), deleted = SUM(RATE(postgresql.tup_deleted)), fetched = SUM(RATE(postgresql.tup_fetched)), returned = SUM(RATE(postgresql.tup_returned)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: time_bucket
+            data_type: date
+          metrics:
+            - field: inserted
+              label: Inserted/sec
+              format:
+                type: number
+                decimals: 2
+            - field: updated
+              label: Updated/sec
+              format:
+                type: number
+                decimals: 2
+            - field: deleted
+              label: Deleted/sec
+              format:
+                type: number
+                decimals: 2
+            - field: fetched
+              label: Fetched/sec
+              format:
+                type: number
+                decimals: 2
+            - field: returned
+              label: Returned/sec
+              format:
+                type: number
+                decimals: 2
+          legend:
+            visible: show
+            position: right
+          appearance:
+            y_left_axis:
+              title: Tuples/sec
+
+      # Top Databases by Transaction Rate (lnsDatatable)
+      - title: Top Databases by Transaction Rate
+        size: {w: 48, h: 12}
+        position: {x: 0, y: 26}
+        esql:
+          type: datatable
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.commits IS NOT NULL OR postgresql.rollbacks IS NOT NULL
+            | STATS commits = SUM(RATE(postgresql.commits)), rollbacks = SUM(RATE(postgresql.rollbacks)) BY resource.attributes.postgresql.database.name
+            | EVAL rollback_ratio = CASE(commits > 0, rollbacks / commits, 0.0)
+            | SORT commits DESC
+            | LIMIT 20
+          breakdowns:
+            - field: resource.attributes.postgresql.database.name
+              label: Database
+          metrics:
+            - field: commits
+              label: Commits/sec
+              format:
+                type: number
+                decimals: 2
+            - field: rollbacks
+              label: Rollbacks/sec
+              format:
+                type: number
+                decimals: 2
+            - field: rollback_ratio
+              label: Rollback Ratio
+              format:
+                type: percent
+                decimals: 2

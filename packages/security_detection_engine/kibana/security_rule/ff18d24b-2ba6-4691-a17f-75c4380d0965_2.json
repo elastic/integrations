@@ -1,0 +1,162 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects execution of JavaScript via Deno with suspicious command-line patterns (base64, eval, http, or import in a javascript context). Adversaries may abuse Deno to run malicious JavaScript for execution or staging.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious JavaScript Execution via Deno",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious JavaScript Execution via Deno\n\nDeno is a legitimate JavaScript/TypeScript runtime. This rule fires when a Deno process (identified by name, PE original filename, or code signer \"Deno Land Inc.\") is started with a command line matching suspicious patterns: javascript with base64, eval(, http, or javascript import. Such patterns are commonly used to run inline or remote scripts and can indicate abuse.\n\n### Possible investigation steps\n\n- Review process.command_line and process.args to see the exact script or URL being executed.\n- Identify the parent process and how Deno was launched (user, script, terminal, or other tool).\n- Check whether Deno is approved on the host; if not, treat as potential unauthorized software execution.\n- Correlate with file creation or network events around the same time (downloads, script drops).\n\n### False positive analysis\n\n- Legitimate development or automation that runs Deno with eval, http imports, or base64-encoded snippets may trigger; allowlist by host or command-line pattern where appropriate.\n\n### Response and remediation\n\n- If abuse is confirmed: contain the host, terminate the Deno process, and remove or block Deno if not authorized; investigate how the script was delivered and scope for similar activity.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n (process.name : \"deno.exe\" or ?process.pe.original_file_name == \"deno.exe\" or ?process.code_signature.subject_name == \"Deno Land Inc.\") and\n process.command_line : (\"*javascript*base64*\", \"*eval(*\", \"*http*\", \"*javascript*import*\")\n",
+        "references": [
+            "https://reliaquest.com/blog/threat-spotlight-casting-a-wider-net-clickfix-deno-and-leaknets-scaling-threat",
+            "https://deno.com/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.subject_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "ff18d24b-2ba6-4691-a17f-75c4380d0965",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Crowdstrike",
+            "Data Source: Elastic Endgame",
+            "Data Source: Windows Security Event Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.007",
+                                "name": "JavaScript",
+                                "reference": "https://attack.mitre.org/techniques/T1059/007/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1027",
+                        "name": "Obfuscated Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1027/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "ff18d24b-2ba6-4691-a17f-75c4380d0965_2",
+    "type": "security-rule"
+}

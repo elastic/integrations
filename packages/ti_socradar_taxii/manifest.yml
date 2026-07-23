@@ -1,0 +1,96 @@
+format_version: 3.3.2
+name: ti_socradar_taxii
+title: SOCRadar Threat Intelligence (TAXII)
+version: "0.2.1"
+description: Ingest threat intelligence indicators from SOCRadar's TAXII 2.1 server in STIX 2.1 format with Elastic Agent.
+type: integration
+categories:
+  - security
+  - threat_intel
+conditions:
+  kibana:
+    version: "^8.18.0 || ^9.0.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/logo.svg
+    title: SOCRadar TAXII
+    size: 216x216
+    type: image/svg+xml
+policy_templates:
+  - name: ti_socradar_taxii
+    title: SOCRadar TAXII
+    description: Collect threat intelligence indicators from SOCRadar's TAXII 2.1 server.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: security
+        division: engineering
+        team: security-service-integrations
+    inputs:
+      - type: cel
+        title: Collect SOCRadar STIX data via TAXII 2.1
+        description: Collect STIX 2.1 threat intelligence indicators from SOCRadar's TAXII 2.1 server.
+        vars:
+          - name: base_url
+            type: text
+            title: SOCRadar TAXII Base URL
+            description: >
+              Base URL of the SOCRadar TAXII 2.1 server. Default `https://taxii2.socradar.com`. Change only if SOCRadar provides a different host.
+            multi: false
+            required: true
+            show_user: true
+            default: "https://taxii2.socradar.com"
+          - name: collections_config
+            type: yaml
+            title: Collections Configuration
+            multi: false
+            required: true
+            show_user: true
+            description: >
+              YAML array of TAXII collections to poll. Each entry needs `api_root` and `collection_id`. SOCRadar API roots: `radar_alpha` (~15 collections), `radar_gamma` (~150 collections), `radar_premium` (~600 collections). The agent polls one collection per `Interval` tick in round-robin fashion. If a collection_id or api_root is invalid, that tick is skipped (no system stall) and polling continues with the next collection on the next tick. To find collection IDs use the SOCRadar Platform UI under Threat Intelligence → TAXII Collections, then append entries below.
+            default: |
+              - api_root: "radar_alpha"
+                collection_id: "fd3fec42-efee-4353-85b2-cb87f9acc4ef"
+          - name: username
+            type: text
+            title: Username
+            description: The username for Basic HTTP authentication to the SOCRadar TAXII server.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: password
+            type: password
+            title: Password
+            description: The password for Basic HTTP authentication to the SOCRadar TAXII server.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    ...
+              #    -----END CERTIFICATE-----
+owner:
+  github: elastic/security-service-integrations
+  type: partner

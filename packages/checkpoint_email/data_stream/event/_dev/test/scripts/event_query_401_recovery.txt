@@ -1,0 +1,260 @@
+# Test that a 401 on the event query triggers re-authentication and recovery.
+#
+# The bug requires a prior successful cycle to cache the token in state.
+# The auth result lives in a local variable; only the success handler copies
+# access_token and expiry into the output state. So the test must see a 200
+# before the 401 — otherwise expiry is never in state and auth reruns anyway.
+#
+# Mock design:
+#   Auth endpoint: cycles [token-alpha, token-bravo].
+#   Event query with token-alpha: cycles [200 with data-A, 401].
+#   Event query with token-bravo: always 200 with data-B (different eventIds).
+#
+# With the fix (3 cycles):
+#   1. auth(alpha) -> 200(data-A)  -> token cached in state
+#   2. alpha cached -> 401         -> expiry cleared -> re-auth forced
+#   3. auth(bravo) -> 200(data-B)  -> data-B events indexed
+#
+# Without the fix (alpha stays cached, bravo never reached):
+#   1. auth(alpha) -> 200(data-A)  -> token cached in state
+#   2. alpha cached -> 401         -> expiry NOT cleared
+#   3. alpha cached -> 200(data-A) -> same eventIds, overwrites, no new docs
+#   4. alpha cached -> 401         -> another error event
+#   ... repeats, data-B events never appear.
+#
+# Assertion: data-B events exist. This can only happen via token-bravo.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} checkpoint-email-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Wait for 5 documents: 2 data-A + 1 error + 2 data-B.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 5 -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# Verify at least one error event mentioning the 401 authentication failure.
+exec jq -r '[.hits.hits[]._source.error.message // empty] | flatten | .[]' got_docs.json
+stdout 'Authentication required'
+
+# Verify data-B events exist. These can only be indexed if the integration
+# re-authenticated after the 401 and obtained token-bravo.
+exec jq '[.hits.hits[]._source | select(.event.id == "b6d8674a04c30123456789e4d3ebd98")] | length' got_docs.json
+stdout '^1$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down checkpoint-email-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://checkpoint-email-mock:8090
+  client_id: clientId
+  client_secret: accessKey
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 1h
+    preserve_original_event: true
+
+-- checkpoint-email-mock/docker-compose.yml --
+version: '2.3'
+services:
+  checkpoint-email-mock:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: checkpoint-email-mock
+    ports:
+      - 8090
+    volumes:
+      - ./config.yml:/config.yml:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/config.yml
+
+-- checkpoint-email-mock/config.yml --
+rules:
+  # Auth endpoint: cycles between token-alpha (1st call) and token-bravo (2nd call).
+  - path: /auth/external
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - "application/json"
+    request_body: '{"accessKey":"accessKey","clientId":"clientId"}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "success": true,
+            "data": {
+              "token": "token-alpha",
+              "csrf": "32057d5e-abcd-1234-abcd-123456789087",
+              "expires": "Mon, 14 Oct 2030 07:20:18 GMT",
+              "expiresIn": 1800
+            }
+          }
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "success": true,
+            "data": {
+              "token": "token-bravo",
+              "csrf": "32057d5e-abcd-1234-abcd-123456789087",
+              "expires": "Mon, 14 Oct 2030 07:20:18 GMT",
+              "expiresIn": 1800
+            }
+          }
+
+  # Event query with token-alpha: cycles between 200 (1st call) and 401 (2nd call).
+  # The initial 200 caches the token in state, then the 401 simulates server-side
+  # token invalidation.
+  - path: /app/hec-api/v1.0/event/query
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer token-alpha"
+      X-Av-Req-Id:
+        - .*
+    request_body: /^\{"requestData":\{"endDate":.*,"startDate":.*\}\}/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "responseEnvelope": {
+              "requestId": "test-request-id-alpha",
+              "responseCode": 200,
+              "responseText": "",
+              "additionalText": "",
+              "recordsNumber": 2,
+              "scrollId": null
+            },
+            "responseData": [
+              {
+                "eventId": "a6d8674a04c30123456789e4d3ebd98",
+                "customerId": "exampletest",
+                "saas": "google_mail",
+                "entityId": "25e0c50123456789e351b0dafa6aafa6",
+                "state": "pending",
+                "type": "shadow_it",
+                "confidenceIndicator": "detected",
+                "eventCreated": "2024-10-14T07:02:11.229935+00:00",
+                "severity": "3",
+                "description": "Shadow IT - john@example.com is using google.com (Search Engine)",
+                "data": "Shadow IT detected",
+                "additionalData": null,
+                "availableEventActions": null,
+                "actions": [],
+                "senderAddress": "google-workspace-alerts-noreply@google.com",
+                "entityLink": "https://example.checkpoint.com/test"
+              },
+              {
+                "eventId": "abaabcdef01234567894115b9e64da71",
+                "customerId": "exampletest",
+                "saas": "google_mail",
+                "entityId": "6fd32d1acccf146b03725eb513886822",
+                "state": "exception",
+                "type": "phishing",
+                "confidenceIndicator": "malicious",
+                "eventCreated": "2024-10-15T06:08:40.022596+00:00",
+                "severity": "5",
+                "description": "Phishing attempt detected in an email from info@example.in",
+                "data": "Phishing attempt detected",
+                "additionalData": null,
+                "availableEventActions": null,
+                "actions": [],
+                "senderAddress": "info@example.in",
+                "entityLink": "https://example.checkpoint.com/test2"
+              }
+            ]
+          }
+      - status_code: 401
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"success":false,"message":"Authentication required","forceLogout":true}'
+
+  # Event query with token-bravo: always 200 with data-B (different eventIds).
+  # Only reachable if the integration re-authenticated after a 401 on token-alpha.
+  - path: /app/hec-api/v1.0/event/query
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "Bearer token-bravo"
+      X-Av-Req-Id:
+        - .*
+    request_body: /^\{"requestData":\{"endDate":.*,"startDate":.*\}\}/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "responseEnvelope": {
+              "requestId": "test-request-id-bravo",
+              "responseCode": 200,
+              "responseText": "",
+              "additionalText": "",
+              "recordsNumber": 2,
+              "scrollId": null
+            },
+            "responseData": [
+              {
+                "eventId": "b6d8674a04c30123456789e4d3ebd98",
+                "customerId": "exampletest",
+                "saas": "google_mail",
+                "entityId": "35e0c50123456789e351b0dafa6aafa6",
+                "state": "new",
+                "type": "dlp",
+                "confidenceIndicator": "detected",
+                "eventCreated": "2024-10-16T09:15:22.112000+00:00",
+                "severity": "3",
+                "description": "SmartDLP has detected PII leak in email",
+                "data": "DLP violation detected",
+                "additionalData": null,
+                "availableEventActions": null,
+                "actions": [],
+                "senderAddress": "alice@example.io",
+                "entityLink": "https://example.checkpoint.com/test3"
+              },
+              {
+                "eventId": "bbaabcdef01234567894115b9e64da71",
+                "customerId": "exampletest",
+                "saas": "google_mail",
+                "entityId": "7fd32d1acccf146b03725eb513886822",
+                "state": "new",
+                "type": "anomaly",
+                "confidenceIndicator": "detected",
+                "eventCreated": "2024-10-16T10:30:00.000000+00:00",
+                "severity": "4",
+                "description": "Anomaly detected in login from unusual location",
+                "data": "Anomaly detected",
+                "additionalData": null,
+                "availableEventActions": null,
+                "actions": [],
+                "senderAddress": "bob@example.io",
+                "entityLink": "https://example.checkpoint.com/test4"
+              }
+            ]
+          }

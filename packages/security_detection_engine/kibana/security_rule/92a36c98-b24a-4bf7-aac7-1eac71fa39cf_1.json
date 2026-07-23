@@ -1,0 +1,116 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the first time a Python process spawns a shell on a given host. Malicious Python scripts, compromised dependencies, or model file deserialization can result in shell spawns that would not occur during normal workflows. Since legitimate Python processes rarely shell out to interactive shells, a first occurrence of this behavior on a host is a strong signal of potential compromise.",
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "First Time Python Spawned a Shell on Host",
+        "new_terms_fields": [
+            "host.id",
+            "process.parent.executable"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating First Time Python Spawned a Shell on Host\n\nAttackers who achieve Python code execution \u2014 whether through malicious scripts, compromised dependencies, or model file deserialization (e.g., pickle/PyTorch `__reduce__`) \u2014 often spawn shell processes to perform reconnaissance, credential theft, persistence, or reverse shell activity. Since legitimate Python workflows rarely shell out with `-c`, a first occurrence is highly suspicious.\n\nThis rule uses the New Terms rule type to detect the first occurrence of a Python process spawning a shell with the `-c` flag on a given host within a 7-day window. This approach reduces false positives from recurring legitimate Python workflows while surfacing novel, potentially malicious activity.\n\n### Possible investigation steps\n\n- Examine the parent Python process command line to identify the script or command that triggered the shell spawn.\n- Determine if the Python process was loading a model file (look for `torch.load`, `pickle.load`), running a standalone script, or executing via a compromised dependency.\n- Review the shell command arguments to assess intent (credential access, reverse shell, persistence, reconnaissance).\n- Inspect the full process tree to determine if the Python process was launched from an interactive session, a cron job, or an automated pipeline.\n- Investigate the origin of any recently downloaded scripts, packages, or model files on the host.\n- Correlate with other hosts in the environment to determine if the same behavior is occurring elsewhere, which may indicate a supply chain compromise.\n\n### False positive analysis\n\n- Development environments where Python scripts legitimately shell out for system tasks (e.g., build scripts, CI/CD runners) may trigger this rule on first occurrence. Consider excluding known CI/CD working directories or build automation paths.\n- Package installation via pip or conda may spawn shells during post-install scripts. These are excluded by the query filter.\n- Jupyter notebooks executing system commands via `!` or `subprocess` may trigger this rule in data science environments.\n\n### Response and remediation\n\n- Investigate the shell command that was executed and assess its impact (credential access, persistence, data exfiltration).\n- If a malicious file is confirmed, quarantine it and identify its source (PyPI, Hugging Face, shared drive, email attachment).\n- Scan other hosts that may have received the same file.\n- Review and rotate any credentials that may have been accessed.\n- Consider implementing `weights_only=True` enforcement for PyTorch model loading across the environment.\n",
+        "query": "event.category:process and host.os.type:macos and event.type:start and event.action:exec and\nprocess.parent.name:python* and\nprocess.name:(bash or dash or sh or tcsh or csh or zsh or ksh or fish) and process.args:\"-c\" and\nnot process.command_line:(*pip* or *conda* or *brew* or *jupyter*)\n",
+        "references": [
+            "https://blog.trailofbits.com/2024/06/11/exploiting-ml-models-with-pickle-file-attacks-part-1/",
+            "https://github.com/trailofbits/fickling",
+            "https://5stars217.github.io/2024-03-04-what-enables-malicious-models/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "92a36c98-b24a-4bf7-aac7-1eac71fa39cf",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Domain: LLM"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.006",
+                                "name": "Python",
+                                "reference": "https://attack.mitre.org/techniques/T1059/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "92a36c98-b24a-4bf7-aac7-1eac71fa39cf_1",
+    "type": "security-rule"
+}

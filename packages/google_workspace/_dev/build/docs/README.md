@@ -38,12 +38,29 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 
 In order to ingest data from the Google Reports API you must:
 
-- Have an *administrator account*.
+- Have an *administrator account*. As a security best practice, instead of using a Super Admin account, you can create a custom role with the following permissions. This applies the principle of least privilege.
+
+  **Admin console privileges**
+  - OUs: Read
+  - Users: Read
+  - Chrome Management > Managed browsers: Read
+  - View Reports
+  - Alert Center: Full access
+
+  **Admin API privileges**
+  - Reports
+  - Groups: Read
+  - OU: Read
+  - Users: Read
+
+  You also need to enable the following APIs in your Google Cloud project:
+  - Admin SDK API
+  - Google Workspace Alert Center API
 - [Set up a ServiceAccount](https://support.google.com/workspacemigrate/answer/9222993?hl=en) using the administrator account.
 - [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
 - [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for your ServiceAccount.
 
-This integration will make use of the following *oauth2 scope*:
+This integration will use the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
 

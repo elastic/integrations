@@ -13,6 +13,13 @@ processors:
   - json:
       field: event.original
       target_field: json
+      if: ctx.event?.original != null
+      on_failure:
+        # Parse cluster notification on failure
+        - set:
+            field: gcp.audit.notification
+            copy_from: event.original
+            ignore_empty_value: true
   - set:
       field: gcp.audit.type
       copy_from: "json.protoPayload.@type"
@@ -61,6 +68,8 @@ processors:
       timezone: UTC
       formats:
         - ISO8601
+      if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
+
 ##
 # MonitoredResource
 # .resource
@@ -502,6 +511,48 @@ processors:
       field: gcp.audit.labels
       copy_from: json.labels
       if: ctx.json?.labels != null
+  - json:
+      field: labels.payload
+      tag: json_labels_payload
+      if: ctx.labels?.payload != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloud.project.id
+      tag: set_cloud_project_id_from_labels_project_id
+      copy_from: labels.project_id
+      override: false
+      ignore_empty_value: true
+      if: ctx.cloud?.project?.id == null && ctx.labels?.project_id != null
+  - set:
+      field: orchestrator.type
+      tag: set_orchestrator_type
+      value: kubernetes
+      override: false
+      if: ctx.orchestrator?.type == null && ctx.labels?.cluster_name != null
+  - set:
+      field: orchestrator.cluster.name
+      tag: set_orchestrator_cluster_name_from_labels_cluster_name
+      copy_from: labels.cluster_name
+      ignore_empty_value: true
+      override: false
+      if: ctx.orchestrator?.cluster?.name == null && ctx.labels?.cluster_name != null
+  - set:
+      field: orchestrator.resource.type
+      tag: set_orchestrator_resource_type_from_labels_payload_resourceType
+      copy_from: labels.payload.resourceType
+      ignore_empty_value: true
+      override: false
+      if: ctx.orchestrator?.resource?.type == null && ctx.labels?.payload?.resourceType != null
+  - set:
+      field: orchestrator.resource.name
+      tag: set_orchestrator_resource_name_from_labels_payload_resource
+      copy_from: labels.payload.resource
+      ignore_empty_value: true
+      override: false
+      if: ctx.orchestrator?.resource?.name == null && ctx.labels?.payload?.resource != null
 
 ##
 # RequestMetadata
@@ -585,6 +636,16 @@ processors:
         if (first == false && last == true) {
           ctx.event.type.add('end');
         }
+
+##
+# BindingDelta
+# protPayload.serviceData.policyDelta.bindingDeltas
+# https://docs.cloud.google.com/iam/docs/reference/rpc/google.iam.v1#google.iam.v1.BindingDelta
+##
+  - set:
+      field: gcp.audit.service_data.policy_delta.binding_deltas
+      copy_from: json.protoPayload.serviceData.policyDelta.bindingDeltas
+      if: ctx.json?.protoPayload?.serviceData?.policyDelta?.bindingDeltas != null && !ctx.json.protoPayload.serviceData.policyDelta.bindingDeltas.isEmpty()
 
 # TODO remove duplicate protoPayload.methodName
   - set:
@@ -862,6 +923,17 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+
+# Populate user.email from client.user.email
+  - set:
+      field: user.email
+      copy_from: client.user.email
+      ignore_empty_value: true
+# Populate user.id from client.user.id
+  - set:
+      field: user.id
+      copy_from: client.user.id
+      ignore_empty_value: true
 
 # Related fields
   - append:

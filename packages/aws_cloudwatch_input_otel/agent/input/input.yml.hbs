@@ -1,0 +1,76 @@
+extensions:
+  awscredentialsprovider:
+{{#if access_key_id}}
+    credentials:
+      access_key_id: {{access_key_id}}
+      secret_access_key: {{secret_access_key}}
+{{#if session_token}}
+      session_token: {{session_token}}
+{{/if}}
+{{/if}}
+{{#if role_arn}}
+    assume_role:
+      arn: {{role_arn}}
+{{#if external_id}}
+      external_id: {{external_id}}
+{{/if}}
+{{/if}}
+
+receivers:
+  awscloudwatch:
+    credentials_provider: awscredentialsprovider
+    region: {{region}}
+    metrics:
+      collection_interval: {{collection_interval}}
+      period: {{period}}
+      delay: {{delay}}
+      discovery:
+        filters:
+          namespace: "{{namespace}}"
+        limit: {{autodiscover_limit}}
+        recently_active: true
+{{#if autodiscover_aggregation}}
+        stats:
+{{#each autodiscover_aggregation}}
+          - "{{this}}"
+{{/each}}
+{{/if}}
+
+processors:
+  transform:
+    metric_statements:
+      - context: datapoint
+        statements:
+          # The awscloudwatch receiver bundles all CloudWatch dimensions into one nested
+          # `Dimensions` map attribute. ES otel-mode maps a nested-object attribute as
+          # `flattened` (see the `complex_attributes` dynamic template), which can't be a
+          # time_series_dimension — so every InstanceId would collapse into one _tsid.
+          # Flatten the dimensions up to top-level attributes (it's already a map, so no
+          # ParseJSON) where `attributes` passthrough makes each a real keyword dimension.
+          # Guarded with IsMap: dimensionless metrics (e.g. UnreservedConcurrentExecutions)
+          # have no `Dimensions` attribute, and merge_maps on the resulting nil warns.
+          - merge_maps(datapoint.attributes, datapoint.attributes["Dimensions"], "upsert") where IsMap(datapoint.attributes["Dimensions"])
+          - delete_key(datapoint.attributes, "Dimensions") where IsMap(datapoint.attributes["Dimensions"])
+  resourcedetection/system:
+    detectors: ["system"]
+    system:
+      hostname_sources: ["os"]
+      resource_attributes:
+        host.name:
+          enabled: true
+        host.id:
+          enabled: false
+  resourcedetection/aws:
+    detectors: ["ec2", "ecs"]
+    timeout: 2s
+    override: false
+
+service:
+  extensions: [awscredentialsprovider]
+  pipelines:
+    metrics:
+      receivers: [awscloudwatch]
+      processors:
+        - transform
+        - resourcedetection/system
+        - resourcedetection/aws

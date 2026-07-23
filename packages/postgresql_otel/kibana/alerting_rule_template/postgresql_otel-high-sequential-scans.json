@@ -1,0 +1,56 @@
+{
+  "id": "postgresql_otel-high-sequential-scans",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when sequential scans exceed 1000 in the window. Missing indexes or bad query plans.",
+    "name": "[PostgreSQL OTel] High sequential scans",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-query-performance"
+        },
+        {
+          "id": "postgresql_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL high sequential scans\n\n### What fired\nSummed sequential scans exceeded 1000 during the window.\n\n### Why it matters\nSustained seqscans on large tables indicate missing indexes or plans that ignore existing indexes. Hurts performance and disk I/O.\n\n### Triage\n1. Identify the top offending tables.\n2. Inspect query plans.\n\n### Remediation\n- Add appropriate indexes.\n- Refresh planner statistics.\n\n### Tuning\n- 1000 threshold; tune to table count.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-postgresqlreceiver.otel-*\n// Sequential scans on large tables suggest missing indexes; table-level metric (production)\n| WHERE postgresql.sequential_scans IS NOT NULL\n| EVAL seq_scans_val = TO_DOUBLE(postgresql.sequential_scans)\n| WHERE seq_scans_val > 0\n| STATS seq_scan_count = SUM(seq_scans_val) BY service.instance.id, postgresql.database.name\n// Threshold: > 1000 scans in window; adjust for table count and workload\n| WHERE seq_scan_count > 1000"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

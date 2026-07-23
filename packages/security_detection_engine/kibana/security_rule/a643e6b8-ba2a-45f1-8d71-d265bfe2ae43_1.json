@@ -1,0 +1,107 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects modifications to the CoreDNS or kube-dns ConfigMap in the kube-system namespace. These ConfigMaps control cluster DNS resolution for all pods. An attacker who modifies the CoreDNS Corefile can redirect internal service DNS names to attacker-controlled IP addresses, enabling man-in-the-middle attacks against the Kubernetes API server, database services, and other internal endpoints. Pods that resolve service names via cluster DNS will transparently connect to the attacker instead of the legitimate service, allowing interception of service account tokens, database credentials, and API traffic. DNS poisoning at the cluster level is particularly dangerous because it affects every pod in every namespace simultaneously and does not require any modification to the victim workloads. CoreDNS configuration changes are rare in normal operations and any unexpected modification should be investigated immediately.",
+        "false_positives": [
+            "Cluster administrators may legitimately update CoreDNS configuration for forwarding, stub domains, or cluster DNS troubleshooting. Baseline approved operators and automation identities; tune exclusions for known change pipelines."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-kubernetes.audit_logs-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Kubernetes CoreDNS or Kube-DNS Configuration Modified",
+        "note": "## Triage and analysis\n\n### Investigating Kubernetes CoreDNS or Kube-DNS Configuration Modified\n\nIdentify who performed the change (user.name, groups), from where (source.ip), and which ConfigMap was modified.\nIf request/response capture is available, review the changed Corefile content for upstream redirection, wildcard\nrewrites, or unexpected forward/proxy targets.\n\n### Possible investigation steps\n\n- Confirm the actor is authorized to modify kube-system DNS configuration and whether the change aligns with a change window.\n- Review the ConfigMap diff for added rewrite rules, hosts entries, or forwarding to external or unexpected internal IPs.\n- Correlate with follow-on suspicious activity such as secret reads, token minting, or RBAC modifications.\n- Check for cluster-wide symptoms: service connection failures, TLS errors, or sudden endpoint changes across namespaces.\n\n### Response and remediation\n\n- Revert the ConfigMap to a known-good version and restart DNS pods if required by your deployment.\n- Restrict RBAC permissions that allow update/patch/delete on kube-system DNS ConfigMaps and investigate the source identity.\n",
+        "query": "data_stream.dataset:\"kubernetes.audit_logs\" and \nkubernetes.audit.objectRef.resource:\"configmaps\" and\nkubernetes.audit.objectRef.name:(\"coredns\" or \"kube-dns\" or \"coredns-custom\") and\nkubernetes.audit.objectRef.namespace:\"kube-system\" and\nkubernetes.audit.verb:(\"update\" or \"patch\" or \"delete\") and\nkubernetes.audit.annotations.authorization_k8s_io/decision:\"allow\" and \nnot user.name:(\n  system\\:serviceaccount\\:kube-system\\:coredns or\n  system\\:serviceaccount\\:kube-system\\:kube-dns or\n  system\\:node\\:* or\n  eks\\:* or aksService or acsService\n)\n",
+        "references": [
+            "https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/",
+            "https://coredns.io/plugins/rewrite/",
+            "https://attack.mitre.org/techniques/T1565/001/"
+        ],
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.80.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.annotations.authorization_k8s_io/decision",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.namespace",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "a643e6b8-ba2a-45f1-8d71-d265bfe2ae43",
+        "severity": "high",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Domain: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1565",
+                        "name": "Data Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1565/",
+                        "subtechnique": [
+                            {
+                                "id": "T1565.001",
+                                "name": "Stored Data Manipulation",
+                                "reference": "https://attack.mitre.org/techniques/T1565/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "a643e6b8-ba2a-45f1-8d71-d265bfe2ae43_1",
+    "type": "security-rule"
+}

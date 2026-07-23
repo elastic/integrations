@@ -1,0 +1,56 @@
+{
+  "id": "postgresql_otel-slow-top-queries",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when a `db.server.top_query` delta total_exec_time exceeds 10 s. Top queries consuming disproportionate time.",
+    "name": "[PostgreSQL OTel] Slow top queries",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-query-performance"
+        },
+        {
+          "id": "postgresql_otel-active-queries"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL slow top queries\n\n### What fired\n`attributes.postgresql.total_exec_time > 10000 ms` delta per scrape on a top query.\n\n### Why it matters\nTop queries from pg_stat_statements dominate total workload. A query consuming 10+ seconds per scrape interval is a prime optimisation target.\n\n### Triage\n1. Inspect the query text and plan.\n2. Check for missing indexes / poor stats.\n\n### Remediation\n- Optimise the query.\n- Consider query rewrite or index changes.\n\n### Tuning\n- 10 s threshold; tune to scrape cadence.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM logs-postgresqlreceiver.otel-*\n// Top query stats from pg_stat_statements; total_exec_time is delta per scrape\n| WHERE event_name == \"db.server.top_query\"\n| WHERE attributes.postgresql.total_exec_time IS NOT NULL AND attributes.postgresql.total_exec_time > 0\n// Threshold: total exec time > 10 seconds in window (delta); tune for scrape interval\n| WHERE attributes.postgresql.total_exec_time > 10000\n| KEEP service.instance.id, attributes.db.namespace, attributes.db.query.text, attributes.postgresql.total_exec_time, attributes.postgresql.calls\n| SORT attributes.postgresql.total_exec_time DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

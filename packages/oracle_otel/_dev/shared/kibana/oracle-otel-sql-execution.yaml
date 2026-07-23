@@ -1,0 +1,306 @@
+---
+# Oracle Database OTel - SQL Execution, I/O & Cache Performance
+# Dashboard 3 of 6 - Query engine efficiency and data access performance
+# Data source: metrics-oracledbreceiver.otel-*
+dashboards:
+  - id: oracle_otel-sql-execution
+    minimum_kibana_version: '8.14.0'
+    name: '[Metrics Oracle] SQL Execution, I/O & Cache Performance'
+    description: Query engine efficiency and data access performance. Are applications using the database efficiently? Is the buffer cache effective?
+    controls:
+      - type: options
+        label: Oracle Instance
+        data_view: metrics-*
+        field: oracledb.instance.name
+    filters:
+      - field: data_stream.dataset
+        equals: oracledbreceiver.otel
+    panels:
+      - title: Navigation Links
+        description: Links to all Oracle Database OTel dashboards.
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: oracle_otel-overview
+            - label: Resource Capacity, Sessions & Locking
+              dashboard: oracle_otel-resource-capacity
+            - label: SQL Execution, I/O & Cache Performance
+              dashboard: oracle_otel-sql-execution
+            - label: Transaction Health & Storage Management
+              dashboard: oracle_otel-transaction-health
+            - label: Active Query Analysis
+              dashboard: oracle_otel-active-query-analysis
+            - label: Query Performance & Plans
+              dashboard: oracle_otel-query-performance
+
+      - title: Dashboard Introduction
+        size: {w: 48, h: 3}
+        markdown:
+          content: |
+            # Oracle Database
+
+            This dashboard offers insights into query engine efficiency and data access performance for your Oracle Database instance, including
+
+            - SQL execution rate and CPU time per execution
+            - Hard parse ratio and parse call throughput
+            - Buffer cache hit ratio effectiveness over time
+            - Logical and physical read rates
+            - PGA memory allocation and trends
+            - CPU time consumption rate
+
+      - title: Execution Rate
+        description: SQL statements executed per second, including both user and recursive (internal) calls.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.executions IS NOT NULL
+            | STATS exec_rate = SUM(RATE(oracledb.executions))
+          primary:
+            field: exec_rate
+            label: Executions/sec
+            format:
+              type: number
+              decimals: 1
+
+      - title: Hard Parse Ratio
+        hide_title: true
+        description: Proportion of parse calls that required full SQL compilation (hard parse) versus reusing a cached plan (soft parse).
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.hard_parses IS NOT NULL AND oracledb.parse_calls IS NOT NULL
+            | STATS hard_rate = SUM(RATE(oracledb.hard_parses)), total_rate = SUM(RATE(oracledb.parse_calls))
+            | EVAL ratio_pct = CASE(total_rate > 0, ROUND(hard_rate / total_rate, 3), 0)
+          primary:
+            field: ratio_pct
+            label: Hard Parse Ratio
+            format:
+              type: percent
+              decimals: 1
+
+      - title: Buffer Cache Hit Ratio
+        hide_title: true
+        description: Proportion of data block reads served from the SGA buffer cache versus disk.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.physical_reads IS NOT NULL AND oracledb.logical_reads IS NOT NULL
+            | STATS physical_rate = SUM(RATE(oracledb.physical_reads)), logical_rate = SUM(RATE(oracledb.logical_reads))
+            | EVAL hit_ratio_pct = CASE(logical_rate > 0, ROUND(1 - physical_rate / logical_rate, 3), 0)
+          primary:
+            field: hit_ratio_pct
+            label: Buffer Cache Hit Ratio
+            format:
+              type: percent
+              decimals: 1
+
+      - title: CPU Time per Execution
+        description: Average CPU seconds consumed per SQL execution.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.cpu_time IS NOT NULL OR oracledb.executions IS NOT NULL
+            | STATS cpu_rate = SUM(RATE(oracledb.cpu_time)), exec_rate = SUM(RATE(oracledb.executions))
+            | EVAL cpu_per_exec = CASE(exec_rate > 0, cpu_rate / exec_rate, 0)
+          primary:
+            field: cpu_per_exec
+            label: CPU sec/exec
+            format:
+              type: number
+              decimals: 4
+
+      - title: PGA Memory
+        hide_title: true
+        description: Current aggregate PGA (Program Global Area) memory allocated across all sessions.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.pga_memory IS NOT NULL
+            | STATS pga = MAX(LAST_OVER_TIME(oracledb.pga_memory))
+          primary:
+            field: pga
+            label: PGA Memory
+            format:
+              type: bytes
+
+      - title: Execution Rate Over Time
+        description: SQL execution rate per second over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.executions IS NOT NULL
+            | STATS exec_rate = SUM(RATE(oracledb.executions)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: exec_rate
+              label: Executions/sec
+
+      - title: Parse Call Rate Over Time
+        description: Total parse call rate (soft + hard parses) per second over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.parse_calls IS NOT NULL
+            | STATS parse_rate = SUM(RATE(oracledb.parse_calls)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: parse_rate
+              label: Parse Calls/sec
+
+      - title: Hard Parse Rate Over Time
+        description: Hard parse rate per second over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.hard_parses IS NOT NULL
+            | STATS hard_parse_rate = SUM(RATE(oracledb.hard_parses)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: hard_parse_rate
+              label: Hard Parses/sec
+
+      - title: Hard Parse Ratio Over Time
+        description: Hard parse ratio trend over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.hard_parses IS NOT NULL AND oracledb.parse_calls IS NOT NULL
+            | STATS hard_rate = SUM(RATE(oracledb.hard_parses)), total_rate = SUM(RATE(oracledb.parse_calls)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | EVAL ratio_pct = CASE(total_rate > 0, ROUND(hard_rate / total_rate, 3), 0)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: ratio_pct
+              label: Hard Parse Ratio %
+              format:
+                type: percent
+
+      - title: Buffer Cache Hit Ratio Over Time
+        description: Buffer cache hit ratio trend over time.
+        size: {w: 48, h: 10}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.physical_reads IS NOT NULL AND oracledb.logical_reads IS NOT NULL
+            | STATS physical_rate = SUM(RATE(oracledb.physical_reads)), logical_rate = SUM(RATE(oracledb.logical_reads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | EVAL hit_ratio_pct = CASE(logical_rate > 0, ROUND(1 - physical_rate / logical_rate, 3), 0)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: hit_ratio_pct
+              label: Buffer Cache Hit Ratio %
+              format:
+                type: percent
+
+      - title: Logical Read Rate Over Time
+        description: Logical read (buffer cache access) rate per second over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.logical_reads IS NOT NULL
+            | STATS logical_rate = SUM(RATE(oracledb.logical_reads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: logical_rate
+              label: Logical Reads/sec
+
+      - title: Physical Read Rate Over Time
+        description: Physical read (disk I/O) rate per second over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.physical_reads IS NOT NULL
+            | STATS physical_rate = SUM(RATE(oracledb.physical_reads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: physical_rate
+              label: Physical Reads/sec
+
+      - title: CPU Time Rate Over Time
+        description: Cumulative CPU time consumption rate (seconds of CPU per second of wall clock) over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.cpu_time IS NOT NULL
+            | STATS cpu_rate = SUM(RATE(oracledb.cpu_time)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: cpu_rate
+              label: CPU Time/sec
+
+      - title: PGA Memory Over Time
+        description: Aggregate PGA memory allocation trend over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.pga_memory IS NOT NULL
+            | STATS pga = MAX(LAST_OVER_TIME(oracledb.pga_memory)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: pga
+              label: PGA Memory
+              format:
+                type: bytes

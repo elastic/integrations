@@ -17,6 +17,12 @@ sql_queries:
     response_format: table
   - query: "SELECT cntr_value As 'buffer_cache_hit_ratio' FROM sys.dm_os_performance_counters WHERE counter_name = 'Buffer cache hit ratio' AND object_name like '%Buffer Manager%'"
     response_format: table
+  # Buffer cache hit ratio is a PERF_LARGE_RAW_FRACTION counter (cntr_type 537003264);
+  # its raw cntr_value is only the numerator and must be divided by its companion
+  # PERF_LARGE_RAW_BASE counter ('Buffer cache hit ratio base') to obtain the actual
+  # ratio. The value is emitted as a fraction in [0, 1]
+  - query: "SELECT CAST(CASE WHEN base.cntr_value > 0 THEN (num.cntr_value * 1.0 / base.cntr_value) ELSE NULL END AS FLOAT) As 'buffer_cache_hit_ratio_pct' FROM sys.dm_os_performance_counters AS num INNER JOIN sys.dm_os_performance_counters AS base ON base.object_name = num.object_name AND base.instance_name = num.instance_name WHERE num.counter_name = 'Buffer cache hit ratio' AND base.counter_name = 'Buffer cache hit ratio base' AND num.object_name like '%Buffer Manager%'"
+    response_format: table
   - query: "SELECT cntr_value As 'page_splits_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Page splits/sec'"
     response_format: table
   - query: "SELECT cntr_value As 'lock_waits_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Lock Waits/sec' AND instance_name = '_Total'"

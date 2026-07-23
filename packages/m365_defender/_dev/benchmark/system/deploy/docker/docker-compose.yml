@@ -1,0 +1,30 @@
+services:
+  m365-defender-incident-http:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: m365_defender
+    ports:
+      - 8082
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/var/log
+      - ./incident-http-mock-config.yml:/config.yml
+    environment:
+      PORT: 8082
+    command:
+      - http-server
+      - --addr=:8082
+      - --config=/config.yml
+  m365-defender-alert-http:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: m365_defender
+    ports:
+      - 8082
+    volumes:
+      - ./alert-http-mock-config.yml:/config.yml
+      - ${SERVICE_LOGS_DIR}:/var/log
+    environment:
+      PORT: 8082
+    command:
+      - http-server
+      - --exit-on-unmatched-rule
+      - --addr=:8082
+      - --config=/config.yml

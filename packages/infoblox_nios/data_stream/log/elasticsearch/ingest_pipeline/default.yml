@@ -12,7 +12,7 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+%{NOTSPACE:host.domain}\\s+%{IP:_tmp.host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+(?:%{IP:_tmp.ip}\\s+)?%{NOTSPACE:host.domain}\\s+%{IP:_tmp.host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
         - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+(%{IP:_tmp.host.ip}|%{NOTSPACE:host.domain})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
         - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+%{IP:_tmp.host.ip}\\s+%{GREEDYDATA:message}$"
         - "^%{GREEDYDATA:message}$"
@@ -122,6 +122,28 @@ processors:
       if: ctx._tmp?.host?.ip != null
       allow_duplicates: false
       ignore_failure: true
+  - convert:
+      field: _tmp.ip
+      if: ctx._tmp?.ip != null && ctx._tmp.ip != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: _tmp.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: related.ip
+      value: '{{{_tmp.ip}}}'
+      if: ctx._tmp?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
   - append:
       field: related.hosts
       value: '{{{host.domain}}}'
@@ -132,6 +154,11 @@ processors:
       field: host.ip
       value: '{{{_tmp.host.ip}}}'
       if: ctx._tmp?.host?.ip != null
+      ignore_failure: true
+  - append:
+      field: host.ip
+      value: '{{{_tmp.ip}}}'
+      if: ctx._tmp?.ip != null
       ignore_failure: true
   - lowercase:
       field: event.action

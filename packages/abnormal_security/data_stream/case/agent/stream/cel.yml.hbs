@@ -92,6 +92,18 @@ program: |
             "next_page": int(state.next) + 1 < size(state.worklist) ? state.next_page : int(state.next_page) + 1,
             "want_more": true,
           })
+        : resp.StatusCode == 404 ?
+          // Case deleted before detail fetch: skip.
+          {
+            "events": [{"retry": true}],
+            "cursor": {
+              "last_timestamp": state.end_time
+            },
+            "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
+            "next": int(state.next) + 1 < size(state.worklist) ? int(state.next) + 1 : 0,
+            "next_page": int(state.next) + 1 < size(state.worklist) ? state.next_page : int(state.next_page) + 1,
+            "want_more": true,
+          }
         :
           {
             "events": {
@@ -130,7 +142,11 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event:
+    when:
+      equals:
+        retry: true
+{{#if processors}}
 {{processors}}
 {{/if}}

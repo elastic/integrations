@@ -1,0 +1,150 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects PowerShell scripts associated with NTLM relay or pass-the-hash tooling and SMB/NTLM negotiation artifacts. Attackers use relay and PtH techniques to authenticate without passwords and pivot to other systems.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.powershell*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Potential PowerShell Pass-the-Hash/Relay Script",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential PowerShell Pass-the-Hash/Relay Script\n\nThis alert indicates PowerShell script block content consistent with low-level NTLM and SMB/SMB2 negotiation handling. These artifacts are commonly embedded in credential relay and pass-the-hash tooling and can be associated with credential access and lateral movement activity.\n\n#### Key alert fields to review\n\n- `user.name`, `user.domain`, `user.id`: Account execution context for correlation, prioritization, and scoping.\n- `host.name`, `host.id`: Host execution context for correlation, prioritization, and scoping.\n- `powershell.file.script_block_text`: Script block content that matched the detection logic.\n- `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`: Script block metadata to pivot to other fragments or reconstruct full script content when split across multiple events.\n- `file.path`, `file.directory`, `file.name`: File-origin context when the script block is sourced from an on-disk file.\n- `powershell.file.script_block_length`: Script block length (size) context.\n\n#### Possible investigation steps\n\n- Review `powershell.file.script_block_text` to understand capability and intent:\n  - Identify whether the script is building, parsing, or transmitting NTLMSSP messages and SMB/SMB2 negotiation data (often represented as hex strings or byte arrays).\n  - Determine whether the logic aligns more closely with:\n    - A capture/relay workflow (for example, listener-style components, authentication forwarding, or multiple inbound and outbound endpoints), or\n    - A pass-the-hash style workflow (for example, authentication material variables combined with remote access or remote execution logic).\n  - Note any tool identifiers, function names, or comments that resemble known PowerShell relay/PtH frameworks (for example, Inveigh, Invoke-TheHash, Invoke-SMBExec, Invoke-WMIExec, or Invoke-Tater).\n  - Extract any referenced remote targets or infrastructure (hostnames, IP addresses, UNC paths, share names, or URLs) and record them for scoping and downstream validation.\n\n- Reconstruct the complete script when the content is split across multiple events:\n  - Pivot on `powershell.file.script_block_id` and order fragments by `powershell.sequence`; use `powershell.total` to confirm the script is complete.\n  - Review other script blocks for the same host and user around the alert time to capture configuration values, embedded payloads, or follow-on actions not present in the matching fragment.\n\n- Establish execution context and expectedness:\n  - Validate the execution context using `host.name`, `host.id`, `user.name`, `user.domain`, and `user.id`.\n  - Prioritize investigation when the executing account is privileged, rarely uses PowerShell on the host, or when the host is a server or administrative jump system.\n  - Use `powershell.file.script_block_length` to help gauge whether this resembles embedded tooling (larger or highly structured blocks) versus incidental string handling.\n\n- Identify script origin (when file context is available):\n  - If `file.path`, `file.directory`, or `file.name` are present, determine whether the script originated from disk and whether the location and naming align with approved scripts and expected operators.\n  - Treat scripts sourced from user-writable or temporary locations as higher risk, especially when combined with protocol-crafting logic.\n\n- Correlate with adjacent telemetry to understand how PowerShell was launched and what occurred afterward (if available in your environment):\n  - Review process activity near `@timestamp` on the same host to identify the PowerShell host process and its parent process, and whether execution appears interactive, scheduled, or remotely initiated.\n  - Review network and authentication activity from the same host and user near the alert time for evidence of SMB or other NTLM-based authentication attempts to multiple targets, repeated failures, or unusual destination systems.\n  - Look for short-following activity consistent with lateral movement (for example, remote management actions, remote execution behaviors, or additional suspicious PowerShell script blocks).\n\n- Expand the scope and hunt for related activity:\n  - Search for additional occurrences of distinctive strings or byte patterns from `powershell.file.script_block_text` across other hosts to identify reuse of the same tooling or broader compromise.\n  - Review other alerts tied to the same `user.id` and `host.id` within a broader window to identify credential access precursors, staging behavior, or persistence attempts.\n\n### False positive analysis\n\n- False positives can occur during authorized security testing, incident response, or troubleshooting where scripts intentionally craft or parse NTLM/SMB protocol messages.\n- Validate whether the activity is expected by confirming the script owner (when `file.path` is present), the approved operator, and whether the host and account match the intended scope for such work.\n- Benign administrative automation rarely embeds raw NTLMSSP/SMB negotiation byte sequences; prioritize additional review when the script content implements low-level protocol logic or includes relay-style workflows.\n\n### Response and remediation\n\n- If malicious or unauthorized activity is suspected:\n  - Contain the affected host to reduce the risk of credential interception and lateral movement.\n  - Preserve evidence, including the full reconstructed script content, relevant PowerShell log events, and any on-disk script files referenced by `file.path`.\n  - Identify potentially impacted accounts using `user.name`, `user.domain`, and `user.id`; take credential containment actions per policy (for example, password resets, revocation of exposed credentials, and review of privileged access).\n  - Investigate potential lateral movement by reviewing activity on any systems referenced in the script content and by hunting for the same script patterns across other hosts.\n\n- If the activity is confirmed benign:\n  - Document the business justification and expected host/account scope, and ensure appropriate approvals are in place.\n  - Apply targeted tuning using stable attributes such as known script paths, approved execution accounts, or consistent script content patterns.\n",
+        "query": "event.category:process and host.os.type:windows and\n  powershell.file.script_block_text : (\n    (\"NTLMSSPNegotiate\" and (\"NegotiateSMB\" or \"NegotiateSMB2\")) or\n    \"4E544C4D53535000\" or\n    \"0x4e,0x54,0x4c,0x4d,0x53,0x53,0x50\" or\n    \"0x4e,0x54,0x20,0x4c,0x4d\" or\n    \"0x53,0x4d,0x42,0x20,0x32\" or\n    \"0x81,0xbb,0x7a,0x36,0x44,0x98,0xf1,0x35,0xad,0x32,0x98,0xf0,0x38\"\n  ) and\n  not file.directory : \"C:\\ProgramData\\Microsoft\\Windows Defender Advanced Threat Protection\\Downloads\"\n",
+        "references": [
+            "https://github.com/Kevin-Robertson/Invoke-TheHash/blob/master/Invoke-WMIExec.ps1",
+            "https://github.com/Kevin-Robertson/Invoke-TheHash/blob/master/Invoke-SMBExec.ps1",
+            "https://github.com/dafthack/Check-LocalAdminHash/blob/master/Check-LocalAdminHash.ps1",
+            "https://github.com/nettitude/PoshC2/blob/master/resources/modules/Invoke-Tater.ps1",
+            "https://github.com/Kevin-Robertson/Inveigh/blob/master/Inveigh.ps1"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.directory",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "951779c2-82ad-4a6c-82b8-296c1f691449",
+        "setup": "## Setup\n\nPowerShell Script Block Logging must be enabled to generate the events used by this rule (e.g., 4104).\nSetup instructions: https://ela.st/powershell-logging-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide",
+            "Data Source: PowerShell Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1557",
+                        "name": "Adversary-in-the-Middle",
+                        "reference": "https://attack.mitre.org/techniques/T1557/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/",
+                        "subtechnique": [
+                            {
+                                "id": "T1550.002",
+                                "name": "Pass the Hash",
+                                "reference": "https://attack.mitre.org/techniques/T1550/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 108
+    },
+    "id": "951779c2-82ad-4a6c-82b8-296c1f691449_108",
+    "type": "security-rule"
+}

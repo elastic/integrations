@@ -103,6 +103,31 @@ processors:
   - dot_expander:
       field: "*"
       path: gitlab.application
+  - script:
+      tag: kv_params
+      lang: painless
+      if: ctx.gitlab?.application?.params != null
+      source: |
+        def keyValuePairs = [];
+        for (item in ctx.gitlab.application.params) {
+          def key = item.key;
+          def value = item.value;
+          def keyValueObject = [key: value];
+          keyValuePairs.add(keyValueObject)
+        }
+        ctx.gitlab.application.params = keyValuePairs;
+  - convert:
+      field: gitlab.application.namespace_id
+      tag: convert_application_namespace_id_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.application.namespace_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'   
   - rename:
       field: gitlab.application.meta.user
       target_field: user.name
@@ -111,6 +136,18 @@ processors:
       field: gitlab.application.meta.user_id
       type: string
       ignore_missing: true
+  - convert:
+      field: gitlab.application.user_id
+      tag: convert_application_user_id_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.application.user_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: gitlab.application.meta.user_id
       target_field: user.id
@@ -133,26 +170,70 @@ processors:
       field: gitlab.application.mergeability_project_id
       target_field: gitlab.application.mergeability.project_id
       ignore_missing: true
+  - convert:
+      field: gitlab.application.duration_s
+      tag: convert_duration_s_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: gitlab.application.duration_s
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: gitlab.application.meta.gl_user_id
+      tag: convert_gl_user_id_to_keyword
+      type: string
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_application_meta_gl_user_id_into_related_user
+      value: '{{{gitlab.application.meta.gl_user_id}}}'
+      allow_duplicates: false
+      if: ctx.gitlab?.application?.meta?.gl_user_id != null && ctx.gitlab.application.meta?.gl_user_id != ''
+  - convert:
+      field: gitlab.application.meta.organization_id
+      tag: convert_organization_id_to_keyword
+      type: string
+      ignore_missing: true
+  - set:
+      field: organization.id
+      tag: set_organization_id_from_application_meta_organization_id
+      copy_from: gitlab.application.meta.organization_id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_application_user_id_into_related_user
+      value: '{{{gitlab.application.user_id}}}'
+      allow_duplicates: false
+      if: ctx.gitlab?.application?.user_id != null && ctx.gitlab.application.user_id != ''
   - grok:
       field: gitlab.application.message
       patterns:
-        - 'Failed%{SPACE}Login:%{SPACE}username=%{USERNAME:user.name}%{SPACE}ip=%{IP:source.ip}'
-        - '%{USERNAME:user.name}%{SPACE}created%{SPACE}a%{SPACE}new%{SPACE}project%{SPACE}"%{GREEDYDATA:gitlab.application.project_name}"'
-        - 'Project%{SPACE}"%{GREEDYDATA:gitlab.application.project_name}"%{SPACE}was%{SPACE}deleted'
-        - 'User%{SPACE}Logout:%{SPACE}username=%{USERNAME:user.name}%{SPACE}ip=%{IP:source.ip}'
-        - 'Successful%{SPACE}Login:%{SPACE}username=%{USERNAME:user.name}%{SPACE}ip=%{IP:source.ip}%{SPACE}method=%{WORD:gitlab.application.login_method}%{SPACE}admin=%{WORD:gitlab.application.user_admin}'
-        - 'User%{SPACE}"%{USERNAME:user.name}"%{SPACE}\(%{EMAILADDRESS:user.email}\)%{SPACE}was%{SPACE}created'
-        - 'User%{SPACE}"%{USERNAME:user.name}"%{SPACE}\(%{EMAILADDRESS:user.email}\)%{SPACE}was%{SPACE}removed'
-        - 'Group%{SPACE}"%{USERNAME:group.name}"%{SPACE}was%{SPACE}created'
-        - 'Group%{SPACE}"%{USERNAME:group.name}"%{SPACE}was%{SPACE}removed'
+        - '^Failed%{SPACE}Login:%{SPACE}username=%{USERNAME:user.name}%{SPACE}ip=%{IP:source.ip}$'
+        - '^%{USERNAME:user.name}%{SPACE}created%{SPACE}a%{SPACE}new%{SPACE}project%{SPACE}"%{GREEDYDATA:gitlab.application.project_name}"$'
+        - '^Project%{SPACE}"%{GREEDYDATA:gitlab.application.project_name}"%{SPACE}was%{SPACE}deleted$'
+        - '^User%{SPACE}Logout:%{SPACE}username=%{USERNAME:user.name}%{SPACE}ip=%{IP:source.ip}$'
+        - '^Successful%{SPACE}Login:%{SPACE}username=%{USERNAME:user.name}%{SPACE}ip=%{IP:source.ip}%{SPACE}method=%{WORD:gitlab.application.login_method}%{SPACE}admin=%{WORD:gitlab.application.user_admin}$'
+        - '^User%{SPACE}"%{USERNAME:user.name}"%{SPACE}\(%{EMAILADDRESS:user.email}\)%{SPACE}was%{SPACE}created$'
+        - '^User%{SPACE}"%{USERNAME:user.name}"%{SPACE}\(%{EMAILADDRESS:user.email}\)%{SPACE}was%{SPACE}removed$'
+        - '^Group%{SPACE}"%{USERNAME:group.name}"%{SPACE}was%{SPACE}created$'
+        - '^Group%{SPACE}"%{USERNAME:group.name}"%{SPACE}was%{SPACE}removed$'
       tag: grok_message
       if: ctx.gitlab.application.message != null
       ignore_missing: true
       ignore_failure: true
   - convert:
       field: gitlab.application.user_admin
+      tag: convert_user_admin_to_boolean
       type: boolean
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: gitlab.application.meta.remote_ip
       type: ip
@@ -163,7 +244,7 @@ processors:
               ignore_missing: true
           - append:
               field: error.message
-              value: '{{{_ingest.on_failure_message}}}'
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: gitlab.application.meta.remote_ip
       target_field: client.ip
@@ -206,10 +287,21 @@ processors:
       if: ctx.client?.ip != null
       allow_duplicates: false
   - append:
+      field: related.ip
+      tag: append_source_ip_into_related_ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
       field: event.category
       value: authentication
       tag: 'auth'
       if: 'ctx.gitlab?.application?.message != null && (ctx.gitlab.application.message.contains("Failed Login:") || ctx.gitlab.application.message.contains("Successful Login:"))'
+  - append:
+      field: event.category
+      value: iam
+      tag: 'append_iam_into_event_category'
+      if: ctx.gitlab?.application?.message != null && ctx.gitlab.application.message.contains('Group')
   - set:
       field: event.outcome
       value: failure
@@ -251,10 +343,9 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
-  - append:
+  - set:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
       if: ctx.error?.message != null
   - append:
       field: tags

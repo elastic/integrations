@@ -61,11 +61,16 @@ processors:
       tag: lowercase_event_action_9334b869
       field: event.action
       ignore_missing: true
+  - set:
+      tag: set_event_outcome_failure
+      field: event.outcome
+      value: failure
+      ignore_failure: true
   - append:
       tag: append_event_category_9c60edae
       field: event.category
       value: authentication
-      if: ctx.cisco_ise?.log?.message?.code != null && ['5405','5411','5418','5435','5400','5440'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5400','5401','5405','5411','5412','5418','5423','5435','5440','5448'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_category_ef7d974b
@@ -77,7 +82,7 @@ processors:
       tag: append_event_type_2ee7aeee
       field: event.type
       value: info
-      if: ctx.cisco_ise?.log?.message?.code != null && ['5405','5411','5418','5435','5400','5440'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5400','5401','5405','5411','5412','5418','5423','5435','5440','5448'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_type_02b5178b
@@ -91,10 +96,160 @@ processors:
       value: start
       if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5440'
       ignore_failure: true
+  - append:
+      tag: append_event_category_authentication_tacacs_denied
+      field: event.category
+      value: authentication
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5402','5403','5407'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_category_network_tacacs_denied
+      field: event.category
+      value: network
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5402','5403','5407'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_type_denied_tacacs
+      field: event.type
+      value: denied
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5402','5403','5407'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_category_authentication_tacacs_err
+      field: event.category
+      value: authentication
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5408','5409','5410'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_category_network_tacacs_err
+      field: event.category
+      value: network
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5408','5409','5410'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_type_info_tacacs_err
+      field: event.type
+      value: info
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5408','5409','5410'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_category_authentication_suppression
+      field: event.category
+      value: authentication
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5449'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_type_end_suppression
+      field: event.type
+      value: end
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5449'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_category_network_dropped_denied
+      field: event.category
+      value: network
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5406','5441','5442','5443'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_type_denied_network_dropped
+      field: event.type
+      value: denied
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5406','5441','5442','5443'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_category_network_authz_fail
+      field: event.category
+      value: network
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5419','5422'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_type_denied_authz_fail
+      field: event.type
+      value: denied
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5419','5422'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_category_network_info_fail
+      field: event.category
+      value: network
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5413','5414','5417','5420','5421','5434', '5436','5437','5438','5439'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_type_info_network_fail
+      field: event.type
+      value: info
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5413','5414','5417','5420','5421','5434', '5436','5437','5438','5439'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      tag: append_event_category_network_5416
+      field: event.category
+      value: network
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5416'
+      ignore_failure: true
+  - append:
+      tag: append_event_type_end_5416
+      field: event.type
+      value: end
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5416'
+      ignore_failure: true
+  - append:
+      tag: append_event_category_network_5450
+      field: event.category
+      value: network
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5450'
+      ignore_failure: true
+  - append:
+      tag: append_event_type_connection_5450
+      field: event.type
+      value: connection
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5450'
+      ignore_failure: true
+  - append:
+      tag: append_event_category_iam_5415
+      field: event.category
+      value: iam
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5415'
+      ignore_failure: true
+  - append:
+      tag: append_event_type_user_5415
+      field: event.type
+      value: user
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5415'
+      ignore_failure: true
+  - append:
+      tag: append_event_type_change_5415
+      field: event.type
+      value: change
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5415'
+      ignore_failure: true
+  - append:
+      tag: append_event_category_authentication_5451
+      field: event.category
+      value: authentication
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5451'
+      ignore_failure: true
+  - append:
+      tag: append_event_type_end_5451
+      field: event.type
+      value: end
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5451'
+      ignore_failure: true
+  - append:
+      tag: append_event_category_authentication_5452
+      field: event.category
+      value: authentication
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5452'
+      ignore_failure: true
+  - append:
+      tag: append_event_type_info_5452
+      field: event.type
+      value: info
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5452'
+      ignore_failure: true
   - kv:
       tag: kv_cisco_ise_log_log_details_raw_to_cisco_ise_log_log_details_dd59a8ac
       field: cisco_ise.log.log_details_raw
-      field_split: ', '
+      field_split: ', (?=[^,=]+=)'
       value_split: =
       ignore_failure: true
       target_field: cisco_ise.log.log_details

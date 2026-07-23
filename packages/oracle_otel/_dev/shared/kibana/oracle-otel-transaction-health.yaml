@@ -1,0 +1,285 @@
+---
+# Oracle Database OTel - Transaction Health & Storage Management
+# Dashboard 4 of 6 - Transaction outcomes and tablespace capacity
+# Data source: metrics-oracledbreceiver.otel-*
+dashboards:
+  - id: oracle_otel-transaction-health
+    minimum_kibana_version: '8.14.0'
+    name: '[Metrics Oracle] Transaction Health & Storage Management'
+    description: Transaction outcomes and tablespace capacity. Are transactions succeeding? Are deadlocks occurring? Which tablespaces are growing?
+    controls:
+      - type: options
+        label: Oracle Instance
+        data_view: metrics-*
+        field: oracledb.instance.name
+    filters:
+      - field: data_stream.dataset
+        equals: oracledbreceiver.otel
+    panels:
+      - title: Navigation Links
+        description: Links to all Oracle Database OTel dashboards.
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: oracle_otel-overview
+            - label: Resource Capacity, Sessions & Locking
+              dashboard: oracle_otel-resource-capacity
+            - label: SQL Execution, I/O & Cache Performance
+              dashboard: oracle_otel-sql-execution
+            - label: Transaction Health & Storage Management
+              dashboard: oracle_otel-transaction-health
+            - label: Active Query Analysis
+              dashboard: oracle_otel-active-query-analysis
+            - label: Query Performance & Plans
+              dashboard: oracle_otel-query-performance
+
+      - title: Dashboard Introduction
+        size: {w: 48, h: 5}
+        markdown:
+          content: |
+            ## Transaction Health & Storage Management
+
+            This dashboard offers insights into transaction outcomes and storage capacity for the Oracle instance, including
+
+            - Commit and rollback throughput rates with rollback-to-commit ratio trending
+            - Enqueue and exchange deadlock detection and rate tracking over time
+            - Total storage consumption across all tablespaces
+            - Per-tablespace utilisation breakdown showing used bytes, limits, and percentage fill
+            - Tablespace growth trends over time for capacity planning
+
+
+      - title: Commit Rate
+        description: User-initiated transaction commits per second.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.user_commits IS NOT NULL
+            | STATS commit_rate = SUM(RATE(oracledb.user_commits))
+          primary:
+            field: commit_rate
+            label: Commits/sec
+            format:
+              type: number
+              decimals: 1
+
+      - title: Rollback Rate
+        description: User-initiated transaction rollbacks per second.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.user_rollbacks IS NOT NULL
+            | STATS rollback_rate = SUM(RATE(oracledb.user_rollbacks))
+          primary:
+            field: rollback_rate
+            label: Rollbacks/sec
+            format:
+              type: number
+              decimals: 1
+
+      - title: Rollback-to-Commit Ratio
+        description: Proportion of completed transactions that were rolled back rather than committed.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.user_rollbacks IS NOT NULL OR oracledb.user_commits IS NOT NULL
+            | STATS rb_rate = SUM(RATE(oracledb.user_rollbacks)), c_rate = SUM(RATE(oracledb.user_commits))
+            | EVAL total = c_rate + rb_rate
+            | EVAL ratio_pct = CASE(total > 0, ROUND(rb_rate / total, 3), 0)
+          primary:
+            field: ratio_pct
+            label: Rollback Ratio
+            format:
+              type: percent
+              decimals: 1
+
+      - title: Deadlocks in Time Range
+        description: Approximate count of enqueue deadlocks (ORA-00060) in the selected time range.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.enqueue_deadlocks IS NOT NULL
+            | STATS deadlock_delta = SUM(INCREASE(oracledb.enqueue_deadlocks))
+          primary:
+            field: deadlock_delta
+            label: Deadlocks
+            format:
+              type: number
+              decimals: 0
+
+      - title: Total Storage Consumed
+        description: Total bytes used across all tablespaces.
+        size: {w: 8, h: 5}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.tablespace_size.usage IS NOT NULL
+            | STATS usage_bytes = MAX(oracledb.tablespace_size.usage) BY tablespace_name = attributes.tablespace_name
+            | STATS total_usage = SUM(usage_bytes)
+          primary:
+            field: total_usage
+            label: Total Storage
+            format:
+              type: bytes
+
+      - title: Commit vs Rollback Rate Over Time
+        description: User commit and rollback rates per second plotted together over time.
+        size: {w: 48, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.user_commits IS NOT NULL OR oracledb.user_rollbacks IS NOT NULL
+            | STATS commit_rate = SUM(RATE(oracledb.user_commits)), rollback_rate = SUM(RATE(oracledb.user_rollbacks)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: commit_rate
+              label: Commits/sec
+            - field: rollback_rate
+              label: Rollbacks/sec
+
+      - title: Rollback-to-Commit Ratio Over Time
+        description: Rollback-to-commit ratio trend over time.
+        size: {w: 48, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.user_rollbacks IS NOT NULL OR oracledb.user_commits IS NOT NULL
+            | STATS rb_rate = SUM(RATE(oracledb.user_rollbacks)), c_rate = SUM(RATE(oracledb.user_commits)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | EVAL total = c_rate + rb_rate
+            | EVAL ratio_pct = CASE(total > 0, ROUND(rb_rate / total, 3), 0)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: ratio_pct
+              label: Rollback Ratio %
+              format:
+                type: percent
+
+      - title: Enqueue Deadlock Rate Over Time
+        description: Enqueue deadlock (table/row lock deadlocks between sessions) rate per second over time.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.enqueue_deadlocks IS NOT NULL
+            | STATS deadlock_rate = SUM(RATE(oracledb.enqueue_deadlocks)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: deadlock_rate
+              label: Enqueue Deadlocks/sec
+
+      - title: Exchange Deadlock Rate Over Time
+        description: Exchange deadlock (index scan buffer exchange deadlocks) rate per second over time. These are internal, automatically retried events.
+        size: {w: 24, h: 8}
+        esql:
+          type: line
+          query: |
+            TS metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.exchange_deadlocks IS NOT NULL
+            | STATS exchange_rate = SUM(RATE(oracledb.exchange_deadlocks)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: exchange_rate
+              label: Exchange Deadlocks/sec
+
+      - title: Tablespace Utilisation Table
+        description: Per-tablespace breakdown showing used bytes, limit bytes, and utilisation percentage, sorted by utilisation descending.
+        size: {w: 48, h: 12}
+        esql:
+          type: datatable
+          query: |
+            FROM metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.tablespace_size.usage IS NOT NULL AND oracledb.tablespace_size.limit IS NOT NULL
+            | STATS usage_bytes = MAX(oracledb.tablespace_size.usage), limit_bytes = MAX(oracledb.tablespace_size.limit) BY tablespace_name = attributes.tablespace_name
+            | EVAL utilisation_pct = CASE(limit_bytes > 0, ROUND(TO_DOUBLE(usage_bytes) / TO_DOUBLE(limit_bytes), 3), 0)
+            | SORT utilisation_pct DESC
+            | LIMIT 50
+          breakdowns:
+            - field: tablespace_name
+              label: Tablespace
+          metrics:
+            - field: usage_bytes
+              label: Used (bytes)
+              format:
+                type: bytes
+            - field: limit_bytes
+              label: Limit (bytes)
+              format:
+                type: bytes
+            - field: utilisation_pct
+              label: Utilisation %
+              format:
+                type: percent
+
+      - title: Tablespace Usage Over Time
+        description: Per-tablespace used bytes over time, with one series per tablespace_name.
+        size: {w: 48, h: 10}
+        esql:
+          type: line
+          query: |
+            FROM metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.tablespace_size.usage IS NOT NULL
+            | STATS usage_bytes = MAX(oracledb.tablespace_size.usage) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), tablespace_name = attributes.tablespace_name
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: usage_bytes
+              label: Usage (bytes)
+              format:
+                type: bytes
+          breakdown:
+            field: tablespace_name
+
+      - title: Tablespace Utilisation % Over Time
+        description: Per-tablespace utilisation percentage over time, with one series per tablespace_name.
+        size: {w: 48, h: 10}
+        esql:
+          type: line
+          query: |
+            FROM metrics-oracledbreceiver.otel-*
+            | WHERE oracledb.tablespace_size.usage IS NOT NULL AND oracledb.tablespace_size.limit IS NOT NULL AND oracledb.tablespace_size.limit > 0
+            | STATS usage_bytes = MAX(oracledb.tablespace_size.usage), limit_bytes = MAX(oracledb.tablespace_size.limit) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), tablespace_name = attributes.tablespace_name
+            | EVAL utilisation_pct = ROUND(TO_DOUBLE(usage_bytes) / TO_DOUBLE(limit_bytes), 3)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: utilisation_pct
+              label: Utilisation %
+              format:
+                type: percent
+          breakdown:
+            field: tablespace_name

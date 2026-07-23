@@ -8,17 +8,31 @@
   type: group
   fields:
     - name: bucket
-      type: group
-      fields:
-        - name: name
-          type: keyword
-          description: The AWS S3 bucket name.
-        - name: arn
-          type: keyword
-          description: The AWS S3 bucket ARN.
+      type: flattened
     - name: object
-      type: group
-      fields:
-        - name: key
-          type: keyword
-          description: The AWS S3 Object key.
+      type: flattened
+- name: gcs.storage
+  type: group
+  fields:
+    - name: bucket.name
+      type: keyword
+      description: The name of the Google Cloud Storage Bucket.
+    - name: object.json_data
+      type: keyword
+      description: When parse_json is true, the resulting JSON data is stored in this field.
+    - name: object.name
+      type: keyword
+      description: The content type of the Google Cloud Storage object.
+    - name: object.content_type
+      type: keyword
+      description: The content type of the Google Cloud Storage object.
+- name: azure
+  type: group
+  fields:
+    - name: resource
+      type: flattened
+    - name: storage
+      type: flattened
+    - name: subscription_id
+      type: keyword
+      description: Azure subscription ID.

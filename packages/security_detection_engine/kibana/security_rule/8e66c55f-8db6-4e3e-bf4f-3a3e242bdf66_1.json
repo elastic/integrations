@@ -1,0 +1,99 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects Microsoft Graph activity from delegated user tokens (public client, client_auth_method 0) where a single user session and source IP rapidly touches multiple high-value Graph paths indicative of reconnaissance. The query classifies requests into categories such as role discovery, cross-tenant relationship queries, mailbox paths, contact harvesting, and organization or licensing metadata. When three or more distinct categories appear within a short burst window, it suggests a broad enumeration playbook rather than normal application traffic.",
+        "false_positives": [
+            "Legitimate first-party or line-of-business applications that use delegated permissions and enumerate several Graph resources during onboarding or sync may match. Baseline known app IDs and tune thresholds or path lists for your tenant."
+        ],
+        "from": "now-6m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Microsoft Graph Multi-Category Reconnaissance Burst",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft Graph Multi-Category Reconnaissance Burst\n\nThis rule uses an aggregation-based ES|QL query. Alert documents contain summarized fields; pivot to raw Graph activity\nlogs using user principal object ID, session ID (c_sid), source IP, tenant ID, and timestamps from the alert.\n\n### Possible investigation steps\n\n- Review Esql.categories and Esql.sample_paths to see which Graph endpoints were touched and whether they align with the app purpose.\n- Validate azure.graphactivitylogs.properties.app_id and user_agent.original against approved applications.\n- Correlate with Entra ID sign-in logs for the same user and session for MFA, conditional access, and token issuance context.\n- Check whether failed_calls indicates probing or permission errors versus successful enumeration.\n\n### Response and remediation\n\n- If malicious, revoke refresh tokens for the user, disable or restrict the application consent, and reset credentials per policy.\n- Add conditional access or block rules for high-risk Graph patterns where appropriate.\n",
+        "query": "from logs-azure.graphactivitylogs-* metadata _id, _version, _index\n\n// Graph calls via delegated user tokens (any status, any method)\n| where event.dataset == \"azure.graphactivitylogs\"\n  and azure.graphactivitylogs.properties.c_idtyp == \"user\"\n  and azure.graphactivitylogs.properties.client_auth_method == 0\n\n// high-value recon endpoints by url.path\n| eval Esql.is_role_enum = case(\n    url.path like \"*roleManagement/directory*\"\n      or url.path like \"*memberOf/microsoft.graph.directoryRole*\"\n      or url.path like \"*transitiveRoleAssignments*\",\n    true,\n    false\n  )\n| eval Esql.is_cross_tenant_enum = case(\n    url.path like \"*tenantRelationships*\"\n      or url.path like \"*getResourceTenants*\",\n    true,\n    false\n  )\n| eval Esql.is_mailbox_recon = case(\n    url.path like \"*mailboxSettings*\"\n      or url.path like \"*mailFolders*\"\n      or url.path like \"*messages*\"\n      or url.path like \"*inbox*\",\n    true,\n    false\n  )\n| eval Esql.is_contact_harvest = case(\n    url.path like \"*contacts*\"\n      or url.path like \"*contactFolders*\",\n    true,\n    false\n  )\n| eval Esql.is_org_recon = case(\n    url.path like \"*subscribedSkus*\"\n      or url.path like \"*appRoleAssign*\"\n      or (\n          url.path like \"*/organization*\"\n          and not url.path like \"*branding*\"\n          and not url.path like \"*localizations*\"\n        ),\n    true,\n    false\n  )\n\n// Combine: is this request hitting a high-value endpoint?\n| eval Esql.is_high_value = case(\n    Esql.is_role_enum or Esql.is_cross_tenant_enum or Esql.is_mailbox_recon\n      or Esql.is_contact_harvest or Esql.is_org_recon,\n    true,\n    false\n  )\n| where Esql.is_high_value == true\n\n// Classify each hit into a recon category\n| eval Esql.recon_category = case(\n    Esql.is_role_enum, \"role_discovery\",\n    Esql.is_cross_tenant_enum, \"cross_tenant_recon\",\n    Esql.is_mailbox_recon, \"mailbox_recon\",\n    Esql.is_contact_harvest, \"contact_harvesting\",\n    Esql.is_org_recon, \"org_and_licensing_recon\",\n    \"other\"\n  )\n\n// Flag failed requests (recon that errored is still recon)\n| eval Esql.is_failed_request = case(\n    http.response.status_code >= 400, true, false\n  )\n\n// Aggregate per user + session + source IP\n| stats\n    Esql.total_high_value_calls = count(*),\n    Esql.distinct_categories = count_distinct(Esql.recon_category),\n    Esql.distinct_paths = count_distinct(url.path),\n    Esql.failed_calls = sum(case(Esql.is_failed_request, 1, 0)),\n    Esql.categories = values(Esql.recon_category),\n    Esql.sample_paths = values(url.path),\n    Esql.http_methods = values(http.request.method),\n    Esql.status_codes = values(http.response.status_code),\n    Esql.first_seen = min(@timestamp),\n    Esql.last_seen = max(@timestamp),\n    Esql.user_agents = values(user_agent.original),\n    Esql.app_ids = values(azure.graphactivitylogs.properties.app_id)\n  by\n    azure.graphactivitylogs.properties.user_principal_object_id,\n    source.ip,\n    source.`as`.organization.name,\n    source.`as`.number,\n    azure.graphactivitylogs.properties.c_sid,\n    azure.tenant_id\n\n// Threshold: 3+ distinct recon categories \n| where Esql.distinct_categories >= 4 and Esql.total_high_value_calls >= 20\n\n// Burst duration in seconds\n| eval Esql.burst_duration_seconds = date_diff(\"seconds\", Esql.first_seen, Esql.last_seen)\n| where Esql.burst_duration_seconds <= 60\n\n| keep\n    azure.graphactivitylogs.properties.user_principal_object_id,\n    azure.graphactivitylogs.properties.c_sid,\n    azure.tenant_id,\n    source.ip,\n    source.`as`.organization.name,\n    source.`as`.number,\n    Esql.*\n",
+        "related_integrations": [
+            {
+                "integration": "graphactivitylogs",
+                "package": "azure",
+                "version": "^1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.graphactivitylogs.properties.c_sid",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.graphactivitylogs.properties.user_principal_object_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.tenant_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.number",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.organization.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "8e66c55f-8db6-4e3e-bf4f-3a3e242bdf66",
+        "setup": "#### Microsoft Graph Activity Logs\nRequires Microsoft Graph Activity Logs ingested into `logs-azure.graphactivitylogs-*` (for example via Azure Event Hub).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Domain: API",
+            "Data Source: Azure",
+            "Data Source: Microsoft Entra ID",
+            "Data Source: Microsoft Graph",
+            "Data Source: Microsoft Graph Activity Logs",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1526",
+                        "name": "Cloud Service Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1526/"
+                    },
+                    {
+                        "id": "T1087",
+                        "name": "Account Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1087/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "8e66c55f-8db6-4e3e-bf4f-3a3e242bdf66_1",
+    "type": "security-rule"
+}

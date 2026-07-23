@@ -1,0 +1,43 @@
+source:
+  index:
+    - "logs-eset_protect.device_vulnerability-*"
+  query:
+    bool:
+      filter:
+        - exists:
+            field: resource.id
+      must_not:
+        - exists:
+            field: error.message
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
+dest:
+  index: "security_solution-eset_protect.vulnerability_latest-v2"
+  aliases:
+    - alias: "security_solution-eset_protect.vulnerability_latest"
+      move_on_creation: true
+latest:
+  unique_key:
+    - vulnerability.id
+    - resource.id
+    - eset_protect.device_vulnerability.type
+    - eset_protect.device_vulnerability.vulnerability_id
+    - data_stream.namespace
+  sort: "@timestamp"
+description: Latest Device Vulnerability Findings from ESET PROTECT.
+settings:
+  unattended: true
+frequency: 5m
+sync:
+  time:
+    field: event.ingested
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 2h # Source sends fresh events on every polling interval (default: 1h); remediated vulnerabilities age out after 2h.
+_meta:
+  managed: true
+  # Bump this version to delete, reinstall, and restart the transform during package upgrade.
+  fleet_transform_version: 0.1.0

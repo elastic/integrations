@@ -26,7 +26,7 @@ redact:
     - password
 program: |
   state.with(
-    request("GET", state.url.trim_right("/") + "/api/3.0/fo/knowledge_base/vuln/?" +
+    request("GET", state.url.trim_right("/") + "/api/4.0/fo/knowledge_base/vuln/?" +
       state.?params.orValue("").parse_query().with({
         "action": ["list"],
         "last_modified_after": [state.?cursor.last_modified.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339))],
@@ -38,7 +38,7 @@ program: |
       }
     }).do_request().as(resp, (
       resp.StatusCode == 200 ?
-        resp.Body.as(xml, bytes(xml).decode_xml('qualys_api_3_0').as(body, {
+        resp.Body.as(xml, bytes(xml).decode_xml('qualys_api_4_0').as(body, {
           "events": (
             has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST)
             ?
@@ -138,7 +138,7 @@ processors:
 {{processors}}
 {{/if}}
 xsd:
-  qualys_api_3_0: |
+  qualys_api_4_0: |
     <xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
 
       <xsd:element name='KNOWLEDGE_BASE_VULN_LIST_OUTPUT'>

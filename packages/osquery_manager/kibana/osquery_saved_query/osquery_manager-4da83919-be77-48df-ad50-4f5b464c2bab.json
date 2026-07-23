@@ -1,0 +1,142 @@
+{
+    "attributes": {
+        "created_at": "2026-01-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Identifies Linux processes with suspicious characteristics: execution from /tmp, /dev/shm, or /var/tmp, reverse shell patterns, suspicious interpreters, crypto-miners, container escapes, and unusual binary locations. Enriched with file hashes for threat intelligence correlation.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": ["process"]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": ["info"]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.suspicious_processes"
+                }
+            },
+            {
+                "key": "process.pid",
+                "value": {
+                    "field": "pid"
+                }
+            },
+            {
+                "key": "process.name",
+                "value": {
+                    "field": "name"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "cmdline"
+                }
+            },
+            {
+                "key": "process.working_directory",
+                "value": {
+                    "field": "cwd"
+                }
+            },
+            {
+                "key": "process.parent.pid",
+                "value": {
+                    "field": "ppid"
+                }
+            },
+            {
+                "key": "process.parent.name",
+                "value": {
+                    "field": "parent_name"
+                }
+            },
+            {
+                "key": "process.parent.executable",
+                "value": {
+                    "field": "parent_path"
+                }
+            },
+            {
+                "key": "process.parent.command_line",
+                "value": {
+                    "field": "parent_cmdline"
+                }
+            },
+            {
+                "key": "process.start",
+                "value": {
+                    "field": "start_time"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "uid"
+                }
+            },
+            {
+                "key": "group.id",
+                "value": {
+                    "field": "gid"
+                }
+            },
+            {
+                "key": "process.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "process.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "process.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "process",
+                        "suspicious_process",
+                        "threat_hunting",
+                        "linux"
+                    ]
+                }
+            }
+        ],
+        "id": "suspicious_processes_linux_elastic",
+        "interval": "3600",
+        "platform": "linux",
+        "query": "-- Linux Suspicious Process Detection\n-- Identifies processes with potentially malicious characteristics\nSELECT\n    p.pid,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.cwd,\n    p.parent AS ppid,\n    pp.name AS parent_name,\n    pp.path AS parent_path,\n    pp.cmdline AS parent_cmdline,\n    p.uid,\n    p.gid,\n    p.euid,\n    p.egid,\n    p.state,\n    datetime(p.start_time, 'unixepoch') AS start_time,\n    p.on_disk,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    CASE\n        WHEN h.sha256 IS NOT NULL AND h.sha256 != '' THEN concat('https://www.virustotal.com/gui/file/', h.sha256)\n        ELSE NULL\n    END AS vt_link,\n    CASE\n        WHEN p.path LIKE '/tmp/%' OR p.path LIKE '/var/tmp/%' THEN 'suspicious_path_tmp'\n        WHEN p.path LIKE '/dev/shm/%' THEN 'suspicious_path_devshm'\n        WHEN p.path LIKE '/home/%/.%' THEN 'hidden_in_home'\n        WHEN p.cmdline LIKE '%/dev/tcp/%' OR p.cmdline LIKE '%/dev/udp/%' THEN 'reverse_shell_devtcp'\n        WHEN p.cmdline LIKE '%nc %' AND (p.cmdline LIKE '%-e %' OR p.cmdline LIKE '%-c %') THEN 'netcat_shell'\n        WHEN p.cmdline LIKE '%ncat %' AND (p.cmdline LIKE '%-e %' OR p.cmdline LIKE '%-c %') THEN 'ncat_shell'\n        WHEN p.cmdline LIKE '%bash -i%' OR p.cmdline LIKE '%sh -i%' THEN 'interactive_shell'\n        WHEN p.name IN ('python', 'python3', 'perl', 'ruby', 'php') AND p.cmdline LIKE '%socket%' THEN 'script_socket'\n        WHEN p.cmdline LIKE '%curl%|%sh%' OR p.cmdline LIKE '%wget%|%sh%' OR p.cmdline LIKE '%curl%|%bash%' OR p.cmdline LIKE '%wget%|%bash%' THEN 'download_and_execute'\n        WHEN p.cmdline LIKE '%base64 -d%' OR p.cmdline LIKE '%base64 --decode%' THEN 'base64_decode'\n        WHEN p.name LIKE '.%' THEN 'hidden_process_name'\n        WHEN p.cmdline LIKE '%stratum%' OR p.cmdline LIKE '%xmr%' OR p.cmdline LIKE '%monero%' OR p.cmdline LIKE '%nicehash%' OR p.cmdline LIKE '%pool.%' THEN 'crypto_miner'\n        WHEN p.cmdline LIKE '%nsenter%' OR p.cmdline LIKE '%--target 1%' THEN 'container_escape'\n        WHEN p.uid = 0 AND p.path NOT LIKE '/usr/%' AND p.path NOT LIKE '/sbin/%' AND p.path NOT LIKE '/bin/%' THEN 'root_unusual_path'\n        WHEN p.on_disk = 0 THEN 'process_not_on_disk'\n        ELSE 'other_suspicious'\n    END AS detection_reason\nFROM processes p\nLEFT JOIN processes pp ON p.parent = pp.pid\nLEFT JOIN hash h ON p.path = h.path\nWHERE p.path != ''\nAND (\n    -- Suspicious execution paths\n    p.path LIKE '/tmp/%'\n    OR p.path LIKE '/var/tmp/%'\n    OR p.path LIKE '/dev/shm/%'\n    OR p.path LIKE '/home/%/.%'\n    -- Reverse shell patterns\n    OR p.cmdline LIKE '%/dev/tcp/%'\n    OR p.cmdline LIKE '%/dev/udp/%'\n    -- Netcat reverse shells\n    OR (p.cmdline LIKE '%nc %' AND (p.cmdline LIKE '%-e %' OR p.cmdline LIKE '%-c %'))\n    OR (p.cmdline LIKE '%ncat %' AND (p.cmdline LIKE '%-e %' OR p.cmdline LIKE '%-c %'))\n    OR (p.cmdline LIKE '%socat %' AND p.cmdline LIKE '%exec%')\n    -- Interactive shell spawning\n    OR p.cmdline LIKE '%bash -i%'\n    OR p.cmdline LIKE '%sh -i%'\n    -- Script interpreters with network activity\n    OR (p.name IN ('python', 'python3', 'python2', 'perl', 'ruby', 'php') AND p.cmdline LIKE '%socket%')\n    -- Download and execute patterns\n    OR p.cmdline LIKE '%curl%|%sh%'\n    OR p.cmdline LIKE '%wget%|%sh%'\n    OR p.cmdline LIKE '%curl%|%bash%'\n    OR p.cmdline LIKE '%wget%|%bash%'\n    -- Base64 decode (often used in obfuscation)\n    OR (p.cmdline LIKE '%base64%' AND (p.cmdline LIKE '%-d%' OR p.cmdline LIKE '%--decode%'))\n    -- Hidden process names\n    OR p.name LIKE '.%'\n    -- Running from memory\n    OR p.on_disk = 0\n    -- Crypto-miner indicators\n    OR p.cmdline LIKE '%stratum%'\n    OR p.cmdline LIKE '%xmr%'\n    OR p.cmdline LIKE '%monero%'\n    OR p.cmdline LIKE '%nicehash%'\n    OR p.cmdline LIKE '%pool.%mining%'\n    OR p.cmdline LIKE '%cryptonight%'\n    OR p.cmdline LIKE '%randomx%'\n    -- Container escape indicators\n    OR p.cmdline LIKE '%nsenter%'\n    OR (p.cmdline LIKE '%--target%' AND p.cmdline LIKE '%--mount%')\n    OR (p.cmdline LIKE '%--target 1%')\n    -- Root processes from unusual locations\n    OR (p.uid = 0 AND p.path NOT LIKE '/usr/%' AND p.path NOT LIKE '/sbin/%' AND p.path NOT LIKE '/bin/%' AND p.path NOT LIKE '/opt/%' AND p.path NOT LIKE '/lib/%')\n);",
+        "timeout": 180,
+        "updated_at": "2026-01-27T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-4da83919-be77-48df-ad50-4f5b464c2bab",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-01-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

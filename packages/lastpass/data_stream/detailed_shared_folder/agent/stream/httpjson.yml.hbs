@@ -37,13 +37,14 @@ request.transforms:
 response.transforms:
   - set:
       target: body.data
-      value: '[[.last_response.body]]'
+      value: '[[toJSON .last_response.body]]'
       value_type: json
 response.pagination:
   - set:
       target: body.data.pageindex
       value: '[[if (eq (len .last_response.body) (toInt .body.data.pagesize))]][[add .last_response.page 1]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 response.split:
   target: body.data
   type: map

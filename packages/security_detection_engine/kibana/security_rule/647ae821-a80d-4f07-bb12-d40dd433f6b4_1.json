@@ -1,0 +1,113 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects GKE pod create, update, or patch events that mount sensitive hostPath volumes such as the root filesystem, kubelet paths, or container runtime sockets. This can enable container escape and credential theft. System identities and controller-owned workloads are excluded.",
+        "false_positives": [
+            "Node agents and observability DaemonSets commonly mount host paths like /proc or /var/log. Controller ownerReferences exclusions reduce noise; add image exceptions if needed."
+        ],
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Pod Created with a Sensitive hostPath Volume",
+        "note": "## Triage and analysis\n\n### Investigating GKE Pod Created with a Sensitive hostPath Volume\n\nReview `gcp.audit.request.spec.volumes.hostPath.path` and whether the mount is required for the workload.\n\n### Investigation steps\n\n- Confirm the hostPath and container images in the audit request.\n- Review `user.email`, namespace, and follow-on secret or exec activity.\n\n### False positives\n\n- Platform DaemonSets mounting /proc or kubelet paths; validate against known agents.",
+        "query": "data_stream.dataset:gcp.audit and event.outcome:success and\nevent.action:(\"io.k8s.core.v1.pods.create\" or \"io.k8s.core.v1.pods.update\" or \"io.k8s.core.v1.pods.patch\") and\ngcp.audit.request.spec.volumes.hostPath.path:(\n  \"/\" or \"/proc\" or \"/root\" or \"/var\" or \"/var/run\" or \"/var/run/docker.sock\" or \"/var/run/crio/crio.sock\" or\n  \"/var/run/cri-dockerd.sock\" or \"/var/lib/kubelet\" or \"/var/lib/kubelet/pki\" or \"/var/lib/docker/overlay2\" or \"/etc\" or\n  \"/etc/kubernetes\" or \"/etc/kubernetes/manifests\" or \"/etc/kubernetes/pki\" or \"/home/admin\"\n) and not user.email:system\\:* and\nnot gcp.audit.request.metadata.ownerReferences.kind:(\"ReplicaSet\" or \"DaemonSet\" or \"StatefulSet\")\n",
+        "references": [
+            "https://kubernetes.io/docs/concepts/storage/volumes/#hostpath",
+            "https://blog.appsecco.com/kubernetes-namespace-breakout-using-insecure-host-path-volume-part-1-b382f2a6e216"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.request.metadata.ownerReferences.kind",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.request.spec.volumes.hostPath.path",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "647ae821-a80d-4f07-bb12-d40dd433f6b4",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1611",
+                        "name": "Escape to Host",
+                        "reference": "https://attack.mitre.org/techniques/T1611/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1610",
+                        "name": "Deploy Container",
+                        "reference": "https://attack.mitre.org/techniques/T1610/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "647ae821-a80d-4f07-bb12-d40dd433f6b4_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,88 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when the Ollama LLM server accepts connections from external IP addresses. Ollama lacks built-in authentication, so exposed instances allow unauthenticated model theft, prompt injection, and resource hijacking.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.network-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Ollama API Accessed from External Network",
+        "note": "## Triage and analysis\n\n### Investigating Ollama API Accessed from External Network\n\nThis rule detects when Ollama accepts connections from external IP addresses. Ollama binds to localhost:11434 by default but can be exposed via OLLAMA_HOST. Since Ollama lacks authentication, exposed instances allow unauthenticated model theft, prompt injection, and resource hijacking.\n\n### Possible investigation steps\n\n- Check the OLLAMA_HOST environment variable to determine if external exposure was intentional.\n- Review the source IP address to identify if it's a known attacker, scanner, or miscategorized internal system.\n- Examine Ollama logs for suspicious API calls to /api/pull, /api/push, or /api/generate.\n- Check ~/.ollama/models/ for unexpected model downloads that may indicate model poisoning.\n- Review network traffic for data exfiltration following the connection.\n- Look for child processes spawned by Ollama that may indicate exploitation.\n\n### False positive analysis\n\n- Internal networks not properly classified in CIDR ranges may trigger false positives.\n- Load balancers or reverse proxies accessing Ollama from external-facing IPs within trusted infrastructure.\n- Legitimate remote access through VPN or authenticated proxy (add proxy IPs to exclusions).\n\n### Response and remediation\n\n- Restrict access immediately by setting OLLAMA_HOST=127.0.0.1:11434 or applying firewall rules.\n- If exploitation is suspected, stop Ollama and audit ~/.ollama/models/ for unauthorized models.\n- Review Ollama and system logs for signs of compromise.\n- Consider running Ollama in a container with network isolation.\n",
+        "query": "network where event.action == \"connection_accepted\" and\n  process.name in (\"ollama\", \"ollama.exe\") and\n  destination.port == 11434 and\n  source.ip != null and source.ip != \"0.0.0.0\" and\n  not cidrmatch(source.ip, \n    \"10.0.0.0/8\", \n    \"127.0.0.0/8\", \n    \"169.254.0.0/16\", \n    \"172.16.0.0/12\", \n    \"192.168.0.0/16\",\n    \"100.64.0.0/10\",\n    \"::1\",\n    \"fe80::/10\",\n    \"fc00::/7\",\n    \"ff00::/8\"\n  )\n",
+        "references": [
+            "https://www.greynoise.io/blog/threat-actors-actively-targeting-llms",
+            "https://atlas.mitre.org/techniques/AML.T0040",
+            "https://atlas.mitre.org/techniques/AML.T0044"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "d8f2a1b3-c4e5-6789-abcd-ef0123456789",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Domain: LLM",
+            "Mitre Atlas: T0040",
+            "Mitre Atlas: T0044"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "d8f2a1b3-c4e5-6789-abcd-ef0123456789_1",
+    "type": "security-rule"
+}

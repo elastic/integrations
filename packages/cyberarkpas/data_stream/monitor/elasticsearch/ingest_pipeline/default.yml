@@ -17,10 +17,34 @@ processors:
       target_field: event.original
       if: ctx.event?.original == null
       ignore_missing: true
+  #
+  # Parse syslog headers (if any) and extract JSON payload.
+  #
+  - grok:
+      tag: grok_event_original
+      field: event.original
+      patterns:
+        # RFC5424 from CyberArk.
+        # UseLegacySyslogFormat=No
+        # <5>1 2021-03-04T17:28:23Z VAULT {"format":"elastic","version":"1.0",...}
+        - "^<%{NONNEGINT:log.syslog.priority:long}>%{NONNEGINT} %{TIMESTAMP_ISO8601:_tmp.syslog_ts} %{SYSLOGHOST:_tmp.hostname} %{JSON_PAYLOAD:_tmp.payload}"
+
+        # Legacy format.
+        # UseLegacySyslogFormat=Yes
+        # Mar 08 02:57:42 VAULT {"format":"elastic","version":"1.0",...}
+        - "^%{SYSLOGTIMESTAMP:_tmp.syslog_ts} %{SYSLOGHOST:_tmp.hostname} %{JSON_PAYLOAD:_tmp.payload}"
+
+        # Catch-all mode, just JSON payload.
+        - "%{JSON_PAYLOAD:_tmp.payload}"
+      pattern_definitions:
+        JSON_PAYLOAD: '{"format":"elastic","version":"1.0",.*}'
+      on_failure:
+        - fail:
+            message: "unexpected event format: {{{_ingest.on_failure_message}}}"
 
   - json:
-      tag: json_event_original
-      field: event.original
+      tag: json_tmp_payload
+      field: _tmp.payload
       target_field: _tmp.json
       on_failure:
         - fail:

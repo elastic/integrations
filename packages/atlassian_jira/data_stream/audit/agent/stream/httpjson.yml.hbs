@@ -55,8 +55,9 @@ response.pagination:
       value: '[[.last_response.url.params.Get "to"]]'
   - set:
       target: url.params.offset
-      value: '[[if lt (add (toInt .last_response.body.offset) (toInt "{{ limit }}")) (toInt .last_response.body.total)]][[add (toInt .last_response.body.offset) (toInt "{{ limit }}")]][[else]][[/*Stop condition for pagination*/]][[end]]'
+      value: '[[if lt (add (toInt .last_response.body.offset) (toInt "{{ limit }}")) (toInt .last_response.body.total)]][[add (toInt .last_response.body.offset) (toInt "{{ limit }}")]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
   - set:
       target: url.params.limit
       value: '{{limit}}'
@@ -86,8 +87,9 @@ response.split:
 response.pagination:
   - set:
       target: url.value
-      value: '[[ .last_response.body.pagingInfo.nextPageLink ]]'
+      value: '[[ if index .last_response.body.pagingInfo "nextPageLink" ]][[ .last_response.body.pagingInfo.nextPageLink ]][[ end ]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 
 cursor:
   last_timestamp:

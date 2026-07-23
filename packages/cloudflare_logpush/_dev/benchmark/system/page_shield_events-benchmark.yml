@@ -1,0 +1,26 @@
+---
+description: Benchmark 10000 page_shield_events events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: page_shield_events
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/page_shield_events
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-page_shield_events
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./page_shield_events-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./page_shield_events-benchmark/config.yml
+    fields:
+      path: ./page_shield_events-benchmark/fields.yml

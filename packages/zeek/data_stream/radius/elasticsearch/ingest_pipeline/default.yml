@@ -11,10 +11,6 @@ processors:
       tag: json_event_original_to__temp__7408cf8c
       field: event.original
       target_field: _temp_
-  - pipeline:
-      tag: pipeline_c69a6660
-      if: ctx?._temp_?.result != null
-      name: '{{ IngestPipeline "third-party" }}'
   - drop:
       tag: drop_c70c3de1
       description: Drop if no timestamp (invalid json)
@@ -130,6 +126,11 @@ processors:
       field: event.outcome
       copy_from: zeek.radius.result
       if: ctx.zeek?.radius?.result != null
+  - set:
+      tag: set_event_outcome_failure
+      field: event.outcome
+      value: failure
+      if: ctx.zeek?.radius?.result == "failed"
   - date:
       tag: date_zeek_radius_ts_74cdf9d5
       field: zeek.radius.ts

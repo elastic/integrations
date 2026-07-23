@@ -93,9 +93,13 @@ processors:
         "7":
           category:
             - process
+            - library
           type:
             - change
-          action: 'Image loaded'
+            - start
+          action:
+            - 'Image loaded'
+            - load
         "8":
           category:
             - process
@@ -584,9 +588,9 @@ processors:
 
 ## File fields
 
-  - rename:
-      field: _temp.hashes
-      target_field: file.hash
+  - set:
+      field: file.hash
+      copy_from: _temp.hashes
       if: |-
         ctx._temp?.hashes != null &&
         ["6", "7", "15", "26", "29"].contains(ctx.event.code)
@@ -660,9 +664,13 @@ processors:
       ignore_empty_value: true
       if: ctx.event.code == "7"
   - set:
-      field: file.code_signature.signed
+      field: file.code_signature.trusted
       value: true
-      if: ctx.winlog?.event_data?.Signed != null && ctx.winlog.event_data.Signed == true
+      if: ctx.winlog?.event_data?.Signed != null && ctx.winlog.event_data.Signed == 'true'
+  - set:
+      field: file.code_signature.trusted
+      value: false
+      if: ctx.winlog?.event_data?.Signed != null && ctx.winlog.event_data.Signed != 'true'
   - set:
       field: file.code_signature.valid
       value: true
@@ -687,6 +695,62 @@ processors:
                 ctx.file.extension = path.substring(extIdx+1);
             }
         }
+
+## DLL fields
+
+  - set:
+      field: dll.name
+      copy_from: file.name
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx.event.code == "7"
+  - set:
+      field: dll.path
+      copy_from: file.path
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx.event.code == "7"
+  - set:
+      field: dll.code_signature.subject_name
+      copy_from: winlog.event_data.Signature
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx.event.code == "7"
+  - set:
+      field: dll.code_signature.trusted
+      value: true
+      if: ctx.event.code == "7" && ctx.winlog?.event_data?.Signed == 'true'
+  - set:
+      field: dll.code_signature.trusted
+      value: false
+      if: ctx.event.code == "7" && ctx.winlog?.event_data?.Signed != null && ctx.winlog?.event_data?.Signed == 'false'
+  - script:
+      description: Set dll.code_signature.status
+      lang: painless
+      if: ctx.event.code == "7"
+      source: |-
+        if (ctx.winlog?.event_data?.Signed == 'true') {
+          ctx.dll.code_signature.status = "trusted";
+        } else if (ctx.winlog?.event_data?.SignatureStatus == "Unavailable") {
+          ctx.dll.code_signature.status = "Unavailable";
+        } else if (ctx.winlog?.event_data?.Signed instanceof String && ctx.winlog.event_data.Signed.startsWith("failed:")) {
+          ctx.dll.code_signature.status = ctx.winlog.event_data.Signed;
+        }
+  - set:
+      field: dll.hash
+      copy_from: _temp.hashes
+      if: |-
+        ctx._temp?.hashes != null && ctx.event.code == "7"
+  - rename:
+      field: dll.hash.imphash
+      target_field: dll.pe.imphash
+      ignore_failure: true
+      ignore_missing: true
+  - set:
+      field: dll.pe.original_file_name
+      copy_from: file.pe.original_file_name
+      ignore_failure: true
+      if: ctx.event.code == "7" && ctx.file?.pe?.original_file_name != null
 
 ## Network, Destination, and Source fields
 

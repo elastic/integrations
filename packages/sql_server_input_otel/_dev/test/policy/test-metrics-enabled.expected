@@ -1,0 +1,86 @@
+connectors:
+    forward: {}
+exporters:
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+                - names:
+                    - metrics-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    resourcedetection/componentid-0:
+        detectors:
+            - system
+    transform/componentid-1:
+        log_statements:
+            - context: log
+              statements:
+                - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.dataset"], "sqlserverreceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+        metric_statements:
+            - context: datapoint
+              statements:
+                - set(attributes["data_stream.type"], "metrics")
+                - set(attributes["data_stream.dataset"], "sqlserverreceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    sqlserver/componentid-0:
+        collection_interval: 10s
+        events:
+            db.server.query_sample:
+                enabled: false
+            db.server.top_query:
+                enabled: false
+        initial_delay: 1s
+        metrics:
+            sqlserver.batch.request.rate:
+                enabled: true
+            sqlserver.batch.sql_compilation.rate:
+                enabled: true
+secret_references: []
+service:
+    pipelines:
+        logs:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        logs/componentid-0:
+            exporters:
+                - forward
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - sqlserver/componentid-0
+        metrics:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        metrics/componentid-1:
+            exporters:
+                - forward
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - sqlserver/componentid-0

@@ -1,0 +1,310 @@
+---
+description: >-
+  Ingest pipeline for macOS Unified Logs — parses raw ndjson from the log
+  CLI into ECS and unified_log.* fields with conditional Apple Event enrichment.
+processors:
+  - json:
+      field: message
+      target_field: _temp
+      tag: parse_raw_ndjson
+      description: Parse the raw ndjson line from log stream into structured fields.
+      on_failure:
+        - set:
+            field: error.message
+            value: "Failed to parse unified log JSON from message field: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - set:
+      field: event.module
+      tag: set_event_module
+      value: unifiedlogs
+  - set:
+      field: event.dataset
+      tag: set_event_dataset
+      value: unifiedlogs.log
+  - set:
+      field: host.os.type
+      tag: set_host_os_type
+      value: macos
+  - set:
+      field: host.os.family
+      tag: set_host_os_family
+      value: darwin
+  - rename:
+      field: _temp.eventMessage
+      target_field: message
+      tag: rename_event_message
+      override: true
+      ignore_missing: true
+      description: Replace the raw JSON blob with the human-readable log message.
+  - rename:
+      field: _temp.subsystem
+      target_field: unified_log.subsystem
+      tag: rename_subsystem
+      ignore_missing: true
+  - rename:
+      field: _temp.category
+      target_field: unified_log.category
+      tag: rename_category
+      ignore_missing: true
+  - rename:
+      field: _temp.eventType
+      target_field: unified_log.event_type
+      tag: rename_event_type
+      ignore_missing: true
+  - rename:
+      field: _temp.formatString
+      target_field: unified_log.format_string
+      tag: rename_format_string
+      ignore_missing: true
+  - rename:
+      field: _temp.activityIdentifier
+      target_field: unified_log.activity_id
+      tag: rename_activity_id
+      ignore_missing: true
+  - rename:
+      field: _temp.parentActivityIdentifier
+      target_field: unified_log.parent_activity_id
+      tag: rename_parent_activity_id
+      ignore_missing: true
+  - rename:
+      field: _temp.machTimestamp
+      target_field: unified_log.mach_timestamp
+      tag: rename_mach_timestamp
+      ignore_missing: true
+  - rename:
+      field: _temp.bootUUID
+      target_field: unified_log.boot_uuid
+      tag: rename_boot_uuid
+      ignore_missing: true
+  - rename:
+      field: _temp.processImageUUID
+      target_field: unified_log.process.uuid
+      tag: rename_process_image_uuid
+      ignore_missing: true
+  - rename:
+      field: _temp.senderImageUUID
+      target_field: unified_log.sender.uuid
+      tag: rename_sender_image_uuid
+      ignore_missing: true
+  - rename:
+      field: _temp.senderProgramCounter
+      target_field: unified_log.sender.program_counter
+      tag: rename_sender_program_counter
+      ignore_missing: true
+  - rename:
+      field: _temp.timezoneName
+      target_field: unified_log.timezone
+      tag: rename_timezone
+      ignore_missing: true
+  - rename:
+      field: _temp.processImagePath
+      target_field: process.executable
+      tag: rename_process_executable
+      ignore_missing: true
+  - rename:
+      field: _temp.processID
+      target_field: process.pid
+      tag: rename_process_pid
+      ignore_missing: true
+  - rename:
+      field: _temp.threadID
+      target_field: process.thread.id
+      tag: rename_thread_id
+      ignore_missing: true
+  - rename:
+      field: _temp.userID
+      target_field: user.id
+      tag: rename_user_id
+      ignore_missing: true
+  - convert:
+      field: user.id
+      type: string
+      tag: convert_user_id_to_string
+      ignore_missing: true
+      description: ECS user.id is keyword type.
+  - rename:
+      field: _temp.senderImagePath
+      target_field: dll.path
+      tag: rename_sender_image_path
+      ignore_missing: true
+  - rename:
+      field: _temp.traceID
+      target_field: unified_log.trace_id
+      tag: rename_trace_id
+      ignore_missing: true
+  - convert:
+      field: unified_log.trace_id
+      type: string
+      tag: convert_trace_id_to_string
+      ignore_missing: true
+      description: traceID can exceed long integer range — store as keyword.
+  - set:
+      field: event.provider
+      tag: set_event_provider
+      copy_from: unified_log.subsystem
+      ignore_empty_value: true
+      description: Use subsystem as the ECS event.provider.
+  - script:
+      lang: painless
+      tag: extract_process_name_dll_name_log_level
+      description: >-
+        Extract process.name from process.executable, dll.name from dll.path,
+        and normalize log.level from messageType.
+      source: >-
+        if (ctx.process?.executable != null) {
+          String exe = ctx.process.executable;
+          int idx = exe.lastIndexOf('/');
+          if (idx >= 0 && idx < exe.length() - 1) {
+            ctx.process.name = exe.substring(idx + 1);
+          } else {
+            ctx.process.name = exe;
+          }
+        }
+        if (ctx.dll?.path != null) {
+          String lib = ctx.dll.path;
+          int idx = lib.lastIndexOf('/');
+          if (idx >= 0 && idx < lib.length() - 1) {
+            ctx.dll.name = lib.substring(idx + 1);
+          } else {
+            ctx.dll.name = lib;
+          }
+        }
+        String mt = ctx._temp?.messageType;
+        if (mt != null) {
+          Map levels = new HashMap();
+          levels.put('Default', 'info');
+          levels.put('Info', 'info');
+          levels.put('Debug', 'debug');
+          levels.put('Error', 'error');
+          levels.put('Fault', 'critical');
+          String normalized = levels.getOrDefault(mt, mt.toLowerCase());
+          if (ctx.unified_log == null) { ctx.unified_log = new HashMap(); }
+          if (ctx.log == null) { ctx.log = new HashMap(); }
+          ctx.log.level = normalized;
+          ctx.unified_log.message_type = mt;
+        }
+  - script:
+      lang: painless
+      tag: derive_event_category_and_type
+      description: Derive event.category and event.type from the subsystem.
+      source: >-
+        String sub = ctx.unified_log?.subsystem;
+        if (sub == null) return;
+        if (ctx.event == null) ctx.event = new HashMap();
+        if (sub.equals('com.apple.appleevents')) {
+          ctx.event.category = ['process'];
+          ctx.event.type = ['info'];
+        } else if (sub.equals('com.apple.TCC')) {
+          ctx.event.category = ['configuration'];
+          ctx.event.type = ['access'];
+        } else if (sub.equals('com.apple.Authorization') || sub.equals('com.apple.opendirectory')) {
+          ctx.event.category = ['authentication'];
+          ctx.event.type = ['info'];
+        } else if (sub.equals('com.apple.loginwindow.logging')) {
+          ctx.event.category = ['session'];
+          ctx.event.type = ['start'];
+        } else if (sub.equals('com.apple.mDNSResponder')) {
+          ctx.event.category = ['network'];
+          ctx.event.type = ['protocol'];
+        } else if (sub.contains('xprotect') || sub.contains('syspolicy') || sub.contains('Gatekeeper')) {
+          ctx.event.category = ['malware'];
+          ctx.event.type = ['info'];
+        } else if (sub.equals('com.apple.xpc')) {
+          ctx.event.category = ['process'];
+          ctx.event.type = ['info'];
+        } else if (sub.contains('Security') || sub.contains('securityd')) {
+          ctx.event.category = ['configuration'];
+          ctx.event.type = ['info'];
+        } else {
+          ctx.event.category = ['host'];
+          ctx.event.type = ['info'];
+        }
+  - script:
+      lang: painless
+      tag: apple_event_enrichment
+      description: >-
+        Apple Event enrichment — extract structured fields from the log
+        message when the subsystem is com.apple.appleevents and the
+        message contains event={} or reply={} patterns.
+      if: >-
+        ctx.unified_log?.subsystem == 'com.apple.appleevents'
+        && ctx.message != null
+        && (ctx.message.contains('event={') || ctx.message.contains('reply={'))
+      source: >-
+        String msg = ctx.message;
+        if (ctx.apple_event == null) ctx.apple_event = new HashMap();
+
+        if (msg.startsWith('sendToSelf()')) {
+          ctx.apple_event.direction = 'self';
+        } else if (msg.contains('sendToModernProcess')) {
+          ctx.apple_event.direction = 'remote';
+        } else if (msg.contains('Reply of SendToSelf') || msg.contains('reply={')) {
+          ctx.apple_event.direction = 'reply';
+        }
+
+        def tcMatch = /(?:event|reply)=\{(\w{4},\w{4})/.matcher(msg);
+        if (tcMatch.find()) {
+          ctx.apple_event.type_code = tcMatch.group(1);
+        }
+
+        def tpMatch = /target='psn '\[([^\]]+)\]/.matcher(msg);
+        if (tpMatch.find()) {
+          ctx.apple_event.target_process = tpMatch.group(1);
+        }
+
+        def riMatch = /returnID=(-?\d+)/.matcher(msg);
+        if (riMatch.find()) {
+          ctx.apple_event.return_id = riMatch.group(1);
+        }
+
+        def pbMatch = /target='psn '\[[^\]]+\]\s*\{([^}]*)\}\s*attr:/.matcher(msg);
+        if (pbMatch.find()) {
+          String paramsBlock = pbMatch.group(1);
+          def pmMatch = /(\w{4}|-{4})=/.matcher(paramsBlock);
+          def paramList = new ArrayList();
+          while (pmMatch.find()) {
+            String p = pmMatch.group(1);
+            if (!paramList.contains(p)) paramList.add(p);
+          }
+          if (paramList.size() > 0) ctx.apple_event.parameters = paramList;
+        }
+
+        def hexMatcher = /utxt\(\d+\/\$([0-9a-fA-F]+)/.matcher(msg);
+        def hexPayloads = new ArrayList();
+        while (hexMatcher.find()) {
+          String hex = hexMatcher.group(1);
+          StringBuilder decoded = new StringBuilder();
+          for (int i = 0; i + 3 < hex.length(); i += 4) {
+            int hi = Character.digit(hex.charAt(i), 16) * 16 + Character.digit(hex.charAt(i + 1), 16);
+            int lo = Character.digit(hex.charAt(i + 2), 16) * 16 + Character.digit(hex.charAt(i + 3), 16);
+            if (lo >= 32 && lo <= 126) decoded.append((char) lo);
+            else if (hi >= 32 && hi <= 126) decoded.append((char) hi);
+          }
+          if (decoded.length() > 0) hexPayloads.add(decoded.toString());
+        }
+        if (hexPayloads.size() > 0) ctx.apple_event.decoded_payloads = hexPayloads;
+
+        if (msg.contains('mute=true')) ctx.apple_event.put('mute', true);
+  - remove:
+      field: _temp
+      tag: remove_temp
+      ignore_missing: true
+  - remove:
+      field: unified_log.boot_uuid
+      tag: remove_empty_boot_uuid
+      if: "ctx.unified_log?.boot_uuid != null && ctx.unified_log.boot_uuid.isEmpty()"
+      ignore_missing: true
+      description: Clean up empty boot_uuid field.
+  - remove:
+      field: unified_log.timezone
+      tag: remove_empty_timezone
+      if: "ctx.unified_log?.timezone != null && ctx.unified_log.timezone.isEmpty()"
+      ignore_missing: true
+      description: Clean up empty timezone field.
+on_failure:
+  - set:
+      field: error.message
+      value: "Unified Logs pipeline failed: {{{_ingest.on_failure_message}}}"

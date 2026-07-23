@@ -1,0 +1,96 @@
+# Test that the alert data stream recovers from a 429 Too Many Requests
+# (rate limiting) response from the SentinelOne API.
+#
+# The mock cycles through two responses for /web/api/v2.1/cloud-detection/alerts:
+#   1st call → 429 with Retry-After: 1 header
+#   2nd call → 200 with 2 alert documents
+#
+# The httpjson input respects the Retry-After header and retries after 1 second.
+# The test asserts that the 2 alert documents eventually land in Elasticsearch,
+# confirming the integration handles SentinelOne rate limiting gracefully.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock SentinelOne API server.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} s1-mock
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Wait for 2 alert documents. The first poll is throttled; httpjson respects
+# Retry-After: 1 and retries after 1 second, at which point the mock returns 200.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# Verify the documents have the sentinel_one.alert namespace set.
+exec jq '[.hits.hits[]._source | select(.sentinel_one.alert != null)] | length' got_docs.json
+stdout '^2$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down s1-mock
+
+-- test_config.yaml --
+input: httpjson
+vars:
+  url: http://s1-mock:8080
+  api_token: test-api-token
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 1h
+    preserve_original_event: true
+    enable_request_tracer: false
+-- s1-mock/docker-compose.yml --
+version: '2.3'
+services:
+  s1-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: s1-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- s1-mock/config.yml --
+rules:
+  # Alerts endpoint: first call returns 429 with a short Retry-After to keep
+  # the test fast; subsequent calls return 200 with 2 alerts. The mock cycles
+  # through the responses list in order, wrapping back to the start when
+  # exhausted.
+  - path: /web/api/v2.1/cloud-detection/alerts
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "ApiToken test-api-token"
+    responses:
+      - status_code: 429
+        headers:
+          Content-Type:
+            - "application/json"
+          Retry-After:
+            - "1"
+        body: |-
+          {"errors":[{"detail":"The requests are being throttled. Too many requests."}],"data":null,"pagination":null}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":[{"alertInfo":{"alertId":"a1b2c3d4-0001-0002-0003-000000000001","createdAt":"2024-01-15T10:00:00.000Z","updatedAt":"2024-01-15T10:01:00.000Z","eventType":"DNS","incidentStatus":"Unresolved","analystVerdict":"Undefined","status":"Active","severity":"High","type":"Suspicious Activity"},"agentDetectionInfo":{"agentId":"agent-001","siteId":"site-001","siteName":"Default","agentOsName":"Windows 10","machineType":"desktop","agentVersion":"22.2.5.2"}},{"alertInfo":{"alertId":"a1b2c3d4-0001-0002-0003-000000000002","createdAt":"2024-01-15T10:05:00.000Z","updatedAt":"2024-01-15T10:06:00.000Z","eventType":"DNS","incidentStatus":"Unresolved","analystVerdict":"Undefined","status":"Active","severity":"Critical","type":"Suspicious Activity"},"agentDetectionInfo":{"agentId":"agent-002","siteId":"site-001","siteName":"Default","agentOsName":"Windows 11","machineType":"laptop","agentVersion":"22.2.5.2"}}],"pagination":{"nextCursor":null,"totalItems":2}}

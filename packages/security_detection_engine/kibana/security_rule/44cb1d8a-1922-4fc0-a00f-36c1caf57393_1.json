@@ -1,0 +1,84 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects non-root file creation within \"/tmp/.snap\" or its host backing path \"/tmp/snap-private-tmp/*/tmp/.snap\", which may indicate exploitation attempts related to CVE-2026-3888. In vulnerable Ubuntu systems, the snap-confine utility normally creates the \"/tmp/.snap\" directory as root when initializing a snap sandbox. The vulnerability arises when systemd-tmpfiles deletes this directory after it becomes stale, allowing an unprivileged user to recreate it and populate attacker-controlled files. During subsequent snap sandbox initialization, snap-confine may bind-mount or trust these attacker-controlled paths, enabling manipulation of libraries or configuration files that can lead to local privilege escalation to root. Because legitimate creation of \".snap\" directories should only be performed by root, non-root file activity in these locations is highly suspicious. This detection helps identify early stages of the exploit before privilege escalation is completed.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential snap-confine Privilege Escalation via CVE-2026-3888",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential snap-confine Privilege Escalation via CVE-2026-3888\n\nThis rule flags non-root creation of files under temporary snap sandbox directories that snap-confine should prepare as root, which can expose an attempt to abuse CVE-2026-3888 for local root access. A common pattern is an unprivileged user waiting for stale `/tmp/.snap` content to be removed, recreating that path, and dropping crafted libraries or configuration so the next snap launch pulls attacker-controlled files into the sandbox setup and elevates privileges.\n\n### Possible investigation steps\n\n- Review the originating user's recent terminal, SSH, sudo, and scheduled-task activity to determine whether the file creation was part of legitimate administration or an unexpected local execution chain.\n- Inspect the affected `.snap` directory contents for crafted symlinks, shared libraries, configuration files, or path redirection artifacts that could be consumed during snap sandbox initialization.\n- Correlate the activity with nearby launches of `snap`, `snap-confine`, `snapd`, or installed snap applications and determine whether any such execution was followed by a new root-level process tree.\n- Look for evidence that `systemd-tmpfiles` or another cleanup mechanism removed the stale directory shortly before it was recreated by the unprivileged account, as this timing strongly supports CVE-2026-3888 exploitation behavior.\n- Examine post-alert host activity for signs of successful escalation such as unexpected root-owned file changes, new setuid binaries, persistence creation, credential access, or security control tampering.\n\n### False positive analysis\n\n- A user troubleshooting a failing snap application may manually create or modify files under `/tmp/.snap` or `/tmp/snap-private-tmp/*/tmp/.snap`; verify by reviewing the parent shell/process lineage and nearby `snap` or `snap-confine` executions to confirm it was interactive testing with no follow-on root activity.\n- Telemetry can occasionally attribute file creation to the invoking non-root user during normal snap sandbox initialization even though the privileged helper completes the action; verify by checking whether related `snap` or `snap-confine` events occurred at the same time and whether the final directory and files are owned by root.\n\n### Response and remediation\n\n- Isolate the affected Linux host from the network, stop any active `snap`, `snap-confine`, or suspicious root shell processes tied to the originating user, and preserve the contents of `/tmp/.snap` or `/tmp/snap-private-tmp/*/tmp/.snap` for evidence.\n- Remove attacker-controlled files, symlinks, shared libraries, and configuration placed in the recreated `.snap` paths, then delete any persistence added after the event such as unauthorized `systemd` units, `/etc/cron*` entries, `~/.ssh/authorized_keys` changes, sudoers modifications, new local accounts, or unexpected setuid-root binaries.\n- Escalate immediately to incident response and treat the host as fully compromised if you confirm a root-owned process tree descending from the unprivileged user, root-level file changes outside the temporary snap path, or tampering with `/etc/ld.so.preload`, PAM modules, or endpoint security agents.\n- Restore the host to a known-good state by rebuilding or reimaging it when privilege escalation cannot be conclusively ruled out, or otherwise replace modified system files from trusted packages, rotate credentials exposed on the system, and verify correct root ownership and permissions on snap temporary directories before reconnecting it.\n- Harden the environment by applying the vendor fix for CVE-2026-3888, updating `snapd` and related Ubuntu packages, restricting unnecessary local shell access, and increasing monitoring for non-root creation of files under `/tmp/.snap` and `/tmp/snap-private-tmp/*/tmp/.snap`.\n",
+        "query": "file where host.os.type == \"linux\" and event.action == \"creation\" and\nfile.path like (\"/tmp/.snap*\", \"/tmp/snap-private-tmp/*/tmp/.snap*\") and\nuser.id != \"0\"\n",
+        "references": [
+            "https://blog.qualys.com/vulnerabilities-threat-research/2026/03/17/cve-2026-3888-important-snap-flaw-enables-local-privilege-escalation-to-root",
+            "https://cdn2.qualys.com/advisory/2026/03/17/snap-confine-systemd-tmpfiles.txt"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "44cb1d8a-1922-4fc0-a00f-36c1caf57393",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Use Case: Vulnerability",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1068",
+                        "name": "Exploitation for Privilege Escalation",
+                        "reference": "https://attack.mitre.org/techniques/T1068/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "44cb1d8a-1922-4fc0-a00f-36c1caf57393_1",
+    "type": "security-rule"
+}

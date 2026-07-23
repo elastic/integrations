@@ -1,0 +1,27 @@
+---
+description: Benchmark 100000 alert events ingested
+input: cel
+deployer: docker
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  client_id: xxxx
+  client_secret: yyyy
+  token_url: http://{{Hostname}}:{{Port}}/oauth2/token
+data_stream:
+  name: alert
+  vars:
+    enable_request_tracer: true
+    preserve_original_event: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: crowdstrike
+  generator:
+    total_events: 1000
+    template:
+      path: ./alert-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./alert-benchmark/config.yml
+    fields:
+      path: ./alert-benchmark/fields.yml

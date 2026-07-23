@@ -98,16 +98,18 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
   - Vulnerability data is fetched for the previous day.
   - Custom headers are not supported in this integration. Only the standard Authorization header (for example, Bearer token) is used for API requests.
 
-### Troubleshooting
+### Transforms
 
-The transforms used in the Wiz integration depend on the presence of the `event.ingested` field to function correctly.
+The Wiz integration creates transforms to support [CDR](https://www.elastic.co/what-is/cloud-detection-response), for the following data streams:
 
-When using Fleet-managed Elastic Agents, the `.fleet_final_pipeline-1` is automatically executed and ensures that the `event.ingested` field is added to all events.
+| Data stream name                                      | Transform destination alias                     |
+|-------------------------------------------------------|-------------------------------------------------|
+| `logs-wiz.vulnerability-*`                            | `security_solution-wiz.vulnerability_latest`    |
+| `logs-wiz.cloud_configuration_finding_full_posture-*` | `security_solution-wiz.misconfiguration_latest` |
 
-However, when using standalone Elastic Agents, this pipeline is not applied, and the `event.ingested` field is not automatically added.
+The source data streams contain historical events and are suitable for most uses, while the aliased transform destination indexes provide a view of the current state of Wiz findings to support Elastic Security CDR workflows. The dashboards included in the Wiz integration use the source data streams.
 
-📌 Action Required (for standalone agents):
-You must manually add the `event.ingested` field, preferably via a custom ingest pipeline (e.g., using the @custom pipeline).
+The transforms use `event.ingested` as their sync field. Fleet-managed Elastic Agents add this field automatically but for other setups this field might need to be added separately.
 
 ## Logs reference
 
@@ -298,7 +300,7 @@ An example event for `cloud_configuration_finding` looks as following:
         "id": "1243196d-a365-589a-a8aa-13817c9877b2",
         "ingested": "2025-04-22T09:54:52Z",
         "kind": "state",
-        "original": "{\"analyzedAt\":\"2024-08-07T12:55:52.012378Z\",\"id\":\"1243196d-a365-589a-a8aa-13817c9877b2\",\"remediation\":null,\"resource\":{\"cloudPlatform\":\"EKS\",\"id\":\"f0f4163d-cbd7-517c-ba9e-f96bb90ab5ea\",\"name\":\"Root user\",\"nativeType\":\"rootUser\",\"providerId\":\"arn:aws:iam::998231069301:root\",\"region\":null,\"subscription\":{\"cloudProvider\":\"AWS\",\"externalId\":\"998231069301\",\"id\":\"94e76baa-85fd-5928-b829-1669a2ca9660\",\"name\":\"wiz-integrations\"},\"tags\":[],\"type\":\"USER_ACCOUNT\"},\"result\":\"PASS\",\"rule\":{\"description\":\"This rule checks if the AWS Root Account has access keys. \\nThis rule fails if `AccountAccessKeysPresent` is not set to `0`. Note that it does not take into consideration the status of the keys if present. \\nThe root account should avoid using access keys. Since the root account has full permissions across the entire account, creating access keys for it increases the chance that they will be compromised. Instead, it is recommended to create IAM users with predefined roles.\\n\\u003e**Note** \\nSee Cloud Configuration Rule `IAM-207` to see if the Root account's access keys are active.\",\"id\":\"563ed717-4fb6-47fd-929e-9c794e201d0a\",\"name\":\"Root account access keys should not exist\",\"remediationInstructions\":\"Perform the following steps, while being signed in as the Root user, in order to delete the root user's access keys via AWS CLI: \\n1. Use the following command to list the Root user's access keys. \\nCopy the `AccessKeyId` from the output and paste it into the `access-key-id` value in the next step. \\n```\\naws iam list-access-keys\\n```\\n2. Use the following command to delete the access key(s). \\n```\\naws iam delete-access-key /\\n --access-key-id \\u003cvalue\\u003e\\n```\\n\\u003e**Note** \\nOnce an access key is removed, any application using it will not work until a new one is configured for it.\",\"shortId\":\"IAM-006\"},\"severity\":\"MEDIUM\"}",
+        "original": "{\"analyzedAt\":\"2024-08-07T12:55:52.012378Z\",\"updatedAt\":\"2024-08-07T12:55:52.012378Z\",\"id\":\"1243196d-a365-589a-a8aa-13817c9877b2\",\"remediation\":null,\"resource\":{\"cloudPlatform\":\"EKS\",\"id\":\"f0f4163d-cbd7-517c-ba9e-f96bb90ab5ea\",\"name\":\"Root user\",\"nativeType\":\"rootUser\",\"providerId\":\"arn:aws:iam::998231069301:root\",\"region\":null,\"subscription\":{\"cloudProvider\":\"AWS\",\"externalId\":\"998231069301\",\"id\":\"94e76baa-85fd-5928-b829-1669a2ca9660\",\"name\":\"wiz-integrations\"},\"tags\":[],\"type\":\"USER_ACCOUNT\"},\"result\":\"PASS\",\"rule\":{\"description\":\"This rule checks if the AWS Root Account has access keys. \\nThis rule fails if `AccountAccessKeysPresent` is not set to `0`. Note that it does not take into consideration the status of the keys if present. \\nThe root account should avoid using access keys. Since the root account has full permissions across the entire account, creating access keys for it increases the chance that they will be compromised. Instead, it is recommended to create IAM users with predefined roles.\\n\\u003e**Note** \\nSee Cloud Configuration Rule `IAM-207` to see if the Root account's access keys are active.\",\"id\":\"563ed717-4fb6-47fd-929e-9c794e201d0a\",\"name\":\"Root account access keys should not exist\",\"remediationInstructions\":\"Perform the following steps, while being signed in as the Root user, in order to delete the root user's access keys via AWS CLI: \\n1. Use the following command to list the Root user's access keys. \\nCopy the `AccessKeyId` from the output and paste it into the `access-key-id` value in the next step. \\n```\\naws iam list-access-keys\\n```\\n2. Use the following command to delete the access key(s). \\n```\\naws iam delete-access-key /\\n --access-key-id \\u003cvalue\\u003e\\n```\\n\\u003e**Note** \\nOnce an access key is removed, any application using it will not work until a new one is configured for it.\",\"shortId\":\"IAM-006\"},\"severity\":\"MEDIUM\"}",
         "outcome": "success",
         "type": [
             "info"
@@ -341,6 +343,7 @@ An example event for `cloud_configuration_finding` looks as following:
     "wiz": {
         "cloud_configuration_finding": {
             "analyzed_at": "2024-08-07T12:55:52.012Z",
+            "updated_at": "2024-08-07T12:55:52.012Z",
             "id": "1243196d-a365-589a-a8aa-13817c9877b2",
             "resource": {
                 "cloud_platform": "EKS",
@@ -413,6 +416,7 @@ An example event for `cloud_configuration_finding` looks as following:
 | wiz.cloud_configuration_finding.rule.name |  | keyword |
 | wiz.cloud_configuration_finding.rule.remediation_instructions |  | text |
 | wiz.cloud_configuration_finding.rule.short_id |  | keyword |
+| wiz.cloud_configuration_finding.updated_at |  | date |
 
 
 ### Cloud configuration finding full posture
@@ -466,7 +470,7 @@ An example event for `cloud_configuration_finding_full_posture` looks as followi
         "id": "1243196d-a365-589a-a8aa-13817c9877b2",
         "ingested": "2025-04-22T09:55:55Z",
         "kind": "state",
-        "original": "{\"analyzedAt\":\"2024-08-07T12:55:52.012378Z\",\"id\":\"1243196d-a365-589a-a8aa-13817c9877b2\",\"remediation\":null,\"resource\":{\"cloudPlatform\":\"EKS\",\"id\":\"f0f4163d-cbd7-517c-ba9e-f96bb90ab5ea\",\"name\":\"Root user\",\"nativeType\":\"rootUser\",\"providerId\":\"arn:aws:iam::998231069301:root\",\"region\":null,\"subscription\":{\"cloudProvider\":\"AWS\",\"externalId\":\"998231069301\",\"id\":\"94e76baa-85fd-5928-b829-1669a2ca9660\",\"name\":\"wiz-integrations\"},\"tags\":[],\"type\":\"USER_ACCOUNT\"},\"result\":\"PASS\",\"rule\":{\"description\":\"description\",\"id\":\"563ed717-4fb6-47fd-929e-9c794e201d0a\",\"name\":\"Root account access keys should not exist\",\"remediationInstructions\":\"instructions\",\"shortId\":\"IAM-006\"},\"severity\":\"MEDIUM\"}",
+        "original": "{\"analyzedAt\":\"2024-08-07T12:55:52.012378Z\",\"updatedAt\":\"2024-08-07T12:55:52.012378Z\",\"id\":\"1243196d-a365-589a-a8aa-13817c9877b2\",\"remediation\":null,\"resource\":{\"cloudPlatform\":\"EKS\",\"id\":\"f0f4163d-cbd7-517c-ba9e-f96bb90ab5ea\",\"name\":\"Root user\",\"nativeType\":\"rootUser\",\"providerId\":\"arn:aws:iam::998231069301:root\",\"region\":null,\"subscription\":{\"cloudProvider\":\"AWS\",\"externalId\":\"998231069301\",\"id\":\"94e76baa-85fd-5928-b829-1669a2ca9660\",\"name\":\"wiz-integrations\"},\"tags\":[],\"type\":\"USER_ACCOUNT\"},\"result\":\"PASS\",\"rule\":{\"description\":\"description\",\"id\":\"563ed717-4fb6-47fd-929e-9c794e201d0a\",\"name\":\"Root account access keys should not exist\",\"remediationInstructions\":\"instructions\",\"shortId\":\"IAM-006\"},\"severity\":\"MEDIUM\"}",
         "outcome": "success",
         "type": [
             "info"
@@ -507,6 +511,7 @@ An example event for `cloud_configuration_finding_full_posture` looks as followi
     "wiz": {
         "cloud_configuration_finding_full_posture": {
             "analyzed_at": "2024-08-07T12:55:52.012Z",
+            "updated_at": "2024-08-07T12:55:52.012Z",
             "id": "1243196d-a365-589a-a8aa-13817c9877b2",
             "resource": {
                 "cloud_platform": "EKS",
@@ -581,6 +586,7 @@ An example event for `cloud_configuration_finding_full_posture` looks as followi
 | wiz.cloud_configuration_finding_full_posture.rule.remediation_instructions |  | text |
 | wiz.cloud_configuration_finding_full_posture.rule.short_id |  | keyword |
 | wiz.cloud_configuration_finding_full_posture.status |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.updated_at |  | date |
 
 
 ### Defend
@@ -976,11 +982,11 @@ An example event for `issue` looks as following:
 {
     "@timestamp": "2023-07-21T06:26:08.708Z",
     "agent": {
-        "ephemeral_id": "1c453cfc-4ac3-49f8-80da-720ce2fb2df2",
-        "id": "ef1f42d0-9e3f-41dd-8482-9dbff945c288",
-        "name": "elastic-agent-39824",
+        "ephemeral_id": "8ed8aec5-5335-4510-a6b6-e98441f37b7a",
+        "id": "07d85902-c982-4c69-8827-318fa4d8050f",
+        "name": "elastic-agent-67496",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.16.6"
     },
     "cloud": {
         "provider": "Kubernetes",
@@ -988,16 +994,16 @@ An example event for `issue` looks as following:
     },
     "data_stream": {
         "dataset": "wiz.issue",
-        "namespace": "41856",
+        "namespace": "49382",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ef1f42d0-9e3f-41dd-8482-9dbff945c288",
-        "snapshot": true,
-        "version": "8.18.0"
+        "id": "07d85902-c982-4c69-8827-318fa4d8050f",
+        "snapshot": false,
+        "version": "8.16.6"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1007,9 +1013,9 @@ An example event for `issue` looks as following:
         "created": "2023-08-21T07:56:09.903Z",
         "dataset": "wiz.issue",
         "id": "ggf9cggd-64a7-412c-9445-cf837f4b0b10",
-        "ingested": "2025-04-22T10:00:06Z",
+        "ingested": "2026-01-07T08:55:20Z",
         "kind": "event",
-        "original": "{\"createdAt\":\"2023-08-21T07:56:09.903743Z\",\"dueAt\":\"2023-08-28T21:00:00Z\",\"entitySnapshot\":{\"cloudPlatform\":\"Kubernetes\",\"cloudProviderURL\":\"https://portal.az.com/#@sectest.on.com/resource//subscriptions/\",\"externalId\":\"k8s/clusterrole/aaa8e7ca2bf9bc85a75d5bbdd8ffd08d69f8852782a6341c3c3519sad45/system:aggregate-to-edit/12\",\"id\":\"f307d472-b7da-5t05-9b25-71a271336b14\",\"name\":\"system:aggregate-to-edit\",\"nativeType\":\"ClusterRole\",\"providerId\":\"k8s/clusterrole/aaa8e7ca2bf9bc85a75d5bbdd8ffd08d69f8852782a6341c3c3519bac0f24ae9/system:aggregate-to-edit/12\",\"region\":\"us-01\",\"resourceGroupExternalId\":\"/subscriptions/cfd132be-3bc7-4f86-8efd-ed53ae498fec/resourcegroups/test-selfmanaged-eastus\",\"status\":\"Active\",\"subscriptionExternalId\":\"998231069301\",\"subscriptionName\":\"demo-integrations\",\"subscriptionTags\":{},\"tags\":{\"kubernetes.io/bootstrapping\":\"rbac-defaults\",\"rbac.authorization.k8s.io/aggregate-to-edit\":\"true\"},\"type\":\"ACCESS_ROLE\"},\"id\":\"ggf9cggd-64a7-412c-9445-cf837f4b0b10\",\"notes\":[{\"createdAt\":\"2023-08-21T07:56:09.903743Z\",\"serviceAccount\":{\"name\":\"rev-ke\"},\"text\":\"updated\",\"updatedAt\":\"2023-09-09T23:10:22.588721Z\"},{\"createdAt\":\"2023-08-07T23:08:49.918941Z\",\"serviceAccount\":{\"name\":\"rev-ke2\"},\"text\":\"updated\",\"updatedAt\":\"2023-08-09T23:10:22.591487Z\"}],\"projects\":[{\"businessUnit\":\"\",\"id\":\"jf77n35n-a7b6-5762-8a53-8e8f59e68bd8\",\"name\":\"Project 2\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-2\"},{\"businessUnit\":\"Dev\",\"id\":\"af52828c-4eb1-5c4e-847c-ebc3a5ead531\",\"name\":\"project 4\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-4\"},{\"businessUnit\":\"Dev\",\"id\":\"d5h1545-aec0-52fc-80ab-bacd7b02f178\",\"name\":\"Project1\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project1\"}],\"resolvedAt\":\"2023-08-09T23:10:22.588721Z\",\"serviceTickets\":[{\"externalId\":\"638361121bbfdd10f6c1cbf3604bcb7e\",\"name\":\"SIR0010002\",\"url\":\"https://ven05658.testing.com/nav_to.do?uri=%2Fsn_si_incident.do%3Fsys_id%3D6385248sdsae421\"}],\"severity\":\"INFORMATIONAL\",\"sourceRule\":{\"__typename\":\"Control\",\"controlDescription\":\"These EKS principals assume roles that provide bind, escalate and impersonate permissions. \\n\\nThe `bind` permission allows users to create bindings to roles with rights they do not already have. The `escalate` permission allows users effectively escalate their privileges. The `impersonate` permission allows users to impersonate and gain the rights of other users in the cluster. Running containers with these permissions has the potential to effectively allow privilege escalation to the cluster-admin level.\",\"id\":\"wc-id-1335\",\"name\":\"EKS principals assume roles that provide bind, escalate and impersonate permissions\",\"resolutionRecommendation\":\"To follow the principle of least privilege and minimize the risk of unauthorized access and data breaches, it is recommended not to grant `bind`, `escalate` or `impersonate` permissions.\",\"securitySubCategories\":[{\"category\":{\"framework\":{\"name\":\"CIS EKS 1.2.0\"},\"name\":\"4.1 RBAC and Service Accounts\"},\"title\":\"4.1.8 Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster - Level 1 (Manual)\"},{\"category\":{\"framework\":{\"name\":\"Wiz for Risk Assessment\"},\"name\":\"Identity Management\"},\"title\":\"Privileged principal\"},{\"category\":{\"framework\":{\"name\":\"Wiz\"},\"name\":\"9 Container Security\"},\"title\":\"Container Security\"},{\"category\":{\"framework\":{\"name\":\"Wiz for Risk Assessment\"},\"name\":\"Container \\u0026 Kubernetes Security\"},\"title\":\"Cluster misconfiguration\"}]},\"status\":\"IN_PROGRESS\",\"statusChangedAt\":\"2023-07-21T06:26:08.708199Z\",\"updatedAt\":\"2023-08-14T06:06:18.331647Z\"}",
+        "original": "{\"createdAt\":\"2023-08-21T07:56:09.903743Z\",\"dueAt\":\"2023-08-28T21:00:00Z\",\"entitySnapshot\":{\"cloudPlatform\":\"Kubernetes\",\"cloudProviderURL\":\"https://portal.az.com/#@sectest.on.com/resource//subscriptions/\",\"externalId\":\"k8s/clusterrole/aaa8e7ca2bf9bc85a75d5bbdd8ffd08d69f8852782a6341c3c3519sad45/system:aggregate-to-edit/12\",\"id\":\"f307d472-b7da-5t05-9b25-71a271336b14\",\"name\":\"system:aggregate-to-edit\",\"nativeType\":\"ClusterRole\",\"providerId\":\"k8s/clusterrole/aaa8e7ca2bf9bc85a75d5bbdd8ffd08d69f8852782a6341c3c3519bac0f24ae9/system:aggregate-to-edit/12\",\"region\":\"us-01\",\"resourceGroupExternalId\":\"/subscriptions/cfd132be-3bc7-4f86-8efd-ed53ae498fec/resourcegroups/test-selfmanaged-eastus\",\"status\":\"Active\",\"subscriptionExternalId\":\"998231069301\",\"subscriptionName\":\"demo-integrations\",\"subscriptionTags\":{},\"tags\":{\"kubernetes.io/bootstrapping\":\"rbac-defaults\",\"rbac.authorization.k8s.io/aggregate-to-edit\":\"true\"},\"type\":\"ACCESS_ROLE\"},\"id\":\"ggf9cggd-64a7-412c-9445-cf837f4b0b10\",\"notes\":[{\"createdAt\":\"2023-08-21T07:56:09.903743Z\",\"serviceAccount\":{\"name\":\"rev-ke\"},\"text\":\"updated\",\"updatedAt\":\"2023-09-09T23:10:22.588721Z\"},{\"createdAt\":\"2023-08-07T23:08:49.918941Z\",\"serviceAccount\":{\"name\":\"rev-ke2\"},\"text\":\"updated\",\"updatedAt\":\"2023-08-09T23:10:22.591487Z\"}],\"projects\":[{\"businessUnit\":\"\",\"id\":\"jf77n35n-a7b6-5762-8a53-8e8f59e68bd8\",\"name\":\"Project 2\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-2\"},{\"businessUnit\":\"Dev\",\"id\":\"af52828c-4eb1-5c4e-847c-ebc3a5ead531\",\"name\":\"project 4\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-4\"},{\"businessUnit\":\"Dev\",\"id\":\"d5h1545-aec0-52fc-80ab-bacd7b02f178\",\"name\":\"Project1\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project1\"}],\"resolvedAt\":\"2023-08-09T23:10:22.588721Z\",\"serviceTickets\":[{\"externalId\":\"638361121bbfdd10f6c1cbf3604bcb7e\",\"name\":\"SIR0010002\",\"url\":\"https://ven05658.testing.com/nav_to.do?uri=%2Fsn_si_incident.do%3Fsys_id%3D6385248sdsae421\"}],\"severity\":\"INFORMATIONAL\",\"sourceRules\":[{\"__typename\":\"Control\",\"description\":\"These EKS principals assume roles that provide bind, escalate and impersonate permissions. \\n\\nThe `bind` permission allows users to create bindings to roles with rights they do not already have. The `escalate` permission allows users effectively escalate their privileges. The `impersonate` permission allows users to impersonate and gain the rights of other users in the cluster. Running containers with these permissions has the potential to effectively allow privilege escalation to the cluster-admin level.\",\"id\":\"wc-id-1335\",\"name\":\"EKS principals assume roles that provide bind, escalate and impersonate permissions\",\"resolutionRecommendation\":\"To follow the principle of least privilege and minimize the risk of unauthorized access and data breaches, it is recommended not to grant `bind`, `escalate` or `impersonate` permissions.\",\"risks\":[\"INSECURE_KUBERNETES_CLUSTER\",\"VULNERABILITY\"],\"securitySubCategories\":[{\"category\":{\"framework\":{\"name\":\"CIS EKS 1.2.0\"},\"name\":\"4.1 RBAC and Service Accounts\"},\"title\":\"4.1.8 Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster - Level 1 (Manual)\"},{\"category\":{\"framework\":{\"name\":\"Wiz for Risk Assessment\"},\"name\":\"Identity Management\"},\"title\":\"Privileged principal\"},{\"category\":{\"framework\":{\"name\":\"Wiz\"},\"name\":\"9 Container Security\"},\"title\":\"Container Security\"},{\"category\":{\"framework\":{\"name\":\"Wiz for Risk Assessment\"},\"name\":\"Container \\u0026 Kubernetes Security\"},\"title\":\"Cluster misconfiguration\"}]},{\"__typename\":\"CloudEventRule\",\"description\":\"Process wrote to a security configuration file. This could indicate the presence of a threat actor tampering with security controls.\",\"id\":\"cer-sen-id-002\",\"name\":\"Security configuration file was modified\",\"risks\":[\"INSECURE_KUBERNETES_CLUSTER\",\"VULNERABILITY\"],\"securitySubCategories\":[{\"category\":{\"framework\":{\"name\":\"Wiz for Threat Detection\"},\"name\":\"Defense Evasion\"},\"title\":\"Security tool tampering\"}],\"sourceType\":\"WIZ_SENSOR\",\"type\":\"FILE_INTEGRITY_MONITORING_WORKLOAD_RUNTIME_RULE\"},{\"__typename\":\"CloudEventRule\",\"description\":\"Python process spawned interactive shell. This can indicate the presence of a malicious actor enhancing a basic reverse shell.\",\"id\":\"cer-sen-id-003\",\"name\":\"Python process spawned interactive shell\",\"risks\":[\"INSECURE_KUBERNETES_CLUSTER\",\"VULNERABILITY\"],\"securitySubCategories\":[{\"category\":{\"framework\":{\"name\":\"Wiz for Threat Detection\"},\"name\":\"C2 \\u0026 Exfiltration\"},\"title\":\"Remote shell\"}],\"sourceType\":\"WIZ_SENSOR\",\"type\":\"WORKLOAD_RUNTIME_RULE\"}],\"status\":\"IN_PROGRESS\",\"statusChangedAt\":\"2023-07-21T06:26:08.708199Z\",\"updatedAt\":\"2023-08-14T06:06:18.331647Z\"}",
         "type": [
             "info"
         ],
@@ -1115,51 +1121,103 @@ An example event for `issue` looks as following:
                 }
             ],
             "severity": "INFORMATIONAL",
-            "source_rule": {
-                "__typename": "Control",
-                "control_description": "These EKS principals assume roles that provide bind, escalate and impersonate permissions. \n\nThe `bind` permission allows users to create bindings to roles with rights they do not already have. The `escalate` permission allows users effectively escalate their privileges. The `impersonate` permission allows users to impersonate and gain the rights of other users in the cluster. Running containers with these permissions has the potential to effectively allow privilege escalation to the cluster-admin level.",
-                "id": "wc-id-1335",
-                "name": "EKS principals assume roles that provide bind, escalate and impersonate permissions",
-                "resolution_recommendation": "To follow the principle of least privilege and minimize the risk of unauthorized access and data breaches, it is recommended not to grant `bind`, `escalate` or `impersonate` permissions.",
-                "security_sub_categories": [
-                    {
-                        "category": {
-                            "framework": {
-                                "name": "CIS EKS 1.2.0"
+            "source_rules": [
+                {
+                    "__typename": "Control",
+                    "description": "These EKS principals assume roles that provide bind, escalate and impersonate permissions. \n\nThe `bind` permission allows users to create bindings to roles with rights they do not already have. The `escalate` permission allows users effectively escalate their privileges. The `impersonate` permission allows users to impersonate and gain the rights of other users in the cluster. Running containers with these permissions has the potential to effectively allow privilege escalation to the cluster-admin level.",
+                    "id": "wc-id-1335",
+                    "name": "EKS principals assume roles that provide bind, escalate and impersonate permissions",
+                    "resolution_recommendation": "To follow the principle of least privilege and minimize the risk of unauthorized access and data breaches, it is recommended not to grant `bind`, `escalate` or `impersonate` permissions.",
+                    "risks": [
+                        "INSECURE_KUBERNETES_CLUSTER",
+                        "VULNERABILITY"
+                    ],
+                    "security_sub_categories": [
+                        {
+                            "category": {
+                                "framework": {
+                                    "name": "CIS EKS 1.2.0"
+                                },
+                                "name": "4.1 RBAC and Service Accounts"
                             },
-                            "name": "4.1 RBAC and Service Accounts"
+                            "title": "4.1.8 Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster - Level 1 (Manual)"
                         },
-                        "title": "4.1.8 Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster - Level 1 (Manual)"
-                    },
-                    {
-                        "category": {
-                            "framework": {
-                                "name": "Wiz for Risk Assessment"
+                        {
+                            "category": {
+                                "framework": {
+                                    "name": "Wiz for Risk Assessment"
+                                },
+                                "name": "Identity Management"
                             },
-                            "name": "Identity Management"
+                            "title": "Privileged principal"
                         },
-                        "title": "Privileged principal"
-                    },
-                    {
-                        "category": {
-                            "framework": {
-                                "name": "Wiz"
+                        {
+                            "category": {
+                                "framework": {
+                                    "name": "Wiz"
+                                },
+                                "name": "9 Container Security"
                             },
-                            "name": "9 Container Security"
+                            "title": "Container Security"
                         },
-                        "title": "Container Security"
-                    },
-                    {
-                        "category": {
-                            "framework": {
-                                "name": "Wiz for Risk Assessment"
+                        {
+                            "category": {
+                                "framework": {
+                                    "name": "Wiz for Risk Assessment"
+                                },
+                                "name": "Container & Kubernetes Security"
                             },
-                            "name": "Container & Kubernetes Security"
-                        },
-                        "title": "Cluster misconfiguration"
-                    }
-                ]
-            },
+                            "title": "Cluster misconfiguration"
+                        }
+                    ]
+                },
+                {
+                    "__typename": "CloudEventRule",
+                    "description": "Process wrote to a security configuration file. This could indicate the presence of a threat actor tampering with security controls.",
+                    "id": "cer-sen-id-002",
+                    "name": "Security configuration file was modified",
+                    "risks": [
+                        "INSECURE_KUBERNETES_CLUSTER",
+                        "VULNERABILITY"
+                    ],
+                    "security_sub_categories": [
+                        {
+                            "category": {
+                                "framework": {
+                                    "name": "Wiz for Threat Detection"
+                                },
+                                "name": "Defense Evasion"
+                            },
+                            "title": "Security tool tampering"
+                        }
+                    ],
+                    "source_type": "WIZ_SENSOR",
+                    "type": "FILE_INTEGRITY_MONITORING_WORKLOAD_RUNTIME_RULE"
+                },
+                {
+                    "__typename": "CloudEventRule",
+                    "description": "Python process spawned interactive shell. This can indicate the presence of a malicious actor enhancing a basic reverse shell.",
+                    "id": "cer-sen-id-003",
+                    "name": "Python process spawned interactive shell",
+                    "risks": [
+                        "INSECURE_KUBERNETES_CLUSTER",
+                        "VULNERABILITY"
+                    ],
+                    "security_sub_categories": [
+                        {
+                            "category": {
+                                "framework": {
+                                    "name": "Wiz for Threat Detection"
+                                },
+                                "name": "C2 & Exfiltration"
+                            },
+                            "title": "Remote shell"
+                        }
+                    ],
+                    "source_type": "WIZ_SENSOR",
+                    "type": "WORKLOAD_RUNTIME_RULE"
+                }
+            ],
             "status": {
                 "changed_at": "2023-07-21T06:26:08.708Z",
                 "value": "IN_PROGRESS"
@@ -1216,15 +1274,19 @@ An example event for `issue` looks as following:
 | wiz.issue.service_tickets.name |  | keyword |
 | wiz.issue.service_tickets.url |  | keyword |
 | wiz.issue.severity |  | keyword |
-| wiz.issue.source_rule.__typename |  | keyword |
-| wiz.issue.source_rule.cloud_configuration_rule_description |  | keyword |
-| wiz.issue.source_rule.control_description |  | keyword |
-| wiz.issue.source_rule.id |  | keyword |
-| wiz.issue.source_rule.name |  | keyword |
-| wiz.issue.source_rule.resolution_recommendation |  | keyword |
-| wiz.issue.source_rule.security_sub_categories.category.framework.name |  | keyword |
-| wiz.issue.source_rule.security_sub_categories.category.name |  | keyword |
-| wiz.issue.source_rule.security_sub_categories.title |  | keyword |
+| wiz.issue.source_rules.__typename |  | keyword |
+| wiz.issue.source_rules.description |  | keyword |
+| wiz.issue.source_rules.id |  | keyword |
+| wiz.issue.source_rules.name |  | keyword |
+| wiz.issue.source_rules.remediation_instructions |  | keyword |
+| wiz.issue.source_rules.resolution_recommendation |  | keyword |
+| wiz.issue.source_rules.risks |  | keyword |
+| wiz.issue.source_rules.security_sub_categories.category.framework.name |  | keyword |
+| wiz.issue.source_rules.security_sub_categories.category.name |  | keyword |
+| wiz.issue.source_rules.security_sub_categories.title |  | keyword |
+| wiz.issue.source_rules.service_type |  | keyword |
+| wiz.issue.source_rules.source_type |  | keyword |
+| wiz.issue.source_rules.type |  | keyword |
 | wiz.issue.status.changed_at |  | date |
 | wiz.issue.status.value |  | keyword |
 | wiz.issue.type |  | keyword |

@@ -1,0 +1,52 @@
+metricsets: ["jmx"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{path}}
+period: {{period}}
+{{#if username}}
+username: {{username}}
+{{/if}}
+{{#if password}}
+password: {{password}}
+{{/if}}
+namespace: "kafka_connect"
+jmx.mappings:
+  - mbean: 'kafka.connect:type=connect-worker-metrics'
+    attributes:
+      - attr: connector-count
+        field: worker.connector_count
+      - attr: connector-startup-attempts-total
+        field: worker.connector_startup_attempts_total
+      - attr: connector-startup-failure-total
+        field: worker.connector_startup_failure_total
+      - attr: connector-startup-success-total
+        field: worker.connector_startup_success_total
+      - attr: connector-startup-failure-percentage
+        field: worker.connector_startup_failure_percentage
+      - attr: task-count
+        field: worker.task_count
+      - attr: task-startup-attempts-total
+        field: worker.task_startup_attempts_total
+      - attr: task-startup-failure-total
+        field: worker.task_startup_failure_total
+      - attr: task-startup-success-total
+        field: worker.task_startup_success_total
+      - attr: task-startup-success-percentage
+        field: worker.task_startup_success_percentage
+  - mbean: 'kafka.connect:type=connect-worker-rebalance-metrics'
+    attributes:
+      - attr: completed-rebalances-total
+        field: worker.completed_rebalances_total
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

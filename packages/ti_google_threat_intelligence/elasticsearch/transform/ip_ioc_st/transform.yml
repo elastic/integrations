@@ -11,13 +11,15 @@ source:
         - exists:
             field: error.message
 dest:
-  index: "logs-ti_google_threat_intelligence_latest.dest_ip_ioc_st-1"
+  index: "logs-ti_google_threat_intelligence_latest.dest_ip_ioc_st-2"
   pipeline: '{{ ingestPipelineName "ti_google_threat_intelligence-latest_ip_ioc_st-transform-pipeline" }}'
   aliases:
     - alias: "logs-ti_google_threat_intelligence_latest.ip_ioc_st"
       move_on_creation: true
 latest:
   unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
     - event.dataset
     - threat.indicator.ip
   sort: "@timestamp"
@@ -27,7 +29,7 @@ frequency: 30s
 settings:
   # This is required to prevent the transform from clobbering the Fleet-managed mappings.
   deduce_mappings: false
-  unattended: true
+  num_failure_retries: -1
 sync:
   time:
     field: "event.ingested"
@@ -42,5 +44,5 @@ _meta:
   managed: false
   # Bump this version to delete, reinstall, and restart the transform during
   # package installation.
-  fleet_transform_version: 0.7.0
+  fleet_transform_version: 0.9.0
   run_as_kibana_system: false

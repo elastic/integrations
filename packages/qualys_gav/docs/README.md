@@ -45,6 +45,19 @@ For Rest API, this module has been tested against the **2.0** API version.
 4. Add all the required integration configuration parameters: URL, Username and Password.
 5. Save the integration.
 
+### Query-time asset enrichment (LOOKUP JOIN)
+
+When the integration is installed, a transform maintains the latest asset inventory per host in a lookup index (`logs-qualys_gav_latest.asset`). You can enrich other Qualys or security data with GAV asset metadata at query time using ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join) on `host.id`.
+
+Example enriching Qualys VMDR vulnerability data with GAV asset inventory:
+
+```esql
+FROM security_solution-qualys_vmdr.vulnerability_latest
+| LOOKUP JOIN logs-qualys_gav_latest.asset ON host.id
+```
+
+**Elasticsearch 9.1+** is required for `LOOKUP JOIN` against a lookup index. On releases before 9.1, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the Qualys GAV latest asset transform, and use the **destination_index** name shown there (that name can change with the integration version).
+
 ## Logs reference
 
 ### Asset
@@ -57,13 +70,13 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-12-03T12:44:38.354Z",
+    "@timestamp": "2026-07-09T16:29:57.967Z",
     "agent": {
-        "ephemeral_id": "dc4e57e9-b7d8-49c5-96ef-b3c4a5902477",
-        "id": "dd13357b-1570-4a0e-aa97-5941f9f32ce9",
-        "name": "elastic-agent-83554",
+        "ephemeral_id": "62c8b2f5-aba3-4e9b-be8c-8e56e0c4ffa7",
+        "id": "301b6745-acbc-4753-a4df-275b7bae6af3",
+        "name": "elastic-agent-67472",
         "type": "filebeat",
-        "version": "9.2.1"
+        "version": "9.4.3"
     },
     "cloud": {
         "account": {
@@ -85,7 +98,7 @@ An example event for `asset` looks as following:
     },
     "data_stream": {
         "dataset": "qualys_gav.asset",
-        "namespace": "56571",
+        "namespace": "59070",
         "type": "logs"
     },
     "device": {
@@ -98,9 +111,9 @@ An example event for `asset` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "dd13357b-1570-4a0e-aa97-5941f9f32ce9",
+        "id": "301b6745-acbc-4753-a4df-275b7bae6af3",
         "snapshot": false,
-        "version": "9.2.1"
+        "version": "9.4.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -109,7 +122,7 @@ An example event for `asset` looks as following:
         ],
         "created": "2025-07-09T14:21:12.000Z",
         "dataset": "qualys_gav.asset",
-        "ingested": "2025-12-03T12:44:41Z",
+        "ingested": "2026-07-09T16:30:00Z",
         "kind": "event",
         "module": "qualys_gav",
         "risk_score": 0,
@@ -321,6 +334,8 @@ An example event for `asset` looks as following:
             "host_id": "1437386",
             "hosting_category1": "CDN",
             "hw_uuid": "422a2b16-4c8b-588a-a20c-c1851ad7e376",
+            "interval_id": "425283cc-3c3d-4629-a7d1-bdf5d1c0a6eb",
+            "interval_start": "2026-07-09T16:29:57.964Z",
             "inventory": {
                 "created": "2025-07-09T14:21:12.000Z",
                 "last_updated": "2025-07-11T14:21:10.000Z",
@@ -762,6 +777,8 @@ An example event for `asset` looks as following:
 | qualys_gav.asset.host_id |  | keyword |
 | qualys_gav.asset.hosting_category1 |  | keyword |
 | qualys_gav.asset.hw_uuid |  | keyword |
+| qualys_gav.asset.interval_id | The universally unique identifier (UUID) values will change with each interval of ingestion. | keyword |
+| qualys_gav.asset.interval_start | The start time of the interval of ingestion. | date |
 | qualys_gav.asset.inventory.created |  | date |
 | qualys_gav.asset.inventory.last_updated |  | date |
 | qualys_gav.asset.inventory.source |  | keyword |

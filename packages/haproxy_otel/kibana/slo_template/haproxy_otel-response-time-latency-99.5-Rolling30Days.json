@@ -1,0 +1,43 @@
+{
+  "attributes": {
+    "name": "[HAProxy OTel] Response time latency 99.5% rolling 30 days",
+    "description": "This SLO tracks the average backend response time (haproxy.responses.average_time) over the last 1024 requests, ensuring 99.5% of 1-minute timeslices show average response time below 500 milliseconds over a rolling 30-day period. Scoped to backends and servers where response time is measured.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"haproxyreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "avg", "field": "haproxy.responses.average_time"}
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 500
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": ["haproxy", "otel"],
+    "groupBy": ["resource.attributes.haproxy.addr"],
+    "artifacts": {
+      "dashboards": [
+        {"id": "haproxy_otel-overview"},
+        {"id": "haproxy_otel-backend"},
+        {"id": "haproxy_otel-server"}
+      ]
+    }
+  },
+  "id": "haproxy_otel-response-time-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}

@@ -4,31 +4,503 @@
     - name: sidekiq
       type: group
       fields:
-        - name: queue
-          type: keyword
         - name: args
           type: keyword
         - name: class
           type: keyword
-        - name: retry
-          type: boolean
-        - name: queue_namespace
-          type: keyword
-        - name: jid
-          type: keyword
-        - name: enqueued_at
+        - name: completed_at
           type: date
-        - name: worker_id
+        - name: correlation_id
           type: keyword
-        - name: job_status
+        - name: cpu_s
+          type: double
+        - name: created_at
+          type: date
+        - name: database
           type: keyword
         - name: db
           type: group
           fields:
             - name: duration_m
-              type: float
+              type: double
             - name: duration_s
-              type: float
+              type: double
+        - name: db_cached_count
+          type: long
+        - name: db_ci_cached_count
+          type: long
+        - name: db_ci_count
+          type: long
+        - name: db_ci_duration_s
+          type: double
+        - name: db_ci_replica_cached_count
+          type: long
+        - name: db_ci_replica_count
+          type: long
+        - name: db_ci_replica_duration_s
+          type: double
+        - name: db_ci_replica_txn_count
+          type: long
+        - name: db_ci_replica_txn_duration_s
+          type: double
+        - name: db_ci_replica_txn_max_duration_s
+          type: double
+        - name: db_ci_replica_wal_cached_count
+          type: long
+        - name: db_ci_replica_wal_count
+          type: long
+        - name: db_ci_replica_write_count
+          type: long
+        - name: db_ci_txn_count
+          type: long
+        - name: db_ci_txn_duration_s
+          type: double
+        - name: db_ci_txn_max_duration_s
+          type: double
+        - name: db_ci_wal_cached_count
+          type: long
+        - name: db_ci_wal_count
+          type: long
+        - name: db_ci_write_count
+          type: long
+        - name: db_count
+          type: long
+        - name: db_duration
+          type: double
+        - name: db_duration_s
+          type: double
+        - name: db_main_cached_count
+          type: long
+        - name: db_main_count
+          type: long
+        - name: db_main_duration_s
+          type: double
+        - name: db_main_replica_cached_count
+          type: long
+        - name: db_main_replica_count
+          type: long
+        - name: db_main_replica_duration_s
+          type: double
+        - name: db_main_replica_txn_count
+          type: long
+        - name: db_main_replica_txn_duration_s
+          type: double
+        - name: db_main_replica_txn_max_duration_s
+          type: double
+        - name: db_main_replica_wal_cached_count
+          type: long
+        - name: db_main_replica_wal_count
+          type: long
+        - name: db_main_replica_write_count
+          type: long
+        - name: db_main_txn_count
+          type: long
+        - name: db_main_txn_duration_s
+          type: double
+        - name: db_main_txn_max_duration_s
+          type: double
+        - name: db_main_wal_cached_count
+          type: long
+        - name: db_main_wal_count
+          type: long
+        - name: db_main_write_count
+          type: long
+        - name: db_primary_cached_count
+          type: long
+        - name: db_primary_count
+          type: long
+        - name: db_primary_duration_s
+          type: double
+        - name: db_primary_txn_count
+          type: long
+        - name: db_primary_txn_duration_s
+          type: double
+        - name: db_primary_txn_max_duration_s
+          type: double
+        - name: db_primary_wal_cached_count
+          type: long
+        - name: db_primary_wal_count
+          type: long
+        - name: db_primary_write_count
+          type: long
+        - name: db_replica_cached_count
+          type: long
+        - name: db_replica_count
+          type: long
+        - name: db_replica_duration_s
+          type: double
+        - name: db_replica_txn_count
+          type: long
+        - name: db_replica_txn_duration_s
+          type: double
+        - name: db_replica_txn_max_duration_s
+          type: double
+        - name: db_replica_wal_cached_count
+          type: long
+        - name: db_replica_wal_count
+          type: long
+        - name: db_replica_write_count
+          type: long
+        - name: db_txn_count
+          type: long
+        - name: db_write_count
+          type: long
+        - name: dead
+          type: boolean
+        - name: duration
+          type: double
+        - name: duration_s
+          type: double
+        - name: enqueue_latency_s
+          type: double
+        - name: enqueued_at
+          type: date
+        - name: exception
+          type: group
+          fields:
+            - name: backtrace
+              type: text
+            - name: class
+              type: keyword
+            - name: message
+              type: text
+        - name: exclusive_lock_hold_duration_s
+          type: double
+        - name: exclusive_lock_requested_count
+          type: long
+        - name: exclusive_lock_wait_duration_s
+          type: double
+        - name: extra
+          type: group
+          fields:
+            - name: batched_git_ref_updates_cleanup_scheduler_worker
+              type: group
+              fields:
+                - name: stats
+                  type: group
+                  fields:
+                    - name: total_projects
+                      type: long
+            - name: cells_stale_requests_cleanup_cron_worker
+              type: group
+              fields:
+                - name: removed_count
+                  type: long
+            - name: ci_catalog_resources_process_sync_events_worker
+              type: group
+              fields:
+                - name: consumable_events
+                  type: long
+                - name: estimated_total_events
+                  type: long
+            - name: ci_pipeline_artifacts_expire_artifacts_worker
+              type: group
+              fields:
+                - name: destroyed_pipeline_artifacts_count
+                  type: long
+            - name: ci_unlock_pipelines_in_queue_worker
+              type: group
+              fields:
+                - name: remaining_pending
+                  type: long
+            - name: ci_update_locked_unknown_artifacts_worker
+              type: group
+              fields:
+                - name: locked_count
+                  type: long
+                - name: removed_count
+                  type: long
+            - name: container_expiration_policy_worker
+              type: group
+              fields:
+                - name: cleanup_required_count
+                  type: long
+                - name: cleanup_total_count
+                  type: long
+                - name: cleanup_unfinished_count
+                  type: long
+            - name: expire_build_artifacts_worker
+              type: group
+              fields:
+                - name: destroyed_job_artifacts_count
+                  type: long
+            - name: loose_foreign_keys_ci_pipelines_builds_cleanup_cron_worker
+              type: group
+              fields:
+                - name: stats
+                  type: group
+                  fields:
+                    - name: delete_count
+                      type: long
+                    - name: over_limit
+                      type: boolean
+                    - name: turbo_mode
+                      type: boolean
+                    - name: update_count
+                      type: long
+            - name: loose_foreign_keys_cleanup_worker
+              type: group
+              fields:
+                - name: stats
+                  type: group
+                  fields:
+                    - name: connection
+                      type: keyword
+                    - name: delete_count
+                      type: long
+                    - name: over_limit
+                      type: boolean
+                    - name: turbo_mode
+                      type: boolean
+                    - name: update_count
+                      type: long
+            - name: loose_foreign_keys_merge_request_diff_commit_cleanup_worker
+              type: group
+              fields:
+                - name: stats
+                  type: group
+                  fields:
+                    - name: delete_count
+                      type: long
+                    - name: over_limit
+                      type: boolean
+                    - name: turbo_mode
+                      type: boolean
+                    - name: update_count
+                      type: long
+            - name: namespaces_process_sync_events_worker
+              type: group
+              fields:
+                - name: consumable_events
+                  type: long
+                - name: estimated_total_events
+                  type: long
+                - name: processed_events
+                  type: long
+            - name: object_storage_delete_stale_direct_uploads_worker
+              type: group
+              fields:
+                - name: execution_timeout
+                  type: boolean
+                - name: total_deleted_stale_entries
+                  type: long
+                - name: total_pending_entries
+                  type: long
+            - name: packages_cleanup_delete_orphaned_dependencies_worker
+              type: group
+              fields:
+                - name: deleted_rows_count
+                  type: long
+                - name: last_processed_packages_dependency_id
+                  type: long
+            - name: pages_deactivate_expired_deployments_cron_worker
+              type: group
+              fields:
+                - name: deactivate_expired_pages_deployments
+                  type: group
+                  fields:
+                    - name: deactivated_deployments
+                      type: long
+                    - name: duration
+                      type: double
+            - name: projects_process_sync_events_worker
+              type: group
+              fields:
+                - name: consumable_events
+                  type: long
+                - name: estimated_total_events
+                  type: long
+                - name: processed_events
+                  type: long
+        - name: gitaly_calls
+          type: long
+        - name: gitaly_duration
+          type: long
+        - name: idempotency_key
+          type: keyword
+        - name: jid
+          type: keyword
+        - name: job_size_bytes
+          type: long
+        - name: job_status
+          type: keyword
+        - name: load_balancing_strategy
+          type: keyword
+        - name: mem_bytes
+          type: long
+        - name: mem_mallocs
+          type: long
+        - name: mem_objects
+          type: long
+        - name: mem_total_bytes
+          type: long
+        - name: message
+          type: keyword
+        - name: meta
+          type: group
+          fields:
+            - name: caller_id
+              type: keyword
+            - name: client_id
+              type: keyword
+            - name: feature_category
+              type: keyword
+            - name: project
+              type: keyword
+            - name: gl_user_id
+              type: keyword
+            - name: organization_id
+              type: keyword
+            - name: remote_ip
+              type: ip
+            - name: root_caller_id
+              type: keyword
+            - name: root_namespace
+              type: keyword
+            - name: user
+              type: keyword
+        - name: pid
+          type: long
+        - name: queue
+          type: keyword
+        - name: queue_duration_s
+          type: double
+        - name: queue_namespace
+          type: keyword
+        - name: redis_cache_calls
+          type: long
+        - name: redis_cache_duration_s
+          type: double
+        - name: redis_cache_read_bytes
+          type: long
+        - name: redis_cache_write_bytes
+          type: long
+        - name: redis_calls
+          type: long
+          description: Total number of calls made to Redis.
+        - name: redis_duration_s
+          type: double
+        - name: redis_feature_flag_calls
+          type: long
+        - name: redis_feature_flag_duration_s
+          type: double
+        - name: redis_feature_flag_read_bytes
+          type: long
+        - name: redis_feature_flag_write_bytes
+          type: long
+        - name: redis_queues_calls
+          type: long
+        - name: redis_queues_duration_s
+          type: double
+        - name: redis_queues_metadata_calls
+          type: long
+        - name: redis_queues_metadata_duration_s
+          type: double
+        - name: redis_queues_metadata_read_bytes
+          type: long
+        - name: redis_queues_metadata_write_bytes
+          type: long
+        - name: redis_queues_read_bytes
+          type: long
+        - name: redis_queues_write_bytes
+          type: long
+        - name: redis_rate_limiting_calls
+          type: long
+        - name: redis_rate_limiting_duration_s
+          type: double
+        - name: redis_rate_limiting_read_bytes
+          type: long
+        - name: redis_rate_limiting_write_bytes
+          type: long
+        - name: redis_read_bytes
+          type: long
+        - name: redis_shared_state_calls
+          type: long
+        - name: redis_shared_state_duration_s
+          type: double
+        - name: redis_shared_state_read_bytes
+          type: long
+        - name: redis_shared_state_write_bytes
+          type: long
+        - name: redis_write_bytes
+          type: long
+        - name: retried_at
+          type: date
+        - name: retry
+          type: boolean
+        - name: retry_count
+          type: long
+        - name: retry_long
+          type: long
+        - name: scheduler
+          type: keyword
+        - name: scheduled_at
+          type: date
+        - name: scheduling_latency_s
+          type: double
+        - name: sidekiq_thread_name
+          type: keyword
+        - name: sidekiq_tid
+          type: keyword
+        - name: size_limiter_computed_size_bytes
+          type: long
+        - name: size_limiter_limit_bytes
+          type: long
+        - name: size_limiter_limiter
+          type: keyword
+        - name: size_limiter_safe_bytes
+          type: long
+        - name: size_limiter
+          type: keyword
+        - name: status
+          type: keyword
+        - name: status_expiration
+          type: long
+        - name: store
+          type: keyword
+        - name: target_duration_s
+          type: long
+        - name: target_scheduling_latency_s
+          type: long
+        - name: time
+          type: date
+        - name: trace_propagation_headers
+          type: group
+          fields:
+            - name: baggage
+              type: keyword
+            - name: sentry_trace
+              type: keyword
+        - name: urgency
+          type: keyword
+        - name: version
+          type: long
+        - name: wal_location_sources
+          type: group
+          fields:
+            - name: ci
+              type: keyword
+            - name: main
+              type: keyword
+        - name: worker_data_consistency
+          type: keyword
+        - name: worker_data_consistency_per_db
+          type: group
+          fields:
+            - name: ci
+              type: keyword
+            - name: main
+              type: keyword
+        - name: unique_args
+          type: keyword
+        - name: unique_digest
+          type: keyword
+        - name: unique_expiration
+          type: long
+        - name: unique_strategy
+          type: keyword
+        - name: worker_id
+          type: keyword
     - name: gitaly
       type: group
       fields:

@@ -13,10 +13,22 @@
       type: keyword
       description: |
         The authentication factor.
+    - name: isotimestamp
+      type: date
+      description: ISO8601 timestamp of the event.
     - name: ood_software
       type: keyword
       description: |
         If authentication was denied due to out-of-date software, shows the name of the software.
+    - name: passport_assessment
+      type: group
+      fields:
+        - name: is_supported
+          type: boolean
+          description: If true, the authentication supported Duo Passport. If false, the authentication did not support Duo Passport.
+        - name: reason
+          type: keyword
+          description: Returns 'supported' if is_supported is true. Otherwise, returns a reason on why Duo Passport could not be used for that authentication.
     - name: reason
       type: keyword
       description: |
@@ -29,6 +41,12 @@
       type: keyword
       description: |
         Status of Trusted Endpoint.
+    - name: trusted_session_info
+      type: group
+      fields:
+        - name: trusted_session_uuid
+          type: keyword
+          description: Unique identifier for tracking a trusted session.
     - name: txid
       type: keyword
       description: |
@@ -51,6 +69,9 @@
               type: keyword
               description: |
                 Organization name.
+        - name: epkey
+          type: keyword
+          description: The endpoint's unique identifier. Collected during authentication events.
         - name: flash_version
           type: keyword
           description: |
@@ -134,9 +155,58 @@
           type: flattened
           description: |
             Reports the security agents present on the endpoint as detected by the Duo Device Health app.
+    - name: adaptive_trust_assessments
+      type: group
+      fields:
+        - name: more_secure_auth
+          type: group
+          fields:
+            - name: detected_attack_detectors
+              type: keyword
+              description: List of the risk-based authentication detections found during or after an authentication attempt.
+            - name: features_version
+              type: keyword
+              description: The feature version for the risk-based authentication trust assessment.
+            - name: model_version
+              type: keyword
+              description: The model version for the risk-based authentication trust assessment.
+            - name: policy_enabled
+              type: boolean
+              description: Denotes if risk-based authentication was enabled by the policy under which the trust assessment was evaluated.
+            - name: preview_mode_enabled
+              type: boolean
+            - name: reason
+              type: keyword
+              description: The reason behind the trust assessment level.
+            - name: trust_level
+              type: keyword
+              description: 'The trust assessment level. One of: ERROR, LOW, NORMAL, UNKNOWN, or UNSET.'
+        - name: remember_me
+          type: group
+          fields:
+            - name: features_version
+              type: keyword
+              description: The feature version for the risk-based authentication trust assessment.
+            - name: model_version
+              type: keyword
+              description: The model version for the risk-based authentication trust assessment.
+            - name: policy_enabled
+              type: boolean
+              description: Denotes if risk-based authentication was enabled by the policy under which the trust assessment was evaluated.
+            - name: preview_mode_enabled
+              type: boolean
+            - name: reason
+              type: keyword
+              description: The reason behind the trust assessment level.
+            - name: trust_level
+              type: keyword
+              description: 'The trust assessment level. One of: ERROR, LOW, NORMAL, UNKNOWN, or UNSET.'
     - name: application
       type: group
       fields:
+        - name: destination_name
+          type: keyword
+          description: The dest_app_name value passed in by an OIDC Auth API application.
         - name: key
           type: keyword
           description: |
@@ -152,6 +222,9 @@
           type: ip
           description: |
             The IP address of the authentication device.
+        - name: key
+          type: keyword
+          description: The Duo identifier of the authentication device.
         - name: port
           type: long
           description: |
@@ -218,3 +291,24 @@
           type: keyword
           description: |
             The name of the authentication device.
+    - name: rbfs_triggered_attacks
+      type: group
+      fields:
+        - name: country_code_access
+          type: keyword
+        - name: country_code_auth
+          type: keyword
+        - name: detected_occurrences
+          type: long
+        - name: detector
+          type: keyword
+        - name: shadow_mode
+          type: boolean
+        - name: suppressed
+          type: keyword
+        - name: threshold_occurrences
+          type: long
+        - name: threshold_time_frame
+          type: long
+        - name: unrealistic_travel_velocity
+          type: long

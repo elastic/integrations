@@ -49,7 +49,7 @@ resource "aws_s3_object" "object" {
   key    = "test-endpoint-config.log"
   source = "./files/test-endpoint-config.log"
 
-  depends_on = [aws_sqs_queue.queue]
+  depends_on = [aws_s3_bucket_notification.bucket_notification]
 }
 
 output "queue_url" {

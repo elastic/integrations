@@ -1,0 +1,30 @@
+{
+    "id": "system-cpu-utilization",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[System] CPU Utilization",
+        "tags": [
+            "System"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when the average CPU usage exceeds a threshold.\n// Groups by host.\n// Adjust utilization threshold in the final WHERE clause as needed.\nFROM metrics-system.cpu-*\n| KEEP `host.name`, `system.cpu.total.norm.pct`\n| STATS avg_cpu_util = AVG(`system.cpu.total.norm.pct`), sample_count = COUNT(*) BY `host.name`\n| WHERE sample_count >= 5 AND avg_cpu_util >= 0.85"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

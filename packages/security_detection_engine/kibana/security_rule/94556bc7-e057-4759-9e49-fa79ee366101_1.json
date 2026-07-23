@@ -1,0 +1,83 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects bursts of failed GKE API requests from a single user identity within a five-minute window. Repeated authorization failures across multiple actions can indicate credential stuffing, RBAC probing, or reconnaissance with stolen tokens.",
+        "from": "now-11m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GKE API Request Failure Burst by User",
+        "note": "## Triage and analysis\n\n### Investigating GKE API Request Failure Burst by User\n\nThe rule aggregates failed Kubernetes API calls per `user.email`, source IP, and user agent in five-minute buckets and\nalerts when failures reach ten or more.\n\n### Investigation steps\n\n- Review `Esql.actions` and `Esql.resources` for targeted API operations.\n- Validate whether the identity should exist and whether the source IP is expected.\n- Hunt for later successful calls indicating privilege escalation.\n\n### False positives\n\n- Misconfigured automation or CI jobs with stale credentials may generate bursts; exclude known service accounts.",
+        "query": "from logs-gcp.audit-* metadata _id, _index, _version\n| eval Esql.time_interval = date_trunc(5 minutes, @timestamp)\n| where data_stream.dataset == \"gcp.audit\"\n    and service.name == \"k8s.io\"\n    and event.outcome == \"failure\"\n    and event.type != \"allowed\"\n    and user.email is not null\n    and not to_string(user.email) rlike \"(system:serviceaccount:|system:gke-spiffe-controller|system:kube-scheduler|system:node:).*\"\n| stats\n    Esql.unique_actions = count_distinct(event.action),\n    Esql.failures_count = count(*),\n    Esql.actions = values(event.action),\n    Esql.resources = values(orchestrator.resource.name)\n  by user.email, source.ip, user_agent.original, data_stream.namespace, Esql.time_interval\n| where Esql.failures_count >= 10\n| keep Esql.*, user.email, source.ip, user_agent.original, data_stream.namespace\n",
+        "references": [
+            "https://cloud.google.com/kubernetes-engine/docs/how-to/audit-logging",
+            "https://attack.mitre.org/techniques/T1613/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "94556bc7-e057-4759-9e49-fa79ee366101",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "94556bc7-e057-4759-9e49-fa79ee366101_1",
+    "type": "security-rule"
+}

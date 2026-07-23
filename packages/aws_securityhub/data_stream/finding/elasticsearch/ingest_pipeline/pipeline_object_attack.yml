@@ -1,0 +1,100 @@
+---
+description: Pipeline for processing Attack object.
+# Attack object docs: https://schema.ocsf.io/1.5.0/objects/attack
+processors:
+  - foreach:
+      field: aws_securityhub.finding.attacks
+      if: ctx.aws_securityhub?.finding?.attacks instanceof List
+      processor:
+        append:
+          field: threat.tactic.id
+          value: '{{{_ingest._value.tactic.uid}}}'
+          tag: append_attacks_tactic_uid_into_threat_tactic_id
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.attacks
+      if: ctx.aws_securityhub?.finding?.attacks instanceof List
+      processor:
+        append:
+          field: threat.tactic.name
+          value: '{{{_ingest._value.tactic.name}}}'
+          tag: append_attacks_tactic_name_into_threat_tactic_name
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.attacks
+      if: ctx.aws_securityhub?.finding?.attacks instanceof List
+      processor:
+        append:
+          field: threat.tactic.reference
+          value: '{{{_ingest._value.tactic.src_url}}}'
+          tag: append_attacks_tactic_src_url_into_threat_tactic_reference
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.attacks
+      if: ctx.aws_securityhub?.finding?.attacks instanceof List
+      processor:
+        append:
+          field: threat.technique.id
+          value: '{{{_ingest._value.technique.uid}}}'
+          tag: append_attacks_technique_uid_into_threat_technique_id
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.attacks
+      if: ctx.aws_securityhub?.finding?.attacks instanceof List
+      processor:
+        append:
+          field: threat.technique.name
+          value: '{{{_ingest._value.technique.name}}}'
+          tag: append_attacks_technique_name_into_threat_technique_name
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.attacks
+      if: ctx.aws_securityhub?.finding?.attacks instanceof List
+      processor:
+        append:
+          field: threat.technique.reference
+          value: '{{{_ingest._value.technique.src_url}}}'
+          tag: append_attacks_technique_src_url_into_threat_technique_reference
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.attacks
+      if: ctx.aws_securityhub?.finding?.attacks instanceof List
+      processor:
+        append:
+          field: threat.technique.subtechnique.id
+          value: '{{{_ingest._value.sub_technique.uid}}}'
+          tag: append_attacks_sub_technique_uid_into_threat_technique_subtechnique_id
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.attacks
+      if: ctx.aws_securityhub?.finding?.attacks instanceof List
+      processor:
+        append:
+          field: threat.technique.subtechnique.name
+          value: '{{{_ingest._value.sub_technique.name}}}'
+          tag: append_attacks_sub_technique_name_into_threat_technique_subtechnique_name
+          allow_duplicates: false
+  - foreach:
+      field: aws_securityhub.finding.attacks
+      if: ctx.aws_securityhub?.finding?.attacks instanceof List
+      processor:
+        append:
+          field: threat.technique.subtechnique.reference
+          value: '{{{_ingest._value.sub_technique.src_url}}}'
+          tag: append_attacks_sub_technique_src_url_into_threat_technique_subtechnique_reference
+          allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,157 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the Foxmail client spawning a child process with arguments pointing to user-profile AppData paths or remote shares. This may indicate exploitation of a Foxmail vulnerability for initial access and execution via a malicious email.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.args",
+                "process.parent.entity_id",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Foxmail Exploitation",
+        "note": "## Triage and analysis\n\n### Investigating Potential Foxmail Exploitation\n\n#### Possible investigation steps\n\n- What exact Foxmail child execution did the alert capture?\n  - Why: Foxmail exploit attempts execute code in the user's client context; the child process and path argument distinguish payload execution from routine file handling.\n  - Focus: `process.parent.name`, `process.parent.executable`, child `process.executable`, `process.command_line`, and `process.args`.\n  - Implication: escalate when Foxmail.exe launches a script host, LOLBin, interpreter, archive utility, installer, or payload from a user-writable or remote-share path; lower suspicion only when the child is a recognized signed Foxmail component with the expected path, argument pattern, and no contradictory process evidence.\n\n- Does the Foxmail parent match the installed mail client and user launch context?\n  - Focus: `process.parent.executable`, `process.parent.command_line`, `process.parent.code_signature.subject_name`, and `process.parent.code_signature.trusted`.\n  - Implication: escalate when Foxmail runs from a user-writable or portable path, has an unexpected signer or trust state, or appears under an abnormal launch chain; lower suspicion when parent identity and user context match a recognized installed Foxmail workflow. Parent identity never clears the child behavior by itself.\n\n- What does the child command line say it was trying to execute or open?\n  - Why: the user-writable or remote path string in `process.args` is the rule-specific payload anchor; interpret it before relying on broader pivots.\n  - Focus: `process.executable`, `process.command_line`, `process.args`, and `process.code_signature.subject_name`. !{investigate{\"description\":\"\",\"label\":\"Events for the Foxmail child process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the child runs executable or scriptable content from a user-writable path, mounted archive, or remote share, especially through a LOLBin or interpreter; lower suspicion when signed child, arguments, and path pattern match a locally confirmed Foxmail file-handling action.\n\n- Did the Foxmail child launch descendants that change impact or confirm execution?\n  - Focus: process starts on the same `host.id` where `process.parent.entity_id` matches the child `process.entity_id`, or `process.parent.pid` matches `process.pid` in the alert window; review descendant `process.executable` and `process.command_line`. !{investigate{\"description\":\"\",\"label\":\"Child processes launched by the Foxmail child\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: prefer entity match; use PID only inside the alert window.\n  - Implication: escalate when descendants include payload staging, scripting, installers, persistence tooling, or commands unrelated to Foxmail; lower suspicion when there are no descendants and the child command from the prior step already matches a recognized helper workflow.\n\n- What delivery clue is embedded in the user-writable or remote path argument?\n  - Focus: file name, extension, UNC host/share, and directory pattern visible in `process.args`, scoped to `host.name` and `user.id`.\n  - Implication: escalate or broaden when the path suggests executable content, a deceptive attachment-like name, or a remote share that can execute content without local provenance; lower suspicion only as corroboration when the path shape fits a recognized Foxmail file-handling workflow supported by child identity and descendant evidence.\n\n- Does related activity history show the same child/path pattern beyond this process?\n  - Focus: related records for the same `user.id`; compare child `process.executable`, parent-child pair, and distinctive `process.args` fragments. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: use same-asset related records to separate one user's repeat workflow from multiple users on one host. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden when the same child binary, remote share, or path fragment appears on unrelated users or hosts; keep response local when related records are absent and local process evidence already proves one recognized workflow.\n\n- Based on the Foxmail parent, child command, argument path, descendants, and related activity, what disposition is supported?\n  - Escalate for suspicious child intent, unexplained descendants, or the same pattern on multiple users or hosts; close only when process evidence and supported recovery prove one exact recognized Foxmail workflow on this host; preserve and escalate mixed, missing, or contradictory evidence, using outside confirmation only to corroborate details telemetry cannot prove.\n\n### False positive analysis\n\n- Signed Foxmail child processes used for update or file handling and authorized internal tests are plausible benign candidates, but the label is not clearance. Confirm parent path/signer, child path/signer, `process.args`, `host.id`, and `user.id` all align with one workflow or exact test file/share, and verify no suspicious descendants; use prior alerts only to tune a durable exception, not to close the single alert by recurrence alone.\n- If test records are unavailable, use the process timeline, path shape, and user/host scope as fallback corroboration; do not close on owner confirmation alone when process evidence remains unexplained.\n- Before creating an exception, require stable anchors such as `process.parent.executable`, `process.executable`, `process.code_signature.subject_name`, the user-writable or remote path pattern in `process.args`, `host.id`, and `user.id`. Avoid exceptions on \"Foxmail.exe\" alone, temp-path strings alone, or `process.name` alone because exploit chains and benign components can share those surface features.\n\n### Response and remediation\n\n- If confirmed benign, reverse any temporary containment and document the recognized Foxmail component, file-handling, or test workflow, including the expected parent-child pair, signer, path pattern, `host.id`, and `user.id`. Create a narrow exception only when those anchors are stable enough to avoid suppressing lookalike exploit chains.\n- If suspicious but unconfirmed, preserve the alert record, parent and child command lines, `process.entity_id`, `process.pid`, `process.args`, referenced user-writable or remote paths, descendant process identifiers, and case records that identify the delivery path before containment. Apply reversible containment such as temporary quarantine of the referenced artifact, temporary outbound restrictions for the affected host when remote retrieval is indicated, or heightened monitoring on the affected `host.id` and `user.id`; escalate to host isolation only if follow-on execution, staging, or wider compromise appears and the host role can tolerate it.\n- If confirmed malicious, isolate the host and terminate the Foxmail child or descendant payloads only after recording the relevant process identifiers, command lines, path strings, and delivery-path evidence; if direct endpoint response is unavailable, escalate with those preserved artifacts to the team that can act. Quarantine the referenced attachment or payload, block confirmed malicious indicators, and review other recipients, hosts, and users for the same attachment, remote path, or child-process pattern before deleting evidence or resetting accounts.\n- Eradicate only the payloads, persistence mechanisms, or configuration changes identified in the same chain after scoping affected recipients and hosts. Remediate the message source, attachment workflow, or remote share that led to the Foxmail launch.\n- Post-incident hardening: update Foxmail to a current vendor-fixed release, retain endpoint process telemetry and any mail or artifact telemetry used in this case, and document adjacent exploit-chain findings for the detection engineering team.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n process.parent.name : \"Foxmail.exe\" and process.args : (\"?:\\\\Users\\\\*\\\\AppData\\\\*\", \"\\\\\\\\*\")\n",
+        "references": [
+            "https://mp.weixin.qq.com/s/F8hNyESBdKhwXkQPgtGpew"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "2c6a6acf-0dcb-404d-89fb-6b0327294cfa",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Elastic Endgame",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1203",
+                        "name": "Exploitation for Client Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1203/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.001",
+                                "name": "Spearphishing Attachment",
+                                "reference": "https://attack.mitre.org/techniques/T1566/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 209
+    },
+    "id": "2c6a6acf-0dcb-404d-89fb-6b0327294cfa_209",
+    "type": "security-rule"
+}

@@ -1,0 +1,85 @@
+# Test that a 503 Service Unavailable response from the SSLBL API results in
+# an indexed error event and no ja3_fingerprints data is collected.
+#
+# The mock returns 503 for all requests. The CEL program treats non-200
+# responses as errors and emits a single error event, stopping collection
+# until the next interval.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock AbuseCH API server.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} abusech-mock
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Wait for exactly 1 document (the error event). Use a confirm duration shorter
+# than the poll interval (30s) to verify no additional data events arrive.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# The single document should be an error event.
+exec jq '[.hits.hits[]._source | select(.error != null)] | length' got_docs.json
+stdout '^1$'
+
+# Verify the error code matches the 503 response.
+exec jq -r '.hits.hits[0]._source.error.code' got_docs.json
+stdout '^503$'
+
+# No ja3_fingerprints data events should be present.
+exec jq '[.hits.hits[]._source | select(.abusech.ja3_fingerprints != null)] | length' got_docs.json
+stdout '^0$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down abusech-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  auth_key: test_auth_key
+data_stream:
+  vars:
+    url: http://abusech-mock:8080/blacklist/ja3_fingerprints.csv
+    interval: 30s
+    preserve_original_event: true
+    enable_request_tracer: false
+-- abusech-mock/docker-compose.yml --
+version: '2.3'
+services:
+  abusech-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: abusech-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- abusech-mock/config.yml --
+rules:
+  # Simulate a service outage: all requests return 503.
+  - path: /blacklist/ja3_fingerprints.csv
+    methods: [GET]
+    responses:
+      - status_code: 503
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":"Service Unavailable","message":"The service is temporarily unavailable. Please try again later."}

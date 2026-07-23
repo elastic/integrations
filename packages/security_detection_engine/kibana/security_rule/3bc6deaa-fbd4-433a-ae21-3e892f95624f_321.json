@@ -1,0 +1,162 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Austin Songer"
+        ],
+        "description": "Identifies a copy operation of the Active Directory Domain Database (ntds.dit) or Security Account Manager (SAM) files. Those files contain sensitive information including hashed domain and/or local credentials.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.name",
+                "user.id",
+                "process.entity_id",
+                "process.executable",
+                "process.command_line",
+                "process.pe.original_file_name",
+                "process.parent.entity_id",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.code_signature.subject_name",
+                "process.Ext.authentication_id",
+                "process.Ext.session_info.logon_type",
+                "process.Ext.token.integrity_level_name"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "max_signals": 33,
+        "name": "NTDS or SAM Database File Copied",
+        "note": "## Triage and analysis\n\n### Investigating NTDS or SAM Database File Copied\n\n#### Possible investigation steps\n\n- What protected store did the alerting command try to copy, and where was it sent?\n  - Focus: `process.command_line` for NTDS vs SAM, direct path vs \"GLOBALROOT\\Device\\HarddiskVolumeShadowCopy\" or \"esentutl.exe /y /vss /d\", and a local, UNC, archive, or temp-like destination.\n  - Implication: escalate when the command copies NTDS, SAM, or a VSS-backed hive to a user-writable, remote, or archive path, and treat NTDS as domain credential exposure and SAM as local credential exposure; lower suspicion only when the exact source, destination, and copy method fit one recognized backup, repair, or authorized forensic collection. Identity alone never clears the copy.\n\n- If PowerShell performed the copy, what script content produced it?\n  - Focus: if PowerShell script-block telemetry is available, recover events with `host.id` + `process.pid` in a tight alert window; reconstruct split blocks with `powershell.file.script_block_id`, `powershell.sequence`, and `powershell.total`, then read `powershell.file.script_block_text`. Missing PowerShell telemetry is unresolved, not benign.\n  - Implication: escalate when the reconstructed script copies NTDS, SAM, or VSS paths, loops shadow copies, hides destinations, or chains archive or transfer logic; lower suspicion when script content matches the same recognized backup, repair, or forensic workflow as the alert command.\n\n- Is the copier the expected binary in the expected launch chain?\n  - Focus: `process.executable`, `process.pe.original_file_name`, `process.code_signature.subject_name`, `process.code_signature.trusted`, and `process.parent.executable`.\n  - Implication: escalate when the copier is renamed, unsigned or unexpectedly signed, runs from a user-writable path, or is launched by an unusual shell, script, service, or remote tool; lower suspicion when the same binary identity and parent chain match the workflow proven in the command line.\n\n- Does the user, privilege, and session context fit protected credential-store access?\n  - Focus: `user.id`, `process.Ext.session_info.logon_type`, `process.Ext.token.integrity_level_name`, and `process.Ext.authentication_id`. !{investigate{\"description\":\"\",\"label\":\"Authentication events for the linked session\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TargetLogonId\",\"queryType\":\"phrase\",\"value\":\"{{process.Ext.authentication_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4624\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: if Windows Security authentication logs are available, recover session origin by matching `process.Ext.authentication_id` to same-host `winlog.event_data.TargetLogonId`, then read `source.ip` and `winlog.event_data.AuthenticationPackageName`. Missing authentication telemetry is unresolved, not benign.\n  - Implication: escalate when the copy runs under an unexpected admin, service, machine, remote-interactive, or high-integrity context, or when recovered origin evidence conflicts with the same backup, repair, or forensic pattern; lower suspicion only when account, session type, and origin all match that pattern.\n\n- Do recovered artifacts or follow-on activity show staging or transfer?\n  - Focus: if endpoint file telemetry is available, recover file events for the copier and children; read `file.path` and `file.name`. Missing file telemetry is unresolved, not benign. !{investigate{\"description\":\"\",\"label\":\"File activity for the alerting process and children\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: review child starts where `process.parent.entity_id` matches the copier, especially `process.command_line` and `process.executable`; if endpoint network telemetry is available, recover connections for the copier and children, then read `destination.ip`, `destination.port`, and `network.direction`. Missing network telemetry is unresolved, not benign. !{investigate{\"description\":\"\",\"label\":\"Child processes of the copier\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}} !{investigate{\"description\":\"\",\"label\":\"Network activity for the alerting process and children\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when copied hives, \"ntds.dit\", SAM exports, archives, child archivers, share-copy tools, upload utilities, or outbound connections reuse the copied store or destination; absence of recovered artifacts or connections cannot close the alert by itself.\n\n- If local evidence is unrecognized, is this copy part of a VSS-to-archive credential-access chain?\n  - Focus: related alerts for `user.id` showing shadow-copy creation, credential dumping, archiving, privilege escalation, lateral movement, or the same command/store pattern. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: compare `host.id` history for the same store or destination pattern; this rule catches the copy, so earlier shadow-copy or backup-service activity changes scope. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope when related evidence shows shadow-copy creation before the copy or archiving/transfer after it; do not close while the current copy evidence remains unresolved.\n\n- Escalate on an unrecognized NTDS, SAM, or VSS copy to a staging path, abnormal copier or parent, mismatched session, recovered script/artifact/transfer evidence, or a VSS-to-archive chain; close only when source, destination, copier, session, and recovered evidence all match one backup, repair, or authorized forensic/IR pattern; preserve and escalate when evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Backup, disaster-recovery, repair, and authorized forensic/IR collection can legitimately copy NTDS, SAM, or VSS-backed hives. Confirm by aligning identity (`process.executable`, `process.code_signature.subject_name`, `process.parent.executable`), intent (bounded `process.command_line` source/destination), and scope (`user.id`, `host.id`, recovered artifact destination, and recovered session origin). If organizational records are unavailable, close only when telemetry proves the same identity, command, destination, artifact, session, `user.id`, and `host.id` pattern; otherwise preserve and escalate.\n- Build exceptions only from the minimum confirmed workflow pattern: stable `process.executable` or `process.code_signature.subject_name`, `process.parent.executable`, bounded `process.command_line` source/destination, `user.id`, and `host.id`. Avoid exceptions on utility name, copied store name, or destination family alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document the evidence that proved the workflow: copier identity, parent chain, command source/destination, recovered artifact destination, `user.id`, `host.id`, and recovered session origin. Create an exception only after a tuning review confirms the same stable workflow pattern; do not suppress on one partial match.\n- If suspicious but unconfirmed, preserve the alert, Timeline or query results, `process.entity_id` or `process.pid` + `host.id` + alert time, `process.command_line`, `process.parent.executable`, recovered copied-store paths, archive names, destination shares, transfer destinations, and recovered session-origin evidence before containment or cleanup.\n- Apply reversible containment next: restrict the destination share, block confirmed transfer destinations, heighten monitoring for the affected `host.id` and `user.id`, or isolate the endpoint only after weighing tier-0 and production impact.\n- If malicious activity is confirmed, isolate the host or contain the account according to the evidence, then terminate the copy, archive, or transfer process only after preserving `process.entity_id`, `process.parent.entity_id`, command lines, copied-store locations, and destination indicators.\n- For confirmed NTDS copying, activate the Active Directory compromise response plan and begin credential hygiene for affected administrative tiers. For confirmed SAM copying, scope local-account and service-account exposure on the affected endpoint or server.\n- After evidence export and scoping, eradicate only copied databases or hives, archives, shadow-copy artifacts, and staging utilities identified during investigation, then remediate the privilege path or access vector that enabled the copy.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  (\n    ((?process.pe.original_file_name in (\"Cmd.Exe\", \"PowerShell.EXE\", \"XCOPY.EXE\") or process.name : (\"Cmd.Exe\", \"PowerShell.EXE\", \"XCOPY.EXE\")) and\n       process.args : (\"copy\", \"xcopy\", \"Copy-Item\", \"move\", \"cp\", \"mv\")\n    ) or\n    ((?process.pe.original_file_name : \"esentutl.exe\" or process.name : \"esentutl.exe\") and process.args : (\"*/y*\", \"*/vss*\", \"*/d*\"))\n  ) and\n  process.command_line : (\"*\\\\ntds.dit*\", \"*\\\\config\\\\SAM*\", \"*\\\\*\\\\GLOBALROOT\\\\Device\\\\HarddiskVolumeShadowCopy*\\\\*\", \"*/system32/config/SAM*\")\n",
+        "references": [
+            "https://thedfirreport.com/2020/11/23/pysa-mespinoza-ransomware/",
+            "https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1003.002/T1003.002.md#atomic-test-3---esentutlexe-sam-copy",
+            "https://www.elastic.co/security-labs/detect-credential-access",
+            "https://www.elastic.co/security-labs/siestagraph-new-implant-uncovered-in-asean-member-foreign-ministry"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "3bc6deaa-fbd4-433a-ae21-3e892f95624f",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: SentinelOne",
+            "Data Source: Sysmon",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.002",
+                                "name": "Security Account Manager",
+                                "reference": "https://attack.mitre.org/techniques/T1003/002/"
+                            },
+                            {
+                                "id": "T1003.003",
+                                "name": "NTDS",
+                                "reference": "https://attack.mitre.org/techniques/T1003/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 321
+    },
+    "id": "3bc6deaa-fbd4-433a-ae21-3e892f95624f_321",
+    "type": "security-rule"
+}

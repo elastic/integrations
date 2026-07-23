@@ -41,11 +41,11 @@ program: |
       "Header": {
         "x-apikey": [state.access_token],
         "x-tool": ["Elastic"],
-        "User-Agent": ["v0.7.0"], // Keep this in sync with 'version' in package level manifest.yml.
+        "User-Agent": ["v1.0.0"], // Keep this in sync with 'version' in package level manifest.yml.
       }
     }).do_request().as(resp, resp.StatusCode == 200 ?
       resp.Body.decode_json().as(body, {
-      "events": ( has(body.data) && size(body.data) > 0 ?
+      "events": ( has(body.data) && body.data != null && size(body.data) > 0 ?
         body.data.map(e, {
           "message": e.encode_json()
         })

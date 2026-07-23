@@ -1,0 +1,195 @@
+inputs:
+  - data_stream:
+      namespace: ep
+    meta:
+      package:
+        name: microsoft_defender_cloud
+    name: test-default-microsoft_defender_cloud
+    streams:
+      - auth.oauth2:
+          client.id: ${SECRET_0}
+          client.secret: ${SECRET_1}
+          scopes: https://management.azure.com/.default
+          token_url: https://login.microsoftonline.com/efgh/oauth2/v2.0/token
+        config_version: 2
+        data_stream:
+          dataset: microsoft_defender_cloud.assessment
+          type: logs
+        interval: 24h
+        max_executions: 1000
+        processors:
+          - drop_event:
+              when:
+                equals:
+                  message: retry
+        program: |-
+          (
+            state.?worklist[0].hasValue() ?
+              {
+                "worklist": state.worklist,
+                ?"assessment_next_url": state.?assessment_next_url
+              }
+            :
+              has(state.scope) ?
+                (request("GET",
+                  state.?assessment_next_url.orValue(
+                    state.url.trim_right("/") + state.scope + "/providers/Microsoft.Security/assessments?" + {
+                      "api-version": [state.assessment_api_version],
+                    }.format_query()
+                  )
+                ).do_request().as(resp, resp.StatusCode == 200 ?
+                  resp.Body.decode_json().as(body, {
+                    "worklist": body.value,
+                    ?"assessment_next_url": body.?nextLink
+                  })
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "GET " + state.url.trim_right("/") + state.scope + " :" + (
+                          size(resp.Body) != 0 ?
+                            string(resp.Body)
+                          :
+                            string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                        ),
+                      },
+                    },
+                    "want_more": false,
+                    "assessment_api_version": state.assessment_api_version,
+                    "sub_assessment_api_version": state.sub_assessment_api_version,
+                    "scope": state.scope,
+                  }
+                ))
+              :
+                {
+                  "events": {
+                    "error": {
+                      "message": "A request scope is missing. Please provide a 'Subscription ID' or 'Management Group Name' while configuring",
+                    },
+                  },
+                  "want_more": false,
+                  "assessment_api_version": state.assessment_api_version,
+                  "sub_assessment_api_version": state.sub_assessment_api_version,
+                  "scope": state.scope,
+                }
+          ).as(work,
+            has(work.events) ? state : // Exit early due to GET failure.
+              work.?worklist[0].hasValue() ?
+                (work.?worklist[0].properties.additionalData.subAssessmentsLink.hasValue() ?
+                  request("GET",
+                    state.?subassessment_next_url.orValue(
+                      state.url.trim_right("/") + work.worklist[0].properties.additionalData.subAssessmentsLink + "?" + {
+                        "api-version": [state.sub_assessment_api_version],
+                      }.format_query()
+                    )
+                  ).do_request().as(resp, resp.StatusCode == 200 ?
+                    resp.Body.decode_json().as(body, {
+                      "events": body.?value[0].hasValue() ?
+                        body.value.map(e, {
+                          "message": work.worklist[0].with({
+                            "properties": {
+                              "additionalData": {
+                                "subAssessment": e
+                              }
+                            }
+                          }).encode_json(),
+                        })
+                      :
+                        (
+                          has(state.subassessment_next_url) ?
+                            [{"message": "retry"}]
+                          :
+                            [{
+                              "message": work.worklist[0].encode_json(),
+                            }]
+                        ),
+                      ?"worklist": has(body.nextLink) ?
+                        optional.of(work.worklist)
+                      :
+                        tail(work.worklist)[?0].hasValue() ? optional.of(tail(work.worklist)) : optional.none(),
+                      "want_more": (tail(work.worklist)[?0].hasValue()) || has(work.assessment_next_url) || has(body.nextLink),
+                      ?"assessment_next_url": work.?assessment_next_url,
+                      ?"subassessment_next_url": body.?nextLink,
+                      "assessment_api_version": state.assessment_api_version,
+                      "sub_assessment_api_version": state.sub_assessment_api_version,
+                      "scope": state.scope,
+                    })
+                  :
+                    {
+                      "events": {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET " + state.url.trim_right("/") + work.worklist[0].properties.additionalData.subAssessmentsLink + " :" + (
+                            size(resp.Body) != 0 ?
+                              string(resp.Body)
+                            :
+                              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                          ),
+                        },
+                      },
+                      "want_more": false,
+                      "assessment_api_version": state.assessment_api_version,
+                      "sub_assessment_api_version": state.sub_assessment_api_version,
+                      "scope": state.scope,
+                    }
+                  )
+                :
+                  {
+                    "events": [{
+                      "message": work.worklist[0].encode_json(),
+                    }],
+                    ?"worklist": (tail(work.worklist)[?0].hasValue()) ? optional.of(tail(work.worklist)) : optional.none(),
+                    "want_more": (tail(work.worklist)[?0].hasValue()) || has(work.assessment_next_url),
+                    ?"assessment_next_url": work.?assessment_next_url,
+                    "assessment_api_version": state.assessment_api_version,
+                    "sub_assessment_api_version": state.sub_assessment_api_version,
+                    "scope": state.scope,
+                  }
+                )
+              :
+                {
+                  "events": [],
+                  "want_more": false,
+                  "assessment_api_version": state.assessment_api_version,
+                  "sub_assessment_api_version": state.sub_assessment_api_version,
+                  "scope": state.scope,
+                }
+          )
+        publisher_pipeline.disable_host: true
+        redact:
+          fields: null
+        resource.ssl: null
+        resource.timeout: 120s
+        resource.tracer:
+          enabled: false
+          filename: ../../logs/cel/http-request-trace-*.ndjson
+          maxbackups: 5
+        resource.url: https://management.azure.com
+        state:
+          assessment_api_version: '2021-06-01'
+          sub_assessment_api_version: 2019-01-01-preview
+        tags:
+          - forwarded
+          - microsoft_defender_cloud-assessment
+    type: cel
+    use_output: default
+output_permissions:
+  default:
+    _elastic_agent_checks:
+      cluster:
+        - monitor
+    _elastic_agent_monitoring:
+      indices: []
+    uuid-for-permissions-on-related-indices:
+      indices:
+        - names:
+            - logs-microsoft_defender_cloud.assessment-ep
+          privileges:
+            - auto_configure
+            - create_doc
+secret_references:
+    - {}
+    - {}

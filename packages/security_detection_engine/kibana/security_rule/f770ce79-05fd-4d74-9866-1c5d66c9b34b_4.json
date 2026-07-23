@@ -1,0 +1,84 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies PowerShell script blocks linked to multiple distinct PowerShell detections via the same ScriptBlock ID, indicating compound suspicious behavior. Attackers often chain obfuscation, decoding, and execution within a single script block.",
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "Esql.script_block_id",
+                "Esql._id_values",
+                "Esql.kibana_alert_rule_name_values",
+                "Esql.kibana_alert_rule_name_count_distinct"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Malicious PowerShell Based on Alert Correlation",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This guide was created by humans with the assistance of generative AI. While its contents have been manually curated to include the most valuable information, always validate assumptions and adjust procedures to match your internal runbooks and incident triage and response policies.\n\n### Investigating Potential Malicious PowerShell Based on Alert Correlation\n\nThis alert groups multiple PowerShell-related detections that reference the same ScriptBlock identifier. When several independent detections fire on a single script block, it often indicates a single execution chain combining multiple suspicious behaviors. Treat the contributing alerts as the primary evidence and use this correlation to prioritize investigation and scoping.\n\nInvestigation goals:\n- Identify affected endpoints and users by pivoting to the contributing alerts.\n- Recover the complete script content associated with the ScriptBlock identifier and understand its intent.\n- Identify follow-on behavior (process, network, persistence) and scope the activity across the environment.\n\n#### Key alert fields to review\n\n- `Esql.script_block_id`: The ScriptBlock identifier used to correlate multiple alerts.\n- `Esql.kibana_alert_rule_name_count_distinct`: The number of distinct PowerShell-related rule names that contributed to the correlation.\n- `Esql.kibana_alert_rule_name_values`: The contributing rule names; use this list to quickly understand what detection logic was triggered.\n- `Esql._id_values`: The contributing alert document IDs; pivot to these source alerts for full context and supporting evidence.\n\n#### Possible investigation steps\n\n- Understand what drove the correlation:\n  - Review `Esql.kibana_alert_rule_name_count_distinct` to gauge overall confidence and urgency.\n  - Review `Esql.kibana_alert_rule_name_values` and group the contributing detections by behavior (for example, obfuscation/encoding, suspicious execution, network retrieval, or persistence-related activity). Use this grouping to decide what evidence is most important to validate first.\n\n- Pivot to the contributing alerts and capture execution context:\n  - Use `Esql._id_values` to open each contributing alert and collect the affected host and user context, along with the earliest and latest timestamps across the set.\n  - Confirm the contributing alerts represent the same ScriptBlock ID and are not unrelated alerts that happen to share similar message content.\n  - Identify whether the activity is limited to a single endpoint or appears on multiple endpoints. Multiple endpoints can indicate script reuse, distribution, or remote execution.\n\n- Reconstruct the full script block content:\n  - Using `Esql.script_block_id`, locate all available records (alerts and/or underlying telemetry referenced by the contributing alerts) tied to the same identifier.\n  - If the script content is split across multiple fragments, reconstruct it in the correct order before assessing intent.\n  - Identify any decoded/deobfuscated output that the script generates during execution and capture it as evidence for scoping.\n\n- Assess intent and capability based on the recovered script:\n  - Look for evidence of staged execution, such as multiple layers of decoding, dynamic code generation, or invocation of additional code.\n  - Identify indicators that can be used for scoping (for example, external destinations, file locations, created services, or suspicious child process activity referenced by the contributing alerts).\n\n- Correlate with adjacent activity during the same timeframe:\n  - Process activity: check for unusual parent-child relationships involving PowerShell and unexpected child processes following the script block execution.\n  - Network activity: review outbound connections and DNS activity that align with the execution window, especially first-time or rare destinations.\n  - File and registry activity: look for payload staging, configuration changes, or persistence artifacts created near the execution window.\n  - Authentication activity: review for suspicious logons or account changes that coincide with the script execution, especially if activity spans multiple endpoints.\n\n- Scope and hunt for additional occurrences:\n  - Search for other alerts containing the same `Esql.script_block_id` to determine if the script was reused or executed repeatedly.\n  - Use indicators and behaviors observed in the contributing alerts to identify related activity in other alerts and telemetry sources, and establish first-seen/last-seen boundaries.\n\n### False positive analysis\n\n- Legitimate administrative automation can produce multiple detections if it uses dynamic script generation, embedded encoded content, or downloads content at runtime. Validate whether the affected hosts, users, and timing align with an approved maintenance activity.\n- If the same ScriptBlock content repeatedly maps to a known benign workflow, document the expected behavior and tune upstream detections to better distinguish that workflow, rather than suppressing this correlation rule.\n\n### Response and remediation\n\n- If the activity is confirmed or strongly suspected to be malicious:\n  - Contain impacted endpoints to prevent additional execution and follow-on actions.\n  - Restrict, reset, or rotate credentials for involved accounts as appropriate, especially for privileged or shared accounts.\n  - Remove identified artifacts and persistence mechanisms (for example, suspicious services or dropped binaries) and remediate any affected systems.\n  - Block or monitor indicators identified from the contributing alerts (external destinations, file locations, or other observable artifacts) to prevent reinfection and support hunting.\n\n- Validation and recovery:\n  - Use `Esql.script_block_id` and the contributing alert set in `Esql._id_values` to verify that the activity has ceased and to identify any additional impacted endpoints.\n  - Continue monitoring for recurrence of the same ScriptBlock ID or the contributing behaviors to confirm remediation effectiveness.\n\n- Post-incident:\n  - Preserve the recovered script content and the full set of contributing alerts as evidence.\n  - Identify and address the initial execution mechanism indicated by the contributing alerts and improve preventative controls and logging coverage to reduce recurrence.\n",
+        "query": "from .alerts-security.* metadata _id\n\n// Filter for PowerShell related alerts\n| where kibana.alert.rule.name like \"*PowerShell*\"\n\n// as alerts don't have non-ECS fields, parse the script block ID using grok\n| grok message \"ScriptBlock ID: (?<Esql.script_block_id>.+)\"\n| where Esql.script_block_id is not null\n\n// keep relevant fields for further processing\n| keep kibana.alert.rule.name, Esql.script_block_id, _id\n\n// count distinct alerts and filter for matches above the threshold\n| stats\n    Esql.kibana_alert_rule_name_count_distinct = count_distinct(kibana.alert.rule.name),\n    Esql.kibana_alert_rule_name_values = values(kibana.alert.rule.name),\n    Esql._id_values = values(_id)\n  by Esql.script_block_id\n\n// Apply detection threshold\n| where Esql.kibana_alert_rule_name_count_distinct >= 5\n",
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql._id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.kibana_alert_rule_name_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.kibana_alert_rule_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.script_block_id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "f770ce79-05fd-4d74-9866-1c5d66c9b34b",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Rule Type: Higher-Order Rule",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 4
+    },
+    "id": "f770ce79-05fd-4d74-9866-1c5d66c9b34b_4",
+    "type": "security-rule"
+}

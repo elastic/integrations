@@ -1,0 +1,456 @@
+dashboards:
+  - id: ibmmq_otel-error-analysis
+    name: '[IBM MQ OTel] Error Analysis'
+    minimum_kibana_version: '8.18.0'
+    description: >-
+      Comprehensive error monitoring for IBM MQ queue managers covering all failed
+      API operations, transaction rollbacks, expired messages, and FDC file generation.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+    filters:
+      - field: data_stream.dataset
+        equals: ibmmq.otel
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: ibmmq_otel-overview
+            - label: Message Traffic
+              dashboard: ibmmq_otel-message-traffic
+            - label: Error Analysis
+              dashboard: ibmmq_otel-error-analysis
+            - label: Resources & Performance
+              dashboard: ibmmq_otel-resources
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [IBM MQ OTel] Error Analysis
+
+            This dashboard monitors all IBM MQ error signals:
+            - Core messaging failures (put, get, browse)
+            - Connection and object access failures
+            - Pub/sub and subscription errors
+            - Administrative operation failures
+            - Transaction rollback rates vs commits
+            - Expired messages and FDC file generation
+
+      # ─── KPI Row 1 ────────────────────────────────────────────────────
+      - title: Failed Put Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              f_put = SUM(RATE(ibmmq_qmgr_failed_mqput_total)),
+              f_put1 = SUM(RATE(ibmmq_qmgr_failed_mqput1_total))
+            - EVAL failed_put_rate = COALESCE(f_put, 0) + COALESCE(f_put1, 0)
+          primary:
+            field: failed_put_rate
+            label: Failed Puts
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: Failed Get Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              f_get = SUM(RATE(ibmmq_qmgr_failed_mqget_total)),
+              f_browse = SUM(RATE(ibmmq_qmgr_failed_browse_total))
+            - EVAL failed_get_rate = COALESCE(f_get, 0) + COALESCE(f_browse, 0)
+          primary:
+            field: failed_get_rate
+            label: Failed Gets
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: Failed Connection Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_failed_mqconn_mqconnx_total IS NOT NULL
+            - STATS failed_conn = SUM(RATE(ibmmq_qmgr_failed_mqconn_mqconnx_total))
+          primary:
+            field: failed_conn
+            label: Failed Connects
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: Rollback Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_rollback_total IS NOT NULL
+            - STATS rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total))
+          primary:
+            field: rollback_rate
+            label: Rollbacks
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      # ─── KPI Row 2 ────────────────────────────────────────────────────
+      - title: Expired Messages Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_expired_message_total IS NOT NULL
+            - STATS expired_rate = SUM(RATE(ibmmq_qmgr_expired_message_total))
+          primary:
+            field: expired_rate
+            label: Expired Msgs
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: FDC Files
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_fdc_files IS NOT NULL
+            - STATS fdc_count = SUM(LAST_OVER_TIME(ibmmq_qmgr_fdc_files))
+          primary:
+            field: fdc_count
+            label: FDC Files
+            format:
+              type: number
+              decimals: 0
+
+      - title: Failed Open Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_failed_mqopen_total IS NOT NULL
+            - STATS failed_open = SUM(RATE(ibmmq_qmgr_failed_mqopen_total))
+          primary:
+            field: failed_open
+            label: Failed Opens
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      - title: Failed Topic Puts
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_failed_topic_mqput_mqput1_total IS NOT NULL
+            - STATS failed_topic = SUM(RATE(ibmmq_qmgr_failed_topic_mqput_mqput1_total))
+          primary:
+            field: failed_topic
+            label: Failed Topic Puts
+            format:
+              type: number
+              compact: true
+              suffix: " /s"
+
+      # ─── Core Messaging Failures ────────────────────────────────────────
+      - title: Core Messaging Failures Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              failed_put = SUM(RATE(ibmmq_qmgr_failed_mqput_total)),
+              failed_put1 = SUM(RATE(ibmmq_qmgr_failed_mqput1_total)),
+              failed_get = SUM(RATE(ibmmq_qmgr_failed_mqget_total)),
+              failed_browse = SUM(RATE(ibmmq_qmgr_failed_browse_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: failed_put
+              label: Failed MQPUT
+            - field: failed_put1
+              label: Failed MQPUT1
+            - field: failed_get
+              label: Failed MQGET
+            - field: failed_browse
+              label: Failed Browse
+          legend:
+            visible: show
+            position: right
+
+      # ─── Connection & Access Failures ───────────────────────────────────
+      - title: Connection & Access Failures Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              failed_conn = SUM(RATE(ibmmq_qmgr_failed_mqconn_mqconnx_total)),
+              failed_open = SUM(RATE(ibmmq_qmgr_failed_mqopen_total)),
+              failed_close = SUM(RATE(ibmmq_qmgr_failed_mqclose_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: failed_conn
+              label: Failed Connect
+            - field: failed_open
+              label: Failed Open
+            - field: failed_close
+              label: Failed Close
+          legend:
+            visible: show
+            position: right
+
+      # ─── Pub/Sub Failures ───────────────────────────────────────────────
+      - title: Pub/Sub Failures Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              failed_topic_put = SUM(RATE(ibmmq_qmgr_failed_topic_mqput_mqput1_total)),
+              failed_sub_create = SUM(RATE(ibmmq_qmgr_failed_subscription_create_alter_resume_total)),
+              failed_sub_delete = SUM(RATE(ibmmq_qmgr_failed_subscription_delete_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: failed_topic_put
+              label: Failed Topic Put
+            - field: failed_sub_create
+              label: Failed Sub Create/Alter
+            - field: failed_sub_delete
+              label: Failed Sub Delete
+          legend:
+            visible: show
+            position: right
+
+      # ─── Admin & Metadata Failures ──────────────────────────────────────
+      - title: Administrative Failures Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              failed_inq = SUM(RATE(ibmmq_qmgr_failed_mqinq_total)),
+              failed_set = SUM(RATE(ibmmq_qmgr_failed_mqset_total)),
+              failed_cb = SUM(RATE(ibmmq_qmgr_failed_mqcb_total)),
+              failed_subrq = SUM(RATE(ibmmq_qmgr_failed_mqsubrq_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: failed_inq
+              label: Failed Inquire
+            - field: failed_set
+              label: Failed Set
+            - field: failed_cb
+              label: Failed Callback
+            - field: failed_subrq
+              label: Failed SubRequest
+          legend:
+            visible: show
+            position: right
+
+      # ─── Transaction Health ──────────────────────────────────────────────
+      - title: Commit vs Rollback Rate Over Time
+        description: Compare transaction commits to rollbacks. A rising rollback rate may indicate poison messages or application errors.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              commit_rate = SUM(RATE(ibmmq_qmgr_commit_total)),
+              rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: commit_rate
+              label: Commits
+              format:
+                type: number
+                suffix: " /s"
+            - field: rollback_rate
+              label: Rollbacks
+              format:
+                type: number
+                suffix: " /s"
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: Commits
+                color: '#54b399'
+              - value: Rollbacks
+                color: '#cc5642'
+          legend:
+            visible: show
+            position: right
+
+      # ─── Expired & FDC ──────────────────────────────────────────────────
+      - title: Expired Messages & FDC Files Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              expired = SUM(RATE(ibmmq_qmgr_expired_message_total)),
+              fdc = MAX(LAST_OVER_TIME(ibmmq_qmgr_fdc_files))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: expired
+              label: Expired Messages (/s)
+              format:
+                type: number
+                suffix: " /s"
+            - field: fdc
+              label: FDC Files
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      # ─── Error Summary ──────────────────────────────────────────────────
+      - title: Error Summary by Queue Manager
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              failed_put = SUM(RATE(ibmmq_qmgr_failed_mqput_total)),
+              failed_put1 = SUM(RATE(ibmmq_qmgr_failed_mqput1_total)),
+              failed_get = SUM(RATE(ibmmq_qmgr_failed_mqget_total)),
+              failed_conn = SUM(RATE(ibmmq_qmgr_failed_mqconn_mqconnx_total)),
+              failed_open = SUM(RATE(ibmmq_qmgr_failed_mqopen_total)),
+              rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total)),
+              commit_rate = SUM(RATE(ibmmq_qmgr_commit_total)),
+              expired = SUM(RATE(ibmmq_qmgr_expired_message_total)),
+              fdc = MAX(LAST_OVER_TIME(ibmmq_qmgr_fdc_files))
+              BY attributes.qmgr
+            - >-
+              EVAL total_failures =
+              COALESCE(failed_put, 0) + COALESCE(failed_put1, 0)
+              + COALESCE(failed_get, 0) + COALESCE(failed_conn, 0)
+              + COALESCE(failed_open, 0)
+            - >-
+              EVAL rollback_pct = ROUND(CASE(
+              commit_rate + rollback_rate > 0,
+              rollback_rate / (commit_rate + rollback_rate) * 100, 0), 2)
+            - KEEP attributes.qmgr, total_failures, failed_put, failed_get, failed_conn, rollback_pct, expired, fdc
+            - SORT total_failures DESC
+            - LIMIT 50
+          metrics:
+            - field: attributes.qmgr
+              label: Queue Manager
+            - field: total_failures
+              label: Total Failures (/s)
+              format:
+                type: number
+                decimals: 2
+            - field: failed_put
+              label: Failed Put (/s)
+              format:
+                type: number
+                decimals: 2
+            - field: failed_get
+              label: Failed Get (/s)
+              format:
+                type: number
+                decimals: 2
+            - field: failed_conn
+              label: Failed Connect (/s)
+              format:
+                type: number
+                decimals: 2
+            - field: rollback_pct
+              label: Rollback %
+              format:
+                type: number
+                decimals: 2
+                suffix: "%"
+            - field: expired
+              label: Expired (/s)
+              format:
+                type: number
+                decimals: 2
+            - field: fdc
+              label: FDC Files
+              format:
+                type: number
+                decimals: 0

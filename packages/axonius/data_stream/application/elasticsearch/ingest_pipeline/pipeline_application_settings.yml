@@ -1,0 +1,145 @@
+---
+description: Pipeline for processing application settings logs.
+processors:
+  - foreach:
+      field: axonius.application.configuration_values
+      tag: foreach_configuration_values_configuration_value
+      if: ctx.axonius?.application?.configuration_values instanceof List
+      processor:
+        append:
+          field: rule.description
+          tag: append_configuration_values_configuration_value_into_rule_description
+          value: '{{{_ingest._value.configuration_value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: axonius.application.configuration_values
+      tag: foreach_configuration_values_is_valid
+      if: ctx.axonius?.application?.configuration_values instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_valid
+          tag: convert_configuration_values_is_valid_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_valid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.application.configuration_values
+      tag: foreach_configuration_values_role_remote_id
+      if: ctx.axonius?.application?.configuration_values instanceof List
+      processor:
+        append:
+          field: rule.id
+          tag: append_configuration_values_role_remote_id_into_rule_id
+          value: '{{{_ingest._value.role.remote_id}}}'
+          allow_duplicates: false
+  - convert:
+      field: axonius.application.is_excluded
+      tag: convert_is_excluded_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.application.is_excluded
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: rule.name
+      tag: append_axonius_application_raw_setting_name_into_rule_name
+      value: '{{{axonius.application.raw_setting_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.raw_setting_name != null
+  - append:
+      field: rule.description
+      tag: append_axonius_application_recommendation_description_into_rule_description
+      value: '{{{axonius.application.recommendation_description}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.recommendation_description != null
+  - append:
+      field: message
+      tag: append_axonius_application_setting_description_into_message
+      value: '{{{axonius.application.setting_description}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.setting_description != null
+  - convert:
+      field: axonius.application.settings_score
+      tag: convert_settings_score_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.application.settings_score
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: rule.id
+      tag: append_axonius_application_vendor_setting__id_into_rule_id
+      value: '{{{axonius.application.vendor_setting._id}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.vendor_setting?._id != null
+  - convert:
+      field: axonius.application.vendor_setting.is_relevant
+      tag: convert_vendor_setting_is_relevant_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.application.vendor_setting.is_relevant
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: rule.ruleset
+      tag: set_rule_ruleset_from_application_vendor_setting_level
+      copy_from: axonius.application.vendor_setting.level
+      ignore_empty_value: true
+  - set:
+      field: rule.reference
+      tag: set_rule_reference_from_application_vendor_setting_link
+      copy_from: axonius.application.vendor_setting.link
+      ignore_empty_value: true
+  - append:
+      field: rule.name
+      tag: append_axonius_application_vendor_setting_raw_setting_name_into_rule_name
+      value: '{{{axonius.application.vendor_setting.raw_setting_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.vendor_setting?.raw_setting_name != null
+  - append:
+      field: rule.description
+      tag: append_axonius_application_vendor_setting_recommendation_reason_into_rule_description
+      value: '{{{axonius.application.vendor_setting.recommendation_reason}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.vendor_setting?.recommendation_reason != null
+  - convert:
+      field: axonius.application.vendor_setting.xsetting.impact
+      tag: convert_vendor_setting_xsetting_impact_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.application.vendor_setting.xsetting.impact
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

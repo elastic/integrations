@@ -1,0 +1,138 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule correlates alerts from multiple integrations and event categories that involve different user.name values which may represent the same real-world identity. It uses an LLM-based similarity analysis to evaluate whether multiple user identifiers (e.g. naming variations, formats, aliases, or domain differences) likely belong to the same person.",
+        "from": "now-60m",
+        "interval": "30m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Correlated Alerts on Similar User Identities",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, analysts should validate findings against their environment and identity architecture.\n\n### Investigating Correlated Alerts on Similar User Identities\n\nThis rule identifies alerts from multiple integrations and event categories involving different `user.name` values that may represent the same real-world identity.\nAn LLM is used to assess string similarity and naming patterns to determine whether multiple user identifiers likely belong to the same person, which may indicate account compromise, credential abuse, or identity misuse across systems.\n\n### Possible investigation steps\n\n- Review the correlated `user.name` values and validate whether they represent naming variations, aliases, or identity mappings.\n- Examine the LLM output fields (`verdict`, `confidence`, `summary`) as decision support, not ground truth.\n- Analyze the diversity of alert sources, event categories, and detection rules involved.\n- Reconstruct the alert timeline to identify potential stages such as initial access, lateral movement, privilege escalation, or persistence.\n- Correlate with authentication logs, IAM/SSO telemetry, EDR data, and network logs to identify shared sessions, IPs, devices, or hosts.\n- Validate identities against directory services, identity providers, and federation mappings.\n\n### False positive analysis\n\n- Identity format variations across systems (e.g., `first.last`, `flast`, `user@domain`).\n- Federated identity mappings between on-prem, cloud, and SaaS platforms.\n- Service, automation, and CI/CD accounts with similar naming conventions.\n- Separate admin and standard user accounts for the same individual.\n- Shared credentials or naming templates in development and test environments.\n\n### Response and remediation\n\n- Temporarily disable or suspend correlated accounts if compromise is suspected.\n- Revoke active sessions, tokens, and credentials.\n- Investigate access scope, privileges, and lateral movement paths.\n- Perform endpoint and identity forensics to identify persistence mechanisms.\n- Remediate IAM misconfigurations and federation issues.\n- Enhance monitoring for identity correlation, credential misuse, and cross-platform abuse..",
+        "query": "from .alerts-security.*\n\n// truncate timestamp to 5-minute window\n| eval Esql.time_window_date_trunc = date_trunc(5 minutes, @timestamp)\n\n// high severity alerts excluding system standard user.ids\n| where kibana.alert.rule.name is not null and user.name is not null and kibana.alert.risk_score >= 73 and kibana.alert.workflow_status == \"open\" and \n        not kibana.alert.rule.type in (\"threat_match\", \"machine_learning\") and\n        not user.id in (\"S-1-5-18\", \"S-1-5-19\", \"S-1-5-20\", \"0\")\n\n// group alerts by short time window and extract values of interest for alert triage\n| stats Esql.event_module_distinct_count = COUNT_DISTINCT(event.module),\n        Esql.user_name_distinct_count = COUNT_DISTINCT(user.name),\n        Esql.rule_name_distinct_count = COUNT_DISTINCT(kibana.alert.rule.name),\n        Esql.event_category_distinct_count = COUNT_DISTINCT(event.category),\n        Esql.rule_risk_score_distinct_count = COUNT_DISTINCT(kibana.alert.risk_score),\n        Esql.event_module_values = VALUES(event.module),\n        Esql.rule_name_values = VALUES(kibana.alert.rule.name),\n        Esql.message_values = VALUES(message),\n        Esql.event_category_values = VALUES(event.category),\n        Esql.event_action_values = VALUES(event.action),\n        Esql.source_ip_values = VALUES(source.ip),\n        Esql.destination_ip_values = VALUES(destination.ip),\n        Esql.host_id_values = VALUES(host.id),\n        Esql.agent_id_values = VALUES(agent.id),\n        Esql.rule_severity_values = VALUES(kibana.alert.risk_score),\n        Esql.user_name_values = VALUES(user.name) by Esql.time_window_date_trunc\n\n// filter for alerts from different integrations with unique categories\n| where Esql.event_module_distinct_count >= 2 and Esql.user_name_distinct_count >= 2 and Esql.event_category_distinct_count >= 2\n\n// build context for LLM analysis\n| eval users_list = MV_CONCAT(Esql.user_name_values, \",\")\n\n// LLM analysis\n| eval instructions = \"Analyze the provided user names and return a boolean value true if at least 2 of them are similar and they may belong to the same human identify or false if not, do not compare user names that may look like service accounts. If the list of users has more than 2 users and only 2 of them are similar consider this as true. Structure the output as follows: verdict=<verdict> confidence=<score> summary=<short reason max 500 words> without any other response statements on a single line.\"\n| eval prompt = CONCAT(\"User identities extracted from different alerts: \", users_list, instructions)\n| COMPLETION triage_result = prompt WITH { \"inference_id\": \".gp-llm-v2-completion\"}\n\n// parse LLM response\n| DISSECT triage_result \"\"\"verdict=%{Esql.verdict} confidence=%{Esql.confidence} summary=%{Esql.summary}\"\"\"\n\n// filter for similar user values\n| where TO_LOWER(Esql.verdict) == \"true\"\n| keep Esql.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/query-languages/esql/esql-commands#esql-completion",
+            "https://www.elastic.co/security-labs/elastic-advances-llm-security"
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.agent_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.confidence",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.destination_ip_values",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_action_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_category_distinct_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_category_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_module_distinct_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_module_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.host_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.message_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.rule_name_distinct_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.rule_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.rule_risk_score_distinct_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.rule_severity_values",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_ip_values",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.summary",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.time_window_date_trunc",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_name_distinct_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.verdict",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "1bb329a5-2168-4da5-b7b9-d42a51deb6dd",
+        "setup": "## Setup\n\n### LLM Configuration\n\nThis rule uses the ES|QL COMPLETION command with Elastic's managed General Purpose LLM v2 (`.gp-llm-v2-completion`),\nwhich is available out-of-the-box in Elastic Cloud deployments with an appropriate subscription.\n\nTo use a different LLM provider (Azure OpenAI, Amazon Bedrock, OpenAI, or Google Vertex), configure a connector\nfollowing the [LLM connector documentation](https://www.elastic.co/docs/explore-analyze/ai-features/llm-guides/llm-connectors)\nand update the `inference_id` parameter in the query to reference your configured connector.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Identity",
+            "Domain: LLM",
+            "Use Case: Threat Detection",
+            "Use Case: Identity and Access Audit",
+            "Resources: Investigation Guide",
+            "Rule Type: Higher-Order Rule"
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "1bb329a5-2168-4da5-b7b9-d42a51deb6dd_1",
+    "type": "security-rule"
+}

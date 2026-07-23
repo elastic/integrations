@@ -1,0 +1,119 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies deletion of imported key material from an AWS KMS customer managed key via DeleteImportedKeyMaterial. Keys created with an external key material origin (BYOK) rely on key material that the customer imports. Deleting that material immediately makes the key unusable and renders all data encrypted under it inaccessible, with no recovery window. Unlike ScheduleKeyDeletion, which enforces a pending deletion period of 7 to 30 days, this action takes effect instantly, making it an attractive primitive for cloud ransomware and data-destruction attacks. Because this operation only applies to external-origin keys and is rare in normal operations, its use by an unexpected principal warrants prompt review.",
+        "false_positives": [
+            "Encryption or platform teams that operate keys with imported key material (BYOK/HYOK) may delete and re-import material during key rotation, migration, or decommissioning. Verify the principal in \"aws.cloudtrail.user_identity.arn\", confirm the change aligns with a planned key lifecycle activity, and check whether material was re-imported shortly after. Known administration roles and automation can be excluded after validation."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "aws.cloudtrail.resources.arn",
+                "aws.cloudtrail.resources.type",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS KMS Imported Key Material Deleted",
+        "note": "## Triage and analysis\n\n### Investigating AWS KMS Imported Key Material Deleted\n\nAWS KMS keys can be created with an external key material origin (BYOK), where the customer imports the cryptographic material rather than having KMS generate it. \"DeleteImportedKeyMaterial\" removes that material, immediately transitioning the key to a \"PendingImport\" state where it can no longer encrypt or decrypt. All data protected by the key becomes inaccessible until the exact same material is re-imported. Unlike \"ScheduleKeyDeletion\", there is no pending window, so the impact is instant and, for an adversary who controls and withholds the original material, effectively irreversible.\n\nBecause this action only applies to external-origin keys and is uncommon in normal operations, it should be treated as a high-risk, destructive action when performed unexpectedly. Adversaries may delete imported key material to sabotage recovery, destroy data, or hold encrypted resources for ransom.\n\n### Possible investigation steps\n\n- Identify the actor and authentication context in \"aws.cloudtrail.user_identity.arn\", \"aws.cloudtrail.user_identity.access_key_id\", and \"aws.cloudtrail.user_identity.type\", and review \"source.ip\" and \"user_agent.original\" to determine whether the action came from an expected network path or automation platform.\n- Identify the affected key from \"aws.cloudtrail.resources.arn\" or the \"keyId\" in \"aws.cloudtrail.request_parameters\", and determine which services and data depend on it (S3, EBS, RDS, Secrets Manager, etc.).\n- Determine whether the same material was re-imported shortly after (\"ImportKeyMaterial\") or whether the key was left unusable.\n- Correlate with surrounding activity by the same principal, such as KMS key policy changes, scheduled key deletions, S3 or EBS destructive actions, or credential changes that may indicate a broader sabotage or ransom attempt.\n\n### False positive analysis\n\n- Organizations with BYOK/HYOK requirements may delete and re-import key material during planned rotation, migration, or decommissioning. Confirm the change is expected and exclude known administration roles or automation on \"aws.cloudtrail.user_identity.arn\" after validation.\n\n### Response and remediation\n\n- If the deletion is unauthorized, re-import the original key material if it is securely retained, and restore access to affected services.\n- Treat any encrypted data whose key material cannot be re-imported as potentially unrecoverable, and engage incident response and data owners to assess impact.\n- Rotate or restrict credentials for the principal if compromise is suspected, and constrain \"kms:DeleteImportedKeyMaterial\" and \"kms:ImportKeyMaterial\" to a small set of trusted administrators.\n- Use AWS Organizations SCPs to limit who can manage imported key material in production accounts.\n\n### Additional information\n\n- [DeleteImportedKeyMaterial API](https://docs.aws.amazon.com/kms/latest/APIReference/API_DeleteImportedKeyMaterial.html)\n- [Importing key material into AWS KMS keys](https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)\n",
+        "query": "data_stream.dataset: \"aws.cloudtrail\"\n    and event.provider: \"kms.amazonaws.com\"\n    and event.action: \"DeleteImportedKeyMaterial\"\n    and event.outcome: \"success\"\n    and not aws.cloudtrail.user_identity.type: \"AWSService\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/kms/latest/APIReference/API_DeleteImportedKeyMaterial.html",
+            "https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "f6fee40d-8a5e-4cc8-9f73-8688419c6d68",
+        "setup": "This rule requires AWS CloudTrail management events for AWS Backup and ingestion via the Elastic AWS CloudTrail integration. See https://docs.elastic.co/integrations/aws/cloudtrail.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS KMS",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1485",
+                        "name": "Data Destruction",
+                        "reference": "https://attack.mitre.org/techniques/T1485/",
+                        "subtechnique": [
+                            {
+                                "id": "T1485.001",
+                                "name": "Lifecycle-Triggered Deletion",
+                                "reference": "https://attack.mitre.org/techniques/T1485/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "f6fee40d-8a5e-4cc8-9f73-8688419c6d68_1",
+    "type": "security-rule"
+}

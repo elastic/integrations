@@ -8,6 +8,11 @@ Use the PingOne integration to collect and parse data from the REST APIs or HTTP
 
 For example, you could use the data from this integration to know which action or activity is performed against a defined PingOne resource, and also track the actor or agent who initiated the action.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data streams
 
 The PingOne integration collects logs for one type of event: Audit.
@@ -117,11 +122,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-08-08T15:31:08.237Z",
     "agent": {
-        "ephemeral_id": "1262c630-c826-45b1-a250-30d9299c4ad0",
-        "id": "14fa9ed6-e3fd-4caa-9a4b-a61b540b6d02",
-        "name": "elastic-agent-55090",
+        "ephemeral_id": "d67bd0bc-bf75-4446-aea0-a2f78a4ae945",
+        "id": "c1e440f4-a271-44e0-842c-ef5e47e4fcc3",
+        "name": "elastic-agent-78287",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.19.4"
     },
     "client": {
         "user": {
@@ -131,16 +136,16 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "ping_one.audit",
-        "namespace": "30586",
+        "namespace": "51949",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "14fa9ed6-e3fd-4caa-9a4b-a61b540b6d02",
+        "id": "c1e440f4-a271-44e0-842c-ef5e47e4fcc3",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "user.access_allowed",
@@ -151,7 +156,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "ping_one.audit",
         "id": "123abc123-12ab-1234-1abc-abc123abc12",
-        "ingested": "2025-10-29T05:29:53Z",
+        "ingested": "2025-12-22T10:12:35Z",
         "kind": "event",
         "original": "{\"_embedded\":{},\"action\":{\"type\":\"USER.ACCESS_ALLOWED\"},\"actors\":{\"client\":{\"environment\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"href\":\"https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/applications/123abc123-12ab-1234-1abc-abc123abc12\",\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"name\":\"PingOne Admin Console\",\"type\":\"CLIENT\"},\"user\":{\"environment\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"href\":\"https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/users/123abc123-12ab-1234-1abc-abc123abc12\",\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"name\":\"example@gmail.com\",\"population\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"type\":\"USER\"}},\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"recordedAt\":\"2022-08-08T15:31:08.237Z\",\"resources\":[{\"environment\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"href\":\"https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/users/123abc123-12ab-1234-1abc-abc123abc12\",\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"name\":\"example@gmail.com\",\"population\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"type\":\"USER\"}],\"result\":{\"description\":\"Passed role access control\",\"status\":\"SUCCESS\"}}",
         "outcome": "success",

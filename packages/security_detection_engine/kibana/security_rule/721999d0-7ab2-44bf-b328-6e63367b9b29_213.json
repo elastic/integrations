@@ -1,0 +1,94 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Austin Songer"
+        ],
+        "description": "Identifies when Microsoft Cloud App Security flags potential ransomware activity in Microsoft 365. This rule detects events where the Security Compliance Center reports a \"Ransomware activity\" or \"Potential ransomware activity\" alert, which may indicate file encryption, mass file modifications, or uploads of ransomware-infected files to cloud services such as SharePoint or OneDrive.",
+        "false_positives": [
+            "If Cloud App Security identifies, for example, a high rate of file uploads or file deletion activities it may represent an adverse encryption process."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-o365.audit-*",
+            "filebeat-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Deprecated - M365 Security Compliance Potential Ransomware Activity",
+        "note": "## Triage and analysis\n\n### Investigating Deprecated - M365 Security Compliance Potential Ransomware Activity\n\nMicrosoft 365's cloud services can be exploited by adversaries to distribute ransomware by uploading infected files. This detection rule leverages Microsoft Cloud App Security to identify suspicious uploads, focusing on successful events flagged as potential ransomware activity. By monitoring specific event datasets and actions, it helps security analysts pinpoint and mitigate ransomware threats, aligning with MITRE ATT&CK's impact tactics.\n\n### Possible investigation steps\n\n- Identify the affected user account and review their recent file activity in Microsoft 365 for signs of mass file encryption, renaming with unusual extensions, or rapid file modifications.\n- Examine the file names, extensions, and metadata of the flagged uploads to determine if they match known ransomware patterns (e.g., `.encrypted`, `.locked`, or ransom note files like `README.txt` or `DECRYPT_INSTRUCTIONS.html`).\n- Correlate this alert with other security events from the same user or source IP, such as impossible travel, failed login attempts, or suspicious inbox rules, to identify potential account compromise.\n- Check whether the affected user's endpoint shows signs of ransomware execution, such as high CPU usage, mass file system changes, or known ransomware process names.\n- Review SharePoint or OneDrive file version history to determine the scope of encrypted or modified files and whether recovery via version rollback is possible.\n- Contact the user to verify whether the activity is legitimate or if their account or device may have been compromised.\n\n### False positive analysis\n\n- Legitimate file uploads by trusted users may trigger alerts if the files are mistakenly flagged as ransomware. To manage this, create exceptions for specific users or groups who frequently upload large volumes of files.\n- Automated backup processes that upload encrypted files to the cloud can be misidentified as ransomware activity. Exclude these processes by identifying and whitelisting the associated service accounts or IP addresses.\n- Certain file types or extensions commonly used in business operations might be flagged. Review and adjust the detection rule to exclude these file types if they are consistently identified as false positives.\n- Collaborative tools that sync files across devices may cause multiple uploads that appear suspicious. Monitor and exclude these tools by recognizing their typical behavior patterns and adjusting the rule settings accordingly.\n\n### Response and remediation\n\n- Immediately isolate the affected user account to prevent further uploads and potential spread of ransomware within the cloud environment.\n- Quarantine the uploaded files flagged as potential ransomware to prevent access and further distribution.\n- Conduct a thorough scan of the affected user's devices and cloud storage for additional signs of ransomware or other malicious activity.\n- Notify the security operations team to initiate a deeper investigation into the source and scope of the ransomware activity.\n- Restore any affected files from secure backups, ensuring that the backups are clean and free from ransomware.\n- Review and update access controls and permissions for the affected user and related accounts to minimize the risk of future incidents.\n- Escalate the incident to senior security management and, if necessary, involve legal or compliance teams to assess any regulatory implications.\n",
+        "query": "event.dataset:o365.audit and\n    event.provider:SecurityComplianceCenter and\n    event.category:web and\n    rule.name:(\"Ransomware activity\" or \"Potential ransomware activity\") and\n    event.outcome:success\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/cloud-app-security/anomaly-detection-policy",
+            "https://docs.microsoft.com/en-us/cloud-app-security/policy-template-reference",
+            "https://www.microsoft.com/en-us/security/blog/threat-intelligence/ransomware/"
+        ],
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "rule.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "721999d0-7ab2-44bf-b328-6e63367b9b29",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Data Source: Microsoft 365",
+            "Data Source: Microsoft 365 Audit Logs",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1486",
+                        "name": "Data Encrypted for Impact",
+                        "reference": "https://attack.mitre.org/techniques/T1486/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 213
+    },
+    "id": "721999d0-7ab2-44bf-b328-6e63367b9b29_213",
+    "type": "security-rule"
+}

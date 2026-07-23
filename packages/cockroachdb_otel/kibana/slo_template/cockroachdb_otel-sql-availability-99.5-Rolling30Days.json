@@ -1,0 +1,68 @@
+{
+  "attributes": {
+    "name": "[CockroachDB OTel] SQL statement success rate 99.5% rolling 30 days",
+    "description": "This SLO tracks the SQL statement success rate of CockroachDB via OTel metrics, ensuring that 99.5% of 1-minute time intervals show a success rate (successful statements / total statements) of at least 99.5% over a rolling period of 30 days. It uses sql_query_count and sql_failure_count counters to compute the ratio of successful to total SQL statements, maintaining reliable database availability for applications.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"cockroachdb.otel\" AND service.name: \"cockroachdb\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "sql_query_count",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "sql_query_count",
+              "filter": ""
+            },
+            {
+              "name": "C",
+              "aggregation": "max",
+              "field": "sql_failure_count",
+              "filter": ""
+            },
+            {
+              "name": "D",
+              "aggregation": "min",
+              "field": "sql_failure_count",
+              "filter": ""
+            }
+          ],
+          "equation": "((A-B)-(C-D))/(A-B)",
+          "comparator": "GTE",
+          "threshold": 0.995
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "cockroachdb",
+      "otel"
+    ],
+    "groupBy": "resource.attributes.host.name"
+  },
+  "artifacts": {
+    "dashboards": [
+      { "id": "cockroachdb_otel-overview" },
+      { "id": "cockroachdb_otel-sql-transactions" }
+    ]
+  },
+  "id": "cockroachdb_otel-sql-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}

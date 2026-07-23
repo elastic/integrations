@@ -1,0 +1,48 @@
+{
+    "id": "couchdb_otel-file-descriptor-exhaustion",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when the number of open file descriptors on a CouchDB node approaches the OS limit. Each open database file and network connection consumes a file descriptor; exhausting the limit causes new connections and database opens to fail.",
+        "name": "[CouchDB OTel] File descriptor exhaustion risk",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "couchdb"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## File Descriptor Exhaustion Risk\n\n### Triage Steps\n1. Check the open file descriptor trend on the CouchDB overview dashboard for the alerting node.\n2. Cross-reference with `couchdb.database.open` — runaway database counts proportionally consume FDs.\n3. Verify the OS-level `ulimit -n` setting on the CouchDB host: `cat /proc/{pid}/limits` for the `beam.smp` process.\n4. Inspect active CouchDB connections — long-lived `_changes` feeds, replication tasks, and HTTP keep-alives all consume FDs.\n\n### Remediation\n- Raise the OS file descriptor limit (`ulimit -n`) and the systemd `LimitNOFILE` for the CouchDB service unit.\n- Close idle replication tasks and unused `_changes` listeners.\n- Identify and consolidate per-user or per-tenant databases if the open-database count is also high.\n- Restart CouchDB during a maintenance window to release leaked descriptors if no application-side fix is possible.\n\n### Threshold Tuning\nThe default threshold of 1000 open FDs assumes a typical `ulimit -n` of 1024–65536. Set the threshold to ~70-80% of your configured limit to give time to react before exhaustion."
+            },
+            "dashboards": [
+                {"id": "couchdb_otel-overview"}
+            ]
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-couchdbreceiver.otel-default\n// Open file descriptors is a gauge — use LAST_OVER_TIME for current state\n| WHERE couchdb.file_descriptor.open IS NOT NULL\n| STATS open_fds = MAX(LAST_OVER_TIME(couchdb.file_descriptor.open))\n  BY couchdb.node.name\n// Typical ulimit is 1024–65536 — adjust threshold for your environment\n| WHERE open_fds > 1000\n| SORT open_fds DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "couchdb.node.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

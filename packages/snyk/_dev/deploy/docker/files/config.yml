@@ -1,4 +1,19 @@
 rules:
+  - path: /oauth2/token
+    methods: ["POST"]
+    request_headers:
+      content-type: application/x-www-form-urlencoded
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "access_token": "xxxxxx",
+            "token_type": "bearer",
+            "expires_in": 3600,
+            "scope": "read write"
+          }
+          `}}
   - path: /rest/orgs
     methods: ["GET"]
     request_headers:
@@ -7,6 +22,10 @@ rules:
       version: "2024-04-29"
     responses:
       - status_code: 200
+        headers:
+          X-Ratelimit-Limit: ["100, 100;w=1;name=\"per_second\", 6000;w=60;name=\"per_minute\""]
+          X-Ratelimit-Remaining: ["99"]
+          X-Ratelimit-Reset: ["60"]
         body: |-
           {{ minify_json `
           {
@@ -45,9 +64,67 @@ rules:
     query_params:
       version: "2024-04-29"
       sort_order: ASC
+      events: "org.project.issue.create"
       cursor: null
     responses:
       - status_code: 200
+        headers:
+          X-Ratelimit-Limit: ["100, 100;w=1;name=\"per_second\", 6000;w=60;name=\"per_minute\""]
+          X-Ratelimit-Remaining: ["99"]
+          X-Ratelimit-Reset: ["60"]
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "items": [
+                {
+                  "content": {
+                    "action": "Returned from analysis"
+                  },
+                  "created": "2024-05-15T16:34:14.144Z",
+                  "event": "org.project.issue.create",
+                  "org_id": "0de7b2d6-c1da-46aa-887e-1886f96770d4",
+                  "project_id": "d2bf0629-84a7-4b0b-b435-f49a87f0720c"
+                },
+                {
+                  "content": {
+                    "action": "Saved to DB",
+                    "issueCounts": {
+                      "sast": {
+                        "high": 3,
+                        "low": 101,
+                        "medium": 45
+                      }
+                    }
+                  },
+                  "created": "2024-05-15T16:34:15.251Z",
+                  "event": "org.project.issue.create",
+                  "org_id": "0de7b2d6-c1da-46aa-887e-1886f96770d4",
+                  "project_id": "d2bf0629-84a7-4b0b-b435-f49a87f0720c"
+                }
+              ],
+              "type": "audit_log_search"
+            },
+            "jsonapi": {
+              "version": "1.0"
+            },
+            "links": {}
+          }
+          `}}
+  - path: /rest/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4/audit_logs/search
+    methods: ["GET"]
+    request_headers:
+      authorization: xxxxxx
+    query_params:
+      version: "2024-04-29"
+      sort_order: ASC
+      cursor: null
+    responses:
+      - status_code: 200
+        headers:
+          X-Ratelimit-Limit: ["100, 100;w=1;name=\"per_second\", 6000;w=60;name=\"per_minute\""]
+          X-Ratelimit-Remaining: ["99"]
+          X-Ratelimit-Reset: ["60"]
         body: |-
           {{ minify_json `
           {
@@ -127,6 +204,10 @@ rules:
       cursor: "MjcwMjAzMTEwNzIu41EcAFz4TRGxhHBUqkpr1g"
     responses:
       - status_code: 200
+        headers:
+          X-Ratelimit-Limit: ["100, 100;w=1;name=\"per_second\", 6000;w=60;name=\"per_minute\""]
+          X-Ratelimit-Remaining: ["99"]
+          X-Ratelimit-Reset: ["60"]
         body: |-
           {{ minify_json `
           {
@@ -218,6 +299,10 @@ rules:
       cursor: "MjcwMjAzMTgyNjAu41EcAFz4TRGxhHBUqkpr1g"
     responses:
       - status_code: 200
+        headers:
+          X-Ratelimit-Limit: ["100, 100;w=1;name=\"per_second\", 6000;w=60;name=\"per_minute\""]
+          X-Ratelimit-Remaining: ["99"]
+          X-Ratelimit-Reset: ["60"]
         body: |-
           {{ minify_json `
           {
@@ -249,6 +334,10 @@ rules:
       starting_after: null
     responses:
       - status_code: 200
+        headers:
+          X-Ratelimit-Limit: ["100, 100;w=1;name=\"per_second\", 6000;w=60;name=\"per_minute\""]
+          X-Ratelimit-Remaining: ["99"]
+          X-Ratelimit-Reset: ["60"]
         body: |-
           {{ minify_json `
           {
@@ -919,6 +1008,10 @@ rules:
       starting_after: "YzMwZTg1NjQtmVjMzhiNzdlLWE2YWQtNDI5Zi05NDI1LWEyZTg0MDE4YjdmMCIsInNldmVyaXR5IjoxMCwiY3JlYXRlZEF0IjoiMjAyNC0wNS0xNVQxOTozMDoxNi4xN1oiLCJpZCI6IjI1MTM4NGViLWNlMTItNDVmYS04YWU4LTkzMDI0M2YxYmNjNSIsInRvdGFsIjp7ImNhbGN1bGF0ZWRBdCI6IjAwMDEtMDEtMDFUMDA6MDA6MDBaIn19"
     responses:
       - status_code: 200
+        headers:
+          X-Ratelimit-Limit: ["100, 100;w=1;name=\"per_second\", 6000;w=60;name=\"per_minute\""]
+          X-Ratelimit-Remaining: ["99"]
+          X-Ratelimit-Reset: ["60"]
         body: |-
           {{ minify_json `
           {
@@ -1405,6 +1498,10 @@ rules:
       starting_after: "YzMwZTg1NjQtmVjMzhiNzdlLWE2YWQtNDI5Zi05NDI1LWEyZTg0MDE4YjdmMCIsInNldmVyaXR5IjoxMCwiY3JlYXRlZEF0IjoiMjAyNC0wNS0xNVQyMzoxMTozMi4yNDFaIiwiaWQiOiI5MmQ2N2ZlZC05YmFjLTRiMDgtYjEyMy04ZDYzMDY2OWZjMzEiLCJ0b3RhbCI6eyJjYWxjdWxhdGVkQXQiOiIwMDAxLTAxLTAxVDAwOjAwOjAwWiJ9fQ=="
     responses:
       - status_code: 200
+        headers:
+          X-Ratelimit-Limit: ["100, 100;w=1;name=\"per_second\", 6000;w=60;name=\"per_minute\""]
+          X-Ratelimit-Remaining: ["99"]
+          X-Ratelimit-Reset: ["60"]
         body: |-
           {{ minify_json `
           {
@@ -1787,6 +1884,10 @@ rules:
       version: "2024-04-29"
     responses:
       - status_code: 200
+        headers:
+          X-Ratelimit-Limit: ["100, 100;w=1;name=\"per_second\", 6000;w=60;name=\"per_minute\""]
+          X-Ratelimit-Remaining: ["99"]
+          X-Ratelimit-Reset: ["60"]
         body: |-
           {{ minify_json `
           {

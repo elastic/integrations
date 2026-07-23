@@ -1,0 +1,142 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies execution from the Remote Desktop Protocol (RDP) shared mountpoint tsclient on the target host. This may indicate a lateral movement attempt.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.executable",
+                "process.command_line",
+                "process.parent.name",
+                "process.parent.command_line",
+                "process.Ext.session_info.logon_type",
+                "process.Ext.authentication_id",
+                "process.hash.sha256",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Execution via TSClient Mountpoint",
+        "note": "## Triage and analysis\n\n### Investigating Execution via TSClient Mountpoint\n\n#### Possible investigation steps\n\n- What exact TSClient launch did the alert capture?\n  - Focus: `process.executable`, `process.command_line`, `process.pe.original_file_name`, `process.code_signature.subject_name`, `process.code_signature.trusted`.\n  - Implication: escalate when the redirected-drive executable is unsigned, untrusted, renamed, script-capable, or launched with command intent outside a recognized RDP support or deployment workflow; lower concern only when a vendor-signed installer or utility from the RDP client drive matches that exact session purpose.\n- What launcher and Windows session produced the TSClient process?\n  - Focus: `process.parent.name`, `process.parent.command_line`, `process.Ext.session_info.logon_type`, `user.id`.\n  - Implication: escalate when the parent is \"cmd.exe\", \"powershell.exe\", \"taskmgr.exe\", or another remote-session launcher, when the session is remote-interactive for an unusual user, or when children show another TSClient-launched payload; lower concern when parent and session match a recognized support launcher or deployment tool.\n- Which RDP source created the session, when authentication telemetry is available?\n  - Focus: bridge `process.Ext.authentication_id` to same-host authentication events through `winlog.event_data.TargetLogonId`; read `source.ip`, `winlog.logon.type`, `winlog.event_data.AuthenticationPackageName`. !{investigate{\"description\":\"\",\"label\":\"Authentication events for the linked session\",\"providers\":[[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4624\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TargetLogonId\",\"queryType\":\"phrase\",\"value\":\"{{process.Ext.authentication_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the recovered source or authentication package conflicts with recognized jump hosts, support workstations, or deployment sources. Missing authentication telemetry is unresolved, not benign.\n- Did the TSClient process spawn shells, tools, or persistence helpers on the target?\n  - Focus: child starts from `process.entity_id` on `host.id`, especially `process.executable`, `process.command_line`, `process.parent.entity_id`. !{investigate{\"description\":\"\",\"label\":\"Child processes spawned by the TSClient launch\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if `process.entity_id` is absent, recover descendants with `host.id` + `process.pid` + a tight alert-time window and confirm the parent command line before interpreting results.\n  - Implication: escalate when descendants include shells, script hosts, remote-access tools, credential utilities, or persistence helpers; an isolated installer-like launch lowers urgency only if session and identity evidence also align.\n- If local evidence remains suspicious or incomplete, do related alerts show the same user or host attempting RDP or remote execution elsewhere?\n  - Focus: same-user `user.id` and same-host `host.id` alerts sharing RDP, credential, remote-service, or execution patterns.\n  - Hint: user alert pivot. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: host alert pivot. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: expand scope only when related alerts reuse the same user, host, session pattern, or command family; unrelated alert noise does not change disposition.\n- Escalate when suspicious identity, lineage, source, descendants, or related alerts support unauthorized redirected-drive execution; close only when process identity, parent/session, source when available, and descendants all match one recognized RDP support or deployment activity; preserve artifacts and escalate when authentication visibility is missing or evidence remains mixed.\n\n### False positive analysis\n\n- RDP helpdesk, break-fix, or software deployment workflows can legitimately run installers or utilities from a client drive redirected into the target session. Confirm all evidence converges on one exact activity: identity and intent (`process.executable`, `process.command_line`, signature), launch/session (`process.parent.name`, `user.id`, `host.id`, recovered `source.ip` when available), and outcome (no suspicious descendants or related alerts). Contradictory evidence keeps the case open.\n- Use recurrence only to support a narrow exception candidate, not to close the current case by itself. Require the same stable executable path or signer, parent/session pattern, `user.id`, `host.id`, recovered source when available, and descendant-clean outcome across prior alerts from this rule; keep the case open when current telemetry is incomplete or contradictory.\n- Before creating an exception, anchor it on the minimum confirmed pattern: specific `process.executable`, stable `process.command_line` or signer, `process.parent.name`, `user.id`, `host.id`, and recovered `source.ip` only when it was part of the confirmation. Avoid exceptions on the TSClient path wildcard or `process.name` alone.\n\n### Response and remediation\n\n- Preserve evidence before changing state: case export of the alert, process tree, command line, binary hash or sample when available, child-process events, and authentication-bridge records.\n- If confirmed benign after preservation, reverse temporary containment and document the exact process identity, parent/session context, `user.id`, `host.id`, and recovered `source.ip` that established the redirected-drive workflow. Create an exception only after the same narrowly scoped pattern is stable across prior alerts.\n- If suspicious but unconfirmed after preservation, use reversible containment only: terminate the active RDP session, restrict new RDP connections from the recovered source when available, disable drive redirection for the affected access path, or heighten monitoring on the affected `host.id`. Do not isolate the host, terminate processes, or suspend accounts unless follow-on execution or related alerts confirm broader abuse.\n- If confirmed malicious, isolate the target host when feasible, terminate the TSClient-launched process and malicious descendants after evidence capture, and disable or suspend the account or RDP access path used for the session.\n- Scope before cleanup by reviewing other hosts and users tied to the same recovered source, `user.id`, distinctive `process.command_line`, signer, or hash.\n- Eradicate only the staged payloads, persistence artifacts, or tooling identified during the investigation, then review whether credentials exposed in the RDP session need reset or reissue.\n- Post-incident hardening: limit RDP drive redirection, restrict RDP access to managed jump hosts, retain endpoint process and Windows Security telemetry for session bridging, and document any TSClient execution patterns that should become narrow exceptions.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.executable : \"\\\\Device\\\\Mup\\\\tsclient\\\\*.exe\"\n",
+        "references": [
+            "https://specterops.io/blog/2020/01/22/revisiting-remote-desktop-lateral-movement/",
+            "https://www.elastic.co/security-labs/hunting-for-lateral-movement-using-event-query-language"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "4fe9d835-40e1-452d-8230-17c147cafad8",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.001",
+                                "name": "Remote Desktop Protocol",
+                                "reference": "https://attack.mitre.org/techniques/T1021/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1570",
+                        "name": "Lateral Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1570/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 320
+    },
+    "id": "4fe9d835-40e1-452d-8230-17c147cafad8_320",
+    "type": "security-rule"
+}

@@ -1,0 +1,137 @@
+rules:
+  - path: /v1/organizations/usage_report/messages
+    methods: ['GET']
+    query_params:
+      page: 'page_abc123'
+      starting_at: '{starting_at:.*}'
+      ending_at: '{ending_at:.*}'
+      bucket_width: '1h'
+    request_headers:
+      x-api-key:
+        - 'xxxx'
+      anthropic-version:
+        - '2023-06-01'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "starting_at": "2025-01-08T01:00:00Z",
+                "ending_at": "2025-01-08T02:00:00Z",
+                "results": [
+                  {
+                    "model": "claude-sonnet-4-20250514",
+                    "workspace_id": "wrkspc_01ExampleWorkspace02",
+                    "service_tier": "standard",
+                    "inference_geo": "global",
+                    "context_window": null,
+                    "api_key_id": null,
+                    "account_id": null,
+                    "service_account_id": null,
+                    "uncached_input_tokens": 75000,
+                    "cache_read_input_tokens": 25000,
+                    "cache_creation": { "ephemeral_5m_input_tokens": 3000, "ephemeral_1h_input_tokens": 2000 },
+                    "output_tokens": 18000,
+                    "server_tool_use": { "web_search_requests": 0 }
+                  }
+                ]
+              }
+            ],
+            "has_more": false,
+            "next_page": null
+          }
+          ` }}
+  - path: /v1/organizations/usage_report/messages
+    methods: ['GET']
+    query_params:
+      starting_at: '{starting_at:.*}'
+      ending_at: '{ending_at:.*}'
+      bucket_width: '1h'
+    request_headers:
+      x-api-key:
+        - 'xxxx'
+      anthropic-version:
+        - '2023-06-01'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ if ge .req_num 3 }}{{ minify_json `
+          {
+            "data": [
+              {
+                "starting_at": "2025-01-08T02:00:00Z",
+                "ending_at": "2025-01-08T03:00:00Z",
+                "results": [
+                  {
+                    "model": "claude-sonnet-4-20250514",
+                    "workspace_id": "wrkspc_01ExampleWorkspace01",
+                    "service_tier": "standard",
+                    "inference_geo": "us",
+                    "context_window": null,
+                    "api_key_id": null,
+                    "account_id": null,
+                    "service_account_id": null,
+                    "uncached_input_tokens": 25000,
+                    "cache_read_input_tokens": 10000,
+                    "cache_creation": { "ephemeral_5m_input_tokens": 1000, "ephemeral_1h_input_tokens": 1000 },
+                    "output_tokens": 8000,
+                    "server_tool_use": { "web_search_requests": 0 }
+                  }
+                ]
+              }
+            ],
+            "has_more": false,
+            "next_page": null
+          }
+          ` }}{{ else }}{{ minify_json `
+          {
+            "data": [
+              {
+                "starting_at": "2025-01-08T00:00:00Z",
+                "ending_at": "2025-01-08T01:00:00Z",
+                "results": [
+                  {
+                    "model": "claude-sonnet-4-20250514",
+                    "workspace_id": "wrkspc_01ExampleWorkspace01",
+                    "service_tier": "standard",
+                    "inference_geo": "us",
+                    "context_window": null,
+                    "api_key_id": null,
+                    "account_id": null,
+                    "service_account_id": null,
+                    "uncached_input_tokens": 100000,
+                    "cache_read_input_tokens": 30000,
+                    "cache_creation": { "ephemeral_5m_input_tokens": 3000, "ephemeral_1h_input_tokens": 2000 },
+                    "output_tokens": 20000,
+                    "server_tool_use": { "web_search_requests": 0 }
+                  },
+                  {
+                    "model": "claude-sonnet-4-20250514",
+                    "workspace_id": "wrkspc_01ExampleWorkspace01",
+                    "service_tier": "batch",
+                    "inference_geo": "us",
+                    "context_window": null,
+                    "api_key_id": null,
+                    "account_id": null,
+                    "service_account_id": null,
+                    "uncached_input_tokens": 50000,
+                    "cache_read_input_tokens": 20000,
+                    "cache_creation": { "ephemeral_5m_input_tokens": 3000, "ephemeral_1h_input_tokens": 2000 },
+                    "output_tokens": 15000,
+                    "server_tool_use": { "web_search_requests": 0 }
+                  }
+                ]
+              }
+            ],
+            "has_more": true,
+            "next_page": "page_abc123"
+          }
+          ` }}{{ end }}

@@ -1,0 +1,425 @@
+dashboards:
+  - id: activemq_otel-broker-health
+    name: '[ActiveMQ OTel] Broker Health & Capacity'
+    description: >-
+      Broker process health, capacity headroom, JVM, and GC.
+    minimum_kibana_version: "8.14.0"
+
+    time_range:
+      from: "now-15m"
+      to: "now"
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: data_stream.dataset
+        equals: activemq.otel
+
+    controls:
+      - type: options
+        label: Broker
+        data_view: metrics-*
+        field: resource.attributes.activemq.broker.name
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: resource.attributes.host.name
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: activemq_otel-overview
+            - label: Broker Health & Capacity
+              dashboard: activemq_otel-broker-health
+            - label: Destinations & Message Flow
+              dashboard: activemq_otel-destinations
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [ActiveMQ OTel] Broker Health & Capacity
+
+            Deep-dive into broker process health and capacity:
+            - Memory, store, and temp utilization
+            - Usage vs limits
+            - Disk store & temp usage
+            - Blocked sends rate
+            - JVM heap, CPU, threads, GC, file descriptors
+
+      # ─── KPI Metric Row 1 (beside overview) ──────────────────────────
+      - title: Memory Utilization
+        hide_title: true
+        size: {w: eighth, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-activemq.otel-*
+            - "WHERE activemq.memory.utilization IS NOT NULL"
+            - "STATS mem_pct = AVG(activemq.memory.utilization) * 100"
+          primary:
+            field: mem_pct
+            label: Memory %
+            format:
+              type: percent
+              decimals: 1
+
+      - title: Store Utilization
+        hide_title: true
+        size: {w: eighth, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-activemq.otel-*
+            - "WHERE activemq.store.utilization IS NOT NULL"
+            - "STATS store_pct = AVG(activemq.store.utilization) * 100"
+          primary:
+            field: store_pct
+            label: Store %
+            format:
+              type: percent
+              decimals: 1
+
+      - title: Temp Utilization
+        hide_title: true
+        size: {w: eighth, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-activemq.otel-*
+            - "WHERE activemq.temp.utilization IS NOT NULL"
+            - "STATS temp_pct = AVG(activemq.temp.utilization) * 100"
+          primary:
+            field: temp_pct
+            label: Temp %
+            format:
+              type: percent
+              decimals: 1
+
+      - title: Store Limit
+        hide_title: true
+        size: {w: eighth, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-activemq.otel-*
+            - "WHERE activemq.store.limit IS NOT NULL"
+            - "STATS store_limit = MAX(activemq.store.limit)"
+          primary:
+            field: store_limit
+            label: Store Limit
+            format:
+              type: bytes
+              decimals: 2
+
+      # ─── KPI Metric Row 2 (beside overview) ──────────────────────────
+      - title: Temp Limit
+        hide_title: true
+        size: {w: 16, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-activemq.otel-*
+            - "WHERE activemq.temp.limit IS NOT NULL"
+            - "STATS temp_limit = MAX(activemq.temp.limit)"
+          primary:
+            field: temp_limit
+            label: Temp Limit
+            format:
+              type: bytes
+              decimals: 2
+
+      - title: Memory Usage vs Limit
+        hide_title: true
+        size: {w: 16, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-activemq.otel-*
+            - "WHERE activemq.memory.usage IS NOT NULL AND activemq.memory.limit IS NOT NULL"
+            - "STATS usage = MAX(activemq.memory.usage), `limit` = MAX(activemq.memory.limit)"
+          primary:
+            field: usage
+            label: Memory Used
+            format:
+              type: bytes
+              decimals: 2
+          secondary:
+            field: limit
+            label: Limit
+            format:
+              type: bytes
+              decimals: 2
+
+      # ─── Utilization Charts ──────────────────────────────────────────
+      - title: Memory Utilization Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.memory.utilization IS NOT NULL"
+            - "STATS mem_pct = AVG(activemq.memory.utilization) * 100 BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: mem_pct
+              label: Memory %
+              format:
+                type: percent
+                decimals: 1
+          appearance:
+            y_left_axis:
+              title: "Memory %"
+          legend:
+            visible: show
+            position: right
+
+      - title: Store Utilization Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.store.utilization IS NOT NULL"
+            - "STATS store_pct = AVG(activemq.store.utilization) * 100 BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: store_pct
+              label: Store %
+              format:
+                type: percent
+                decimals: 1
+          appearance:
+            y_left_axis:
+              title: "Store %"
+          legend:
+            visible: show
+            position: right
+
+      - title: Disk Store & Temp Usage %
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.disk.store_usage IS NOT NULL OR activemq.disk.temp_usage IS NOT NULL"
+            - "STATS store_pct = AVG(activemq.disk.store_usage), temp_pct = AVG(activemq.disk.temp_usage) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: store_pct
+              label: Disk Store %
+            - field: temp_pct
+              label: Disk Temp %
+          appearance:
+            y_left_axis:
+              title: "Usage %"
+          legend:
+            visible: show
+            position: right
+
+      - title: Blocked Sends Rate Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.queue.blocked.sends IS NOT NULL"
+            - "STATS blocked_rate = SUM(RATE(activemq.queue.blocked.sends)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: blocked_rate
+              label: Blocked Sends/sec
+          appearance:
+            y_left_axis:
+              title: "Blocked Sends/sec"
+          legend:
+            visible: show
+            position: right
+
+      # ─── JVM Charts ──────────────────────────────────────────────────
+      - title: JVM Heap Used vs Max Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.jvm.memory.heap.used IS NOT NULL OR activemq.jvm.memory.heap.max IS NOT NULL"
+            - "STATS heap_used = AVG(activemq.jvm.memory.heap.used), heap_max = AVG(activemq.jvm.memory.heap.max) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: heap_used
+              label: Heap Used
+              format:
+                type: bytes
+            - field: heap_max
+              label: Heap Max
+              format:
+                type: bytes
+          appearance:
+            y_left_axis:
+              title: "Bytes"
+          legend:
+            visible: show
+            position: right
+
+      - title: JVM CPU Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.jvm.cpu.process.usage IS NOT NULL"
+            - "STATS cpu_pct = AVG(activemq.jvm.cpu.process.usage) * 100 BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: cpu_pct
+              label: CPU %
+              format:
+                type: percent
+                decimals: 1
+          appearance:
+            y_left_axis:
+              title: "CPU %"
+          legend:
+            visible: show
+            position: right
+
+      - title: Thread Count Over Time
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.jvm.thread.count IS NOT NULL"
+            - "STATS threads = AVG(activemq.jvm.thread.count) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: threads
+              label: Threads
+              format:
+                type: number
+                decimals: 0
+          appearance:
+            y_left_axis:
+              title: "Threads"
+          legend:
+            visible: show
+            position: right
+
+      - title: GC Collection Rate by Collector
+        size: {w: 24, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.jvm.gc.collections IS NOT NULL"
+            - "STATS gc_rate = SUM(RATE(activemq.jvm.gc.collections)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), gc.name"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: gc_rate
+              label: GC Rate
+          breakdown:
+            field: gc.name
+          appearance:
+            y_left_axis:
+              title: "Collections/sec"
+          legend:
+            visible: show
+            position: right
+
+      # ─── File Descriptors (full-width) ───────────────────────────────
+      - title: File Descriptors (Open vs Max)
+        size: {w: 48, h: 10}
+        esql:
+          type: line
+          query:
+            - TS metrics-activemq.otel-*
+            - "WHERE activemq.jvm.file_descriptor.open IS NOT NULL OR activemq.jvm.file_descriptor.max IS NOT NULL"
+            - "STATS fd_open = AVG(activemq.jvm.file_descriptor.open), fd_max = AVG(activemq.jvm.file_descriptor.max) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)"
+            - "SORT time_bucket ASC"
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: fd_open
+              label: Open
+              format:
+                type: number
+                decimals: 0
+            - field: fd_max
+              label: Max
+              format:
+                type: number
+                decimals: 0
+          appearance:
+            y_left_axis:
+              title: "File Descriptors"
+          legend:
+            visible: show
+            position: right
+
+      # ─── Detail Table ────────────────────────────────────────────────
+      - title: Memory, Store, and Temp Limits by Broker
+        size: {w: 48, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-activemq.otel-*
+            - "WHERE activemq.memory.limit IS NOT NULL OR activemq.store.limit IS NOT NULL OR activemq.temp.limit IS NOT NULL"
+            - "EVAL broker = COALESCE(activemq.broker.name, resource.attributes.activemq.broker.name)"
+            - "STATS memory_limit = MAX(activemq.memory.limit), store_limit = MAX(activemq.store.limit), temp_limit = MAX(activemq.temp.limit) BY broker"
+            - "SORT broker ASC"
+          breakdowns:
+            - field: broker
+              label: Broker
+          metrics:
+            - field: memory_limit
+              label: Memory Limit
+              format:
+                type: bytes
+                decimals: 2
+            - field: store_limit
+              label: Store Limit
+              format:
+                type: bytes
+                decimals: 2
+            - field: temp_limit
+              label: Temp Limit
+              format:
+                type: bytes
+                decimals: 2

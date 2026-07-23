@@ -89,6 +89,7 @@ rules:
         body: |-
           {
             "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#communications/callRecords",
+            "@odata.nextLink": "{{ env "SERVER_ADDRESS" }}/communications/callRecords?$skiptoken=1",
             "value": [
               {
                 "id": "a66d-b6f2-443-b12e-5aa1b6",
@@ -120,6 +121,15 @@ rules:
                 }
               }
             ]
+          }
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#communications/callRecords",
+            "value": null
           }
   - path: /communications/callRecords/6ce-b8fa-4d44-a613-7f81/sessions
     methods: ["GET"]
@@ -1678,7 +1688,7 @@ rules:
           "code": "AuthenticationFailed",
           "message": "Authentication failed."
           }
-  - path: /admin/serviceAnnouncement/healthOverviews/Microsoft 365 suite
+  - path: /admin/serviceAnnouncement/healthOverviews
     methods: ["GET"]
     request_headers:
       Authorization:
@@ -1690,9 +1700,24 @@ rules:
             - "application/json"
         body: |-
           {
-          "service":"Microsoft 365 suite",
-          "status":"serviceDegradation",
-          "id":"OSDPPlatform"
+              "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#admin/serviceAnnouncement/healthOverviews",
+              "value": [
+                  {
+                        "service": "Microsoft Entra",
+                        "status": "serviceOperational",
+                        "id": "OrgLiveID"
+                  },
+                  {
+                        "service": "Microsoft 365 suite",
+                        "status": "serviceDegradation",
+                        "id": "OSDPPlatform"
+                  },
+                  {
+                        "service": "Microsoft 365 Copilot Chat",
+                        "status": "serviceOperational",
+                        "id": "CopilotChat"
+                  }
+                ]
           }
       - status_code: 404
         headers:

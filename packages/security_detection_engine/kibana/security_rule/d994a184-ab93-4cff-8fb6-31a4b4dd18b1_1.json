@@ -1,0 +1,135 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies successful outbound TLS sessions that negotiate deprecated protocol versions (SSLv3, TLS 1.0, or TLS 1.1) or weak cipher suites such as RC4, 3DES, NULL, EXPORT, or anonymous Diffie-Hellman. Adversaries-in-the-middle and legacy malware often force these negotiations to decrypt or intercept traffic. Modern clients and services should negotiate TLS 1.2 or 1.3 with strong ciphers on internet-bound connections.",
+        "false_positives": [
+            "Legacy internal applications, industrial control systems, or embedded devices may still require deprecated TLS versions or weak ciphers. Exclude known legacy destination IPs or subnets after validation."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-network_traffic.tls-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Deprecated TLS Version or Weak Cipher Negotiated Externally",
+        "new_terms_fields": [
+            "source.ip",
+            "destination.ip",
+            "tls.version"
+        ],
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Deprecated TLS Version or Weak Cipher Negotiated Externally\n\nTLS downgrade and weak-cipher negotiation expose sessions to interception or decryption. This rule flags completed\noutbound TLS handshakes from internal hosts to external destinations that negotiated SSLv3, TLS 1.0, TLS 1.1, or a\ncipher suite containing RC4, 3DES, NULL, EXPORT, or anonymous key exchange material.\n\n### Possible investigation steps\n\n- Review `source.ip`, `destination.ip`, `destination.port`, `tls.version`, `tls.version_protocol`, and `tls.cipher`.\n- Determine whether the destination is a known legacy partner, vendor appliance, or unmanaged IoT device.\n- Check for concurrent alerts on the source host (credential access, C2, or proxy manipulation).\n- Compare against baseline: does this destination normally negotiate modern TLS from other clients?\n\n### False positive analysis\n\n- Exclude validated legacy B2B endpoints, mainframe gateways, or SCADA systems that cannot be upgraded immediately.\n- Some older mobile or embedded clients may still offer weak ciphers even when connecting to modern services; confirm\n  whether the server accepted the weak option (this rule requires `tls.established:true`).\n\n### Response and remediation\n\n- Block or proxy traffic to the destination if downgrade appears attacker-driven.\n- Patch or replace the client or server that accepted deprecated TLS.\n- Enable TLS 1.2+ minimums on egress proxies and inspect for MITM appliances forcing weak negotiation.\n",
+        "query": "data_stream.dataset:network_traffic.tls\n  and network.protocol: tls\n  and network.transport: tcp\n  and tls.established: true\n  and source.ip:(10.0.0.0/8 or 172.16.0.0/12 or 192.168.0.0/16)\n  and not destination.ip:(\n    10.0.0.0/8 or\n    100.64.0.0/10 or\n    127.0.0.0/8 or\n    169.254.0.0/16 or\n    172.16.0.0/12 or\n    192.0.0.0/24 or\n    192.0.0.0/29 or\n    192.0.0.10/32 or\n    192.0.0.170/32 or\n    192.0.0.171/32 or\n    192.0.0.8/32 or\n    192.0.0.9/32 or\n    192.0.2.0/24 or\n    192.168.0.0/16 or\n    192.175.48.0/24 or\n    192.31.196.0/24 or\n    192.52.193.0/24 or\n    192.88.99.0/24 or\n    198.18.0.0/15 or\n    198.51.100.0/24 or\n    203.0.113.0/24 or\n    224.0.0.0/4 or\n    240.0.0.0/4 or\n    \"::1\" or\n    \"FE80::/10\" or\n    \"FF00::/8\"\n  )\n  and (\n    tls.version:(1.0 or 1.1) or\n    (tls.version_protocol:ssl and tls.version:3.0) or\n    (\n      not tls.version:1.3 and (\n        tls.cipher:(\n          *RC4* or\n          *3DES* or\n          *NULL* or\n          *EXPORT* or\n          *_anon_* or\n          *ADH* or\n          *AECDH*\n        )\n      )\n    )\n  )\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1557/",
+            "https://www.elastic.co/docs/reference/integrations/network_traffic",
+            "https://www.elastic.co/docs/reference/ecs/ecs-tls",
+            "https://www.rfc-editor.org/rfc/rfc9325.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "network.protocol",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.transport",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "tls.cipher",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "tls.established",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "tls.version",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "tls.version_protocol",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "d994a184-ab93-4cff-8fb6-31a4b4dd18b1",
+        "setup": "## Setup\n\nThis rule requires TLS metadata from the Elastic network_traffic integration (`network_traffic.tls` data stream) that\npopulates ECS `tls.version`, `tls.version_protocol`, `tls.cipher`, and `tls.established` fields.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Network",
+            "Use Case: Network Security Monitoring",
+            "Use Case: Threat Detection",
+            "Data Source: Network Traffic",
+            "Tactic: Credential Access",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1557",
+                        "name": "Adversary-in-the-Middle",
+                        "reference": "https://attack.mitre.org/techniques/T1557/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1573",
+                        "name": "Encrypted Channel",
+                        "reference": "https://attack.mitre.org/techniques/T1573/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "d994a184-ab93-4cff-8fb6-31a4b4dd18b1_1",
+    "type": "security-rule"
+}
