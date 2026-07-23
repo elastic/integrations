@@ -59,30 +59,30 @@ processors:
       description: Maps the Backstage span identifier to ECS span.id.
   - rename:
       field: json.request.url
-      target_field: _backstage.common.url
+      target_field: _tmp.common.url
       ignore_missing: true
       tag: normalize_audit_url_source
       if: ctx.json?.isAuditEvent == true && ctx.json?.request?.url != null
       description: Normalizes the audit URL source before shared URL parsing.
   - rename:
       field: json.url
-      target_field: _backstage.common.url
+      target_field: _tmp.common.url
       ignore_missing: true
       tag: normalize_application_url_source
       if: ctx.json?.isAuditEvent != true && ctx.json?.url != null
       description: Normalizes the application URL source before shared URL parsing.
   - set:
       field: url.original
-      copy_from: _backstage.common.url
+      copy_from: _tmp.common.url
       tag: set_common_url_original
-      if: ctx._backstage?.common?.url != null
+      if: ctx._tmp?.common?.url != null
       description: Preserves the unmodified URL before parsing its components.
   - uri_parts:
-      field: _backstage.common.url
+      field: _tmp.common.url
       target_field: url
       tag: parse_common_url
       ignore_failure: true
-      if: ctx._backstage?.common?.url != null
+      if: ctx._tmp?.common?.url != null
       description: Parses audit and application URLs into ECS URL components.
   - remove:
       field:
@@ -93,26 +93,26 @@ processors:
       tag: remove_common_url_non_path_parts
       description: Removes URL components that are not meaningful for Backstage request paths.
   - remove:
-      field: _backstage.common.url
+      field: _tmp.common.url
       ignore_missing: true
       tag: remove_common_url_source
       description: Removes the temporary normalized URL source.
   - rename:
       field: json.actor.userAgent
-      target_field: _backstage.common.user_agent
+      target_field: _tmp.common.user_agent
       ignore_missing: true
       tag: normalize_audit_user_agent_source
       if: ctx.json?.isAuditEvent == true && ctx.json?.actor?.userAgent != null
       description: Normalizes the audit user-agent source before shared ECS parsing.
   - rename:
       field: json.userAgent
-      target_field: _backstage.common.user_agent
+      target_field: _tmp.common.user_agent
       ignore_missing: true
       tag: normalize_application_user_agent_source
       if: ctx.json?.isAuditEvent != true && ctx.json?.userAgent != null
       description: Normalizes the application user-agent source before shared ECS parsing.
   - rename:
-      field: _backstage.common.user_agent
+      field: _tmp.common.user_agent
       target_field: user_agent.original
       ignore_missing: true
       tag: rename_common_user_agent
@@ -126,20 +126,20 @@ processors:
       description: Parses the normalized Backstage user agent into ECS fields.
   - rename:
       field: json.request.method
-      target_field: _backstage.common.http_method
+      target_field: _tmp.common.http_method
       ignore_missing: true
       tag: normalize_audit_http_method_source
       if: ctx.json?.isAuditEvent == true && ctx.json?.request?.method != null
       description: Normalizes the audit HTTP method source before shared ECS mapping.
   - rename:
       field: json.method
-      target_field: _backstage.common.http_method
+      target_field: _tmp.common.http_method
       ignore_missing: true
       tag: normalize_application_http_method_source
       if: ctx.json?.isAuditEvent != true && ctx.json?.method != null
       description: Normalizes the application HTTP method source before shared ECS mapping.
   - rename:
-      field: _backstage.common.http_method
+      field: _tmp.common.http_method
       target_field: http.request.method
       ignore_missing: true
       tag: rename_common_http_method
@@ -152,7 +152,7 @@ processors:
       tag: remove_common_timestamp_sources
       description: Removes timestamp source fields after they have been parsed.
   - remove:
-      field: _backstage
+      field: _tmp
       ignore_missing: true
       tag: remove_common_temporary_fields
       description: Removes temporary fields used while normalizing format-specific sources.
