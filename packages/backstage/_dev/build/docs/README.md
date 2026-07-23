@@ -1,3 +1,5 @@
+{{- generatedHeader }}
+
 # Backstage Integration for Elastic
 
 ## Overview
