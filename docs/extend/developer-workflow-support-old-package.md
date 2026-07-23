@@ -154,6 +154,31 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 
     In order to keep track, this new PR should have a reference (relates) to the backport PR too in its description.
 
+## Package owner synchronization
+
+Backport branches are created from historical commits, so their `manifest.yml` owner field and `.github/CODEOWNERS` entries may be stale from the start and can drift further as packages change hands on `main`. Because GitHub resolves PR reviewers from the CODEOWNERS on the PR's **base branch**, a stale backport branch notifies the wrong team.
+
+Two mechanisms keep owners in sync.
+
+### Automatic sync during apply
+
+When `backport_apply.sh` (or `mage applyBackport`) creates a backport PR, it automatically syncs the package's owners from `main` as a separate commit on top of the cherry-pick:
+
+- **What is synced:** the `owner.github` field in `manifest.yml`, the package's own `.github/CODEOWNERS` line, and any sub-path entries nested under the package (data streams, `kibana/` directory, and other subdirectory overrides).
+- **Commit message:** `Sync <package> package owners from main`
+- **No-op:** if the owners already match `main`, the commit is skipped silently.
+- **Warn-and-continue:** if `main` cannot be fetched, or the package no longer exists on `main`, a warning is printed and the apply continues without syncing. The backport PR is still opened; the CI check below surfaces any remaining mismatch.
+
+### CI check: `check-backport-owners`
+
+A Buildkite step runs on every pull request targeting a `backport-*` branch (triggered when `packages/**` or `.github/CODEOWNERS` changes) and posts a comment on the PR with one of three outcomes:
+
+- **✅ In sync** — `Package owners are in sync with main.` No action needed.
+- **Mismatch** — `Package owners are out of sync with main:` followed by a list of packages and the team(s) they should now be owned by. Update `manifest.yml` (`owner.github`) and `.github/CODEOWNERS` for each listed package to match the teams shown.
+- **Check failed** — `The backport owner check failed to run` with a link to the build log. This is usually a transient network error fetching `main`; re-run the build.
+
+The step is currently `soft_fail: true` — a mismatch posts a warning comment but does not block merge.
+
 ## Backport checklist comment
 
 When you open or update a pull request targeting `main`, the `post-backport-checklist.yml` workflow automatically posts a comment listing the active backport branches for every package touched by that PR. The comment is updated on every push — any manual edits are overwritten. It only appears when at least one package in the PR's diff has active backport branches in `.backports.yml`.
