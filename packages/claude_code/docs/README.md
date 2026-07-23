@@ -367,7 +367,6 @@ An example event for `events` looks as following:
 | organization.id | Unique identifier for the organization. | keyword |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
 | process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |

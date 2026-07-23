@@ -85,6 +85,10 @@ processors:
   - date:
       field: _tmp.timestamp
       tag: default-tmp-timestamp parsing
+      description: >-
+        Avoid processing if _tmp.timestamp is unset, preventing a "field [_tmp]
+        not present" error on top of the grok_time_details failure.
+      if: ctx._tmp?.timestamp != null
       formats:
         - MMM [ ]d[d] HH:mm:ss[.SSSSSS][.SSS]
         - ISO8601
@@ -98,7 +102,7 @@ processors:
             field: error.message
             value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
   - date:
-      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      if: ctx._tmp?.timestamp != null && ctx.event?.timezone != null && ctx.event.timezone != ''
       field: _tmp.timestamp
       timezone: '{{{event.timezone}}}'
       tag: default-tmp-timestamp-with timezone parsing
@@ -277,6 +281,26 @@ processors:
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
+  - append:
+      tag: append_tag_timestamp_defaulted_to_ingest_time
+      description: >-
+        Tag events whose @timestamp is defaulted to ingest time (no event date
+        parsed) so the assumed timestamps can be filtered out or audited.
+      field: tags
+      value: cisco_ise.timestamp_defaulted_to_ingest_time
+      allow_duplicates: false
+      if: ctx['@timestamp'] == null
+  - set:
+      tag: set_fallback_timestamp_to_ingest_time
+      description: >-
+        Default @timestamp to ingest time when no event date was parsed, so
+        valid but timestamp-less events (e.g. device-sensor fragments) are not
+        routed to the failure store. Guarded on null to never overwrite a
+        parsed event time.
+      field: '@timestamp'
+      value: '{{{_ingest.timestamp}}}'
+      if: ctx['@timestamp'] == null
+      ignore_failure: true
 on_failure:
   - set:
       field: event.kind

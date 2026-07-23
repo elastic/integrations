@@ -1401,26 +1401,26 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-06T08:54:17.194Z",
+    "@timestamp": "2022-04-06T08:54:00.000Z",
     "agent": {
-        "ephemeral_id": "cd27983f-f477-4671-ad9d-7cd42a523ba0",
-        "id": "85a2a1e9-ed68-4e03-b4f2-b192f24c1119",
-        "name": "elastic-agent-70506",
+        "ephemeral_id": "ba6b66d4-532a-4b4e-926e-bd024c37e2a4",
+        "id": "6b583d51-023a-4ec5-98ff-e5e8c8c7d880",
+        "name": "elastic-agent-80119",
         "type": "filebeat",
-        "version": "8.19.13"
+        "version": "8.19.18"
     },
     "data_stream": {
         "dataset": "sentinel_one.threat",
-        "namespace": "10331",
+        "namespace": "67558",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "85a2a1e9-ed68-4e03-b4f2-b192f24c1119",
+        "id": "6b583d51-023a-4ec5-98ff-e5e8c8c7d880",
         "snapshot": false,
-        "version": "8.19.13"
+        "version": "8.19.18"
     },
     "event": {
         "action": "SentinelOne Cloud",
@@ -1428,12 +1428,11 @@ An example event for `threat` looks as following:
         "category": [
             "malware"
         ],
-        "created": "2026-03-23T06:41:19.922Z",
         "dataset": "sentinel_one.threat",
         "id": "1234567890123456789",
-        "ingested": "2026-03-23T06:41:20Z",
+        "ingested": "2026-07-08T07:26:48Z",
         "kind": "alert",
-        "original": "{\"agentDetectionInfo\":{\"accountId\":\"111245567890123456789\",\"accountName\":\"Default2\",\"agentDetectionState\":null,\"agentDomain\":\"WORKGROUP\",\"agentIpV4\":\"127.0.0.1\",\"agentIpV6\":\"2a02:cf40::\",\"agentLastLoggedInUpn\":null,\"agentLastLoggedInUserMail\":null,\"agentLastLoggedInUserName\":\"\",\"agentMitigationMode\":\"protect\",\"agentOsName\":\"linux\",\"agentOsRevision\":\"1234\",\"agentRegisteredAt\":\"2022-04-08T08:26:45.515278Z\",\"agentUuid\":\"fwfbxxxxxxxxxxqcfjfnxxxxxxxxx\",\"agentVersion\":\"21.x.x\",\"cloudProviders\":{},\"externalIp\":\"81.2.69.143\",\"groupId\":\"1444567890123456789\",\"groupName\":\"Default Group\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\"},\"agentRealtimeInfo\":{\"accountId\":\"1456567890123456789\",\"accountName\":\"Default2\",\"activeThreats\":8,\"agentComputerName\":\"test-LINUX\",\"agentDecommissionedAt\":null,\"agentDomain\":\"WORKGROUP\",\"agentId\":\"1234567890123456789\",\"agentInfected\":true,\"agentIsActive\":true,\"agentIsDecommissioned\":false,\"agentMachineType\":\"server\",\"agentMitigationMode\":\"detect\",\"agentNetworkStatus\":\"connected\",\"agentOsName\":\"linux\",\"agentOsRevision\":\"1234\",\"agentOsType\":\"linux\",\"agentUuid\":\"fwfbxxxxxxxxxxqcfjfnxxxxxxxxx\",\"agentVersion\":\"21.x.x.1234\",\"groupId\":\"1234567890123456789\",\"groupName\":\"Default Group\",\"networkInterfaces\":[{\"id\":\"1234567890123456789\",\"inet\":[\"10.0.0.1\"],\"inet6\":[\"2a02:cf40:add:4002:91f2:a9b2:e09a:6fc6\"],\"name\":\"Ethernet\",\"physical\":\"DE:AD:00:00:BE:EF\"}],\"operationalState\":\"na\",\"rebootRequired\":false,\"scanAbortedAt\":null,\"scanFinishedAt\":\"2022-04-09T09:18:21.090855Z\",\"scanStartedAt\":\"2022-04-09T08:26:52.838047Z\",\"scanStatus\":\"finished\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\",\"storageName\":null,\"storageType\":null,\"userActionsNeeded\":[]},\"containerInfo\":{\"id\":null,\"image\":null,\"labels\":null,\"name\":null},\"id\":\"1234567890123456789\",\"indicators\":[],\"kubernetesInfo\":{\"cluster\":null,\"controllerKind\":null,\"controllerLabels\":null,\"controllerName\":null,\"namespace\":null,\"namespaceLabels\":null,\"node\":null,\"pod\":null,\"podLabels\":null},\"mitigationStatus\":[{\"action\":\"unquarantine\",\"actionsCounters\":{\"failed\":0,\"notFound\":0,\"pendingReboot\":0,\"success\":1,\"total\":1},\"agentSupportsReport\":true,\"groupNotFound\":false,\"lastUpdate\":\"2022-04-06T08:54:17.198002Z\",\"latestReport\":\"/threats/mitigation-report\",\"mitigationEndedAt\":\"2022-04-06T08:54:17.101000Z\",\"mitigationStartedAt\":\"2022-04-06T08:54:17.101000Z\",\"status\":\"success\"},{\"action\":\"kill\",\"actionsCounters\":null,\"agentSupportsReport\":true,\"groupNotFound\":false,\"lastUpdate\":\"2022-04-06T08:45:55.303355Z\",\"latestReport\":null,\"mitigationEndedAt\":\"2022-04-06T08:45:55.297364Z\",\"mitigationStartedAt\":\"2022-04-06T08:45:55.297363Z\",\"status\":\"success\"}],\"threatInfo\":{\"analystVerdict\":\"undefined\",\"analystVerdictDescription\":\"Undefined\",\"automaticallyResolved\":false,\"browserType\":null,\"certificateId\":\"\",\"classification\":\"Trojan\",\"classificationSource\":\"Cloud\",\"cloudFilesHashVerdict\":\"black\",\"collectionId\":\"1234567890123456789\",\"confidenceLevel\":\"malicious\",\"createdAt\":\"2022-04-06T08:45:54.519988Z\",\"detectionEngines\":[{\"key\":\"sentinelone_cloud\",\"title\":\"SentinelOne Cloud\"}],\"detectionType\":\"static\",\"engines\":[\"SentinelOne Cloud\"],\"externalTicketExists\":false,\"externalTicketId\":null,\"failedActions\":false,\"fileExtension\":\"EXE\",\"fileExtensionType\":\"Executable\",\"filePath\":\"default.exe\",\"fileSize\":1234,\"fileVerificationType\":\"NotSigned\",\"identifiedAt\":\"2022-04-06T08:45:53.968000Z\",\"incidentStatus\":\"unresolved\",\"incidentStatusDescription\":\"Unresolved\",\"initiatedBy\":\"agent_policy\",\"initiatedByDescription\":\"Agent Policy\",\"initiatingUserId\":null,\"initiatingUsername\":null,\"isFileless\":false,\"isValidCertificate\":false,\"maliciousProcessArguments\":null,\"md5\":null,\"mitigatedPreemptively\":false,\"mitigationStatus\":\"not_mitigated\",\"mitigationStatusDescription\":\"Not mitigated\",\"originatorProcess\":\"default.exe\",\"pendingActions\":false,\"processUser\":\"test user\",\"publisherName\":\"\",\"reachedEventsLimit\":false,\"rebootRequired\":false,\"sha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"sha256\":null,\"storyline\":\"D0XXXXXXXXXXAF4D\",\"threatId\":\"1234567890123456789\",\"threatName\":\"default.exe\",\"updatedAt\":\"2022-04-06T08:54:17.194122Z\"},\"whiteningOptions\":[\"hash\"]}",
+        "original": "{\"agentDetectionInfo\":{\"accountId\":\"111245567890123456789\",\"accountName\":\"Default2\",\"agentDetectionState\":null,\"agentDomain\":\"WORKGROUP\",\"agentIpV4\":\"127.0.0.1\",\"agentIpV6\":\"2a02:cf40::\",\"agentLastLoggedInUpn\":null,\"agentLastLoggedInUserMail\":null,\"agentLastLoggedInUserName\":\"\",\"agentMitigationMode\":\"protect\",\"agentOsName\":\"linux\",\"agentOsRevision\":\"1234\",\"agentRegisteredAt\":\"2022-04-08T08:26:45.515278Z\",\"agentUuid\":\"fwfbxxxxxxxxxxqcfjfnxxxxxxxxx\",\"agentVersion\":\"21.x.x\",\"cloudProviders\":{},\"externalIp\":\"81.2.69.143\",\"groupId\":\"1444567890123456789\",\"groupName\":\"Default Group\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\"},\"agentRealtimeInfo\":{\"accountId\":\"1456567890123456789\",\"accountName\":\"Default2\",\"activeThreats\":8,\"agentComputerName\":\"test-LINUX\",\"agentDecommissionedAt\":null,\"agentDomain\":\"WORKGROUP\",\"agentId\":\"1234567890123456789\",\"agentInfected\":true,\"agentIsActive\":true,\"agentIsDecommissioned\":false,\"agentMachineType\":\"server\",\"agentMitigationMode\":\"detect\",\"agentNetworkStatus\":\"connected\",\"agentOsName\":\"linux\",\"agentOsRevision\":\"1234\",\"agentOsType\":\"linux\",\"agentUuid\":\"fwfbxxxxxxxxxxqcfjfnxxxxxxxxx\",\"agentVersion\":\"21.x.x.1234\",\"groupId\":\"1234567890123456789\",\"groupName\":\"Default Group\",\"networkInterfaces\":[{\"id\":\"1234567890123456789\",\"inet\":[\"10.0.0.1\"],\"inet6\":[\"2a02:cf40:add:4002:91f2:a9b2:e09a:6fc6\"],\"name\":\"Ethernet\",\"physical\":\"DE:AD:00:00:BE:EF\"}],\"operationalState\":\"na\",\"rebootRequired\":false,\"scanAbortedAt\":null,\"scanFinishedAt\":\"2022-04-09T09:18:21.090855Z\",\"scanStartedAt\":\"2022-04-09T08:26:52.838047Z\",\"scanStatus\":\"finished\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\",\"storageName\":null,\"storageType\":null,\"userActionsNeeded\":[]},\"containerInfo\":{\"id\":null,\"image\":null,\"labels\":null,\"name\":null},\"id\":\"1234567890123456789\",\"indicators\":[],\"kubernetesInfo\":{\"cluster\":null,\"controllerKind\":null,\"controllerLabels\":null,\"controllerName\":null,\"namespace\":null,\"namespaceLabels\":null,\"node\":null,\"pod\":null,\"podLabels\":null},\"mitigationStatus\":[{\"action\":\"unquarantine\",\"actionsCounters\":{\"failed\":0,\"notFound\":0,\"pendingReboot\":0,\"success\":1,\"total\":1},\"agentSupportsReport\":true,\"groupNotFound\":false,\"lastUpdate\":\"2022-04-06T08:54:17.198002Z\",\"latestReport\":\"/threats/mitigation-report\",\"mitigationEndedAt\":\"2022-04-06T08:54:17.101000Z\",\"mitigationStartedAt\":\"2022-04-06T08:54:17.101000Z\",\"status\":\"success\"},{\"action\":\"kill\",\"actionsCounters\":null,\"agentSupportsReport\":true,\"groupNotFound\":false,\"lastUpdate\":\"2022-04-06T08:45:55.303355Z\",\"latestReport\":null,\"mitigationEndedAt\":\"2022-04-06T08:45:55.297364Z\",\"mitigationStartedAt\":\"2022-04-06T08:45:55.297363Z\",\"status\":\"success\"}],\"threatInfo\":{\"analystVerdict\":\"undefined\",\"analystVerdictDescription\":\"Undefined\",\"automaticallyResolved\":false,\"browserType\":null,\"certificateId\":\"\",\"classification\":\"Trojan\",\"classificationSource\":\"Cloud\",\"cloudFilesHashVerdict\":\"black\",\"collectionId\":\"1234567890123456789\",\"confidenceLevel\":\"malicious\",\"createdAt\":\"2022-04-06T08:45:54.519988Z\",\"detectionEngines\":[{\"key\":\"sentinelone_cloud\",\"title\":\"SentinelOne Cloud\"}],\"detectionType\":\"static\",\"engines\":[\"SentinelOne Cloud\"],\"externalTicketExists\":false,\"externalTicketId\":null,\"failedActions\":false,\"fileExtension\":\"EXE\",\"fileExtensionType\":\"Executable\",\"filePath\":\"default.exe\",\"fileSize\":1234,\"fileVerificationType\":\"NotSigned\",\"identifiedAt\":\"2022-04-06T08:45:53.968000Z\",\"incidentStatus\":\"unresolved\",\"incidentStatusDescription\":\"Unresolved\",\"initiatedBy\":\"agent_policy\",\"initiatedByDescription\":\"Agent Policy\",\"initiatingUserId\":null,\"initiatingUsername\":null,\"isFileless\":false,\"isValidCertificate\":false,\"maliciousProcessArguments\":null,\"md5\":null,\"mitigatedPreemptively\":false,\"mitigationStatus\":\"not_mitigated\",\"mitigationStatusDescription\":\"Not mitigated\",\"originatorProcess\":\"default.exe\",\"pendingActions\":false,\"processUser\":\"test user\",\"publisherName\":\"\",\"reachedEventsLimit\":false,\"rebootRequired\":false,\"sha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"sha256\":null,\"storyline\":\"D0XXXXXXXXXXAF4D\",\"threatId\":\"1234567890123456789\",\"threatName\":\"default.exe\",\"updatedAt\":\"2022-04-06T08:54:17.194122Z\"},\"timeline\":{\"activityType\":3608,\"createdAt\":\"2022-04-06T08:54:00.000000Z\",\"data\":{\"ruledescription\":\"Detects suspicious encoded PowerShell command execution\",\"ruleid\":\"1412136126226508571\",\"rulename\":\"Suspicious PowerShell Encoded Command\"},\"id\":\"activity-0001\",\"primaryDescription\":\"STAR rule matched\",\"threatId\":\"1234567890123456789\",\"updatedAt\":\"2022-04-06T08:54:17.194122Z\"},\"whiteningOptions\":[\"hash\"]}",
         "type": [
             "info"
         ]
@@ -1499,6 +1498,11 @@ An example event for `threat` looks as following:
         "user": [
             "test user"
         ]
+    },
+    "rule": {
+        "description": "Detects suspicious encoded PowerShell command execution",
+        "id": "1412136126226508571",
+        "name": "Suspicious PowerShell Encoded Command"
     },
     "sentinel_one": {
         "account": {
@@ -1662,8 +1666,18 @@ An example event for `threat` looks as following:
             "process_user": "test user",
             "reached_events_limit": false,
             "reboot_required": false,
+            "rule_description": "Detects suspicious encoded PowerShell command execution",
+            "rule_id": "1412136126226508571",
+            "rule_name": "Suspicious PowerShell Encoded Command",
             "storyline": "D0XXXXXXXXXXAF4D",
             "threat_id": "1234567890123456789",
+            "timeline": {
+                "activity_type": 3608,
+                "created_at": "2022-04-06T08:54:00.000Z",
+                "id": "activity-0001",
+                "primary_description": "STAR rule matched",
+                "updated_at": "2022-04-06T08:54:17.194Z"
+            },
             "whitening_option": [
                 "hash"
             ]
@@ -1674,6 +1688,7 @@ An example event for `threat` looks as following:
         }
     },
     "tags": [
+        "run_as_cel",
         "preserve_original_event",
         "forwarded",
         "sentinel_one-threat"
@@ -1826,8 +1841,26 @@ An example event for `threat` looks as following:
 | sentinel_one.threat.publisher.name | Certificate publisher. | keyword |
 | sentinel_one.threat.reached_events_limit | Has number of OS events for this threat reached the limit, resulting in a partial attack storyline. | boolean |
 | sentinel_one.threat.reboot_required | A reboot is required on the endpoint for at least one threat. | boolean |
+| sentinel_one.threat.rule_description | STAR rule description, when present in the timeline `data` object for activity-specific entries. | keyword |
+| sentinel_one.threat.rule_id | STAR rule identifier, when present in the timeline `data` object for activity-specific entries. | keyword |
+| sentinel_one.threat.rule_name | STAR rule name, when present in the timeline `data` object for activity-specific entries. | keyword |
 | sentinel_one.threat.storyline | Storyline identifier from agent. | keyword |
 | sentinel_one.threat.threat_id | Threat id. | keyword |
+| sentinel_one.threat.timeline.account.id | Related account (if applicable). | keyword |
+| sentinel_one.threat.timeline.activity_type | Activity type. | long |
+| sentinel_one.threat.timeline.agent.id | Related Agent (if applicable). | keyword |
+| sentinel_one.threat.timeline.agent_updated_version | Agent's new version (if applicable). | keyword |
+| sentinel_one.threat.timeline.created_at | Activity creation time (UTC). | date |
+| sentinel_one.threat.timeline.data | Extra activity specific data. | flattened |
+| sentinel_one.threat.timeline.group.id | Related group (if applicable). | keyword |
+| sentinel_one.threat.timeline.hash | Threat file hash (if applicable). | keyword |
+| sentinel_one.threat.timeline.id | Activity ID. | keyword |
+| sentinel_one.threat.timeline.os_family | Agent's OS type (if applicable). | keyword |
+| sentinel_one.threat.timeline.primary_description | Primary description. | keyword |
+| sentinel_one.threat.timeline.secondary_description | Secondary description. | keyword |
+| sentinel_one.threat.timeline.site.id | Related site (if applicable). | keyword |
+| sentinel_one.threat.timeline.updated_at | Activity last updated time (UTC). | date |
+| sentinel_one.threat.timeline.user.id | The user who invoked the activity (if applicable). | keyword |
 | sentinel_one.threat.whitening_option | Whitening options. | keyword |
 | sentinel_one.threat_classification.name |  | keyword |
 | sentinel_one.threat_classification.source |  | keyword |
