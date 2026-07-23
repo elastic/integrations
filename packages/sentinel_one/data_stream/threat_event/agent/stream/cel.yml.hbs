@@ -18,6 +18,7 @@ resource.url: {{url}}
 state:
   api_token: {{api_token}}
   batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
 {{#if site_ids }}
   site_ids: !!str {{site_ids}}
 {{/if}}
@@ -35,8 +36,17 @@ program: |-
           state.url.trim_right("/") + "/web/api/v2.1/threats?" + {
             "skipCount": ["true"],
             "limit": [string(state.batch_size)],
+            "sortBy": ["updatedAt"],
+            "sortOrder": ["asc"],
+            "updatedAt__gte": [
+              state.?cursor.?list_updated_at_gte.orValue(
+                state.?cursor.?last_timestamp.orValue(
+                  (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+                )
+              )
+            ],
             ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
-            ?"cursor": state.?cursor.next_page.token.optMap(v, [v]),
+            ?"cursor": state.?cursor.?next_page.token.optMap(v, [v]),
           }.format_query()
         ).with(
           {
@@ -53,6 +63,12 @@ program: |-
                   ?"token": (body.?pagination.nextCursor.orValue(null) != null) ? optional.of(body.pagination.nextCursor) : optional.none(),
                 },
                 "fetch_more": body.?pagination.nextCursor.orValue(null) != null,
+                "list_updated_at_gte": state.?cursor.?list_updated_at_gte.orValue(
+                  state.?cursor.?last_timestamp.orValue(
+                    (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+                  )
+                ),
+                ?"last_timestamp": state.?cursor.last_timestamp,
               },
             }
           )
@@ -71,7 +87,6 @@ program: |-
               },
             },
             "want_more": false,
-            "cursor": {},
           }
         )
       )
@@ -121,6 +136,11 @@ program: |-
                       ?"token": has_more_events ? optional.of(body.pagination.nextCursor) : optional.none(),
                     },
                     "fetch_more": state.?cursor.fetch_more.orValue(false),
+                    "list_updated_at_gte": state.cursor.list_updated_at_gte,
+                    ?"last_timestamp": has_more_events ?
+                      state.?cursor.last_timestamp
+                    :
+                      state.cursor.worklist.data[0].?threatInfo.updatedAt.or(state.?cursor.last_timestamp),
                   },
                 }
               )
@@ -147,7 +167,6 @@ program: |-
         {
           "events": [],
           "want_more": false,
-          "cursor": {},
         }
     )
   )
