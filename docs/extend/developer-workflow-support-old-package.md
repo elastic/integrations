@@ -154,6 +154,43 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 
     In order to keep track, this new PR should have a reference (relates) to the backport PR too in its description.
 
+## Backport checklist comment
+
+When you open or update a pull request targeting `main`, the `post-backport-checklist.yml` workflow automatically posts a comment listing the active backport branches for every package touched by that PR. The comment is updated on every push — any manual edits are overwritten. It only appears when at least one package in the PR's diff has active backport branches in `.backports.yml`.
+
+Example comment:
+
+```
+## Backport branches
+
+> [!IMPORTANT]
+> Only branches for packages touched by this PR's current diff are shown.
+> This comment is updated automatically on each push — manual edits will be overwritten.
+
+Active backport branches for the packages touched by this PR:
+
+**aws**
+- `backport-aws-1.19` (maintained until 2025-06-30)
+- `backport-aws-6.x`
+
+---
+
+> [!TIP]
+> If a branch above is no longer required, set `archived: true` in its entry in `.backports.yml` to stop it appearing here.
+> If the branch has a known end-of-life date, prefer `maintained_until: "YYYY-MM-DD"` — it will be excluded automatically once that date passes.
+```
+
+The comment is currently **informational only** — no checkboxes are rendered and no automation is triggered by it. If you do not intend to backport, you can safely ignore it.
+
+**Suppressing a branch from the checklist:**
+
+To stop a branch appearing in the checklist, update its entry in `.backports.yml`:
+
+- **`archived: true`** — excludes the branch immediately, with no fixed end-of-life date.
+- **`maintained_until: "YYYY-MM-DD"`** — excludes the branch automatically once that date passes; preferred when the end-of-life date is known.
+
+Archiving a branch does not delete it. Packages can still be published from an archived branch; archiving only removes the branch from the checklist and inventory validation.
+
 ## Known issues
 
 1. Missing `elastic-package stack shellinit` in backport branch:
