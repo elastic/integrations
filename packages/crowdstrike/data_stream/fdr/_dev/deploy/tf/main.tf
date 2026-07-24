@@ -100,14 +100,14 @@ resource "aws_scheduler_schedule" "eventbridge_scheduler_every1minute" {
       cid        = "ffffffff15754bcfb5f9152ec7ac90ac"
       timestamp  = 1625677488615
       fileCount  = 3
-      totalSize  = 128157
+      totalSize  = 132054
       bucket     = aws_s3_bucket.crowdstrike_fdr.id
       pathPrefix = "data/f0714ca5-3689-448d-b5cc-582a6f7a56b1"
       "files" : [
         {
           "path" : aws_s3_object.crowdstrike_data.key,
-          "size" : 123254,
-          "checksum" : "45073b6d00df38c13e2f3639bcdf4652"
+          "size" : 127151,
+          "checksum" : "4181bff30762315fd386c4a04467836d"
         },
         {
           "path" : aws_s3_object.crowdstrike_aidmaster.key,
