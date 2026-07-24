@@ -1,0 +1,30 @@
+wait_for_data_timeout: 1m
+input: otelcol
+service: akamai-siem-emulator
+# The akamai_siem receiver redirects all events to the akamai.siem dataset
+# (see the data_stream.dataset var), so hits land in logs-akamai.siem-* rather
+# than logs-akamai.siem_otel-*. elastic-package cannot yet assert on a
+# redirected dataset, so this test is skipped until that support lands.
+skip:
+  reason: "elastic-package system tests don't currently support redirecting all events to another dataset"
+  link: https://github.com/elastic/elastic-package/issues/2109
+vars: ~
+data_stream:
+  vars:
+    api_host: "http://akamai-siem-emulator:9903"
+    client_token: ct-f625f0b8-9c8f-44ce-8250-eaf17bc93051
+    client_secret: cs-0d15cfd9-764a-48e6-a822-22756180ddb8
+    access_token: at-6b8c7217-8748-490d-b0f5-bfeb72b2e7cd
+    config_ids: "123456"
+    # initial_interval should get automatically capped to 12h by the receiver (Akamai API limit).
+    initial_interval: 24h
+    interval: 1m
+    event_limit: 20
+    preserve_original_event: true
+    namespace: default
+    # Disable cursor persistence so the test performs a single deterministic drain
+    # of the initial window without wiring the file_storage extension.
+    enable_storage: false
+assert:
+  # 12 hours of emulator events at 5-minute spacing (= 12 * 60/5).
+  hit_count: 144
