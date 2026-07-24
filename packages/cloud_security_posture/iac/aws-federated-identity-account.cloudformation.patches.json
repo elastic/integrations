@@ -1,30 +1,34 @@
 [
   {
     "op": "add",
-    "path": "/Resources/ElasticCloudConnectorsRole/Properties/ManagedPolicyArns/-",
+    "path": "/Resources/ElasticFederatedIdentityRole/Properties/ManagedPolicyArns/-",
     "value": "arn:aws:iam::aws:policy/SecurityAudit"
   },
   {
     "op": "add",
-    "path": "/Resources/ElasticCloudConnectorsRole/Properties/Policies/-",
+    "path": "/Resources/ElasticCSPMSupplementalPolicy",
     "value": {
-      "PolicyName": "ElasticCSPMAWSSupplementalAccess",
-      "PolicyDocument": {
-        "Version": "2012-10-17",
-        "Statement": [
-          {
-            "Sid": "CSPMSupplemental",
-            "Effect": "Allow",
-            "Action": [
-              "access-analyzer:ListAnalyzers",
-              "organizations:DescribeOrganization",
-              "organizations:ListAccounts",
-              "organizations:ListDelegatedAdministrators",
-              "account:GetAlternateContact"
-            ],
-            "Resource": "*"
-          }
-        ]
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "ElasticCSPMSupplemental",
+        "Roles": [{ "Ref": "ElasticFederatedIdentityRole" }],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "CSPMSupplemental",
+              "Effect": "Allow",
+              "Action": [
+                "access-analyzer:ListAnalyzers",
+                "organizations:DescribeOrganization",
+                "organizations:ListAccounts",
+                "organizations:ListDelegatedAdministrators",
+                "account:GetAlternateContact"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
       }
     }
   }

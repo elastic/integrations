@@ -1,10 +1,10 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Elastic Cloud Connectors federated identity role for AWS — canonical base blueprint for single-account deployments. The cloud-iac-provisioner loads this template and applies RFC 6902 patches from each enabled integration to append the required IAM policies.",
+  "Description": "Elastic Federated Identity role for AWS — canonical base blueprint for single-account deployments. The cloud-iac-provisioner loads this template and appends RFC 6902 patches from each enabled integration as separate AWS::IAM::Policy resources.",
   "Parameters": {
     "ElasticResourceId": {
       "Type": "String",
-      "Description": "Elastic resource ID. Used to construct the ExternalId trust condition, uniquely scoping this role to the Elastic deployment."
+      "Description": "Elastic resource ID (deployment component ID or serverless project ID). Used to construct the ExternalId trust condition, uniquely scoping this role to the Elastic deployment."
     },
     "ElasticRoleARN": {
       "Type": "String",
@@ -13,10 +13,10 @@
     }
   },
   "Resources": {
-    "ElasticCloudConnectorsRole": {
+    "ElasticFederatedIdentityRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": { "Fn::Sub": "ElasticCloudConnectorsRole-${AWS::StackName}" },
+        "RoleName": { "Fn::Sub": "ElasticFederatedIdentity-${AWS::StackName}" },
         "Path": "/",
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
@@ -48,24 +48,35 @@
             }
           ]
         },
-        "ManagedPolicyArns": [],
-        "Policies": []
+        "ManagedPolicyArns": []
       }
     }
   },
   "Outputs": {
     "RoleArn": {
-      "Description": "ARN of the Elastic Cloud Connectors role. Supply this to the Elastic platform when configuring the integration.",
-      "Value": { "Fn::GetAtt": ["ElasticCloudConnectorsRole", "Arn"] }
+      "Description": "ARN of the Elastic Federated Identity role. Paste this into Kibana when configuring the integration.",
+      "Value": { "Fn::GetAtt": ["ElasticFederatedIdentityRole", "Arn"] }
     },
     "ExternalId": {
-      "Description": "UUID fragment used as part of the ExternalId trust condition. Supply this to the Elastic platform when configuring the integration.",
+      "Description": "Full ExternalId used in the trust condition. Paste this into Kibana when configuring the integration.",
       "Value": {
-        "Fn::Select": [
-          2,
-          { "Fn::Split": ["/", { "Ref": "AWS::StackId" }] }
+        "Fn::Join": [
+          "-",
+          [
+            { "Ref": "ElasticResourceId" },
+            {
+              "Fn::Select": [
+                2,
+                { "Fn::Split": ["/", { "Ref": "AWS::StackId" }] }
+              ]
+            }
+          ]
         ]
       }
+    },
+    "StackId": {
+      "Description": "CloudFormation stack ID. Store in Kibana to construct stack-update URLs when additional integrations are enabled.",
+      "Value": { "Ref": "AWS::StackId" }
     }
   }
 }

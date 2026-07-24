@@ -1,4 +1,4 @@
-format_version: 3.6.1
+format_version: 3.7.0
 name: aws
 title: AWS
 version: 7.1.1
@@ -150,6 +150,11 @@ var_groups:
         title: Shared Credentials
         vars: [shared_credential_file, credential_profile_name]
         hide_in_deployment_modes: [agentless]
+iac_blueprints:
+  - id: aws/federated-identity/account
+    format: cloudformation
+    title: "AWS federated identity role (base)"
+    patches: iac/aws-federated-identity-account.cloudformation.patches.json
 policy_templates:
   - name: awshealth
     title: AWS Health
@@ -158,6 +163,11 @@ policy_templates:
       - awshealth
     categories:
       - observability
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "AWS Health federated identity permissions"
+        patches: iac/aws-federated-identity-account-awshealth.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect AWS Health metrics (experimental)
@@ -165,6 +175,10 @@ policy_templates:
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -191,6 +205,11 @@ policy_templates:
       - billing
     categories:
       - observability
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "AWS Billing federated identity permissions"
+        patches: iac/aws-federated-identity-account-billing.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect billing metrics
@@ -198,6 +217,10 @@ policy_templates:
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -229,10 +252,18 @@ policy_templates:
         title: Collect CloudTrail logs from S3
         description: Collecting logs from CloudTrail using aws-s3 input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-s3-input.cloudformation.patches.json
       - type: aws-cloudwatch
         title: Collect CloudTrail logs from CloudWatch
         description: Collecting logs from CloudTrail using aws-cloudwatch input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-cloudwatch-input.cloudformation.patches.json
     icons:
       - src: /img/logo_cloudtrail.svg
         title: AWS Cloudtrail logo
@@ -259,12 +290,20 @@ policy_templates:
         input_group: logs
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-cloudwatch-input.cloudformation.patches.json
       - type: aws/metrics
         title: Collect metrics from CloudWatch
         description: Collecting metrics using AWS CloudWatch
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -297,6 +336,11 @@ policy_templates:
       - security
       - cloudsecurity_cdr
       - misconfiguration_workflow
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "AWS Config federated identity permissions"
+        patches: iac/aws-federated-identity-account-config.cloudformation.patches.json
     inputs:
       - type: cel
         title: Collect AWS Config logs via API
@@ -321,6 +365,11 @@ policy_templates:
     categories:
       - observability
       - datastore
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon DynamoDB federated identity permissions"
+        patches: iac/aws-federated-identity-account-dynamodb.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect dynamodb metrics
@@ -328,6 +377,10 @@ policy_templates:
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -355,6 +408,11 @@ policy_templates:
     categories:
       - observability
       - datastore
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon EBS federated identity permissions"
+        patches: iac/aws-federated-identity-account-ebs.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect EBS metrics
@@ -362,6 +420,10 @@ policy_templates:
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -389,23 +451,40 @@ policy_templates:
       - ec2_metrics
     categories:
       - observability
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon EC2 federated identity permissions"
+        patches: iac/aws-federated-identity-account-ec2.cloudformation.patches.json
     inputs:
       - type: aws-s3
         title: Collect EC2 logs from S3
         description: Collecting logs from EC2 using aws-s3 input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-s3-input.cloudformation.patches.json
       - type: aws-cloudwatch
         title: Collect EC2 logs from CloudWatch
         description: Collecting logs from EC2 using aws-cloudwatch input
         input_group: logs
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-cloudwatch-input.cloudformation.patches.json
       - type: aws/metrics
         title: Collect EC2 metrics
         description: Collecting EC2 metrics using AWS CloudWatch
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -433,6 +512,11 @@ policy_templates:
     categories:
       - observability
       - containers
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon ECS federated identity permissions"
+        patches: iac/aws-federated-identity-account-ecs.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect ECS metrics
@@ -440,6 +524,10 @@ policy_templates:
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -463,6 +551,11 @@ policy_templates:
     categories:
       - observability
       - load_balancer
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "AWS ELB federated identity permissions"
+        patches: iac/aws-federated-identity-account-elb.cloudformation.patches.json
     inputs:
       - type: aws-s3
         title: Collect ELB logs from S3
@@ -470,18 +563,30 @@ policy_templates:
         input_group: logs
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-s3-input.cloudformation.patches.json
       - type: aws-cloudwatch
         title: Collect ELB logs from CloudWatch
         description: Collecting logs from ELB using aws-cloudwatch input
         input_group: logs
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-cloudwatch-input.cloudformation.patches.json
       - type: aws/metrics
         title: Collect ELB metrics
         description: Collecting ELB metrics using AWS CloudWatch
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -529,6 +634,11 @@ policy_templates:
       - lambda_logs
     categories:
       - observability
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "AWS Lambda federated identity permissions"
+        patches: iac/aws-federated-identity-account-lambda.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect Lambda metrics
@@ -536,12 +646,20 @@ policy_templates:
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
       - type: aws-cloudwatch
         title: Collect lambda logs from CloudWatch
         description: Collecting AWS lambda logs using aws-cloudwatch input
         input_group: logs
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-cloudwatch-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -573,11 +691,20 @@ policy_templates:
     categories:
       - observability
       - network
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "AWS NAT Gateway federated identity permissions"
+        patches: iac/aws-federated-identity-account-natgateway.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect NATGateway metrics
         description: Collect NATGateway metrics using AWS CloudWatch
         input_group: metrics
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     icons:
       - src: /img/logo_natgateway.svg
         title: AWS NATGateway logo
@@ -592,19 +719,36 @@ policy_templates:
     data_streams:
       - firewall_logs
       - firewall_metrics
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "AWS Network Firewall federated identity permissions"
+        patches: iac/aws-federated-identity-account-firewall.cloudformation.patches.json
     inputs:
       - type: aws-s3
         title: Collect Network Firewall logs from S3
         description: Collecting logs from Network Firewall using aws-s3 input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-s3-input.cloudformation.patches.json
       - type: aws-cloudwatch
         title: Collect Network Firewall logs from CloudWatch
         description: Collecting logs from Network Firewall using aws-cloudwatch input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-cloudwatch-input.cloudformation.patches.json
       - type: aws/metrics
         title: Collect Network Firewall metrics
         description: Collecting AWS Network Firewall metrics using AWS CloudWatch
         input_group: metrics
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     icons:
       - src: /img/logo_firewall.svg
         title: AWS Network Firewall logo
@@ -635,6 +779,11 @@ policy_templates:
     categories:
       - observability
       - datastore
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon RDS federated identity permissions"
+        patches: iac/aws-federated-identity-account-rds.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect RDS metrics
@@ -642,6 +791,10 @@ policy_templates:
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -671,17 +824,30 @@ policy_templates:
     categories:
       - observability
       - datastore
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon S3 federated identity permissions"
+        patches: iac/aws-federated-identity-account-s3.cloudformation.patches.json
     inputs:
       - type: aws-s3
         title: Collect S3 access logs from S3
         description: Collecting S3 access logs using aws-s3 input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-s3-input.cloudformation.patches.json
       - type: aws/metrics
         title: Collect S3 metrics
         description: Collecting S3 metrics using AWS CloudWatch
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -712,11 +878,20 @@ policy_templates:
       - s3_storage_lens
     categories:
       - observability
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon S3 Storage Lens federated identity permissions"
+        patches: iac/aws-federated-identity-account-s3_storage_lens.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect S3 Storage Lens metrics
         description: Collect S3 Storage Lens metrics using AWS CloudWatch
         input_group: metrics
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     icons:
       - src: /img/logo_s3_storage_lens.svg
         title: AWS S3 storage lens logo
@@ -735,6 +910,11 @@ policy_templates:
     categories:
       - observability
       - notification
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon SNS federated identity permissions"
+        patches: iac/aws-federated-identity-account-sns.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect SNS metrics
@@ -742,6 +922,10 @@ policy_templates:
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -768,6 +952,11 @@ policy_templates:
       - sqs
     categories:
       - observability
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon SQS federated identity permissions"
+        patches: iac/aws-federated-identity-account-sqs.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect SQS metrics
@@ -775,6 +964,10 @@ policy_templates:
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -801,6 +994,11 @@ policy_templates:
       - transitgateway
     categories:
       - security
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "AWS Transit Gateway federated identity permissions"
+        patches: iac/aws-federated-identity-account-transitgateway.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect Transit Gateway metrics
@@ -808,6 +1006,10 @@ policy_templates:
         input_group: metrics
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     deployment_modes:
       default:
         enabled: true
@@ -834,6 +1036,10 @@ policy_templates:
         title: Collect Usage metrics
         description: Collect Usage metrics using AWS CloudWatch
         input_group: metrics
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     screenshots:
       - src: /img/metricbeat-aws-usage-overview.png
         title: metricbeat aws sns overview
@@ -852,10 +1058,18 @@ policy_templates:
         title: Collect VPC flow logs from S3
         description: Collecting VPC Flow logs using aws-s3 input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-s3-input.cloudformation.patches.json
       - type: aws-cloudwatch
         title: Collect VPC flow logs from CloudWatch
         description: Collecting VPC Flow logs using aws-cloudwatch input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-cloudwatch-input.cloudformation.patches.json
     icons:
       - src: /img/logo_vpcflow.svg
         title: AWS VPC logo
@@ -869,11 +1083,20 @@ policy_templates:
     categories:
       - observability
       - network
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "AWS VPN federated identity permissions"
+        patches: iac/aws-federated-identity-account-vpn.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect VPN metrics
         description: Collect VPN metrics using AWS CloudWatch
         input_group: metrics
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     icons:
       - src: /img/logo_vpn.svg
         title: AWS VPN logo
@@ -892,10 +1115,18 @@ policy_templates:
         title: Collect WAF logs from S3
         description: Collecting WAF logs using aws-s3 input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-s3-input.cloudformation.patches.json
       - type: aws-cloudwatch
         title: Collect WAF logs from CloudWatch
         description: Collecting WAF logs using aws-cloudwatch input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-cloudwatch-input.cloudformation.patches.json
     icons:
       - src: /img/logo_waf.svg
         title: AWS VPC logo
@@ -920,10 +1151,18 @@ policy_templates:
         title: Collect Route53 logs
         description: Collecting Route53 logs using aws-cloudwatch input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-cloudwatch-input.cloudformation.patches.json
       - type: aws-s3
         title: Collect Route53 logs
         description: Collecting Route53 logs using aws-s3 input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-s3-input.cloudformation.patches.json
     icons:
       - src: /img/logo_route53.svg
         title: AWS Route53 logo
@@ -942,6 +1181,10 @@ policy_templates:
         title: Collect CloudFront logs
         description: Collecting CloudFront logs using aws-s3 input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-s3-input.cloudformation.patches.json
     icons:
       - src: /img/logo_cloudfront.svg
         title: AWS CloudFront logo
@@ -955,11 +1198,20 @@ policy_templates:
     categories:
       - observability
       - datastore
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon Redshift federated identity permissions"
+        patches: iac/aws-federated-identity-account-redshift.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect Amazon Redshift metrics
         description: Collect Amazon Redshift metrics using AWS CloudWatch
         input_group: metrics
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     icons:
       - src: /img/logo_redshift.svg
         title: Amazon Redshift logo
@@ -978,11 +1230,20 @@ policy_templates:
     categories:
       - observability
       - stream_processing
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon Kinesis federated identity permissions"
+        patches: iac/aws-federated-identity-account-kinesis.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect Amazon Kinesis Data Stream metrics
         description: Collect Amazon Kinesis Data Stream metrics using AWS CloudWatch
         input_group: metrics
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     icons:
       - src: /img/logo_kinesis.svg
         title: Amazon Kinesis logo
@@ -1013,6 +1274,11 @@ policy_templates:
       - security
       - cloudsecurity_cdr
       - misconfiguration_workflow
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "AWS Security Hub federated identity permissions"
+        patches: iac/aws-federated-identity-account-securityhub.cloudformation.patches.json
     inputs:
       - type: httpjson
         title: Collect AWS Security Hub CSPM logs via API
@@ -1051,6 +1317,11 @@ policy_templates:
       - security
       - cloudsecurity_cdr
       - vulnerability_workflow
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon Inspector federated identity permissions"
+        patches: iac/aws-federated-identity-account-inspector.cloudformation.patches.json
     inputs:
       - type: httpjson
         title: Collect Amazon Inspector logs via API
@@ -1095,6 +1366,11 @@ policy_templates:
       - guardduty
     categories:
       - cloudsecurity_cdr
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon GuardDuty federated identity permissions"
+        patches: iac/aws-federated-identity-account-guardduty.cloudformation.patches.json
     inputs:
       - type: httpjson
         title: Collect Amazon GuardDuty logs via API
@@ -1104,6 +1380,10 @@ policy_templates:
         description: Collecting Amazon GuardDuty logs via AWS S3 or SQS input.
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-s3-input.cloudformation.patches.json
     screenshots:
       - src: /img/guardduty-findings-overview.png
         title: GuardDuty Findings Overview dashboard screenshot
@@ -1130,19 +1410,36 @@ policy_templates:
       - apigateway_logs
     categories:
       - observability
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon API Gateway federated identity permissions"
+        patches: iac/aws-federated-identity-account-apigateway.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect API Gateway metrics
         description: Collect API Gateway metrics using AWS CloudWatch.
         input_group: metrics
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
       - type: aws-s3
         title: Collect API Gateway logs from S3
         description: Collecting API Gateway logs using aws-s3 input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-s3-input.cloudformation.patches.json
       - type: aws-cloudwatch
         title: Collect API Gateway logs from CloudWatch
         description: Collecting API Gateway logs using aws-cloudwatch input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-cloudwatch-input.cloudformation.patches.json
     screenshots:
       - src: /img/filebeat-aws-apigateway-overview.png
         title: filebeat aws api gateway overview
@@ -1165,19 +1462,36 @@ policy_templates:
       - emr_logs
     categories:
       - observability
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon EMR federated identity permissions"
+        patches: iac/aws-federated-identity-account-emr.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect EMR metrics
         description: Collect EMR metrics using AWS CloudWatch
         input_group: metrics
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
       - type: aws-s3
         title: Collect EMR logs from S3
         description: Collecting logs from EMR using aws-s3 input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-s3-input.cloudformation.patches.json
       - type: aws-cloudwatch
         title: Collect EMR logs from CloudWatch
         description: Collecting logs from EMR using aws-cloudwatch input
         input_group: logs
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-cloudwatch-input.cloudformation.patches.json
     screenshots:
       - src: /img/filebeat-aws-emr-overview.png
         title: filebeat aws emr overview
@@ -1195,11 +1509,20 @@ policy_templates:
       - kafka_metrics
     categories:
       - observability
+    iac_blueprints:
+      - id: aws/federated-identity/account
+        format: cloudformation
+        title: "Amazon MSK federated identity permissions"
+        patches: iac/aws-federated-identity-account-kafka.cloudformation.patches.json
     inputs:
       - type: aws/metrics
         title: Collect Amazon MSK metrics
         description: Collect Amazon MSK metrics using AWS CloudWatch
         input_group: metrics
+        iac_blueprints:
+          - id: aws/federated-identity/account
+            format: cloudformation
+            patches: iac/aws-federated-identity-account-metrics-input.cloudformation.patches.json
     icons:
       - src: /img/logo_msk.svg
         title: Amazon MSK logo
