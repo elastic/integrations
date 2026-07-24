@@ -1172,11 +1172,11 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2023-11-02T13:41:34.000Z",
     "agent": {
-        "ephemeral_id": "8f4a039c-66d4-439c-a43f-c5a95f653dd4",
-        "id": "67072e92-576d-47d8-8a43-ebb347b4250b",
-        "name": "elastic-agent-93422",
+        "ephemeral_id": "63cd5df9-a92f-4bdb-942b-300a4d8a2c93",
+        "id": "4eba9263-4610-49a5-8214-b55876ba9a56",
+        "name": "elastic-agent-11626",
         "type": "filebeat",
-        "version": "8.18.1"
+        "version": "8.19.8"
     },
     "crowdstrike": {
         "event": {
@@ -1192,16 +1192,16 @@ An example event for `falcon` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.falcon",
-        "namespace": "99576",
+        "namespace": "28440",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "67072e92-576d-47d8-8a43-ebb347b4250b",
+        "id": "4eba9263-4610-49a5-8214-b55876ba9a56",
         "snapshot": false,
-        "version": "8.18.1"
+        "version": "8.19.8"
     },
     "event": {
         "action": [
@@ -1214,7 +1214,7 @@ An example event for `falcon` looks as following:
         ],
         "created": "2023-11-02T13:41:34.000Z",
         "dataset": "crowdstrike.falcon",
-        "ingested": "2025-05-30T08:29:21Z",
+        "ingested": "2026-07-24T07:50:37Z",
         "kind": "event",
         "original": "{\"event\":{\"AgentIdString\":\"fffffffff33333\",\"HostnameField\":\"UKCHUDL00206\",\"SessionId\":\"1111-fffff-4bb4-99c1-74c13cfc3e5a\",\"StartTimestamp\":1698932494,\"UserName\":\"admin.rose@example.com\"},\"metadata\":{\"customerIDString\":\"abcabcabc22221\",\"eventCreationTime\":1698932494000,\"eventType\":\"RemoteResponseSessionStartEvent\",\"offset\":1,\"version\":\"1.0\"}}",
         "start": "2023-11-02T13:41:34.000Z",
@@ -1325,7 +1325,7 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.ExecutablesWritten | Detected executables written to disk by a process. | nested |
 | crowdstrike.event.ExecutablesWritten.FileName |  | keyword |
 | crowdstrike.event.ExecutablesWritten.FilePath |  | keyword |
-| crowdstrike.event.ExecutablesWritten.Timestamp |  | date |
+| crowdstrike.event.ExecutablesWritten.Timestamp |  | keyword |
 | crowdstrike.event.ExecutionID |  | keyword |
 | crowdstrike.event.ExecutionMetadata.ExecutionDuration |  | long |
 | crowdstrike.event.ExecutionMetadata.ExecutionStart |  | date |
@@ -1790,9 +1790,6 @@ An example event for `fdr` looks as following:
         "hosts": [
             "example-XXXXXXXXX"
         ]
-    },
-    "source": {
-        "ip": "10.10.0.8"
     },
     "tags": [
         "preserve_original_event",
