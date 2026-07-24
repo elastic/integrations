@@ -25,18 +25,18 @@ The integration processes these event types:
 | Event | Description | ECS category |
 |-------|-------------|--------------|
 | `tool_result` | Tool execution outcome (success/failure, duration, parameters). | `process` |
-| `tool_decision` | Permission decision for a tool call (accept/reject, source). | `process` |
-| `api_request` | API call to Anthropic (model, cost, tokens, duration). | `web` |
-| `user_prompt` | User prompt submission (length, command, optionally text). | `process` |
-| `api_error` | API request failure (error, status code, retry attempt). | `web` |
-| `api_refusal` | Content safety refusal from the model. | `web` |
+| `tool_decision` | Permission decision for a tool call (accept/reject, source). | `iam` |
+| `api_request` | API call to Anthropic (model, cost, tokens, duration). | `api` |
+| `user_prompt` | User prompt submission (length, command, optionally text). | — |
+| `api_error` | API request failure (error, status code, retry attempt). | `api` |
+| `api_refusal` | Content safety refusal from the model. | `api` |
 | `permission_mode_changed` | Permission mode change (from/to mode, trigger). | `configuration` |
 | `mcp_server_connection` | MCP server connection attempt (status, transport type). | `network` |
-| `hook_registered` | Hook registration (name, event type, matcher). | `process` |
+| `hook_registered` | Hook registration (name, event type, matcher). | `configuration` |
 | `hook_execution_start` | Hook execution start. | `process` |
 | `hook_execution_complete` | Hook execution result (success/failure counts, duration). | `process` |
-| `plugin_loaded` | Plugin loaded (name, scope, paths). | `package` |
-| `skill_activated` | Skill activation (name, source, trigger). | `process` |
+| `plugin_loaded` | Plugin loaded (name, scope, paths). | `library` |
+| `skill_activated` | Skill activation (name, source, trigger). | — |
 
 ## What do I need to use this integration?
 
@@ -161,19 +161,16 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-30T02:43:31.836Z",
+    "@timestamp": "2026-07-06T03:25:40.439Z",
     "claude_code": {
         "events": {
             "event": {
                 "name": "user_prompt",
                 "sequence": 0,
-                "timestamp": "2026-06-30T02:43:31.836Z"
+                "timestamp": "2026-07-06T03:25:40.439Z"
             },
             "has_hooks": true,
             "has_mcp": true,
-            "organization": {
-                "id": "00000000-0000-0000-0000-000000000001"
-            },
             "prompt": {
                 "id": "11111111-2222-3333-4444-555555555555"
             },
@@ -187,15 +184,13 @@ An example event for `events` looks as following:
             },
             "user": {
                 "account_id": "user_01ExampleAccountId00000",
-                "account_uuid": "00000000-1111-2222-3333-444444444444",
-                "email": "test@example.com",
-                "id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+                "account_uuid": "00000000-1111-2222-3333-444444444444"
             }
         }
     },
     "data_stream": {
         "dataset": "claude_code.events.otel",
-        "namespace": "42747",
+        "namespace": "55955",
         "type": "logs"
     },
     "ecs": {
@@ -204,18 +199,17 @@ An example event for `events` looks as following:
     "event": {
         "action": "user_prompt",
         "agent_id_status": "missing",
-        "category": [
-            "process"
-        ],
         "dataset": "claude_code.events.otel",
-        "ingested": "2026-06-30T02:43:41Z",
+        "ingested": "2026-07-06T03:25:50Z",
         "kind": "event",
-        "original": "{\"observed_timestamp\":\"1782787411836.690337\",\"@timestamp\":\"1782787411836.681529\",\"resource\":{\"attributes\":{\"service.name\":\"claude-code\",\"service.version\":\"2.1.175\",\"host.arch\":\"amd64\",\"os.type\":\"linux\",\"os.version\":\"6.17.0-14-generic\"}},\"data_stream\":{\"namespace\":\"42747\",\"type\":\"logs\",\"dataset\":\"claude_code.events.otel\"},\"scope\":{\"name\":\"com.anthropic.claude_code.events\",\"version\":\"2.1.175\"},\"event_name\":\"user_prompt\",\"attributes\":{\"user.id\":\"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2\",\"user.account_uuid\":\"00000000-1111-2222-3333-444444444444\",\"terminal.type\":\"xterm-256color\",\"event.name\":\"user_prompt\",\"event.timestamp\":\"2026-06-30T02:43:31.83666166Z\",\"prompt.id\":\"11111111-2222-3333-4444-555555555555\",\"event.sequence\":0,\"user.email\":\"test@example.com\",\"prompt_length\":18,\"elastic.preserve_original_event\":\"true\",\"organization.id\":\"00000000-0000-0000-0000-000000000001\",\"has_mcp\":\"true\",\"user.account_id\":\"user_01ExampleAccountId00000\",\"prompt\":\"What is 2 plus 2?\",\"session.id\":\"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\",\"has_hooks\":\"true\"},\"body\":{\"text\":\"claude_code.user_prompt\"},\"event\":{},\"_version_type\":\"internal\",\"_index\":\"logs-claude_code.events.otel-42747\",\"_id\":null,\"_version\":-4}",
+        "original": "{\"observed_timestamp\":\"1783308340439.840708\",\"@timestamp\":\"1783308340439.834018\",\"resource\":{\"attributes\":{\"service.name\":\"claude-code\",\"service.version\":\"2.1.175\",\"host.arch\":\"amd64\",\"os.type\":\"linux\",\"os.version\":\"6.17.0-14-generic\"}},\"data_stream\":{\"namespace\":\"55955\",\"type\":\"logs\",\"dataset\":\"claude_code.events.otel\"},\"scope\":{\"name\":\"com.anthropic.claude_code.events\",\"version\":\"2.1.175\"},\"event_name\":\"user_prompt\",\"attributes\":{\"user.id\":\"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2\",\"user.account_uuid\":\"00000000-1111-2222-3333-444444444444\",\"terminal.type\":\"xterm-256color\",\"event.name\":\"user_prompt\",\"event.timestamp\":\"2026-07-06T03:25:40.439819114Z\",\"prompt.id\":\"11111111-2222-3333-4444-555555555555\",\"event.sequence\":0,\"user.email\":\"test@example.com\",\"prompt_length\":18,\"elastic.preserve_original_event\":\"true\",\"organization.id\":\"00000000-0000-0000-0000-000000000001\",\"has_mcp\":\"true\",\"user.account_id\":\"user_01ExampleAccountId00000\",\"prompt\":\"What is 2 plus 2?\",\"session.id\":\"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\",\"has_hooks\":\"true\"},\"body\":{\"text\":\"claude_code.user_prompt\"},\"event\":{},\"_version_type\":\"internal\",\"_index\":\"logs-claude_code.events.otel-55955\",\"_id\":null,\"_version\":-4}",
         "outcome": "unknown",
-        "provider": "claude-code",
-        "type": [
-            "start"
-        ]
+        "provider": "claude-code"
+    },
+    "gen_ai": {
+        "provider": {
+            "name": "anthropic"
+        }
     },
     "host": {
         "arch": "amd64",
@@ -225,7 +219,10 @@ An example event for `events` looks as following:
             "version": "6.17.0-14-generic"
         }
     },
-    "observed_timestamp": "2026-06-30T02:43:31.836690337Z",
+    "observed_timestamp": "2026-07-06T03:25:40.439840708Z",
+    "organization": {
+        "id": "00000000-0000-0000-0000-000000000001"
+    },
     "os": {
         "type": "linux",
         "version": "6.17.0-14-generic"
@@ -259,7 +256,11 @@ An example event for `events` looks as following:
         "name": "claude-code",
         "version": "2.1.175"
     },
-    "tags": "preserve_original_event"
+    "tags": "preserve_original_event",
+    "user": {
+        "email": "test@example.com",
+        "id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+    }
 }
 ```
 
@@ -269,8 +270,6 @@ An example event for `events` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | claude_code.events.agent_path_count | Number of agent paths in the plugin. | long |
-| claude_code.events.cache_creation_tokens | Number of tokens used for cache creation. | long |
-| claude_code.events.cache_read_tokens | Number of tokens served from cache. | long |
 | claude_code.events.command_name | Slash command name from user_prompt events. | keyword |
 | claude_code.events.command_path_count | Number of command paths in the plugin. | long |
 | claude_code.events.cost_usd | Cost of the API request in USD. | double |
@@ -278,12 +277,9 @@ An example event for `events` looks as following:
 | claude_code.events.decision | Permission decision (accept, reject). | keyword |
 | claude_code.events.decision_source | Source of the permission decision (config, user_temporary, user_permanent). | keyword |
 | claude_code.events.decision_type | Decision type (accept, reject). | keyword |
-| claude_code.events.duration_ms | Duration of the operation in milliseconds. | long |
 | claude_code.events.effort | Thinking effort level (high, medium, low). | keyword |
 | claude_code.events.enabled_via | How the plugin was enabled (for example user-install). | keyword |
 | claude_code.events.error | Error message from a failed operation. | keyword |
-| claude_code.events.error_code | Error code (for example ENOENT). | keyword |
-| claude_code.events.error_type | Error classification (for example ShellError). | keyword |
 | claude_code.events.event.name | Event name from OTel attributes. | keyword |
 | claude_code.events.event.sequence | Event sequence number within a prompt turn. | long |
 | claude_code.events.event.timestamp | Event timestamp from OTel attributes. | date |
@@ -296,22 +292,17 @@ An example event for `events` looks as following:
 | claude_code.events.hook_source | Source of the hook definition (for example settings.json). | keyword |
 | claude_code.events.hook_type | Hook type (for example command). | keyword |
 | claude_code.events.host_owned_mcp | Whether MCP servers are host-owned ("true" or "false"). | boolean |
-| claude_code.events.input_tokens | Number of input tokens consumed. | long |
 | claude_code.events.invocation_trigger | How the skill was invoked (for example user-slash). | keyword |
 | claude_code.events.is_plugin | Whether the MCP server is a plugin. | boolean |
 | claude_code.events.managed_only | Whether the MCP server is managed-only ("true" or "false"). | keyword |
 | claude_code.events.marketplace.name | Name of the marketplace entry. | keyword |
 | claude_code.events.mcp_server_name | Name of the MCP server. Extracted from tool_parameters_flattened by the ingest pipeline. | keyword |
 | claude_code.events.mcp_server_scope | MCP server scope from tool_parameters. | keyword |
-| claude_code.events.mcp_tool_name | Name of the MCP tool invoked. Extracted from tool_parameters_flattened by the ingest pipeline. | keyword |
-| claude_code.events.model | AI model used for the request (for example claude-sonnet-4-6). | keyword |
 | claude_code.events.num_blocking | Number of hooks that blocked execution. | long |
 | claude_code.events.num_cancelled | Number of hooks that were cancelled. | long |
 | claude_code.events.num_hooks | Number of hooks registered for this event. | long |
 | claude_code.events.num_non_blocking_error | Number of hooks that failed without blocking. | long |
 | claude_code.events.num_success | Number of hooks that completed successfully. | long |
-| claude_code.events.organization.id | Anthropic organization identifier. | keyword |
-| claude_code.events.output_tokens | Number of output tokens generated. | long |
 | claude_code.events.plugin.name | Plugin name. | keyword |
 | claude_code.events.plugin.scope | Plugin scope (for example project, user). | keyword |
 | claude_code.events.plugin.version | Plugin version. | keyword |
@@ -319,8 +310,6 @@ An example event for `events` looks as following:
 | claude_code.events.prompt.id | Prompt turn identifier within a session. | keyword |
 | claude_code.events.prompt_length | Length of the user prompt in characters. | long |
 | claude_code.events.prompt_text | User prompt text. Only present when OTEL_LOG_USER_PROMPTS is enabled. Renamed from OTel attribute 'prompt' to avoid conflict with prompt.id path. | text |
-| claude_code.events.query_source | Source of the API query (repl_main_thread, sdk, generate_session_title, tool_feedback). | keyword |
-| claude_code.events.request_id | Anthropic API request identifier. | keyword |
 | claude_code.events.safe_mode | Whether safe mode is active ("true" or "false"). | keyword |
 | claude_code.events.server_name | MCP server name from connection events. | keyword |
 | claude_code.events.server_scope | MCP server scope (for example project, user). | keyword |
@@ -335,25 +324,22 @@ An example event for `events` looks as following:
 | claude_code.events.terminal.type | Terminal emulator type or "non-interactive" for Cowork. | keyword |
 | claude_code.events.to_mode | Permission mode after the change. | keyword |
 | claude_code.events.tool_input | JSON-encoded tool input. Only present when OTEL_LOG_TOOL_DETAILS is enabled. | text |
-| claude_code.events.tool_input_flattened | Parsed tool_input as a flattened object for structured queries. Populated by the ingest pipeline. | flattened |
 | claude_code.events.tool_input_size_bytes | Size of tool input in bytes. | long |
-| claude_code.events.tool_name | Name of the tool invoked (for example Bash, Read, Write, mcp_tool). | keyword |
 | claude_code.events.tool_parameters | JSON-encoded tool parameters. Only present when OTEL_LOG_TOOL_DETAILS is enabled. | text |
 | claude_code.events.tool_parameters_flattened | Parsed tool_parameters as a flattened object for structured queries. Populated by the ingest pipeline. | flattened |
 | claude_code.events.tool_result_size_bytes | Size of tool result in bytes. | long |
-| claude_code.events.tool_use_id | Unique identifier for this tool invocation. | keyword |
 | claude_code.events.total_duration_ms | Total duration of all hook executions in milliseconds. | long |
 | claude_code.events.transport_type | MCP transport type (for example stdio, sse). | keyword |
 | claude_code.events.trigger | What triggered the permission mode change. | keyword |
 | claude_code.events.user.account_id | Anthropic account identifier. | keyword |
 | claude_code.events.user.account_uuid | Anthropic account UUID. | keyword |
-| claude_code.events.user.email | User email address. | keyword |
-| claude_code.events.user.id | User identifier hash. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
+| error.type | The type of the error, for example the class name of the exception. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
@@ -366,9 +352,21 @@ An example event for `events` looks as following:
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.path.text | Multi-field of `file.path`. | match_only_text |
+| gen_ai.operation.name | Source or type of the generative AI operation. | keyword |
+| gen_ai.provider.name | Generative AI provider name. | constant_keyword |
+| gen_ai.request.model | Model used for the generative AI request. | keyword |
+| gen_ai.response.id | Identifier for the generative AI response. | keyword |
+| gen_ai.response.model | Model that generated the response. | keyword |
+| gen_ai.tool.call.arguments | Arguments passed to the tool call. | flattened |
+| gen_ai.tool.call.id | Unique identifier for the tool call. | keyword |
+| gen_ai.tool.name | Name of the tool invoked by the model. | keyword |
+| gen_ai.usage.cache_creation.input_tokens | Number of input tokens used for cache creation. | long |
+| gen_ai.usage.cache_read.input_tokens | Number of input tokens served from cache. | long |
+| gen_ai.usage.input_tokens | Number of input tokens consumed. | long |
+| gen_ai.usage.output_tokens | Number of output tokens generated. | long |
+| organization.id | Unique identifier for the organization. | keyword |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
 | process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |

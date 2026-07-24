@@ -9,12 +9,14 @@ source:
 # us that ability in order to prevent having duplicate IoC data and prevent query
 # time field type conflicts.
 dest:
-  index: "logs-ti_domaintools_latest.domainhotlist_feed-2"
+  index: "logs-ti_domaintools_latest.domainhotlist_feed-3"
   aliases:
     - alias: "logs-ti_domaintools_latest.domainhotlist_feed"
       move_on_creation: true
 latest:
   unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
     - domaintools.domain
   sort: event.ingested
 description: Latest Domain hotlist data
@@ -32,6 +34,6 @@ _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 1.2.0
+  fleet_transform_version: 1.3.0
 settings:
   num_failure_retries: -1

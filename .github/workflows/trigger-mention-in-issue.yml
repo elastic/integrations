@@ -15,9 +15,13 @@ jobs:
   run:
     # Access control is enforced by the upstream reusable workflow pre_activation
     # check (required roles: admin, maintainer, write).
-    if: >-
-      github.event.issue.pull_request == null &&
-      (startsWith(github.event.comment.body, '/ai') || contains(github.event.comment.body, '@claude'))
+    #
+    # Disabled 2026-07-02 — no current owner. To re-enable, remove `if: false`
+    # and restore the original activation condition below via a reviewed PR:
+    #   if: >-
+    #     github.event.issue.pull_request == null &&
+    #     (startsWith(github.event.comment.body, '/ai') || contains(github.event.comment.body, '@claude'))
+    if: false
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-mention-in-issue.lock.yml@v0
     with:
       setup-commands: |

@@ -9,9 +9,11 @@ source:
 # us that ability in order to prevent having duplicate IoC data and prevent query
 # time field type conflicts.
 dest:
-  index: "logs-ti_maltiverse_latest.indicator-3"
+  index: "logs-ti_maltiverse_latest.indicator-4"
 latest:
   unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
     - event.dataset
     - event.id
   sort: "event.ingested"
@@ -29,6 +31,6 @@ retention_policy:
 _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
-  fleet_transform_version: 0.5.0
+  fleet_transform_version: 0.6.0
 settings:
   num_failure_retries: -1

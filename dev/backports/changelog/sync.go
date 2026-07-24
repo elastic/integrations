@@ -13,7 +13,7 @@ import (
 
 	"github.com/cli/go-gh/v2"
 
-	"github.com/elastic/integrations/dev/backports/gitutil"
+	"github.com/elastic/integrations/dev/gitutil"
 )
 
 // SyncResult holds outputs produced by CreateSyncPR.
@@ -94,7 +94,8 @@ func CreateSyncPR(workDir, entriesTSV, workingBranch, backportPRNumber, backport
 		"--base", "main",
 		"--head", workingBranch,
 		"--title", prTitle,
-		"--label", "automation",
+		"--label", "backport:sync-changelog",
+		"--label", "changelog-link-check:skip",
 		"--reviewer", "elastic/ecosystem",
 		"--body", body,
 	)
