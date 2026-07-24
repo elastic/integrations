@@ -1028,7 +1028,27 @@ processors:
                   - change
         types:
           ACCT_LOCK:
-            - event:
+            - copy:
+                - from:
+                    - auid
+                  to: user
+                - from:
+                    - AUID
+                  to: user
+                - from:
+                    - uid
+                  to: user.effective
+                - from:
+                    - UID
+                  to: user.effective
+                - from:
+                    - id
+                    - acct
+                  to: user.target
+                - from:
+                    - ID
+                  to: user.target
+              event:
                 action:
                   - locked-account
                 category:
@@ -1037,7 +1057,27 @@ processors:
                   - user
                   - info
           ACCT_UNLOCK:
-            - event:
+            - copy:
+                - from:
+                    - auid
+                  to: user
+                - from:
+                    - AUID
+                  to: user
+                - from:
+                    - uid
+                  to: user.effective
+                - from:
+                    - UID
+                  to: user.effective
+                - from:
+                    - id
+                    - acct
+                  to: user.target
+                - from:
+                    - ID
+                  to: user.target
+              event:
                 action:
                   - unlocked-account
                 category:
@@ -1051,11 +1091,20 @@ processors:
                     - auid
                   to: user
                 - from:
+                    - AUID
+                  to: user
+                - from:
                     - uid
+                  to: user.effective
+                - from:
+                    - UID
                   to: user.effective
                 - from:
                     - id
                     - acct
+                  to: group
+                - from:
+                    - ID
                   to: group
               event:
                 action:
@@ -1071,11 +1120,20 @@ processors:
                     - auid
                   to: user
                 - from:
+                    - AUID
+                  to: user
+                - from:
                     - uid
+                  to: user.effective
+                - from:
+                    - UID
                   to: user.effective
                 - from:
                     - id
                     - acct
+                  to: user.target
+                - from:
+                    - ID
                   to: user.target
               event:
                 action:
@@ -1338,11 +1396,20 @@ processors:
                     - auid
                   to: user
                 - from:
+                    - AUID
+                  to: user
+                - from:
                     - uid
+                  to: user.effective
+                - from:
+                    - UID
                   to: user.effective
                 - from:
                     - id
                     - acct
+                  to: group
+                - from:
+                    - ID
                   to: group
               event:
                 action:
@@ -1358,11 +1425,20 @@ processors:
                     - auid
                   to: user
                 - from:
+                    - AUID
+                  to: user
+                - from:
                     - uid
+                  to: user.effective
+                - from:
+                    - UID
                   to: user.effective
                 - from:
                     - id
                     - acct
+                  to: user.target
+                - from:
+                    - ID
                   to: user.target
               event:
                 action:
@@ -1667,12 +1743,21 @@ processors:
                     - auid
                   to: user
                 - from:
+                    - AUID
+                  to: user
+                - from:
                     - uid
+                  to: user.effective
+                - from:
+                    - UID
                   to: user.effective
                 - from:
                     - acct
                     - id
                     - uid
+                  to: user.target
+                - from:
+                    - ID
                   to: user.target
               event:
                 action:
@@ -1747,9 +1832,15 @@ processors:
                     - auid
                   to: user
                 - from:
+                    - AUID
+                  to: user
+                - from:
                     - acct
                     - id
                     - uid
+                  to: user.effective
+                - from:
+                    - UID
                   to: user.effective
               event:
                 action:
@@ -1809,9 +1900,15 @@ processors:
                     - auid
                   to: user
                 - from:
+                    - AUID
+                  to: user
+                - from:
                     - acct
                     - id
                     - uid
+                  to: user.effective
+                - from:
+                    - UID
                   to: user.effective
               event:
                 action:
@@ -1931,7 +2028,7 @@ processors:
             for (int j=0; value == null && j<srcList.length; j++) {
               value = base[srcList[j]];
             }
-            if (value != null && value instanceof String) {
+            if (value != null && value instanceof String && value != 'unset' && value != '?') {
               String suffix = value ==~ /[0-9]+/? ".id" : ".name";
               lst.add([
                 "target": act.copy[i]["to"] + suffix,
