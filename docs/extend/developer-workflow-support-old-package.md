@@ -191,9 +191,12 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 
 4. **Update changelog in main**
 
-    Once PR has been merged in the corresponding backport branch (e.g. `backport-aws-1.19`) and the package has been published, a new Pull Request should be created manually to update the changelog in the main branch to include the new version published in the backport branch. Make sure to add the changelog entry following the version order.
+    This step is handled automatically. When a backport PR is merged, the `sync-backport-changelog.yml` workflow fires and opens a PR against `main` that adds the new changelog entry for the backport version. The sync PR is created with two labels:
 
-    In order to keep track, this new PR should have a reference (relates) to the backport PR too in its description.
+    - `backport:sync-changelog` — identifies it as an automated sync PR.
+    - `changelog-link-check:skip` — skips the changelog link validation (the entry's link points to the backport PR, not the sync PR itself).
+
+    After the workflow runs, a comment is posted on the merged backport PR linking to the sync PR or reporting a failure. No manual action is needed.
 
 ## Package owner synchronization
 
