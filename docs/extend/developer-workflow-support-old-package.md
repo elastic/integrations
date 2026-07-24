@@ -141,13 +141,53 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 
 3. **Create a PR for the bug fix**
 
-    Create a new branch in your own remote (it is advised **not to use** a branch name starting with `backport-`), and apply bugfixes there. Remember to update the version in the package manifest (update patch version like `1.19.<x+1>`) and add a new changelog entry for this patch version.
+    **Recommended: use `backport_apply.sh`**
 
-    Once ready, open a PR selecting as a base branch the one created above: `backport-<package_name>-<major>.<minor>` (e.g. `backport-aws-1.19`).
+    `backport_apply.sh` handles the entire process: cherry-picking the commit, bumping the patch version, writing the changelog entry, syncing package owners, and opening a PR.
 
-    Once this PR is merged, this new version of the package is going to be published automatically following the usual CI/CD jobs. Wait for the package to appear in the [Elastic Package Registry](https://epr.elastic.co/) before proceeding to the next step.
+    ```bash
+    dev/scripts/backport_apply.sh \
+      --sha <merge_commit_sha> \
+      --package <package_name> \
+      --target <branch_or_version> \
+      --open-pr
+    ```
 
-    If it is needed to release a new fix for that version, there is no need to create a new branch. Just create a new PR to merge a new branch onto the same backport branch created previously.
+    Required arguments:
+
+    | Argument | Description |
+    |----------|-------------|
+    | `--sha` | Merge commit SHA on `main` to cherry-pick (minimum 8 characters; from step 1). |
+    | `--package` | Package name as it appears in `manifest.yml`. |
+    | `--target` | Version series (e.g. `6.14`) or full branch name (e.g. `backport-aws-6.14`); the branch name is derived automatically from the version series. |
+
+    Common optional flags:
+
+    | Flag | Description |
+    |------|-------------|
+    | `--open-pr` | Create a GitHub PR after pushing the working branch. |
+    | `--dry-run` | Commit locally and skip push and PR creation; use to review the result before opening a PR. |
+
+    What the script does, in order:
+
+    1. Fetches the backport branch and creates a local working branch (`auto-backport/<pkg>-<version>-<sha8>`).
+    2. Cherry-picks `<sha>`, auto-resolving version-only conflicts in `manifest.yml`; restores `changelog.yml` to HEAD (it is regenerated in the next step).
+    3. Bumps the patch version in `manifest.yml` and inserts a new `changelog.yml` entry (with a placeholder link that is fixed after the PR is opened).
+    4. Syncs package owners from `main` as a separate commit — see [Package owner synchronization](#package-owner-synchronization).
+    5. Pushes the working branch and opens a PR against the backport branch (with `--open-pr`).
+    6. Replaces the placeholder link in `changelog.yml` with the real backport PR URL and pushes a second `Fix changelog link to backport PR` commit.
+
+    If the cherry-pick conflicts on files beyond a version-line difference in `manifest.yml`, the script reports the conflicting files and cleans up. In this case, apply the fix manually (see the alternative path below).
+
+    > **Coming soon:** once the auto-backport workflow lands, checking a branch checkbox in the backport checklist comment will trigger the same process automatically on merge — no manual invocation of `backport_apply.sh` needed. The script remains useful for ad-hoc backports and retries.
+
+    **Alternative: manual cherry-pick**
+
+    Create a new branch in your own remote (do **not** use a name starting with `backport-`), apply the bug fix, bump the patch version in `manifest.yml`, and add a `changelog.yml` entry. Open a PR targeting the backport branch.
+
+    Once this PR is merged, the new version of the package is published automatically. Wait for it to appear in the [Elastic Package Registry](https://epr.elastic.co/) before proceeding to the next step.
+
+    For subsequent fixes to the same version, no new branch is needed — open a new PR against the same backport branch.
 
 4. **Update changelog in main**
 
