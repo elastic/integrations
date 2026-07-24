@@ -2,13 +2,14 @@
 
 This section describes the CI pipelines available in this repository.
 
-Currently, there are six different pipelines:
+Currently, there are seven different pipelines:
 - https://buildkite.com/elastic/integrations: pipeline in charge of testing all packages using a local Elastic stack. More info at [section](#pull-requests-and-pushes-to-specific-branches).
 - https://buildkite.com/elastic/integrations-serverless: pipeline in charge of testing all packages using an Elastic Serverless project. More info at [section](#serverless-pipeline).
 - https://buildkite.com/elastic/integrations-publish: pipeline to publish the new versions of packages. More info at [section](#publish-packages).
 - https://buildkite.com/elastic/integrations-schedule-daily/: pipeline running every night to test packages in different scenarios. More info at [section](#daily-job).
 - https://buildkite.com/elastic/integrations-schedule-weekly/: pipeline running once per week to test packages in different scenarios. More info at [section](#weekly-job).
-- https://buildkite.com/elastic/integrations-backport/: pipeline to create backport branches. Triggered automatically when a new entry is merged into `.backports.yml`, or manually from the UI by members of the `ecosystem` team. More info at [section](#backport-branches-pipeline).
+- https://buildkite.com/elastic/integrations-backport/: pipeline to create backport branches. Triggered automatically by the dispatch pipeline when a new entry is merged into `.backports.yml`, or manually from the UI by members of the `ecosystem` team. More info at [section](#backport-branches-pipeline).
+- `integrations-backport-dispatch` (private): dedicated private pipeline that triggers `integrations-backport` on merges to `main` where `.backports.yml` changed. More info at [section](#backport-branches-pipeline).
 
 ## Pull Requests and pushes to specific branches
 
@@ -227,11 +228,13 @@ be used in each pipeline are detailed in the corresponding sections of each pipe
 Releasing hotfixes from earlier versions of packages requires creating `backport-*` branches from specific commits in the `main` branch.
 The pipeline https://buildkite.com/elastic/integrations-backport/ handles this creation and can be triggered in two ways:
 
-- **Automatically (recommended)**: when a PR adding a new entry to `.backports.yml` is merged into `main`, the `integrations` pipeline detects the change and triggers the backport pipeline automatically. A comment is posted on the merged PR reporting success or failure of the branch creation.
+- **Automatically (recommended)**: when a PR adding a new entry to `.backports.yml` is merged into `main`, the private `integrations-backport-dispatch` pipeline detects the change and triggers `integrations-backport` to create the branch. A comment is posted on the merged PR reporting success or failure of the branch creation.
 - **Manually from the UI**: restricted to members of the `ecosystem` Buildkite team.
 
+The `integrations-backport-dispatch` private pipeline is responsible for triggering branch creation on pushes to `main`. This split from the public `integrations` pipeline exists because Buildkite restricts public pipelines from triggering private pipelines in certain scenarios (fork builds, specific webhook configurations) — a dedicated private dispatch pipeline eliminates that failure mode. As a safeguard, `trigger_backport.sh` exits with an error if branch creation is attempted from any pipeline other than `integrations-backport-dispatch`.
+
 As part of the PR that modifies `.backports.yml`, CI automatically:
-- Validates the new inventory schema (`check-backports-inventory` step). This step runs on PRs targeting `main` and direct pushes to `main` only — it is skipped on PRs targeting `backport-*` branches, which carry only a subset of packages and would fail the validation unnecessarily.
+- Validates the new inventory schema (`check-backports-inventory` step). In the public `integrations` pipeline this step runs on PRs targeting `main` only — it is skipped on PRs targeting `backport-*` branches, which carry only a subset of packages and would fail the validation unnecessarily. On pushes to `main`, the `integrations-backport-dispatch` pipeline runs its own validation before triggering branch creation.
 - Runs a **dry run** of the branch creation (`trigger-backport-dryrun` step), verifying the commit exists and the branch does not already exist, without pushing anything.
 
 By default, the created branch only contains the target package — all other packages in `packages/` are removed to keep the branch lean.
