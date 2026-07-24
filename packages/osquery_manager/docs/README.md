@@ -19,64 +19,29 @@ For information about Osquery tables, refer to the [Osquery schema documentation
 
 ## Shadow AI Discovery
 
-The integration ships three canonical platform packs for endpoint AI inventory:
+The integration ships prebuilt osquery **packs** that inventory AI and LLM tooling across your endpoints, giving security and platform teams a single-policy way to answer "what AI is running in my fleet?" — local model runtimes, AI coding agents, Model Context Protocol (MCP) servers, model files, AI packages, browser and editor extensions, and the network and persistence footprint of AI tools.
 
-| Pack | Platform | Queries |
-|------|----------|---------|
-| `ai-asset-discovery-windows` | Windows | 19 |
-| `ai-asset-discovery-macos` | macOS | 19 |
-| `ai-asset-discovery-linux` | Linux | 18 |
+There is one pack per operating system:
 
-Assign the pack matching each agent's OS to your Osquery Manager policy in Fleet. Pack queries emit `event.action: osquery.ai_*` and `osquery.mcp_*` once scheduled pack queries run on assigned agents.
+| Pack | Platform |
+|------|----------|
+| `ai-asset-discovery-windows` | Windows |
+| `ai-asset-discovery-macos` | macOS |
+| `ai-asset-discovery-linux` | Linux |
 
-### Snapshot duplicate semantics
+Assign the pack matching each agent's OS to your Osquery Manager policy in Fleet. Once the scheduled queries run, results are stored in Elasticsearch and tagged with an `event.action` of `osquery.ai_*`, so you can search, visualize, and build detections on top of them.
 
-Many inventory queries use `snapshot: true`. Each scheduled run emits a full current-state row set. Osquery Manager does not deduplicate snapshot documents in this package; analysts should expect repeated rows across intervals and use latest-per-host aggregation or time-range filters in their hunts and visualizations.
+### What it inventories
 
-### Metadata-only privacy boundary
+- **Running AI tools** — local LLM runtimes, AI coding agents, and MCP servers, classified by role in `osquery.process_category` (`llm_runtime`, `agent`, `mcp`).
+- **Installed AI software** — desktop apps, OS packages, Python and npm packages, and browser/editor extensions (Chrome, Firefox, Safari, VS Code).
+- **AI configuration and models** — MCP and AI tool config files, large model files, and model cache usage.
+- **AI network and persistence footprint** — listening ports, outbound sockets for AI processes, and auto-start entries (Windows services, scheduled tasks, launchd, systemd, cron).
 
-Pack queries inventory installed tools, paths, ports, and configuration locations. They report credential-adjacent **path metadata only** (for example Chrome Login Data, keychain paths, AWS credential file locations) and never read file contents, prompts, completions, hook payloads, consent databases, or sandbox-escalation events.
+### Interpreting results
 
-### Risk-context queries
+Inventory queries run in snapshot mode: every scheduled run emits a full, current-state set of rows. Expect the same asset to reappear on each interval, and use latest-per-host aggregation or time-range filters when building dashboards and hunts.
 
-Some queries provide detection context rather than pure inventory:
+### Privacy
 
-- `ai_config_file_changes` — recent MCP/AI config modifications (7200s lookback)
-- `ai_sensitive_file_access` (macOS/Linux) — AI processes with open handles to sensitive paths via `process_open_files`
-- `ai_sensitive_file_colocation` (Windows) — uid co-occurrence between AI processes and sensitive paths; **not access proof**
-- `ai_process_network_summary` — outbound socket inventory for classified AI processes (`osquery.process_category` required); non-loopback sockets with active-ish TCP state; `is_rfc1918_destination` flags private IPv4 destinations (10/8, 172.16/12, 192.168/16)
-- `ai_sensitive_file_proximity` — emits `osquery.process_category` on macOS/Linux access evidence and Windows colocation rows
-
-macOS/Linux access evidence (`ai_sensitive_file_access`) is distinct from Windows colocation inventory (`ai_sensitive_file_colocation`).
-
-### Platform differences
-
-- **Windows** uses `programs`, `services`, `scheduled_tasks`, `ai_programs_windows`, and `ai_sensitive_file_colocation`.
-- **macOS** uses `apps`, `launchd`, `homebrew_packages`, and `ai_sensitive_file_access`.
-- **Linux** uses `deb_packages`/`rpm_packages`, `systemd`, `crontab`, and `ai_sensitive_file_access`.
-- Cross-platform queries may emit platform-adapted ECS shapes (for example Windows docker uses `process.*` fallback; macOS/Linux use `container.*`; `ai_python_packages` maps Python package output to `package.*` on all platforms).
-
-Model-file size thresholds use 100 MiB (104857600 bytes).
-
-### Correlation with activity telemetry
-
-Osquery inventory documents endpoint state. They do **not** emit `gen_ai.*` fields. The deprecated `gen_ai.system` ECS field was renamed to `gen_ai.provider.name` (ECS RFC 0052); that field belongs on GenAI **activity** telemetry when a request proves the provider, not on installed-process inventory.
-
-Correlate osquery inventory with hook or OpenTelemetry activity streams by `host.*`, `user.*`, normalized process or tool identity, and time—not by manufacturing `gen_ai.*` fields in inventory rows.
-
-### Copilot variant classification
-
-Process queries (`ai_processes`, `ai_process_network_summary`, `ai_listening_ports`, `ai_sensitive_file_proximity`) classify running processes via a shared `CASE` subquery joined on `pid`, mapped to `osquery.process_category` (`mcp`, `agent`, `llm_runtime`). Derived queries reference that subquery once rather than re-evaluating the full detection expression in both `SELECT` and `WHERE`.
-
-Install-time inventory queries (programs, apps, packages, browser/IDE extensions) classify Copilot-related hits into `osquery.copilot_variant` (`developer`, `productivity`, `browser`, `unknown`) where source fields support disambiguation — for example GitHub Copilot vs Microsoft 365 Copilot. Process queries do **not** emit `copilot_variant`; use `osquery.process_category` or process name/cmdline instead. The field is sparse (mostly `NULL` outside Copilot hits) and variant taxonomies differ by source, so treat it as best-effort context on install inventory only.
-
-### Deferred follow-ups (not collected by this package)
-
-The following are tracked separately and are **out of scope** for these inventory packs:
-
-- Hook/OpenTelemetry GenAI activity correlation and ingest pipelines
-- Windows ODR ETW / consent-database telemetry
-- Sandbox-elevation and session-level telemetry
-- Unsigned AI binary detection and YARA/session scanning
-- Snapshot document deduplication in ingest
-- Orphaned saved-search object cleanup
+These queries collect **metadata only** — names, versions, paths, ports, and configuration locations. They do not read file contents, prompts, completions, or credentials.
