@@ -5,6 +5,7 @@ name: "integrations-backport"
 env:
   SETUP_GVM_VERSION: "v0.6.0"
   YQ_VERSION: 'v4.35.2'
+  GH_CLI_VERSION: "2.29.0"
   # Agent images used in pipeline steps
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
 
@@ -13,11 +14,11 @@ steps:
   - label: "Check that it runs from UI"
     key: "check-ui"
     command:
-      - "buildkite-agent annotate \"The $BUILDKITE_PIPELINE_SLUG is used only for running from UI or a trigger step!\" --style 'warning'"
+      - "buildkite-agent annotate \"The $${BUILDKITE_PIPELINE_SLUG} pipeline can only be triggered from the UI by members of the 'ecosystem' team, or via a trigger step from the 'integrations' pipeline. For the recommended workflow see the [documentation](https://www.elastic.co/guide/en/integrations-developer/current/developer-workflow-support-old-package.html).\" --style 'warning'"
       - "exit 1"
     if: |
       !(
-        build.source == 'ui' ||
+        (build.source == 'ui' && build.creator.teams includes "ecosystem") ||
         (build.source == 'trigger_job' && build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == 'integrations')
       )
 
@@ -55,7 +56,15 @@ steps:
           value: "true"
         - label: "False"
           value: "false"
-      default: "false"
+      default: "true"
+    - text: "Backport branch name (optional, defaults to backport-<package>-<major>.<minor>)"
+      key: "BACKPORT_BRANCH_NAME"
+      required: false
+      default: ""
+    - text: "PR number to notify on completion (optional)"
+      key: "PR_NUMBER"
+      required: false
+      default: ""
 
   - label: "Creating the backport branch"
     key: "create-backport-branch"
@@ -70,3 +79,23 @@ steps:
     depends_on:
       - step: "input-variables"
         allow_failure: false
+
+  - label: ":github: Notify PR"
+    key: "notify-pr"
+    command: |
+      if ! outcome=$$(buildkite-agent step get "outcome" --step "create-backport-branch"); then
+        echo "Failed to retrieve step outcome, skipping PR notification"
+        exit 0
+      fi
+      if [[ "$${outcome}" == "passed" ]]; then
+        NOTIFY_STATUS=success .buildkite/scripts/notify_backport_pr.sh
+      else
+        NOTIFY_STATUS=failure .buildkite/scripts/notify_backport_pr.sh
+      fi
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
+    depends_on:
+      - step: "create-backport-branch"
+        allow_failure: true

@@ -83,10 +83,13 @@ steps:
       - ".buildkite/scripts/run_dev_scripts_tests.sh"
       - "dev/scripts/**.sh"
       - "dev/backports/**"
+    if: |
+      (build.env('BUILDKITE_PULL_REQUEST') != "false" && build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main") ||
+      (build.env('BUILDKITE_PULL_REQUEST') == "false" && build.branch == "main")
 
   - label: ":git: Trigger backport dry-runs"
     key: "trigger-backport-dryrun"
-    command: ".buildkite/scripts/trigger_backport_dryrun.sh"
+    command: ".buildkite/scripts/trigger_backport.sh"
     agents:
       image: "${LINUX_AGENT_IMAGE}"
     depends_on:
@@ -98,6 +101,23 @@ steps:
       build.env('BUILDKITE_PULL_REQUEST') != "false" &&
       build.env('BUILDKITE_PIPELINE_SLUG') == "integrations" &&
       build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main"
+
+  - label: ":git: Create backport branches for new entries"
+    key: "trigger-backport-create"
+    command: ".buildkite/scripts/trigger_backport.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
+    depends_on:
+      - step: "check-backports-inventory"
+        allow_failure: false
+    if_changed:
+      - ".backports.yml"
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') == "false" &&
+      build.branch == "main" &&
+      build.env('BUILDKITE_PIPELINE_SLUG') == "integrations"
 
   - label: ":junit: Sources Junit annotate"
     agents:
@@ -137,6 +157,25 @@ steps:
     if_changed:
       - "**/changelog.yml"
 
+  - label: ":busts_in_silhouette: Check backport package owners"
+    key: "check-backport-owners"
+    command: ".buildkite/scripts/check_backport_owners.sh"
+    soft_fail: true
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "2"
+      memory: "1G"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
+    depends_on:
+      - step: "check-buildkite-scripts"
+        allow_failure: false
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
+      build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') =~ /^backport-/
+    if_changed:
+      - "packages/**"
+      - ".github/CODEOWNERS"
 
   - label: "Trigger integrations"
     key: "test-integrations"

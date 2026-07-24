@@ -1,0 +1,57 @@
+---
+description: Pipeline for OverwatchGenericDetectionSummaryEvent events.
+processors:
+  - set:
+      field: event.kind
+      value: alert
+      tag: set_event_kind
+  - append:
+      field: event.category
+      value: malware
+      tag: append_malware_category
+  - append:
+      field: event.type
+      value: info
+      tag: append_info_type
+  - rename:
+      field: crowdstrike.event.CompositeId
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_composite_id_to_event_id
+  - rename:
+      field: crowdstrike.event.FalconHostLink
+      target_field: event.reference
+      ignore_missing: true
+      tag: rename_falcon_host_link
+  - rename:
+      field: crowdstrike.event.Description
+      target_field: message
+      ignore_missing: true
+      tag: rename_description_to_message
+  - convert:
+      field: crowdstrike.event.Severity
+      type: long
+      ignore_missing: true
+      tag: convert_severity_to_long
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_event_Severity_2c932c83
+            field: crowdstrike.event.Severity
+            ignore_missing: true
+        - append:
+            tag: append_error_message_48722b3e
+            field: error.message
+            value: |-
+              Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

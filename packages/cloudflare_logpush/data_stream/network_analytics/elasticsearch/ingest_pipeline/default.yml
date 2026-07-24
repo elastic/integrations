@@ -775,11 +775,18 @@ processors:
       tag: split_IPv6ExtensionHeaders
       separator: ', *'
       if: ctx.json?.IPv6ExtensionHeaders instanceof String && ctx.json.IPv6ExtensionHeaders != ''
-  - rename:
-      tag: rename_json_IPv6ExtensionHeaders_to_cloudflare_logpush_network_analytics_ipv6_extension_headers_cdd8e128
+  - convert:
+      tag: convert_json_ipv6_extension_headers
       field: json.IPv6ExtensionHeaders
       target_field: cloudflare_logpush.network_analytics.ipv6.extension_headers
+      if: ctx.json?.IPv6ExtensionHeaders != ''
+      type: long
       ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_cdd8e128
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_ipv6_flow_label
       field: json.IPv6FlowLabel
@@ -978,11 +985,18 @@ processors:
       tag: split_TCPOptions
       separator: ', *'
       if: ctx.json?.TCPOptions instanceof String && ctx.json.TCPOptions != ''
-  - rename:
-      tag: rename_json_TCPOptions_to_cloudflare_logpush_network_analytics_tcp_options_0cd59237
+  - convert:
+      tag: convert_json_tcp_options
       field: json.TCPOptions
       target_field: cloudflare_logpush.network_analytics.tcp.options
+      if: ctx.json?.TCPOptions != ''
+      type: long
       ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_0cd59237
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
       tag: split_json_TCPSACKBlocks_e086a612
       field: json.TCPSACKBlocks

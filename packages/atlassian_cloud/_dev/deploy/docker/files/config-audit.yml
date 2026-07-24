@@ -1,0 +1,296 @@
+rules:
+  # Round 1, page 2 — second page via cursor pagination.
+  # Cursor-based rules go first so they take precedence over the time-window catchall below.
+  - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
+    methods: ["GET"]
+    query_params:
+      cursor: cursor-page-2
+      limit: "2"
+    request_headers:
+      Authorization:
+        - "Bearer test-api-key"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "type": "events",
+                "id": "a1000003-0000-4000-8000-000000000003",
+                "attributes": {
+                  "time": "2026-05-19T10:02:00.000Z",
+                  "processedAt": "2026-05-19T10:02:01.000Z",
+                  "action": "user_profile_viewed",
+                  "actor": {
+                    "id": "712020:cccccccc-cccc-cccc-cccc-cccccccccccc",
+                    "name": "Carol Davis",
+                    "email": "carol.davis@example.com"
+                  },
+                  "location": {
+                    "ip": "203.0.113.20",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Carol Davis viewed a user profile",
+                  "format": "simple"
+                }
+              },
+              {
+                "type": "events",
+                "id": "a1000004-0000-4000-8000-000000000004",
+                "attributes": {
+                  "time": "2026-05-19T10:03:00.000Z",
+                  "processedAt": "2026-05-19T10:03:01.000Z",
+                  "action": "confluence_added_space_permission",
+                  "actor": {
+                    "id": "712020:dddddddd-dddd-dddd-dddd-dddddddddddd",
+                    "name": "Dana Wilson",
+                    "email": "dana.wilson@example.com"
+                  },
+                  "context": [
+                    {
+                      "id": "11111111-1111-1111-1111-111111111111",
+                      "type": "sites",
+                      "attributes": {
+                        "siteName": "example-corp",
+                        "siteHostName": "https://example-corp.atlassian.net"
+                      }
+                    }
+                  ],
+                  "location": {
+                    "ip": "203.0.113.21",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Dana Wilson added Confluence space permission",
+                  "format": "simple"
+                }
+              }
+            ],
+            "links": {
+              "next": "https://api.atlassian.com/admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream?cursor=cursor-page-3"
+            },
+            "meta": {
+              "next": "cursor-page-3",
+              "page_size": 2
+            }
+          }
+          ` }}
+  # Round 1, page 3 — terminal page: returns Eve (1 event) with no next cursor.
+  # The CEL program sets last_timestamp = Eve's processedAt
+  # (2026-05-19T10:10:01.000Z → 1779185401000 ms) because size(items) > 0.
+  # want_more = false because meta.next is null, ending the pagination loop.
+  - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
+    methods: ["GET"]
+    query_params:
+      cursor: cursor-page-3
+      limit: "2"
+    request_headers:
+      Authorization:
+        - "Bearer test-api-key"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "type": "events",
+                "id": "a1000005-0000-4000-8000-000000000005",
+                "attributes": {
+                  "time": "2026-05-19T10:10:00.000Z",
+                  "processedAt": "2026-05-19T10:10:01.000Z",
+                  "action": "api_token_created",
+                  "actor": {
+                    "id": "712020:eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+                    "name": "Eve Martinez",
+                    "email": "eve.martinez@example.com",
+                    "auth": {
+                      "authType": "session",
+                      "tokenId": "token-00000001",
+                      "tokenLabel": "Example API Token"
+                    }
+                  },
+                  "location": {
+                    "ip": "198.51.100.30",
+                    "geo": "EU",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Eve Martinez created an API token",
+                  "format": "simple"
+                }
+              }
+            ],
+            "links": {},
+            "meta": {
+              "attributes": null,
+              "next": null,
+              "prev": null,
+              "current": null,
+              "page_size": 200,
+              "start_index": 1,
+              "end_index": 1,
+              "total": 1
+            }
+          }
+          ` }}
+  # Round 2 — fresh time-window request after the polling interval.
+  # last_timestamp from round 1 = Eve's processedAt (1779185401000 ms),
+  # so the CEL program sends from=1779185401000. Returns empty data,
+  # confirming no new events. After this, last_timestamp advances to "now".
+  - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
+    methods: ["GET"]
+    query_params:
+      from: "1779185401000"
+      to: "{to:.*}"
+      sortOrder: asc
+      limit: "2"
+    request_headers:
+      Authorization:
+        - "Bearer test-api-key"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [],
+            "links": {},
+            "meta": {
+              "attributes": null,
+              "next": null,
+              "prev": null,
+              "current": null,
+              "page_size": 200,
+              "start_index": null,
+              "end_index": null,
+              "total": 0
+            }
+          }
+          ` }}
+  # Round 1, page 1 + steady-state (round 3+).
+  # This wildcard rule matches any from/to time-window request. It uses
+  # response cycling: the first match returns page 1 events with a pagination
+  # cursor (round 1 initial poll); subsequent matches return empty data
+  # (steady state after round 2 advances last_timestamp to "now").
+  # Must come after the round 2 exact-match rule above.
+  - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
+    methods: ["GET"]
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      sortOrder: asc
+      limit: "2"
+    request_headers:
+      Authorization:
+        - "Bearer test-api-key"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "type": "events",
+                "id": "a1000001-0000-4000-8000-000000000001",
+                "attributes": {
+                  "time": "2026-05-19T10:00:00.000Z",
+                  "processedAt": "2026-05-19T10:00:01.000Z",
+                  "action": "user_login",
+                  "actor": {
+                    "id": "712020:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                    "name": "Alice Johnson",
+                    "email": "alice.johnson@example.com"
+                  },
+                  "location": {
+                    "ip": "198.51.100.10",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Alice Johnson logged in",
+                  "format": "simple"
+                }
+              },
+              {
+                "type": "events",
+                "id": "a1000002-0000-4000-8000-000000000002",
+                "attributes": {
+                  "time": "2026-05-19T10:01:00.000Z",
+                  "processedAt": "2026-05-19T10:01:01.000Z",
+                  "action": "organization_users_viewed",
+                  "actor": {
+                    "id": "712020:bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+                    "name": "Bob Smith",
+                    "email": "bob.smith@example.com"
+                  },
+                  "location": {
+                    "ip": "198.51.100.11",
+                    "countryName": "Example Country",
+                    "city": "Example City"
+                  }
+                },
+                "message": {
+                  "content": "Bob Smith viewed organization users",
+                  "format": "simple"
+                }
+              }
+            ],
+            "links": {
+              "next": "https://api.atlassian.com/admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream?cursor=cursor-page-2"
+            },
+            "meta": {
+              "next": "cursor-page-2",
+              "page_size": 2
+            }
+          }
+          ` }}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [],
+            "links": {},
+            "meta": {
+              "attributes": null,
+              "next": null,
+              "prev": null,
+              "current": null,
+              "page_size": 200,
+              "start_index": null,
+              "end_index": null,
+              "total": 0
+            }
+          }
+          ` }}

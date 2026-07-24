@@ -10,7 +10,7 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 **Overview of the process:**
 
 1. Find the git commit that introduced the target package version.
-2. Run the **integrations-backport** pipeline to create the backport branch.
+2. Open a PR adding a new entry to `.backports.yml` — CI validates and dry-runs the branch creation, and the branch is created automatically on merge.
 3. Create a PR with the bug fix against that backport branch.
 4. Update the changelog in `main` to include the new version.
 
@@ -78,31 +78,65 @@ Sometimes, when we drop the support for an earlier version of the stack and late
                 Move lightweight manifest to integration for EBS data stream (#3856)
             ```
 
-2. Run the **integrations-backport** pipeline [https://buildkite.com/elastic/integrations-backport](https://buildkite.com/elastic/integrations-backport) for creating the backport branch. ![buildkite build](images/build.png "")
+2. **Add a new entry to `.backports.yml` and open a PR**
 
-    **Pay attention:** if you just run the pipeline it’ll wait for your inputs, nothing will happen without that.
+    The backport branch is created automatically when a new entry is merged into `.backports.yml`.
 
-    ![waiting input step](images/backport_input_step.png)
+    **Recommended: use the `AddBackportEntry` mage target**
 
-    Pipeline’s inputs:
+    This target resolves the base commit automatically (combining steps 1 and 2) and inserts the entry in the correct position in the file:
 
-    * **PACKAGE_NAME** (default: "") — enter the package name, as defined in the `name` field of manifest.yml, for example `aws`
-    * **PACKAGE_VERSION** (default: "") — enter the package version, for example: 1.19.7, 1.0.0-beta1
-    * **BASE_COMMIT** (default: "") — enter the commit from the previous step (for example: 8cb321075afb9b77ea965e1373a03a603d9c9796)
-    * **REMOVE_OTHER_PACKAGES** (default: "false") — If set to "true", all packages from the **packages** folder except the target package will be removed from the created branch. This will help to reduce CI time on the backport branch and avoid CI errors unrelated to the package being fixed, since only the affected package needs to be tested and published.
-    * **DRY_RUN** (default: "true")
+    ```bash
+    mage AddBackportEntry <package_name> <base_version>
+    ```
 
-        * **`true`** — Performs checks and a local dry run only. It will:
-            * Verify if the package is published
-            * Verify if the entered commit exists
-            * Verify if the entered commit publishes the expected version
-            * Verify if the backport branch already exists
-            * Create the local branch and update it with `.buildkite` and `.ci` folders
-            * Remove other packages except the defined one (if `REMOVE_OTHER_PACKAGES` is set)
+    Example:
+    ```bash
+    $ mage AddBackportEntry aws 1.19.5
+    Added: branch=backport-aws-1.19 base_commit=8cb321075afb9b77ea965e1373a03a603d9c9796
+    ```
 
-            The branch will **not** be pushed to the upstream repository.
+    **Alternatively: add the entry manually**
 
-        * **`false`** — Does everything above, plus creates a commit and pushes the local branch to the upstream repository ([https://github.com/elastic/integrations](https://github.com/elastic/integrations)). The branch will be named `backport-<package_name>-<major>.<minor>` (e.g. `backport-aws-1.19`).
+    Open a PR adding the entry for the branch you need:
+
+    ```yaml
+    - package: <package_name>
+      branch: backport-<package_name>-<major>.<minor>
+      base_version: "<version>"
+      base_commit: "<commit_from_step_1>"
+      maintained_until: null
+      archived: false
+    ```
+
+    Example for the `aws` package at version `1.19.5`:
+
+    ```yaml
+    - package: aws
+      branch: backport-aws-1.19
+      base_version: "1.19.5"
+      base_commit: "8cb321075afb9b77ea965e1373a03a603d9c9796"
+      maintained_until: null
+      archived: false
+    ```
+
+    Fields:
+
+    * **`package`** — package name as defined in the `name` field of `manifest.yml`
+    * **`branch`** — name of the backport branch to create, following the format `backport-<package_name>-<major>.<minor>`
+    * **`base_version`** — the package version to branch from (e.g. `1.19.5`, `1.0.0-beta1`)
+    * **`base_commit`** — the commit SHA found in the previous step
+    * **`maintained_until`** — set to a `YYYY-MM-DD` date if the branch has a known end-of-life, otherwise `null`
+    * **`archived`** — set to `false` for a new active branch
+
+    Once the PR is opened, CI automatically:
+
+    * Validates the new entry schema (`check-backports-inventory`)
+    * Runs a **dry run** of the branch creation, which verifies that the package is published, the commit exists, the commit publishes the expected version, and the branch does not already exist — without pushing anything
+
+    The PR requires review from the `elastic/ecosystem` team (they are the CODEOWNERS of `.backports.yml`). Once merged to `main`, the branch `backport-<package_name>-<major>.<minor>` is created and pushed automatically. A comment is posted on the merged PR confirming success or failure of the branch creation.
+
+    By default, the backport branch is created with only the target package in the `packages/` directory — all other packages are removed. This keeps the branch lean and avoids running tests for unrelated packages on every PR opened against it.
 
 3. **Create a PR for the bug fix**
 

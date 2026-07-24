@@ -537,6 +537,7 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.knowledge_base.software_list.vendor |  | keyword |
 | qualys_vmdr.asset_host_detection.knowledge_base.solution.comment |  | match_only_text |
 | qualys_vmdr.asset_host_detection.knowledge_base.solution.value |  | match_only_text |
+| qualys_vmdr.asset_host_detection.knowledge_base.status | Indicates whether the QID was found in the Knowledge Base (`found`) or not (`not_found`). | keyword |
 | qualys_vmdr.asset_host_detection.knowledge_base.supported_modules |  | keyword |
 | qualys_vmdr.asset_host_detection.knowledge_base.threat_intelligence.intel.id |  | keyword |
 | qualys_vmdr.asset_host_detection.knowledge_base.threat_intelligence.intel.text |  | keyword |

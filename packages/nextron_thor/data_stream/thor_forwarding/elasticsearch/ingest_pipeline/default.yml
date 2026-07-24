@@ -3,20 +3,22 @@ description: Pipeline for parsing Thor logs.
 processors:
   - set:
       field: ecs.version
-      value: 9.2.0
+      value: 9.4.0
       tag: set_ecs_version
-  - append:
-      field: event.category
-      value: file
-      tag: append_ecs_category
-  - set:
-      field: event.kind
-      value: event
-      tag: set_event_kind
-  - append:
-      field: event.type
-      value: info
-      tag: append_event_type
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
   - rename:
       ignore_missing: true
       field: message
@@ -30,16 +32,53 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
-      ignore_failure: true
       field: event.original
       target_field: thor
       tag: parse_event_original_json
+  # Categorization
+  - pipeline:
+      tag: pipeline_20a0e7f1
+      name: '{{ IngestPipeline "categorize" }}'
+      ignore_missing_pipeline: true
+  # Cached event category for category-dependent processors.
+  - set:
+      tag: set__temp_isProcess_279add73
+      if: ctx.event?.category?.contains('process') == true
+      field: _temp.isProcess
+      value: true
+  - set:
+      tag: set__temp_isNetwork_70f64bff
+      if: ctx.event?.category?.contains('network') == true
+      field: _temp.isNetwork
+      value: true
+  - set:
+      tag: set__temp_isRegistry_1ecc0df5
+      if: ctx.event?.category?.contains('registry') == true
+      field: _temp.isRegistry
+      value: true
   - rename:
-      field: thor.file
-      target_field: file.name
-      if: ctx.thor?.file != null && ctx.thor?.file instanceof String
+      field: thor.scanid
+      target_field: thor.scan_id
+      tag: rename_thor_scanid_to_thor_scan_id
       ignore_missing: true
-      tag: rename_thor_file_to_file_name
+  - fingerprint:
+      ignore_missing: true
+      target_field: _id
+      fields:
+        - event.original
+        - log_line
+      method: SHA-256
+      tag: fingerprint_event_original_and_log_line
+  - remove:
+      field: log_line
+      tag: remove_log_line
+      ignore_missing: true
+  - rename:
+      ignore_missing: true
+      field: thor.file
+      target_field: file.path
+      if: ctx.thor?.file != null && ctx.thor.file instanceof String
+      tag: rename_thor_file_to_file_path_if_string
   - date:
       formats:
       - ISO8601
@@ -48,6 +87,7 @@ processors:
       tag: parse_thor_time
       on_failure:
         - append:
+            tag: append_error_message_8357ea02
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -55,11 +95,27 @@ processors:
       field: thor.time
       if: ctx['@timestamp'] != null
       tag: remove_thor_time_if_timestamp_set
-  - rename:
-      ignore_missing: true
+  - date:
+      formats:
+        - ISO8601
       field: thor.end_time
       target_field: event.end
-      tag: rename_thor_end_time_to_event_end
+      if: ctx.thor?.end_time != null && ctx.thor.end_time != ''
+      tag: date_thor_end_time
+      on_failure:
+        - remove:
+            tag: remove_thor_end_time_64fe8a01
+            field: thor.end_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_c049f044
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      tag: remove_thor_end_time_a934190f
+      ignore_missing: true
+      field: thor.end_time
+      if: ctx.event?.end != null
   - rename:
       ignore_missing: true
       field: thor.level
@@ -75,6 +131,406 @@ processors:
       field: thor.module
       target_field: event.module
       tag: rename_thor_module_to_event_module
+  # Field name normalization
+  - set:
+      field: thor.image.path
+      copy_from: thor.image_path
+      if: ctx.thor?.image_path != null && ctx.thor?.image?.path == null
+      tag: set_thor_image_path_from_image_path
+  - remove:
+      field: thor.image_path
+      ignore_missing: true
+      if: ctx.thor?.image?.path != null
+      tag: remove_thor_image_path_after_normalization
+  # Data type normalization
+  - convert:
+      field: thor.exec_flag
+      type: boolean
+      ignore_missing: true
+      tag: convert_thor_exec_flag_to_boolean
+      on_failure:
+        - remove:
+            tag: remove_thor_exec_flag_9e9f17fa
+            field: thor.exec_flag
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            tag: append_error_message_convert_thor_exec_flag_to_boolean
+  - convert:
+      field: thor.enabled
+      type: boolean
+      ignore_missing: true
+      tag: convert_thor_enabled_to_boolean
+      on_failure:
+        - remove:
+            tag: remove_thor_enabled_f499f627
+            field: thor.enabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            tag: append_error_message_convert_thor_enabled_to_boolean
+  - convert:
+      field: thor.is_admin
+      type: boolean
+      ignore_missing: true
+      tag: convert_thor_is_admin_to_boolean
+      on_failure:
+        - remove:
+            tag: remove_thor_is_admin_b9a2e54d
+            field: thor.is_admin
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            tag: append_error_message_0ee4eab3
+  - convert:
+      field: thor.no_expire
+      type: boolean
+      ignore_missing: true
+      tag: convert_thor_no_expire_to_boolean
+      on_failure:
+        - remove:
+            tag: remove_thor_no_expire_401acd0f
+            field: thor.no_expire
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            tag: append_error_message_6a99b434
+  - convert:
+      field: thor.active
+      type: boolean
+      ignore_missing: true
+      tag: convert_thor_active_to_boolean
+      on_failure:
+        - remove:
+            tag: remove_thor_active_0a6828cd
+            field: thor.active
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            tag: append_error_message_389e044d
+  - convert:
+      field: thor.locked
+      type: boolean
+      ignore_missing: true
+      tag: convert_thor_locked_to_boolean
+      on_failure:
+        - remove:
+            tag: remove_thor_locked_edceea37
+            field: thor.locked
+            ignore_missing: true
+        - append:
+            tag: append_error_message_85ffaa0d
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: thor.valid
+      type: boolean
+      ignore_missing: true
+      tag: convert_thor_valid_to_boolean
+      on_failure:
+        - remove:
+            tag: remove_thor_valid_deae5b8d
+            field: thor.valid
+            ignore_missing: true
+        - append:
+            tag: append_error_message_aec15d4b
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: thor.badpwcount
+      type: long
+      ignore_missing: true
+      tag: convert_thor_badpwcount_to_long
+      on_failure:
+        - remove:
+            tag: remove_thor_badpwcount_28d0760d
+            field: thor.badpwcount
+            ignore_missing: true
+        - append:
+            tag: append_error_message_aa5128c6
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: thor.entries
+      type: long
+      ignore_missing: true
+      tag: convert_thor_entries_to_long
+      on_failure:
+        - remove:
+            tag: remove_thor_entries_68f2d69d
+            field: thor.entries
+            ignore_missing: true
+        - append:
+            tag: append_error_message_c544e739
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: thor.event_id
+      type: long
+      ignore_missing: true
+      tag: convert_thor_event_id_to_long
+      on_failure:
+        - remove:
+            tag: remove_thor_event_id_aaad9f9b
+            field: thor.event_id
+            ignore_missing: true
+        - append:
+            tag: append_error_message_5c6bc027
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: thor.num_logons
+      type: long
+      ignore_missing: true
+      tag: convert_thor_num_logons_to_long
+      on_failure:
+        - remove:
+            tag: remove_thor_num_logons_5b40ded1
+            field: thor.num_logons
+            ignore_missing: true
+        - append:
+            tag: append_error_message_8525825a
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: thor.scanned
+      type: long
+      ignore_missing: true
+      tag: convert_thor_scanned_to_long
+      on_failure:
+        - remove:
+            tag: remove_thor_scanned_22822ef5
+            field: thor.scanned
+            ignore_missing: true
+        - append:
+            tag: append_error_message_b77bc345
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: thor.pass_age
+      type: double
+      ignore_missing: true
+      tag: convert_thor_pass_age_to_double
+      on_failure:
+        - remove:
+            tag: remove_thor_pass_age_99759a09
+            field: thor.pass_age
+            ignore_missing: true
+        - append:
+            tag: append_error_message_f81a8f3e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Process fields
+  - rename:
+      ignore_missing: true
+      field: thor.pid
+      target_field: process.pid
+      if: ctx._temp?.isProcess == true
+      tag: rename_thor_pid_to_process_pid
+  - rename:
+      ignore_missing: true
+      field: thor.ppid
+      target_field: process.parent.pid
+      if: ctx._temp?.isProcess == true
+      tag: rename_thor_ppid_to_process_parent_pid
+  - rename:
+      ignore_missing: true
+      field: thor.process_name
+      target_field: process.name
+      if: ctx._temp?.isProcess == true
+      tag: rename_thor_process_name_to_process_name
+  - rename:
+      ignore_missing: true
+      field: thor.command
+      target_field: process.command_line
+      if: ctx._temp?.isProcess == true
+      tag: rename_thor_command_to_process_command_line
+  - rename:
+      ignore_missing: true
+      field: thor.parent
+      target_field: process.parent.executable
+      if: ctx._temp?.isProcess == true
+      tag: rename_thor_parent_to_process_parent_executable
+  - rename:
+      ignore_missing: true
+      field: thor.image.path
+      target_field: process.executable
+      if: ctx._temp?.isProcess == true
+      tag: rename_thor_image_path_to_process_executable
+  # Network fields
+  - rename:
+      ignore_missing: true
+      field: thor.protocol
+      target_field: network.transport
+      if: ctx._temp?.isNetwork == true
+      tag: rename_thor_protocol_to_network_transport
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+      tag: lowercase_network_transport
+  - remove:
+      field: thor.ip
+      ignore_missing: true
+      if: ctx.thor?.ip == '*'
+      tag: remove_thor_ip_wildcard
+  - remove:
+      field: thor.rip
+      ignore_missing: true
+      if: ctx.thor?.rip == '*'
+      tag: remove_thor_rip_wildcard
+  - convert:
+      tag: convert_thor_ip_24095cde
+      field: thor.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_thor_ip_90e30997
+            field: thor.ip
+            ignore_missing: true
+        - append:
+            tag: append_error_message_3de1e5e8
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: thor.ip
+      target_field: source.ip
+      tag: rename_thor_ip_to_source_ip
+      if: ctx._temp?.isNetwork == true
+      ignore_missing: true
+  - convert:
+      tag: convert_thor_port_8044a21e
+      field: thor.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_thor_port_61d2db41
+            field: thor.port
+            ignore_missing: true
+        - append:
+            tag: append_error_message_593b04d0
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: thor.port
+      target_field: source.port
+      tag: rename_thor_port_to_source_port
+      if: ctx._temp?.isNetwork == true
+      ignore_missing: true
+  - convert:
+      tag: convert_thor_rip_061cd984
+      field: thor.rip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_thor_rip_323b2117
+            field: thor.rip
+            ignore_missing: true
+        - append:
+            tag: append_error_message_c0b7206e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: thor.rip
+      target_field: destination.ip
+      tag: rename_thor_rip_to_destination_ip
+      if: ctx._temp?.isNetwork == true
+      ignore_missing: true
+  - convert:
+      tag: convert_thor_rport_08e203a6
+      field: thor.rport
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_thor_rport_51a5edcb
+            field: thor.rport
+            ignore_missing: true
+        - append:
+            tag: append_error_message_c2acd798
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: thor.rport
+      target_field: destination.port
+      tag: rename_thor_rport_to_destination_port
+      if: ctx._temp?.isNetwork == true
+      ignore_missing: true
+  - append:
+      field: event.type
+      value: connection
+      if: ctx.event?.module == 'ProcessConnections'
+      allow_duplicates: false
+      tag: append_event_type_connection
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      ignore_empty_values: true
+      allow_duplicates: false
+      tag: append_source_ip_to_related_ip
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      ignore_empty_values: true
+      allow_duplicates: false
+      tag: append_destination_ip_to_related_ip
+  # Registry fields
+  - rename:
+      ignore_missing: true
+      field: thor.key
+      target_field: registry.key
+      if: ctx._temp?.isRegistry == true
+      tag: rename_thor_key_to_registry_key
+  - rename:
+      ignore_missing: true
+      field: thor.entry
+      target_field: registry.value
+      if: ctx._temp?.isRegistry == true
+      tag: rename_thor_entry_to_registry_value
+  - rename:
+      ignore_missing: true
+      field: thor.hive
+      target_field: registry.path
+      if: ctx._temp?.isRegistry == true
+      tag: rename_thor_hive_to_registry_path
+  # Rule fields
+  - set:
+      field: rule.name
+      copy_from: thor.reasons.0.name
+      ignore_empty_value: true
+      if: ctx.thor?.reasons instanceof List && ctx.thor.reasons.size() > 0
+      tag: set_rule_name_from_thor_reasons
+  - set:
+      field: rule.id
+      copy_from: thor.reasons.0.signature.rulename
+      ignore_empty_value: true
+      if: ctx.thor?.reasons instanceof List && ctx.thor.reasons.size() > 0 && ctx.thor.reasons[0]?.signature?.rulename != null
+      tag: set_rule_id_from_thor_reasons_signature
+  - set:
+      field: rule.author
+      value: ['{{{thor.reasons.0.signature.author}}}']
+      ignore_empty_value: true
+      if: ctx.thor?.reasons instanceof List && ctx.thor.reasons.size() > 0 && ctx.thor.reasons[0]?.signature?.author != null
+      tag: set_rule_author_from_thor_reasons_signature
+  - set:
+      field: rule.description
+      copy_from: thor.reasons.0.name
+      ignore_empty_value: true
+      if: ctx.thor?.reasons instanceof List && ctx.thor.reasons.size() > 0
+      tag: set_rule_description_from_thor_reasons
+  - set:
+      field: rule.ruleset
+      copy_from: thor.reasons.0.signature.ref
+      ignore_empty_value: true
+      if: ctx.thor?.reasons instanceof List && ctx.thor.reasons.size() > 0 && ctx.thor.reasons[0]?.signature?.ref != null
+      tag: set_rule_ruleset_from_thor_reasons_signature
   - rename:
       ignore_missing: true
       field: thor.log_version
@@ -97,6 +553,17 @@ processors:
       field: thor.userid
       target_field: user.id
       tag: rename_thor_userid_to_user_id
+  - rename:
+      ignore_missing: true
+      field: thor.full_name
+      target_field: user.full_name
+      tag: rename_thor_full_name_to_user_full_name
+      if: ctx.event?.module == 'Users'
+  - rename:
+      ignore_missing: true
+      field: thor.domain
+      target_field: user.domain
+      tag: rename_thor_domain_to_user_domain
   - rename:
       ignore_missing: true
       field: thor.hostname
@@ -129,6 +596,7 @@ processors:
       field: thor.file.path
       target_field: file.path
       tag: rename_thor_file_path_to_file_path
+      if: ctx.file?.path == null
   - grok:
       ignore_missing: true
       field: file.path
@@ -139,6 +607,11 @@ processors:
       - '^(?:[A-Za-z]:\\|\\)(?:.*\\)?%{WINFILENAME:file.name}$'
       - '^/(?:.*/)?%{FILENAME:file.name}$'
       tag: extract_file_name_from_path
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            tag: append_error_message_extract_file_name_from_path
   - rename:
       ignore_missing: true
       field: thor.file.sha1
@@ -164,11 +637,6 @@ processors:
       field: thor.nextrun
       target_field: thor.next_run
       tag: rename_thor_nextrun_to_thor_next_run
-  - rename:
-      ignore_missing: true
-      field: thor.scanid
-      target_field: thor.scan_id
-      tag: rename_thor_scanid_to_thor_scan_id
   - rename:
       ignore_missing: true
       field: thor.firstbytes
@@ -224,7 +692,7 @@ processors:
       field: thor.files
       if: ctx.thor?.files instanceof List
       ignore_missing: true
-      tag: rename_thor_files_desc_to_thor_files_description
+      tag: foreach_thor_files_1b06416b
       processor:
         rename:
           field: _ingest._value.desc
@@ -241,6 +709,21 @@ processors:
       field: thor.image.firstbytes
       target_field: thor.image.first_bytes
       tag: rename_thor_image_firstbytes_to_thor_first_bytes_description
+  - rename:
+      ignore_missing: true
+      field: thor.app.firstbytes
+      target_field: thor.app.first_bytes
+      tag: rename_thor_app_firstbytes_to_thor_app_first_bytes
+  - rename:
+      ignore_missing: true
+      field: thor.app.desc
+      target_field: thor.app.description
+      tag: rename_thor_app_desc_to_thor_app_description
+  - rename:
+      ignore_missing: true
+      field: thor.archive.firstbytes
+      target_field: thor.archive.first_bytes
+      tag: rename_thor_archive_firstbytes_to_thor_archive_first_bytes
   - date:
       formats:
       - ISO8601
@@ -250,6 +733,7 @@ processors:
       tag: parse_thor_file_accessed
       on_failure:
         - append:
+            tag: append_error_message_ccca74f9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -266,6 +750,7 @@ processors:
       tag: parse_thor_file_changed
       on_failure:
         - append:
+            tag: append_error_message_551d7629
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -282,6 +767,7 @@ processors:
       tag: parse_thor_file_modified
       on_failure:
         - append:
+            tag: append_error_message_45995d16
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -297,6 +783,7 @@ processors:
       tag: parse_thor_image_accessed
       on_failure:
         - append:
+            tag: append_error_message_5589ed66
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -308,6 +795,7 @@ processors:
       tag: parse_thor_image_created
       on_failure:
         - append:
+            tag: append_error_message_2f200476
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -319,6 +807,7 @@ processors:
       tag: parse_thor_image_modified
       on_failure:
         - append:
+            tag: append_error_message_ef28d57e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -335,19 +824,59 @@ processors:
           - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_308ff79d
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: thor.files
+      if: ctx.thor?.files instanceof List
+      ignore_missing: true
+      tag: foreach_parse_thor_files_accessed
+      processor:
+        date:
+          field: _ingest._value.accessed
+          target_field: _ingest._value.accessed
+          ignore_failure: true
+          formats:
+          - ISO8601
+      on_failure:
+        - append:
+            tag: append_error_message_b693f214
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: thor.files
+      if: ctx.thor?.files instanceof List
+      ignore_missing: true
+      tag: foreach_parse_thor_files_modified
+      processor:
+        date:
+          field: _ingest._value.modified
+          target_field: _ingest._value.modified
+          ignore_failure: true
+          formats:
+          - ISO8601
+      on_failure:
+        - append:
+            tag: append_error_message_d3354e98
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       formats:
       - ISO8601
       field: thor.file.created
-      target_field: thor.file.created
+      target_field: file.created
       if: ctx.thor?.file?.created != null
       tag: parse_thor_file_created
       on_failure:
         - append:
+            tag: append_error_message_01d593b5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: thor.file.created
+      if: ctx.file?.created != null
+      tag: remove_thor_file_created_if_file_created_set
   - date:
       formats:
       - ISO8601
@@ -357,6 +886,7 @@ processors:
       tag: parse_thor_created
       on_failure:
         - append:
+            tag: append_error_message_54845386
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -368,6 +898,7 @@ processors:
       tag: parse_thor_last_run
       on_failure:
         - append:
+            tag: append_error_message_e3f8d0fc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -379,6 +910,7 @@ processors:
       tag: parse_thor_modified
       on_failure:
         - append:
+            tag: append_error_message_c34393d2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -390,6 +922,18 @@ processors:
       tag: parse_thor_next_run
       on_failure:
         - append:
+            tag: append_error_message_87cf5e46
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_normalize_thor_start_multivalue
+      lang: painless
+      if: ctx.thor?.start != null && ctx.thor.start instanceof String && ctx.thor.start.indexOf(',') > 0
+      source: |-
+        ctx.thor.start = ctx.thor.start.splitOnToken(',')[0].trim();
+      on_failure:
+        - append:
+            tag: append_error_message_ede4208e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -401,6 +945,7 @@ processors:
       tag: parse_thor_start
       on_failure:
         - append:
+            tag: append_error_message_35959a41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -412,6 +957,217 @@ processors:
       tag: parse_thor_image_changed
       on_failure:
         - append:
+            tag: append_error_message_71e52892
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.app.created
+      target_field: thor.app.created
+      if: ctx.thor?.app?.created != null && ctx.thor.app.created != ''
+      tag: parse_thor_app_created
+      on_failure:
+        - remove:
+            tag: remove_thor_app_created_85b10117
+            field: thor.app.created
+            ignore_missing: true
+        - append:
+            tag: append_error_message_a9201134
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.archive.accessed
+      target_field: thor.archive.accessed
+      if: ctx.thor?.archive?.accessed != null && ctx.thor.archive.accessed != ''
+      tag: parse_thor_archive_accessed
+      on_failure:
+        - remove:
+            tag: remove_thor_archive_accessed_7a40c5e5
+            field: thor.archive.accessed
+            ignore_missing: true
+        - append:
+            tag: append_error_message_984b224c
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.archive.created
+      target_field: thor.archive.created
+      if: ctx.thor?.archive?.created != null && ctx.thor.archive.created != ''
+      tag: parse_thor_archive_created
+      on_failure:
+        - remove:
+            tag: remove_thor_archive_created_00085ca6
+            field: thor.archive.created
+            ignore_missing: true
+        - append:
+            tag: append_error_message_ac941512
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.archive.modified
+      target_field: thor.archive.modified
+      if: ctx.thor?.archive?.modified != null && ctx.thor.archive.modified != ''
+      tag: parse_thor_archive_modified
+      on_failure:
+        - remove:
+            tag: remove_thor_archive_modified_ebfedce5
+            field: thor.archive.modified
+            ignore_missing: true
+        - append:
+            tag: append_error_message_d38bc0b8
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.date
+      target_field: thor.date
+      if: ctx.thor?.date != null && ctx.thor.date != ''
+      tag: parse_thor_date
+      on_failure:
+        - remove:
+            tag: remove_thor_date_ce31103a
+            field: thor.date
+            ignore_missing: true
+        - append:
+            tag: append_error_message_730ba142
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.event_time
+      target_field: thor.event_time
+      if: ctx.thor?.event_time != null && ctx.thor.event_time != ''
+      tag: parse_thor_event_time
+      on_failure:
+        - remove:
+            tag: remove_thor_event_time_c0b886d6
+            field: thor.event_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_18b1674e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.last_logon
+      target_field: thor.last_logon
+      if: ctx.thor?.last_logon != null && ctx.thor.last_logon != ''
+      tag: parse_thor_last_logon
+      on_failure:
+        - remove:
+            tag: remove_thor_last_logon_8ebdb6f2
+            field: thor.last_logon
+            ignore_missing: true
+        - append:
+            tag: append_error_message_e1f3b502
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.log_accessed
+      target_field: thor.log_accessed
+      if: ctx.thor?.log_accessed != null && ctx.thor.log_accessed != ''
+      tag: parse_thor_log_accessed
+      on_failure:
+        - remove:
+            tag: remove_thor_log_accessed_151b866a
+            field: thor.log_accessed
+            ignore_missing: true
+        - append:
+            tag: append_error_message_10ff401a
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.log_created
+      target_field: thor.log_created
+      if: ctx.thor?.log_created != null && ctx.thor.log_created != ''
+      tag: parse_thor_log_created
+      on_failure:
+        - remove:
+            tag: remove_thor_log_created_237f11ab
+            field: thor.log_created
+            ignore_missing: true
+        - append:
+            tag: append_error_message_8dc7faa6
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.log_modified
+      target_field: thor.log_modified
+      if: ctx.thor?.log_modified != null && ctx.thor.log_modified != ''
+      tag: parse_thor_log_modified
+      on_failure:
+        - remove:
+            tag: remove_thor_log_modified_44b121ae
+            field: thor.log_modified
+            ignore_missing: true
+        - append:
+            tag: append_error_message_47ec4ace
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.start_time
+      target_field: thor.start_time
+      if: ctx.thor?.start_time != null && ctx.thor.start_time != ''
+      tag: parse_thor_start_time
+      on_failure:
+        - remove:
+            tag: remove_thor_start_time_d996ed46
+            field: thor.start_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_cdeda302
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      field: thor.timestamp
+      target_field: thor.timestamp
+      if: ctx.thor?.timestamp != null && ctx.thor.timestamp != ''
+      tag: parse_thor_timestamp
+      on_failure:
+        - remove:
+            tag: remove_thor_timestamp_c1b0b698
+            field: thor.timestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_message_d23041f4
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      formats:
+      - ISO8601
+      - M/d/yyyy
+      - MM/dd/yyyy
+      field: thor.installed_on
+      target_field: thor.installed_on
+      if: ctx.thor?.installed_on != null && ctx.thor.installed_on != ''
+      tag: parse_thor_installed_on
+      on_failure:
+        - remove:
+            tag: remove_thor_installed_on_95308dcd
+            field: thor.installed_on
+            ignore_missing: true
+        - append:
+            tag: append_error_message_32b98437
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
@@ -428,6 +1184,7 @@ processors:
           - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_246fd80a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -466,70 +1223,100 @@ processors:
 
           ctx.thor.duration = hours * 3600L + mins * 60L + secs;
   - append:
-      field: event.category
-      value: malware
-      if: ctx.message == "Malware file found"
-      tag: append_event_category_malware
-  - append:
       field: related.hash
       value: "{{{file.hash.md5}}}"
       ignore_empty_values: true
+      allow_duplicates: false
       tag: append_related_hash_md5
   - append:
       field: related.hash
       value: "{{{file.hash.sha1}}}"
       ignore_empty_values: true
+      allow_duplicates: false
       tag: append_related_hash_sha1
   - append:
       field: related.hash
       value: "{{{file.hash.sha256}}}"
       ignore_empty_values: true
+      allow_duplicates: false
       tag: append_related_hash_sha256
   - append:
       field: related.user
       value: "{{{file.owner}}}"
       ignore_empty_values: true
+      allow_duplicates: false
       tag: append_related_user_file_owner
   - append:
       field: related.user
       value: "{{{thor.run_as_user}}}"
       ignore_empty_values: true
+      allow_duplicates: false
       tag: append_related_user_run_as_user
   - append:
       field: related.user
       value: "{{{thor.exe_owner}}}"
       ignore_empty_values: true
+      allow_duplicates: false
       tag: append_related_user_exe_owner
-  - append:
-      field: related.user
-      value: "{{{thor.files.owner}}}"
-      ignore_empty_values: true
-      tag: append_related_user_files_owner
   - append:
       field: related.user
       value: "{{{thor.image.owner}}}"
       ignore_empty_values: true
+      allow_duplicates: false
       tag: append_related_user_image_owner
   - append:
       field: related.user
       value: "{{{thor.owner}}}"
       ignore_empty_values: true
+      allow_duplicates: false
       tag: append_related_user_owner
   - append:
       field: related.user
       value: "{{{thor.unit_owner}}}"
       ignore_empty_values: true
+      allow_duplicates: false
       tag: append_related_user_unit_owner
-  - fingerprint:
+  - foreach:
+      field: thor.files
+      if: ctx.thor?.files instanceof List
       ignore_missing: true
-      target_field: _id
-      fields:
-      - thor
-      - message
-      - "@timestamp"
-      - file
-      method: SHA-256
-      tag: fingerprint_event
+      tag: foreach_append_related_user_from_thor_files
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.owner}}}'
+          allow_duplicates: false
+          if: ctx._ingest?._value?.owner != null && ctx._ingest._value.owner != ''
+  - remove:
+      field: _temp
+      tag: remove_temp
+      ignore_missing: true
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
   - pipeline:
       name: global@custom
       ignore_missing_pipeline: true

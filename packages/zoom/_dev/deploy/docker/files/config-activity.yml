@@ -1,0 +1,140 @@
+rules:
+  # Zoom S2S OAuth token endpoint (account_credentials grant).
+  - path: /oauth/token
+    methods: [POST]
+    query_params:
+      grant_type: account_credentials
+      account_id: test-account-id
+    request_headers:
+      Authorization:
+        - "Basic dGVzdC1jbGllbnQtaWQ6dGVzdC1jbGllbnQtc2VjcmV0"
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"access_token":"test-access-token","token_type":"Bearer","expires_in":3600,"scope":"report:read:admin"}
+  # Pagination page 2 — token from page 1.
+  - path: /v2/report/activities
+    methods: [GET]
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      page_size: "{page_size:.*}"
+      next_page_token: mock-page-2-token
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "activity_logs": [
+              {
+                "client_type": "Browser",
+                "email": "bob@example.com",
+                "ip_address": "198.51.100.42",
+                "time": "{{ .request.vars.from }}T14:30:00Z",
+                "type": "Sign in",
+                "version": "6.0.0.1000"
+              }
+            ],
+            "from": "{{ .request.vars.from }}",
+            "to": "{{ .request.vars.to }}",
+            "page_size": 300,
+            "next_page_token": "mock-page-3-token"
+          }
+  # Pagination page 3 — terminal page for round 1.
+  - path: /v2/report/activities
+    methods: [GET]
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      page_size: "{page_size:.*}"
+      next_page_token: mock-page-3-token
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "activity_logs": [
+              {
+                "client_type": "Mac",
+                "email": "carol@example.com",
+                "ip_address": "203.0.113.55",
+                "time": "{{ .request.vars.to }}T08:45:00Z",
+                "type": "Sign out",
+                "version": "6.0.0.1000"
+              }
+            ],
+            "from": "{{ .request.vars.from }}",
+            "to": "{{ .request.vars.to }}",
+            "page_size": 300
+          }
+  # Initial page (round 1) and cursor-resumed page (round 2).
+  - path: /v2/report/activities
+    methods: [GET]
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+      page_size: "{page_size:.*}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ if eq .req_num 1 }}
+          {
+            "activity_logs": [
+              {
+                "client_type": "Browser",
+                "email": "alice@example.com",
+                "ip_address": "192.0.2.10",
+                "time": "{{ .request.vars.from }}T10:00:00Z",
+                "type": "Sign in",
+                "version": "6.0.0.1000"
+              },
+              {
+                "client_type": "Windows",
+                "email": "dave@example.com",
+                "ip_address": "192.0.2.20",
+                "time": "{{ .request.vars.from }}T11:15:00Z",
+                "type": "Sign out",
+                "version": "6.0.0.1000"
+              }
+            ],
+            "from": "{{ .request.vars.from }}",
+            "to": "{{ .request.vars.to }}",
+            "page_size": 300,
+            "next_page_token": "mock-page-2-token"
+          }
+          {{ else if eq .req_num 2 }}
+          {
+            "activity_logs": [
+              {
+                "client_type": "Browser",
+                "email": "eve@example.com",
+                "ip_address": "198.51.100.77",
+                "time": "{{ .request.vars.from }}T12:00:00Z",
+                "type": "Sign in",
+                "version": "6.0.0.1000"
+              }
+            ],
+            "from": "{{ .request.vars.from }}",
+            "to": "{{ .request.vars.to }}",
+            "page_size": 300
+          }
+          {{ else }}
+          {
+            "activity_logs": [],
+            "from": "{{ .request.vars.from }}",
+            "to": "{{ .request.vars.to }}",
+            "page_size": 300
+          }
+          {{ end }}

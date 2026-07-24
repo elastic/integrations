@@ -7,22 +7,48 @@ processors:
       value: false
   - grok:
       tag: grok_citrix_detail_21fa0653
-      description: Extract native header and message.
+      description: Extract native header and message. The header is optional because the RFC5424 syslog envelope (NetScaler NS14.1 and later) is already stripped in the entry pipeline.
       field: citrix.detail
       patterns:
-        - '^%{HEADER} : %{GREEDYDATA:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"'
-        - '^%{HEADER} : %{GREEDYDATA:_tmp.details} : +%{GREEDYDATA:citrix.extended.message}'
+        - '^(?:%{HEADER} : )?%{GREEDYDATA:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"'
+        - '^(?:%{HEADER} : )?%{GREEDYDATA:_tmp.details} : +%{GREEDYDATA:citrix.extended.message}'
       pattern_definitions:
         HEADER: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native} %{WORD:event.timezone} (?:%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
         NATIVE_TIMESTAMP: '(?:%{MONTHNUM}/%{MONTHDAY}/%{YEAR}|%{YEAR}/%{MONTHNUM}/%{MONTHDAY}):%{HOUR}:%{MINUTE}:%{SECOND}'
   - grok:
       tag: grok__tmp_details_7fe39004
-      description: Parse out details.
+      description: >-
+        Parse out details for the classic native body
+        (`default? <module> <event_class> <event_id> <severity>`). Skipped for
+        RFC5424 events, whose body lacks the leading module token.
       field: _tmp.details
+      if: ctx.log?.syslog?.appname == null
       patterns:
         - '^%{DEFAULT:_tmp.default}?%{WORD:citrix.device_event_class_id} %{GREEDYDATA:citrix.name} %{INT:event.id} %{INT:event.severity}$'
       pattern_definitions:
         DEFAULT: 'default '
+  - grok:
+      tag: grok__tmp_details_rfc5424_2b8d4f1a
+      description: >-
+        Parse out details for the RFC5424 native body
+        (`default? <event_class> <event_id> <severity>`). The module token is
+        absent here because it is carried in the RFC5424 APP-NAME, which is
+        reconstructed into `citrix.device_event_class_id` below.
+      field: _tmp.details
+      if: ctx.log?.syslog?.appname != null
+      patterns:
+        - '^%{DEFAULT:_tmp.default}?%{GREEDYDATA:citrix.name} %{INT:event.id} %{INT:event.severity}$'
+      pattern_definitions:
+        DEFAULT: 'default '
+  - set:
+      tag: set_citrix_device_event_class_id_from_rfc5424_appname_5f1c2a7e
+      description: >-
+        Reconstruct the device event class ID from the RFC5424 APP-NAME
+        (log.syslog.appname), for RFC5424 native events whose body lacks the
+        leading module token.
+      field: citrix.device_event_class_id
+      copy_from: log.syslog.appname
+      if: ctx.citrix?.device_event_class_id == null && ctx.log?.syslog?.appname != null
   - set:
       tag: set_citrix_default_class_7414b158
       field: citrix.default_class

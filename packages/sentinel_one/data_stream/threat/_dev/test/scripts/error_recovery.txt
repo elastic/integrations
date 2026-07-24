@@ -1,16 +1,17 @@
-# Test that the threat data stream recovers from SentinelOne API errors
-# (authentication failure and service unavailability) and eventually collects
-# threat documents.
+# Test that the threat data stream indexes CEL error events for SentinelOne API
+# failures, then recovers and collects threat documents.
 #
 # The mock cycles through three responses for /web/api/v2.1/threats:
 #   1st call → 401 {"errors":[{"code":4010010,"detail":"Authentication failed."}]}
 #   2nd call → 503 {"errors":[{"code":5030010,"detail":"Service is temporarily unavailable."}]}
 #   3rd call → 200 with 2 threat documents
 #
-# The httpjson input logs error responses but does not create indexed documents
-# for non-2xx status codes. The observable outcome is that threat documents
-# arrive after the transient failures, confirming recovery without operator
-# intervention.
+# The CEL program emits an indexed error event for each non-200 response that
+# completes a poll cycle. The 401 on the first poll is indexed. On the second
+# poll the HTTP client retries past the 503 and receives the 200 response in
+# the same cycle, so recovery produces threat documents without a separate 503
+# error event. The test asserts the 401 error event, then 2 threat documents
+# (3 total).
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
@@ -30,12 +31,22 @@ add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 # Add the data stream policy.
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
 
-# Wait for 2 threat documents. The first two polls return errors; httpjson
-# retries on each subsequent interval until the mock returns 200.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 5m ${DATA_STREAM_NAME}
+# Wait for the 401 error event from the first poll.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_errors.json
+
+# Verify the document is an error event with code 401.
+exec jq '[.hits.hits[]._source | select(.error.message != null)] | length' got_errors.json
+stdout '^1$'
+
+exec jq '[.hits.hits[]._source.error.code] | sort | .[]' got_errors.json
+stdout '401'
+
+# Wait for 2 additional threat documents (3 total).
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -timeout 5m ${DATA_STREAM_NAME}
 cp stdout got_docs.json
 
-# Verify the documents have the sentinel_one.threat namespace set.
+# Verify 2 documents have the sentinel_one.threat namespace set.
 exec jq '[.hits.hits[]._source | select(.sentinel_one.threat != null)] | length' got_docs.json
 stdout '^2$'
 

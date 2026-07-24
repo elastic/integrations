@@ -108,6 +108,7 @@ The following event types are supported for CrowdStrike Event Streams (whether y
 - IDP Incidents
 - IDP Summary events
 - Mobile Detection events
+- OverwatchGenericDetectionSummaryEvent
 - Recon Notification events
 - XDR Detection events
 - Scheduled Report Notification events
@@ -274,11 +275,11 @@ The FDR dataset includes:
 5. Configure the integration.
 6. Click **Save and Continue** to save the integration.
 
-### Agentless enabled integration
+### Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent based installation
 
@@ -287,6 +288,20 @@ You can install only one Elastic Agent per host.
 Elastic Agent is required to stream data from the AWS SQS, Event Streams API, REST API, or SIEM Connector and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ## Troubleshooting
+
+### Event Streams input stops collecting after repeated connection failures
+
+The **Falcon events** data stream's **Event Streams API** input (`streaming`) reconnects to the CrowdStrike stream with a bounded number of retries. Failures such as a non-200 response or an authentication error from bad credentials count toward **Retry - Maximum Attempts**; once that limit is reached the input terminates and the Elastic Agent must be restarted to resume collection.
+
+On Elastic Agent 8.19.19, 9.3.8, 9.4.4, or later, transient connection-level failures (an empty response, a network error, or a timeout) are instead retried indefinitely with back-off and do not count toward the limit, so the input self-heals once the upstream recovers. On earlier agents these transient failures count toward the limit and can terminate the input.
+
+If the Falcon Event Streams input goes **Degraded** and then stops, and the agent logs show repeated discover or connection errors, tune the retry settings on the integration policy:
+
+- Increase **Retry - Maximum Attempts** to tolerate longer upstream outages.
+- Enable **Retry - Infinite Retries** to never terminate on repeated failures. The input keeps retrying with capped back-off until the upstream recovers.
+- Under **Advanced options**, adjust **Retry - Minimum Wait** and **Retry - Maximum Wait** to control the back-off window between attempts.
+
+Values above 10 for **Retry - Maximum Attempts**, and **Retry - Infinite Retries**, also require Elastic Agent 8.19.19, 9.3.8, 9.4.4, or later; on earlier agents they are silently capped at 10 attempts.
 
 ### Vulnerability API returns 404 Not found
 
@@ -819,18 +834,31 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.cmdline |  | keyword |
 | crowdstrike.alert.command_line |  | keyword |
 | crowdstrike.alert.comment |  | keyword |
+| crowdstrike.alert.comments.falcon_user_id |  | keyword |
+| crowdstrike.alert.comments.timestamp |  | date |
+| crowdstrike.alert.comments.value |  | keyword |
 | crowdstrike.alert.composite_id |  | keyword |
 | crowdstrike.alert.confidence |  | long |
 | crowdstrike.alert.context_timestamp |  | date |
 | crowdstrike.alert.control_graph_id |  | keyword |
+| crowdstrike.alert.correlation_rule_case_template_id |  | keyword |
+| crowdstrike.alert.correlation_rule_create_case |  | boolean |
+| crowdstrike.alert.correlation_rule_execution_id |  | keyword |
+| crowdstrike.alert.correlation_rule_id |  | keyword |
+| crowdstrike.alert.correlation_rule_user_id |  | keyword |
+| crowdstrike.alert.correlation_rule_user_uuid |  | keyword |
+| crowdstrike.alert.correlation_rule_version_id |  | keyword |
 | crowdstrike.alert.crawl_edge_ids.Sensor |  | keyword |
 | crowdstrike.alert.crawl_vertex_ids.Sensor |  | keyword |
 | crowdstrike.alert.crawled_timestamp |  | date |
 | crowdstrike.alert.created_timestamp |  | date |
 | crowdstrike.alert.data_domains |  | keyword |
 | crowdstrike.alert.description |  | keyword |
+| crowdstrike.alert.destination_hosts |  | keyword |
+| crowdstrike.alert.destination_ips |  | ip |
 | crowdstrike.alert.detect_type |  | keyword |
 | crowdstrike.alert.detection_context |  | flattened |
+| crowdstrike.alert.detection_id |  | keyword |
 | crowdstrike.alert.device.agent_load_flags |  | long |
 | crowdstrike.alert.device.agent_local_time |  | date |
 | crowdstrike.alert.device.agent_version |  | keyword |
@@ -875,6 +903,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.end_time |  | date |
 | crowdstrike.alert.event_correlation_id |  | keyword |
 | crowdstrike.alert.event_id |  | keyword |
+| crowdstrike.alert.event_ids |  | keyword |
 | crowdstrike.alert.executables_written.filename |  | keyword |
 | crowdstrike.alert.executables_written.filepath |  | keyword |
 | crowdstrike.alert.executables_written.timestamp |  | date |
@@ -903,7 +932,9 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.grandparent_details.user_id |  | keyword |
 | crowdstrike.alert.grandparent_details.user_name |  | keyword |
 | crowdstrike.alert.has_script_or_module_ioc |  | boolean |
+| crowdstrike.alert.has_truncated_entities |  | boolean |
 | crowdstrike.alert.host_name |  | keyword |
+| crowdstrike.alert.host_names |  | keyword |
 | crowdstrike.alert.host_type |  | keyword |
 | crowdstrike.alert.id |  | keyword |
 | crowdstrike.alert.idp_policy.enforced_externally |  | long |
@@ -938,6 +969,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.ldap_search_query_attack |  | long |
 | crowdstrike.alert.lead_id |  | keyword |
 | crowdstrike.alert.lead_type |  | keyword |
+| crowdstrike.alert.linked_case_ids |  | keyword |
 | crowdstrike.alert.local_prevalence |  | keyword |
 | crowdstrike.alert.local_process_id |  | keyword |
 | crowdstrike.alert.location_country_code |  | keyword |
@@ -963,6 +995,8 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.network_accesses.remote_port |  | long |
 | crowdstrike.alert.objective |  | keyword |
 | crowdstrike.alert.operating_system |  | keyword |
+| crowdstrike.alert.original_correlation_rules_entities_count |  | long |
+| crowdstrike.alert.original_indicator_entities_count |  | long |
 | crowdstrike.alert.os_name |  | keyword |
 | crowdstrike.alert.overwatch_note |  | keyword |
 | crowdstrike.alert.overwatch_note_timestamp |  | date |
@@ -1103,6 +1137,15 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.user_name |  | keyword |
 | crowdstrike.alert.user_names |  | keyword |
 | crowdstrike.alert.user_principal |  | keyword |
+| crowdstrike.alert.usernames |  | keyword |
+| crowdstrike.alert.users.aid |  | keyword |
+| crowdstrike.alert.users.full_name |  | keyword |
+| crowdstrike.alert.users.full_name_is_enriched |  | boolean |
+| crowdstrike.alert.users.idp_id |  | keyword |
+| crowdstrike.alert.users.idp_id_is_enriched |  | boolean |
+| crowdstrike.alert.users.sid |  | keyword |
+| crowdstrike.alert.users.user_name |  | keyword |
+| crowdstrike.alert.vendor_pattern_id |  | keyword |
 | crowdstrike.alert.worker_node_name |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -1269,6 +1312,7 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.DetectName | Name of the detection. | keyword |
 | crowdstrike.event.DetectionType |  | keyword |
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
+| crowdstrike.event.DisplayName | The user-friendly detection name. | keyword |
 | crowdstrike.event.DnsRequests | Detected DNS requests done by a process. | nested |
 | crowdstrike.event.DocumentsAccessed | Detected documents accessed by a process. | nested |
 | crowdstrike.event.DomainName |  | keyword |
@@ -1640,15 +1684,15 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-10-01T09:58:32.519Z",
     "agent": {
-        "id": "71e71f16-ae08-46e3-a58e-a7d14e974950",
-        "name": "elastic-agent-30302",
+        "id": "b278a83d-df3e-4db6-a909-51a258889bbe",
+        "name": "elastic-agent-62647",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.4.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "name": "elastic-package-crowdstrike-fdr-30445"
+                "name": "elastic-package-crowdstrike-fdr-78107"
             },
             "object": {
                 "key": "data"
@@ -1656,199 +1700,102 @@ An example event for `fdr` looks as following:
         }
     },
     "crowdstrike": {
-        "AuthenticationId": "3783389",
-        "ConfigStateHash": "3998263252",
-        "EffectiveTransmissionClass": "3",
-        "Entitlements": "15",
-        "ImageSubsystem": "2",
-        "IntegrityLevel": "4096",
-        "MD5HashData": "50d5fd1290d94d46acca0585311e74d5",
-        "ParentAuthenticationId": "3783389",
-        "ProcessCreateFlags": "525332",
-        "ProcessParameterFlags": "16385",
-        "ProcessSxsFlags": "1600",
-        "RpcClientProcessId": "2439558094566",
-        "SHA256HashData": "b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37",
-        "SessionId": "1",
-        "SourceProcessId": "2439558094566",
-        "SourceThreadId": "77538684027214",
-        "Tags": [
-            "41",
-            "12094627905582",
-            "12094627906234"
-        ],
-        "TokenType": "2",
-        "WindowFlags": "128",
-        "cid": "ffffffff30a3407dae27d0503611022d",
-        "id": "ffffffff-1111-11eb-8462-02ade3b2f949",
-        "info": {
-            "host": {
-                "AgentLoadFlags": "1",
-                "AgentLocalTime": "1697775225",
-                "AgentTimeOffset": "15889.017",
-                "AgentVersion": "7.01.13922.0",
-                "BiosManufacturer": "Iris",
-                "BiosVersion": "vG17V.21040423/z64",
-                "ChassisType": "Other",
-                "City": "Chicago",
-                "ConfigBuild": "1007.3.0017312.1",
-                "ConfigIDBuild": "13922",
-                "Continent": "North America",
-                "Country": "United States of America",
-                "FalconGroupingTags": "'FalconGroupingTags/AMERICA'",
-                "FirstSeen": "1628678052.0",
-                "HostHiddenStatus": "Visible",
-                "MachineDomain": "groot.org",
-                "OU": "Servers;America;Offices",
-                "PointerSize": "8",
-                "ProductType": "3.0",
-                "ServicePackMajor": "0",
-                "SiteName": "BCL",
-                "SystemManufacturer": "Iris",
-                "SystemProductName": "IrOS",
-                "Time": "1697992719.22",
-                "Timezone": "America/Chicago",
-                "Version": "Windows Server 2021",
-                "cid": "ffffffff30a3407dae27d0503611022d",
-                "event_platform": "Win"
-            },
-            "user": {
-                "AccountType": "Domain User",
-                "LastLoggedOnHost": "COMPUTER1",
-                "LocalAdminAccess": "No",
-                "LogonInfo": "Domain User Logon",
-                "LogonTime": "1702546155.197",
-                "LogonType": "Interactive",
-                "PasswordLastSet": "1699971198.062",
-                "User": "DOMAIN\\BRADLEYA",
-                "UserIsAdmin": "0",
-                "UserLogonFlags_decimal": "0",
-                "_time": "1702546168.576",
-                "cid": "ffffffff15754bcfb5f9152ec7ac90ac",
-                "event_platform": "Win",
-                "monthsincereset": "1.0"
-            }
+        "EventType": "ZeroTrustHostAssessment",
+        "HostHiddenStatus": "VISIBLE",
+        "assessments": {
+            "analytics_and_improvements_mac": "yes",
+            "application_firewall_mac": "yes",
+            "crendential_dumping_hash_mac": "yes",
+            "crendential_dumping_kcpassword_mac": "yes",
+            "crowdstrike_full_disk_access": "yes",
+            "execution_blocking_custom_blocking_enabled_mac": "yes",
+            "execution_blocking_intel_threats_enabled_mac": "yes",
+            "execution_blocking_suspicious_processes_enabled_mac": "yes",
+            "file_vault_enabled_mac": "yes",
+            "gatekeeper_mac": "yes",
+            "internet_sharing_mac": "yes",
+            "mac_os_version": "yes",
+            "ml_adware_detection_mac": "yes",
+            "ml_adware_prevention_mac": "yes",
+            "ml_cloud_antimalware_detection_mac": "yes",
+            "ml_cloud_antimalware_prevention_mac": "yes",
+            "ml_sensor_adware_and_pup_detection_mac": "yes",
+            "ml_sensor_adware_and_pup_prevention_mac": "yes",
+            "ml_sensor_antimalware_detection_mac": "yes",
+            "ml_sensor_antimalware_prevention_mac": "yes",
+            "quarantine_mac": "yes",
+            "real_time_response_enabled_mac": "yes",
+            "remote_login_mac": "yes",
+            "script_based_execution_monitoring_mac": "yes",
+            "sip_enabled_mac": "yes",
+            "stealth_mode_mac": "no",
+            "system_full_disk_access_mac": "no",
+            "unauthorized_remote_access_chopper_mac": "yes",
+            "unauthorized_remote_access_empyre_mac": "yes",
+            "unauthorized_remote_access_xpcom_mac": "yes"
         },
-        "name": "ProcessRollup2V18"
+        "cid": "22222222222222222222222222222222",
+        "os_version": "Sonoma (14)",
+        "product_type_desc": "Workstation",
+        "scores": {
+            "modified_time": "2024-02-13T22:33:34.077Z",
+            "os": 89,
+            "overall": 97,
+            "sensor": 100,
+            "version": "3.8.1"
+        }
     },
     "data_stream": {
         "dataset": "crowdstrike.fdr",
-        "namespace": "77613",
+        "namespace": "87700",
         "type": "logs"
     },
     "device": {
-        "id": "ffffffff655344736aca58d17fb570f0"
+        "id": "11111111111111111111111111111111"
+    },
+    "ecs": {
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "71e71f16-ae08-46e3-a58e-a7d14e974950",
+        "id": "b278a83d-df3e-4db6-a909-51a258889bbe",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.4.0"
     },
     "event": {
-        "action": "ProcessRollup2",
         "agent_id_status": "verified",
-        "category": [
-            "process"
-        ],
         "created": "2020-10-01T09:58:32.519Z",
         "dataset": "crowdstrike.fdr",
-        "id": "ffffffff-1111-11eb-8462-02ade3b2f949|ffffffff655344736aca58d17fb570f0|ffffffff30a3407dae27d0503611022d",
-        "ingested": "2025-08-27T05:55:29Z",
-        "kind": "event",
-        "original": "{\"AuthenticationId\":\"3783389\",\"CommandLine\":\"\\\"C:\\\\WINDOWS\\\\system32\\\\backgroundTaskHost.exe\\\" -ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca\",\"ConfigBuild\":\"1007.3.0012309.1\",\"ConfigStateHash\":\"3998263252\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"ImageFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\backgroundTaskHost.exe\",\"ImageSubsystem\":\"2\",\"IntegrityLevel\":\"4096\",\"MD5HashData\":\"50d5fd1290d94d46acca0585311e74d5\",\"ParentAuthenticationId\":\"3783389\",\"ParentBaseFileName\":\"svchost.exe\",\"ParentProcessId\":\"2439558094566\",\"ProcessCreateFlags\":\"525332\",\"ProcessEndTime\":\"\",\"ProcessParameterFlags\":\"16385\",\"ProcessStartTime\":\"1604855181.648\",\"ProcessSxsFlags\":\"1600\",\"RawProcessId\":\"22272\",\"RpcClientProcessId\":\"2439558094566\",\"SHA1HashData\":\"0000000000000000000000000000000000000000\",\"SHA256HashData\":\"b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37\",\"SessionId\":\"1\",\"SourceProcessId\":\"2439558094566\",\"SourceThreadId\":\"77538684027214\",\"Tags\":\"41, 12094627905582, 12094627906234\",\"TargetProcessId\":\"2450046082233\",\"TokenType\":\"2\",\"UserSid\":\"S-1-12-1-3697283754-1083485977-2164330645-2516515886\",\"WindowFlags\":\"128\",\"aid\":\"ffffffff655344736aca58d17fb570f0\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"ProcessRollup2\",\"id\":\"ffffffff-1111-11eb-8462-02ade3b2f949\",\"name\":\"ProcessRollup2V18\",\"timestamp\":\"1601546312519\"}",
-        "outcome": "success",
-        "type": [
-            "start"
-        ]
+        "id": "|11111111111111111111111111111111|22222222222222222222222222222222",
+        "ingested": "2026-07-02T05:28:19Z",
+        "module": "crowdstrike",
+        "original": "{\"aid\":\"11111111111111111111111111111111\",\"cid\":\"22222222222222222222222222222222\",\"hostname\":\"example-XXXXXXXXX\",\"os_version\":\"Sonoma (14)\",\"product_name\":\"\",\"product_type_desc\":\"Workstation\",\"host_hidden_status\":\"VISIBLE\",\"event_platform\":\"Mac\",\"scores\":{\"os\":89,\"sensor\":100,\"overall\":97,\"version\":\"3.8.1\",\"modified_time\":\"2024-02-13T22:33:34.077075097Z\"},\"assessments\":{\"analytics_and_improvements_mac\":\"yes\",\"application_firewall_mac\":\"yes\",\"crendential_dumping_hash_mac\":\"yes\",\"crendential_dumping_kcpassword_mac\":\"yes\",\"crowdstrike_full_disk_access\":\"yes\",\"execution_blocking_custom_blocking_enabled_mac\":\"yes\",\"execution_blocking_intel_threats_enabled_mac\":\"yes\",\"execution_blocking_suspicious_processes_enabled_mac\":\"yes\",\"file_vault_enabled_mac\":\"yes\",\"gatekeeper_mac\":\"yes\",\"internet_sharing_mac\":\"yes\",\"mac_os_version\":\"yes\",\"ml_adware_detection_mac\":\"yes\",\"ml_adware_prevention_mac\":\"yes\",\"ml_cloud_antimalware_detection_mac\":\"yes\",\"ml_cloud_antimalware_prevention_mac\":\"yes\",\"ml_sensor_adware_and_pup_detection_mac\":\"yes\",\"ml_sensor_adware_and_pup_prevention_mac\":\"yes\",\"ml_sensor_antimalware_detection_mac\":\"yes\",\"ml_sensor_antimalware_prevention_mac\":\"yes\",\"quarantine_mac\":\"yes\",\"real_time_response_enabled_mac\":\"yes\",\"remote_login_mac\":\"yes\",\"script_based_execution_monitoring_mac\":\"yes\",\"sip_enabled_mac\":\"yes\",\"stealth_mode_mac\":\"no\",\"system_full_disk_access_mac\":\"no\",\"unauthorized_remote_access_chopper_mac\":\"yes\",\"unauthorized_remote_access_empyre_mac\":\"yes\",\"unauthorized_remote_access_xpcom_mac\":\"yes\"},\"event_type\":\"ZeroTrustHostAssessment\",\"timestamp\":\"1601546312519\"}"
     },
     "host": {
-        "ip": [
-            "16.15.12.10"
-        ],
-        "name": "FEVWSN1-234",
+        "hostname": "example-XXXXXXXXX",
+        "id": "11111111111111111111111111111111",
+        "name": "example-XXXXXXXXX",
         "os": {
-            "type": "windows"
+            "type": "macos"
         }
     },
     "input": {
         "type": "aws-s3"
     },
-    "message": "ProcessRollup2",
     "observer": {
-        "address": [
-            "67.43.156.14"
-        ],
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": [
-            "67.43.156.14"
-        ],
-        "serial_number": "ffffffff655344736aca58d17fb570f0",
-        "version": "1007.3.0012309.1"
-    },
-    "process": {
-        "Ext": {
-            "token": {
-                "integrity_level_name": "LOW"
-            }
-        },
-        "args": [
-            "C:\\WINDOWS\\system32\\backgroundTaskHost.exe",
-            "-ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca"
-        ],
-        "args_count": 2,
-        "command_line": "\"C:\\WINDOWS\\system32\\backgroundTaskHost.exe\" -ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca",
-        "entity_id": "2450046082233",
-        "executable": "\\Device\\HarddiskVolume3\\Windows\\System32\\backgroundTaskHost.exe",
-        "hash": {
-            "md5": "50d5fd1290d94d46acca0585311e74d5",
-            "sha256": "b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37"
-        },
-        "name": "backgroundTaskHost.exe",
-        "parent": {
-            "entity_id": "2439558094566",
-            "name": "svchost.exe"
-        },
-        "pid": 22272,
-        "start": "2020-11-08T17:06:21.648Z"
+        "serial_number": "11111111111111111111111111111111",
+        "type": "agent",
+        "vendor": "crowdstrike"
     },
     "related": {
-        "hash": [
-            "50d5fd1290d94d46acca0585311e74d5",
-            "b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37",
-            "3998263252"
-        ],
         "hosts": [
-            "FEVWSN1-234",
-            "COMPUTER1"
-        ],
-        "ip": [
-            "67.43.156.14",
-            "16.15.12.10"
-        ],
-        "user": [
-            "Alan-One",
-            "DOMAIN\\BRADLEYA",
-            "S-1-12-1-3697283754-1083485977-2164330645-2516515886"
+            "example-XXXXXXXXX"
         ]
     },
     "tags": [
         "preserve_original_event",
         "forwarded",
         "crowdstrike-fdr"
-    ],
-    "user": {
-        "domain": "DOMAIN",
-        "id": "S-1-12-1-3697283754-1083485977-2164330645-2516515886",
-        "name": "Alan-One"
-    }
+    ]
 }
 ```
 
@@ -1861,10 +1808,12 @@ An example event for `fdr` looks as following:
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | crowdstrike.AccessType |  | keyword |
+| crowdstrike.AccessoryConnectionType |  | keyword |
 | crowdstrike.AccountDomain |  | match_only_text |
 | crowdstrike.AccountObjectGuid |  | match_only_text |
 | crowdstrike.AccountObjectSid |  | match_only_text |
 | crowdstrike.AccountType |  | keyword |
+| crowdstrike.ActionBlocked |  | keyword |
 | crowdstrike.ActiveCpuCount |  | long |
 | crowdstrike.ActiveDirectoryAuthenticationMethod |  | keyword |
 | crowdstrike.ActivityId |  | keyword |
@@ -1874,7 +1823,14 @@ An example event for `fdr` looks as following:
 | crowdstrike.AgentLoadFlags |  | keyword |
 | crowdstrike.AgentLocalTime |  | date |
 | crowdstrike.AgentTimeOffset |  | float |
+| crowdstrike.AgentType |  | keyword |
 | crowdstrike.AgentVersion |  | keyword |
+| crowdstrike.AgenticDataSource |  | keyword |
+| crowdstrike.AgenticHookVersion |  | keyword |
+| crowdstrike.AgenticModel |  | keyword |
+| crowdstrike.AgenticProduct |  | keyword |
+| crowdstrike.AgenticSessionId |  | keyword |
+| crowdstrike.AgenticWorkingDirectory |  | keyword |
 | crowdstrike.AggregateId |  | keyword |
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
 | crowdstrike.AllowlistingFilterId |  | keyword |
@@ -1891,6 +1847,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.AssemblyFlags |  | keyword |
 | crowdstrike.AssemblyId |  | keyword |
 | crowdstrike.AssemblyName |  | keyword |
+| crowdstrike.AssessedFileName |  | keyword |
 | crowdstrike.AssociatedFile |  | keyword |
 | crowdstrike.Attacks.Tactic |  | keyword |
 | crowdstrike.Attacks.Technique |  | keyword |
@@ -1907,7 +1864,30 @@ An example event for `fdr` looks as following:
 | crowdstrike.AvailableDiskSpace |  | keyword |
 | crowdstrike.AverageCpuUsage |  | keyword |
 | crowdstrike.AverageUsedRam |  | keyword |
+| crowdstrike.AwsImageId |  | keyword |
+| crowdstrike.AwsInstanceId |  | keyword |
+| crowdstrike.AwsInstanceName |  | keyword |
+| crowdstrike.AwsInstanceState |  | keyword |
+| crowdstrike.AwsInstanceType |  | keyword |
+| crowdstrike.AwsOwnerId |  | keyword |
+| crowdstrike.AwsPrivateIPAddress |  | keyword |
+| crowdstrike.AwsPublicIpAddress |  | keyword |
+| crowdstrike.AwsRegion |  | keyword |
+| crowdstrike.AwsSubnetId |  | keyword |
+| crowdstrike.AwsVpcId |  | keyword |
+| crowdstrike.AzureIpAddress |  | keyword |
+| crowdstrike.AzureIpConfigurationId |  | keyword |
+| crowdstrike.AzureIpConfigurationName |  | keyword |
+| crowdstrike.AzureLocation |  | keyword |
+| crowdstrike.AzurePrivateIpAddress |  | keyword |
+| crowdstrike.AzureResourceGroup |  | keyword |
+| crowdstrike.AzureResourceId |  | keyword |
+| crowdstrike.AzureSubscriptionId |  | keyword |
+| crowdstrike.AzureVMName |  | keyword |
+| crowdstrike.AzureVMSize |  | keyword |
+| crowdstrike.AzureVmId |  | keyword |
 | crowdstrike.BaseFileName |  | keyword |
+| crowdstrike.BaseModuleName |  | keyword |
 | crowdstrike.BaseReachableTime |  | keyword |
 | crowdstrike.BatchDataNumber |  | keyword |
 | crowdstrike.BatchDataTotal |  | keyword |
@@ -1980,6 +1960,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.ClientProcessStartKey |  | keyword |
 | crowdstrike.CloudErrorCode |  | keyword |
 | crowdstrike.CloudIndicator |  | boolean |
+| crowdstrike.CloudRequestId |  | keyword |
 | crowdstrike.CommandCount |  | match_only_text |
 | crowdstrike.CommandCountMax |  | match_only_text |
 | crowdstrike.CommandHistory |  | keyword |
@@ -2017,6 +1998,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.ContextImageFileName |  | keyword |
 | crowdstrike.ContextProcessId |  | keyword |
 | crowdstrike.ContextProcessTagsAsString |  | keyword |
+| crowdstrike.ContextThreadId |  | keyword |
 | crowdstrike.ContextTimeStamp | System local time of event creation. | date |
 | crowdstrike.CpuClockSpeed |  | keyword |
 | crowdstrike.CpuFeaturesMask |  | keyword |
@@ -2029,10 +2011,25 @@ An example event for `fdr` looks as following:
 | crowdstrike.CurrentLocalIP |  | ip |
 | crowdstrike.CustomerIdString |  | keyword |
 | crowdstrike.CycleTime |  | long |
+| crowdstrike.DBusDestination |  | keyword |
+| crowdstrike.DBusInterface |  | keyword |
+| crowdstrike.DBusMember |  | keyword |
+| crowdstrike.DBusMessageFlags |  | keyword |
+| crowdstrike.DBusMessageKind |  | keyword |
+| crowdstrike.DBusNumUnixFiles |  | keyword |
+| crowdstrike.DBusPath |  | keyword |
+| crowdstrike.DBusPayload |  | keyword |
+| crowdstrike.DBusReplySerial |  | keyword |
+| crowdstrike.DBusSerial |  | keyword |
 | crowdstrike.DadState |  | keyword |
 | crowdstrike.DadTransmits |  | keyword |
 | crowdstrike.Data1 |  | keyword |
 | crowdstrike.DataDomains |  | keyword |
+| crowdstrike.DataEgressId |  | keyword |
+| crowdstrike.DataOriginsDerived |  | keyword |
+| crowdstrike.DataProtectionPolicyRuleAction |  | keyword |
+| crowdstrike.DataProtectionTestMode |  | keyword |
+| crowdstrike.DataProtectionUserNotified |  | keyword |
 | crowdstrike.DcNumAttachments |  | match_only_text |
 | crowdstrike.DcNumBlockingPolicies |  | match_only_text |
 | crowdstrike.DcPolicyAction |  | keyword |
@@ -2061,6 +2058,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.DevicePropertyClassGuid |  | match_only_text |
 | crowdstrike.DevicePropertyClassName |  | match_only_text |
 | crowdstrike.DevicePropertyDeviceDescription |  | keyword |
+| crowdstrike.DevicePropertyFriendlyName |  | keyword |
 | crowdstrike.DevicePropertyLocationInformation |  | match_only_text |
 | crowdstrike.DevicePropertyManufacturer |  | keyword |
 | crowdstrike.DeviceProtocol |  | keyword |
@@ -2070,6 +2068,10 @@ An example event for `fdr` looks as following:
 | crowdstrike.DeviceUsbVersion |  | keyword |
 | crowdstrike.DeviceVendorId |  | keyword |
 | crowdstrike.DeviceVersion |  | keyword |
+| crowdstrike.DiagnosticResultContext |  | keyword |
+| crowdstrike.DiagnosticRunId |  | keyword |
+| crowdstrike.DiagnosticRunType |  | keyword |
+| crowdstrike.DiagnosticTriggerContext |  | keyword |
 | crowdstrike.DirectionType |  | keyword |
 | crowdstrike.DirectoryCreatedCount |  | long |
 | crowdstrike.DirectoryEnumeratedCount |  | long |
@@ -2160,6 +2162,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.FileContent |  | match_only_text |
 | crowdstrike.FileDeletedCount |  | long |
 | crowdstrike.FileEcpBitmask |  | keyword |
+| crowdstrike.FileIdentifier |  | keyword |
 | crowdstrike.FileName |  | keyword |
 | crowdstrike.FileObject |  | keyword |
 | crowdstrike.FileOperatorSid |  | keyword |
@@ -2182,6 +2185,8 @@ An example event for `fdr` looks as following:
 | crowdstrike.FilesWritten.FileName |  | keyword |
 | crowdstrike.FilesWritten.FilePath |  | keyword |
 | crowdstrike.FilesWritten.Timestamp |  | date |
+| crowdstrike.FilterContent |  | keyword |
+| crowdstrike.FilterLength |  | keyword |
 | crowdstrike.FirewallAction |  | keyword |
 | crowdstrike.FirewallOption |  | keyword |
 | crowdstrike.FirewallOptionNumericValue |  | keyword |
@@ -2209,6 +2214,20 @@ An example event for `fdr` looks as following:
 | crowdstrike.FsOperationClassification |  | keyword |
 | crowdstrike.FsOperationClassificationFlags |  | keyword |
 | crowdstrike.FullExceptionRecord |  | keyword |
+| crowdstrike.GcpAccessConfigNatIp |  | keyword |
+| crowdstrike.GcpAttachedInstanceId |  | keyword |
+| crowdstrike.GcpDisplayName |  | keyword |
+| crowdstrike.GcpEmail |  | keyword |
+| crowdstrike.GcpId |  | keyword |
+| crowdstrike.GcpInterfaceName |  | keyword |
+| crowdstrike.GcpMachineType |  | keyword |
+| crowdstrike.GcpName |  | keyword |
+| crowdstrike.GcpNetwork |  | keyword |
+| crowdstrike.GcpNetworkIp |  | keyword |
+| crowdstrike.GcpProjectId |  | keyword |
+| crowdstrike.GcpRegion |  | keyword |
+| crowdstrike.GcpStatus |  | keyword |
+| crowdstrike.GcpZone |  | keyword |
 | crowdstrike.GenericFileWrittenCount |  | long |
 | crowdstrike.GrandParentBaseFileName |  | keyword |
 | crowdstrike.GrandparentCommandLine |  | keyword |
@@ -2227,6 +2246,17 @@ An example event for `fdr` looks as following:
 | crowdstrike.HandleCreated |  | keyword |
 | crowdstrike.HandleOperationType |  | keyword |
 | crowdstrike.HashAlgorithm |  | keyword |
+| crowdstrike.HbfwRuleFlags |  | keyword |
+| crowdstrike.HbfwRuleId |  | keyword |
+| crowdstrike.HookedDriverImagePath |  | keyword |
+| crowdstrike.HookedDriverObjectPointer |  | keyword |
+| crowdstrike.HookedDriverSize |  | keyword |
+| crowdstrike.HookedDriverStartAddress |  | keyword |
+| crowdstrike.HookedObjectPointer |  | keyword |
+| crowdstrike.HookedObjectType |  | keyword |
+| crowdstrike.HookedPointerType |  | keyword |
+| crowdstrike.HookingAddress |  | keyword |
+| crowdstrike.HookingDriverImagePath |  | keyword |
 | crowdstrike.HostGroups |  | keyword |
 | crowdstrike.HostHiddenStatus |  | keyword |
 | crowdstrike.HostProcessType |  | keyword |
@@ -2247,6 +2277,12 @@ An example event for `fdr` looks as following:
 | crowdstrike.IcmpCode |  | keyword |
 | crowdstrike.IcmpType |  | keyword |
 | crowdstrike.Id |  | keyword |
+| crowdstrike.IdpPerfCounterMaximum |  | long |
+| crowdstrike.IdpPerfCounterMinimum |  | long |
+| crowdstrike.IdpPerfCounterPath |  | keyword |
+| crowdstrike.IdpPerfCounterSum |  | long |
+| crowdstrike.IdpPerfSampleCount |  | long |
+| crowdstrike.IdpPerfSampleDuration |  | keyword |
 | crowdstrike.IfType |  | keyword |
 | crowdstrike.ImageBaseName |  | keyword |
 | crowdstrike.ImageCheckSum |  | keyword |
@@ -2365,6 +2401,9 @@ An example event for `fdr` looks as following:
 | crowdstrike.MemoryTotal |  | keyword |
 | crowdstrike.Metric |  | keyword |
 | crowdstrike.MicrocodeSignature |  | keyword |
+| crowdstrike.MigoTemplateId |  | keyword |
+| crowdstrike.MigoTemplateInstanceId |  | keyword |
+| crowdstrike.MigoTemplateInstanceVersion |  | keyword |
 | crowdstrike.MillisecondsToReadFirmware |  | keyword |
 | crowdstrike.MinRouterAdvertisementInterval |  | keyword |
 | crowdstrike.MinorFunction |  | keyword |
@@ -2376,6 +2415,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.MoboProductName |  | keyword |
 | crowdstrike.ModelPrediction |  | keyword |
 | crowdstrike.ModuleCharacteristics |  | keyword |
+| crowdstrike.ModuleExportName |  | keyword |
 | crowdstrike.ModuleILPath |  | keyword |
 | crowdstrike.ModuleLoadCount |  | long |
 | crowdstrike.ModuleLoadTelemetryClassification |  | keyword |
@@ -2393,6 +2433,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.NeighborList |  | keyword |
 | crowdstrike.NeighborName |  | keyword |
 | crowdstrike.NetLuidIndex |  | long |
+| crowdstrike.NetlinkFamily |  | keyword |
 | crowdstrike.NetworkAccesses.AccessTimestamp |  | keyword |
 | crowdstrike.NetworkAccesses.AccessType |  | keyword |
 | crowdstrike.NetworkAccesses.ConnectionDirection |  | keyword |
@@ -2412,6 +2453,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.NetworkInterfaceGuid |  | keyword |
 | crowdstrike.NetworkListenCount |  | long |
 | crowdstrike.NetworkModuleLoadCount |  | long |
+| crowdstrike.NetworkProfile |  | keyword |
 | crowdstrike.NetworkRecvAcceptCount |  | long |
 | crowdstrike.NewExecutableWrittenCount |  | long |
 | crowdstrike.NewFileAttributesLinux |  | keyword |
@@ -2421,6 +2463,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.NewUsername |  | keyword |
 | crowdstrike.NlMtu |  | keyword |
 | crowdstrike.Nonce |  | unsigned_long |
+| crowdstrike.NormalizedPath |  | keyword |
 | crowdstrike.NumberOfDiskDrives |  | keyword |
 | crowdstrike.NumberOfMeasurements |  | keyword |
 | crowdstrike.ODAccountType |  | keyword |
@@ -2463,6 +2506,16 @@ An example event for `fdr` looks as following:
 | crowdstrike.OciContainerStatePid |  | match_only_text |
 | crowdstrike.OciContainersStartedCount |  | match_only_text |
 | crowdstrike.OciContainersStoppedCount |  | match_only_text |
+| crowdstrike.OdsCPUPriority |  | keyword |
+| crowdstrike.OdsEndpointNotification |  | keyword |
+| crowdstrike.OdsFileName |  | keyword |
+| crowdstrike.OdsIsFileQuarantined |  | keyword |
+| crowdstrike.OdsPatternId |  | keyword |
+| crowdstrike.OdsPreemptionPriority |  | keyword |
+| crowdstrike.OdsProfileId |  | keyword |
+| crowdstrike.OdsQuarantineFile |  | keyword |
+| crowdstrike.OdsScanId |  | keyword |
+| crowdstrike.OdsScanType |  | keyword |
 | crowdstrike.OnLinkPrefixLength |  | keyword |
 | crowdstrike.OperStatus |  | keyword |
 | crowdstrike.OperationFlags |  | keyword |
@@ -2562,6 +2615,8 @@ An example event for `fdr` looks as following:
 | crowdstrike.PointerSize |  | keyword |
 | crowdstrike.Policy.ID |  | keyword |
 | crowdstrike.Policy.Name |  | keyword |
+| crowdstrike.PolicyIdentifier |  | keyword |
+| crowdstrike.PolicyName |  | keyword |
 | crowdstrike.PolicyRuleSeverity |  | long |
 | crowdstrike.PreferredLifetime |  | keyword |
 | crowdstrike.PrefixLength |  | keyword |
@@ -2609,11 +2664,13 @@ An example event for `fdr` looks as following:
 | crowdstrike.RPath |  | match_only_text |
 | crowdstrike.RTRState |  | keyword |
 | crowdstrike.RUID |  | keyword |
+| crowdstrike.RawProcessId |  | keyword |
 | crowdstrike.RawThreadId |  | keyword |
 | crowdstrike.ReachableTime |  | keyword |
 | crowdstrike.ReasonOfFunctionalityLevel |  | keyword |
 | crowdstrike.ReceiveLinkSpeed |  | keyword |
 | crowdstrike.ReferrerUrl |  | keyword |
+| crowdstrike.ReflectiveDllName |  | keyword |
 | crowdstrike.RegBinaryValue |  | match_only_text |
 | crowdstrike.RegClassification |  | keyword |
 | crowdstrike.RegClassificationFlags |  | keyword |
@@ -2624,6 +2681,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.RegConfigValueType |  | keyword |
 | crowdstrike.RegCreateDisposition |  | match_only_text |
 | crowdstrike.RegCreateOptions |  | match_only_text |
+| crowdstrike.RegKeyName |  | keyword |
 | crowdstrike.RegKeySecurityDecreasedCount |  | long |
 | crowdstrike.RegObjectName |  | keyword |
 | crowdstrike.RegOperationType |  | keyword |
@@ -2645,6 +2703,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.ResourceCreateTime |  | date |
 | crowdstrike.ResourceId |  | keyword |
 | crowdstrike.ResourceIdType |  | keyword |
+| crowdstrike.ResourceName |  | keyword |
 | crowdstrike.RespondingDnsServer |  | keyword |
 | crowdstrike.ResponseAction |  | keyword |
 | crowdstrike.ResponsiblePid |  | keyword |
@@ -2660,7 +2719,10 @@ An example event for `fdr` looks as following:
 | crowdstrike.RpcNestingLevel |  | keyword |
 | crowdstrike.RpcOpClassification |  | match_only_text |
 | crowdstrike.RpcOpNum |  | keyword |
+| crowdstrike.RuleAction |  | keyword |
 | crowdstrike.RuleId |  | keyword |
+| crowdstrike.RuleMatchCount |  | long |
+| crowdstrike.RuleMatchCountSinceLastReport |  | long |
 | crowdstrike.RunDllInvocationCount |  | long |
 | crowdstrike.SHA1HashData |  | keyword |
 | crowdstrike.SHA1String |  | keyword |
@@ -2686,6 +2748,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.SensorGroupingTags |  | keyword |
 | crowdstrike.SensorId |  | keyword |
 | crowdstrike.SensorStateBitMap |  | keyword |
+| crowdstrike.SerialNumber |  | keyword |
 | crowdstrike.ServiceAccessPropertiesEtw |  | match_only_text |
 | crowdstrike.ServiceCurrentState |  | keyword |
 | crowdstrike.ServiceDelayedAutoStart |  | match_only_text |
@@ -2701,6 +2764,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.ServiceStart |  | keyword |
 | crowdstrike.ServiceType |  | keyword |
 | crowdstrike.SessionId |  | keyword |
+| crowdstrike.SessionPatternIdList |  | keyword |
 | crowdstrike.SessionProcessId |  | keyword |
 | crowdstrike.SetThreadContextCount |  | long |
 | crowdstrike.Severity |  | integer |
@@ -2723,10 +2787,12 @@ An example event for `fdr` looks as following:
 | crowdstrike.SmbClientName |  | keyword |
 | crowdstrike.SmbShareName |  | keyword |
 | crowdstrike.SnapshotFileOpenCount |  | long |
+| crowdstrike.SocketType |  | keyword |
 | crowdstrike.SourceAccountDomain |  | keyword |
 | crowdstrike.SourceAccountObjectGuid |  | keyword |
 | crowdstrike.SourceAccountObjectSid |  | keyword |
 | crowdstrike.SourceAccountSamAccountName |  | keyword |
+| crowdstrike.SourceCommandLine |  | wildcard |
 | crowdstrike.SourceEndpointAccountObjectGuid |  | keyword |
 | crowdstrike.SourceEndpointAccountObjectSid |  | keyword |
 | crowdstrike.SourceEndpointAddressIP4 |  | keyword |
@@ -2735,6 +2801,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.SourceEndpointNetworkType |  | keyword |
 | crowdstrike.SourceEventUniqueId |  | keyword |
 | crowdstrike.SourceFileName |  | keyword |
+| crowdstrike.SourceImageFileName |  | keyword |
 | crowdstrike.SourceProcessId |  | keyword |
 | crowdstrike.SourceProducts |  | keyword |
 | crowdstrike.SourceThreadId |  | keyword |
@@ -2777,8 +2844,15 @@ An example event for `fdr` looks as following:
 | crowdstrike.SystemSerialNumber |  | keyword |
 | crowdstrike.SystemSku |  | keyword |
 | crowdstrike.SystemTableIndex |  | long |
+| crowdstrike.SystemdUnitActiveState |  | keyword |
+| crowdstrike.SystemdUnitFileState |  | keyword |
+| crowdstrike.SystemdUnitLoadState |  | keyword |
+| crowdstrike.SystemdUnitName |  | keyword |
+| crowdstrike.SystemdUnitPath |  | keyword |
+| crowdstrike.SystemdUnitProperties |  | wildcard |
 | crowdstrike.Tactic |  | keyword |
 | crowdstrike.Tags |  | keyword |
+| crowdstrike.TamperingAction |  | keyword |
 | crowdstrike.TargetAuthenticationId |  | keyword |
 | crowdstrike.TargetCommandLineParameters |  | keyword |
 | crowdstrike.TargetDomainControllerObjectGuid |  | keyword |
@@ -2841,6 +2915,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.UserMemoryProtectExecutableCount |  | long |
 | crowdstrike.UserMemoryProtectExecutableRemoteCount |  | long |
 | crowdstrike.UserName |  | keyword |
+| crowdstrike.UserNames |  | keyword |
 | crowdstrike.UserNotified |  | boolean |
 | crowdstrike.UserRid |  | keyword |
 | crowdstrike.UserSid |  | keyword |
@@ -2851,6 +2926,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.ValidLifetime |  | keyword |
 | crowdstrike.VerifiedCertificate |  | keyword |
 | crowdstrike.VersionInfo |  | match_only_text |
+| crowdstrike.VirtualAddress |  | keyword |
 | crowdstrike.VnodeModificationType |  | keyword |
 | crowdstrike.VnodeType |  | keyword |
 | crowdstrike.VolumeAppearanceTime |  | keyword |
@@ -2896,6 +2972,15 @@ An example event for `fdr` looks as following:
 | crowdstrike.VolumeSnapshotTimeStamp |  | match_only_text |
 | crowdstrike.VolumeType |  | keyword |
 | crowdstrike.VolumeUUID |  | keyword |
+| crowdstrike.WSLDistributionFlavor |  | keyword |
+| crowdstrike.WSLDistributionId |  | keyword |
+| crowdstrike.WSLDistributionName |  | keyword |
+| crowdstrike.WSLDistributionVersion |  | keyword |
+| crowdstrike.WSLPIDNamespace |  | keyword |
+| crowdstrike.WSLPluginAPIMajor |  | keyword |
+| crowdstrike.WSLPluginAPIMinor |  | keyword |
+| crowdstrike.WSLPluginAPIRevision |  | keyword |
+| crowdstrike.WSLSessionId |  | keyword |
 | crowdstrike.WindowFlags |  | keyword |
 | crowdstrike.WmiNamespaceName |  | keyword |
 | crowdstrike.WmiProviderName |  | keyword |
