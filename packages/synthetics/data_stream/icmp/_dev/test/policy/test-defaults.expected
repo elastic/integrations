@@ -1,0 +1,46 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: synthetics
+      name: test-defaults-synthetics
+      streams:
+        - __ui: null
+          data_stream:
+            dataset: icmp
+            elasticsearch:
+                privileges:
+                    indices:
+                        - auto_configure
+                        - create_doc
+                        - read
+          enabled: true
+          hosts: localhost
+          ipv4: true
+          ipv6: true
+          max_attempts: 2
+          name: null
+          run_from.geo.name: Fleet managed
+          run_from.id: fleet_managed
+          schedule: '@every 3m'
+          type: icmp
+          wait: 1s
+      type: synthetics/icmp
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - synthetics-icmp-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+                    - read
+secret_references: []
