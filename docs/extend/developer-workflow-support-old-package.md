@@ -107,6 +107,7 @@ Sometimes, when we drop the support for an earlier version of the stack and late
       base_commit: "<commit_from_step_1>"
       maintained_until: null
       archived: false
+      remove_other_packages: true
     ```
 
     Example for the `aws` package at version `1.19.5`:
@@ -118,6 +119,7 @@ Sometimes, when we drop the support for an earlier version of the stack and late
       base_commit: "8cb321075afb9b77ea965e1373a03a603d9c9796"
       maintained_until: null
       archived: false
+      remove_other_packages: true
     ```
 
     Fields:
@@ -126,9 +128,9 @@ Sometimes, when we drop the support for an earlier version of the stack and late
     * **`branch`** — name of the backport branch to create, following the format `backport-<package_name>-<major>.<minor>`
     * **`base_version`** — the package version to branch from (e.g. `1.19.5`, `1.0.0-beta1`)
     * **`base_commit`** — the commit SHA found in the previous step
-    * **`maintained_until`** — `null` for a new active branch. Set to a `YYYY-MM-DD` date when the branch has a known end-of-life: the branch is automatically excluded from the checklist and inventory validation once that date passes (strictly before today in UTC). Prefer this over `archived: true` when the end-of-life date is known in advance.
-    * **`archived`** — `false` for a new active branch. Set to `true` to immediately exclude the branch from the checklist and inventory validation, with no fixed end-of-life date. Archiving does **not** delete the branch — packages can still be published from it; archiving only removes it from automated tooling.
-    * **`remove_other_packages`** — `true` (default): when the branch is created, all packages other than the target are removed from `packages/`. `false`: all packages are kept. The default of `true` keeps the branch lean and avoids running tests for unrelated packages on every PR.
+    * **`maintained_until`** — `null` for a new active branch. Set to a `YYYY-MM-DD` date when the branch has a known end-of-life: the branch is automatically excluded from the checklist and branch creation once that date passes (strictly before today in UTC). Prefer this over `archived: true` when the end-of-life date is known in advance.
+    * **`archived`** — `false` for a new active branch. Set to `true` to immediately exclude the branch from the checklist and branch creation, with no fixed end-of-life date. Archiving does **not** delete the branch — packages can still be published from it; archiving only removes it from automated tooling.
+    * **`remove_other_packages`** — required. `true`: when the branch is created, all packages other than the target are removed from `packages/`. `false`: all packages are kept. Set to `true` for the standard case — it keeps the branch lean and avoids running tests for unrelated packages on every PR.
 
     Once the PR is opened, CI automatically:
 
@@ -239,7 +241,7 @@ Example comment:
 Active backport branches for the packages touched by this PR:
 
 **aws**
-- `backport-aws-1.19` (maintained until 2025-06-30)
+- `backport-aws-1.19` (maintained until 2027-06-30)
 - `backport-aws-6.x`
 
 ---
@@ -258,7 +260,7 @@ To stop a branch appearing in the checklist, update its entry in `.backports.yml
 - **`archived: true`** — excludes the branch immediately, with no fixed end-of-life date.
 - **`maintained_until: "YYYY-MM-DD"`** — excludes the branch automatically once that date passes; preferred when the end-of-life date is known.
 
-Archiving a branch does not delete it. Packages can still be published from an archived branch; archiving only removes the branch from the checklist and inventory validation.
+Archiving a branch does not delete it. Packages can still be published from an archived branch; archiving only removes the branch from the checklist and branch creation.
 
 ## Known issues
 
