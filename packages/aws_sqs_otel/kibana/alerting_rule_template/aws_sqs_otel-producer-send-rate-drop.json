@@ -29,7 +29,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-aws.sqs.otel-*\n| WHERE Namespace == \"AWS/SQS\"\n    AND MetricName == \"NumberOfMessagesSent\"\n    AND stat == \"Sum\"\n    AND QueueName NOT LIKE \"*dlq*\"\n| STATS total_sent = SUM(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`)\n    BY QueueName, cloud.region\n// Tune to your expected baseline — default catches near-zero send rates\n// AWS does not emit this metric when sends are 0; raise threshold above your minimum expected volume\n| WHERE total_sent < 1\n| EVAL sqs_queue = CONCAT(QueueName, \" (\", cloud.region, \")\")\n| SORT total_sent ASC"
+        "esql": "TS metrics-aws.sqs.otel-*\n| WHERE Namespace == \"AWS/SQS\"\n    AND MetricName == \"NumberOfMessagesSent\"\n    AND stat == \"Sum\"\n    AND QueueName NOT LIKE \"*dlq*\"\n| STATS total_sent = SUM(SUM_OVER_TIME(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`))\n    BY QueueName, cloud.region\n// Tune to your expected baseline — default catches near-zero send rates\n// AWS does not emit this metric when sends are 0; raise threshold above your minimum expected volume\n| WHERE total_sent < 1\n| EVAL sqs_queue = CONCAT(QueueName, \" (\", cloud.region, \")\")\n| SORT total_sent ASC"
       },
       "size": 0,
       "threshold": [

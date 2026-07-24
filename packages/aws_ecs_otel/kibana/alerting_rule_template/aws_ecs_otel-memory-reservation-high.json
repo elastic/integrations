@@ -29,7 +29,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-aws.ecs.otel-*\n| WHERE Namespace == \"AWS/ECS\"\n    AND MetricName == \"MemoryReservation\"\n    AND stat == \"Average\"\n| STATS avg_mem_res = AVG(`metrics.amazonaws.com/AWS/ECS/MemoryReservation`)\n    BY ClusterName, cloud.region\n// Percent of registered cluster memory reserved — tune threshold (default: 80%)\n| WHERE avg_mem_res > 80.0\n| EVAL ecs_cluster = CONCAT(ClusterName, \" (\", cloud.region, \")\")\n| SORT avg_mem_res DESC"
+        "esql": "TS metrics-aws.ecs.otel-*\n| WHERE Namespace == \"AWS/ECS\"\n    AND MetricName == \"MemoryReservation\"\n    AND stat == \"Average\"\n| STATS avg_mem_res = AVG(AVG_OVER_TIME(`metrics.amazonaws.com/AWS/ECS/MemoryReservation`))\n    BY ClusterName, cloud.region\n// Percent of registered cluster memory reserved — tune threshold (default: 80%)\n| WHERE avg_mem_res > 80.0\n| EVAL ecs_cluster = CONCAT(ClusterName, \" (\", cloud.region, \")\")\n| SORT avg_mem_res DESC"
       },
       "size": 0,
       "threshold": [
