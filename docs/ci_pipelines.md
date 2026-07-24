@@ -27,6 +27,8 @@ Special comments that can be added in the Pull Request (by Elastic employees):
         - `/test stack 8.18.0-SNAPSHOT`
         - `/test stack 9.0.0-SNAPSHOT`
 
+**Changelog link check (`check-changelog-pr-links`):** on pull requests that modify a `changelog.yml` file, a step validates that every changelog entry's linked PR number matches the PR being merged (`soft_fail: true` — a failure posts an annotation but does not block merge). To skip this check on a PR, add the label `changelog-link-check:skip`. This label is added automatically by the `sync-backport-changelog` workflow on changelog sync PRs, because their entries intentionally link to the original backport PR rather than the sync PR itself.
+
 There are some environment variables that can be added into this pipeline to enable customizations:
 - **FORCE_CHECK_ALL**: If `true`, this forces the CI to check all packages even if those packages have no file updated/added/deleted. Default: `false`.
 - **STACK_VERSION**: Force the CI steps to spin up a specific Elastic stack version to run the tests. Default: unset.
@@ -229,7 +231,7 @@ The pipeline https://buildkite.com/elastic/integrations-backport/ handles this c
 - **Manually from the UI**: restricted to members of the `ecosystem` Buildkite team.
 
 As part of the PR that modifies `.backports.yml`, CI automatically:
-- Validates the new inventory schema (`check-backports-inventory` step).
+- Validates the new inventory schema (`check-backports-inventory` step). This step runs on PRs targeting `main` and direct pushes to `main` only — it is skipped on PRs targeting `backport-*` branches, which carry only a subset of packages and would fail the validation unnecessarily.
 - Runs a **dry run** of the branch creation (`trigger-backport-dryrun` step), verifying the commit exists and the branch does not already exist, without pushing anything.
 
 By default, the created branch only contains the target package — all other packages in `packages/` are removed to keep the branch lean.
