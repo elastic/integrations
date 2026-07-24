@@ -98,6 +98,7 @@ An example event for `log` looks as following:
 | auditd.log.FSGID |  | keyword |
 | auditd.log.FSUID |  | keyword |
 | auditd.log.GID |  | keyword |
+| auditd.log.ID |  | keyword |
 | auditd.log.SGID |  | keyword |
 | auditd.log.SUID |  | keyword |
 | auditd.log.SYSCALL |  | keyword |
