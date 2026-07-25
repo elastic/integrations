@@ -74,9 +74,38 @@
                     "order": 0,
                     "type": "optionsListControl",
                     "width": "medium"
+                },
+                "f4e8b2c1-9a3d-4e5f-8b7c-1d2e3f4a5b6c": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "elasticsearch.index.mode",
+                        "grow": true,
+                        "id": "f4e8b2c1-9a3d-4e5f-8b7c-1d2e3f4a5b6c",
+                        "searchTechnique": "wildcard",
+                        "title": "elasticsearch.index.mode",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 4,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "c8d9e0f1-2a3b-4c5d-9e8f-7a6b5c4d3e2f": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "elasticsearch.index.codec",
+                        "grow": true,
+                        "id": "c8d9e0f1-2a3b-4c5d-9e8f-7a6b5c4d3e2f",
+                        "searchTechnique": "wildcard",
+                        "title": "elasticsearch.index.codec",
+                        "width": "medium"
+                    },
+                    "grow": true,
+                    "order": 5,
+                    "type": "optionsListControl",
+                    "width": "medium"
                 }
-            },
-            "showApplySelections": false
+            }
         },
         "description": "This dashboard presents per data stream usage information, allowing you to align ILM policy, cluster architecture with actual consumption patterns.",
         "kibanaSavedObjectMeta": {
@@ -116,7 +145,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "# Indices and data streams usage dashboard\n\nThis dashboard will require Elasticsearch monitoring data (built-in or Metricbeat module / Elasticsearch integration) to be collected in this cluster, **and** the `logs-elasticsearch.index_pivot-default` [transform](/app/management/data/transform) to be started.\n\nThis dashboard will provide tier- and data stream-centric consumption information, such as:\n* Ingest volume (written on disk, after indexing by Elasticsearch).\n* Query volume (by count and time).\n* Storage volume.\n\n\nThis will help you review your data usage and ensure alignment between expectations, usage patterns, ILM policy and architecture best practices.",
+                            "markdown": "# Indices and data streams usage dashboard\n\nThis dashboard will require Elasticsearch monitoring data (built-in or Metricbeat module / Elasticsearch integration) to be collected in this cluster, **and** the `logs-elasticsearch.index_pivot-default` [transform](/app/management/data/transform) to be started.\n\nIndex mode and codec panels require Metricbeat **8.19** or later ([beats#49237](https://github.com/elastic/beats/pull/49237)) so that `elasticsearch.index.mode` and `elasticsearch.index.codec` are present in the `index` metricset source data read by the transform.\n\nThis dashboard will provide tier-, data stream-, index mode-, and codec-centric consumption information, such as:\n* Ingest volume (written on disk, after indexing by Elasticsearch).\n* Query volume (by count and time).\n* Storage volume.\n\n\nThis will help you review your data usage and ensure alignment between expectations, usage patterns, ILM policy and architecture best practices.",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -1852,7 +1881,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "elasticsearch.index.age \u003e0 AND elasticsearch.index.age \u003c 365"
+                                "query": "elasticsearch.index.age >0 AND elasticsearch.index.age < 365"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2159,7 +2188,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "elasticsearch.index.age \u003e0 AND elasticsearch.index.age \u003c 365"
+                                "query": "elasticsearch.index.age >0 AND elasticsearch.index.age < 365"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2396,7 +2425,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "elasticsearch.index.age \u003e0 AND elasticsearch.index.age \u003c 365"
+                                "query": "elasticsearch.index.age >0 AND elasticsearch.index.age < 365"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -6454,10 +6483,681 @@
                 "panelIndex": "61ab4612-491b-449f-b6d7-30bd33f0dbc0",
                 "title": "Ingest by data stream (primary volume)",
                 "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {},
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "# Index mode and codec",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 4,
+                    "i": "a2e9ad63-87de-434c-ab1a-c9eab594a8ff",
+                    "w": 48,
+                    "x": 0,
+                    "y": 142
+                },
+                "panelIndex": "a2e9ad63-87de-434c-ab1a-c9eab594a8ff",
+                "title": "",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "elasticsearch-monitoringindices",
+                                "name": "indexpattern-datasource-layer-572b303e-1ed2-4148-8ab7-f9dca06fab06",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "elasticsearch-monitoringindices",
+                                    "layers": {
+                                        "572b303e-1ed2-4148-8ab7-f9dca06fab06": {
+                                            "columnOrder": [
+                                                "b6e72bd9-2cd8-4172-8a9c-3ff85a11c53a",
+                                                "5087a5df-391a-451e-a52a-b8581af3922f"
+                                            ],
+                                            "columns": {
+                                                "b6e72bd9-2cd8-4172-8a9c-3ff85a11c53a": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of elasticsearch.index.mode",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5,
+                                                        "orderBy": {
+                                                            "columnId": "5087a5df-391a-451e-a52a-b8581af3922f",
+                                                            "type": "column"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "elasticsearch.index.mode"
+                                                },
+                                                "5087a5df-391a-451e-a52a-b8581af3922f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Index count",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "elasticsearch.index.name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "elasticsearch-monitoringindices",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "hide",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "572b303e-1ed2-4148-8ab7-f9dca06fab06",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "5087a5df-391a-451e-a52a-b8581af3922f"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "value",
+                                        "primaryGroups": [
+                                            "b6e72bd9-2cd8-4172-8a9c-3ff85a11c53a"
+                                        ]
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "d27c300e-f6ec-41f8-ab00-fd91173fa96a",
+                    "w": 24,
+                    "x": 0,
+                    "y": 146
+                },
+                "panelIndex": "d27c300e-f6ec-41f8-ab00-fd91173fa96a",
+                "title": "Index count by mode",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "elasticsearch-monitoringindices",
+                                "name": "indexpattern-datasource-layer-1e032c15-bd21-43fa-8bce-ae1fdf0f4e37",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "elasticsearch-monitoringindices",
+                                    "layers": {
+                                        "1e032c15-bd21-43fa-8bce-ae1fdf0f4e37": {
+                                            "columnOrder": [
+                                                "c56b46dd-49d9-499e-a0a8-b63454781d9b",
+                                                "3a3bfc8e-eb81-4935-be93-99bb897d6e07"
+                                            ],
+                                            "columns": {
+                                                "c56b46dd-49d9-499e-a0a8-b63454781d9b": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of elasticsearch.index.codec",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5,
+                                                        "orderBy": {
+                                                            "columnId": "3a3bfc8e-eb81-4935-be93-99bb897d6e07",
+                                                            "type": "column"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "elasticsearch.index.codec"
+                                                },
+                                                "3a3bfc8e-eb81-4935-be93-99bb897d6e07": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Primary storage",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "elasticsearch-monitoringindices",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "hide",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "1e032c15-bd21-43fa-8bce-ae1fdf0f4e37",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "3a3bfc8e-eb81-4935-be93-99bb897d6e07"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "value",
+                                        "primaryGroups": [
+                                            "c56b46dd-49d9-499e-a0a8-b63454781d9b"
+                                        ]
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "925e2cfb-2e24-4159-aac0-da2186a98435",
+                    "w": 24,
+                    "x": 24,
+                    "y": 146
+                },
+                "panelIndex": "925e2cfb-2e24-4159-aac0-da2186a98435",
+                "title": "Primary storage by codec",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "elasticsearch-monitoringindices",
+                                "name": "indexpattern-datasource-layer-58932f41-f74e-4eda-bded-146e2759e2cd",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "elasticsearch-monitoringindices",
+                                    "layers": {
+                                        "58932f41-f74e-4eda-bded-146e2759e2cd": {
+                                            "columnOrder": [
+                                                "aeed435a-4178-4200-aafa-e177be964ca5",
+                                                "e50cb708-d98c-4c6f-8944-a932aa080373",
+                                                "005a9dbf-2011-4170-b2b6-ebf93f68dd47"
+                                            ],
+                                            "columns": {
+                                                "aeed435a-4178-4200-aafa-e177be964ca5": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "e50cb708-d98c-4c6f-8944-a932aa080373": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of elasticsearch.index.mode",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5,
+                                                        "orderBy": {
+                                                            "columnId": "005a9dbf-2011-4170-b2b6-ebf93f68dd47",
+                                                            "type": "column"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "elasticsearch.index.mode"
+                                                },
+                                                "005a9dbf-2011-4170-b2b6-ebf93f68dd47": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Primary ingest",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta",
+                                                    "timeScale": "s"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "elasticsearch-monitoringindices",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "005a9dbf-2011-4170-b2b6-ebf93f68dd47"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "58932f41-f74e-4eda-bded-146e2759e2cd",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "e50cb708-d98c-4c6f-8944-a932aa080373",
+                                        "xAccessor": "aeed435a-4178-4200-aafa-e177be964ca5",
+                                        "yConfig": [
+                                            {
+                                                "forAccessor": "005a9dbf-2011-4170-b2b6-ebf93f68dd47",
+                                                "axisMode": "auto"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "bed049e2-9fec-4b62-af2b-f912142e4be4",
+                    "w": 48,
+                    "x": 0,
+                    "y": 160
+                },
+                "panelIndex": "bed049e2-9fec-4b62-af2b-f912142e4be4",
+                "title": "Primary ingest by index mode over time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "elasticsearch-monitoringindices",
+                                "name": "indexpattern-datasource-layer-d7e18b52-7e4f-5c3b-a062-3e5f7c9b1d26",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "elasticsearch-monitoringindices",
+                                    "layers": {
+                                        "d7e18b52-7e4f-5c3b-a062-3e5f7c9b1d26": {
+                                            "columnOrder": [
+                                                "f1a29384-5b6c-4d7e-8e90-1a2b3c4d5e6f",
+                                                "a2b30495-6c7d-5e8f-9f01-2b3c4d5e6f70",
+                                                "b3c415a6-7d8e-6f90-a012-3c4d5e6f7081"
+                                            ],
+                                            "columns": {
+                                                "f1a29384-5b6c-4d7e-8e90-1a2b3c4d5e6f": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "a2b30495-6c7d-5e8f-9f01-2b3c4d5e6f70": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of elasticsearch.index.codec",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5,
+                                                        "orderBy": {
+                                                            "columnId": "b3c415a6-7d8e-6f90-a012-3c4d5e6f7081",
+                                                            "type": "column"
+                                                        }
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "elasticsearch.index.codec"
+                                                },
+                                                "b3c415a6-7d8e-6f90-a012-3c4d5e6f7081": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Primary ingest",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta",
+                                                    "timeScale": "s"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "elasticsearch-monitoringindices",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b3c415a6-7d8e-6f90-a012-3c4d5e6f7081"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "d7e18b52-7e4f-5c3b-a062-3e5f7c9b1d26",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "a2b30495-6c7d-5e8f-9f01-2b3c4d5e6f70",
+                                        "xAccessor": "f1a29384-5b6c-4d7e-8e90-1a2b3c4d5e6f",
+                                        "yConfig": [
+                                            {
+                                                "forAccessor": "b3c415a6-7d8e-6f90-a012-3c4d5e6f7081",
+                                                "axisMode": "auto"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "c8f29a41-6d3e-4b2a-9f71-2d4e6b8a0c15",
+                    "w": 48,
+                    "x": 0,
+                    "y": 174
+                },
+                "panelIndex": "c8f29a41-6d3e-4b2a-9f71-2d4e6b8a0c15",
+                "title": "Primary ingest by codec over time",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
-        "title": "[Elasticsearch] Indices \u0026 data streams usage (Technical Preview/Beta)",
+        "title": "[Elasticsearch] Indices & data streams usage (Technical Preview/Beta)",
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
@@ -6669,6 +7369,36 @@
         {
             "id": "elasticsearch-monitoringindices",
             "name": "controlGroup_cba6f145-8be8-4798-92f9-119f36f1a6b2:rangeSliderDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "elasticsearch-monitoringindices",
+            "name": "controlGroup_f4e8b2c1-9a3d-4e5f-8b7c-1d2e3f4a5b6c:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "elasticsearch-monitoringindices",
+            "name": "controlGroup_c8d9e0f1-2a3b-4c5d-9e8f-7a6b5c4d3e2f:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "elasticsearch-monitoringindices",
+            "name": "d27c300e-f6ec-41f8-ab00-fd91173fa96a:indexpattern-datasource-layer-572b303e-1ed2-4148-8ab7-f9dca06fab06",
+            "type": "index-pattern"
+        },
+        {
+            "id": "elasticsearch-monitoringindices",
+            "name": "925e2cfb-2e24-4159-aac0-da2186a98435:indexpattern-datasource-layer-1e032c15-bd21-43fa-8bce-ae1fdf0f4e37",
+            "type": "index-pattern"
+        },
+        {
+            "id": "elasticsearch-monitoringindices",
+            "name": "bed049e2-9fec-4b62-af2b-f912142e4be4:indexpattern-datasource-layer-58932f41-f74e-4eda-bded-146e2759e2cd",
+            "type": "index-pattern"
+        },
+        {
+            "id": "elasticsearch-monitoringindices",
+            "name": "c8f29a41-6d3e-4b2a-9f71-2d4e6b8a0c15:indexpattern-datasource-layer-d7e18b52-7e4f-5c3b-a062-3e5f7c9b1d26",
             "type": "index-pattern"
         }
     ],
