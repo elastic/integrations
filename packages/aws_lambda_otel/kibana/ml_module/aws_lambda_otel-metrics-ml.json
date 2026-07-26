@@ -7,7 +7,7 @@
     "references": [],
     "attributes": {
         "id": "aws_lambda_otel-metrics-ml",
-        "title": "AWS Lambda function performance (OpenTelemetry)",
+        "title": "[AWS Lambda OTel] Function performance anomalies",
         "description": "Detect anomalies in Lambda function duration and concurrency streamed from CloudWatch via the OpenTelemetry firehose receiver. Each function is modelled against its own history, so latency drift and concurrency climbing toward the account limit are caught before they cross the static alert thresholds or begin to throttle.",
         "type": "AWS metrics",
         "logo": {
@@ -102,6 +102,7 @@
                     "indices_options": {
                         "allow_no_indices": true
                     },
+                    "frequency": "5m",
                     "query": {
                         "bool": {
                             "filter": [
@@ -135,7 +136,14 @@
                                         "date": {
                                             "date_histogram": {
                                                 "field": "@timestamp",
-                                                "fixed_interval": "900s"
+                                                "fixed_interval": "5m"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.account.id": {
+                                            "terms": {
+                                                "field": "cloud.account.id"
                                             }
                                         }
                                     },

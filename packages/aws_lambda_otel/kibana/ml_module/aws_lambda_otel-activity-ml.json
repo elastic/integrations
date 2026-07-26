@@ -7,7 +7,7 @@
     "references": [],
     "attributes": {
         "id": "aws_lambda_otel-activity-ml",
-        "title": "AWS Lambda function errors and throttles (OpenTelemetry)",
+        "title": "[AWS Lambda OTel] Function error and throttle anomalies",
         "description": "Detect anomalous rates of Lambda errors, throttles, and dead-letter failures (the per-bucket Sum statistic) streamed from CloudWatch via the OpenTelemetry firehose receiver. Each function is modelled against its own history, so an elevation in error or throttle rate that is abnormal for that function is caught even when it stays below the fixed error-rate alert thresholds.",
         "type": "AWS metrics",
         "logo": {
@@ -109,6 +109,7 @@
                     "indices_options": {
                         "allow_no_indices": true
                     },
+                    "frequency": "5m",
                     "query": {
                         "bool": {
                             "filter": [
@@ -143,7 +144,14 @@
                                         "date": {
                                             "date_histogram": {
                                                 "field": "@timestamp",
-                                                "fixed_interval": "900s"
+                                                "fixed_interval": "5m"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.account.id": {
+                                            "terms": {
+                                                "field": "cloud.account.id"
                                             }
                                         }
                                     },
