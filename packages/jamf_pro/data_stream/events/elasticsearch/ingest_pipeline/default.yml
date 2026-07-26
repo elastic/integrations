@@ -182,104 +182,50 @@ processors:
     copy_from: jamf_pro.events.webhook.webhook_event
     ignore_empty_value: true
 
-# event.category — keyed on event.action
-- append:
-    field: event.category
-    tag: append_host_into_event_category
-    value: host
-    if: >-
-      ctx.event?.action != null &&
-      ['ComputerAdded', 'ComputerCheckIn', 'ComputerInventoryCompleted',
-       'ComputerPushCapabilityChanged', 'MobileDeviceEnrolled',
-       'MobileDeviceUnEnrolled', 'MobileDeviceCheckIn',
-       'MobileDeviceInventoryCompleted', 'MobileDeviceCommandCompleted',
-       'MobileDevicePushSent', 'DeviceAddedToDEP', 'PushSent', 'SCEPChallenge',
-       'SmartGroupComputerMembershipChange',
-       'SmartGroupMobileDeviceMembershipChange', 'JSSStartup',
-       'JSSShutdown'].contains(ctx.event.action)
-- append:
-    field: event.category
-    tag: append_configuration_into_event_category
-    value: configuration
-    if: >-
-      ctx.event?.action != null &&
-      ['ComputerPolicyFinished', 'ComputerPatchPolicyCompleted',
-       'PatchSoftwareTitleUpdated'].contains(ctx.event.action)
-- append:
-    field: event.category
-    tag: append_package_into_event_category
-    value: package
-    if: >-
-      ctx.event?.action != null &&
-      ['ComputerPatchPolicyCompleted', 'PatchSoftwareTitleUpdated'].contains(ctx.event.action)
-- append:
-    field: event.category
-    tag: append_api_into_event_category
-    value: api
-    if: ctx.event?.action == 'RestAPIOperation'
-- append:
-    field: event.category
-    tag: append_iam_into_event_category
-    value: iam
-    if: >-
-      ctx.event?.action != null &&
-      ['SmartGroupComputerMembershipChange',
-       'SmartGroupMobileDeviceMembershipChange',
-       'SmartGroupUserMembershipChange'].contains(ctx.event.action)
-- append:
-    field: event.category
-    tag: append_authentication_into_event_category
-    value: authentication
-    if: ctx.event?.action == 'SCEPChallenge'
-
-# event.type — keyed on event.action
-- append:
-    field: event.type
-    tag: append_change_into_event_type
-    value: change
-    if: >-
-      ctx.event?.action != null &&
-      ['ComputerAdded', 'ComputerPushCapabilityChanged',
-       'ComputerPolicyFinished', 'ComputerPatchPolicyCompleted',
-       'MobileDeviceEnrolled', 'MobileDeviceUnEnrolled',
-       'MobileDeviceCommandCompleted', 'DeviceAddedToDEP',
-       'PatchSoftwareTitleUpdated', 'RestAPIOperation',
-       'SmartGroupComputerMembershipChange',
-       'SmartGroupMobileDeviceMembershipChange',
-       'SmartGroupUserMembershipChange'].contains(ctx.event.action)
-- append:
-    field: event.type
-    tag: append_end_into_event_type
-    value: end
-    if: >-
-      ctx.event?.action != null &&
-      ['MobileDeviceUnEnrolled', 'MobileDeviceCommandCompleted',
-       'JSSShutdown'].contains(ctx.event.action)
-- append:
-    field: event.type
-    tag: append_start_into_event_type
-    value: start
-    if: >-
-      ctx.event?.action != null &&
-      ['SCEPChallenge', 'JSSStartup'].contains(ctx.event.action)
-- append:
-    field: event.type
-    tag: append_admin_into_event_type
-    value: admin
-    if: ctx.event?.action == 'RestAPIOperation'
-- append:
-    field: event.type
-    tag: append_group_into_event_type
-    value: group
-    if: >-
-      ctx.event?.action != null &&
-      ['SmartGroupComputerMembershipChange',
-       'SmartGroupMobileDeviceMembershipChange',
-       'SmartGroupUserMembershipChange'].contains(ctx.event.action)
-- append:
-    field: event.type
-    tag: append_info_default_into_event_type
-    value: info
+# event.category and event.type — keyed on event.action via a lookup table.
+- script:
+    tag: script_set_event_category_and_type
+    lang: painless
+    description: Set event.category and event.type from a table keyed on the Jamf webhook event (event.action).
+    params:
+      actions:
+        ComputerAdded: { category: [host], type: [change] }
+        ComputerCheckIn: { category: [host], type: [] }
+        ComputerInventoryCompleted: { category: [host], type: [] }
+        ComputerPushCapabilityChanged: { category: [host], type: [change] }
+        MobileDeviceEnrolled: { category: [host], type: [change] }
+        MobileDeviceUnEnrolled: { category: [host], type: [change, end] }
+        MobileDeviceCheckIn: { category: [host], type: [] }
+        MobileDeviceInventoryCompleted: { category: [host], type: [] }
+        MobileDeviceCommandCompleted: { category: [host], type: [change, end] }
+        MobileDevicePushSent: { category: [host], type: [] }
+        DeviceAddedToDEP: { category: [host], type: [change] }
+        PushSent: { category: [host], type: [] }
+        SCEPChallenge: { category: [host, authentication], type: [start] }
+        SmartGroupComputerMembershipChange: { category: [host, iam], type: [change, group] }
+        SmartGroupMobileDeviceMembershipChange: { category: [host, iam], type: [change, group] }
+        JSSStartup: { category: [host], type: [start] }
+        JSSShutdown: { category: [host], type: [end] }
+        ComputerPolicyFinished: { category: [configuration], type: [change] }
+        ComputerPatchPolicyCompleted: { category: [configuration, package], type: [change] }
+        PatchSoftwareTitleUpdated: { category: [configuration, package], type: [change] }
+        RestAPIOperation: { category: [api], type: [change, admin] }
+        SmartGroupUserMembershipChange: { category: [iam], type: [change, group] }
+    source: |-
+      def cats = new ArrayList();
+      def types = new ArrayList();
+      def action = ctx.event?.action;
+      if (action != null) {
+        def entry = params.actions.get(action);
+        if (entry != null) {
+          if (entry.category != null) { cats.addAll(entry.category); }
+          if (entry.type != null) { types.addAll(entry.type); }
+        }
+      }
+      types.add('info');
+      ctx.event = ctx.event ?: [:];
+      if (!cats.isEmpty()) { ctx.event.category = cats; }
+      ctx.event.type = types;
 
 - set:
     field: event.outcome

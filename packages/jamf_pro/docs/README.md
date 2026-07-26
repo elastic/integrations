@@ -393,24 +393,24 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-07-21T17:37:04.022Z",
+    "@timestamp": "2026-07-26T14:37:39.817Z",
     "agent": {
-        "ephemeral_id": "5e4d40af-0b00-44c6-8b69-21ab15fb467e",
-        "id": "70a5daad-17e0-4285-8ac4-324572156b0d",
-        "name": "elastic-agent-61007",
+        "ephemeral_id": "7ff99866-0db2-4af0-8cd5-51957007a61c",
+        "id": "77cd4886-245a-43a6-a4eb-0a2737915527",
+        "name": "elastic-agent-62101",
         "type": "filebeat",
         "version": "8.19.2"
     },
     "data_stream": {
         "dataset": "jamf_pro.events",
-        "namespace": "15745",
+        "namespace": "78205",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "70a5daad-17e0-4285-8ac4-324572156b0d",
+        "id": "77cd4886-245a-43a6-a4eb-0a2737915527",
         "snapshot": false,
         "version": "8.19.2"
     },
@@ -421,7 +421,7 @@ An example event for `events` looks as following:
             "host"
         ],
         "dataset": "jamf_pro.events",
-        "ingested": "2026-07-21T17:37:05Z",
+        "ingested": "2026-07-26T14:37:40Z",
         "kind": "event",
         "original": "{\"event\":{\"alternateMacAddress\":\"be:aa:e5:54:94:db\",\"building\":\"1S8NPV\",\"department\":\"XDO4C5\",\"deviceName\":\"VPNYC\",\"emailAddress\":\"kghrqq@email.com\",\"ipAddress\":\"89.160.20.156\",\"jssID\":\"1500747557\",\"macAddress\":\"be:aa:e5:54:94:db\",\"managementId\":\"6319330669\",\"model\":\"LJ68RT\",\"osBuild\":\"26.6913\",\"osVersion\":\"92.5786\",\"phone\":\"2183546\",\"position\":\"B64JIO\",\"realName\":\"CPK79\",\"reportedIpAddress\":\"89.160.20.156\",\"room\":\"HQC6S9\",\"serialNumber\":\"7967177\",\"udid\":\"7265694772\",\"userDirectory_id\":\"0389771137\",\"username\":\"John Doe\"},\"webhook\":{\"eventTimestamp\":1725443872001,\"id\":\"8131946016\",\"name\":\"PU17M\",\"webhookEvent\":\"ComputerAdded\"}}",
         "type": [
