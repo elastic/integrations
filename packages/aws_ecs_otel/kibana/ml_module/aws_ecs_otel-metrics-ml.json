@@ -7,7 +7,7 @@
     "references": [],
     "attributes": {
         "id": "aws_ecs_otel-metrics-ml",
-        "title": "AWS ECS service resources (OpenTelemetry)",
+        "title": "[AWS ECS OTel] Service resource anomalies",
         "description": "Detect anomalies in ECS service CPU and memory utilization streamed from CloudWatch via the OpenTelemetry firehose receiver. Memory is modelled per service (within its cluster) against its own history to catch slow leaks that affect a service's tasks before any single task crosses a hard threshold - the ECS analogue of per-workload memory modelling on Kubernetes.",
         "type": "AWS metrics",
         "logo": {
@@ -103,6 +103,7 @@
                     "indices_options": {
                         "allow_no_indices": true
                     },
+                    "frequency": "5m",
                     "query": {
                         "bool": {
                             "filter": [
@@ -136,7 +137,21 @@
                                         "date": {
                                             "date_histogram": {
                                                 "field": "@timestamp",
-                                                "fixed_interval": "900s"
+                                                "fixed_interval": "5m"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.region": {
+                                            "terms": {
+                                                "field": "cloud.region"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.account.id": {
+                                            "terms": {
+                                                "field": "cloud.account.id"
                                             }
                                         }
                                     },
