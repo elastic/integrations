@@ -7,7 +7,7 @@
     "references": [],
     "attributes": {
         "id": "aws_ec2_otel-metrics-ml",
-        "title": "AWS EC2 instance resources (OpenTelemetry)",
+        "title": "[AWS EC2 OTel] Instance resource anomalies",
         "description": "Detect anomalies in EC2 instance resource metrics (CPU, burstable CPU credit balance, network egress) streamed from CloudWatch via the OpenTelemetry firehose receiver. Modelled per instance against its own history, so credit-balance depletion and CPU/network drift are caught before they cross the static alert thresholds or exhaust burst capacity.",
         "type": "AWS metrics",
         "logo": {
@@ -47,7 +47,7 @@
                         "ec2",
                         "otel"
                     ],
-                    "description": "AWS EC2: detect instances whose resource usage has drifted unusually relative to their own history - sustained CPU elevation below the alert threshold, a burstable (T-family) CPU credit balance draining toward exhaustion, or anomalous network egress. The static alert rules cover hard threshold breaches and status-check failures; this job covers the gradual drift and credit depletion that precede them, with the instance, auto-scaling group, region, and account as influencers.",
+                    "description": "AWS EC2: detect instances whose resource usage has drifted unusually relative to their own history - sustained CPU elevation below the alert threshold, a burstable (T-family) CPU credit balance draining toward exhaustion, or anomalous network egress. The static alert rules cover hard threshold breaches and status-check failures; this job covers the gradual drift and credit depletion that precede them, with the instance, region, and account as influencers.",
                     "analysis_config": {
                         "bucket_span": "15m",
                         "summary_count_field_name": "doc_count",
@@ -76,7 +76,6 @@
                         ],
                         "influencers": [
                             "InstanceId",
-                            "AutoScalingGroupName",
                             "cloud.region",
                             "cloud.account.id"
                         ]
@@ -110,6 +109,7 @@
                     "indices_options": {
                         "allow_no_indices": true
                     },
+                    "frequency": "5m",
                     "query": {
                         "bool": {
                             "filter": [
@@ -144,7 +144,14 @@
                                         "date": {
                                             "date_histogram": {
                                                 "field": "@timestamp",
-                                                "fixed_interval": "900s"
+                                                "fixed_interval": "5m"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.account.id": {
+                                            "terms": {
+                                                "field": "cloud.account.id"
                                             }
                                         }
                                     },
