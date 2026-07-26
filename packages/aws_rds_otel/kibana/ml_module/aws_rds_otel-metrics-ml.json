@@ -7,7 +7,7 @@
     "references": [],
     "attributes": {
         "id": "aws_rds_otel-metrics-ml",
-        "title": "AWS RDS instance resources (OpenTelemetry)",
+        "title": "[AWS RDS OTel] Instance resource anomalies",
         "description": "Detect anomalies in RDS instance resource metrics (connections, CPU, latency, memory, disk queue) streamed from CloudWatch via the OpenTelemetry firehose receiver. Each metric is modelled per DB instance against that instance's own history, so slow drift below the fixed alert thresholds is caught before it becomes an outage.",
         "type": "AWS metrics",
         "logo": {
@@ -130,6 +130,7 @@
                     "indices_options": {
                         "allow_no_indices": true
                     },
+                    "frequency": "5m",
                     "query": {
                         "bool": {
                             "filter": [
@@ -167,7 +168,14 @@
                                         "date": {
                                             "date_histogram": {
                                                 "field": "@timestamp",
-                                                "fixed_interval": "900s"
+                                                "fixed_interval": "5m"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.account.id": {
+                                            "terms": {
+                                                "field": "cloud.account.id"
                                             }
                                         }
                                     },
