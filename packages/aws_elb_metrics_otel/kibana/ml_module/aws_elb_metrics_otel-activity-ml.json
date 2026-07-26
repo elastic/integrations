@@ -7,13 +7,13 @@
     "references": [],
     "attributes": {
         "id": "aws_elb_metrics_otel-activity-ml",
-        "title": "AWS Application Load Balancer errors (OpenTelemetry)",
+        "title": "[AWS ELB OTel] Application Load Balancer error anomalies",
         "description": "Detect anomalous rates of ALB 5XX responses and rejected connections (the per-bucket Sum statistic) streamed from CloudWatch via the OpenTelemetry firehose receiver. Modelled per load balancer against its own history, so error and rejection elevations that are abnormal for that resource are caught even when they stay below the fixed error-count alert thresholds.",
         "type": "AWS metrics",
         "logo": {
             "icon": "logoAWSMono"
         },
-        "defaultIndexPattern": "metrics-aws.elb.otel-*",
+        "defaultIndexPattern": "metrics-aws.applicationelb.otel-*",
         "query": {
             "bool": {
                 "filter": [
@@ -47,7 +47,7 @@
                         "elb",
                         "otel"
                     ],
-                    "description": "AWS ALB: detect load balancers producing unusual rates of ELB-generated 5XX, target 5XX, or rejected connections relative to their own history. The threshold-based alert rules cover hard error-count breaches; this job catches rate elevations that drift below any fixed threshold, with the load balancer, target group, region, and account surfaced as influencers for attribution.",
+                    "description": "AWS ALB: detect load balancers producing unusual rates of ELB-generated 5XX, target 5XX, or rejected connections relative to their own history. The threshold-based alert rules cover hard error-count breaches; this job catches rate elevations that drift below any fixed threshold, with the load balancer, region, and account surfaced as influencers for attribution.",
                     "analysis_config": {
                         "bucket_span": "15m",
                         "summary_count_field_name": "doc_count",
@@ -76,7 +76,6 @@
                         ],
                         "influencers": [
                             "LoadBalancer",
-                            "TargetGroup",
                             "cloud.region",
                             "cloud.account.id"
                         ]
@@ -110,6 +109,7 @@
                     "indices_options": {
                         "allow_no_indices": true
                     },
+                    "frequency": "5m",
                     "query": {
                         "bool": {
                             "filter": [
@@ -144,7 +144,14 @@
                                         "date": {
                                             "date_histogram": {
                                                 "field": "@timestamp",
-                                                "fixed_interval": "900s"
+                                                "fixed_interval": "5m"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.account.id": {
+                                            "terms": {
+                                                "field": "cloud.account.id"
                                             }
                                         }
                                     },

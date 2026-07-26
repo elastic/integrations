@@ -7,13 +7,13 @@
     "references": [],
     "attributes": {
         "id": "aws_elb_metrics_otel-metrics-ml",
-        "title": "AWS Application Load Balancer target health (OpenTelemetry)",
+        "title": "[AWS ELB OTel] Application Load Balancer target health anomalies",
         "description": "Detect anomalies in ALB target response time and unhealthy-host count streamed from CloudWatch via the OpenTelemetry firehose receiver. Each target group is modelled against its own history, so latency drift and intermittent host unhealthiness are caught before they cross the static alert thresholds.",
         "type": "AWS metrics",
         "logo": {
             "icon": "logoAWSMono"
         },
-        "defaultIndexPattern": "metrics-aws.elb.otel-*",
+        "defaultIndexPattern": "metrics-aws.applicationelb.otel-*",
         "query": {
             "bool": {
                 "filter": [
@@ -103,6 +103,7 @@
                     "indices_options": {
                         "allow_no_indices": true
                     },
+                    "frequency": "5m",
                     "query": {
                         "bool": {
                             "filter": [
@@ -136,7 +137,21 @@
                                         "date": {
                                             "date_histogram": {
                                                 "field": "@timestamp",
-                                                "fixed_interval": "900s"
+                                                "fixed_interval": "5m"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "LoadBalancer": {
+                                            "terms": {
+                                                "field": "LoadBalancer"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.account.id": {
+                                            "terms": {
+                                                "field": "cloud.account.id"
                                             }
                                         }
                                     },
