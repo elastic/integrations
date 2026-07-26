@@ -7,7 +7,7 @@
     "references": [],
     "attributes": {
         "id": "aws_sqs_otel-metrics-ml",
-        "title": "AWS SQS queue backlog (OpenTelemetry)",
+        "title": "[AWS SQS OTel] Queue backlog anomalies",
         "description": "Detect anomalies in SQS queue depth, in-flight messages, and oldest-message age streamed from CloudWatch via the OpenTelemetry firehose receiver. Each queue is modelled against its own history, so a backlog building abnormally for that queue (a stalling or under-scaled consumer) is caught before it crosses the static depth or age thresholds.",
         "type": "AWS metrics",
         "logo": {
@@ -109,6 +109,7 @@
                     "indices_options": {
                         "allow_no_indices": true
                     },
+                    "frequency": "5m",
                     "query": {
                         "bool": {
                             "filter": [
@@ -143,7 +144,14 @@
                                         "date": {
                                             "date_histogram": {
                                                 "field": "@timestamp",
-                                                "fixed_interval": "900s"
+                                                "fixed_interval": "5m"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.account.id": {
+                                            "terms": {
+                                                "field": "cloud.account.id"
                                             }
                                         }
                                     },
