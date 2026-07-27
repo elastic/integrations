@@ -15,7 +15,6 @@ resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
 state:
-  auth_type: {{auth_type}}
   api_key: {{api_key}}
   user: {{username}}
   password: {{password}}
@@ -53,10 +52,10 @@ program: |
         "Header":{
           "Content-Type": ["application/json"],
           "Authorization": [
-            state.auth_type == 'api_auth' ?
+            has(state.api_key) && state.api_key != "" ?
               "Apikey " + state.api_key
             :
-              state.auth_type == 'basic_auth' ?
+              has(state.user) && has(state.password) && state.user != "" && state.password != "" ?
                 "Basic " + base64(state.user+":"+state.password)
               :
                 "Bearer " + state.bearer_token
