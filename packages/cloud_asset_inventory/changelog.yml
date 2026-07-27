@@ -1,5 +1,6 @@
 # newer versions go on top
 # version map:
+# 1.7.x - 9.6.x
 # 1.6.x - 9.5.x
 # 1.5.x - 9.4.x
 # 1.4.x - 9.3.x
@@ -8,6 +9,27 @@
 # 1.1.x - 9.2.x
 # 1.0.x - 9.1.x
 # 0.1.x - 8.15.x
+- version: "1.7.1"
+  changes:
+    - description: >
+        Fix generic entity extraction in the Entity Store: rename the flattened entity.attributes
+        bag to entity.Details, and add an ingest pipeline that moves legacy entity.attributes to
+        entity.Details. The entity.attributes (flattened) mapping added in 1.7.0 collided with the
+        Entity Store's reserved entity.attributes.* typed leaves, aborting generic entity extraction.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20334
+- version: "1.7.0"
+  changes:
+    - description: >
+        Support additional AWS fields and asset types emitted by cloudbeat through the
+        entity.attributes (flattened) mapping: extra EC2 attributes (ImageId, Platform,
+        VpcId, SubnetId, State, InstanceProfileArn, RoleArn), extra ELB attributes
+        (LoadBalancerType, State, IPAddresses, OwnerTag), RDS engine/version, ELB DNS name
+        and publicly-accessible flag, the new Route53 DNS record and EKS cluster asset types,
+        and a normalized resource creation timestamp (entity.attributes.CreatedAt) across all
+        asset types. No new field mappings are required.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19795
 - version: "1.6.0"
   changes:
     - description: Use new `release` field for agentless deployment mode to establish as beta.
