@@ -30,14 +30,19 @@ processors:
       field: event.category
       value: configuration
       tag: append_configuration_into_event_category
+  # The API returns a snapshot of the issue's current state, not a discrete action, so
+  # event.type is inferred from timestamps. `creation` applies only while the issue has
+  # never been modified; reopened and closed issues have updated_at > created_at.
   - append:
       field: event.type
       value: creation
       if: ctx.github?.issues?.created_at == ctx.github?.issues?.updated_at
+  # A closed issue or a merged pull request has reached the end of its lifecycle.
   - append:
       field: event.type
       value: deletion
       if: ctx.github?.issues?.closed_at != null || ctx.github?.issues?.pull_request?.merged_at != null
+  # Anything still open but modified since it was created has been edited or reopened.
   - append:
       field: event.type
       value: change
