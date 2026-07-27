@@ -1,0 +1,155 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Windows contains accessibility features that may be launched with a key combination before a user has logged in. An adversary can modify the way these programs are launched to get a command prompt or backdoor without logging in to the system.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.name",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.args",
+                "process.pe.original_file_name",
+                "process.hash.sha256",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.parent.name",
+                "process.parent.executable"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Modification of Accessibility Binaries",
+        "note": "## Triage and analysis\n\n### Investigating Potential Modification of Accessibility Binaries\n#### Possible investigation steps\n\n- Does the alert show an accessibility-feature launch path running a different binary identity?\n  - Focus: `process.parent.name`, `user.name`, `process.args`, and `process.pe.original_file_name`.\n  - Implication: escalate when the logon accessibility path starts a SYSTEM process whose PE original name does not fit the requested feature; lower initial concern only when this exact host and binary match a narrow exception from prior verified testing. Otherwise, the mismatch stays suspicious.\n\n- What binary actually ran from the accessibility launch?\n  - Focus: `process.executable`, `process.hash.sha256`, `process.code_signature.subject_name`, and `process.code_signature.trusted`.\n  - Implication: escalate when the executable is a shell, scripting or administration tool, user-writable copy, unsigned or unexpectedly signed binary, or rare hash for the host; stable hash or trusted signer lowers identity concern but does not clear the SYSTEM accessibility mismatch.\n\n- Did the launched binary create a SYSTEM follow-on process?\n  - Focus: process starts on the same `host.id` where `process.parent.entity_id` matches `process.entity_id`, checking `process.executable`, `process.args`, and `user.name`. !{investigate{\"description\":\"\",\"label\":\"Child process starts from the accessibility binary\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when follow-on activity opens a shell, scripting engine, remote-access tool, credential or account utility, or long-lived SYSTEM process; no children lowers follow-on severity only, not the accessibility mismatch.\n  - Hint: if `process.entity_id` is missing, use `host.id`, `process.pid`, and a tight alert-time window as a weaker fallback.\n\n- Do surrounding process starts show preparation, replacement, or cleanup?\n  - Focus: same-`host.id` process starts in a tight alert-time window, prioritizing parent or child links to the alerting process, then same `user.id`; check `process.name`, `process.args`, and `process.parent.name`. !{investigate{\"description\":\"\",\"label\":\"Process starts on the host near the alert\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when takeown, icacls, copy, robocopy, reg, PowerShell, cmd, or service-control activity surrounds the accessibility launch; absence of setup or cleanup reduces preparation evidence only, not the mismatch.\n  - Why: runtime evidence may not show whether abuse used binary replacement or IFEO/debugger redirection, so surrounding process starts can expose the setup path to preserve or restore.\n\n- If local evidence is suspicious or unresolved, is this a local one-off or repeated accessibility-hijack pattern?\n  - Focus: prior alerts and process starts for the same `host.id`, then the same `process.hash.sha256`, `process.executable`, or `process.pe.original_file_name` across other hosts.\n    - !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Process events with the same SHA-256\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.hash.sha256\",\"queryType\":\"phrase\",\"value\":\"{{process.hash.sha256}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate scope when the same binary identity or PE mismatch appears on additional hosts, recurs after attempted cleanup, or clusters outside a recognized validation cohort; no recurrence lowers scope only. Do not close on absence or recurrence alone.\n\n- Escalate for suspicious binary identity, SYSTEM follow-on activity, preparation or cleanup, or unexplained recurrence. Close only when process evidence matches a preexisting narrow exception for one controlled test on this host; if absent or mixed, preserve the binary, process tree, and alert records and escalate.\n\n### False positive analysis\n\n- Accessibility-feature hijacking is an operational anti-pattern. The main benign path is a preexisting, narrow security-test exception for this exact behavior. Compare the alert to stable exception anchors: `host.id`, `process.hash.sha256`, `process.executable`, `process.args`, `process.pe.original_file_name`, parent context, and child-process evidence; contradictions prevent benign closure.\n- Without a preexisting exception, do not close from recurrence alone. Treat stable recurrence as candidate exception evidence and keep the case open or escalated until the exact activity is verified.\n- Build exceptions only from stable test anchors: `process.hash.sha256`, signer identity, `process.args`, `process.pe.original_file_name`, and `host.id` or a tightly managed test cohort. Avoid exceptions on `process.name`, accessibility filenames, parent name, or `user.name` alone.\n\n### Response and remediation\n\n- If confirmed benign:\n  - Record the exact evidence that confirmed the test: host, binary hash and signer, accessibility target, parent context, and absence of suspicious child or surrounding process activity.\n  - Reverse temporary containment after the evidence record is complete.\n  - Create a narrow exception only after the same test pattern is stable across prior alerts and limited to the validated cohort.\n- If suspicious but unconfirmed:\n  - Preserve the alert record, process tree, executable copy, hash, signature details, child-process events, and surrounding process events before containment.\n  - Apply reversible containment tied to the findings, such as temporary host isolation, restricted remote access, or increased monitoring on the affected host, and avoid deleting binaries or restoring system state until evidence is preserved.\n- If confirmed malicious:\n  - Record `process.entity_id`, `process.pid`, command arguments, executable path, hash, signer, and any child process identifiers before containment, termination, or cleanup.\n  - Contain the endpoint based on the binary identity, SYSTEM lineage, follow-on process activity, and recurrence scope that established malicious use.\n  - Block confirmed malicious hashes or binaries, then terminate active shells or backdoors.\n  - Restore affected accessibility binaries to known-good state, validate the accessibility launch path no longer starts the suspicious binary, and remediate the account, deployment tool, or remote-access path that allowed the change.\n  - Reset credentials only when follow-on activity or separate identity evidence shows account misuse.\n- Post-incident hardening:\n  - Restrict local administrator paths that can replace or redirect Windows accessibility features, and enforce application control for accessibility-feature execution where feasible.\n  - Ensure Remote Desktop exposure uses gateway controls and Network Level Authentication so remote users authenticate before the login screen path can be abused.\n  - Document the confirmed test pattern or malicious artifact set so future analysts can separate repeat validation from repeat abuse.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n process.parent.name : (\"Utilman.exe\", \"winlogon.exe\") and user.name == \"SYSTEM\" and\n process.pe.original_file_name : \"?*\" and\n process.args :\n    (\n    \"C:\\\\Windows\\\\System32\\\\osk.exe\",\n    \"C:\\\\Windows\\\\System32\\\\Magnify.exe\",\n    \"C:\\\\Windows\\\\System32\\\\Narrator.exe\",\n    \"C:\\\\Windows\\\\System32\\\\Sethc.exe\",\n    \"utilman.exe\",\n    \"ATBroker.exe\",\n    \"DisplaySwitch.exe\",\n    \"sethc.exe\"\n    )\n and not process.pe.original_file_name in\n    (\n    \"osk.exe\",\n    \"sethc.exe\",\n    \"utilman2.exe\",\n    \"DisplaySwitch.exe\",\n    \"atbroker.exe\",\n    \"ATBroker.exe\",\n    \"ScreenMagnifier.exe\",\n    \"SR.exe\",\n    \"Narrator.exe\",\n    \"magnify.exe\",\n    \"MAGNIFY.EXE\"\n    )\n",
+        "references": [
+            "https://www.elastic.co/blog/practical-security-engineering-stateful-detection"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "7405ddf1-6c8e-41ce-818f-48bea6bcaed8",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender XDR"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1546",
+                        "name": "Event Triggered Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1546/",
+                        "subtechnique": [
+                            {
+                                "id": "T1546.008",
+                                "name": "Accessibility Features",
+                                "reference": "https://attack.mitre.org/techniques/T1546/008/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1546",
+                        "name": "Event Triggered Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1546/",
+                        "subtechnique": [
+                            {
+                                "id": "T1546.008",
+                                "name": "Accessibility Features",
+                                "reference": "https://attack.mitre.org/techniques/T1546/008/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 218
+    },
+    "id": "7405ddf1-6c8e-41ce-818f-48bea6bcaed8_218",
+    "type": "security-rule"
+}

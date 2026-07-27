@@ -100,10 +100,6 @@ processors:
       field: teleport.audit.server_addr
       ignore_missing: true
   - rename:
-      field: teleport.audit.server_labels
-      target_field: teleport.audit.server.labels
-      ignore_missing: true
-  - rename:
       field: teleport.audit.forwarded_by
       target_field: teleport.audit.server.forwarded_by
       ignore_missing: true
@@ -114,6 +110,12 @@ processors:
   - rename:
       field: teleport.audit.server_version
       target_field: teleport.audit.server.version
+      ignore_missing: true
+  # Stash scalar addr before dot_expander so addr.local/addr.remote can expand.
+  - rename:
+      field: teleport.audit.addr
+      target_field: _temp.teleport_audit_addr
+      if: "ctx.teleport?.audit?.addr instanceof String"
       ignore_missing: true
   # Extract data from addr.local field.
   - dot_expander:
@@ -151,6 +153,15 @@ processors:
   - remove:
       field: teleport.audit.addr.remote
       ignore_missing: true
+  # Restore stashed scalar addr value.
+  - remove:
+      field: teleport.audit.addr
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: _temp.teleport_audit_addr
+      target_field: teleport.audit.addr
+      ignore_missing: true
   # The last field and cleanup.
   - rename:
       field: teleport.audit.proto
@@ -185,10 +196,6 @@ processors:
   - rename:
       field: teleport.audit.kubernetes_groups
       target_field: teleport.audit.kubernetes.groups
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.kubernetes_labels
-      target_field: teleport.audit.kubernetes.labels
       ignore_missing: true
   # KubernetesPodMetadata contains common metadata for kubernetes pod-related events.
   # See teleport.audit.kubernetes.pod group for field definitions.
@@ -1407,12 +1414,6 @@ processors:
   - rename:
       field: teleport.audit.upgrade_window_start
       target_field: teleport.audit.upgradewindow.start
-      ignore_missing: true
-  # KubeClusterMetadata contains common kubernetes cluster information.
-  # This was called 'kubernetes_labels' in a different message.
-  - rename:
-      field: teleport.audit.kube_labels
-      target_field: teleport.audit.kubernetes.labels
       ignore_missing: true
   # SSMRun is emitted after an AWS SSM document completes execution.
   - set:

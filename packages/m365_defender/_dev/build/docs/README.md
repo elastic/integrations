@@ -19,9 +19,9 @@ This integration supports below API versions to collect data.
     - [Alerts](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0)
     - [Incidents](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0)
   - [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
-    - [Vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files)
+    - [Vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities)
   - [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
-    - Supported Microsoft Defender XDR Streaming event types are listed below. For more details on all available event types, refer to [documentation](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types).
+    - Supported Microsoft Defender XDR Streaming event types are in the following table. For more details on all available event types, refer to [documentation](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types).
 
 | Resource types | Description |
 | --- | --- |
@@ -67,7 +67,7 @@ The Microsoft Defender XDR integration collects logs for four types of events: A
 
 **Events:** This data stream uses the [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of supported events exposed by the Streaming API and supported by Elastic's integration, please refer to Microsoft's documentation [here](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types?view=o365-worldwide).
 
-**Vulnerabilities:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)'s [`/api/machines/SoftwareVulnerabilitiesExport`](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) endpoint to collect vulnerability assessments.
+**Vulnerabilities:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)'s [`/api/machines/SoftwareVulnerabilityChangesByMachine`](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities) delta endpoint to collect vulnerability change events (new, updated, and fixed vulnerabilities).
 
 **Note:** The **Alerts** data stream ingests individual detection events surfaced by Microsoft and partner security providers, while **Incidents** data stream ingests correlated collections of alerts that represent a broader attack.
 
@@ -177,7 +177,17 @@ The values used in `event.severity` are consistent with Elastic Detection Rules.
 
 ## Troubleshooting
 
-- Expiring SAS URLs: The option `SAS Valid Hours` in `vulnerability` data stream controls the duration that the `Shared Access Signature (SAS)` download URLs are valid for. The default value of this option is `1h` i.e., 1 hour, and the maximum allowed value is `6h` i.e., 6 hours. Increase the value of the option `SAS Valid Hours` when you see `error.message` indicates signatures are invalid, or when you notice invalid signature errors inside CEL trace logs.
+### Vulnerability data stream: Fixed vulnerabilities appearing on the Findings page
+
+The vulnerability data stream uses Microsoft Defender for Endpoint's delta API, which returns change events including remediated (`Fixed`) vulnerabilities. Each record carries a `vulnerability.status` field with one of the following values: `open`, `fixed`, or `unknown`.
+
+Until the Kibana Vulnerability Findings page adds a default filter on this field, remediated vulnerabilities will appear alongside open findings. To exclude them, add the following filter to the Findings page or any saved search:
+
+```
+NOT vulnerability.status: fixed
+```
+
+This is equivalent to showing only currently active vulnerabilities.
 
 ## Scaling
 
@@ -240,4 +250,4 @@ This integration dataset uses the following APIs:
 - `Alerts`: [List alerts_v2](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0&tabs=http) endpoint from [Microsoft Graph Security REST API v1.0](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)
 - `Events`: [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
 - `Incidents`: [List incidents](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0&tabs=http) endpoint from [Microsoft Graph Security REST API v1.0](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)
-- `Vulnerabilities`: [Get software vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) endpoint from [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
+- `Vulnerabilities`: [SoftwareVulnerabilityChangesByMachine](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities) delta endpoint from [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)

@@ -1,0 +1,1845 @@
+{
+    "attributes": {
+        "title": "[HAProxy OTel] Frontend",
+        "description": "Per-frontend request rates, connection rates, session utilisation, bytes throughput, request errors, denied requests, and status code distribution.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "6dcb97a9-0999-7c49-1565-4116faecf706",
+                                "order": 1,
+                                "label": "Frontend",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_6dcb97a9-0999-7c49-1565-4116faecf706_dashboard"
+                            },
+                            {
+                                "id": "3ce80021-f101-727b-d2db-7a8ba346f195",
+                                "order": 2,
+                                "label": "Backend",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3ce80021-f101-727b-d2db-7a8ba346f195_dashboard"
+                            },
+                            {
+                                "id": "4897cbdd-ef7e-932f-829b-5836968ae35f",
+                                "order": 3,
+                                "label": "Server",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_4897cbdd-ef7e-932f-829b-5836968ae35f_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "367e8a42-f793-9581-05f3-7871b3171f55",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 12,
+                    "h": 8,
+                    "i": "367e8a42-f793-9581-05f3-7871b3171f55"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [HAProxy OTel] Frontend\n\nPer-frontend metrics for client-facing listeners:\n- Request and connection rates\n- Session utilisation and bytes throughput\n- Request errors and denied requests\n- HTTP status code distribution\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "98bcea50-28ae-b4c6-1c9b-f4d1d67be2b0",
+                "gridData": {
+                    "x": 12,
+                    "y": 2,
+                    "w": 18,
+                    "h": 4,
+                    "i": "98bcea50-28ae-b4c6-1c9b-f4d1d67be2b0"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Request Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "737d5f1c-e4b5-bced-df13-f856e5fa3136",
+                                "layerType": "data",
+                                "metricAccessor": "add1b5db-6cde-6603-e764-93623cd42282",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.total IS NOT NULL\n| STATS req_rate = SUM(RATE(haproxy.requests.total))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "737d5f1c-e4b5-bced-df13-f856e5fa3136": {
+                                            "query": {
+                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.total IS NOT NULL\n| STATS req_rate = SUM(RATE(haproxy.requests.total))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "req_rate",
+                                                    "columnId": "add1b5db-6cde-6603-e764-93623cd42282",
+                                                    "label": "req/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "req_rate",
+                                                    "columnId": "add1b5db-6cde-6603-e764-93623cd42282",
+                                                    "label": "req/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "5591e436-94c8-135f-9b04-6ca1a713fcbc",
+                "gridData": {
+                    "x": 30,
+                    "y": 2,
+                    "w": 18,
+                    "h": 4,
+                    "i": "5591e436-94c8-135f-9b04-6ca1a713fcbc"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Connection Rate",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "31c999df-2406-ef59-67a1-87153a12760b",
+                                "layerType": "data",
+                                "metricAccessor": "71be5a64-ba41-279d-4dee-4de2d316fdfe",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.connections.rate IS NOT NULL\n| STATS conn_rate = AVG(haproxy.connections.rate)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "31c999df-2406-ef59-67a1-87153a12760b": {
+                                            "query": {
+                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.connections.rate IS NOT NULL\n| STATS conn_rate = AVG(haproxy.connections.rate)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "conn_rate",
+                                                    "columnId": "71be5a64-ba41-279d-4dee-4de2d316fdfe",
+                                                    "label": "conn/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "conn_rate",
+                                                    "columnId": "71be5a64-ba41-279d-4dee-4de2d316fdfe",
+                                                    "label": "conn/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "1afc9b4c-8fde-889a-8452-5fa0b7b00afc",
+                "gridData": {
+                    "x": 12,
+                    "y": 6,
+                    "w": 18,
+                    "h": 4,
+                    "i": "1afc9b4c-8fde-889a-8452-5fa0b7b00afc"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Request Errors",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "de400575-cc5b-91ab-325b-3be06add7d89",
+                                "layerType": "data",
+                                "metricAccessor": "f00077f7-c604-0337-8301-b2836d67d182",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.errors IS NOT NULL\n| STATS err_rate = SUM(RATE(haproxy.requests.errors))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "de400575-cc5b-91ab-325b-3be06add7d89": {
+                                            "query": {
+                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.errors IS NOT NULL\n| STATS err_rate = SUM(RATE(haproxy.requests.errors))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "err_rate",
+                                                    "columnId": "f00077f7-c604-0337-8301-b2836d67d182",
+                                                    "label": "errors/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "err_rate",
+                                                    "columnId": "f00077f7-c604-0337-8301-b2836d67d182",
+                                                    "label": "errors/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "3d5ce2a2-5993-3da2-d3f1-bd13fcc3c81f",
+                "gridData": {
+                    "x": 30,
+                    "y": 6,
+                    "w": 18,
+                    "h": 4,
+                    "i": "3d5ce2a2-5993-3da2-d3f1-bd13fcc3c81f"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Denied Requests",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "38a4e8b4-9226-6fad-26d2-24bc8e85375c",
+                                "layerType": "data",
+                                "metricAccessor": "776ecf81-13c6-a67d-eb33-766018ab573e",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.denied IS NOT NULL\n| STATS denied = SUM(RATE(haproxy.requests.denied))"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "38a4e8b4-9226-6fad-26d2-24bc8e85375c": {
+                                            "query": {
+                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.denied IS NOT NULL\n| STATS denied = SUM(RATE(haproxy.requests.denied))"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "denied",
+                                                    "columnId": "776ecf81-13c6-a67d-eb33-766018ab573e",
+                                                    "label": "denied/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "denied",
+                                                    "columnId": "776ecf81-13c6-a67d-eb33-766018ab573e",
+                                                    "label": "denied/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "d61d4866-d70c-a8d4-44f9-6f7bbbecc64f",
+                "gridData": {
+                    "x": 0,
+                    "y": 10,
+                    "w": 48,
+                    "h": 12,
+                    "i": "d61d4866-d70c-a8d4-44f9-6f7bbbecc64f"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Request Rate by Frontend Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "3313ff0a-17f1-bb07-2830-b24d30257faf",
+                                        "accessors": [
+                                            "94f87283-69f4-a3c9-bd62-f36c4723992e"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "9df9add4-0b65-e5d4-6c67-f6a361d496a2",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.total IS NOT NULL\n| STATS req_rate = SUM(RATE(haproxy.requests.total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "3313ff0a-17f1-bb07-2830-b24d30257faf": {
+                                            "query": {
+                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.total IS NOT NULL\n| STATS req_rate = SUM(RATE(haproxy.requests.total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "req_rate",
+                                                    "columnId": "94f87283-69f4-a3c9-bd62-f36c4723992e",
+                                                    "label": "Requests/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "haproxy.proxy_name",
+                                                    "columnId": "9df9add4-0b65-e5d4-6c67-f6a361d496a2",
+                                                    "label": "haproxy.proxy_name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "req_rate",
+                                                    "columnId": "94f87283-69f4-a3c9-bd62-f36c4723992e",
+                                                    "label": "Requests/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "haproxy.proxy_name",
+                                                    "columnId": "9df9add4-0b65-e5d4-6c67-f6a361d496a2",
+                                                    "label": "haproxy.proxy_name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "ecf310e4-a4bc-9ad4-abf3-abecf06ae8e5",
+                "gridData": {
+                    "x": 0,
+                    "y": 22,
+                    "w": 24,
+                    "h": 12,
+                    "i": "ecf310e4-a4bc-9ad4-abf3-abecf06ae8e5"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Connection Rate by Frontend Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "35809150-e401-c2a9-1d84-1f215346ddfe",
+                                        "accessors": [
+                                            "5e303510-d285-648e-b92c-e1fe3aacd66e"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "9df9add4-0b65-e5d4-6c67-f6a361d496a2",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.connections.rate IS NOT NULL\n| STATS conn_rate = AVG(haproxy.connections.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "35809150-e401-c2a9-1d84-1f215346ddfe": {
+                                            "query": {
+                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.connections.rate IS NOT NULL\n| STATS conn_rate = AVG(haproxy.connections.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "conn_rate",
+                                                    "columnId": "5e303510-d285-648e-b92c-e1fe3aacd66e",
+                                                    "label": "Connections/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "haproxy.proxy_name",
+                                                    "columnId": "9df9add4-0b65-e5d4-6c67-f6a361d496a2",
+                                                    "label": "haproxy.proxy_name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "conn_rate",
+                                                    "columnId": "5e303510-d285-648e-b92c-e1fe3aacd66e",
+                                                    "label": "Connections/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "haproxy.proxy_name",
+                                                    "columnId": "9df9add4-0b65-e5d4-6c67-f6a361d496a2",
+                                                    "label": "haproxy.proxy_name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "613a456a-1932-0a46-8174-706af0f37c8f",
+                "gridData": {
+                    "x": 24,
+                    "y": 22,
+                    "w": 24,
+                    "h": 12,
+                    "i": "613a456a-1932-0a46-8174-706af0f37c8f"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Status Code Distribution",
+                        "visualizationType": "lnsPie",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "a730c4f3-0680-f794-ca0b-daa82f24a712",
+                                        "layerType": "data",
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "2xx"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#54B399"
+                                                    },
+                                                    "touched": false
+                                                },
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "3xx"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#6DCCB1"
+                                                    },
+                                                    "touched": false
+                                                },
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "4xx"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#D6BF57"
+                                                    },
+                                                    "touched": false
+                                                },
+                                                {
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "5xx"
+                                                        ]
+                                                    },
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#E7664C"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        },
+                                        "primaryGroups": [
+                                            "2f253dab-8991-e672-1190-ecff4ff389fe"
+                                        ],
+                                        "metrics": [
+                                            "07d353e7-33a9-edc3-6edb-e272e4c4ee52"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "categoryDisplay": "default",
+                                        "legendDisplay": "show",
+                                        "nestedLegend": false,
+                                        "emptySizeRatio": 0.5
+                                    }
+                                ],
+                                "shape": "donut"
+                            },
+                            "query": {
+                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.total IS NOT NULL AND attributes.status_code IS NOT NULL\n| STATS requests = SUM(RATE(haproxy.requests.total)) BY attributes.status_code\n| SORT requests DESC\n| LIMIT 6"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "a730c4f3-0680-f794-ca0b-daa82f24a712": {
+                                            "query": {
+                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.total IS NOT NULL AND attributes.status_code IS NOT NULL\n| STATS requests = SUM(RATE(haproxy.requests.total)) BY attributes.status_code\n| SORT requests DESC\n| LIMIT 6"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "07d353e7-33a9-edc3-6edb-e272e4c4ee52",
+                                                    "label": "requests",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.status_code",
+                                                    "columnId": "2f253dab-8991-e672-1190-ecff4ff389fe",
+                                                    "label": "Status Code",
+                                                    "customLabel": true
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "07d353e7-33a9-edc3-6edb-e272e4c4ee52",
+                                                    "label": "requests",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "attributes.status_code",
+                                                    "columnId": "2f253dab-8991-e672-1190-ecff4ff389fe",
+                                                    "label": "Status Code",
+                                                    "customLabel": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "898e8802-3a18-e339-0972-17ad7ef3959e",
+                "gridData": {
+                    "x": 0,
+                    "y": 34,
+                    "w": 24,
+                    "h": 12,
+                    "i": "898e8802-3a18-e339-0972-17ad7ef3959e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Bytes Throughput by Frontend",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "12e0d1d0-c076-b36c-d4ac-80cdf49e58ca",
+                                        "accessors": [
+                                            "63568547-199c-c0da-de33-15d7f382bb75",
+                                            "a203f8b1-4749-f4b0-97a3-1a6759d28363"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "9df9add4-0b65-e5d4-6c67-f6a361d496a2",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND (haproxy.bytes.input IS NOT NULL OR haproxy.bytes.output IS NOT NULL)\n| STATS bytes_in = SUM(RATE(haproxy.bytes.input)), bytes_out = SUM(RATE(haproxy.bytes.output)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name\n| EVAL bytes_in = COALESCE(bytes_in, 0)\n| EVAL bytes_out = COALESCE(bytes_out, 0)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "12e0d1d0-c076-b36c-d4ac-80cdf49e58ca": {
+                                            "query": {
+                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND (haproxy.bytes.input IS NOT NULL OR haproxy.bytes.output IS NOT NULL)\n| STATS bytes_in = SUM(RATE(haproxy.bytes.input)), bytes_out = SUM(RATE(haproxy.bytes.output)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name\n| EVAL bytes_in = COALESCE(bytes_in, 0)\n| EVAL bytes_out = COALESCE(bytes_out, 0)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "bytes_in",
+                                                    "columnId": "63568547-199c-c0da-de33-15d7f382bb75",
+                                                    "label": "Bytes in/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "bytes_out",
+                                                    "columnId": "a203f8b1-4749-f4b0-97a3-1a6759d28363",
+                                                    "label": "Bytes out/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "haproxy.proxy_name",
+                                                    "columnId": "9df9add4-0b65-e5d4-6c67-f6a361d496a2",
+                                                    "label": "haproxy.proxy_name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "bytes_in",
+                                                    "columnId": "63568547-199c-c0da-de33-15d7f382bb75",
+                                                    "label": "Bytes in/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "bytes_out",
+                                                    "columnId": "a203f8b1-4749-f4b0-97a3-1a6759d28363",
+                                                    "label": "Bytes out/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "haproxy.proxy_name",
+                                                    "columnId": "9df9add4-0b65-e5d4-6c67-f6a361d496a2",
+                                                    "label": "haproxy.proxy_name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "112487aa-8800-b2af-43ee-f481a1d67101",
+                "gridData": {
+                    "x": 24,
+                    "y": 34,
+                    "w": 24,
+                    "h": 12,
+                    "i": "112487aa-8800-b2af-43ee-f481a1d67101"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Request Errors by Frontend Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "827f2c8a-2641-fa20-2978-789a80e63a54",
+                                        "accessors": [
+                                            "cae8f38d-2feb-f9a9-a4ec-6a9bc69ae209"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "9df9add4-0b65-e5d4-6c67-f6a361d496a2",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.errors IS NOT NULL\n| STATS err_rate = SUM(RATE(haproxy.requests.errors)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "827f2c8a-2641-fa20-2978-789a80e63a54": {
+                                            "query": {
+                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\" AND haproxy.requests.errors IS NOT NULL\n| STATS err_rate = SUM(RATE(haproxy.requests.errors)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), haproxy.proxy_name\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "err_rate",
+                                                    "columnId": "cae8f38d-2feb-f9a9-a4ec-6a9bc69ae209",
+                                                    "label": "Errors/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "haproxy.proxy_name",
+                                                    "columnId": "9df9add4-0b65-e5d4-6c67-f6a361d496a2",
+                                                    "label": "haproxy.proxy_name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "err_rate",
+                                                    "columnId": "cae8f38d-2feb-f9a9-a4ec-6a9bc69ae209",
+                                                    "label": "Errors/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "haproxy.proxy_name",
+                                                    "columnId": "9df9add4-0b65-e5d4-6c67-f6a361d496a2",
+                                                    "label": "haproxy.proxy_name",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c1cd56a6-3d01-41e8-4ded-d1c674fed97e",
+                "gridData": {
+                    "x": 0,
+                    "y": 46,
+                    "w": 48,
+                    "h": 15,
+                    "i": "c1cd56a6-3d01-41e8-4ded-d1c674fed97e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Frontend Summary Table",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "ce59ea1c-546c-1c9e-8b4e-0cdb61b1b9a1",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "794dad1f-91cb-988d-4104-410a23c69a32",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "4c63debc-9aee-9990-907c-1c78fbf94028",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "02430cc7-621e-e4f9-0e1a-03db654668f8",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "a04f2252-1ab5-5903-18dd-836777f362e7",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "e80a27d1-c5af-4bb5-9fc5-a5c3eda5b808",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "87c54e93-4646-6d6e-8d23-cc2cf7cd91fc",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "43b232ce-d886-27b8-c50c-a95529e7ca3c",
+                                "layerType": "data",
+                                "paging": {
+                                    "size": 10,
+                                    "enabled": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\"\n| STATS req_rate = SUM(RATE(haproxy.requests.total)), conn_rate = AVG(haproxy.connections.rate), err_rate = SUM(RATE(haproxy.requests.errors)), denied_rate = SUM(RATE(haproxy.requests.denied)), sessions = SUM(LAST_OVER_TIME(haproxy.sessions.count)) BY haproxy.proxy_name, haproxy.addr\n| SORT req_rate DESC\n| LIMIT 50"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "43b232ce-d886-27b8-c50c-a95529e7ca3c": {
+                                            "query": {
+                                                "esql": "TS metrics-haproxyreceiver.otel-*\n| WHERE haproxy.service_name == \"FRONTEND\"\n| STATS req_rate = SUM(RATE(haproxy.requests.total)), conn_rate = AVG(haproxy.connections.rate), err_rate = SUM(RATE(haproxy.requests.errors)), denied_rate = SUM(RATE(haproxy.requests.denied)), sessions = SUM(LAST_OVER_TIME(haproxy.sessions.count)) BY haproxy.proxy_name, haproxy.addr\n| SORT req_rate DESC\n| LIMIT 50"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "haproxy.proxy_name",
+                                                    "columnId": "ce59ea1c-546c-1c9e-8b4e-0cdb61b1b9a1",
+                                                    "label": "Proxy",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "haproxy.addr",
+                                                    "columnId": "794dad1f-91cb-988d-4104-410a23c69a32",
+                                                    "label": "Instance",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "req_rate",
+                                                    "columnId": "4c63debc-9aee-9990-907c-1c78fbf94028",
+                                                    "label": "Req/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "conn_rate",
+                                                    "columnId": "02430cc7-621e-e4f9-0e1a-03db654668f8",
+                                                    "label": "Conn/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "err_rate",
+                                                    "columnId": "a04f2252-1ab5-5903-18dd-836777f362e7",
+                                                    "label": "Errors/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "denied_rate",
+                                                    "columnId": "e80a27d1-c5af-4bb5-9fc5-a5c3eda5b808",
+                                                    "label": "Denied/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "sessions",
+                                                    "columnId": "87c54e93-4646-6d6e-8d23-cc2cf7cd91fc",
+                                                    "label": "Sessions",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "haproxy.proxy_name",
+                                                    "columnId": "ce59ea1c-546c-1c9e-8b4e-0cdb61b1b9a1",
+                                                    "label": "Proxy",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "haproxy.addr",
+                                                    "columnId": "794dad1f-91cb-988d-4104-410a23c69a32",
+                                                    "label": "Instance",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "req_rate",
+                                                    "columnId": "4c63debc-9aee-9990-907c-1c78fbf94028",
+                                                    "label": "Req/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "conn_rate",
+                                                    "columnId": "02430cc7-621e-e4f9-0e1a-03db654668f8",
+                                                    "label": "Conn/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "err_rate",
+                                                    "columnId": "a04f2252-1ab5-5903-18dd-836777f362e7",
+                                                    "label": "Errors/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "denied_rate",
+                                                    "columnId": "e80a27d1-c5af-4bb5-9fc5-a5c3eda5b808",
+                                                    "label": "Denied/s",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "sessions",
+                                                    "columnId": "87c54e93-4646-6d6e-8d23-cc2cf7cd91fc",
+                                                    "label": "Sessions",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "haproxyreceiver.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "haproxyreceiver.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": true,
+        "timeFrom": "now-1h",
+        "timeTo": "now",
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "e52a7969-22b8-3cab-1339-d3ee964ad44c": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "e52a7969-22b8-3cab-1339-d3ee964ad44c",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "haproxy.proxy_name",
+                        "title": "Proxy (Frontend)",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                },
+                "48657e64-dfb7-881c-18ed-1479394d31de": {
+                    "grow": false,
+                    "order": 1,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "48657e64-dfb7-881c-18ed-1479394d31de",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "haproxy.addr",
+                        "title": "HAProxy Instance",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "haproxy_otel-frontend",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "haproxy_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "haproxy_otel-frontend",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_6dcb97a9-0999-7c49-1565-4116faecf706_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "haproxy_otel-backend",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3ce80021-f101-727b-d2db-7a8ba346f195_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "haproxy_otel-server",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_4897cbdd-ef7e-932f-829b-5836968ae35f_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_e52a7969-22b8-3cab-1339-d3ee964ad44c:optionsListDataView"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_48657e64-dfb7-881c-18ed-1479394d31de:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

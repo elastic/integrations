@@ -1,0 +1,153 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to export a registry hive which may contain credentials using the Windows reg.exe tool.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "host.name",
+                "user.name",
+                "user.id",
+                "process.entity_id",
+                "process.executable",
+                "process.command_line",
+                "process.pe.original_file_name",
+                "process.parent.entity_id",
+                "process.parent.pid",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.code_signature.subject_name",
+                "process.Ext.session_info.logon_type"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Credential Acquisition via Registry Hive Dumping",
+        "note": "## Triage and analysis\n\n### Investigating Credential Acquisition via Registry Hive Dumping\n\n#### Possible investigation steps\n\n- What exact hive-export behavior did the alert capture?\n  - Focus: `process.command_line`, `process.executable`, `process.pe.original_file_name`, and `process.code_signature.subject_name`.\n  - Implication: escalate if the command saves or exports SAM or SECURITY to temp, public, admin-share, UNC, removable, or deceptive paths; lower suspicion only when the signed Microsoft reg.exe identity, destination, and export set fit the same recognized backup, recovery, forensic, or break-glass workflow. Identity alone never clears the export.\n\n- Does the parent and session context explain why credential-bearing hives were exported?\n  - Focus: `process.parent.executable`, `process.parent.command_line`, `process.Ext.session_info.logon_type`, and `user.id`.\n  - Hint: If the parent is generic and lineage remains unclear, expand ancestry before accepting a maintenance explanation.\n  - Implication: escalate when an interactive shell, script host, RMM tool, service account, remote-style session, or unexpected user initiated the export; lower suspicion when the same user or service identity, parent workflow, and session type recur for a recognized backup, recovery, forensic, or break-glass process.\n\n- Did the alert parent launch accompanying SYSTEM export, staging, transfer, cleanup, or alternate dump commands?\n  - Focus: process events from the alert parent and reg.exe children, using `process.parent.entity_id`, `process.parent.pid`, `process.executable`, and `process.command_line`. !{investigate{\"description\":\"\",\"label\":\"Processes from same parent as alert\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}} !{investigate{\"description\":\"\",\"label\":\"Child processes of reg.exe\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: If `process.parent.entity_id` is absent, use the `host.id` + alert `process.parent.pid` branch in a tight alert-time window; if reg.exe spawned a helper, pivot from alert `process.entity_id` to child `process.parent.entity_id`.\n  - Hint: If file or network telemetry is available, recover file activity and connections for reg.exe and its children to identify hive output, archives, share writes, removable-media staging, or off-host transfer. Missing network telemetry is unresolved, not benign. !{investigate{\"description\":\"\",\"label\":\"File activity for reg.exe and children\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}} !{investigate{\"description\":\"\",\"label\":\"Network activity for reg.exe and children\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the same parent exports SYSTEM, packages, copies, deletes, or transfers hive output, or launches vssadmin.exe, diskshadow.exe, or shadow-copy paths to continue dumping outside this rule; absence of same-parent support reduces staging evidence but does not clear the original export.\n\n- Does the host role or hive combination raise credential-exposure severity?\n  - Focus: `host.id`, `host.name`, and `process.command_line`, plus asset or case records only as corroboration.\n  - Hint: Do not infer privileged role from `host.name` alone.\n  - Implication: raise urgency when asset context or host history identifies a jump host, backup node, admin workstation, server, or shared management platform, or when same-parent process review confirms SYSTEM was exported with SAM or SECURITY; lower urgency only when the host role and export set fit the same recognized workflow.\n\n- If local evidence remains suspicious or unresolved, does related alert scope show broader credential-access activity?\n  - Focus: related alerts for the same `user.id` and `host.id`, looking for credential dumping, archiving, privilege escalation, persistence, or lateral movement.\n  - Hint: Start with same-user alerts. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: Compare same-host alerts. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope and credential review when related alerts show complementary abuse; keep the case local when related alert scope is quiet and local telemetry already binds the export to one recognized workflow.\n\n- Based on the evidence gathered, what disposition is supported?\n  - Focus: binary identity, hive targets and output path, parent/session context, same-parent or child-process activity, host exposure, and related-alert scope.\n  - Implication: escalate when an unrecognized SAM or SECURITY export has a risky destination, suspicious lineage or session, follow-on staging, privileged-host exposure, or related credential-access alerts; close only when the same evidence categories bind one exact recognized workflow on this host, with outside confirmation if telemetry cannot prove legitimacy; preserve artifacts and escalate when evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Backup, recovery, forensic, or break-glass workflows can legitimately export SAM or SECURITY hives. Confirm that the signed Microsoft utility identity, command-line hive and destination pattern, parent workflow, session context, `user.id`, `host.id`, host role, and same-parent or child-process activity all align with the same workflow. If telemetry cannot prove legitimacy, use case records, change records, or owner confirmation only as corroboration for that exact activity. If any evidence dimension contradicts the workflow, do not close as benign.\n- Before creating an exception, validate that the same `process.executable`, `process.code_signature.subject_name`, `process.parent.command_line`, `process.command_line` hive/destination pattern, `user.id`, and `host.id` recur across prior alerts from this rule. Build from that minimum confirmed pattern. Avoid exceptions on `process.name`, reg.exe, the hive name, or the host alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse any temporary restriction and document the recognized utility path, hive/destination pattern, parent and session context, `user.id`, `host.id`, host role, and corroborating case evidence that justified closure. Create an exception only if that same pattern recurs consistently across prior alerts from this rule.\n- If suspicious but unconfirmed, preserve the alert record, process tree, `process.entity_id`, `process.command_line`, output path named in the command, same-parent or child-process command lines, session context, `user.id`, and `host.id` before containment or cleanup. Apply reversible containment tied to the findings, such as temporary share restriction or limited outbound access for the affected host; escalate to host isolation or account action only if staging, transfer commands, related alerts, or host criticality justify the impact.\n- If confirmed malicious, preserve the same evidence set, then isolate the host if its role can tolerate it and the findings show unauthorized hive export or movement risk. Contain the responsible account only when the user/session evidence indicates account misuse. Terminate the process only after evidence capture if it is still running.\n- Scope exposure from the copied material: SAM implies local account hash exposure; SECURITY implies LSA secret or cached-credential exposure; a same-parent SYSTEM export makes offline decryption more plausible and should raise urgency.\n- Before deleting or rotating anything, review related `host.id` and `user.id` activity for the same command patterns, hive-copy names, archive names, share paths, transfer commands, and alternate copy methods such as vssadmin.exe, diskshadow.exe, or raw shadow-copy access. Then remove only the unauthorized dump scripts, archives, copied hive files, and persistence mechanisms identified during the investigation, and remediate the access path that allowed the export.\n- Post-incident hardening: restrict hive export activity to recognized recovery or forensic workflows, document the confirmed `process.command_line` and destination patterns behind any exception, and retain process telemetry needed to distinguish future recovery work from repeated abuse.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n (?process.pe.original_file_name == \"reg.exe\" or process.name : \"reg.exe\") and\n process.args : (\"save\", \"export\") and\n process.args : (\"hklm\\\\sam\", \"hklm\\\\security\")\n",
+        "references": [
+            "https://medium.com/threatpunter/detecting-attempts-to-steal-passwords-from-the-registry-7512674487f8",
+            "https://www.elastic.co/security-labs/detect-credential-access"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "a7e7bfa3-088e-4f13-b29e-3986e0e756b8",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: SentinelOne",
+            "Data Source: Sysmon",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.002",
+                                "name": "Security Account Manager",
+                                "reference": "https://attack.mitre.org/techniques/T1003/002/"
+                            },
+                            {
+                                "id": "T1003.004",
+                                "name": "LSA Secrets",
+                                "reference": "https://attack.mitre.org/techniques/T1003/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 317
+    },
+    "id": "a7e7bfa3-088e-4f13-b29e-3986e0e756b8_317",
+    "type": "security-rule"
+}

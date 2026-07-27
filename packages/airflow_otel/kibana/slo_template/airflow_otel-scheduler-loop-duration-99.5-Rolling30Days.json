@@ -1,0 +1,52 @@
+{
+  "attributes": {
+    "name": "[Airflow OTel] Scheduler loop duration 99.5% rolling 30 days",
+    "description": "Ensures 99.5% of 1-minute timeslices have average scheduler loop duration below 120 seconds over a rolling 30-day period. Slow scheduler loops delay task scheduling and DAG run progression; sustained high duration indicates scheduler contention or overload.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"airflow.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "airflow.scheduler.scheduler_loop_duration"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 120
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "airflow",
+      "otel"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-overview"
+        },
+        {
+          "id": "airflow_otel-scheduler-capacity"
+        }
+      ]
+    }
+  },
+  "id": "airflow_otel-scheduler-loop-duration-99.5-Rolling30Days",
+  "type": "slo_template"
+}

@@ -1,39 +1,61 @@
 {
-    "id": "mysql_otel-high-buffer-pool-dirty-ratio",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[MySQL OTel] High buffer pool dirty page ratio",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "mysql"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "mysql_otel-high-buffer-pool-dirty-ratio",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the InnoDB buffer pool dirty ratio exceeds 75%. InnoDB will flush aggressively above this threshold.",
+    "name": "[MySQL OTel] High buffer pool dirty page ratio",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "mysql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mysql_otel-14f9bee0-b03e-4e6d-b386-c89d5e7589c8"
         },
-        "alertDelay": {
-            "active": 3
+        {
+          "id": "mysql_otel-233fa1a2-7c05-46b9-8ae6-112d42610e12"
         },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
+        {
+          "id": "mysql_otel-49452773-8358-4394-827e-d15d1e3f8467"
         },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-mysqlreceiver.otel-*\n// Buffer pool usage (bytes) by status: clean vs dirty; gauges\n| WHERE metrics.mysql.buffer_pool.usage IS NOT NULL\n    AND attributes.status IN (\"dirty\", \"clean\")\n| STATS\n    dirty = MAX(metrics.mysql.buffer_pool.usage) WHERE attributes.status == \"dirty\",\n    clean = MAX(metrics.mysql.buffer_pool.usage) WHERE attributes.status == \"clean\"\n  BY resource.attributes.mysql.instance.endpoint\n| EVAL total = dirty + clean, ratio = CASE(total > 0, dirty / total, 0)\n// Alert when dirty ratio > 75%; InnoDB will flush aggressively above this\n| WHERE ratio > 0.75 AND total > 0\n| SORT ratio DESC"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "resource.attributes.mysql.instance.endpoint",
-            "termSize": 10,
-            "excludeHitsFromPreviousRun": true
+        {
+          "id": "mysql_otel-71977e60-f126-4c18-8769-639e686585a3"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## MySQL high buffer pool dirty page ratio\n\n### What fired\nDirty pages / (dirty + clean) > 0.75 on an instance during the window.\n\n### Why it matters\nDirty pages are modified pages awaiting flush. Above 75%, InnoDB enters aggressive async flush mode, which tanks write latency and saturates disk.\n\n### Triage\n1. Check disk write IOPS.\n2. Inspect InnoDB flush and log settings.\n\n### Remediation\n- Upgrade disk.\n- Tune `innodb_io_capacity` to match hardware.\n\n### Tuning\n- 75% threshold matches InnoDB's documented aggressive-flush band.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-mysqlreceiver.otel-*\n// Buffer pool usage (bytes) by status: clean vs dirty; gauges\n| WHERE metrics.mysql.buffer_pool.usage IS NOT NULL\n    AND attributes.status IN (\"dirty\", \"clean\")\n| STATS\n    dirty = MAX(metrics.mysql.buffer_pool.usage) WHERE attributes.status == \"dirty\",\n    clean = MAX(metrics.mysql.buffer_pool.usage) WHERE attributes.status == \"clean\"\n  BY resource.attributes.mysql.instance.endpoint\n| EVAL total = dirty + clean, ratio = CASE(total > 0, dirty / total, 0)\n// Alert when dirty ratio > 75%; InnoDB will flush aggressively above this\n| WHERE ratio > 0.75 AND total > 0\n| SORT ratio DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.mysql.instance.endpoint",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

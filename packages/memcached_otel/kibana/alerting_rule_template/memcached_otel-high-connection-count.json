@@ -1,40 +1,53 @@
 {
-    "id": "memcached_otel-high-connection-count",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Memcached OTel] High connection count",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "memcached"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "enabled": true,
-            "lookBackWindow": 6,
-            "statusChangeThreshold": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-memcachedreceiver.otel-*\n| WHERE memcached.connections.current IS NOT NULL\n// Current connections (gauge) — use max over window for peak detection\n| STATS max_connections = MAX(LAST_OVER_TIME(memcached.connections.current))\n  BY host.name, COALESCE(service.instance.id, host.name)\n// Alert when connections exceed 800 — adjust for your -c limit\n| WHERE max_connections > 800\n| SORT max_connections DESC\n| LIMIT 20"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 10,
-            "excludeHitsFromPreviousRun": true
+  "id": "memcached_otel-high-connection-count",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when `memcached.connections.current > 800`. Approaching the `-c` limit means new connections will be refused.",
+    "name": "[Memcached OTel] High connection count",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "memcached"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "memcached_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Memcached high connection count\n\n### What fired\nCurrent connections exceeded 800 during the window.\n\n### Why it matters\nMemcached has a fixed connection limit (`-c`, default 1024). Above ~80% of the limit, new connections can be refused silently. Usually caused by client-side connection churn or missing pooling.\n\n### Triage\n1. Check client connection churn with `connections.total` rate.\n2. Inspect client pool sizing.\n\n### Remediation\n- Enable/tune client-side pooling.\n- Raise `-c` if legitimately needed.\n\n### Tuning\n- 800 assumes 1024 limit; tune to your `-c` setting.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-memcachedreceiver.otel-*\n| WHERE memcached.connections.current IS NOT NULL\n// Current connections (gauge) \u2014 use max over window for peak detection\n| STATS max_connections = MAX(LAST_OVER_TIME(memcached.connections.current))\n  BY host.name, COALESCE(service.instance.id, host.name)\n// Alert when connections exceed 800 \u2014 adjust for your -c limit\n| WHERE max_connections > 800\n| SORT max_connections DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

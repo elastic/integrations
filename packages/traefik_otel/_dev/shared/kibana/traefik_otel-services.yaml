@@ -1,0 +1,310 @@
+# Traefik OTel — Services
+# Backend service-level traffic, errors, and performance.
+
+dashboards:
+  - id: traefik_otel-services
+    name: '[Traefik OTel] Services'
+    description: "Backend service traffic, error rates, and performance. Critical for identifying failing backends."
+
+    settings:
+      margins: true
+      titles: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: data_stream.dataset
+        equals: traefik.otel
+
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: host.name
+      - type: options
+        label: Service
+        data_view: metrics-*
+        field: attributes.service
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: traefik_otel-overview
+            - label: Services
+              dashboard: traefik_otel-services
+            - label: TLS & Config
+              dashboard: traefik_otel-tls-config
+            - label: Process
+              dashboard: traefik_otel-process
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Traefik OTel] Services
+
+            This dashboard focuses on backend service performance:
+            - Request rate and traffic by service
+            - 5xx server errors (502, 503) indicating backend failures
+            - Request distribution by service and status code
+            - Top services by request volume and error rate
+
+      # ─── KPI Metric Row ──────────────────────────────────────────────
+      - title: Total Service Requests
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_service_requests_total IS NOT NULL
+            - STATS total = SUM(traefik_service_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
+            - EVAL request_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
+            - KEEP request_rate
+          primary:
+            field: request_rate
+            label: Req/sec
+            format:
+              type: number
+              decimals: 1
+              suffix: "/sec"
+
+      - title: Services with 5xx
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_service_requests_total IS NOT NULL
+            - STATS total = SUM(traefik_service_requests_total),
+              errors_5xx = SUM(traefik_service_requests_total)
+                WHERE attributes.code LIKE "5*"
+            - EVAL error_rate = CASE(total > 0, errors_5xx / total, 0.0)
+            - STATS error_rate = MAX(error_rate)
+          primary:
+            field: error_rate
+            label: 5xx Rate
+            format:
+              type: percent
+              decimals: 2
+
+      - title: Distinct Services
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_service_requests_total IS NOT NULL
+            - STATS service_count = COUNT_DISTINCT(attributes.service)
+          primary:
+            field: service_count
+            label: Services
+            format:
+              type: number
+              decimals: 0
+
+      - title: Bandwidth by Service
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_service_responses_bytes_total IS NOT NULL
+            - STATS total = SUM(traefik_service_responses_bytes_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
+            - EVAL bytes_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
+            - KEEP bytes_rate
+          primary:
+            field: bytes_rate
+            label: Bytes/sec
+            format:
+              type: bytes
+
+      # ─── Request Rate by Service Over Time ────────────────────────────
+      - title: Request Rate by Service
+        size: {w: 48, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_service_requests_total IS NOT NULL
+            - STATS total = SUM(traefik_service_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+                attributes.service
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL request_rate = total / bucket_secs
+            - KEEP time_bucket, attributes.service, request_rate
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: request_rate
+              label: Req/sec
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.service
+          legend:
+            visible: show
+            position: right
+
+      # ─── 5xx Errors by Service ─────────────────────────────────────────
+      - title: 5xx Errors by Service Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_service_requests_total IS NOT NULL
+            - WHERE attributes.code LIKE "5*"
+            - STATS total = SUM(traefik_service_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+                attributes.service
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL errors = total / bucket_secs
+            - KEEP time_bucket, attributes.service, errors
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: errors
+              label: 5xx/sec
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: attributes.service
+          legend:
+            visible: show
+            position: right
+
+      # ─── Status Codes by Service ───────────────────────────────────────
+      - title: Status Code Distribution by Service
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_service_requests_total IS NOT NULL
+            - STATS total = SUM(traefik_service_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+                attributes.code
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL requests = total / bucket_secs
+            - KEEP time_bucket, attributes.code, requests
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: requests
+              label: Req/sec
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.code
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "200"
+                color: '#54B399'
+              - values: ['500', '502', '503', '504']
+                color: '#BD271E'
+          legend:
+            visible: show
+            position: right
+
+      # ─── Top Services by Request Count ─────────────────────────────────
+      - title: Top Services by Request Count
+        size: {w: 24, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_service_requests_total IS NOT NULL
+            - STATS total_requests = SUM(traefik_service_requests_total),
+              errors_5xx = SUM(traefik_service_requests_total)
+                WHERE attributes.code LIKE "5*"
+              BY attributes.service
+            - EVAL error_rate = CASE(total_requests > 0, errors_5xx / total_requests, 0.0)
+            - SORT total_requests DESC
+            - LIMIT 20
+          breakdowns:
+            - field: attributes.service
+              label: Service
+          metrics:
+            - field: total_requests
+              label: Total Requests
+              format:
+                type: number
+                compact: true
+            - field: error_rate
+              label: 5xx Rate
+              format:
+                type: percent
+                decimals: 2
+
+      # ─── Services with Highest Error Rate ──────────────────────────────
+      - title: Services with Highest 5xx Rate
+        size: {w: 24, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_service_requests_total IS NOT NULL
+            - STATS total_requests = SUM(traefik_service_requests_total),
+              errors_5xx = SUM(traefik_service_requests_total)
+                WHERE attributes.code LIKE "5*"
+              BY attributes.service
+            - WHERE total_requests > 0
+            - EVAL error_rate = errors_5xx / total_requests
+            - WHERE error_rate > 0
+            - SORT error_rate DESC
+            - LIMIT 20
+          breakdowns:
+            - field: attributes.service
+              label: Service
+          metrics:
+            - field: error_rate
+              label: 5xx Rate
+              format:
+                type: percent
+                decimals: 2
+            - field: errors_5xx
+              label: 5xx Count
+              format:
+                type: number
+                compact: true

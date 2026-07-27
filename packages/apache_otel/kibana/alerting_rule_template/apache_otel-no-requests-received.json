@@ -1,41 +1,52 @@
 {
-    "id": "apache_otel-no-requests-received",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Apache OTel] No requests received",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "apache"
-        ],
-        "schedule": {
-            "interval": "1m"
-        },
-        "alertDelay": {
-            "active": 3
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-apachereceiver.otel-*\n| WHERE apache.requests IS NOT NULL\n| STATS request_rate = SUM(RATE(apache.requests))\n    BY resource.attributes.apache.server.name\n| WHERE request_rate == 0.0 OR request_rate IS NULL\n| SORT resource.attributes.apache.server.name ASC\n| LIMIT 10"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "resource.attributes.apache.server.name",
-            "termSize": 10,
-            "excludeHitsFromPreviousRun": true
+  "id": "apache_otel-no-requests-received",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the request rate drops to zero (`RATE(apache.requests) == 0`). Unexpected zero traffic usually points to upstream routing / DNS / load-balancer problems.",
+    "name": "[Apache OTel] No requests received",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "apache"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Apache no requests received\n\n### What fired\n`RATE(apache.requests)` was 0 (or null) across the evaluation window.\n\n### Why it matters\nA server that is running but serving zero requests is effectively unavailable. The cause is rarely Apache itself \u2014 usually an upstream routing, DNS, or load balancer problem is starving the server of traffic.\n\n### Triage\n1. Confirm whether *this* server is unique or the whole fleet is affected (Overview dashboard).\n2. Check the load balancer health-check status and target registration.\n3. Verify DNS resolution for the virtual host.\n4. Inspect external synthetic probes / RUM for a broader outage signal.\n5. Look at `apache.uptime` to rule out a recent restart during which no traffic has arrived yet.\n\n### Remediation\n- Fix the upstream routing/DNS/load-balancer issue.\n- If Apache itself is misconfigured and rejecting traffic, inspect `error_log` for vhost / cert failures.\n\n### Tuning\n- Rule fires on any zero-rate sample. If you have maintenance windows, suppress it via tags or a separate maintenance rule.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-apachereceiver.otel-*\n| WHERE apache.requests IS NOT NULL\n| STATS request_rate = SUM(RATE(apache.requests))\n    BY resource.attributes.apache.server.name\n| WHERE request_rate == 0.0 OR request_rate IS NULL\n| SORT resource.attributes.apache.server.name ASC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.apache.server.name",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

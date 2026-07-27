@@ -1,0 +1,724 @@
+rules:
+  # Auth — X-Api-Key header
+  - path: /api/auth
+    methods: ['POST']
+    request_headers:
+      X-Api-Key: "mock-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "accessToken": "mock-access-token-abc123",
+            "refreshToken": "mock-refresh-token-xyz789"
+          }
+          `}}
+  # Token refresh
+  - path: /api/refresh-token
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - 'application/json'
+    request_body: /.*"refreshToken".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "accessToken": "mock-access-token-refreshed-abc123",
+            "refreshToken": "mock-refresh-token-refreshed-xyz789"
+          }
+          `}}
+  # Page 2 — fetched via nextLink cursor=page2 (more specific match, must precede page 1)
+  - path: /api/audit-trail/auditRecords
+    methods: ['GET']
+    query_params:
+      cursor: 'page2'
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "_id": "64c3d4e5f60718293a4b5c6d",
+                "details": "Example-02 failed to perform domain scan",
+                "eventSubType": "SENSOR_SCAN_FAILED",
+                "eventType": "ACTIVE_DIRECTORY",
+                "objectName": "example.com",
+                "objectType": "DOMAIN",
+                "tenant": "demo",
+                "terminalId": {
+                  "hostname": "acme",
+                  "ip": "acme"
+                },
+                "timestamp": "2023-04-18T10:48:50.768Z",
+                "userId": {
+                  "name": "Automated"
+                }
+              }
+            ],
+            "paging": {
+              "page": 1,
+              "pageSize": 100,
+              "total": 3,
+              "totalPages": 2,
+              "nextLink": null
+            },
+            "metadata": {}
+          }
+          `}}
+  # Page 1 — initial full fetch (no cursor; only pageSize+sort)
+  - path: /api/audit-trail/auditRecords
+    methods: ['GET']
+    query_params:
+      pageSize: '100'
+      sort: '-timestamp'
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "_id": "64a1b2c3d4e5f60718293a4b",
+                "details": "ExampleDC01 failed to perform domain scan",
+                "eventSubType": "SENSOR_SCAN_FAILED",
+                "eventType": "ACTIVE_DIRECTORY",
+                "objectName": "example.com",
+                "objectType": "DOMAIN",
+                "tenant": "demo",
+                "terminalId": {
+                  "hostname": "acme",
+                  "ip": "acme"
+                },
+                "timestamp": "2023-04-16T10:49:26.855Z",
+                "userId": {
+                  "name": "Automated"
+                }
+              },
+              {
+                "_id": "64b2c3d4e5f60718293a4b5c",
+                "details": "john.doe@example.com Logged in via user",
+                "eventSubType": "CONSOLE_LOGIN",
+                "eventType": "ACCESS",
+                "objectName": "User",
+                "objectType": "USER",
+                "tenant": "demo",
+                "terminalId": {
+                  "hostname": "demo.clients.example.com",
+                  "ip": "192.0.2.0"
+                },
+                "timestamp": "2023-01-03T19:13:54.358Z",
+                "userId": {
+                  "email": "john.doe@example.com",
+                  "name": "John Doe"
+                }
+              }
+            ],
+            "paging": {
+              "page": 0,
+              "pageSize": 100,
+              "total": 3,
+              "totalPages": 2,
+              "nextLink": "/api/audit-trail/auditRecords?cursor=page2"
+            },
+            "metadata": {}
+          }
+          `}}
+  - path: /api/v2/vrm/public/vulnerabilities
+    methods: ['GET']
+    query_params:
+      pageSize: '2'
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "cve": "CVE-2009-0316",
+                "status": "Active",
+                "description": "Untrusted search path vulnerability in src/if_python.c in the Python interface in Vim before 7.2.045 allows local users to execute arbitrary code via a Trojan horse Python file in the current working directory, related to a vulnerability in the PySys_SetArgv function (CVE-2008-5983), as demonstrated by an erroneous search path for plugin/bike.vim in bicyclerepair.",
+                "severity": 20,
+                "severityLevel": "Medium",
+                "cvss2": 6.9,
+                "cvss2Vector": "AV:L/AC:M/Au:N/C:C/I:C/A:C",
+                "cvss30": null,
+                "cvss3Vector": null,
+                "cvss31": null,
+                "cvss31Vector": null,
+                "cvss4": null,
+                "cvss4Vector": null,
+                "epssPercentile": 0.41737,
+                "epssProbability": 0.00199,
+                "epssScore": 0.00199,
+                "inCisaKev": false,
+                "inExploitDb": false,
+                "exploitKitExist": false,
+                "isExploitedInTheWild": false,
+                "hasAttackTechnique": false,
+                "techniqueId": null,
+                "deviceFoundOn": 2,
+                "products": 2,
+                "criticalAssetsFoundOn": 2,
+                "criticalAssetsAtRisk": 0,
+                "chokePointFoundOn": 0,
+                "firstDetected": "2026-04-29T00:00:00.000Z",
+                "publishedDate": "2009-01-28T00:00:00.000Z"
+              },
+              {
+                "cve": "CVE-2016-0185",
+                "status": "Active",
+                "description": "Media Center in Microsoft Windows Vista SP2, Windows 7 SP1, and Windows 8.1 allows remote attackers to execute arbitrary code via a crafted Media Center link (aka .mcl) file, aka 'Windows Media Center Remote Code Execution Vulnerability.'",
+                "severity": 30,
+                "severityLevel": "High",
+                "cvss2": 9.3,
+                "cvss2Vector": "AV:N/AC:M/Au:N/C:C/I:C/A:C",
+                "cvss30": null,
+                "cvss3Vector": null,
+                "cvss31": 7.8,
+                "cvss31Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+                "cvss4": null,
+                "cvss4Vector": null,
+                "epssPercentile": 0.99132,
+                "epssProbability": 0.80235,
+                "epssScore": 0.80235,
+                "inCisaKev": true,
+                "inExploitDb": true,
+                "exploitKitExist": true,
+                "isExploitedInTheWild": true,
+                "hasAttackTechnique": false,
+                "techniqueId": null,
+                "deviceFoundOn": 17,
+                "products": 1,
+                "criticalAssetsFoundOn": 17,
+                "criticalAssetsAtRisk": 33,
+                "chokePointFoundOn": 4,
+                "firstDetected": "2025-04-03T00:00:00.000Z",
+                "publishedDate": "2016-05-11T00:00:00.000Z"
+              }
+            ],
+            "meta": {
+              "next": null
+            }
+          }
+          `}}
+  # Page 2 — fetched via nextLink cursor=page2
+  - path: /api/entityInventory/entities
+    methods: ['GET']
+    query_params:
+      cursor: 'page2'
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "awsSsmParameter-arn:aws:ssm:us-east-2:000000000001:parameter/ExampleRecovery/Credentials/i-0123456789abcdef0",
+                "accountId": "000000000001",
+                "arn": "arn:aws:ssm:us-east-2:000000000001:parameter/ExampleRecovery/Credentials/i-0123456789abcdef0",
+                "customProperties": {
+                  "domainWorkgroup": {
+                    "type": "domain",
+                    "data": "AWS/000000000001"
+                  },
+                  "ouComputer": "AWS/000000000001/us-east-2/SSM/ParameterMetadata",
+                  "ouUser": "AWS/000000000001/SSM/ParameterMetadata",
+                  "subnetInfo": "AWS_000000000001_us-east-2"
+                },
+                "disabled": false,
+                "displayName": "/ExampleRecovery/Credentials/i-0123456789abcdef0",
+                "entityType": "AwsSsmParameterEntity",
+                "name": "/ExampleRecovery/Credentials/i-0123456789abcdef0",
+                "notIncludedInAttacks": false,
+                "region": "us-east-2",
+                "ruleDisplayName": "000000000001 / /ExampleRecovery/Credentials/i-0123456789abcdef0",
+                "ssmParameterDataType": "text",
+                "ssmParameterDescription": "New local Administrator password for instance i-0123456789abcdef0",
+                "ssmParameterKeyId": "alias/aws/ssm",
+                "ssmParameterLastModifiedDate": "2021-07-28T08:11:54.200Z",
+                "ssmParameterLastModifiedUser": "arn:aws:sts::000000000001:assumed-role/ExampleSSMRoleForInstances/i-0123456789abcdef0",
+                "ssmParameterName": "/ExampleRecovery/Credentials/i-0123456789abcdef0",
+                "ssmParameterTier": "Standard",
+                "ssmParameterType": "SecureString",
+                "ssmParameterVersion": 1,
+                "status": "active",
+                "type": "awsSsmParameter",
+                "typeDisplayName": "AWS SSM Parameter",
+                "useType": "Storage",
+                "xmProviderAccount": "example-account",
+                "xmUpdateTime": "2026-05-05T21:05:15.079Z",
+                "accountName": "example-account",
+                "organizationId": "o-abc123def4",
+                "category": "Cloud",
+                "entityDetails": {
+                  "name": "/ExampleRecovery/Credentials/i-0123456789abcdef0",
+                  "id": "awsSsmParameter-arn:aws:ssm:us-east-2:000000000001:parameter/ExampleRecovery/Credentials/i-0123456789abcdef0",
+                  "isAsset": null,
+                  "subType": "awsSsmParameter",
+                  "subTypeDisplayName": "AWS SSM Parameter"
+                }
+              }
+            ],
+            "paging": {
+              "page": 1,
+              "pageSize": 2,
+              "total": 3,
+              "totalPages": 2,
+              "nextLink": null
+            },
+            "metadata": {}
+          }
+          `}}
+  # Page 1 — initial full fetch (cursor absent so it does not match Page 2 requests)
+  - path: /api/entityInventory/entities
+    methods: ['GET']
+    query_params:
+      pageSize: '2'
+      cursor: null
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "awsSsmParameter-arn:aws:ssm:us-east-1:000000000001:parameter/ExampleBuild/testKeys",
+                "accountId": "000000000001",
+                "arn": "arn:aws:ssm:us-east-1:000000000001:parameter/ExampleBuild/testKeys",
+                "customProperties": {
+                  "domainWorkgroup": {
+                    "type": "domain",
+                    "data": "AWS/000000000001"
+                  },
+                  "ouComputer": "AWS/000000000001/us-east-1/SSM/ParameterMetadata",
+                  "ouUser": "AWS/000000000001/SSM/ParameterMetadata",
+                  "subnetInfo": "AWS_000000000001_us-east-1"
+                },
+                "disabled": false,
+                "displayName": "/ExampleBuild/testKeys",
+                "entityType": "AwsSsmParameterEntity",
+                "name": "/ExampleBuild/testKeys",
+                "notIncludedInAttacks": false,
+                "region": "us-east-1",
+                "ruleDisplayName": "000000000001 / /ExampleBuild/testKeys",
+                "ssmParameterDataType": "text",
+                "ssmParameterKeyId": "alias/aws/ssm",
+                "ssmParameterLastModifiedDate": "2020-07-19T09:53:58.629Z",
+                "ssmParameterLastModifiedUser": "arn:aws:sts::000000000001:assumed-role/AWSReservedSSO_ExampleAccess_0123456789abcdef/alice.johnson@example.org",
+                "ssmParameterName": "/ExampleBuild/testKeys",
+                "ssmParameterTier": "Standard",
+                "ssmParameterType": "SecureString",
+                "ssmParameterVersion": 1,
+                "status": "active",
+                "type": "awsSsmParameter",
+                "typeDisplayName": "AWS SSM Parameter",
+                "useType": "Storage",
+                "xmProviderAccount": "example-account",
+                "xmUpdateTime": "2026-05-05T21:05:15.079Z",
+                "accountName": "example-account",
+                "organizationId": "o-abc123def4",
+                "category": "Cloud",
+                "entityDetails": {
+                  "name": "/ExampleBuild/testKeys",
+                  "id": "awsSsmParameter-arn:aws:ssm:us-east-1:000000000001:parameter/ExampleBuild/testKeys",
+                  "isAsset": null,
+                  "subType": "awsSsmParameter",
+                  "subTypeDisplayName": "AWS SSM Parameter"
+                }
+              },
+              {
+                "id": "awsSecret-/ExampleSecurity/CSPM/SensorManagement/PlatformAPICredentials",
+                "useType": "Storage",
+                "entityType": "AwsSecretEntity",
+                "accountId": "000000000002",
+                "accountName": "aws-000000000002",
+                "organizationId": "o-abc123def4",
+                "arn": "arn:aws:secretsmanager:us-east-1:000000000002:secret:/ExampleSecurity/CSPM/SensorManagement/PlatformAPICredentials-1AbCd2",
+                "xmUpdateTime": "2026-05-05T21:05:15.079Z",
+                "customProperties": {
+                  "domainWorkgroup": {
+                    "type": "domain",
+                    "data": "AWS/000000000002"
+                  },
+                  "ouComputer": "AWS/000000000002/us-east-1/SecretsManager/SecretListEntry",
+                  "ouUser": "AWS/000000000002/SecretsManager/SecretListEntry",
+                  "subnetInfo": "AWS_000000000002_us-east-1"
+                },
+                "region": "us-east-1",
+                "awsTags": [
+                  {
+                    "Key": "aws:cloudformation:stack-id",
+                    "Value": "arn:aws:cloudformation:us-east-1:000000000002:stack/StackSet-examplesecurity-SensorManagement-11111111-2222-4333-8444-555555555555/66666666-7777-4888-8999-aaaaaaaaaaaa"
+                  },
+                  {
+                    "Key": "aws:cloudformation:stack-name",
+                    "Value": "StackSet-examplesecurity-SensorManagement-11111111-2222-4333-8444-555555555555"
+                  },
+                  {
+                    "Key": "aws:cloudformation:logical-id",
+                    "Value": "ExampleSecuritySensorManagementPlatformCredentialsSecret"
+                  }
+                ],
+                "ruleDisplayName": "000000000002 / /ExampleSecurity/CSPM/SensorManagement/PlatformAPICredentials",
+                "secretDescription": "Platform API credentials used by the 1-Click sensor management orchestrator.",
+                "status": "active",
+                "type": "awsSecret",
+                "displayName": "/ExampleSecurity/CSPM/SensorManagement/PlatformAPICredentials",
+                "name": "/ExampleSecurity/CSPM/SensorManagement/PlatformAPICredentials",
+                "disabled": false,
+                "notIncludedInAttacks": false,
+                "typeDisplayName": "AWS Secret",
+                "labels": [
+                  {
+                    "id": "aws:cloudformation:stack-id: arn:aws:cloudformation:us-east-1:000000000002:stack/StackSet-examplesecurity-SensorManagement-11111111-2222-4333-8444-555555555555/66666666-7777-4888-8999-aaaaaaaaaaaa",
+                    "type": "cloud"
+                  },
+                  {
+                    "id": "aws:cloudformation:stack-name: StackSet-examplesecurity-SensorManagement-11111111-2222-4333-8444-555555555555",
+                    "type": "cloud"
+                  },
+                  {
+                    "id": "aws:cloudformation:logical-id: ExampleSecuritySensorManagementPlatformCredentialsSecret",
+                    "type": "cloud"
+                  }
+                ],
+                "tagsStr": [
+                  "aws:cloudformation:stack-id: arn:aws:cloudformation:us-east-1:000000000002:stack/StackSet-examplesecurity-SensorManagement-11111111-2222-4333-8444-555555555555/66666666-7777-4888-8999-aaaaaaaaaaaa",
+                  "aws:cloudformation:stack-name: StackSet-examplesecurity-SensorManagement-11111111-2222-4333-8444-555555555555",
+                  "aws:cloudformation:logical-id: ExampleSecuritySensorManagementPlatformCredentialsSecret"
+                ],
+                "category": "Cloud",
+                "entityDetails": {
+                  "name": "/ExampleSecurity/CSPM/SensorManagement/PlatformAPICredentials",
+                  "id": "awsSecret-/ExampleSecurity/CSPM/SensorManagement/PlatformAPICredentials",
+                  "isAsset": null,
+                  "subType": "awsSecret",
+                  "subTypeDisplayName": "AWS Secret"
+                }
+              }
+            ],
+            "paging": {
+              "page": 0,
+              "pageSize": 2,
+              "total": 3,
+              "totalPages": 2,
+              "nextLink": "/api/entityInventory/entities?cursor=page2"
+            },
+            "metadata": {}
+          }
+          `}}
+  - path: /api/scenarios/v2/scenarios/riskScore
+    methods: ['GET']
+    request_headers:
+      Authorization: "Bearer mock-access-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "resolution": 5,
+            "timeId": "timeAgo_days_30",
+            "data": {
+              "stats": {"score": 90, "grade": "A", "trend": 1},
+              "avgGraphData": [
+                {"date": "2025-12-03T00:00:00.000Z", "grade": "A", "score": 95}
+              ],
+              "scenarios": [
+                {
+                  "id": "A101",
+                  "name": "(EX) Endpoint to Servers",
+                  "grade": "B",
+                  "score": 82,
+                  "graphData": [
+                    {
+                      "campaigns": null,
+                      "fromDate": "2025-12-02T00:00:00.000Z",
+                      "grade": "A",
+                      "score": 95,
+                      "toDate": "2025-12-03T00:00:00.000Z"
+                    }
+                  ]
+                },
+                {
+                  "id": "A107",
+                  "name": "(ex)scenario-test",
+                  "grade": "C",
+                  "score": 75,
+                  "graphData": [
+                    {
+                      "campaigns": ["camp-101", "camp-102"],
+                      "fromDate": "2026-01-04T00:00:00.000Z",
+                      "grade": "C",
+                      "score": 72,
+                      "toDate": "2026-01-05T00:00:00.000Z"
+                    },
+                    {
+                      "campaigns": null,
+                      "fromDate": "2026-01-09T00:00:00.000Z",
+                      "grade": "C",
+                      "score": 74,
+                      "toDate": "2026-01-10T00:00:00.000Z"
+                    }
+                  ]
+                },
+                {
+                  "id": "A108",
+                  "name": "Edge to Internal Assets",
+                  "grade": "F",
+                  "score": 35,
+                  "graphData": []
+                },
+                {
+                  "id": "A109",
+                  "name": "Cloud Operator > Example",
+                  "grade": "B",
+                  "score": 88,
+                  "graphData": [
+                    {
+                      "campaigns": ["camp-demo-01"],
+                      "fromDate": "2026-03-31T00:00:00.000Z",
+                      "grade": "B",
+                      "score": 85,
+                      "toDate": "2026-04-01T00:00:00.000Z"
+                    },
+                    {
+                      "campaigns": null,
+                      "fromDate": "2026-04-07T00:00:00.000Z",
+                      "grade": "B",
+                      "score": 87,
+                      "toDate": "2026-04-08T00:00:00.000Z"
+                    },
+                    {
+                      "campaigns": null,
+                      "fromDate": "2026-04-14T00:00:00.000Z",
+                      "grade": "A",
+                      "score": 91,
+                      "toDate": "2026-04-15T00:00:00.000Z"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+          ` }}
+  # Device
+  - path: /api/v2/vrm/public/devices
+    methods: ['GET']
+    query_params:
+      pageSize: '2'
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "deviceId": "9000000000000000001",
+                "deviceName": "host-01",
+                "isChokePoint": true,
+                "chokePointScore": 100,
+                "chokePointLevel": "Critical",
+                "isCriticalAsset": true,
+                "lastScan": "2026-05-12T21:54:01.641Z",
+                "lastCompromised": null,
+                "deviceType": "Workstation",
+                "type": "Endpoint",
+                "products": 5,
+                "ipAddress": "192.168.1.10",
+                "subnet": "192.168.1.0/24",
+                "labels": ["lab", "example-security-test"],
+                "enrichmentLabels": ["enriched"],
+                "os": "Windows 11",
+                "domain": "corp.example.com",
+                "ou": "OU=Workstations,DC=corp,DC=example,DC=com",
+                "fqdn": "hugh.corp.example.com",
+                "criticalVulnerabilities": 2,
+                "highVulnerabilities": 5,
+                "mediumVulnerabilities": 10,
+                "lowVulnerabilities": 3,
+                "unknownVulnerabilities": 0,
+                "maxCvssV2": 8,
+                "maxCvssV3": 9.1,
+                "maxCvssV31": 8.8,
+                "maxCvssV4": 7.2,
+                "enitityVulnerabilities": 1,
+                "affectedEntities": 4,
+                "criticalAssetsAtRisk": 2,
+                "riskScore": 75,
+                "apps": [
+                  {
+                    "name": "Example Product",
+                    "vendor": "VendorCo",
+                    "version": "1.2.3",
+                    "deviceFoundOn": 2,
+                    "chokePointFoundOn": "1",
+                    "affectedCriticalAssets": 0,
+                    "productsCriticalAssetsAtRisk": 1,
+                    "productVulnerabilities": 3,
+                    "activeCves": ["CVE-2023-0001"],
+                    "closedCves": [],
+                    "productOperatingSystems": ["Windows"],
+                    "activeCvesSafeVersion": [
+                      {"cve": "CVE-2023-0001", "safeVersion": "2.0.0"}
+                    ]
+                  }
+                ]
+              },
+              {
+                "deviceId": "90000000000000000002",
+                "deviceName": "server-02",
+                "isChokePoint": true,
+                "chokePointScore": 90,
+                "chokePointLevel": "Critical",
+                "isCriticalAsset": true,
+                "lastScan": "2026-05-12T21:54:02.136Z",
+                "lastCompromised": "2025-11-01T08:00:00.000Z",
+                "deviceType": "Server",
+                "type": "Infrastructure",
+                "products": 12,
+                "ipAddress": "10.0.0.50",
+                "subnet": "10.0.0.0/24",
+                "labels": ["backup"],
+                "enrichmentLabels": [],
+                "os": "Ubuntu 22.04",
+                "domain": "infra.example.com",
+                "ou": "OU=Servers,DC=infra,DC=example,DC=com",
+                "fqdn": null,
+                "criticalVulnerabilities": 0,
+                "highVulnerabilities": 2,
+                "mediumVulnerabilities": 6,
+                "lowVulnerabilities": 1,
+                "unknownVulnerabilities": 0,
+                "maxCvssV2": 7,
+                "maxCvssV3": null,
+                "maxCvssV31": 7.5,
+                "maxCvssV4": null,
+                "enitityVulnerabilities": 0,
+                "affectedEntities": 2,
+                "criticalAssetsAtRisk": 0,
+                "riskScore": 42,
+                "apps": [
+                  {
+                    "name": "OpenSSH",
+                    "vendor": "OpenBSD",
+                    "version": "8.9p1",
+                    "deviceFoundOn": 1,
+                    "chokePointFoundOn": "4",
+                    "affectedCriticalAssets": 1,
+                    "productsCriticalAssetsAtRisk": 0,
+                    "productVulnerabilities": 1,
+                    "activeCves": ["CVE-2024-6387"],
+                    "closedCves": ["CVE-2000-0001"],
+                    "productOperatingSystems": ["Linux"],
+                    "activeCvesSafeVersion": [
+                      {"cve": "CVE-2024-6387", "safeVersion": "9.6p1"}
+                    ]
+                  }
+                ]
+              }
+            ],
+            "meta": {
+              "next": null
+            }
+          }
+          `}}
+  # Product
+  - path: /api/v2/vrm/public/products
+    methods: ['GET']
+    query_params:
+      pageSize: '20'
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "affectedCriticalAssets": 2,
+                "chokePointsFoundOn": 0,
+                "devicesFoundOn": 2,
+                "productName": "wget",
+                "productOperatingSystems": ["Linux sles 12.5 Server"],
+                "productVulnerabilities": 1,
+                "productsCriticalAssetsAtRisk": 0,
+                "vendor": null
+              },
+              {
+                "affectedCriticalAssets": 26,
+                "chokePointsFoundOn": 6,
+                "devicesFoundOn": 26,
+                "productName": ".net framework",
+                "productOperatingSystems": [
+                  "Windows 10 ver 1909",
+                  "Windows Server 2012 R2",
+                  "Windows 7 SP 1.0",
+                  "Windows Server 2012 R2 (DC)",
+                  "Windows Server 2019 (DC)"
+                ],
+                "productVulnerabilities": 71,
+                "productsCriticalAssetsAtRisk": 38,
+                "vendor": "microsoft"
+              },
+              {
+                "affectedCriticalAssets": 1,
+                "chokePointsFoundOn": 1,
+                "devicesFoundOn": 1,
+                "productName": "ACME Secure Agent",
+                "productOperatingSystems": ["Windows Server 2019 (DC)", "Ubuntu 22.04"],
+                "productVulnerabilities": 4243,
+                "productsCriticalAssetsAtRisk": 12,
+                "vendor": "ACME"
+              }
+            ],
+            "meta": {
+              "next": null
+            }
+          }
+          `}}

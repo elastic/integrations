@@ -38,7 +38,7 @@ processors:
         # Beginning with version 6.3, Firepower Threat Defense provides the option to enable timestamp as per RFC 5424.
         FTD_DATE: "(?:%{TIMESTAMP_ISO8601}|%{ASA_DATE})"
         ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ:_temp_.tz})?"
-        TZ: "(?:[APMCE][SD]T|UTC)"
+        TZ: "[A-Z]{1,7}([+-]\\d{1,2}|[+-]\\d{2}:\\d{2})?"
         TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:_temp_.tz}?"
         ISO8601_TIMEZONE: "(?:Z|[+-]%{HOUR}(?::?%{MINUTE}))"
         PROCESS: "(?:[^%\\s:\\[]+)"
@@ -55,6 +55,7 @@ processors:
         - '%{GREEDYDATA:_temp_.full_message}'
       pattern_definitions:
         ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ:_temp_.tz})?"
+        TZ: "[A-Z]{1,7}([+-]\\d{1,2}|[+-]\\d{2}:\\d{2})?"
   - script:
       lang: painless
       tag: script_log_syslog
@@ -428,7 +429,7 @@ processors:
       - "AAA user %{AUTH} Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: server = %{IPORHOST:destination.address}(%{SPACE})?: user = ?(%{CISCO_USER:source.user.name}|)(%{SPACE})?: user IP = %{IPORNONE}"
       pattern_definitions:
         AUTH: (authentication|authorization)
-        REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified|Account has been locked out)
+        REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified|Account has been locked out|Users account has expired)
         USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
         IPORNONE: (%{IP:source.address}|None)
@@ -467,7 +468,7 @@ processors:
       field: "message"
       description: "113015"
       patterns:
-      - "AAA user authentication Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}(%{SPACE})?: [Uu]ser IP = %{IP:source.address}"
+      - "AAA user authentication Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{DATA:source.user.name}(%{SPACE})?: [Uu]ser IP = %{IP:source.address}"
       pattern_definitions:
         REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified|User was not found)
         USERNAME: "[a-zA-Z0-9._'-]+"
@@ -582,12 +583,11 @@ processors:
       field: "message"
       description: "305012"
       patterns:
-        - Teardown %{DATA} %{NOTSPACE:network.transport} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\s*\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{IP:destination.address}/%{NUMBER:destination.port} duration %{DURATION:_temp_.duration_hms}
+        - Teardown %{DATA} %{NOTSPACE:network.transport} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port}(\s*\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port} duration %{DURATION:_temp_.duration_hms}
       pattern_definitions:
         USERNAME: "[^@$]*"
         NOTCOLON: "[^:]*"
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
-        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(%{HOSTNAME}\\)?(?:%{USERNAME})\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?(?:%{NUMBER}:%{DATA})?))
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
   - grok:
@@ -640,7 +640,7 @@ processors:
       field: "message"
       description: "305011"
       patterns:
-        - Built %{NOTSPACE} %{NOTSPACE:network.transport} translation from %{NOTSPACE:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\(%{NOTSPACE:source.user.name}\))? to %{NOTSPACE:_temp_.cisco.destination_interface}:%{IP:destination.address}/%{NUMBER:destination.port}
+        - Built %{NOTSPACE} %{NOTSPACE:network.transport} translation from %{NOTSPACE:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port}(\(%{NOTSPACE:source.user.name}\))? to %{NOTSPACE:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port}
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313001'"
       tag: parse_313001
@@ -692,8 +692,8 @@ processors:
       field: "message"
       description: "315011"
       patterns:
-        - 'SSH session from %{IP:source.ip} on interface %{NOTSPACE:_temp_.cisco.source_interface} for user %{CISCO_USER} disconnected by SSH server, reason: %{GREEDYDATA:event.reason}'
-        - 'SSH session from %{IP:source.ip} on interface %{NOTSPACE:_temp_.cisco.source_interface} for user %{CISCO_USER} terminated normally'
+        - 'SSH session from (?:%{IP:source.ip} )?on interface %{NOTSPACE:_temp_.cisco.source_interface} for user %{CISCO_USER} disconnected by SSH server, reason: %{GREEDYDATA:event.reason}'
+        - 'SSH session from (?:%{IP:source.ip} )?on interface %{NOTSPACE:_temp_.cisco.source_interface} for user %{CISCO_USER} terminated normally'
       pattern_definitions:
         CISCO_USER: '\"?(?:\*{5}|%{USERNAME:source.user.name})\"?'
   - dissect:
@@ -1092,6 +1092,7 @@ processors:
       tag: parse_725002
       patterns:
         - '^Device completed SSL handshake with %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{NOTSPACE:source.port} to %{NOTSPACE:destination.address}/%{NOTSPACE:destination.port} for %{NOTSPACE:_temp_.cisco.tls_version}'
+        - '^Device completed SSL handshake with %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{NOTSPACE:source.port}$'
   - grok:
       field: message
       if: "ctx._temp_.cisco.message_id == '725007'"
@@ -1137,14 +1138,18 @@ processors:
       tag: parse_737016
       patterns:
         - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, Freeing local pool %{NOTSPACE:_temp_.cisco.pool_name} address %{NOTSPACE:_temp_.cisco.pool_address}$'
+        - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, Freeing local pool address %{NOTSPACE:_temp_.cisco.pool_address}$'
         - '^IPAA: Freeing local pool %{NOTSPACE:_temp_.cisco.pool_name} address %{NOTSPACE:_temp_.cisco.pool_address}$'
   - grok:
       field: message
       if: "ctx._temp_.cisco.message_id == '737026'"
       tag: parse_737026
-      patterns:
+      patterns: 
+        - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, Client assigned from local pool %{IP:_temp_.cisco.pool_address}$'
         - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, Client assigned %{NOTSPACE:_temp_.cisco.pool_address} from local pool %{NOTSPACE:_temp_.cisco.pool_name}$'
         - '^IPAA: Client assigned %{NOTSPACE:_temp_.cisco.pool_address} from local pool %{NOTSPACE:_temp_.cisco.pool_name}$'
+        - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, Client assigned %{NOTSPACE:_temp_.cisco.pool_address} from local pool$'
+        - '^IPAA: Client assigned %{NOTSPACE:_temp_.cisco.pool_address} from local pool$'
   - grok:
       field: message
       if: "ctx._temp_.cisco.message_id == '737034'"
@@ -1220,7 +1225,7 @@ processors:
       tag: parse_750002
       field: "message"
       patterns:
-        - "Local:%{IP:source.address}:%{NUMBER:source.port} Remote:%{IP:destination.address}:%{NUMBER:destination.port} Username:%{DATA:user.name} %{GREEDYDATA:event.reason}"
+        - "Local:%{IPORHOST:source.address}:%{NUMBER:source.port} Remote:%{IPORHOST:destination.address}:%{NUMBER:destination.port} Username:%{DATA:user.name} %{GREEDYDATA:event.reason}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '713120'"
       tag: parse_713120
@@ -1244,7 +1249,7 @@ processors:
       tag: parse_750003
       field: "message"
       patterns:
-        - "Local:%{IP:source.address}:%{NUMBER:source.port} Remote:%{IP:destination.address}:%{NUMBER:destination.port} Username:%{DATA:user.name} %{GREEDYDATA:event.reason}"
+        - "Local:%{IPORHOST:source.address}:%{NUMBER:source.port} Remote:%{IPORHOST:destination.address}:%{NUMBER:destination.port} Username:%{DATA:user.name} %{GREEDYDATA:event.reason}"
   - grok:
       if: '["713905", "713904", "713906", "713902", "713901"].contains(ctx._temp_.cisco.message_id)'
       tag: parse_713901-713906
@@ -3201,6 +3206,12 @@ processors:
       field: related.ip
       value: "{{{destination.nat.ip}}}"
       if: "ctx?.destination?.nat?.ip != null"
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_pool_address
+      field: related.ip
+      value: "{{{cisco.asa.pool_address}}}"
+      if: "ctx?.cisco?.asa?.pool_address != null"
       allow_duplicates: false
   - append:
       tag: append_related_user_970ac916

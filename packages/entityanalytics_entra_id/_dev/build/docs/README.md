@@ -66,6 +66,8 @@ The integration periodically contacts Microsoft Entra ID using the Graph API, re
 
 Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations will send the entire list of users and devices in state, along with write markers to indicate the start and end of the synchronization event. Incremental updates will only send data for changed users and devices during that event. Changes on a user or device can come in many forms, whether it be a change to the user or device metadata, a user/device was added or deleted, or group membership was changed (either direct or transitive). By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
 
+This integration provides an **asset inventory**, a point-in-time snapshot of which users and devices exist and their current properties. It does not provide an audit trail of who changed what, or when. If you need to track administrative changes to Entra ID objects (user modifications, deletions, group membership changes by an administrator, etc.), use the [Azure integration's](https://docs.elastic.co/integrations/azure) audit logs data stream, which collects [Entra ID audit logs](https://learn.microsoft.com/en-us/entra/identity/monitoring-health/concept-audit-logs) via Event Hub.
+
 ## Sample Events
 
 A user document:
@@ -73,9 +75,6 @@ A user document:
 ```json
 {
   "@timestamp": "2022-11-04T09:57:19.786056-05:00",
-  "event": {
-    "action": "user-discovered"
-  },
   "azure_ad": {
     "userPrincipalName": "example.user@example.com",
     "mail": "example.user@example.com",
@@ -112,9 +111,6 @@ A device document:
 ```json
 {
   "@timestamp": "2022-11-04T09:57:19.786056-05:00",
-  "event": {
-    "action": "device-discovered"
-  },
   "azure_ad": {
     "accountEnabled": true,
     "displayName": "DESKTOP-LETW452G",

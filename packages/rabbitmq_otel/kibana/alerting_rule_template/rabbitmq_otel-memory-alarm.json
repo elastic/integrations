@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `rabbitmq.node.mem_alarm > 0`. The node has raised the memory alarm \u2014 producers are blocked.",
     "name": "[RabbitMQ OTel] Memory alarm triggered",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "rabbitmq_otel-nodes"
+        },
+        {
+          "id": "rabbitmq_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## RabbitMQ memory alarm triggered\n\n### What fired\n`rabbitmq.node.mem_alarm > 0` during the window.\n\n### Why it matters\nWhen memory use exceeds the configured watermark, RabbitMQ blocks publishers. Publishers will appear to hang until memory is released.\n\n### Triage\n1. Check queue length and memory per queue.\n2. Look for unacked messages holding memory.\n\n### Remediation\n- Drain large queues / kill stuck consumers.\n- Raise `vm_memory_high_watermark`.\n\n### Tuning\n- Always P1.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-rabbitmqreceiver.otel-default\n// Memory alarm: when triggered (1), producers are blocked\n// Requires node-level metrics enabled in receiver config\n| WHERE metrics.rabbitmq.node.mem_alarm IS NOT NULL\n  AND metrics.rabbitmq.node.mem_alarm > 0\n| STATS alarm_count = COUNT(*)\n  BY resource.attributes.rabbitmq.node.name\n| WHERE alarm_count > 0"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

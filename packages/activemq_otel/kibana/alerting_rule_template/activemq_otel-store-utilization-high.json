@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the broker persistent store utilization exceeds 90% (`activemq.store.utilization > 0.90`). Above this level the broker may halt accepting new persistent messages.",
     "name": "[ActiveMQ OTel] Persistent store utilization high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -16,13 +17,28 @@
     "alertDelay": {
       "active": 2
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "activemq_otel-broker-health"
+        },
+        {
+          "id": "activemq_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## ActiveMQ persistent store utilization high\n\n### What fired\n`activemq.store.utilization` averaged above 0.90 over the evaluation window.\n\n### Why it matters\nThe persistent store (KahaDB or JDBC-backed) is the durable buffer for messages that must survive broker restarts. When it nears capacity, ActiveMQ stops accepting new persistent messages \u2014 producers using `DeliveryMode.PERSISTENT` will block or fail.\n\n### Triage\n1. Broker Health dashboard: check trends on `activemq.store.utilization` and absolute `activemq.store.limit` / `activemq.disk.store_usage`.\n2. Is the issue cluster-wide (data growth) or isolated (slow consumer leaving deep queues)?\n3. Look at queue depth per destination \u2014 most often a handful of queues hold most of the persisted data.\n4. Check for paused/stopped consumers that are preventing message dequeue.\n\n### Remediation\n- Clear backlog on deep queues by restoring consumer capacity.\n- Expand the configured store size (`storeUsage/limit`).\n- Add broker storage or rotate to tiered storage backends.\n\n### Tuning\n- `> 0.90` with a 15-minute window is conservative. Tighten to 0.80 for deployments with long response times on provisioning new storage.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "TS metrics-activemq.otel-*\n// Store utilization is a gauge (0–1 ratio)\n| WHERE activemq.store.utilization IS NOT NULL\n| STATS max_util = MAX(AVG_OVER_TIME(activemq.store.utilization)) BY activemq.broker.name, host.name\n// Alert when persistent store exceeds 90%; broker may halt accepting new persistent messages\n| WHERE max_util > 0.90\n| SORT max_util DESC\n| LIMIT 10"
+        "esql": "TS metrics-activemq.otel-*\n// Store utilization is a gauge (0\u20131 ratio)\n| WHERE activemq.store.utilization IS NOT NULL\n| STATS max_util = MAX(AVG_OVER_TIME(activemq.store.utilization)) BY activemq.broker.name, host.name\n// Alert when persistent store exceeds 90%; broker may halt accepting new persistent messages\n| WHERE max_util > 0.90\n| SORT max_util DESC\n| LIMIT 10"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

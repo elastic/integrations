@@ -4,9 +4,15 @@ ESET PROTECT enables you to manage ESET products on workstations and servers in 
 
 ## Data streams
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+
 The ESET PROTECT integration collects three types of logs: Detection, Device Task and Event.
 
-**[Detection](https://help.eset.com/protect_cloud/en-US/admin_ct.html?threats.html)** is used to retrieve detections via the **Incident Management - List detections** ([v1](https://help.eset.com/eset_connect/en-US/incident_management_v1_detections_get.html) & [v2](https://help.eset.com/eset_connect/en-US/incident_management_v2_detections_get.html) endpoints).
+**[Detection](https://help.eset.com/protect_cloud/en-US/admin_ct.html?threats.html)** is used to retrieve detections via the [Incident Management - List detections v1](https://help.eset.com/eset_connect/en-US/incident_management_v1_detections_get.html) endpoint.
 
 **[Device Task](https://help.eset.com/protect_cloud/en-US/admin_ct.html?admin_ct.html)** is used to retrieve device tasks via the [Automation - List tasks](https://help.eset.com/eset_connect/en-US/automation_v1_device_tasks_get.html) endpoint.
 
@@ -23,8 +29,6 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 1. [Create API User Account](https://help.eset.com/eset_connect/en-US/create_api_user_account.html)
 2. Retrieve the username and password generated during the creation of an API user account.
 3. Retrieve the region from the ESET Web Console URL.
-
-**NOTE**: Detection logs can be collected using the v2 endpoint only after your API user has signed in to your ESET Cloud Office Security instance at least once; this ensures the account is recognized. Note that the v2 endpoint is not supported in the Japanese region.
 
 ### Collect data from ESET PROTECT via Syslog
 

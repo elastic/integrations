@@ -3,9 +3,13 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when an IIS application pool is not in the Started state (`iis.application_pool.state != 3`). Pools in Stopped/Starting/Stopping/Pausing/Paused states cannot serve requests.",
     "name": "[IIS OTel] Application pool not running",
     "ruleTypeId": ".es-query",
-    "tags": ["observability", "iis"],
+    "tags": [
+      "observability",
+      "iis"
+    ],
     "schedule": {
       "interval": "5m"
     },
@@ -17,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "iis_otel-sites"
+        },
+        {
+          "id": "iis_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## IIS application pool not running\n\n### What fired\n`iis.application_pool.state` was non-3 (i.e. not Started) on at least one pool during the window.\n\n### Why it matters\nAn application pool that is not Started cannot host websites or applications. Requests routed to that pool fail with HTTP 503 (Service Unavailable). Common causes include application crashes, rapid-fail protection trips, or operator-driven stops.\n\n### Triage\n1. Identify the affected pool(s) and host(s) from the alert context.\n2. Check the IIS event log for rapid-fail protection events and application crashes.\n3. Inspect the worker process (`w3wp.exe`) crash logs in Windows Event Viewer (Application log).\n4. Verify whether the pool was stopped intentionally (deploys, maintenance).\n\n### Remediation\n- Restart the application pool via `Restart-WebAppPool` or IIS Manager.\n- Disable rapid-fail protection only after fixing the underlying crashes.\n- Address the application bug causing repeated worker process crashes.\n\n### Tuning\n- Fires on any non-Started state. To exclude planned maintenance, suppress with maintenance windows or filter specific pool names.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE `iis.application_pool.state` IS NOT NULL\n| WHERE `iis.application_pool.state` != 3\n| STATS last_state = MAX(`iis.application_pool.state`) BY iis.application_pool, host.name\n| SORT last_state ASC\n| LIMIT 20"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

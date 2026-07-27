@@ -1,0 +1,44 @@
+{
+  "attributes": {
+    "name": "[Oracle OTel] Hard parse ratio 99.5% rolling 30 days",
+    "description": "This SLO tracks the hard parse ratio (hard_parses/parse_calls) of the Oracle Database instance via OTel metrics. High hard parse ratios indicate latch contention, CPU spikes, and inefficient SQL reuse. The SLO ensures 99.5% of 1-minute intervals maintain a hard parse ratio below 10% over a rolling 30-day period.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"oracledbreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "max", "field": "oracledb.hard_parses"},
+            {"name": "B", "aggregation": "min", "field": "oracledb.hard_parses"},
+            {"name": "C", "aggregation": "max", "field": "oracledb.parse_calls"},
+            {"name": "D", "aggregation": "min", "field": "oracledb.parse_calls"}
+          ],
+          "equation": "(A-B)/(C-D)",
+          "comparator": "LT",
+          "threshold": 0.10
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": ["oracle", "otel"],
+    "groupBy": ["oracledb.instance.name"],
+    "artifacts": {
+      "dashboards": [
+        {"id": "oracle_otel-sql-execution"}
+      ]
+    }
+  },
+  "id": "oracle_otel-hard-parse-ratio-99.5-Rolling30Days",
+  "type": "slo_template"
+}

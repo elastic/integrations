@@ -1,0 +1,186 @@
+rules:
+  # Page 0: first alert (sorted newest-first by the API)
+  - path: /v1/alerts
+    methods: ['GET']
+    query_params:
+      page: "0"
+      page_size: "1"
+    request_headers:
+      X-Api-Key:
+        - "test-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "alerts": [
+              {
+                "id": "TST-1001",
+                "entity": "http://phishing-domain.example.com",
+                "brand": "test_brand",
+                "queue_state": "doppel_review",
+                "entity_state": "active",
+                "severity": "high",
+                "product": "domains",
+                "platform": "domains",
+                "source": "Doppel Scanner",
+                "notes": "",
+                "created_at": "2025-01-15T10:00:00.000000",
+                "screenshot_url": null,
+                "last_activity_timestamp": "2025-01-15T12:30:00.000000",
+                "score": null,
+                "message": null,
+                "assignee": null,
+                "doppel_link": "https://app.doppel.com/alerts/TST-1001",
+                "uploaded_by": "Doppel Scanner",
+                "entity_content": {
+                  "root_domain": {
+                    "domain": "phishing-domain.example.com",
+                    "registrar": "Example Registrar",
+                    "ip_address": "198.51.100.1",
+                    "country_code": "US",
+                    "hosting_provider": "Example Hosting",
+                    "contact_email": null,
+                    "mx_records": [],
+                    "nameservers": []
+                  }
+                },
+                "audit_logs": [
+                  {
+                    "timestamp": "2025-01-15T10:00:00.000000",
+                    "type": "alert_create",
+                    "value": "needs_review",
+                    "changed_by": "system",
+                    "metadata": {}
+                  }
+                ],
+                "tags": []
+              }
+            ],
+            "metadata": {
+              "page": 0,
+              "total_pages": 2
+            }
+          }
+  # Page 1: second alert (older)
+  - path: /v1/alerts
+    methods: ['GET']
+    query_params:
+      page: "1"
+      page_size: "1"
+    request_headers:
+      X-Api-Key:
+        - "test-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "alerts": [
+              {
+                "id": "TST-1002",
+                "entity": "http://fake-store.example.net",
+                "brand": "test_brand",
+                "queue_state": "actioned",
+                "entity_state": "down",
+                "severity": "medium",
+                "product": "domains",
+                "platform": "domains",
+                "source": "API Upload",
+                "notes": "Confirmed takedown",
+                "created_at": "2025-01-14T08:00:00.000000",
+                "screenshot_url": null,
+                "last_activity_timestamp": "2025-01-15T09:00:00.000000",
+                "score": 75,
+                "message": null,
+                "assignee": "analyst@example.com",
+                "doppel_link": "https://app.doppel.com/alerts/TST-1002",
+                "uploaded_by": "admin@example.com",
+                "entity_content": {
+                  "root_domain": {
+                    "domain": "fake-store.example.net",
+                    "registrar": null,
+                    "ip_address": null,
+                    "country_code": null,
+                    "hosting_provider": null,
+                    "contact_email": null,
+                    "mx_records": [],
+                    "nameservers": []
+                  }
+                },
+                "audit_logs": [
+                  {
+                    "timestamp": "2025-01-15T09:00:00.000000",
+                    "type": "queue_state",
+                    "value": "actioned",
+                    "changed_by": "analyst@example.com",
+                    "metadata": {}
+                  },
+                  {
+                    "timestamp": "2025-01-14T08:00:00.000000",
+                    "type": "alert_create",
+                    "value": "needs_review",
+                    "changed_by": "admin@example.com",
+                    "metadata": {}
+                  }
+                ],
+                "tags": [{"name": "phishing"}, {"name": "takedown"}]
+              }
+            ],
+            "metadata": {
+              "page": 1,
+              "total_pages": 2
+            }
+          }
+  # Regression guard: if pagination overshoots, return page 0 data again
+
+  # to create an infinite loop that causes hit_count to fail.
+  - path: /v1/alerts
+    methods: ['GET']
+    query_params:
+      page: "2"
+      page_size: "1"
+    request_headers:
+      X-Api-Key:
+        - "test-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "alerts": [
+              {
+                "id": "TST-REGRESSION",
+                "entity": "http://should-not-appear.example.com",
+                "brand": "test_brand",
+                "queue_state": "doppel_review",
+                "entity_state": "active",
+                "severity": "low",
+                "product": "domains",
+                "platform": "domains",
+                "source": "Regression",
+                "notes": "",
+                "created_at": "2025-01-01T00:00:00.000000",
+                "screenshot_url": null,
+                "last_activity_timestamp": "2025-01-01T00:00:00.000000",
+                "score": null,
+                "message": null,
+                "assignee": null,
+                "doppel_link": "https://app.doppel.com/alerts/TST-REGRESSION",
+                "uploaded_by": "regression",
+                "entity_content": {},
+                "audit_logs": [],
+                "tags": []
+              }
+            ],
+            "metadata": {
+              "page": 0,
+              "total_pages": 2
+            }
+          }

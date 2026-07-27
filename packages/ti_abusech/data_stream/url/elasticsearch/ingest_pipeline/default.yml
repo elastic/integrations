@@ -35,12 +35,6 @@ processors:
       tag: set_event_type_97bb78b9
       field: event.type
       value: [indicator]
-  - set:
-      tag: set_labels_interval_ca65b42c
-      field: labels.interval
-      copy_from: _conf.interval
-      if: ctx._conf?.interval != null && ctx._conf.interval != ''
-
   ######################
   # General ECS fields #
   ######################
@@ -160,28 +154,31 @@ processors:
   ######################
   #   IOC expiration   #
   ######################
-  # The `AbuseCH Active URL API` ingests all active indicators during every `Interval`. So, all indicators are expired every `Interval` so new indicators are ingested.
   - script:
       lang: painless
       tag: script-default-deleted_at
-      if: ctx.abusech?.url?.deleted_at == null && (ctx.labels.interval instanceof String)
-      description: Indicator are expired after every `labels.interval` since `event.ingested`. This script adds a default `abusech.url.deleted_at` field to allow indicator expiration at the transform.
+      if: ctx.abusech?.url?.deleted_at == null
+      description: Indicator expiration is computed as last_seen (or first_seen) + ioc_expiration_duration (default 90d). Falls back to 90d when the setting is absent, e.g. during upgrade from 3.x.
       source: >
-        def dur = ctx.labels.interval;
+        def dur = (ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration instanceof String && ctx._conf.ioc_expiration_duration != '') ? ctx._conf.ioc_expiration_duration : '90d';
         ZonedDateTime _tmp_deleted_at;
-        ZonedDateTime _tmp_created_at = ZonedDateTime.parse(ctx.event.ingested);
-        long max_ingest_time_in_sec = 30L;
-        long transform_max_age_in_min = 1L;
+        ZonedDateTime _tmp_updated_at;
+        if (ctx.threat.indicator.last_seen != null) {
+          _tmp_updated_at = ZonedDateTime.parse(ctx.threat.indicator.last_seen);
+        }
+        else {
+          _tmp_updated_at = ZonedDateTime.parse(ctx.threat.indicator.first_seen);
+        }
         String time_unit = dur.substring(dur.length() -  1, dur.length());
         String time_value = dur.substring(0, dur.length() - 1);
         if (time_unit == 'd') {
-          _tmp_deleted_at = _tmp_created_at.plusDays(Long.parseLong(time_value));
+          _tmp_deleted_at = _tmp_updated_at.plusDays(Long.parseLong(time_value));
         } else if (time_unit == 'h') {
-          _tmp_deleted_at = _tmp_created_at.plusHours(Long.parseLong(time_value));
+          _tmp_deleted_at = _tmp_updated_at.plusHours(Long.parseLong(time_value));
         } else if (time_unit == 'm') {
-          _tmp_deleted_at = _tmp_created_at.plusMinutes(Long.parseLong(time_value));
+          _tmp_deleted_at = _tmp_updated_at.plusMinutes(Long.parseLong(time_value));
         } else {
-          _tmp_deleted_at = _tmp_created_at.plusDays(90L);
+          _tmp_deleted_at = _tmp_updated_at.plusDays(90L);
           if (ctx.error == null) {
             ctx.error = new HashMap();
           }
@@ -190,10 +187,6 @@ processors:
           }
           ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
         }
-        // Subtract transform's retention max_age and ingest time so that indicators are expire time slightly before next interval.
-        // This ensures the indicator is deleted when the next interval starts.
-        
-        _tmp_deleted_at = _tmp_deleted_at.minusMinutes(transform_max_age_in_min).minusSeconds(max_ingest_time_in_sec);
         ctx.abusech.url.deleted_at = _tmp_deleted_at;
   - date:
       field: abusech.url.deleted_at
@@ -202,6 +195,12 @@ processors:
       formats:
         - ISO8601
         - UNIX
+      if: ctx.abusech?.url?.deleted_at != null
+  - rename:
+      field: _conf.ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration
+      target_field: abusech.url.ioc_expiration_duration
+      ignore_missing: true
   ######################
   # Cleanup processors #
   ######################

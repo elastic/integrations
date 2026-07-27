@@ -1,0 +1,43 @@
+{
+  "id": "apache_otel-performance-high-server-load",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "description": "Alerts when the 1-minute load average exceeds 0.8 (interpreted as a normalized-per-core value) \u2014 a sign that the host is saturated and request performance is degrading.",
+    "name": "[Apache OTel] High server load",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "Apache",
+      "OTEL",
+      "Performance"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Apache high server load (performance)\n\n### What fired\n`metrics.apache.load.1` averaged above 0.8 during the evaluation window.\n\n### Why it matters\nThis variant is interpreted as normalized load. Values above 0.8 indicate the host is close to saturation; above 1.0 means runnable processes are queuing for CPU. Either way, request processing time is likely degrading.\n\n### Triage\n1. Overview dashboard: confirm trend and compare against `apache.load.5`/`.15`.\n2. Check worker utilization \u2014 busy/idle ratio.\n3. Review `apache.cpu.time` (user vs system) and `apache.request.time` rate.\n4. Cross-check with host-level metrics to rule out non-Apache processes driving the load.\n\n### Remediation\n- Scale horizontally, optimise handlers, or reduce non-Apache workload on the host.\n\n### Tuning\n- `> 0.8` is a generic normalized threshold. If your deployment expects a higher steady-state load, raise this value.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the Apache server load (1-minute average) exceeds the threshold.\n// High server load indicates the server is under heavy demand and may experience performance degradation.\n// The alert is grouped by host name.\n// You can adjust the threshold value by modifying the server_load in the WHERE clause (default: > 0.8 = 80%).\nFROM metrics-apachereceiver.otel-*\n| STATS server_load = AVG(metrics.apache.load.1) BY resource.attributes.host.name\n| WHERE server_load IS NOT NULL AND server_load > 0.8\n| EVAL server_load = ROUND(server_load, 3)\n| KEEP resource.attributes.host.name, server_load\n| SORT server_load DESC"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

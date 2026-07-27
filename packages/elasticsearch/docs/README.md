@@ -273,6 +273,88 @@ NOTE: Configure the `var.paths` setting to point to JSON logs.
 | trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
 
 
+### Querylog
+
+Collects [query logs](https://www.elastic.co/docs/deploy-manage/monitor/logging-configuration/query-logs) emitted by Elasticsearch 9.4+.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| auth.type | Authentication type for the query request | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| elasticsearch.cluster.name | Name of the cluster | keyword |
+| elasticsearch.cluster.uuid | UUID of the cluster | keyword |
+| elasticsearch.component | Elasticsearch component from where the log event originated | keyword |
+| elasticsearch.index.id | Index id | keyword |
+| elasticsearch.index.name | Index name | keyword |
+| elasticsearch.node.id | ID of the node | keyword |
+| elasticsearch.node.name | Name of the node | keyword |
+| elasticsearch.parent.node.id | Parent node id, present together with parent task id | keyword |
+| elasticsearch.parent.task.id | Parent task id when the task has a parent | keyword |
+| elasticsearch.querylog.clusters.failed | Failed cluster count when present in the cluster map | long |
+| elasticsearch.querylog.clusters.partial | Partial cluster count when present in the cluster map | long |
+| elasticsearch.querylog.clusters.remote_count | Number of remote clusters or distinct remote aliases | long |
+| elasticsearch.querylog.clusters.remotes | Remote cluster aliases when remotes exist (DSL/ES&#124;QL/EQL) | keyword |
+| elasticsearch.querylog.clusters.running | Running cluster count when present in the cluster map | long |
+| elasticsearch.querylog.clusters.skipped | Skipped cluster count when present in the cluster map | long |
+| elasticsearch.querylog.clusters.successful | Successful cluster count when present in the cluster map | long |
+| elasticsearch.querylog.clusters.total | Total cluster entries in the map (DSL and ES&#124;QL only; not EQL) | long |
+| elasticsearch.querylog.dsl.total_count | Total hits from TotalHits (DSL only, SearchLogProducer) | long |
+| elasticsearch.querylog.dsl.total_count_partial | True when total hit relation is not EQUAL_TO | boolean |
+| elasticsearch.querylog.esql.profile.analysis.took | ES&#124;QL profile analysis phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.dependency_resolution.took | ES&#124;QL profile dependency resolution phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.parsing.took | ES&#124;QL profile parsing phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.planning.took | ES&#124;QL profile planning phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.preanalysis.took | ES&#124;QL profile preanalysis phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.query.took | ES&#124;QL profile query phase duration in nanoseconds | long |
+| elasticsearch.querylog.has_aggregations | True if the search response has aggregations (DSL) | boolean |
+| elasticsearch.querylog.indices | Indices involved (DSL, ES&#124;QL when response present, EQL). Not emitted by SqlLogProducer. | keyword |
+| elasticsearch.querylog.is_remote | True when SearchRequest#getLocalClusterAlias() is set (DSL remote-cluster request) | boolean |
+| elasticsearch.querylog.is_system | True if all resolved indices match the system-index predicate (QueryLogger); omitted when SQL has no indices | boolean |
+| elasticsearch.querylog.query | Query text (DSL JSON, ES&#124;QL, SQL, or EQL) | keyword |
+| elasticsearch.querylog.result_count | Number of rows or hits returned (clamped to int where applicable) | long |
+| elasticsearch.querylog.shards.failed | Failed shards (only emitted if count \> 0) | long |
+| elasticsearch.querylog.shards.skipped | Skipped shards (only emitted if count \> 0) | long |
+| elasticsearch.querylog.shards.successful | Successful shard count when shardInfo() is present | long |
+| elasticsearch.querylog.timed_out | True when the request timed out (e.g. DSL SearchResponse, EQL timeout) | boolean |
+| elasticsearch.querylog.took | Duration in nanoseconds | long |
+| elasticsearch.querylog.took_millis | Duration in milliseconds | long |
+| elasticsearch.querylog.type | Query kind: dsl, esql, sql, or eql | keyword |
+| elasticsearch.shard.id | Id of the shard | keyword |
+| elasticsearch.task.id | Task id for the query task | keyword |
+| error.message | Error message. | match_only_text |
+| error.type | The type of the error, for example the class name of the exception. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.ip | Host ip addresses. | ip |
+| http.request.headers.x_opaque_id | X-Opaque-Id header from the HTTP request when present | keyword |
+| input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
+| log.offset |  | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| process.thread.name | Thread name. | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+| user.realm | User authentication realm when present in query logs | keyword |
+
+
 ## Metrics
 
 ### Usage for Stack Monitoring

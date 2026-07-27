@@ -1,0 +1,26 @@
+---
+description: Benchmark 10000 gateway_dns events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: gateway_dns
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/gateway_dns
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-gateway-dns
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./gateway_dns-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./gateway_dns-benchmark/config.yml
+    fields:
+      path: ./gateway_dns-benchmark/fields.yml

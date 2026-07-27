@@ -1,0 +1,789 @@
+# Apache Airflow monitoring dashboards
+# Spec: build/spec.md
+# Index: metrics-airflow.otel-default*
+
+dashboards:
+- id: airflow_otel-overview
+  name: '[Airflow OTel] Overview'
+  description: >-
+    Scheduler health, task outcomes, executor capacity, and DAG processing at a glance.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  filters:
+  - field: data_stream.dataset
+    equals: airflow.otel
+  controls:
+  - type: options
+    label: Host
+    data_view: metrics-*
+    field: resource.attributes.host.name
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: airflow_otel-overview
+      - label: Tasks & Errors
+        dashboard: airflow_otel-tasks
+      - label: Scheduler & Capacity
+        dashboard: airflow_otel-scheduler-capacity
+      - label: DAG Processing
+        dashboard: airflow_otel-dag-processing
+
+  - hide_title: true
+    size: {w: 16, h: 8}
+    markdown:
+      content: |
+        ## [Airflow OTel] Overview
+
+        This dashboard provides a health summary for Apache Airflow:
+        - Scheduler heartbeats (liveness)
+        - Task success vs failure rate
+        - Executor slot availability
+        - DAG import errors and parse health
+
+  - title: Scheduler Heartbeats
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.scheduler_heartbeat IS NOT NULL
+      - STATS total = SUM(airflow.scheduler_heartbeat)
+      primary:
+        field: total
+        label: Heartbeats
+        format:
+          type: number
+          compact: true
+
+  - title: Task Successes
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.ti_successes IS NOT NULL
+      - STATS total = SUM(airflow.ti_successes)
+      primary:
+        field: total
+        label: Task successes
+        format:
+          type: number
+          compact: true
+
+  - title: Task Failures
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.ti_failures IS NOT NULL
+      - STATS total = SUM(airflow.ti_failures)
+      primary:
+        field: total
+        label: Task failures
+        format:
+          type: number
+          compact: true
+
+  - title: Executor Open Slots
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.executor.open_slots IS NOT NULL
+      - STATS slots = MAX(LAST_OVER_TIME(airflow.executor.open_slots))
+      primary:
+        field: slots
+        label: Open slots
+        format:
+          type: number
+          decimals: 0
+
+  - title: DAG Import Errors
+    hide_title: true
+    size: {w: 16, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.dag_processing.import_errors IS NOT NULL
+      - STATS errs = MAX(LAST_OVER_TIME(airflow.dag_processing.import_errors))
+      primary:
+        field: errs
+        label: Import errors
+        format:
+          type: number
+          decimals: 0
+
+  - title: Starving Tasks
+    hide_title: true
+    size: {w: 16, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.scheduler.tasks.starving IS NOT NULL
+      - STATS starving = MAX(LAST_OVER_TIME(airflow.scheduler.tasks.starving))
+      primary:
+        field: starving
+        label: Starving tasks
+        format:
+          type: number
+          decimals: 0
+
+  - title: Scheduler Heartbeats Over Time
+    size: {w: 48, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.scheduler_heartbeat IS NOT NULL
+      - STATS total = SUM(airflow.scheduler_heartbeat) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: total
+        label: Heartbeats
+        format:
+          type: number
+          decimals: 0
+
+  - title: Task Success vs Failures Over Time
+    size: {w: 48, h: 10}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - STATS successes = SUM(airflow.ti_successes) WHERE airflow.ti_successes IS NOT NULL, failures = SUM(airflow.ti_failures) WHERE 
+        airflow.ti_failures IS NOT NULL BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: successes
+        label: Successes
+      - field: failures
+        label: Failures
+      color:
+        palette: eui_amsterdam_color_blind
+        assignments:
+        - value: "successes"
+          color: '#54B399'
+        - value: "failures"
+          color: '#E7664C'
+      legend:
+        visible: show
+        position: right
+
+  - title: Executor Capacity
+    size: {w: 48, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.executor.open_slots IS NOT NULL OR airflow.executor.queued_tasks IS NOT NULL OR airflow.executor.running_tasks IS NOT 
+        NULL
+      - STATS open = MAX(LAST_OVER_TIME(airflow.executor.open_slots)), queued = MAX(LAST_OVER_TIME(airflow.executor.queued_tasks)), running 
+        = MAX(LAST_OVER_TIME(airflow.executor.running_tasks)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: open
+        label: Open slots
+      - field: queued
+        label: Queued
+      - field: running
+        label: Running
+      legend:
+        visible: show
+        position: right
+
+  - title: DAG Import Errors and Queue Size
+    size: {w: 48, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.dag_processing.import_errors IS NOT NULL OR airflow.dag_processing.file_path_queue_size IS NOT NULL
+      - STATS import_errors = MAX(LAST_OVER_TIME(airflow.dag_processing.import_errors)), queue_size = 
+        MAX(LAST_OVER_TIME(airflow.dag_processing.file_path_queue_size)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: import_errors
+        label: Import errors
+      - field: queue_size
+        label: Queue size
+      legend:
+        visible: show
+        position: right
+
+- id: airflow_otel-tasks
+  name: '[Airflow OTel] Tasks & Errors'
+  description: >-
+    Task throughput, failure rate, operator breakdown, and duration metrics.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+  filters:
+  - field: data_stream.dataset
+    equals: airflow.otel
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: airflow_otel-overview
+      - label: Tasks & Errors
+        dashboard: airflow_otel-tasks
+      - label: Scheduler & Capacity
+        dashboard: airflow_otel-scheduler-capacity
+      - label: DAG Processing
+        dashboard: airflow_otel-dag-processing
+
+  - hide_title: true
+    size: {w: 16, h: 4}
+    markdown:
+      content: |
+        ## [Airflow OTel] Tasks & Errors
+
+        Task throughput, failures, operator breakdown, and duration.
+
+  - title: Task Throughput (Starts)
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.ti.start IS NOT NULL
+      - STATS total = SUM(airflow.ti.start)
+      primary:
+        field: total
+        label: Tasks started
+        format:
+          type: number
+          decimals: 2
+
+  - title: Task Throughput (Finishes)
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.ti.finish IS NOT NULL
+      - STATS total = SUM(airflow.ti.finish)
+      primary:
+        field: total
+        label: Tasks finished
+        format:
+          type: number
+          decimals: 2
+
+  - title: Task Failures (Total)
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.ti_failures IS NOT NULL
+      - STATS total = SUM(airflow.ti_failures)
+      primary:
+        field: total
+        label: Total failures
+        format:
+          type: number
+          compact: true
+
+  - title: Externally Killed Tasks
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.scheduler.tasks.killed_externally IS NOT NULL
+      - STATS total = SUM(airflow.scheduler.tasks.killed_externally)
+      primary:
+        field: total
+        label: Killed externally
+        format:
+          type: number
+          compact: true
+
+  - title: Task Success vs Failure Over Time
+    size: {w: 48, h: 10}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - STATS successes = SUM(airflow.ti_successes) WHERE airflow.ti_successes IS NOT NULL, failures = SUM(airflow.ti_failures) WHERE 
+        airflow.ti_failures IS NOT NULL BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: successes
+        label: Successes
+      - field: failures
+        label: Failures
+      color:
+        palette: eui_amsterdam_color_blind
+        assignments:
+        - value: "successes"
+          color: '#54B399'
+        - value: "failures"
+          color: '#E7664C'
+      legend:
+        visible: show
+        position: right
+
+  - title: Operator Failures Over Time
+    size: {w: 24, h: 10}
+    esql:
+      type: bar
+      mode: stacked
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.operator_failures IS NOT NULL
+      - EVAL op = COALESCE(attributes.operator, "unknown")
+      - STATS failures = SUM(airflow.operator_failures) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), op
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: failures
+        label: Failures/sec
+        format:
+          type: number
+      breakdown:
+        field: op
+      legend:
+        visible: show
+        position: right
+
+  - title: Task Duration
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - FROM metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.dag.metrics_generator.work_task_1.duration IS NOT NULL
+      - STATS p95 = PERCENTILE(airflow.dag.metrics_generator.work_task_1.duration, 95.0), avg = 
+        AVG(airflow.dag.metrics_generator.work_task_1.duration) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: p95
+        label: p95
+        format:
+          type: duration
+      - field: avg
+        label: Avg
+        format:
+          type: duration
+      legend:
+        visible: show
+        position: right
+
+  - title: Top DAGs by Task Failures
+    size: {w: 48, h: 15}
+    esql:
+      type: datatable
+      query:
+      - FROM metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.ti_failures IS NOT NULL
+      - STATS failures = SUM(airflow.ti_failures) BY dag_id = COALESCE(attributes.dag_id, "unknown")
+      - SORT failures DESC
+      - LIMIT 20
+      breakdowns:
+      - field: dag_id
+        label: DAG ID
+      metrics:
+      - field: failures
+        label: Failures
+        format:
+          type: number
+
+- id: airflow_otel-scheduler-capacity
+  name: '[Airflow OTel] Scheduler & Capacity'
+  description: >-
+    Scheduler loop duration, critical section contention, executor and pool utilisation.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+  filters:
+  - field: data_stream.dataset
+    equals: airflow.otel
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: airflow_otel-overview
+      - label: Tasks & Errors
+        dashboard: airflow_otel-tasks
+      - label: Scheduler & Capacity
+        dashboard: airflow_otel-scheduler-capacity
+      - label: DAG Processing
+        dashboard: airflow_otel-dag-processing
+
+  - hide_title: true
+    size: {w: 16, h: 4}
+    markdown:
+      content: |
+        ## [Airflow OTel] Scheduler & Capacity
+
+        Scheduler loop, executor slots, and pool capacity.
+
+  - title: Scheduler Loop Duration (avg)
+    hide_title: true
+    size: {w: 16, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.scheduler.scheduler_loop_duration IS NOT NULL
+      - STATS avg_s = AVG(airflow.scheduler.scheduler_loop_duration)
+      primary:
+        field: avg_s
+        label: Loop duration (s)
+        format:
+          type: number
+          decimals: 1
+
+  - title: Executor Open Slots
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.executor.open_slots IS NOT NULL
+      - STATS slots = MAX(LAST_OVER_TIME(airflow.executor.open_slots))
+      primary:
+        field: slots
+        label: Open slots
+        format:
+          type: number
+          decimals: 0
+
+  - title: Starving Tasks
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.scheduler.tasks.starving IS NOT NULL
+      - STATS starving = MAX(LAST_OVER_TIME(airflow.scheduler.tasks.starving))
+      primary:
+        field: starving
+        label: Starving tasks
+        format:
+          type: number
+          decimals: 0
+
+  - title: Scheduler Loop Duration Over Time
+    size: {w: 48, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.scheduler.scheduler_loop_duration IS NOT NULL
+      - STATS avg_s = AVG(airflow.scheduler.scheduler_loop_duration) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: avg_s
+        label: Avg loop duration (s)
+        format:
+          type: number
+          decimals: 1
+
+  - title: Critical Section Duration
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.scheduler.critical_section_duration IS NOT NULL
+      - STATS avg_s = AVG(airflow.scheduler.critical_section_duration) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: avg_s
+        label: Critical section (s)
+        format:
+          type: number
+          decimals: 2
+
+  - title: Executor Slot Utilisation
+    size: {w: 24, h: 10}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.executor.open_slots IS NOT NULL OR airflow.executor.queued_tasks IS NOT NULL OR airflow.executor.running_tasks IS NOT 
+        NULL
+      - STATS open = MAX(LAST_OVER_TIME(airflow.executor.open_slots)), queued = MAX(LAST_OVER_TIME(airflow.executor.queued_tasks)), running 
+        = MAX(LAST_OVER_TIME(airflow.executor.running_tasks)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: open
+        label: Open
+      - field: queued
+        label: Queued
+      - field: running
+        label: Running
+      legend:
+        visible: show
+        position: right
+
+  - title: Starving Tasks Over Time
+    size: {w: 48, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.scheduler.tasks.starving IS NOT NULL
+      - STATS starving = MAX(LAST_OVER_TIME(airflow.scheduler.tasks.starving)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: starving
+        label: Starving tasks
+        format:
+          type: number
+
+- id: airflow_otel-dag-processing
+  name: '[Airflow OTel] DAG Processing'
+  description: >-
+    DAG file import errors, parse times, queue size, and processor timeouts.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+  filters:
+  - field: data_stream.dataset
+    equals: airflow.otel
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: airflow_otel-overview
+      - label: Tasks & Errors
+        dashboard: airflow_otel-tasks
+      - label: Scheduler & Capacity
+        dashboard: airflow_otel-scheduler-capacity
+      - label: DAG Processing
+        dashboard: airflow_otel-dag-processing
+
+  - hide_title: true
+    size: {w: 16, h: 4}
+    markdown:
+      content: |
+        ## [Airflow OTel] DAG Processing
+
+        Import errors, parse times, queue size, and timeouts.
+
+  - title: Import Errors
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.dag_processing.import_errors IS NOT NULL
+      - STATS errs = MAX(LAST_OVER_TIME(airflow.dag_processing.import_errors))
+      primary:
+        field: errs
+        label: Import errors
+        format:
+          type: number
+          decimals: 0
+
+  - title: File Queue Size
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.dag_processing.file_path_queue_size IS NOT NULL
+      - STATS size = MAX(LAST_OVER_TIME(airflow.dag_processing.file_path_queue_size))
+      primary:
+        field: size
+        label: Queue size
+        format:
+          type: number
+          decimals: 0
+
+  - title: Processor Timeouts
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.dag_processing.processor_timeouts IS NOT NULL
+      - STATS total = SUM(airflow.dag_processing.processor_timeouts)
+      primary:
+        field: total
+        label: Processor timeouts
+        format:
+          type: number
+          compact: true
+
+  - title: DAG Refresh Errors
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.dag_file_refresh_error IS NOT NULL
+      - STATS total = SUM(airflow.dag_file_refresh_error)
+      primary:
+        field: total
+        label: Refresh errors
+        format:
+          type: number
+          compact: true
+
+  - title: Import Errors Over Time
+    size: {w: 48, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.dag_processing.import_errors IS NOT NULL
+      - STATS errs = MAX(LAST_OVER_TIME(airflow.dag_processing.import_errors)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: errs
+        label: Import errors
+        format:
+          type: number
+
+  - title: Parse Time and Queue Size
+    size: {w: 48, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-airflow.otel-default*
+      - WHERE data_stream.dataset == "airflow.otel"
+      - WHERE airflow.dag_processing.total_parse_time IS NOT NULL OR airflow.dag_processing.file_path_queue_size IS NOT NULL
+      - STATS parse_time = AVG(airflow.dag_processing.total_parse_time), queue_size = 
+        MAX(LAST_OVER_TIME(airflow.dag_processing.file_path_queue_size)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: parse_time
+        label: Total parse time (s)
+      - field: queue_size
+        label: Queue size
+      legend:
+        visible: show
+        position: right

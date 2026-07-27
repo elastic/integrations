@@ -1,0 +1,66 @@
+format_version: 3.4.2
+name: cursor
+title: "Cursor"
+version: "0.2.1"
+description: "Collect audit logs from Cursor with Elastic Agent"
+type: integration
+categories:
+  - security
+  - productivity
+conditions:
+  kibana:
+    version: "^8.19.0 || ^9.1.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/cursor-overview1.png
+    title: Cursor Overview Metrics
+    size: 600x600
+    type: image/png
+  - src: /img/cursor-overview2.png
+    title: Cursor Overview Events
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/cursor-logo.svg
+    title: Cursor logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: cursor
+    title: Cursor Logs
+    description: Collect audit logs from Cursor.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: security
+        division: engineering
+        team: integration-experience
+    inputs:
+      - type: cel
+        title: Collect Cursor audit logs via the Admin API
+        description: Collecting audit logs from Cursor via the Admin API (REST polling).
+        vars:
+          - name: url
+            type: text
+            title: Cursor API URL
+            description: Base URL for the Cursor Admin API.
+            default: https://api.cursor.com
+            required: true
+            show_user: true
+          - name: api_key
+            type: password
+            title: Admin API Key
+            description: Cursor Enterprise admin API key. Created from Dashboard → Settings → Advanced → Admin API Keys. Format `key_<hex>`.
+            required: true
+            show_user: true
+            secret: true
+      - type: aws-s3
+        title: Collect Cursor audit logs via AWS S3 or AWS SQS
+        description: Collecting audit logs from Cursor via AWS S3 or AWS SQS.
+owner:
+  github: elastic/integration-experience
+  type: elastic

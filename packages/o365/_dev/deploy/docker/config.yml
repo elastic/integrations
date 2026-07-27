@@ -532,3 +532,125 @@ rules:
               }
           ]
           `}}
+  # Stale-NextPageUri test rules
+  # Exercise the pre-flight filter that drops queued listing links whose
+  # startTime has aged past maximum_age. The first page is fresh; the
+  # NextPageUri it returns has a hardcoded 2019 startTime so the filter
+  # must drop it on the next evaluation rather than follow it. The
+  # corresponding responder is defined below and is only reached if the
+  # filter regresses.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.Exchange"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "contentType": "Audit.Exchange",
+              "status": "enabled",
+              "webhook": null
+          }
+          `}}
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.Exchange"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+          NextPageUri:
+            - 'http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content?contenttype=Audit.Exchange&starttime=2019-01-01T00:00:00Z&endtime=2019-01-01T01:00:00Z&nextpage=aged-page-that-should-be-dropped'
+        body: |-
+          [{"contentType": "Audit.Exchange","contentId": "celexchfresh","contentUri": "http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/celexch/activity/feed/audit/celexchfresh","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
+  # This path MUST NOT be called when the pre-flight filter is working:
+  # its startTime is from 2019 and falls outside any sensible maximum_age.
+  # If it is called, the aged-content responder below will serve an event
+  # and hit_count will be 2 instead of 1, failing the assertion.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contenttype: "Audit.Exchange"
+      starttime: "2019-01-01T00:00:00Z"
+      endtime: "2019-01-01T01:00:00Z"
+      nextpage: "aged-page-that-should-be-dropped"
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType": "Audit.Exchange","contentId": "celexchstale","contentUri": "http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/celexch/activity/feed/audit/celexchstale","contentCreated": "2019-01-01T00:30:00Z","contentExpiration": "2199-05-30T17:35:00.000Z"}]
+  - path: /api/v1.0/celexch/activity/feed/audit/celexchfresh
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          [
+              {
+                  "CreationTime": "2020-02-07T16:43:53",
+                  "Id": "exch-fresh-event-1",
+                  "Operation": "Send",
+                  "OrganizationId": "b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd",
+                  "RecordType": 2,
+                  "UserKey": "fresh-key",
+                  "UserType": 0,
+                  "Version": 1,
+                  "Workload": "Exchange",
+                  "UserId": "fresh@testsiem.onmicrosoft.com"
+              }
+          ]
+          `}}
+  - path: /api/v1.0/celexch/activity/feed/audit/celexchstale
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          [
+              {
+                  "CreationTime": "2019-01-01T00:30:00",
+                  "Id": "exch-stale-event-1",
+                  "Operation": "Send",
+                  "OrganizationId": "b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd",
+                  "RecordType": 2,
+                  "UserKey": "stale-key",
+                  "UserType": 0,
+                  "Version": 1,
+                  "Workload": "Exchange",
+                  "UserId": "stale@testsiem.onmicrosoft.com"
+              }
+          ]
+          `}}

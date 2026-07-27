@@ -1,0 +1,546 @@
+# NVIDIA GPU OTel — Overview Dashboard
+# Provides fleet-level and per-GPU health monitoring via DCGM metrics.
+
+dashboards:
+  - id: nvidia_gpu_otel-overview
+    name: '[NVIDIA GPU OTel] Overview'
+    description: >-
+      Fleet-level overview of NVIDIA GPU health and performance via DCGM OTel metrics.
+      Covers temperature, utilization, memory, power, errors, and clock frequencies.
+
+    minimum_kibana_version: '8.14.0'
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: data_stream.dataset
+        equals: nvidia_gpu.otel
+
+    controls:
+      - type: options
+        label: Hostname
+        data_view: metrics-*
+        field: Hostname
+      - type: options
+        label: GPU UUID
+        data_view: metrics-*
+        field: UUID
+      - type: options
+        label: GPU Model
+        data_view: metrics-*
+        field: modelName
+
+    panels:
+      # ─── Dashboard Overview ─────────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [NVIDIA GPU OTel] Overview
+
+            This dashboard provides a fleet-level overview of NVIDIA GPU health and performance:
+            - GPU count, models, and driver versions
+            - Temperature and thermal health
+            - Compute and memory utilization
+            - Framebuffer memory usage
+            - Power consumption
+            - XID hardware errors
+            - Clock frequencies and throttling indicators
+
+      # ─── KPI Row (beside overview, 32 cols available) ──────────────
+      - title: GPU Count
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_GPU_TEMP IS NOT NULL
+            - STATS gpu_count = COUNT_DISTINCT(UUID)
+          primary:
+            field: gpu_count
+            label: GPUs Reporting
+            format:
+              type: number
+              decimals: 0
+
+      - title: Avg GPU Temperature
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_GPU_TEMP IS NOT NULL
+            - STATS avg_temp = AVG(DCGM_FI_DEV_GPU_TEMP)
+          primary:
+            field: avg_temp
+            label: Avg GPU Temp
+            format:
+              type: number
+              decimals: 1
+              suffix: " °C"
+
+      - title: Max GPU Temperature
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_GPU_TEMP IS NOT NULL
+            - STATS max_temp = MAX(DCGM_FI_DEV_GPU_TEMP)
+          primary:
+            field: max_temp
+            label: Max GPU Temp
+            format:
+              type: number
+              decimals: 1
+              suffix: " °C"
+
+      - title: Avg GPU Utilization
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_GPU_UTIL IS NOT NULL
+            - STATS avg_util = AVG(DCGM_FI_DEV_GPU_UTIL)
+          primary:
+            field: avg_util
+            label: Avg GPU Util
+            format:
+              type: number
+              decimals: 1
+              suffix: " %"
+
+      # ─── Second KPI row ────────────────────────────────────────────
+      - title: Avg Power Usage
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_POWER_USAGE IS NOT NULL
+            - STATS avg_power = AVG(DCGM_FI_DEV_POWER_USAGE)
+          primary:
+            field: avg_power
+            label: Avg Power
+            format:
+              type: number
+              decimals: 1
+              suffix: " W"
+
+      - title: GPUs with Errors
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_XID_ERRORS IS NOT NULL
+            - WHERE DCGM_FI_DEV_XID_ERRORS > 0
+            - STATS error_gpus = COUNT_DISTINCT(UUID)
+          primary:
+            field: error_gpus
+            label: GPUs with Errors
+            format:
+              type: number
+              decimals: 0
+
+      - title: Avg Memory Utilization
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_MEM_COPY_UTIL IS NOT NULL
+            - STATS avg_mem_util = AVG(DCGM_FI_DEV_MEM_COPY_UTIL)
+          primary:
+            field: avg_mem_util
+            label: Avg Mem Util
+            format:
+              type: number
+              decimals: 1
+              suffix: " %"
+
+      - title: Avg FB Used
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_FB_USED IS NOT NULL
+            - STATS avg_fb_used = AVG(DCGM_FI_DEV_FB_USED)
+          primary:
+            field: avg_fb_used
+            label: Avg FB Used
+            format:
+              type: number
+              decimals: 0
+              suffix: " MiB"
+
+      # ─── Section: Thermal & Power ──────────────────────────────────
+      - title: Thermal & Power
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Thermal & Power'
+
+      # GPU Temperature Over Time
+      - title: GPU Temperature Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_GPU_TEMP IS NOT NULL
+            - STATS avg_temp = AVG(DCGM_FI_DEV_GPU_TEMP) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), UUID
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: avg_temp
+              label: Temperature (°C)
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: UUID
+          legend:
+            visible: show
+            position: right
+
+      # Power Usage Over Time
+      - title: Power Usage Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_POWER_USAGE IS NOT NULL
+            - STATS avg_power = AVG(DCGM_FI_DEV_POWER_USAGE) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), UUID
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: avg_power
+              label: Power (W)
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: UUID
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Utilization ──────────────────────────────────────
+      - title: Utilization
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Utilization'
+
+      # GPU Utilization Over Time
+      - title: GPU Utilization Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: unstacked
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_GPU_UTIL IS NOT NULL
+            - STATS avg_util = AVG(DCGM_FI_DEV_GPU_UTIL) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), UUID
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: avg_util
+              label: GPU Util (%)
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: UUID
+          legend:
+            visible: show
+            position: right
+
+      # Memory Copy Utilization Over Time
+      - title: Memory Bandwidth Utilization Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: unstacked
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_MEM_COPY_UTIL IS NOT NULL
+            - STATS avg_mem = AVG(DCGM_FI_DEV_MEM_COPY_UTIL) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), UUID
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: avg_mem
+              label: Mem Bandwidth Util (%)
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: UUID
+          legend:
+            visible: show
+            position: right
+
+      # Encoder & Decoder Utilization
+      - title: Encoder Utilization Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_ENC_UTIL IS NOT NULL
+            - STATS avg_enc = AVG(DCGM_FI_DEV_ENC_UTIL) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), UUID
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: avg_enc
+              label: Encoder Util (%)
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: UUID
+          legend:
+            visible: show
+            position: right
+
+      - title: Decoder Utilization Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_DEC_UTIL IS NOT NULL
+            - STATS avg_dec = AVG(DCGM_FI_DEV_DEC_UTIL) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), UUID
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: avg_dec
+              label: Decoder Util (%)
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: UUID
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Memory ───────────────────────────────────────────
+      - title: Memory
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Framebuffer Memory'
+
+      # Framebuffer Used Over Time
+      - title: Framebuffer Used Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: unstacked
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_FB_USED IS NOT NULL
+            - STATS avg_fb_used = AVG(DCGM_FI_DEV_FB_USED) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), UUID
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: avg_fb_used
+              label: FB Used (MiB)
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: UUID
+          legend:
+            visible: show
+            position: right
+
+      # Framebuffer Free Over Time
+      - title: Framebuffer Free Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: unstacked
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_FB_FREE IS NOT NULL
+            - STATS avg_fb_free = AVG(DCGM_FI_DEV_FB_FREE) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), UUID
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: avg_fb_free
+              label: FB Free (MiB)
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: UUID
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Clocks ───────────────────────────────────────────
+      - title: Clocks
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Clock Frequencies'
+
+      # SM Clock Over Time
+      - title: SM Clock Frequency Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_SM_CLOCK IS NOT NULL
+            - STATS avg_sm = AVG(DCGM_FI_DEV_SM_CLOCK) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), UUID
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: avg_sm
+              label: SM Clock (MHz)
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: UUID
+          legend:
+            visible: show
+            position: right
+
+      # Memory Clock Over Time
+      - title: Memory Clock Frequency Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_MEM_CLOCK IS NOT NULL
+            - STATS avg_mem_clk = AVG(DCGM_FI_DEV_MEM_CLOCK) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), UUID
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: avg_mem_clk
+              label: Mem Clock (MHz)
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: UUID
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Errors ───────────────────────────────────────────
+      - title: Errors
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Errors & Hardware Health'
+
+      # XID Errors Table
+      - title: XID Error Details
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_XID_ERRORS IS NOT NULL AND DCGM_FI_DEV_XID_ERRORS > 0
+            - STATS occurrences = COUNT(*), last_seen = MAX(@timestamp) BY Hostname, UUID, modelName, err_code, err_msg
+            - SORT occurrences DESC
+            - LIMIT 100
+          metrics:
+            - field: Hostname
+            - field: UUID
+            - field: modelName
+            - field: err_code
+            - field: err_msg
+            - field: occurrences
+            - field: last_seen
+
+      # ─── Detail: GPU Inventory ─────────────────────────────────────
+      - title: GPU Inventory
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-nvidia_gpu.otel-default
+            - WHERE DCGM_FI_DEV_GPU_TEMP IS NOT NULL
+            - STATS
+                avg_temp = AVG(DCGM_FI_DEV_GPU_TEMP),
+                avg_util = AVG(DCGM_FI_DEV_GPU_UTIL),
+                avg_power = AVG(DCGM_FI_DEV_POWER_USAGE),
+                avg_fb_used = AVG(DCGM_FI_DEV_FB_USED),
+                avg_fb_free = AVG(DCGM_FI_DEV_FB_FREE)
+              BY Hostname, UUID, modelName, DCGM_FI_DRIVER_VERSION
+            - EVAL fb_used_pct = ROUND(avg_fb_used / (avg_fb_used + avg_fb_free) * 100.0, 1)
+            - SORT avg_temp DESC
+            - LIMIT 100
+          metrics:
+            - field: Hostname
+              label: Hostname
+            - field: UUID
+              label: GPU UUID
+            - field: modelName
+              label: Model
+            - field: DCGM_FI_DRIVER_VERSION
+              label: Driver Version
+            - field: avg_temp
+              label: Avg Temp (°C)
+              format:
+                type: number
+                decimals: 1
+            - field: avg_util
+              label: Avg Util (%)
+              format:
+                type: number
+                decimals: 1
+            - field: avg_power
+              label: Avg Power (W)
+              format:
+                type: number
+                decimals: 1
+            - field: fb_used_pct
+              label: FB Used (%)
+              format:
+                type: number
+                decimals: 1

@@ -1,0 +1,251 @@
+dashboards:
+- id: etcd_otel-grpc
+  name: '[etcd OTel] gRPC Traffic'
+  description: >-
+    gRPC server metrics: request rates by service/method, error codes, and client request patterns.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  filters:
+  - field: data_stream.dataset
+    equals: etcd.otel
+  controls:
+  - type: options
+    label: Instance
+    data_view: metrics-*
+    field: resource.attributes.service.instance.id
+  - type: options
+    label: gRPC Service
+    data_view: metrics-*
+    field: attributes.grpc_service
+  panels:
+      # ─── Navigation ─────────────────────────────────────────────────────
+  - size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: etcd_otel-overview
+      - label: Raft Consensus
+        dashboard: etcd_otel-raft-consensus
+      - label: Storage & MVCC
+        dashboard: etcd_otel-storage
+      - label: gRPC Traffic
+        dashboard: etcd_otel-grpc
+
+      # ─── Dashboard Overview Panel ───────────────────────────────────────
+  - hide_title: true
+    size: {w: 16, h: 10}
+    markdown:
+      content: |
+        ## [etcd OTel] gRPC Traffic
+
+        gRPC API traffic and health:
+        - Request rates by service and method
+        - Error code distribution
+        - Client request patterns
+        - Network throughput
+
+      # ─── KPI Metric Row ─────────────────────────────────────────────────
+  - title: gRPC Handled Rate
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND grpc_server_handled_total IS NOT NULL
+      - STATS rate = SUM(RATE(grpc_server_handled_total))
+      primary:
+        field: rate
+        label: Handled/sec
+        format:
+          type: number
+          decimals: 1
+
+  - title: gRPC Error Rate
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND grpc_server_handled_total IS NOT NULL AND attributes.grpc_code IS NOT NULL AND 
+        attributes.grpc_code != "OK"
+      - STATS error_rate = SUM(RATE(grpc_server_handled_total))
+      primary:
+        field: error_rate
+        label: Errors/sec
+        format:
+          type: number
+          decimals: 2
+
+  - title: Client Requests Rate
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_client_requests_total IS NOT NULL
+      - STATS rate = SUM(RATE(etcd_server_client_requests_total))
+      primary:
+        field: rate
+        label: Client req/sec
+        format:
+          type: number
+          decimals: 1
+
+  - title: Network Rx Rate
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_network_client_grpc_received_bytes_total IS NOT NULL
+      - STATS rate = SUM(RATE(etcd_network_client_grpc_received_bytes_total))
+      primary:
+        field: rate
+        label: Rx bytes/sec
+        format:
+          type: bytes
+          decimals: 2
+
+      # ─── gRPC Charts ────────────────────────────────────────────────────
+  - title: gRPC Handled by Service
+    size: {w: 48, h: 10}
+    esql:
+      type: area
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND grpc_server_handled_total IS NOT NULL AND attributes.grpc_service IS NOT NULL
+      - STATS rate = SUM(RATE(grpc_server_handled_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), svc = 
+        attributes.grpc_service
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rate
+        label: Handled/sec
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: svc
+
+  - title: gRPC Handled by Code
+    size: {w: 24, h: 10}
+    esql:
+      type: area
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND grpc_server_handled_total IS NOT NULL AND attributes.grpc_code IS NOT NULL
+      - STATS rate = SUM(RATE(grpc_server_handled_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), code = 
+        attributes.grpc_code
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rate
+        label: Handled/sec
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: code
+      color:
+        assignments:
+        - value: "OK"
+          color: '#54B399'
+        - values: ['Canceled', 'DeadlineExceeded', 'Unavailable', 'Internal', 'ResourceExhausted']
+          color: '#E7664C'
+
+  - title: gRPC Error Codes Distribution
+    size: {w: 24, h: 10}
+    esql:
+      type: pie
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND grpc_server_handled_total IS NOT NULL AND attributes.grpc_code IS NOT NULL AND 
+        attributes.grpc_code != "OK"
+      - STATS total = SUM(RATE(grpc_server_handled_total)) BY code = attributes.grpc_code
+      - SORT total DESC
+      - LIMIT 10
+      metrics:
+      - field: total
+      breakdowns:
+      - field: code
+        label: gRPC Code
+      appearance:
+        donut: medium
+
+      # ─── Client Requests ────────────────────────────────────────────────
+  - title: Client Requests by Type
+    size: {w: 24, h: 10}
+    esql:
+      type: pie
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_client_requests_total IS NOT NULL AND attributes.type IS NOT NULL
+      - STATS total = SUM(RATE(etcd_server_client_requests_total)) BY req_type = attributes.type
+      - SORT total DESC
+      - LIMIT 10
+      metrics:
+      - field: total
+      breakdowns:
+      - field: req_type
+        label: Request Type
+      appearance:
+        donut: medium
+
+  - title: Network Bytes (Client gRPC)
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - |
+        WHERE data_stream.dataset == "etcd.otel"
+        | FORK ( WHERE etcd_network_client_grpc_received_bytes_total IS NOT NULL | STATS rate = SUM(RATE(etcd_network_client_grpc_received_bytes_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL direction = "received" ) ( WHERE etcd_network_client_grpc_sent_bytes_total IS NOT NULL | STATS rate = SUM(RATE(etcd_network_client_grpc_sent_bytes_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL direction = "sent" )
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rate
+        label: Bytes/sec
+        format:
+          type: bytes
+          decimals: 2
+      breakdown:
+        field: direction
+
+      # ─── Top Methods Table ──────────────────────────────────────────────
+  - title: Top gRPC Methods by Request Rate
+    size: {w: 48, h: 12}
+    esql:
+      type: datatable
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND grpc_server_handled_total IS NOT NULL AND attributes.grpc_service IS NOT NULL AND 
+        attributes.grpc_method IS NOT NULL
+      - STATS rate = SUM(RATE(grpc_server_handled_total)) BY service = attributes.grpc_service, method = attributes.grpc_method
+      - SORT rate DESC
+      - LIMIT 20
+      breakdowns:
+      - field: service
+        label: Service
+      - field: method
+        label: Method
+      metrics:
+      - field: rate
+        label: Requests/sec
+        format:
+          type: number
+          decimals: 1
+      paging:
+        enabled: true
+        page_size: 10

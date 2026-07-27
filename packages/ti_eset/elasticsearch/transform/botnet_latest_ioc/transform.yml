@@ -1,9 +1,9 @@
 _meta:
-  fleet_transform_version: 0.4.0
+  fleet_transform_version: 0.6.0
   managed: true
 description: Latest ESET Botnet IoC data
 dest:
-  index: logs-ti_eset_latest.dest_botnet-3
+  index: logs-ti_eset_latest.dest_botnet-4
   aliases:
     - alias: logs-ti_eset_latest.botnet
       move_on_creation: true
@@ -11,6 +11,8 @@ frequency: 30s
 latest:
   sort: '@timestamp'
   unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
     - event.dataset
     - eset.id
 retention_policy:
@@ -25,4 +27,4 @@ sync:
     delay: 120s
     field: event.ingested
 settings:
-  unattended: true
+  num_failure_retries: -1

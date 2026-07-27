@@ -14,8 +14,9 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
-{{#if auth_key}}
 state:
+  interval_value: {{interval}}
+{{#if auth_key}}
   auth_key: {{auth_key}}
 {{/if}}
 redact:
@@ -23,32 +24,48 @@ redact:
     - auth_key
 program: |
   state.with(
+    state.url.contains("/downloads/json") ?
+      {
+        "events": {
+          "error": {
+            "code": "400",
+            "id": "configuration_error",
+            "message": "the URL is set to the deprecated full export endpoint (/downloads/json) which is no longer supported. Update the URL setting to https://urlhaus-api.abuse.ch/v1/urls/recent/",
+          },
+        },
+        "want_more": false,
+      }
+    : duration(state.interval_value) > duration("72h") ?
+      {
+        "events": {
+          "error": {
+            "code": "400",
+            "id": "configuration_error",
+            "message": "the polling interval (" + state.interval_value + ") exceeds the 3-day window of the URLhaus recent API. Reduce the interval to 72h or less to avoid missing data.",
+          },
+        },
+        "want_more": false,
+      }
+    :
     request("GET", state.url).with({
       "Header":{
-        "Content-Type": ["application/zip"],
+        "Content-Type": ["application/json"],
         ?"Auth-Key": has(state.auth_key) ?
           optional.of([state.auth_key])
         :
           optional.none(),
       }
-    })
-    .do_request()
-    .as(resp, resp.StatusCode == 200 ?
-      resp.Body.mime("application/zip").File.as(file, file.size() > 0 ?
-        file[0].Data.as(data, bytes(data).decode_json().as(body, {
-          "events": body.map(id, body[id].size() > 0 ?
-            {"message": body[id][0].with({"id": id}).encode_json()}
-          :
-            {"message": ""}
-          ),
-          "url": state.url
-        }))
-      :
-        {
-          "events": [],
-          "url": state.url
-        }
-      )
+    }).as(req, req.do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": (has(body.urls) ?
+          body.urls.map(u, {
+            "message": u.encode_json()
+          })
+        :
+          []
+        ),
+        "url": state.url
+      })
     :
       {
         "events": {
@@ -65,13 +82,15 @@ program: |
         },
         "want_more": false,
       }
-    )
+    ))
   )
 
+{{#if ioc_expiration_duration}}
 fields_under_root: true
 fields:
   _conf:
-    interval: "{{interval}}"
+    ioc_expiration_duration: {{ioc_expiration_duration}}
+{{/if}}
 
 tags:
 {{#if preserve_original_event}}

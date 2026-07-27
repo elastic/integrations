@@ -1,0 +1,52 @@
+{
+  "attributes": {
+    "name": "[vSphere OTel] VM CPU readiness below 5% 99.5% rolling 30 days",
+    "description": "This SLO tracks the percentage of time VMs are ready but cannot get scheduled on physical CPU via OTel vcenterreceiver metrics. It ensures that 99.5% of 1-minute time intervals show average CPU readiness below 5% over a rolling 30-day period. High CPU readiness indicates host over-commitment or insufficient physical cores; remediation includes reducing vCPU allocations, decreasing VM density, or adding hosts.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"vcenterreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "vcenter.vm.cpu.readiness",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 5
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "vsphere",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.vcenter.vm.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        { "id": "vsphere_otel-vms" },
+        { "id": "vsphere_otel-overview" }
+      ]
+    }
+  },
+  "id": "vsphere_otel-vm-cpu-readiness-99.5-Rolling30Days",
+  "type": "slo_template"
+}

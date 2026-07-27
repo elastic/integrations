@@ -3,6 +3,7 @@
     "type": "alerting_rule_template",
     "managed": true,
     "attributes": {
+        "description": "Alerts when the combined rate of 4xx (client) and 5xx (server) HTTP error responses exceeds a configurable percentage of total responses. Useful for tracking overall error budget consumption across both client- and server-side problems.",
         "name": "[CouchDB OTel] High error rate (4xx and 5xx)",
         "ruleTypeId": ".es-query",
         "tags": [
@@ -16,9 +17,16 @@
             "active": 2
         },
         "flapping": {
-            "enabled": true,
             "lookBackWindow": 6,
             "statusChangeThreshold": 3
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Overall Error Rate (4xx and 5xx)\n\n### Triage Steps\n1. Open the CouchDB overview dashboard and break down responses by status code to see whether 4xx, 5xx, or both are driving the alert.\n2. For 4xx-dominated alerts, focus on client-side issues:\n   - 401/403: authentication or authorization problems — check recent credential or `_security` changes.\n   - 404: missing documents or databases — could indicate a deploy that referenced renamed/deleted resources.\n   - 409: write conflicts — see the dedicated conflict storm rule.\n3. For 5xx-dominated alerts, see the dedicated 5xx-rate alert investigation guide.\n4. Identify whether errors come from a specific node or are cluster-wide.\n\n### Remediation\n- Address the dominant status code via the relevant playbook (4xx is typically a client/application issue; 5xx is server-side).\n- For mixed errors, coordinate with the application team to triage in parallel.\n- Investigate any recent deployments, configuration changes, or replication topology changes that correlate with the onset.\n\n### Threshold Tuning\nThe default 10% combined error rate is appropriate for general observability. Tighten the threshold for production-critical workloads, or split into separate 4xx and 5xx alerts if you want different sensitivity per error class."
+            },
+            "dashboards": [
+                {"id": "couchdb_otel-overview"}
+            ]
         },
         "params": {
             "searchType": "esqlQuery",

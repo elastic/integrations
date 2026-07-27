@@ -15,3 +15,22 @@ The Host Traffic Anomalies package includes a dashboard that offers a high-level
 
     _**Warning**_: When creating the data views for the dashboards, ensure that the `Custom data view ID` is set to the value specified above and is not left empty. Omitting or misconfiguring this field may result in broken visualizations, as illustrated by the error message below.
     ![Dashboard Error](../img/dashboard-hta-error.png)
+
+## v2.0.0 and beyond
+
+v2.0.0 of this package requires Elastic Stack version 9.4 or later. It introduces support for Entity Analytics (EA), adding new fields for proper entity resolution.
+
+- This package installs new ML jobs which include `_ea` suffix in their names, as outlined below. These jobs are available through the `Security: Host` module in Kibana. To install them, go to **Machine Learning** -> **Anomaly Detection** -> **Jobs** -> **Create anomaly detection job** -> select your data view -> select **Security: Host** -> **Create jobs**.
+- Previously installed `Security: Host` ML jobs will continue to run, allowing time to transition to the new Entity Analytics jobs.
+- **Important**: We recommend installing the new ML jobs and verifying that they are properly set up, collecting data, and generating anomalies **before** deleting the old jobs and upgrading to the new version of the detection rules available in 9.4. The new detection rules reference ML job IDs with the `_ea` suffix and are not compatible with older versions of the jobs.
+- A new dashboard is available in this version with the suffix "(Entity Analytics)" in the title. If you are still running jobs from before this version, the original dashboard without the suffix remains available.
+
+The new Entity Analytics ML job IDs for this dashboard are:
+- `high_count_events_for_a_host_name_ea`
+- `low_count_events_for_a_host_name_ea`
+
+After confirming the new Entity Analytics ML jobs are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions (Elastic stack 9.4+):
+
+- Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
+    - `high_count_events_for_a_host_name`
+    - `low_count_events_for_a_host_name`

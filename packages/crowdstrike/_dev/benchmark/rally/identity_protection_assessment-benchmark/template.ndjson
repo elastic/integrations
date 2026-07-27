@@ -1,0 +1,39 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $domain := generate "domain" }}
+{{- $likelihood := generate "security_assessment.assessmentFactors.likelihood" }}
+{{- $riskFactorType := generate "security_assessment.assessmentFactors.riskFactorType" }}
+{{- $severity := generate "security_assessment.assessmentFactors.severity" }}
+{{- $overallScore := generate "security_assessment.overallScore" }}
+{{- $overallScoreLevel := generate "security_assessment.overallScoreLevel" }}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "cdaaaabb-be7e-432f-816b-bda019fd7c15",
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "crowdstrike.identity_protection_assessment",
+        "namespace": "93724",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "message": "{\"domain\":\"{{ $domain }}\",\"security_assessment\":{\"assessmentFactors\":[{\"likelihood\":\"{{ $likelihood }}\",\"riskFactorType\":\"{{ $riskFactorType }}\",\"severity\":\"{{ $severity }}\"}],\"overallScore\":{{ $overallScore }},\"overallScoreLevel\":\"{{ $overallScoreLevel }}\"}}",
+    "event": {
+        "dataset": "crowdstrike.identity_protection_assessment"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "crowdstrike-identity-protection-assessment"
+    ]
+}

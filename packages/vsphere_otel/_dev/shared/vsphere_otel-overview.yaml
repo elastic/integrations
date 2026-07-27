@@ -1,0 +1,455 @@
+dashboards:
+- id: vsphere_otel-overview
+  name: '[vSphere OTel] Overview'
+  description: >-
+    Top-level vSphere environment health: entity counts, cluster capacity gauges,
+    and datacenter-level aggregates from the OTel vcenterreceiver.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+
+  controls:
+  - type: options
+    label: Datacenter
+    data_view: metrics-*
+    field: vcenter.datacenter.name
+
+  panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: vsphere_otel-overview
+      - label: Hosts
+        dashboard: vsphere_otel-hosts
+      - label: Virtual Machines
+        dashboard: vsphere_otel-vms
+      - label: Storage
+        dashboard: vsphere_otel-storage
+
+      # ─── Dashboard Overview ─────────────────────────────────────────
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [vSphere OTel] Overview
+
+        This dashboard provides a high-level view of vSphere environment health:
+        - Cluster, host, VM, and datastore inventory
+        - Host CPU and memory utilization gauges
+        - Cluster CPU and memory capacity headroom
+        - VM power state distribution
+        - Datacenter-level disk space
+
+      # ─── KPI Row 1 (beside overview: 4 × w:8 = 32) ────────────────
+  - title: Clusters
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datacenter.cluster.count IS NOT NULL
+      - STATS clusters = MAX(LAST_OVER_TIME(vcenter.datacenter.cluster.count))
+      primary:
+        field: clusters
+        label: Clusters
+        format:
+          type: number
+          decimals: 0
+
+  - title: Hosts
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datacenter.host.count IS NOT NULL
+      - STATS hosts = SUM(LAST_OVER_TIME(vcenter.datacenter.host.count))
+      primary:
+        field: hosts
+        label: Hosts
+        format:
+          type: number
+          decimals: 0
+
+  - title: Virtual Machines
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datacenter.vm.count IS NOT NULL
+      - STATS vms = SUM(LAST_OVER_TIME(vcenter.datacenter.vm.count))
+      primary:
+        field: vms
+        label: Virtual Machines
+        format:
+          type: number
+          decimals: 0
+
+  - title: Datastores
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datacenter.datastore.count IS NOT NULL
+      - STATS datastores = MAX(LAST_OVER_TIME(vcenter.datacenter.datastore.count))
+      primary:
+        field: datastores
+        label: Datastores
+        format:
+          type: number
+          decimals: 0
+
+      # ─── KPI Row 2 (beside overview: 4 × w:8 = 32) ────────────────
+  - title: Avg Host CPU
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.cpu.utilization IS NOT NULL
+      - STATS cpu = AVG(LAST_OVER_TIME(vcenter.host.cpu.utilization))
+      primary:
+        field: cpu
+        label: Avg Host CPU
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+
+  - title: Avg Host Memory
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.memory.utilization IS NOT NULL
+      - STATS mem = AVG(LAST_OVER_TIME(vcenter.host.memory.utilization))
+      primary:
+        field: mem
+        label: Avg Host Memory
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+
+  - title: Avg Datastore Used
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datastore.disk.utilization IS NOT NULL
+      - STATS util = AVG(LAST_OVER_TIME(vcenter.datastore.disk.utilization))
+      primary:
+        field: util
+        label: Avg Datastore Used
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+
+  - title: VMs Powered On
+    hide_title: true
+    size: {w: 8, h: 6}
+    esql:
+      type: metric
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.cluster.vm.count IS NOT NULL
+      - WHERE attributes.power_state == "on"
+      - STATS vms_on = SUM(LAST_OVER_TIME(vcenter.cluster.vm.count))
+      primary:
+        field: vms_on
+        label: VMs Powered On
+        format:
+          type: number
+          decimals: 0
+
+      # ─── vSphere Environment Summary Table ──────────────────────────
+  - title: Infrastructure Topology Overview
+    size: {w: 48, h: 8}
+    esql:
+      type: datatable
+      query:
+      - FROM metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datacenter.cluster.count IS NOT NULL OR vcenter.datacenter.host.count IS NOT NULL OR vcenter.datacenter.vm.count IS 
+        NOT NULL OR vcenter.datacenter.datastore.count IS NOT NULL
+      - STATS clusters = MAX(vcenter.datacenter.cluster.count), hosts = MAX(vcenter.datacenter.host.count), vms = 
+        MAX(vcenter.datacenter.vm.count), datastores = MAX(vcenter.datacenter.datastore.count) BY vcenter.datacenter.name
+      - SORT vcenter.datacenter.name ASC
+      metrics:
+      - field: clusters
+        label: Clusters
+      - field: hosts
+        label: Hosts
+      - field: vms
+        label: VMs
+      - field: datastores
+        label: Datastores
+
+      # ─── Cluster CPU Gauge ─────────────────────────────────────────
+  - title: Cluster CPU Headroom
+    size: {w: 16, h: 10}
+    esql:
+      type: gauge
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.cluster.cpu.effective IS NOT NULL
+      - STATS effective = SUM(LAST_OVER_TIME(vcenter.cluster.cpu.effective)), total = SUM(LAST_OVER_TIME(vcenter.cluster.cpu.limit))
+      - EVAL pct = ROUND(effective * 100.0 / total, 1) | EVAL _gauge_min = 0, _gauge_max = 100, _gauge_goal = 80
+      metric:
+        field: pct
+        label: CPU Effective %
+        format:
+          type: number
+          suffix: "%"
+      minimum:
+        field: _gauge_min
+      maximum:
+        field: _gauge_max
+      goal:
+        field: _gauge_goal
+      appearance:
+        shape: arc
+        ticks_position: auto
+      color:
+        range_type: percent
+        range_min: 0
+        range_max: 100
+        thresholds:
+        - color: "#cc5642"
+          up_to: 50
+        - color: "#d6bf57"
+          up_to: 75
+        - color: "#54b399"
+          up_to: 100
+  - title: Cluster Memory Headroom
+    size: {w: 16, h: 10}
+    esql:
+      type: gauge
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.cluster.memory.effective IS NOT NULL
+      - STATS effective = SUM(LAST_OVER_TIME(vcenter.cluster.memory.effective)), total = SUM(LAST_OVER_TIME(vcenter.cluster.memory.limit))
+      - EVAL pct = ROUND(effective * 100.0 / total, 1) | EVAL _gauge_min = 0, _gauge_max = 100, _gauge_goal = 80
+      metric:
+        field: pct
+        label: Memory Effective %
+        format:
+          type: number
+          suffix: "%"
+      minimum:
+        field: _gauge_min
+      maximum:
+        field: _gauge_max
+      goal:
+        field: _gauge_goal
+      appearance:
+        shape: arc
+        ticks_position: auto
+      color:
+        range_type: percent
+        range_min: 0
+        range_max: 100
+        thresholds:
+        - color: "#cc5642"
+          up_to: 50
+        - color: "#d6bf57"
+          up_to: 75
+        - color: "#54b399"
+          up_to: 100
+  - title: Avg Datastore Utilization
+    size: {w: 16, h: 10}
+    esql:
+      type: gauge
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datastore.disk.utilization IS NOT NULL
+      - STATS util = AVG(LAST_OVER_TIME(vcenter.datastore.disk.utilization)) | EVAL _gauge_min = 0, _gauge_max = 100, _gauge_goal = 80
+      metric:
+        field: util
+        label: Datastore Used %
+        format:
+          type: number
+          suffix: "%"
+      minimum:
+        field: _gauge_min
+      maximum:
+        field: _gauge_max
+      goal:
+        field: _gauge_goal
+      appearance:
+        shape: arc
+        ticks_position: auto
+      color:
+        range_type: percent
+        range_min: 0
+        range_max: 100
+        thresholds:
+        - color: "#54b399"
+          up_to: 70
+        - color: "#d6bf57"
+          up_to: 85
+        - color: "#cc5642"
+          up_to: 100
+  - title: Host CPU Utilization Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.cpu.utilization IS NOT NULL
+      - STATS cpu = AVG(AVG_OVER_TIME(vcenter.host.cpu.utilization)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        vcenter.host.name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: cpu
+        label: CPU %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+      breakdown:
+        field: vcenter.host.name
+      legend:
+        visible: show
+        position: right
+
+      # ─── Host Memory Utilization Over Time ─────────────────────────
+  - title: Host Memory Utilization Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.memory.utilization IS NOT NULL
+      - STATS mem = AVG(AVG_OVER_TIME(vcenter.host.memory.utilization)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        vcenter.host.name
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: mem
+        label: Memory %
+        format:
+          type: number
+          decimals: 1
+          suffix: "%"
+      breakdown:
+        field: vcenter.host.name
+      legend:
+        visible: show
+        position: right
+
+      # ─── VM Power State Distribution ───────────────────────────────
+  - title: VM Count by Power State
+    size: {w: 16, h: 12}
+    esql:
+      type: pie
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.cluster.vm.count IS NOT NULL
+      - STATS vm_count = SUM(LAST_OVER_TIME(vcenter.cluster.vm.count)) BY attributes.power_state
+      metrics:
+      - field: vm_count
+      breakdowns:
+      - field: attributes.power_state
+        label: Power State
+      appearance:
+        donut: medium
+      color:
+        assignments:
+        - value: "on"
+          color: '#54B399'
+        - value: "off"
+          color: '#CC5642'
+        - value: "suspended"
+          color: '#D6BF57'
+      legend:
+        visible: show
+
+      # ─── Datacenter Disk Space ─────────────────────────────────────
+  - title: Datacenter Disk Space
+    size: {w: 16, h: 12}
+    esql:
+      type: bar
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.datacenter.disk.space IS NOT NULL
+      - STATS space = SUM(LAST_OVER_TIME(vcenter.datacenter.disk.space)) BY vcenter.datacenter.name, attributes.disk_state
+      dimension:
+        field: vcenter.datacenter.name
+      metrics:
+      - field: space
+        label: Disk Space
+        format:
+          type: bytes
+      breakdown:
+        field: attributes.disk_state
+      color:
+        assignments:
+        - value: "available"
+          color: '#54B399'
+        - value: "used"
+          color: '#CC5642'
+      legend:
+        visible: show
+        position: bottom
+
+      # ─── Host Network Throughput Over Time ─────────────────────────
+  - title: Host Network Throughput Over Time
+    size: {w: 16, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-vcenterreceiver.otel-*
+      - WHERE vcenter.host.network.throughput IS NOT NULL
+      - WHERE attributes.object == "*"
+      - STATS throughput = AVG(AVG_OVER_TIME(vcenter.host.network.throughput)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        attributes.direction
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: throughput
+        label: Throughput
+        format:
+          type: number
+          suffix: " KiBy/s"
+      breakdown:
+        field: attributes.direction
+      color:
+        assignments:
+        - value: "received"
+          color: '#54B399'
+        - value: "transmitted"
+          color: '#6092C0'
+      legend:
+        visible: show
+        position: bottom

@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `ExclusiveLock` or `AccessExclusiveLock` counts exceed 5. Exclusive locks block all other access.",
     "name": "[PostgreSQL OTel] Exclusive lock contention",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,6 +20,19 @@
       "enabled": true,
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-locks"
+        },
+        {
+          "id": "postgresql_otel-workload"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL exclusive lock contention\n\n### What fired\nCount of exclusive locks exceeded 5 during the window.\n\n### Why it matters\nExclusiveLock blocks most other lock modes; AccessExclusiveLock blocks everything. Accumulating exclusive locks usually means a DDL-like statement is running or stuck.\n\n### Triage\n1. Check for long-running DDL / maintenance.\n\n### Remediation\n- Finish or kill the long-running statement.\n\n### Tuning\n- 5 locks; tighten per environment.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

@@ -1,0 +1,316 @@
+# Traefik OTel — Overview
+# High-level proxy health: traffic flow, error rates, open connections, latency.
+
+dashboards:
+  - id: traefik_otel-overview
+    name: '[Traefik OTel] Overview'
+    description: High-level Traefik proxy health and traffic flow. Request rates, error rates, open connections, and bandwidth.
+
+    settings:
+      margins: true
+      titles: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: data_stream.dataset
+        equals: traefik.otel
+
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: host.name
+      - type: options
+        label: Entrypoint
+        data_view: metrics-*
+        field: attributes.entrypoint
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: traefik_otel-overview
+            - label: Services
+              dashboard: traefik_otel-services
+            - label: TLS & Config
+              dashboard: traefik_otel-tls-config
+            - label: Process
+              dashboard: traefik_otel-process
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Traefik OTel] Overview
+
+            This dashboard provides an overview of Traefik proxy health and traffic:
+            - Request rate and traffic volume across entrypoints
+            - HTTP error rates (4xx and 5xx)
+            - Open connections by entrypoint
+            - Bandwidth (request/response bytes)
+            - Request distribution by status code
+
+      # ─── KPI Metric Row ──────────────────────────────────────────────
+      - title: Request Rate
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_entrypoint_requests_total IS NOT NULL
+            - STATS total = SUM(traefik_entrypoint_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
+            - EVAL request_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
+            - KEEP request_rate
+          primary:
+            field: request_rate
+            label: Req/sec
+            format:
+              type: number
+              decimals: 1
+              suffix: "/sec"
+
+      - title: 5xx Error Rate
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_entrypoint_requests_total IS NOT NULL
+            - STATS total = SUM(traefik_entrypoint_requests_total),
+              errors_5xx = SUM(traefik_entrypoint_requests_total)
+                WHERE attributes.code LIKE "5*"
+            - EVAL error_rate = CASE(total > 0, errors_5xx / total, 0.0)
+            - STATS error_rate = MAX(error_rate)
+          primary:
+            field: error_rate
+            label: 5xx Rate
+            format:
+              type: percent
+              decimals: 2
+
+      - title: Open Connections
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - TS metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_open_connections IS NOT NULL
+            - STATS connections = SUM(LAST_OVER_TIME(traefik_open_connections))
+          primary:
+            field: connections
+            label: Open
+            format:
+              type: number
+              decimals: 0
+
+      - title: Bandwidth (Rate)
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_entrypoint_responses_bytes_total IS NOT NULL
+            - STATS total = SUM(traefik_entrypoint_responses_bytes_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
+            - EVAL bytes_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
+            - KEEP bytes_rate
+          primary:
+            field: bytes_rate
+            label: Bytes/sec
+            format:
+              type: bytes
+              decimals: 1
+
+      # ─── Request Rate Over Time ──────────────────────────────────────
+      - title: Request Rate by Entrypoint
+        size: {w: 48, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_entrypoint_requests_total IS NOT NULL
+            - STATS total = SUM(traefik_entrypoint_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+                attributes.entrypoint
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL request_rate = total / bucket_secs
+            - KEEP time_bucket, attributes.entrypoint, request_rate
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: request_rate
+              label: Req/sec
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.entrypoint
+          legend:
+            visible: show
+            position: right
+
+      # ─── Error Rate Over Time ─────────────────────────────────────────
+      - title: HTTP Status Codes Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_entrypoint_requests_total IS NOT NULL
+            - STATS total = SUM(traefik_entrypoint_requests_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+                attributes.code
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL requests = total / bucket_secs
+            - KEEP time_bucket, attributes.code, requests
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: requests
+              label: Req/sec
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.code
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "200"
+                color: '#54B399'
+              - values: ['500', '502', '503', '504']
+                color: '#BD271E'
+              - values: ['400', '401', '403', '404']
+                color: '#D6BF57'
+          legend:
+            visible: show
+            position: right
+
+      # ─── Open Connections Over Time ──────────────────────────────────
+      - title: Open Connections by Entrypoint
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_open_connections IS NOT NULL
+            - STATS connections = SUM(LAST_OVER_TIME(traefik_open_connections))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+                attributes.entrypoint
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: connections
+              label: Connections
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.entrypoint
+          legend:
+            visible: show
+            position: right
+
+      # ─── Status Code Distribution ────────────────────────────────────
+      - title: Requests by Status Code
+        size: {w: 16, h: 10}
+        esql:
+          type: pie
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_entrypoint_requests_total IS NOT NULL
+            - STATS total_requests = SUM(traefik_entrypoint_requests_total)
+              BY attributes.code
+            - SORT total_requests DESC
+            - LIMIT 10
+          metrics:
+            - field: total_requests
+          breakdowns:
+            - field: attributes.code
+              label: Status Code
+          appearance:
+            donut: medium
+
+      # ─── Bandwidth Over Time ─────────────────────────────────────────
+      - title: Bandwidth (Response Bytes/sec)
+        size: {w: 32, h: 10}
+        esql:
+          type: line
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_entrypoint_responses_bytes_total IS NOT NULL
+            - STATS total = SUM(traefik_entrypoint_responses_bytes_total),
+              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
+            - EVAL bytes_rate = total / bucket_secs
+            - KEEP time_bucket, bytes_rate
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: bytes_rate
+              label: Bytes/sec
+              format:
+                type: bytes
+          legend:
+            visible: show
+            position: right
+
+      # ─── Top Entrypoints Table ───────────────────────────────────────
+      - title: Top Entrypoints by Request Rate
+        size: {w: 48, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM metrics-traefik.otel-*
+            - WHERE data_stream.dataset == "traefik.otel"
+            - WHERE traefik_entrypoint_requests_total IS NOT NULL
+            - STATS total_requests = SUM(traefik_entrypoint_requests_total)
+              BY attributes.entrypoint
+            - SORT total_requests DESC
+            - LIMIT 20
+          breakdowns:
+            - field: attributes.entrypoint
+              label: Entrypoint
+          metrics:
+            - field: total_requests
+              label: Total Requests
+              format:
+                type: number
+                compact: true

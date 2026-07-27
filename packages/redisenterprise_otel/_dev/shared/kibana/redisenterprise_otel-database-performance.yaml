@@ -1,0 +1,669 @@
+dashboards:
+- id: redisenterprise_otel-database-performance
+  name: '[Redis Enterprise OTel] Database Performance'
+  description: 'Deep-dive into Redis Enterprise database performance: latency breakdown, throughput, memory utilisation, cache effectiveness, and connection patterns.'
+  time_range:
+    from: now-15m
+    to: now
+  minimum_kibana_version: 8.14.0
+  filters:
+  - field: data_stream.dataset
+    equals: redisenterprise.otel
+  settings:
+    margins: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  controls:
+  - type: options
+    label: Cluster
+    data_view: metrics-*
+    field: cluster
+  - type: options
+    label: Database
+    data_view: metrics-*
+    field: bdb
+  panels:
+  - title: Navigation
+    size:
+      w: 48
+      h: 2
+    links:
+      layout: horizontal
+      items:
+      - label: Cluster Overview
+        dashboard: redisenterprise_otel-overview
+      - label: Node Health
+        dashboard: redisenterprise_otel-node-health
+      - label: Database Performance
+        dashboard: redisenterprise_otel-database-performance
+      - label: Proxy & Listener
+        dashboard: redisenterprise_otel-proxy-listener
+      - label: Shard Diagnostics
+        dashboard: redisenterprise_otel-shard-diagnostics
+  - hide_title: true
+    size:
+      w: 16
+      h: 12
+    markdown:
+      content: '## [Redis Enterprise OTel] Database Performance
+
+
+        Per-database performance analysis for Redis Enterprise:
+
+        - Read, write, and other command latency trends
+
+        - Operations throughput and network bandwidth
+
+        - Memory usage vs configured limits
+
+        - Cache hit/miss ratios and eviction rates
+
+        - Active and new connection patterns
+
+        - Keyspace size and expiry tracking
+
+        '
+  - title: Databases Up
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_up IS NOT NULL
+      - STATS bdb_status = MAX(bdb_up) BY bdb
+      - STATS databases_up = SUM(bdb_status)
+      primary:
+        field: databases_up
+        label: Databases Up
+        format:
+          type: number
+          decimals: 0
+  - title: Avg Latency
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_avg_latency IS NOT NULL
+      - STATS avg_latency = AVG(bdb_avg_latency)
+      - EVAL avg_latency_ms = avg_latency * 1000
+      primary:
+        field: avg_latency_ms
+        label: Avg Latency
+        format:
+          type: number
+          decimals: 3
+          suffix: ' ms'
+  - title: Total Ops/sec
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_instantaneous_ops_per_sec IS NOT NULL
+      - STATS avg_ops = AVG(bdb_instantaneous_ops_per_sec) BY bdb
+      - STATS total_ops = SUM(avg_ops)
+      primary:
+        field: total_ops
+        label: Total Ops/sec
+        format:
+          type: number
+          compact: true
+  - title: Cache Hit Rate
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_read_hits IS NOT NULL
+      - STATS hits = SUM(bdb_read_hits), misses = SUM(bdb_read_misses)
+      - EVAL hit_rate = ROUND((hits / (hits + misses)) * 100, 1)
+      primary:
+        field: hit_rate
+        label: Cache Hit Rate
+        format:
+          type: number
+          decimals: 1
+          suffix: '%'
+  - title: Total Memory Used
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_used_memory IS NOT NULL
+      - STATS avg_mem = AVG(bdb_used_memory) BY bdb
+      - STATS total_memory = SUM(avg_mem)
+      primary:
+        field: total_memory
+        label: Memory Used
+        format:
+          type: bytes
+  - title: Total Memory Limit
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_memory_limit IS NOT NULL
+      - STATS avg_limit = AVG(bdb_memory_limit) BY bdb
+      - STATS total_limit = SUM(avg_limit)
+      primary:
+        field: total_limit
+        label: Memory Limit
+        format:
+          type: bytes
+  - title: Active Connections
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_conns IS NOT NULL
+      - STATS avg_conns = AVG(bdb_conns) BY bdb
+      - STATS total_conns = SUM(avg_conns)
+      primary:
+        field: total_conns
+        label: Active Connections
+        format:
+          type: number
+          compact: true
+  - title: Evicted Objects
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_evicted_objects IS NOT NULL
+      - STATS total_evictions = SUM(bdb_evicted_objects)
+      primary:
+        field: total_evictions
+        label: Evicted Objects
+        format:
+          type: number
+          compact: true
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Latency'
+  - title: Read / Write / Other Latency Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_avg_read_latency IS NOT NULL
+      - STATS read_latency = AVG(bdb_avg_read_latency), write_latency = AVG(bdb_avg_write_latency), other_latency = AVG(bdb_avg_other_latency) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: read_latency
+        label: Read Latency (s)
+        format:
+          type: number
+          decimals: 5
+          suffix: ' s'
+      - field: write_latency
+        label: Write Latency (s)
+        format:
+          type: number
+          decimals: 5
+          suffix: ' s'
+      - field: other_latency
+        label: Other Latency (s)
+        format:
+          type: number
+          decimals: 5
+          suffix: ' s'
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Latency (s)
+  - title: Max Latency Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_avg_latency_max IS NOT NULL
+      - STATS max_read = MAX(bdb_avg_read_latency_max), max_write = MAX(bdb_avg_write_latency_max), max_other = MAX(bdb_avg_other_latency_max) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: max_read
+        label: Peak Read (s)
+        format:
+          type: number
+          decimals: 5
+          suffix: ' s'
+      - field: max_write
+        label: Peak Write (s)
+        format:
+          type: number
+          decimals: 5
+          suffix: ' s'
+      - field: max_other
+        label: Peak Other (s)
+        format:
+          type: number
+          decimals: 5
+          suffix: ' s'
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Peak Latency (s)
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Throughput'
+  - title: Request Rate by Type Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_read_req IS NOT NULL
+      - STATS read_req = AVG(bdb_read_req), write_req = AVG(bdb_write_req), other_req = AVG(bdb_other_req) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: read_req
+        label: Read Requests
+        format:
+          type: number
+          compact: true
+      - field: write_req
+        label: Write Requests
+        format:
+          type: number
+          compact: true
+      - field: other_req
+        label: Other Requests
+        format:
+          type: number
+          compact: true
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Requests / sec
+  - title: Network Bandwidth Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_ingress_bytes IS NOT NULL
+      - STATS ingress = AVG(bdb_ingress_bytes), egress = AVG(bdb_egress_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: ingress
+        label: Ingress
+        format:
+          type: bytes
+          suffix: /s
+      - field: egress
+        label: Egress
+        format:
+          type: bytes
+          suffix: /s
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Throughput (bytes/s)
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Memory'
+  - title: Memory Usage Over Time by Database
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_used_memory IS NOT NULL
+      - STATS used_memory = AVG(bdb_used_memory) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), bdb
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: used_memory
+        label: Used Memory
+        format:
+          type: bytes
+      breakdown:
+        field: bdb
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Used Memory (bytes)
+  - title: Memory Fragmentation Ratio Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_mem_frag_ratio IS NOT NULL
+      - STATS frag_ratio = AVG(bdb_mem_frag_ratio) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), bdb
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: frag_ratio
+        label: Fragmentation Ratio
+        format:
+          type: number
+          decimals: 2
+      breakdown:
+        field: bdb
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Fragmentation Ratio (RSS / used)
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Cache & Keyspace'
+  - title: Cache Hit Rate Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_read_hits IS NOT NULL
+      - STATS hits = SUM(bdb_read_hits), misses = SUM(bdb_read_misses) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - EVAL hit_rate = ROUND((hits / (hits + misses)) * 100, 2)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: hit_rate
+        label: Hit Rate %
+        format:
+          type: number
+          decimals: 1
+          suffix: '%'
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Hit Rate %
+  - title: Evictions & Expirations Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: bar
+      mode: stacked
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_evicted_objects IS NOT NULL
+      - STATS evictions = AVG(bdb_evicted_objects), expirations = AVG(bdb_expired_objects) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: evictions
+        label: Evictions
+        format:
+          type: number
+          compact: true
+      - field: expirations
+        label: Expirations
+        format:
+          type: number
+          compact: true
+      color:
+        palette: eui_amsterdam_color_blind
+        assignments:
+        - value: Evictions
+          color: '#E7664C'
+        - value: Expirations
+          color: '#D6BF57'
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Objects / sec
+  - title: Total Keys Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_no_of_keys IS NOT NULL
+      - STATS total_keys = SUM(bdb_no_of_keys), keys_with_expiry = SUM(bdb_no_of_expires) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: total_keys
+        label: Total Keys
+        format:
+          type: number
+          compact: true
+      - field: keys_with_expiry
+        label: Keys with Expiry
+        format:
+          type: number
+          compact: true
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Key Count
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Connections & Shard CPU'
+  - title: Active Connections Over Time by Database
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_conns IS NOT NULL
+      - STATS active_conns = AVG(bdb_conns) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), bdb
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: active_conns
+        label: Active Connections
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: bdb
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Active Connections
+  - title: Database Shard CPU Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_shard_cpu_user IS NOT NULL
+      - EVAL shard_cpu = bdb_shard_cpu_user + bdb_shard_cpu_system
+      - STATS cpu = AVG(shard_cpu) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), bdb
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: cpu
+        label: Shard CPU (cores)
+        format:
+          type: number
+          decimals: 2
+      breakdown:
+        field: bdb
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Shard CPU (cores)
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Detail'
+  - title: Database Performance Summary
+    size:
+      w: 48
+      h: 15
+    esql:
+      type: datatable
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE bdb_up IS NOT NULL
+      - STATS Status = MAX(bdb_up), `Latency (s)` = AVG(bdb_avg_latency), `Read Latency` = AVG(bdb_avg_read_latency), `Write Latency` = AVG(bdb_avg_write_latency), `Ops/sec` = AVG(bdb_instantaneous_ops_per_sec), `Used Memory` = AVG(bdb_used_memory), `Memory Limit` = AVG(bdb_memory_limit), `Frag Ratio` = AVG(bdb_mem_frag_ratio), `Hit Rate Hits` = SUM(bdb_read_hits), `Hit Rate Misses` = SUM(bdb_read_misses), Connections = AVG(bdb_conns), Keys = AVG(bdb_no_of_keys), Evictions = SUM(bdb_evicted_objects) BY bdb
+      - EVAL `Memory %` = COALESCE(ROUND((`Used Memory` / `Memory Limit`) * 100, 1), 0.0)
+      - EVAL `Hit Rate` = COALESCE(ROUND((`Hit Rate Hits` / (`Hit Rate Hits` + `Hit Rate Misses`)) * 100, 1), 0.0)
+      - EVAL Status = COALESCE(Status, 0), `Latency (s)` = COALESCE(`Latency (s)`, 0.0), `Read Latency` = COALESCE(`Read Latency`, 0.0), `Write Latency` = COALESCE(`Write Latency`, 0.0), `Ops/sec` = COALESCE(`Ops/sec`, 0.0), `Used Memory` = COALESCE(`Used Memory`, 0), `Memory Limit` = COALESCE(`Memory Limit`, 0), `Frag Ratio` = COALESCE(`Frag Ratio`, 0.0), `Hit Rate Hits` = COALESCE(`Hit Rate Hits`, 0), `Hit Rate Misses` = COALESCE(`Hit Rate Misses`, 0), Connections = COALESCE(Connections, 0), Keys = COALESCE(Keys, 0), Evictions = COALESCE(Evictions, 0)
+      - SORT bdb ASC
+      - LIMIT 100
+      breakdowns:
+      - field: bdb
+        label: Database
+      metrics:
+      - field: Status
+        label: Up
+        format:
+          type: number
+          decimals: 0
+      - field: Latency (s)
+        label: Avg Latency
+        format:
+          type: number
+          decimals: 5
+      - field: Read Latency
+        label: Read Latency
+        format:
+          type: number
+          decimals: 5
+      - field: Write Latency
+        label: Write Latency
+        format:
+          type: number
+          decimals: 5
+      - field: Ops/sec
+        label: Ops/sec
+        format:
+          type: number
+          compact: true
+      - field: Memory %
+        label: Memory %
+        format:
+          type: number
+          decimals: 1
+          suffix: '%'
+      - field: Hit Rate
+        label: Hit Rate %
+        format:
+          type: number
+          decimals: 1
+          suffix: '%'
+      - field: Connections
+        label: Conns
+        format:
+          type: number
+          decimals: 0
+      - field: Keys
+        label: Keys
+        format:
+          type: number
+          compact: true

@@ -1,0 +1,52 @@
+{
+  "attributes": {
+    "name": "[vSphere OTel] Average host disk latency below 15 ms 99.5% rolling 30 days",
+    "description": "This SLO tracks the average disk I/O latency of ESXi hosts via OTel vcenterreceiver metrics. It ensures that 99.5% of 1-minute time intervals show average host disk latency below 15 milliseconds over a rolling 30-day period. High disk latency indicates storage bottlenecks from array issues, noisy-neighbor VMs, or thin-provisioning overcommit; remediation includes investigating storage array, VM I/O profiles, or network path.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"vcenterreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "vcenter.host.disk.latency.max",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 15
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "vsphere",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.vcenter.host.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        { "id": "vsphere_otel-hosts" },
+        { "id": "vsphere_otel-storage" }
+      ]
+    }
+  },
+  "id": "vsphere_otel-host-disk-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}

@@ -14,6 +14,7 @@ mapped_pages:
 
     ```bash
     git clone https://github.com/elastic/elastic-package.git
+    cd elastic-package
     make build
     ```
 

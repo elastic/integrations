@@ -1,0 +1,101 @@
+title: Collect identity protection assessments from CrowdStrike.
+type: logs
+streams:
+  - input: cel
+    title: Identity Protection Assessments
+    description: Collect identity protection assessments from CrowdStrike Falcon.
+    enabled: false
+    template_path: cel.yml.hbs
+    vars:
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to pull the identity protection assessment logs from CrowdStrike. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the CrowdStrike API. By default, differential data is pulled once per day. Supported units for this parameter are h/m/s.
+        default: 24h
+        multi: false
+        required: true
+        show_user: true
+      - name: data_sources
+        type: text
+        title: Identity data sources
+        description: >-
+          DataSource values used to discover domains using the Identity Protection GraphQL API. Allowed values include: `SNIFFER`, `ACTIVE_DIRECTORY`, `ADFS`, `OKTA`, `AZURE`, `PING_IDENTITY`, `AWS`.
+        multi: true
+        required: false
+        show_user: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+      - name: max_executions
+        type: integer
+        title: Maximum Executions
+        description: >-
+          Maximum number of CEL program re-evaluations per collection interval. High-volume environments with large result sets may need a higher value to complete pagination within a single interval.
+        default: 1000
+        multi: false
+        required: true
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - crowdstrike-identity-protection-assessment
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        type: bool
+        title: Preserve duplicate custom fields
+        description: Use this option to allow duplicate custom fields in events.
+        default: false
+        multi: false
+        required: true
+        show_user: true
+      - name: enable_nested_assessment_factors
+        required: false
+        show_user: true
+        title: Populate nested assessment factors
+        description: >-
+          When enabled, duplicates risk factor entries into `crowdstrike.idp.security_assessment.assessment_factors_nested` as an Elasticsearch [nested](https://www.elastic.co/guide/en/elasticsearch/reference/current/nested.html) field, so you can run queries that correlate `risk_factor_type`, `likelihood`, and `severity` within the same factor object. When disabled, only the flattened `assessment_factors` structure is stored.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

@@ -548,6 +548,254 @@
       description: >
         A globally unique identifier that identifies the provider that logged the event.
 
+    - name: scheduled_task
+      type: group
+      description: >
+        Selected configuration from Windows Security scheduled task lifecycle
+        events. These normalized fields provide searchable task metadata when the
+        raw XML may exceed keyword indexing limits. They describe the task
+        definition, not evidence that the task, a trigger, or an action ran. Use
+        `event.action` to identify the audited lifecycle operation.
+      fields:
+        - name: name
+          type: keyword
+          ignore_above: 4096
+          description: >
+            Full task path from `winlog.event_data.TaskName`, in
+            `\folder\task` form.
+        - name: uri
+          type: keyword
+          ignore_above: 4096
+          description: >
+            URI from `RegistrationInfo/URI` in the task XML. Compare it with
+            `winlog.scheduled_task.name` when investigating inconsistent task
+            identity.
+        - name: principals
+          type: group
+          description: >
+            Security contexts configured to run the task. These identify run-as
+            users or groups, not the account that created or changed the task.
+          fields:
+            - name: id
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Task-local identifier for this principal.
+                `winlog.scheduled_task.actions.context` can reference this value;
+                it is not a Windows account identifier.
+            - name: user
+              type: group
+              description: >
+                User account configured to run the task under this principal.
+              fields:
+                - name: identifier
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    User identifier from `Principal/UserId` required to run task
+                    actions associated with this principal.
+            - name: group
+              type: group
+              description: >
+                User group configured to run the task under this principal.
+              fields:
+                - name: identifier
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    User-group identifier from `Principal/GroupId` required to run
+                    task actions associated with this principal.
+            - name: logon
+              type: group
+              description: >
+                Security logon method configured for this principal.
+              fields:
+                - name: type
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    Method Task Scheduler uses to establish the principal's security
+                    context, such as `Password`, `S4U`, `InteractiveToken`, or
+                    `ServiceAccount`. This field is populated only when
+                    `Principal/LogonType` exists in the XML.
+            - name: run_level
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Requested privilege level for task execution, such as
+                `LeastPrivilege` or `HighestAvailable`. This setting does not prove
+                that an execution was elevated.
+        - name: actions
+          type: group
+          description: >
+            Selected actions configured to run when the task starts. Only `Exec`
+            and `ComHandler` actions are normalized. These fields do not prove
+            execution, and their array order may differ from the configured action
+            order. When a task has multiple actions, predicates against separate
+            fields may be satisfied by different actions.
+          fields:
+            - name: definition
+              type: wildcard
+              # Override logsdb's default ignore_above of 8191 so long definitions remain indexed.
+              ignore_above: 2147483647
+              description: >
+                Versioned canonical representation of one configured action as a
+                pipe-separated sequence with fixed key order: `v=1`, `type=<value>`,
+                `context=<value>`, `command=<value>`, `arguments=<value>`,
+                `working_directory=<value>`, and `class_id=<value>`. An empty value
+                means the source element was omitted or empty after normalization.
+                Percent signs, pipe separators, equals signs, C0 controls, and DEL
+                are escaped as uppercase `%HH`; printable Unicode, backslashes, `*`,
+                and `?` remain literal and may need query-language escaping. Put
+                every same-action condition in one predicate. For example, one KQL
+                predicate can require an `exec` type, `powershell.exe` command, and
+                `EncodedCommand` argument so they must occur in the same action.
+                Separate predicates may match different actions. Use the component
+                fields for single-attribute searches; use this field when multiple
+                attributes must belong to the same action.
+            - name: type
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Normalized action type: `exec` runs a command-line operation;
+                `com_handler` invokes a COM handler.
+            - name: context
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Task-local principal identifier whose security context applies to
+                this action. It references
+                `winlog.scheduled_task.principals.id` and is not a Windows account
+                identifier.
+            - name: command
+              type: wildcard
+              ignore_above: 4096
+              description: >
+                Executable file or document configured for an `exec` action. The
+                value may contain environment variables; command-line arguments are
+                stored separately in `winlog.scheduled_task.actions.arguments`.
+              multi_fields:
+                - name: text
+                  type: match_only_text
+            - name: arguments
+              type: wildcard
+              ignore_above: 4096
+              description: >
+                Command-line arguments configured for the `exec` action command. The
+                value may contain environment variables.
+              multi_fields:
+                - name: text
+                  type: match_only_text
+            - name: working_directory
+              type: wildcard
+              ignore_above: 4096
+              description: >
+                Working directory configured for the `exec` action. The value may
+                contain environment variables.
+              multi_fields:
+                - name: text
+                  type: match_only_text
+            - name: class_id
+              type: keyword
+              ignore_above: 1024
+              description: >
+                COM class identifier (CLSID) invoked by a `com_handler` action. This
+                identifies the configured COM component, not a file or observed
+                process.
+        - name: triggers
+          type: group
+          description: >
+            Triggers configured to start the task. These fields describe
+            configuration, not evidence that a trigger fired or the task ran. When
+            a task has multiple triggers, predicates against separate fields may be
+            satisfied by different triggers. Only the trigger types listed under
+            `winlog.scheduled_task.triggers.type` are normalized. Unrecognized
+            trigger elements are omitted from this group and remain available in
+            `winlog.event_data.TaskContent` or `winlog.event_data.TaskContentNew`.
+          fields:
+            - name: definition
+              type: wildcard
+              # Override logsdb's default ignore_above of 8191 so long definitions remain indexed.
+              ignore_above: 2147483647
+              description: >
+                Versioned canonical representation of one configured trigger as a
+                pipe-separated sequence with fixed key order: `v=1`, `type=<value>`,
+                `enabled=<value>`, `interval=<value>`, `duration=<value>`, and
+                `stop_at_duration_end=<value>`. An empty value means the source
+                element was omitted or empty after normalization. An empty
+                `stop_at_duration_end=` means the element was omitted; when
+                repetition applies, Task Scheduler defaults the omitted value to
+                `false`. This remains distinct from explicit
+                `stop_at_duration_end=false`. Percent signs, pipe separators, equals
+                signs, C0 controls, and DEL are escaped as uppercase `%HH`;
+                printable Unicode, backslashes, `*`, and `?` remain literal and may
+                need query-language escaping. Put every same-trigger condition in
+                one predicate. For example, one KQL predicate can require a `time`
+                type, an `enabled` value of `false`, and a `PT30M` interval so they
+                must occur in the same trigger. Separate predicates may match
+                different triggers. Use the component fields for single-attribute
+                searches; use this field when multiple attributes must belong to
+                the same trigger.
+            - name: type
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Normalized trigger type: `boot`, `wnf_state_change`, `time`,
+                `calendar`, `logon`, `registration`, `session_state_change`,
+                `event`, or `idle`.
+            - name: enabled
+              type: boolean
+              description: >
+                Whether the trigger is effectively enabled. If the trigger XML has
+                no `Enabled` element, Task Scheduler treats the trigger as enabled.
+            - name: repetition
+              type: group
+              description: >
+                Configuration that controls how often the trigger repeats and how
+                long the repetition pattern remains active.
+              fields:
+                - name: interval
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    Time between repeated task starts, represented as an XML duration
+                    such as `PT5M` for five minutes.
+                - name: duration
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    How long the repetition pattern remains active, represented as an
+                    XML duration such as `PT1H` for one hour. If `Duration` is
+                    absent, the pattern repeats indefinitely.
+                - name: stop_at_duration_end
+                  type: boolean
+                  description: >
+                    Whether Task Scheduler stops a running task instance when the
+                    repetition duration ends. This field is populated only when the
+                    XML contains `StopAtDurationEnd`; otherwise Task Scheduler
+                    defaults the setting to `false`.
+        - name: settings
+          type: group
+          description: >
+            Selected task-wide settings that control task availability and
+            visibility. These describe configured state, not the lifecycle operation
+            recorded in `event.action`.
+          fields:
+            - name: enabled
+              type: boolean
+              description: >
+                Whether the task definition is enabled. This field is populated only
+                when the XML contains `Settings/Enabled`; otherwise Task Scheduler
+                defaults the setting to `true`. It is separate from `event.action`,
+                which identifies the audited lifecycle operation.
+            - name: hidden
+              type: boolean
+              description: >
+                Whether the task is hidden from default Task Scheduler views. This
+                field is populated only when the XML contains `Settings/Hidden`;
+                otherwise Task Scheduler defaults the setting to `false`. Hidden
+                tasks remain registered and can still run.
+
     - name: process.pid
       type: long
       description: >

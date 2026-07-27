@@ -2,7 +2,7 @@
 
 The Living off the Land Attack (LotL) Detection package contains a supervised machine learning model, called [ProblemChild and associated assets](https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration), which are used to detect living off the land (LotL) activity in your environment. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
-This package support data from Elastic Endpoint via Elastic Defend or winlogbeat on Windows only, although Elastic Defend is reccomended. Prior to using this integration, Elastic Defend should be installed through Elastic Agent (or winlogbeat should be enrolled) and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
+This package supports Windows data from Elastic Defend and Winlogbeat only, although Elastic Defend is strongly recommended. Other integrations do not capture all the process event fields used to train the ProblemChild model, which might lead to incomplete data and potentially degraded prediction quality. Before using this integration, Elastic Defend should be installed through Elastic Agent (or Winlogbeat should be enrolled) and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
 
 **Note**: In versions 2.1.1 and later, this package ignores data in cold and frozen data tiers to reduce heap memory usage, avoid running on outdated data, and to follow best practices.
 
@@ -13,7 +13,7 @@ The following blogs and webinar provide additional context. For the most current
 - [Webinar: ProblemChild: Detecting living-off-the-land attacks using the Elastic Stack](https://www.elastic.co/webinars/problemchild)
 
 ## Installation
-1. **Upgrading**: If upgrading from a version below v2.0.0, see the section v2.0.0 and beyond.
+1. **Upgrading**: If upgrading from a version below v3.0.0, see the section v3.0.0 and beyond.
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Living off the Land Detection**. Configure the integration name and agent policy. Click Save and Continue. (Note that this integration does not rely on an agent, and can be assigned to a policy without an agent.)
 1. **Install assets**: Install the assets by clicking **Settings > Install Living off the Land Detection assets**.
 1. **Configure the pipeline**: To configure the pipeline you can use one of the following steps:
@@ -35,7 +35,7 @@ The following blogs and webinar provide additional context. For the most current
       }
       ```
     - If `logs-endpoint.events.process@custom` already exists, select the three dots next to it and choose **Edit**. Click **Add a processor**. Select **Pipeline** for Processor, enter `<VERSION>-problem_child_ingest_pipeline` for name (replacing `<VERSION>` with the current package version), and check **Ignore missing pipeline** and **Ignore failures for this processor**. Select **Add Processor**.
-    - If using an Elastic Beat such as Winlogbeat, see the next step on how to add the ingest pipeline as part of the component template
+    - If using Winlogbeat, see the next step on how to add the ingest pipeline as part of the component template
 1. **Add the required mappings to the component template**: Go to **Stack Management > Index Management > Component Templates**. Templates that can be edited to add custom components will be marked with a `@custom` suffix. For instance, the custom component template for Elastic Defend process events is `logs-endpoint.events.process@custom`. **Note:** Do not attempt to edit the `@package` template if present. ![Component Templates](../img/component-templates.png)
      
     #### Elastic Defend
@@ -119,7 +119,9 @@ The following blogs and webinar provide additional context. For the most current
     ```
 1. **(Optional) [Create a data view](https://www.elastic.co/guide/en/kibana/current/data-views.html) specificially for your windows process logs (index pattern or data stream name)**
 1. **Add preconfigured anomaly detection jobs**: In **Stack Management -> Anomaly Detection Jobs**, you will see **Select data view or saved search**. Select the data view created in the previous step. Then under `Use preconfigured jobs` you will see `Living off the Land Attack Detection`. When you select the card, you will see several pre-configured anomaly detection jobs that you can create depending on what makes the most sense for your environment. **Warning**: if the ingest pipeline hasn't run for some reason, such as no eligible data has come in yet, or the required mapping has not been added, _you won't be able to see this card yet_. If that is the case, try troubleshooting the ingest pipeline, and if any predictions have been populated yet.
-1. **Enable detection rules**: You can also enable detection rules to alert on LotL activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Living off the Land Attack Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
+### Enable detection rules
+
+You can also enable detection rules to alert on LotL activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Living off the Land Attack Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
 ![Domain Generation Detection Detection Rules](../img/lotlrules.png)
 *In **Security > Rules**, filtering with the “Use Case: Living off the Land Attack Detection” tag*
@@ -128,14 +130,14 @@ The following blogs and webinar provide additional context. For the most current
 
 Detects potential LotL activity by identifying malicious processes.
 
-| Job | Description |
-|---|---|
-| problem_child_rare_process_by_host | Looks for a process that has been classified as malicious on a host that does not commonly manifest malicious process activity. |
-| problem_child_high_sum_by_host | Looks for a set of one or more malicious child processes on a single host. |
-| problem_child_rare_process_by_user | Looks for a process that has been classified as malicious where the user context is unusual and does not commonly manifest malicious process activity. |
-| problem_child_rare_process_by_parent | Looks for rare malicious child processes spawned by a parent process. |
-| problem_child_high_sum_by_user | Looks for a set of one or more malicious processes, started by the same user. |
-| problem_child_high_sum_by_parent | Looks for a set of one or more malicious child processes spawned by the same parent process. |
+| Job                                     | Description                                                                                                                                            | Supported Platform | Event Category |
+|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------|----------------|
+| problem_child_rare_process_by_host_ea   | Looks for a process that has been classified as malicious on a host that does not commonly manifest malicious process activity.                        | Windows            | process        |
+| problem_child_high_sum_by_host_ea       | Looks for a set of one or more malicious child processes on a single host.                                                                             | Windows            | process        |
+| problem_child_rare_process_by_user_ea   | Looks for a process that has been classified as malicious where the user context is unusual and does not commonly manifest malicious process activity. | Windows            | process        |
+| problem_child_rare_process_by_parent_ea | Looks for rare malicious child processes spawned by a parent process.                                                                                  | Windows            | process        |
+| problem_child_high_sum_by_user_ea       | Looks for a set of one or more malicious processes, started by the same user.                                                                          | Windows            | process        |
+| problem_child_high_sum_by_parent_ea     | Looks for a set of one or more malicious child processes spawned by the same parent process.                                                           | Windows            | process        |
 
 ## Customize ML jobs for Living off the Land Attack Detection 
 
@@ -153,6 +155,32 @@ To customize the datafeed query and other settings such as model memory limit, f
 1. You can also modify the job configuration by adjusting the **Bucket span** and by adding or removing **Influencers** to improve anomaly attribution. 
 ![Living off the Land Attack Detection jobs](../img/problemchild_ml_job_6.png)
 1. Finally, assign a new Job ID, and click on **Create job**, and start the datafeed to apply the updated settings.
+
+## v3.0.0 and beyond
+
+v3.0.0 of this package requires Elastic Stack version 9.4 or later. It introduces support for Entity Analytics (EA), adding new fields for proper entity resolution.
+
+- This package installs new ML jobs which include `_ea` suffix in their names, as outlined below. New detection rules are also included.
+- Previously installed ML jobs and rules will continue to run, allowing time to transition to the new Entity Analytics assets.
+- **Important**: We recommend installing the new ML jobs and verifying that they are properly set up, collecting data, and generating anomalies **before** deleting the old jobs and upgrading to the new version of the detection rules available in 9.4. The new detection rules reference ML job IDs with the `_ea` suffix and are not compatible with older versions of the jobs.
+
+The new Entity Analytics ML job IDs are:
+- `problem_child_rare_process_by_host_ea`
+- `problem_child_high_sum_by_host_ea`
+- `problem_child_rare_process_by_user_ea`
+- `problem_child_rare_process_by_parent_ea`
+- `problem_child_high_sum_by_user_ea`
+- `problem_child_high_sum_by_parent_ea`
+
+After confirming the new Entity Analytics ML jobs are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions (Elastic stack 9.4+):
+
+- Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
+    - `problem_child_rare_process_by_host`
+    - `problem_child_high_sum_by_host`
+    - `problem_child_rare_process_by_user`
+    - `problem_child_rare_process_by_parent`
+    - `problem_child_high_sum_by_user`
+    - `problem_child_high_sum_by_parent`
 
 ## v2.0.0 and beyond
 

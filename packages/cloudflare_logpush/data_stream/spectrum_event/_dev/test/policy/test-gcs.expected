@@ -1,0 +1,49 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: cloudflare_logpush
+      name: test-gcs-cloudflare_logpush
+      streams:
+        - auth.credentials_file.path: /tmp/service_account.json
+          bucket_timeout: 120s
+          buckets:
+            - name: spectrum_event_logs
+              number_of_workers: 5
+              poll: true
+              poll_interval: 15s
+          data_stream:
+            dataset: cloudflare_logpush.spectrum_event
+          max_workers: 5
+          poll: true
+          poll_interval: 30s
+          processors:
+            - decode_json_fields:
+                fields:
+                    - message
+                max_depth: 10
+                overwrite_keys: true
+                process_array: true
+                target: ""
+          project_id: my-project
+          publisher_pipeline.disable_host: true
+          tags:
+            - forwarded
+      type: gcs
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-cloudflare_logpush.spectrum_event-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

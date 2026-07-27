@@ -1,0 +1,69 @@
+title: Product
+type: logs
+streams:
+  - input: cel
+    title: Product
+    description: Collect Product logs from XM Cyber.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: How often to poll the XM Cyber Product API. Supported time units are s, m, h.
+        required: true
+        show_user: true
+        default: 24h
+      - name: page_size
+        type: integer
+        title: Page size
+        description: Number of results per page. Must be between 1 and 100.
+        required: true
+        show_user: false
+        default: 100
+      - name: max_executions
+        type: integer
+        title: Maximum Pages Per Interval
+        description: Maximum Pages Per Interval is the maximum number of pages that can be collected at each interval. Note that this must be greater than zero.
+        multi: false
+        required: false
+        show_user: false
+        default: 1000
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before the HTTP client request times out (e.g. 60s).
+        required: true
+        show_user: false
+        default: 60s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: Log HTTP request/response traces to the agent for debugging. Do not enable in production.
+        required: false
+        show_user: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to add to every collected event.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - xm_cyber-product
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Keep a copy of the raw event in `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

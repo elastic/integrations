@@ -1,0 +1,33 @@
+{
+  "id": "otel-collector-internal-telemetry-otel-exporter-send-failed-metric-points",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[OpenTelemetry Collector Internal Telemetry Otel] Exporter send failed metric points",
+    "tags": [
+      "OpenTelemetry",
+      "OpenTelemetry Collector",
+      "Internal telemetry",
+      "Exporter"
+    ],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert when the OpenTelemetry Collector reports non-zero rate of failed metric point exports.\n//\n// metrics.otelcol_exporter_send_failed_metric_points is a cumulative counter; RATE() yields\n// per-bucket increases. TS is used for time-series metrics (counter resets handled by the TS pipeline).\n//\n// Scope: metrics-collectortelemetry* and collectortelemetry.otel dataset to avoid mixing with\n// unrelated metrics-* streams.\n//\n// Grouping: service.name and service.instance.id help identify which collector instance fails.\n//\n// Tuning: raise the threshold (e.g. failed_metric_points_rate > N) or increase alert delay\n// to reduce noise from brief blips.\n//\nTS metrics-collectortelemetry*\n| WHERE data_stream.dataset == \"collectortelemetry.otel\"\n| STATS failed_metric_points_rate = SUM(RATE(metrics.otelcol_exporter_send_failed_metric_points)) BY service.name, service.instance.id\n| WHERE failed_metric_points_rate > 0\n| SORT failed_metric_points_rate DESC\n"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

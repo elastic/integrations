@@ -1,0 +1,167 @@
+rules:
+  - path: /oauth2/token
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"access_token":"xxxx","expires_in":3600,"token_type":"Bearer","refresh_token":"yyyy"}
+  - path: /identity-protection/combined/graphql/v1
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: '/GetTimelineEvents.*"after":"page2-end"/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "timeline": {
+                "nodes": [
+                  {
+                    "eventType": "ACCOUNT_CREATED",
+                    "endTime": "2026-02-20T12:31:42.000Z",
+                    "entity": {
+                      "accounts": [
+                        {
+                          "objectSid": "S-1-5-21-1819694714-1249303988-2979750736-1105",
+                          "samAccountName": "akshar",
+                          "servicePrincipalNames": []
+                        }
+                      ],
+                      "primaryDisplayName": "Akshat Suthar",
+                      "secondaryDisplayName": "CRESTTEST.LOCAL\\akshar",
+                      "type": "USER"
+                    },
+                    "eventId": "jppprp",
+                    "eventLabel": "Account Created",
+                    "eventSeverity": "NEUTRAL",
+                    "startTime": "2026-02-20T12:31:42.000Z",
+                    "timestamp": "2026-02-20T12:31:42.000Z"
+                  }
+                ],
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "startCursor": "page3-start",
+                  "endCursor": "page3-end"
+                }
+              }
+            }
+          }
+          `}}
+  - path: /identity-protection/combined/graphql/v1
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: '/GetTimelineEvents.*"after":"page1-end"/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "timeline": {
+                "nodes": [
+                  {
+                    "eventType": "ACCOUNT_CREATED",
+                    "endTime": "2026-02-20T12:32:24.000Z",
+                    "entity": {
+                      "accounts": [
+                        {
+                          "objectSid": "S-1-5-21-1819694714-1249303988-2979750736-1106",
+                          "samAccountName": "khodaji",
+                          "servicePrincipalNames": []
+                        }
+                      ],
+                      "primaryDisplayName": "Khodaji Chavda",
+                      "secondaryDisplayName": "CRESTTEST.LOCAL\\khodaji",
+                      "type": "USER"
+                    },
+                    "eventId": "jppprj",
+                    "eventLabel": "Account Created",
+                    "eventSeverity": "NEUTRAL",
+                    "startTime": "2026-02-20T12:32:24.000Z",
+                    "timestamp": "2026-02-20T12:32:24.000Z"
+                  }
+                ],
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "startCursor": "page2-start",
+                  "endCursor": "page2-end"
+                }
+              }
+            }
+          }
+          `}}
+  - path: /identity-protection/combined/graphql/v1
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - application/json
+      Authorization:
+        - "Bearer xxxx"
+    request_body: '/GetTimelineEvents/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "timeline": {
+                "nodes": [
+                  {
+                    "eventType": "ACCOUNT_CREATED",
+                    "endTime": "2026-02-20T12:05:14.000Z",
+                    "entity": {
+                      "accounts": [
+                        {
+                          "objectSid": "S-1-5-21-1819694714-1249303988-2979750736-1104",
+                          "samAccountName": "DESKTOP-MF7IFEI$",
+                          "servicePrincipalNames": [
+                            "TERMSRV/DESKTOP-MF7IFEI",
+                            "TERMSRV/DESKTOP-MF7IFEI.cresttest.local",
+                            "RestrictedKrbHost/DESKTOP-MF7IFEI",
+                            "HOST/DESKTOP-MF7IFEI",
+                            "RestrictedKrbHost/DESKTOP-MF7IFEI.cresttest.local",
+                            "HOST/DESKTOP-MF7IFEI.cresttest.local"
+                          ]
+                        }
+                      ],
+                      "primaryDisplayName": "DESKTOP-MF7IFEI",
+                      "secondaryDisplayName": "desktop-mf7ifei.cresttest.local",
+                      "type": "ENDPOINT"
+                    },
+                    "eventId": "jppp54",
+                    "eventLabel": "Account Created",
+                    "eventSeverity": "NEUTRAL",
+                    "startTime": "2026-02-20T12:05:14.000Z",
+                    "timestamp": "2026-02-20T12:05:14.000Z"
+                  }
+                ],
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "startCursor": "page1-start",
+                  "endCursor": "page1-end"
+                }
+              }
+            }
+          }
+          `}}

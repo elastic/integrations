@@ -107,10 +107,6 @@ processors:
           enabled: false
         host.arch:
           enabled: true
-        host.ip:
-          enabled: true
-        host.mac:
-          enabled: true
         host.cpu.vendor.id:
           enabled: true
         host.cpu.family:
@@ -193,8 +189,6 @@ Also, it's recommended to enable the [`resourcedetection` processor](https://git
 - `host.name`
 - `host.id`
 - `host.arch`
-- `host.ip`
-- `host.mac`
 - `host.cpu.vendor.id`
 - `host.cpu.family`
 - `host.cpu.model.id`

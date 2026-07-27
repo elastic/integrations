@@ -1,0 +1,134 @@
+# Test that indicator IDs above 2^53 are preserved without float64
+# precision loss. The mock returns two Address indicators whose IDs
+# (9007199254918487 and 9007199254918489) both round to 9007199254918488
+# under IEEE 754 double-precision. After the fix, each document must
+# retain its original distinct ID.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} tc-precision-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 30s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# Exactly 2 documents.
+exec jq '.hits.total.value' got_docs.json
+stdout '^2$'
+
+# Extract all threat_connect.indicator.id values, sorted.
+exec jq -r '[.hits.hits[]._source.threat_connect.indicator.id] | sort | .[]' got_docs.json
+stdout '9007199254918487'
+stdout '9007199254918489'
+
+# Verify the IDs are distinct (not both 9007199254918488).
+exec jq '[.hits.hits[]._source.threat_connect.indicator.id] | unique | length' got_docs.json
+stdout '^2$'
+
+# Verify each ID maps to the correct IP.
+exec jq -r '.hits.hits[] | select(._source.threat_connect.indicator.id == "9007199254918487") | ._source.threat_connect.indicator.ip' got_docs.json
+stdout '^67\.43\.156\.12$'
+
+exec jq -r '.hits.hits[] | select(._source.threat_connect.indicator.id == "9007199254918489") | ._source.threat_connect.indicator.ip' got_docs.json
+stdout '^67\.43\.156\.13$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down tc-precision-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://tc-precision-mock:8090
+  access_id: "1234"
+  secret_key: xxxx
+data_stream:
+  vars:
+    interval: 30s
+    batch_size: 2
+    initial_interval: 24h
+    preserve_original_event: true
+
+-- tc-precision-mock/docker-compose.yml --
+version: '2.3'
+services:
+  tc-precision-mock:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: tc-precision-mock
+    ports:
+      - 8090
+    environment:
+      PORT: "8090"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/config.yml
+
+-- tc-precision-mock/config.yml --
+rules:
+  - path: /api/v3/indicators
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+            "data": [
+              {
+                "id": 9007199254918487,
+                "dateAdded": "2023-12-05T06:00:00Z",
+                "securityLabels": {},
+                "ownerId": 51,
+                "ownerName": "Elastic",
+                "webLink": "https://app.threatconnect.com/#/details/indicators/9007199254918487/overview",
+                "tags": {},
+                "type": "Address",
+                "lastModified": "2023-12-05T07:00:00Z",
+                "confidence": 75,
+                "rating": 4,
+                "threatAssessRating": 4,
+                "threatAssessConfidence": 75,
+                "threatAssessScore": 502,
+                "threatAssessScoreObserved": 0,
+                "threatAssessScoreFalsePositive": 0,
+                "summary": "67.43.156.12",
+                "privateFlag": false,
+                "active": true,
+                "activeLocked": false,
+                "ip": "67.43.156.12",
+                "legacyLink": "https://app.threatconnect.com/auth/indicators/details/address.xhtml?address=67.43.156.12&owner=Elastic"
+              },
+              {
+                "id": 9007199254918489,
+                "dateAdded": "2023-12-05T06:00:00Z",
+                "securityLabels": {},
+                "ownerId": 51,
+                "ownerName": "Elastic",
+                "webLink": "https://app.threatconnect.com/#/details/indicators/9007199254918489/overview",
+                "tags": {},
+                "type": "Address",
+                "lastModified": "2023-12-06T06:38:53Z",
+                "confidence": 75,
+                "rating": 4,
+                "threatAssessRating": 4,
+                "threatAssessConfidence": 75,
+                "threatAssessScore": 833,
+                "threatAssessScoreObserved": 0,
+                "threatAssessScoreFalsePositive": 0,
+                "summary": "67.43.156.13",
+                "privateFlag": false,
+                "active": true,
+                "activeLocked": false,
+                "ip": "67.43.156.13",
+                "legacyLink": "https://app.threatconnect.com/auth/indicators/details/address.xhtml?address=67.43.156.13&owner=Elastic"
+              }
+            ]
+          }

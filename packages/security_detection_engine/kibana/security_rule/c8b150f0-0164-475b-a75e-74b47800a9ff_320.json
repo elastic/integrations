@@ -1,0 +1,156 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies suspicious startup shell folder modifications to change the default Startup directory in order to bypass detections monitoring file creation in the Windows Startup folder.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.registry-*",
+            "endgame-*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.code_signature.subject_name",
+                "registry.path",
+                "registry.hive",
+                "registry.value",
+                "registry.data.type",
+                "registry.data.strings"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Startup Shell Folder Modification",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious Startup Shell Folder Modification\n\n#### Possible investigation steps\n\n- What shell-folder scope changed, and which local path now receives Startup items?\n  - Why: `registry.value` separates per-user \"Startup\" from all-users \"Common Startup\"; all-users scope broadens persistence beyond one profile.\n  - Focus: `registry.path`, `registry.value`, `registry.hive`, `registry.data.type`, `registry.data.strings`.\n  - Implication: escalate when `registry.data.strings` points to a user-writable, hidden, deceptive, or all-users local path; lower concern here only for a recognized managed redirection target, then continue through process and user/host checks.\n\n- Which process and lineage changed the shell-folder value?\n  - Focus: `process.executable`, `process.command_line`, `process.parent.executable`, `process.parent.command_line`, `process.code_signature.subject_name`.\n  - Implication: escalate when the writer is a COM broker such as dllhost.exe, script host, LOLBin, renamed binary, user-writable executable, or unrelated parent chain; lower concern for management or packaging tooling only when command line and lineage explain this exact shell-folder write. Signed identity never clears the behavior by itself.\n\n- Was a startup artifact staged or executed from the redirected path?\n  - Why: the registry change can be setup only; persistence is proven by startup content in the redirected directory, and delayed staging or value reversion can hide the chain.\n  - Focus: same-process activity, redirected-directory file events, and command lines referencing `registry.data.strings`.\n    - !{investigate{\"description\":\"\",\"label\":\"Activity from this process instance on this host\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h/h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"File events in the redirected Startup path\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"file.directory\",\"queryType\":\"phrase\",\"value\":\"{{registry.data.strings}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h/h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Process command lines referencing the redirected path\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.command_line\",\"queryType\":\"phrase\",\"value\":\"{{registry.data.strings}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h/h\",\"relativeTo\":\"now\"}}\n  - Hint: if file telemetry is available, check file-event writes to that directory; missing file-event visibility is unresolved, not benign.\n  - Implication: escalate when the modifier or later process writes, launches, or reverts around shortcuts, scripts, or binaries in the redirected directory.\n\n- Does the creating identity and host context fit one recognized redirection workflow?\n  - Focus: `user.id`, `user.name`, `user.domain`, `host.id`, `host.name`.\n  - Implication: escalate when an interactive or ad hoc identity changes Startup resolution on a host that does not normally customize shell folders; lower concern only when identity, host cohort, path, and lineage converge on one recognized management or packaging workflow.\n\n- If local evidence is suspicious or unresolved, does same-host activity change scope?\n  - Why: sibling autostart `registry.path` changes can preserve persistence if the redirected Startup folder is noticed, restored, or cleaned.\n  - Focus: use !{investigate{\"description\":\"\",\"label\":\"Recent activity on this host\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}} for the same `host.id`, then filter for the exact `registry.data.strings` path, sibling autostart `registry.path` changes, and process starts referencing the redirected path.\n  - Implication: broaden response when the host shows additional shell-folder or Run-key changes, execution from the redirected path, or repeated attempts to use it; keep scope local only when the pivot finds no matching autostart or execution evidence.\n\n- Do the path, process, payload-use, and context findings support startup-folder evasion?\n  - Implication: escalate for an unexpected process or actor, suspicious local path, shortcut/script/binary content, redirected-path execution, or same-host persistence/evasion; close only when telemetry narrows the case to one exact recognized workflow and outside confirmation verifies legitimacy where telemetry alone cannot; preserve and escalate when file visibility, process context, or workflow evidence is incomplete.\n\n### False positive analysis\n\n- Managed shell-folder redirection or application packaging can repoint \"Startup\" or \"Common Startup\" to a nondefault local path, but this is operationally sensitive. Treat these explanations as benign only when alert-window telemetry proves the exact redirected folder, process lineage, expected startup content, and managed host cohort all match one management or packaging job. Use deployment records, management configuration, packaging job logs, or owner confirmation when telemetry alone cannot prove legitimacy; do not close on a management label without this evidence.\n- Before exceptioning, validate recurrence of the same `registry.value`, `registry.data.strings`, `process.executable`, `process.command_line`, `process.parent.executable`, `user.id`, and `host.id` pattern after confirming the benign workflow. Build the exception from that minimum workflow, and avoid exceptions on all Startup shell-folder modifications, the whole Explorer shell-folder key family, or the rule name alone.\n\n### Response and remediation\n\n- If confirmed benign, record the exact registry path/value/data, process lineage, `user.id`, and `host.id` pattern that proved the recognized workflow, then reverse temporary containment. Keep any exception narrow and require recurrence of that same workflow.\n- If suspicious but unconfirmed, preserve the alert, Timeline or case exports, the current shell-folder value, process tree, command line, and redirected-directory contents or metadata when available before changing state. Apply reversible containment first, such as blocking execution from the redirected directory or increasing monitoring on the host. Restore the legitimate Startup path only after evidence capture, dependency review, and validation of the correct per-user or Common Startup path. Isolate the host only when payload execution or related alerts show active compromise.\n- If confirmed malicious, collect staged shortcuts, scripts, binaries, hashes, and registry evidence before eradication. Contain the endpoint when its role allows, contain the creating account when the evidence shows account misuse, validate the correct per-user or Common Startup value, restore that value, and remove only the artifacts identified in the investigation. If direct response is unavailable, escalate with the preserved evidence to the team that can act on the host.\n- Before cleanup, review other user profiles and the all-users Startup scope for the same redirected path, then verify no process execution still points to that directory. After recovery, restrict shell-folder redirection to controlled management tooling, retain registry/process and available file telemetry needed to connect redirection to later payload staging, and document delayed-staging or value-reversion blind spots for future cases.\n",
+        "query": "registry where host.os.type == \"windows\" and event.type == \"change\" and\n registry.value : (\"Common Startup\", \"Startup\") and\n registry.path : (\n     \"HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\User Shell Folders\\\\Common Startup\",\n     \"HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\Shell Folders\\\\Common Startup\",\n     \"HKEY_USERS\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\User Shell Folders\\\\Startup\",\n     \"HKEY_USERS\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\Shell Folders\\\\Startup\",\n     \"HKU\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\User Shell Folders\\\\Startup\",\n     \"HKU\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\Shell Folders\\\\Startup\",\n     \"HKCU\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\User Shell Folders\\\\Startup\",\n     \"HKCU\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\Shell Folders\\\\Startup\",\n     \"\\\\REGISTRY\\\\MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\User Shell Folders\\\\Common Startup\",\n     \"\\\\REGISTRY\\\\MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\Shell Folders\\\\Common Startup\",\n     \"\\\\REGISTRY\\\\USER\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\User Shell Folders\\\\Startup\",\n     \"\\\\REGISTRY\\\\USER\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\Shell Folders\\\\Startup\",\n     \"MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\User Shell Folders\\\\Common Startup\",\n     \"MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\Shell Folders\\\\Common Startup\",\n     \"USER\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\User Shell Folders\\\\Startup\",\n     \"USER\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\Shell Folders\\\\Startup\"\n     ) and\n  registry.data.strings != null and\n  /* Normal Startup Folder Paths */\n  not registry.data.strings : (\n           \"C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\",\n           \"%ProgramData%\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\",\n           \"%USERPROFILE%\\\\AppData\\\\Roaming\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\",\n           \"%%USERPROFILE%%\\\\AppData\\\\Roaming\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\",\n           \"C:\\\\Users\\\\*\\\\AppData\\\\Roaming\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\",\n           \"\\\\\\\\*\"\n           )\n",
+        "references": [
+            "https://www.elastic.co/security-labs/elastic-security-uncovers-blister-malware-campaign",
+            "https://www.elastic.co/security-labs/revisiting-blister-new-developments-of-the-blister-loader"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.value",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c8b150f0-0164-475b-a75e-74b47800a9ff",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Registry Events](https://ela.st/sysmon-event-reg-setup)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/",
+                        "subtechnique": [
+                            {
+                                "id": "T1547.001",
+                                "name": "Registry Run Keys / Startup Folder",
+                                "reference": "https://attack.mitre.org/techniques/T1547/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1112",
+                        "name": "Modify Registry",
+                        "reference": "https://attack.mitre.org/techniques/T1112/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 320
+    },
+    "id": "c8b150f0-0164-475b-a75e-74b47800a9ff_320",
+    "type": "security-rule"
+}

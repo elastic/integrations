@@ -1,0 +1,93 @@
+- name: zscaler_zia.sandbox_verdict
+  type: group
+  fields:
+    - name: analysis_completed_time
+      type: date
+      description: The timestamp of when the Sandbox analysis of the payload completed.
+    - name: company
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The name of the company that the NSS feed belongs to.
+    - name: datacenter
+      type: group
+      fields:
+        - name: city
+          type: keyword
+          description: The city where the Zscaler data center is located.
+        - name: country
+          type: keyword
+          description: The country where the Zscaler data center is located.
+        - name: name
+          type: keyword
+          description: The name of the Zscaler data center.
+    - name: event_time
+      type: date
+      description: The event time of the Sandbox verdict (when the Public Service Edge processes the Sandbox analysis response).
+    - name: feed_time
+      type: date
+      description: The feed time (i.e., when the transaction is received by the NSS from the Nanolog).
+    - name: file
+      type: group
+      fields:
+        - name: ba_md5_url
+          type: keyword
+          description: The encoded link to the Sandbox MD5 report, retrievable through the Sandbox Submission API.
+        - name: extension
+          type: keyword
+          description: The file extension (e.g. exe, pdf, dll) of the analyzed file.
+        - name: hash
+          type: group
+          fields:
+            - name: children_md5
+              type: keyword
+              description: MD5 hashes of child files for archive payloads. Pipe-delimited in the source feed.
+            - name: md5
+              type: keyword
+              description: The MD5 hash of the analyzed file.
+            - name: sha256
+              type: keyword
+              description: The SHA-256 hash of the analyzed file.
+        - name: type_category
+          type: keyword
+          description: The file type category (e.g. "Windows Executable (exe)").
+    - name: record_id
+      type: keyword
+      description: The unique record identifier for the Sandbox verdict log.
+    - name: sourcetype
+      type: keyword
+      description: NSS feed sourcetype identifier for Sandbox Verdict.
+    - name: threat
+      type: group
+      fields:
+        - name: indicator
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The name of the threat detected by the Sandbox analysis, if any.
+        - name: tactic
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The MITRE ATT&CK Tactic IDs associated with the Sandbox verdict. Pipe-delimited in the source feed.
+        - name: technique
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The MITRE ATT&CK Technique IDs associated with the Sandbox verdict. Pipe-delimited in the source feed.
+    - name: time
+      type: date
+      description: The log time (when the transaction is logged by the Zscaler Nanolog). This excludes the time zone.
+    - name: tz
+      type: keyword
+      description: The time zone. This is the same as the time zone you specified when you configured the NSS feed.
+    - name: verdict
+      type: keyword
+      description: The verdict of the Sandbox analysis.
+    - name: version
+      type: keyword
+      description: Feed Output Format template version expected by this integration.

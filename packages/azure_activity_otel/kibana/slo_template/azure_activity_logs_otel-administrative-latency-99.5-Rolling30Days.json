@@ -1,0 +1,46 @@
+{
+  "attributes": {
+    "name": "[Azure Activity Logs OTel] Administrative operation latency 99.5% rolling 30 days",
+    "description": "This SLO tracks the average duration of Azure Resource Manager administrative operations via Activity Logs, ensuring that 99.5% of 1-minute time intervals show average operation duration below 3 seconds over a rolling 30-day period. Elevated durations may indicate ARM throttling, resource provider degradation, or complex deployment bottlenecks.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "logs-azure.activity.otel-*",
+        "filter": "data_stream.dataset: \"azure.activity.otel\" and azure.category: \"Administrative\" and not (azure.result.type: \"Start\" or azure.result.type: \"Started\")",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "azure.duration"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 3000
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": ["azure", "activity-logs", "otel"],
+    "artifacts": {
+      "dashboards": [
+        { "id": "azure_activity_otel-overview" },
+        { "id": "azure_activity_otel-administrative-operations" },
+        { "id": "azure_activity_otel-platform-health" }
+      ]
+    }
+  },
+  "id": "azure_activity_logs_otel-administrative-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}

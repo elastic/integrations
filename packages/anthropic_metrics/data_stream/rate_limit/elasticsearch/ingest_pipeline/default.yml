@@ -1,0 +1,110 @@
+---
+description: Pipeline for parsing Anthropic organization rate limit configuration events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+  - rename:
+      field: json.type
+      target_field: anthropic.rate_limit.type
+      ignore_missing: true
+      tag: rename_type
+  - rename:
+      field: json.group_type
+      target_field: anthropic.rate_limit.group_type
+      ignore_missing: true
+      tag: rename_group_type
+  - rename:
+      field: json.models
+      target_field: anthropic.rate_limit.models
+      ignore_missing: true
+      if: ctx.json?.models != null
+      tag: rename_models
+  - rename:
+      field: json.limits
+      target_field: anthropic.rate_limit.limits
+      ignore_missing: true
+      tag: rename_limits
+  - script:
+      tag: flatten_limits
+      lang: painless
+      if: ctx.anthropic?.rate_limit?.limits != null
+      source: >-
+        for (limit in ctx.anthropic.rate_limit.limits) {
+          ctx.anthropic.rate_limit[limit.type] = limit.value;
+        }
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_to_ingest_time
+      copy_from: _ingest.timestamp
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category_configuration
+      value: configuration
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event_tag
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

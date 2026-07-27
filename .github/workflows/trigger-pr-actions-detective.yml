@@ -15,6 +15,7 @@ on:
 permissions:
   actions: read
   contents: read
+  copilot-requests: write
   issues: write
   pull-requests: write
 
@@ -28,7 +29,7 @@ jobs:
       enabled: ${{ steps.gate.outputs.enabled }}
     steps:
       - id: gate
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const prNumber = context.payload.workflow_run.pull_requests[0].number;
@@ -45,5 +46,3 @@ jobs:
     needs: gate
     if: needs.gate.outputs.enabled == 'true'
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-actions-detective.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

@@ -1,42 +1,56 @@
 {
-    "id": "kafka_otel-empty-consumer-groups",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Kafka OTel] Empty consumer groups",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "kafka"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "kafka_otel-empty-consumer-groups",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when `kafka.consumer_group.members == 0`. A group with no members is not consuming \u2014 the group is offline.",
+    "name": "[Kafka OTel] Empty consumer groups",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "kafka"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "kafka_otel-consumer-groups"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "enabled": true,
-            "lookBackWindow": 6,
-            "statusChangeThreshold": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-kafkametricsreceiver.otel-*\n// Consumer group member count per group\n| WHERE kafka.consumer_group.members IS NOT NULL\n| STATS members = MAX(kafka.consumer_group.members) BY attributes.group\n// Groups with zero members: no active consumers, consumption paused\n| WHERE members == 0\n| SORT attributes.group ASC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "attributes.group",
-            "termSize": 20,
-            "excludeHitsFromPreviousRun": false
+        {
+          "id": "kafka_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Kafka empty consumer groups\n\n### What fired\n`kafka.consumer_group.members == 0` during the window.\n\n### Why it matters\nAn empty consumer group means no clients are consuming \u2014 messages accumulate, lag grows, and downstream systems stall.\n\n### Triage\n1. Verify whether the group is intentional (one-off migration) or unexpected.\n2. Check consumer instance health and deployment state.\n\n### Remediation\n- Restart consumers.\n- Delete the group if it is truly abandoned.\n\n### Tuning\n- Fires on any empty group. Filter out expected one-off groups by name if needed.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-kafkametricsreceiver.otel-*\n// Consumer group member count per group\n| WHERE kafka.consumer_group.members IS NOT NULL\n| STATS members = MAX(kafka.consumer_group.members) BY attributes.group\n// Groups with zero members: no active consumers, consumption paused\n| WHERE members == 0\n| SORT attributes.group ASC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.group",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
     }
+  }
 }

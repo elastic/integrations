@@ -43,6 +43,37 @@ For step-by-step instructions on how to set up an integration, see the
 
 ### Advanced options
 
+#### IAM Roles Anywhere
+
+If your Elastic Agent runs outside AWS (for example, on on-premises servers), you can use [AWS IAM Roles Anywhere](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/introduction.html) to authenticate the integration without long-term access keys. IAM Roles Anywhere issues temporary AWS credentials based on an X.509 certificate from a trusted Certificate Authority.
+
+**Prerequisites:** complete the [IAM Roles Anywhere setup](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/getting-started.html) in your AWS account — create a Trust Anchor, a Profile, and an IAM role with the necessary CloudTrail permissions.
+
+**Steps:**
+
+1. [Download and install `aws_signing_helper`](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html) on the host running Elastic Agent.
+
+2. Add a profile to the AWS shared config file (`~/.aws/config` on Linux/macOS, `%USERPROFILE%\.aws\config` on Windows) that uses the helper as a [`credential_process`](https://docs.aws.amazon.com/sdkref/latest/guide/feature-process-credentials.html):
+
+    ```ini
+    [profile elastic-agent]
+    credential_process = /path/to/aws_signing_helper credential-process \
+        --certificate /path/to/certificate.pem \
+        --private-key /path/to/private-key.pem \
+        --trust-anchor-arn arn:aws:rolesanywhere:region:account:trust-anchor/TA_ID \
+        --profile-arn arn:aws:rolesanywhere:region:account:profile/PROFILE_ID \
+        --role-arn arn:aws:iam::account:role/role-name
+    region = us-east-1
+    ```
+
+    Replace `/path/to/` with the actual path to the binary on your operating system.
+
+3. In the CloudTrail integration configuration, set the **Credential Profile Name** field to the profile name you defined (for example, `elastic-agent`). If you configure the profile as `[default]`, you can leave the field blank.
+
+> **Note:** If **Shared Credential File** is set, the integration loads credentials only from that file and stops reading the default AWS shared config file; ensure the profile with the `credential_process` entry is present in whichever file you specify, or leave the field blank to use the default config file location. **Credential Profile Name** and **Shared Credential File** are integration-wide settings: any value you set here applies to all AWS data streams in this integration, not just CloudTrail.
+
+The credentials are refreshed automatically before they expire. For the full list of `aws_signing_helper` options and examples, see the [IAM Roles Anywhere credential helper documentation](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html).
+
 #### CloudWatch
 
 The CloudWatch logs input has several advanced options to fit specific use cases.
@@ -60,6 +91,21 @@ If you are collecting log events from multiple log groups using `log_group_name_
 The `number_of_workers` setting defines the number of workers assigned to reading from log groups. **Do not set `number_of_workers` higher than the AWS API rate limit.** The CloudWatch Logs APIs (DescribeLogGroups, FilterLogEvents) are limited to 5 transactions per second (TPS) per AWS account and per region; this limit is shared across all API callers in that account and region. If you run multiple integrations or data streams that collect CloudWatch logs from the same account and region, their workers share the same 5 TPS—so even 5 workers per data stream can cause throttling when combined. Exceeding the limit causes `ThrottlingException: Rate exceeded` errors and may report DEGRADED status in Fleet.
 
 **Recommendation:** Set `number_of_workers` to **5 or less** and `scan_frequency` to **5m or more**, regardless of how many log groups match `log_group_name_prefix`. Workers will iterate through the matching log groups within each scan interval. The default value is `1`.
+
+#### S3 polling mode considerations
+
+When using the "Collect logs via S3 Bucket" option in polling mode, the integration lists and processes all objects in the bucket. For buckets containing large volumes of historical logs, this can cause high memory usage and potential out-of-memory (OOM) errors.
+
+**Important:** If you provide both a bucket ARN and an SQS Queue URL, the integration ignores the SQS URL and operates in polling mode, attempting to process the entire bucket. To use SQS mode, disable "Collect logs via S3 Bucket" and provide only the SQS Queue URL.
+
+**Recommendation:** Use SQS mode when possible to avoid scanning the entire bucket. 
+
+If you must use polling mode, configure these advanced options to limit which S3 objects are processed:
+
+- **Ignore Older Timespan** (`ignore_older`): Skip S3 objects older than the specified duration (for example, `48h`, `30d`).
+- **Start Timestamp** (`start_timestamp`): Only process objects newer than the specified time (`YYYY-MM-DDTHH:MM:SSZ`).
+
+If you experience timeouts (`ListObjectsV2, context canceled`), also consider increasing `bucket_list_interval` to reduce listing frequency.
 
 ## Logs reference
 

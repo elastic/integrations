@@ -1,0 +1,193 @@
+# Mock HackerOne GET /v1/reports for the report data stream system test (elastic/stream).
+# `links.next` is path-only (e.g. `/v1/reports/more`); the collector resolves it against `resource.url`.
+# Live HackerOne responses use absolute `https://…` URLs; those bypass the resolver branch.
+rules:
+  # Second polling interval — resume after cursor bookmark (matches bookmark from page-1 events).
+  # The CEL program adds 1ms to the persisted cursor value (`2026-05-08T12:00:00.000Z` → `…001Z`)
+  # to avoid HackerOne API parsing issues with strictly-greater-than millisecond comparisons.
+  - path: /v1/reports
+    methods: ["GET"]
+    query_params:
+      sort: reports.last_activity_at
+      filter[program][]: acme
+      filter[last_activity_at__gt]: "2026-05-08T12:00:00.001Z"
+      page[size]: "100"
+    request_headers:
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "data": [
+              {
+                "id": "1004",
+                "type": "report",
+                "attributes": {
+                  "title": "Synthetic follow-up finding",
+                  "state": "new",
+                  "created_at": "2026-05-08T12:30:00.000Z",
+                  "submitted_at": "2026-05-08T12:30:00.000Z",
+                  "vulnerability_information": "Truncated stub for pipeline testing.",
+                  "last_activity_at": "2026-05-08T12:30:00.000Z",
+                  "cve_ids": ["CVE-2024-0001"]
+                },
+                "relationships": {
+                  "program": {
+                    "data": {
+                      "id": "9001",
+                      "type": "program",
+                      "attributes": { "handle": "acme", "created_at": "2017-09-28T13:08:32.058Z", "updated_at": "2026-05-07T08:41:04.851Z" }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "self": "/v1/reports?filter%5Blast_activity_at__gt%5D=2026-05-08T12%3A00%3A00.000Z",
+              "next": null,
+              "last": "/v1/reports?page%5Blast%5D=1"
+            }
+          }
+  # Steady state — cursor has caught up past report 1004 (max last_activity_at).
+  # Returns empty data + links.next: null so the CEL cursor parks and no duplicates index.
+  # `…12:30:00.001Z` reflects the +1ms guard applied to the persisted cursor `…12:30:00.000Z`.
+  - path: /v1/reports
+    methods: ["GET"]
+    query_params:
+      sort: reports.last_activity_at
+      filter[program][]: acme
+      filter[last_activity_at__gt]: "2026-05-08T12:30:00.001Z"
+      page[size]: "100"
+    request_headers:
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "data": [],
+            "links": {
+              "self": "/v1/reports?filter%5Blast_activity_at__gt%5D=2026-05-08T12%3A30%3A00.000Z",
+              "next": null
+            }
+          }
+  # Pagination page 2 — CEL follows links.next (full URL), not a rebuilt page[number] query.
+  - path: /v1/reports/more
+    methods: ["GET"]
+    request_headers:
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "data": [
+              {
+                "id": "1003",
+                "type": "report",
+                "attributes": {
+                  "title": "Second-page XSS example",
+                  "state": "triaged",
+                  "created_at": "2026-05-06T15:00:00.000Z",
+                  "submitted_at": "2026-05-06T15:01:00.000Z",
+                  "vulnerability_information": "Short stub description for tests.",
+                  "last_activity_at": "2026-05-06T15:00:00.000Z",
+                  "cve_ids": []
+                },
+                "relationships": {
+                  "program": {
+                    "data": {
+                      "id": "9001",
+                      "type": "program",
+                      "attributes": { "handle": "acme", "created_at": "2017-09-28T13:08:32.058Z", "updated_at": "2026-05-07T08:41:04.851Z" }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "self": "/v1/reports/more",
+              "next": null,
+              "last": "/v1/reports/more"
+            }
+          }
+  # Initial poll page 1 — timestamp cursor is dynamic; capture for rule matching.
+  - path: /v1/reports
+    methods: ["GET"]
+    query_params:
+      sort: reports.last_activity_at
+      filter[program][]: acme
+      filter[last_activity_at__gt]: "{cursor_ts:.*}"
+      page[size]: "100"
+    request_headers:
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "data": [
+              {
+                "id": "1001",
+                "type": "report",
+                "attributes": {
+                  "title": "Example overflow-class issue (sanitized stub)",
+                  "state": "informative",
+                  "created_at": "2026-04-27T09:13:13.781Z",
+                  "submitted_at": "2026-04-27T09:13:14.394Z",
+                  "vulnerability_information": "Integer overflow described briefly for structure testing only.",
+                  "last_activity_at": "2026-05-08T12:00:00.000Z",
+                  "cve_ids": ["CVE-2024-43709"]
+                },
+                "relationships": {
+                  "program": {
+                    "data": {
+                      "id": "9001",
+                      "type": "program",
+                      "attributes": { "handle": "acme", "created_at": "2017-09-28T13:08:32.058Z", "updated_at": "2026-05-07T08:41:04.851Z" }
+                    }
+                  }
+                }
+              },
+              {
+                "id": "1002",
+                "type": "report",
+                "attributes": {
+                  "title": "Lower-severity finding",
+                  "state": "new",
+                  "created_at": "2026-05-07T08:00:00.000Z",
+                  "submitted_at": "2026-05-07T08:00:01.000Z",
+                  "vulnerability_information": "Stub narrative.",
+                  "triaged_at": null,
+                  "last_activity_at": "2026-05-07T10:00:00.000Z"
+                },
+                "relationships": {
+                  "program": {
+                    "data": {
+                      "id": "9001",
+                      "type": "program",
+                      "attributes": { "handle": "acme", "created_at": "2017-09-28T13:08:32.058Z", "updated_at": "2026-05-07T08:41:04.851Z" }
+                    }
+                  }
+                }
+              }
+            ],
+            "links": {
+              "self": "/v1/reports?filter%5Blast_activity_at__gt%5D={{ .request.vars.cursor_ts }}",
+              "next": "/v1/reports/more",
+              "last": "/v1/reports/more"
+            }
+          }

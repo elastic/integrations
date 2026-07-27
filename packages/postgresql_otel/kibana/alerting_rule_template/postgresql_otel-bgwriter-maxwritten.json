@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `postgresql.bgwriter.maxwritten > 0`. bgwriter stopped because it hit the per-round write ceiling \u2014 structural write pressure.",
     "name": "[PostgreSQL OTel] Bgwriter maxwritten stops",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,6 +20,19 @@
       "enabled": true,
       "lookBackWindow": 4,
       "statusChangeThreshold": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-io-health"
+        },
+        {
+          "id": "postgresql_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL bgwriter maxwritten stops\n\n### What fired\n`bgwriter.maxwritten` increased during the window.\n\n### Why it matters\nBgwriter stops writing when it exceeds `bgwriter_lru_maxpages` in a round. Sustained stops mean the write workload exceeds bgwriter capacity.\n\n### Triage\n1. Check `bgwriter_delay` and `_maxpages`.\n\n### Remediation\n- Tune bgwriter more aggressively.\n\n### Tuning\n- Fires on any increase.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

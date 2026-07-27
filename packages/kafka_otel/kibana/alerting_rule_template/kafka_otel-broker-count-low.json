@@ -1,40 +1,54 @@
 {
-    "id": "kafka_otel-broker-count-low",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Kafka OTel] Broker count below threshold",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "kafka"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "kafka_otel-broker-count-low",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when `kafka.brokers` drops below 2. A broker loss weakens replication and triggers partition reassignments.",
+    "name": "[Kafka OTel] Broker count below threshold",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "kafka"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "kafka_otel-overview"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "enabled": true,
-            "lookBackWindow": 6,
-            "statusChangeThreshold": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-kafkametricsreceiver.otel-*\n// Cluster-level broker count (no attributes)\n| WHERE kafka.brokers IS NOT NULL\n| STATS latest_brokers = MAX(kafka.brokers)\n// Threshold: alert when broker count < expected minimum.\n// Customise the value below for your cluster (e.g. 2 for HA, 1 for any loss)\n| WHERE latest_brokers < 2"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "all",
-            "excludeHitsFromPreviousRun": false
+        {
+          "id": "kafka_otel-replication"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Kafka broker count below threshold\n\n### What fired\n`kafka.brokers` metric fell below 2 during the window.\n\n### Why it matters\nA reduced broker count shrinks available capacity and can leave partitions under-replicated. If replication factor equals lost brokers, data becomes unavailable.\n\n### Triage\n1. Check which broker is missing (host-level monitoring).\n2. Correlate with under-replicated partitions.\n3. Inspect controller election events.\n\n### Remediation\n- Bring the missing broker back or replace it.\n- Let the cluster re-replicate affected partitions.\n\n### Tuning\n- Adjust the minimum count (2) to match your cluster size (e.g. 3 for HA tiers).\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-kafkametricsreceiver.otel-*\n// Cluster-level broker count (no attributes)\n| WHERE kafka.brokers IS NOT NULL\n| STATS latest_brokers = MAX(kafka.brokers)\n// Threshold: alert when broker count < expected minimum.\n// Customise the value below for your cluster (e.g. 2 for HA, 1 for any loss)\n| WHERE latest_brokers < 2"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "all",
+      "excludeHitsFromPreviousRun": false
     }
+  }
 }

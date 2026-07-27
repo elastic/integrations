@@ -1,5 +1,5 @@
-ARG HAPROXY_VERSION=${HAPROXY_VERSION:-2.8}
-FROM haproxy:${HAPROXY_VERSION:-2.8}
+ARG HAPROXY_VERSION=3.2
+FROM haproxy:${HAPROXY_VERSION}
 USER root
 RUN apt-get update && apt-get install -y netcat-openbsd
 

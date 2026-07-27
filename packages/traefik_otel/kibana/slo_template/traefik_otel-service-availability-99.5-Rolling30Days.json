@@ -1,0 +1,58 @@
+{
+  "attributes": {
+    "name": "[Traefik OTel] Service availability 99.5% rolling 30 days",
+    "description": "This SLO tracks the availability of Traefik proxy at the service level via OTel metrics, ensuring that 99.5% of requests return a non-5xx status code over a rolling period of 30 days. A breach indicates backend failures, overload, or routing issues affecting user requests.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"traefik.otel\"",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "traefik_service_requests_total",
+              "filter": "not attributes.code: 5*"
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "B",
+              "aggregation": "sum",
+              "field": "traefik_service_requests_total"
+            }
+          ],
+          "equation": "B"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "traefik",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.host.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        { "id": "traefik_otel-overview" },
+        { "id": "traefik_otel-services" }
+      ]
+    }
+  },
+  "id": "traefik_otel-service-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}

@@ -1,0 +1,684 @@
+---
+description: Pipeline for processing Email DLP logs (recommended feed JSON).
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '8.11.0'
+
+  # parse the event JSON
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original `message` field to `event.original` to store a copy of the original message.
+        The `event.original` field is not touched if the document already has one.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - remove:
+      field: json
+      tag: remove_json_if_input_type_http_endpoint
+      ignore_missing: true
+      description: >-
+        For the http_endpoint input, Filebeat auto-parses the JSON request body into `json.*`.
+        Drop it so the pipeline parses again from `event.original`.
+      if: ctx.input?.type == 'http_endpoint'
+
+  - json:
+      field: event.original
+      tag: json_parse_event_original
+      target_field: zscaler_zia.email_dlp
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - script:
+      tag: check_template_version
+      lang: painless
+      params:
+        pkg_version: 4.1.0
+        data_stream: email_dlp
+        expect:
+          version: v1
+      if: ctx.zscaler_zia?.email_dlp != null && ctx._conf?.strict_fields == true
+      source: |-
+        if (ctx.zscaler_zia.email_dlp.version != params.expect.version) {
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message == null ? [] : ctx.error.message;
+          ctx.error.message.add('template version mismatch: ' + (ctx.zscaler_zia.email_dlp.version == null ? 'null' : ctx.zscaler_zia.email_dlp.version.toString()) + ' is not expected version (see ' + params.data_stream + ' https://epr.elastic.co/package/zscaler_zia/' + params.pkg_version + '/docs/README.md)');
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # convert values
+  - convert:
+      field: zscaler_zia.email_dlp.record_id
+      tag: convert_record_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: zscaler_zia.email_dlp.dlp.identifier
+      tag: convert_dlp_identifier_to_string
+      type: string
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_split_pipe_delimited_multi_value_fields
+      description: Split NSS pipe-delimited strings into arrays for multi-value fields.
+      source: |-
+        void splitStr(Map m, String key) {
+          if (m == null || key == null) return;
+          def v = m.get(key);
+          if (!(v instanceof String)) return;
+          String s = (String) v;
+          if (s.length() == 0) return;
+          List out = new ArrayList();
+          int from = 0;
+          int n = s.length();
+          for (int i = 0; i < n; i++) {
+            if (s.charAt(i) == (char)'|') {
+              out.add(s.substring(from, i));
+              from = i + 1;
+            }
+          }
+          out.add(s.substring(from, n));
+          m.put(key, out);
+        }
+        def ed = ctx.zscaler_zia?.email_dlp;
+        if (ed == null) return;
+        splitStr(ed, 'severity');
+        splitStr(ed, 'actions');
+        if (ed.rule instanceof Map) {
+          splitStr(ed.rule, 'labels');
+        }
+        if (ed.dlp instanceof Map) {
+          splitStr(ed.dlp, 'dict_names');
+          splitStr(ed.dlp, 'dict_counts');
+          splitStr(ed.dlp, 'engine_names');
+        }
+        if (ed.email instanceof Map) {
+          splitStr(ed.email, 'triggered_recipients');
+          splitStr(ed.email, 'other_recipients');
+          splitStr(ed.email, 'triggered_recipient_domains');
+          splitStr(ed.email, 'other_recipient_domains');
+          if (ed.email.attachments instanceof Map) {
+            splitStr(ed.email.attachments, 'file_names');
+            splitStr(ed.email.attachments, 'md5s');
+            splitStr(ed.email.attachments, 'sizes');
+            splitStr(ed.email.attachments, 'file_types');
+            splitStr(ed.email.attachments, 'doc_types');
+            splitStr(ed.email.attachments, 'doc_subtypes');
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: zscaler_zia.email_dlp.dlp.scan_time
+      tag: convert_dlp_scan_time_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: zscaler_zia.email_dlp.dlp.scan_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: zscaler_zia.email_dlp.dlp.dict_counts
+      tag: foreach_dlp_dict_counts_to_long
+      if: ctx.zscaler_zia?.email_dlp?.dlp?.dict_counts instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_dlp_dict_count_element_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_dlp_dictionaries
+      description: >-
+        Combine the parallel vendor DLP arrays (dict_names, dict_counts) into a
+        nested zscaler_zia.email_dlp.dlp.dictionaries[] array of {name, count}
+      if: ctx.zscaler_zia?.email_dlp?.dlp instanceof Map
+      source: |
+        def dlp = ctx.zscaler_zia.email_dlp.dlp;
+        def names = dlp.dict_names instanceof List ? dlp.dict_names : null;
+        def counts = dlp.dict_counts instanceof List ? dlp.dict_counts : null;
+        if (names == null) return;
+        def out = new ArrayList();
+        for (int i = 0; i < names.size(); i++) {
+          def name = names.get(i);
+          if (!(name instanceof String) || name == '' || name == 'None') continue;
+          def item = new HashMap();
+          item.put('name', name);
+          if (counts != null && i < counts.size()) item.put('count', counts.get(i));
+          out.add(item);
+        }
+        if (out.size() > 0) ctx.zscaler_zia.email_dlp.dlp.dictionaries = out;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: zscaler_zia.email_dlp.email.attachments.sizes
+      tag: foreach_email_attachments_sizes_to_long
+      if: ctx.zscaler_zia?.email_dlp?.email?.attachments?.sizes instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_email_attachment_size_element_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - date:
+      field: zscaler_zia.email_dlp.email.mail_sent_epoch
+      tag: date_mail_sent_epoch_to_timestamp
+      target_field: zscaler_zia.email_dlp.email.mail_sent_epoch
+      formats:
+        - UNIX
+      if: >-
+        ctx.zscaler_zia?.email_dlp?.email?.mail_sent_epoch != null
+        && ctx.zscaler_zia.email_dlp.email.mail_sent_epoch != ''
+        && ctx.zscaler_zia.email_dlp.email.mail_sent_epoch != '0'
+      on_failure:
+        - remove:
+            field: zscaler_zia.email_dlp.email.mail_sent_epoch
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: zscaler_zia.email_dlp.email.mail_sent_time
+      tag: date_email_mail_sent_time_string_to_date
+      target_field: zscaler_zia.email_dlp.email.mail_sent_time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+      timezone: '{{{zscaler_zia.email_dlp.tz}}}'
+      if: ctx.zscaler_zia?.email_dlp?.email?.mail_sent_time != null && ctx.zscaler_zia.email_dlp.email.mail_sent_time != ''
+      on_failure:
+        - remove:
+            field: zscaler_zia.email_dlp.email.mail_sent_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: zscaler_zia.email_dlp.email.zs_rcv_time
+      tag: date_email_zs_rcv_time_string_to_date
+      target_field: zscaler_zia.email_dlp.email.zs_rcv_time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+      timezone: '{{{zscaler_zia.email_dlp.tz}}}'
+      if: ctx.zscaler_zia?.email_dlp?.email?.zs_rcv_time != null && ctx.zscaler_zia.email_dlp.email.zs_rcv_time != ''
+      on_failure:
+        - remove:
+            field: zscaler_zia.email_dlp.email.zs_rcv_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: zscaler_zia.email_dlp.email.zs_sent_time
+      tag: date_email_zs_sent_time_string_to_date
+      target_field: zscaler_zia.email_dlp.email.zs_sent_time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+      timezone: '{{{zscaler_zia.email_dlp.tz}}}'
+      if: ctx.zscaler_zia?.email_dlp?.email?.zs_sent_time != null && ctx.zscaler_zia.email_dlp.email.zs_sent_time != ''
+      on_failure:
+        - remove:
+            field: zscaler_zia.email_dlp.email.zs_sent_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: zscaler_zia.email_dlp.time
+      tag: date_nanolog_time_string_to_date
+      target_field: zscaler_zia.email_dlp.time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+      timezone: '{{{zscaler_zia.email_dlp.tz}}}'
+      if: ctx.zscaler_zia?.email_dlp?.time != null && ctx.zscaler_zia.email_dlp.time != ''
+      on_failure:
+        - remove:
+            field: zscaler_zia.email_dlp.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: zscaler_zia.email_dlp.feed_time
+      tag: date_feed_time_string_to_date
+      target_field: zscaler_zia.email_dlp.feed_time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+      timezone: '{{{zscaler_zia.email_dlp.tz}}}'
+      if: ctx.zscaler_zia?.email_dlp?.feed_time != null && ctx.zscaler_zia.email_dlp.feed_time != ''
+      on_failure:
+        - remove:
+            field: zscaler_zia.email_dlp.feed_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # populate ECS fields
+
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_nanolog_time
+      copy_from: zscaler_zia.email_dlp.time
+      ignore_empty_value: true
+
+  # event.*
+  - set:
+      field: event.kind
+      tag: set_event_kind_event
+      value: event
+  - append:
+      field: event.category
+      tag: append_email_into_event_category
+      value: email
+  - append:
+      field: event.category
+      tag: append_intrusion_detection_for_dlp_incident
+      value: intrusion_detection
+      if: ctx.zscaler_zia?.email_dlp?.log_type == 'DLP Incident'
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_feed_tz
+      copy_from: zscaler_zia.email_dlp.tz
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.zscaler_zia?.email_dlp?.severity != null
+      source: |
+        ctx.event = ctx.event ?: [:];
+        def raw = ctx.zscaler_zia.email_dlp.severity;
+        List vals;
+        if (raw instanceof List) {
+          vals = (List) raw;
+        } else if (raw instanceof String) {
+          vals = new ArrayList();
+          vals.add(raw);
+        } else {
+          return;
+        }
+        int maxSev = 0;
+        for (def v : vals) {
+          if (!(v instanceof String)) continue;
+          String t = ((String) v).toLowerCase();
+          int cur = 0;
+          if (t.contains('high')) {
+            cur = 73;
+          } else if (t.contains('medium')) {
+            cur = 47;
+          } else if (t.contains('low') || t.contains('information')) {
+            cur = 21;
+          }
+          if (cur > maxSev) maxSev = cur;
+        }
+        if (maxSev > 0) ctx.event.severity = maxSev;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: zscaler_zia.email_dlp.actions
+      tag: foreach_actions_into_event_action
+      if: ctx.zscaler_zia?.email_dlp?.actions instanceof List
+      processor:
+        append:
+          field: event.action
+          tag: append_action_into_event_action
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action_from_actions
+      ignore_missing: true
+  - set:
+      field: event.provider
+      tag: set_event_provider_zscaler
+      value: Zscaler
+  
+  # observer.*
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor_zscaler
+      value: Zscaler
+  - set:
+      field: observer.product
+      tag: set_observer_product_zia
+      value: Zscaler ZIA
+  - set:
+      field: observer.name
+      tag: set_observer_name_from_datacenter_name
+      copy_from: zscaler_zia.email_dlp.datacenter.name
+      ignore_empty_value: true
+  - set:
+      field: observer.geo.name
+      tag: set_observer_geo_name_from_datacenter_name
+      copy_from: zscaler_zia.email_dlp.datacenter.name
+      ignore_empty_value: true
+  - set:
+      field: observer.geo.city_name
+      tag: set_observer_geo_city_from_datacenter
+      copy_from: zscaler_zia.email_dlp.datacenter.city
+      ignore_empty_value: true
+  - set:
+      field: observer.geo.country_iso_code
+      tag: set_observer_geo_country_from_datacenter
+      copy_from: zscaler_zia.email_dlp.datacenter.country
+      ignore_empty_value: true
+
+  # organization.*
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_company_name
+      copy_from: zscaler_zia.email_dlp.company.name
+      ignore_empty_value: true
+
+  # rule.*
+  - foreach:
+      field: zscaler_zia.email_dlp.rule.labels
+      tag: foreach_rule_labels_into_rule_name
+      if: ctx.zscaler_zia?.email_dlp?.rule?.labels instanceof List
+      processor:
+        append:
+          field: rule.name
+          tag: append_rule_label_into_rule_name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: rule.ruleset
+      tag: set_rule_ruleset_from_vendor_dlp_engine_names
+      copy_from: zscaler_zia.email_dlp.dlp.engine_names
+      ignore_empty_value: true
+
+  # email.*
+  - script:
+      lang: painless
+      tag: script_zip_email_attachments_into_ecs
+      description: >-
+        Combine parallel vendor attachment arrays (file_names, sizes, md5s,
+        file_types) into ECS email.attachments[].file objects.
+      if: ctx.zscaler_zia?.email_dlp?.email?.attachments instanceof Map
+      source: |
+        def att = ctx.zscaler_zia.email_dlp.email.attachments;
+        def names = att.file_names instanceof List ? att.file_names : null;
+        def sizes = att.sizes instanceof List ? att.sizes : null;
+        def md5s = att.md5s instanceof List ? att.md5s : null;
+        def types = att.file_types instanceof List ? att.file_types : null;
+        int n = 0;
+        if (names != null && names.size() > n) n = names.size();
+        if (sizes != null && sizes.size() > n) n = sizes.size();
+        if (md5s != null && md5s.size() > n) n = md5s.size();
+        if (types != null && types.size() > n) n = types.size();
+        if (n == 0) return;
+        if (ctx.email == null) ctx.email = [:];
+        if (ctx.email.attachments == null) ctx.email.attachments = new ArrayList();
+        for (int i = 0; i < n; i++) {
+          def file = new HashMap();
+          if (names != null && i < names.size()) file.put('name', names.get(i));
+          if (sizes != null && i < sizes.size()) file.put('size', sizes.get(i));
+          if (md5s != null && i < md5s.size()) {
+            def hash = new HashMap();
+            hash.put('md5', md5s.get(i));
+            file.put('hash', hash);
+          }
+          if (types != null && i < types.size()) file.put('extension', types.get(i));
+          def item = new HashMap();
+          item.put('file', file);
+          ctx.email.attachments.add(item);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: email.message_id
+      tag: set_email_message_id_from_vendor_message_id
+      copy_from: zscaler_zia.email_dlp.email.message_id
+      ignore_empty_value: true
+  - set:
+      field: email.subject
+      tag: set_email_subject_from_vendor_subject
+      copy_from: zscaler_zia.email_dlp.email.subject
+      ignore_empty_value: true
+  - set:
+      field: email.origination_timestamp
+      tag: set_email_origination_timestamp_from_mail_sent_time
+      copy_from: zscaler_zia.email_dlp.email.mail_sent_time
+      ignore_empty_value: true
+  - set:
+      field: email.delivery_timestamp
+      tag: set_email_delivery_timestamp_from_zs_rcv_time
+      copy_from: zscaler_zia.email_dlp.email.zs_rcv_time
+      ignore_empty_value: true
+  - append:
+      field: email.from.address
+      tag: append_sender_into_email_from_address
+      value: '{{{zscaler_zia.email_dlp.sender}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.email_dlp?.sender != null
+  - set:
+      field: email.x_mailer
+      tag: set_email_x_mailer_from_application_name
+      copy_from: zscaler_zia.email_dlp.application.name
+      ignore_empty_value: true
+  - foreach:
+      field: zscaler_zia.email_dlp.email.triggered_recipients
+      tag: foreach_triggered_recipients_into_email_to_address
+      if: ctx.zscaler_zia?.email_dlp?.email?.triggered_recipients instanceof List
+      processor:
+        append:
+          field: email.to.address
+          tag: append_triggered_recipient_into_email_to_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: zscaler_zia.email_dlp.email.other_recipients
+      tag: foreach_other_recipients_into_email_to_address
+      if: ctx.zscaler_zia?.email_dlp?.email?.other_recipients instanceof List
+      processor:
+        append:
+          field: email.to.address
+          tag: append_other_recipient_into_email_to_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+
+  # user.*
+  - set:
+      field: user.name
+      tag: set_user_name_from_owner
+      copy_from: zscaler_zia.email_dlp.owner
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_owner_when_email_like
+      copy_from: zscaler_zia.email_dlp.owner
+      ignore_empty_value: true
+      if: ctx.zscaler_zia?.email_dlp?.owner != null && ctx.zscaler_zia.email_dlp.owner.contains('@')
+  - dissect:
+      field: zscaler_zia.email_dlp.owner
+      tag: dissect_owner_to_user_domain
+      pattern: '%{}@%{user.domain}'
+      if: ctx.zscaler_zia?.email_dlp?.owner != null && ctx.zscaler_zia.email_dlp.owner.contains('@')
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # related.*
+  - append:
+      field: related.user
+      tag: append_owner_into_related_user
+      value: '{{{zscaler_zia.email_dlp.owner}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.email_dlp?.owner != null
+  - append:
+      field: related.user
+      tag: append_sender_into_related_user
+      value: '{{{zscaler_zia.email_dlp.sender}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.email_dlp?.sender != null
+  - foreach:
+      field: zscaler_zia.email_dlp.email.triggered_recipients
+      tag: foreach_triggered_recipients_into_related_user
+      if: ctx.zscaler_zia?.email_dlp?.email?.triggered_recipients instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_triggered_recipient_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: zscaler_zia.email_dlp.email.other_recipients
+      tag: foreach_other_recipients_into_related_user
+      if: ctx.zscaler_zia?.email_dlp?.email?.other_recipients instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_other_recipient_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: zscaler_zia.email_dlp.email.attachments.md5s
+      tag: foreach_email_attachments_md5s_into_related_hash
+      if: ctx.zscaler_zia?.email_dlp?.email?.attachments?.md5s instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_attachment_md5_into_related_hash
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+
+  # cleanup
+  - remove:
+      field:
+        - zscaler_zia.email_dlp.time
+        - zscaler_zia.email_dlp.tz
+        - zscaler_zia.email_dlp.actions
+        - zscaler_zia.email_dlp.datacenter.name
+        - zscaler_zia.email_dlp.datacenter.city
+        - zscaler_zia.email_dlp.datacenter.country
+        - zscaler_zia.email_dlp.company.name
+        - zscaler_zia.email_dlp.rule.labels
+        - zscaler_zia.email_dlp.dlp.engine_names
+        - zscaler_zia.email_dlp.email.mail_sent_time
+        - zscaler_zia.email_dlp.email.zs_rcv_time
+        - zscaler_zia.email_dlp.email.message_id
+        - zscaler_zia.email_dlp.email.subject
+        - zscaler_zia.email_dlp.sender
+        - zscaler_zia.email_dlp.application.name
+        - zscaler_zia.email_dlp.owner
+        - _conf
+      tag: remove_unused_and_duplicate_vendor_fields_mapped_to_ecs
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        boolean dropScalar(Object v) {
+          return v == null || v == '' || v == '0' || v == 'N/A'
+            || v == 'None' || v == 'Unknown' || v == 'Unknown Host' || v == 'Unknown URL';
+        }
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap((Map) v);
+            } else if (v instanceof List) {
+              handleList((List) v);
+            }
+            return dropScalar(v)
+              || (v instanceof Map && ((Map) v).size() == 0)
+              || (v instanceof List && ((List) v).size() == 0);
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap((Map) v);
+            } else if (v instanceof List) {
+              handleList((List) v);
+            }
+            return dropScalar(v)
+              || (v instanceof Map && ((Map) v).size() == 0)
+              || (v instanceof List && ((List) v).size() == 0);
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind_from_ctx_error
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_preserve_original_event_into_tags_when_ctx_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind_global_on_failure
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_into_tags_global_on_failure
+      value: preserve_original_event
+      allow_duplicates: false
