@@ -138,20 +138,37 @@ inputs:
                 // Not subscribed to the current type - Subscribe
                 // ------------------------------------------------------------------------
 
-                request(
-                  "POST",
-                  sprintf(
-                    "%s/api/v1.0/%s/activity/feed/subscriptions/start?%s",
-                    [
-                      state.url.trim_right("/"),
-                      state.base.tenant_id,
-                      {
-                        "contentType": [state.todo_types[0]],
-                        "PublisherIdentifier": [state.base.tenant_id],
-                      }.format_query(),
-                    ]
+                try(
+                  request(
+                    "POST",
+                    sprintf(
+                      "%s/api/v1.0/%s/activity/feed/subscriptions/start?%s",
+                      [
+                        state.url.trim_right("/"),
+                        state.base.tenant_id,
+                        {
+                          "contentType": [state.todo_types[0]],
+                          "PublisherIdentifier": [state.base.tenant_id],
+                        }.format_query(),
+                      ]
+                    )
+                  ).do_request(),
+                  "_transport_error"
+                ).as(sub_resp, sub_resp.?_transport_error.hasValue() ?
+                  // A transport-level failure such as a dropped connection or a truncated
+                  // response body makes do_request return an error rather than a response
+                  // with a status code, which would otherwise crash the evaluation. Emit
+                  // a dropped retry event and stop this cycle so the subscription is
+                  // retried on the next polling interval. The failure is not indexed as
+                  // an event; it remains visible through the input's HTTP metrics and
+                  // request tracer.
+                  state.with(
+                    {
+                      "want_more": false,
+                      "events": [{"retry": true}],
+                    }
                   )
-                ).do_request().as(sub_resp, (sub_resp.StatusCode == 200 || sub_resp.StatusCode == 400) ?
+                : (sub_resp.StatusCode == 200 || sub_resp.StatusCode == 400) ?
                   // Subscription successful - Record subscription, requeue type and continue
                   state.with(
                     {
@@ -198,10 +215,36 @@ inputs:
                       }
                     )
                   :
-                    request(
-                      "GET",
-                      state.cursor.todo_content[0].contentUri
-                    ).do_request().as(content_resp, (content_resp.StatusCode == 200) ?
+                    try(
+                      request(
+                        "GET",
+                        state.cursor.todo_content[0].contentUri
+                      ).do_request(),
+                      "_transport_error"
+                    ).as(content_resp, content_resp.?_transport_error.hasValue() ?
+                      // A transport-level failure such as a dropped connection or a
+                      // truncated response body makes do_request return an error rather
+                      // than a response with a status code. Returning a single error
+                      // object here would make the runtime discard the cursor update, so
+                      // the failing item would be retried on every evaluation and stall
+                      // all further collection. Instead, move the item to the back of the
+                      // queue so the remaining items can still be fetched, emit a dropped
+                      // retry event so the cursor change persists, and stop this cycle to
+                      // back off until the next interval. The failure is not indexed as an
+                      // event; it remains visible through the input's HTTP metrics and
+                      // request tracer.
+                      state.with(
+                        {
+                          "cursor": state.cursor.with(
+                            {
+                              "todo_content": tail(state.cursor.todo_content) + [state.cursor.todo_content[0]],
+                            }
+                          ),
+                          "want_more": false,
+                          "events": [{"retry": true}],
+                        }
+                      )
+                    : (content_resp.StatusCode == 200) ?
                       // Fetch successful - Return events, continue with remaining content
                       state.with(
                         {
@@ -241,10 +284,35 @@ inputs:
                 // Listing link generated or received - Request it
                 // ------------------------------------------------------------------------
 
-                request(
-                  "GET",
-                  state.cursor.todo_links[0]
-                ).do_request().as(list_resp, (list_resp.StatusCode == 200) ?
+                try(
+                  request(
+                    "GET",
+                    state.cursor.todo_links[0]
+                  ).do_request(),
+                  "_transport_error"
+                ).as(list_resp, list_resp.?_transport_error.hasValue() ?
+                  // A transport-level failure such as a dropped connection or a
+                  // truncated response body makes do_request return an error rather than
+                  // a response with a status code. Returning a single error object here
+                  // would make the runtime discard the cursor update, so the failing link
+                  // would be retried on every evaluation and stall all further
+                  // collection. Instead, move the link to the back of the queue so the
+                  // remaining links can still be requested, emit a dropped retry event so
+                  // the cursor change persists, and stop this cycle to back off until the
+                  // next interval. The failure is not indexed as an event; it remains
+                  // visible through the input's HTTP metrics and request tracer.
+                  state.with(
+                    {
+                      "cursor": state.cursor.with(
+                        {
+                          "todo_links": tail(state.cursor.todo_links) + [state.cursor.todo_links[0]],
+                        }
+                      ),
+                      "want_more": false,
+                      "events": [{"retry": true}],
+                    }
+                  )
+                : (list_resp.StatusCode == 200) ?
                   // Listing successful - Enqueue any additional link, enqueue content to fetch
                   list_resp.Body.decode_json().as(content_list,
                     state.with(

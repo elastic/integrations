@@ -1,0 +1,77 @@
+# Template for a standalone Elastic Agent config reproducing the agentless o365
+# `audit` CEL input, matching what agentless-controller deploys (single
+# elastic-agent container, monitoring enabled but logs/metrics collection off,
+# no GOMEMLIMIT).
+#
+# This is a TEMPLATE, not a runnable config. The `program:` block below is a single
+# `#__CEL_PROGRAM__` placeholder: run.sh extracts the CEL program verbatim from
+# packages/o365/data_stream/audit/agent/stream/cel.yml.hbs at run time and splices it
+# in, writing the runnable config to work/elastic-agent.yml. That keeps the harness
+# always exercising the exact program o365 ships - there is nothing to copy or verify
+# by hand (see the README "Keep the CEL program in sync" section).
+#
+# Only the surrounding config lives here, tuned for a SINGLE-BLOB worst case
+# (list_contents_start_time=1h, batch_interval=24h, maximum_age=24h => one listing
+# -> one content item -> one large blob fetch). Output points at an unreachable ES
+# on purpose: events never drain, so the decoded blob is held in memory
+# (conservative worst case) and does not add page cache to the cgroup.
+outputs:
+  default:
+    type: elasticsearch
+    hosts: ["http://127.0.0.1:9200"]
+agent:
+  monitoring:
+    enabled: true
+    http:
+      enabled: true
+      host: 0.0.0.0
+      port: 6791
+    logs: false
+    metrics: false
+  logging:
+    level: info
+    to_stderr: true
+inputs:
+- type: cel
+  id: o365-audit-worstcase
+  use_output: default
+  data_stream:
+    namespace: default
+  streams:
+  - id: cel-o365-audit-worstcase
+    data_stream:
+      dataset: o365.audit
+      type: logs
+    interval: 24h
+    max_executions: 10000
+    auth.oauth2:
+      client.id: test-cel-client-id
+      client.secret: test-cel-client-secret
+      provider: azure
+      scopes:
+        - https://manage.office.com/.default
+      endpoint_params:
+        grant_type: client_credentials
+      token_url: http://svc-o365:8082/test-cel-tenant-id/oauth2/v2.0/token
+    resource.url: http://svc-o365:8082
+    resource.timeout: 300s
+    resource.tracer:
+      enabled: false
+      filename: "../../logs/cel/http-request-trace-*.ndjson"
+      maxbackups: 10
+      maxsize: 5
+    state:
+      want_more: false
+      base:
+        tenant_id: "test-cel-tenant-id"
+        list_contents_start_time: "1h"
+        batch_interval: "24h"
+        maximum_age: "24h"
+        content_types: "Audit.General"
+    redact:
+      fields:
+        - base.tenant_id
+    program: |-
+      #__CEL_PROGRAM__
+    processors:
+      - drop_event.when.equals.retry: true

@@ -556,6 +556,39 @@ processors:
       name: '{{ IngestPipeline "categorize" }}'
       ignore_missing_pipeline: true
 
+  # Derive event.outcome from crowdstrike.Status.
+  # CrowdStrike Status uses NTSTATUS codes; severity is in bits 30-31:
+  #   0 = success, 1 = informational, 2 = warning, 3 = error.
+  # Status 0 represents success. Non-zero success-severity codes (e.g. STATUS_PENDING),
+  # warning, and informational represent unknown. Error represent failure.
+  - script:
+      tag: set_event_outcome_from_Status
+      description: Set event.outcome from crowdstrike.Status using NTSTATUS severity bits.
+      if: >-
+        ctx.crowdstrike?.Status != null && ctx.crowdstrike.Status != '' &&
+        (ctx.event?.outcome == null || ctx.event.outcome == 'unknown')
+      source: |-
+        long status = Long.parseLong(ctx.crowdstrike.Status);
+
+        ctx.event = ctx.event ?: [:];
+        if (status == 0L) {
+          ctx.event.outcome = 'success';
+          return;
+        }
+        // NTSTATUS severity in bits 30-31
+        def severity = (int) ((status >>> 30) & 0x3L);
+        if (severity == 3) {
+          ctx.event.outcome = 'failure';
+        } else {
+          // informational, warning, or non-zero success-class (PENDING/TIMEOUT)
+          ctx.event.outcome = 'unknown';
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_06556072
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   # Cached event category for category-dependent processors
   - set:
       tag: set__temp_isFile_1aa6969f
@@ -2170,6 +2203,36 @@ processors:
       field: file.path
       copy_from: crowdstrike.TargetFileName
       ignore_empty_value: true
+  - set:
+      tag: set_file_path_5418e744
+      if: |-
+        ctx.file?.path == null && ctx.event?.action instanceof String &&
+        (ctx.event.action == 'DataEgress' || ctx.event.action.startsWith('DataProtection'))
+      field: file.path
+      copy_from: crowdstrike.NormalizedPath
+      ignore_empty_value: true
+  - set:
+      tag: set_file_path_b246b65c
+      if: |-
+        ctx.file?.path == null && ctx.event?.action instanceof String &&
+        (ctx.event.action == 'DataEgress' || ctx.event.action.startsWith('DataProtection'))
+      field: file.path
+      copy_from: crowdstrike.AssessedFileName
+      ignore_empty_value: true
+  - set:
+      tag: set_file_hash_sha256_7b267803
+      if: |-
+        ctx.file?.hash?.sha256 == null && ctx.event?.action instanceof String &&
+        (ctx.event.action == 'DataEgress' || ctx.event.action.startsWith('DataProtection'))
+      field: file.hash.sha256
+      copy_from: crowdstrike.ContentSHA256HashData
+      ignore_empty_value: true
+  - append:
+      tag: append_related_hash_017aef51
+      if: ctx.file?.hash?.sha256 != null
+      field: related.hash
+      value: '{{{file.hash.sha256}}}'
+      allow_duplicates: false
   - rename:
       tag: rename_crowdstrike_DiskParentDeviceInstanceId_to_file_device_f0e46ae0
       field: crowdstrike.DiskParentDeviceInstanceId
@@ -2281,6 +2344,294 @@ processors:
       field: device.id
       copy_from: observer.serial_number
       ignore_empty_value: true
+
+  # AWS FDR asset inventory → cloud.* (and host/related IPs)
+  - set:
+      tag: set_temp_is_aws_event
+      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('Aws')
+      field: _temp.is_aws_event
+      value: true
+  - set:
+      tag: set_cloud_provider_aws
+      if: ctx._temp?.is_aws_event == true
+      field: cloud.provider
+      value: aws
+  - set:
+      tag: set_cloud_account_id_from_crowdstrike_AwsOwnerId
+      if: ctx._temp?.is_aws_event == true
+      field: cloud.account.id
+      copy_from: crowdstrike.AwsOwnerId
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_region_from_crowdstrike_AwsRegion
+      if: ctx._temp?.is_aws_event == true
+      field: cloud.region
+      copy_from: crowdstrike.AwsRegion
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_instance_id_from_crowdstrike_AwsInstanceId
+      if: ctx._temp?.is_aws_event == true
+      field: cloud.instance.id
+      copy_from: crowdstrike.AwsInstanceId
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_instance_name_from_crowdstrike_AwsInstanceName
+      if: ctx._temp?.is_aws_event == true
+      field: cloud.instance.name
+      copy_from: crowdstrike.AwsInstanceName
+      ignore_empty_value: true
+  - convert:
+      tag: convert_crowdstrike_AwsPrivateIPAddress_to_ip
+      if: ctx._temp?.is_aws_event == true && ctx.crowdstrike?.AwsPrivateIPAddress != null && ctx.crowdstrike.AwsPrivateIPAddress != ''
+      field: crowdstrike.AwsPrivateIPAddress
+      type: ip
+      target_field: _temp.aws_private_ip
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_AwsPrivateIPAddress_570cf9ff
+            field: crowdstrike.AwsPrivateIPAddress
+            ignore_missing: true
+        - append:
+            tag: append_error_message_7869e686
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_AwsPublicIpAddress_to_ip
+      if: ctx._temp?.is_aws_event == true && ctx.crowdstrike?.AwsPublicIpAddress != null && ctx.crowdstrike.AwsPublicIpAddress != ''
+      field: crowdstrike.AwsPublicIpAddress
+      type: ip
+      target_field: _temp.aws_public_ip
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_AwsPublicIpAddress_b1845fe9
+            field: crowdstrike.AwsPublicIpAddress
+            ignore_missing: true
+        - append:
+            tag: append_error_message_49fef87c
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      tag: append_host_ip_from_aws_private_ip
+      if: ctx._temp?.aws_private_ip != null
+      field: host.ip
+      value: '{{{_temp.aws_private_ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_from_aws_private_ip
+      if: ctx._temp?.aws_private_ip != null
+      field: related.ip
+      value: '{{{_temp.aws_private_ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_host_ip_from_aws_public_ip
+      if: ctx._temp?.aws_public_ip != null
+      field: host.ip
+      value: '{{{_temp.aws_public_ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_from_aws_public_ip
+      if: ctx._temp?.aws_public_ip != null
+      field: related.ip
+      value: '{{{_temp.aws_public_ip}}}'
+      allow_duplicates: false
+
+  # Azure FDR asset inventory → cloud.* (and host/related IPs)
+  - set:
+      tag: set_temp_is_azure_event
+      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('Azure')
+      field: _temp.is_azure_event
+      value: true
+  - set:
+      tag: set_cloud_provider_azure
+      if: ctx._temp?.is_azure_event == true
+      field: cloud.provider
+      value: azure
+  - set:
+      tag: set_cloud_account_id_from_crowdstrike_AzureSubscriptionId
+      if: ctx._temp?.is_azure_event == true
+      field: cloud.account.id
+      copy_from: crowdstrike.AzureSubscriptionId
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_region_from_crowdstrike_AzureLocation
+      if: ctx._temp?.is_azure_event == true
+      field: cloud.region
+      copy_from: crowdstrike.AzureLocation
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_instance_id_from_crowdstrike_AzureVmId
+      if: ctx._temp?.is_azure_event == true
+      field: cloud.instance.id
+      copy_from: crowdstrike.AzureVmId
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_instance_name_from_crowdstrike_AzureVMName
+      if: ctx._temp?.is_azure_event == true
+      field: cloud.instance.name
+      copy_from: crowdstrike.AzureVMName
+      ignore_empty_value: true
+  - convert:
+      tag: convert_crowdstrike_AzurePrivateIpAddress_to_ip
+      if: ctx._temp?.is_azure_event == true && ctx.crowdstrike?.AzurePrivateIpAddress != null && ctx.crowdstrike.AzurePrivateIpAddress != ''
+      field: crowdstrike.AzurePrivateIpAddress
+      type: ip
+      target_field: _temp.azure_private_ip
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_AzurePrivateIpAddress_5c2d2b1b
+            field: crowdstrike.AzurePrivateIpAddress
+            ignore_missing: true
+        - append:
+            tag: append_error_message_6509d244
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_AzureIpAddress_to_ip
+      if: ctx._temp?.is_azure_event == true && ctx.crowdstrike?.AzureIpAddress != null && ctx.crowdstrike.AzureIpAddress != ''
+      field: crowdstrike.AzureIpAddress
+      type: ip
+      target_field: _temp.azure_public_ip
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_AzureIpAddress_9ff72db7
+            field: crowdstrike.AzureIpAddress
+            ignore_missing: true
+        - append:
+            tag: append_error_message_4f4703c9
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      tag: append_host_ip_from_azure_private_ip
+      if: ctx._temp?.azure_private_ip != null
+      field: host.ip
+      value: '{{{_temp.azure_private_ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_from_azure_private_ip
+      if: ctx._temp?.azure_private_ip != null
+      field: related.ip
+      value: '{{{_temp.azure_private_ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_host_ip_from_azure_public_ip
+      if: ctx._temp?.azure_public_ip != null
+      field: host.ip
+      value: '{{{_temp.azure_public_ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_from_azure_public_ip
+      if: ctx._temp?.azure_public_ip != null
+      field: related.ip
+      value: '{{{_temp.azure_public_ip}}}'
+      allow_duplicates: false
+
+  # GCP FDR asset inventory → cloud.* (and host/related IPs)
+  - set:
+      tag: set_temp_is_gcp_event
+      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('Gcp')
+      field: _temp.is_gcp_event
+      value: true
+  - set:
+      tag: set_cloud_provider_gcp
+      if: ctx._temp?.is_gcp_event == true
+      field: cloud.provider
+      value: gcp
+  - set:
+      tag: set_cloud_account_id_from_crowdstrike_GcpProjectId
+      if: ctx._temp?.is_gcp_event == true
+      field: cloud.account.id
+      copy_from: crowdstrike.GcpProjectId
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_project_id_from_crowdstrike_GcpProjectId
+      if: ctx._temp?.is_gcp_event == true
+      field: cloud.project.id
+      copy_from: crowdstrike.GcpProjectId
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_region_from_crowdstrike_GcpRegion
+      if: ctx._temp?.is_gcp_event == true
+      field: cloud.region
+      copy_from: crowdstrike.GcpRegion
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_availability_zone_from_crowdstrike_GcpZone
+      if: ctx._temp?.is_gcp_event == true
+      field: cloud.availability_zone
+      copy_from: crowdstrike.GcpZone
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_instance_id_from_crowdstrike_GcpId
+      if: ctx._temp?.is_gcp_event == true && ctx.event?.action instanceof String && ctx.event.action.startsWith('GcpComputeInstance')
+      field: cloud.instance.id
+      copy_from: crowdstrike.GcpId
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_instance_id_from_crowdstrike_GcpAttachedInstanceId
+      if: ctx._temp?.is_gcp_event == true && ctx.cloud?.instance?.id == null
+      field: cloud.instance.id
+      copy_from: crowdstrike.GcpAttachedInstanceId
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_instance_name_from_crowdstrike_GcpName
+      if: ctx._temp?.is_gcp_event == true && ctx.event?.action instanceof String && ctx.event.action.startsWith('GcpComputeInstance')
+      field: cloud.instance.name
+      copy_from: crowdstrike.GcpName
+      ignore_empty_value: true
+  - convert:
+      tag: convert_crowdstrike_GcpNetworkIp_to_ip
+      if: ctx._temp?.is_gcp_event == true && ctx.crowdstrike?.GcpNetworkIp != null && ctx.crowdstrike.GcpNetworkIp != ''
+      field: crowdstrike.GcpNetworkIp
+      type: ip
+      target_field: _temp.gcp_private_ip
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_GcpNetworkIp_8c166d37
+            field: crowdstrike.GcpNetworkIp
+            ignore_missing: true
+        - append:
+            tag: append_error_message_3da3cd1e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_crowdstrike_GcpAccessConfigNatIp_to_ip
+      if: ctx._temp?.is_gcp_event == true && ctx.crowdstrike?.GcpAccessConfigNatIp != null && ctx.crowdstrike.GcpAccessConfigNatIp != ''
+      field: crowdstrike.GcpAccessConfigNatIp
+      type: ip
+      target_field: _temp.gcp_public_ip
+      on_failure:
+        - remove:
+            tag: remove_crowdstrike_GcpAccessConfigNatIp_d97f6b11
+            field: crowdstrike.GcpAccessConfigNatIp
+            ignore_missing: true
+        - append:
+            tag: append_error_message_e579070d
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      tag: append_host_ip_from_gcp_private_ip
+      if: ctx._temp?.gcp_private_ip != null
+      field: host.ip
+      value: '{{{_temp.gcp_private_ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_from_gcp_private_ip
+      if: ctx._temp?.gcp_private_ip != null
+      field: related.ip
+      value: '{{{_temp.gcp_private_ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_host_ip_from_gcp_public_ip
+      if: ctx._temp?.gcp_public_ip != null
+      field: host.ip
+      value: '{{{_temp.gcp_public_ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_from_gcp_public_ip
+      if: ctx._temp?.gcp_public_ip != null
+      field: related.ip
+      value: '{{{_temp.gcp_public_ip}}}'
+      allow_duplicates: false
 
   # Threat Fields.
   - foreach:
