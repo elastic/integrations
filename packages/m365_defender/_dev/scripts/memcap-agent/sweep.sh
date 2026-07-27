@@ -14,14 +14,15 @@
 #   STREAM=alert    SWEEP_EVENTS="250 500 1000 2000" ./sweep.sh
 #   STREAM=incident SWEEP_EVENTS="10 25 50 100" ALERTS_PER_INCIDENT=100 ./sweep.sh
 #   STREAM=vulnerability SWEEP_EVENTS="2500 5000 10000 20000" ./sweep.sh
-#   SWEEP_CAP=6g STACK_VERSION=9.4.2 STREAM=alert ./sweep.sh
+#   SWEEP_CAP=6g STACK_VERSION=9.6.0-SNAPSHOT STREAM=alert ./sweep.sh
 
 set -euo pipefail
 
 STREAM="${STREAM:?set STREAM=alert|incident|vulnerability}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SWEEP_CAP="${SWEEP_CAP:-6g}"                        # big enough that no point OOMs
-export STACK_VERSION="${STACK_VERSION:-9.4.2}"
+export STACK_VERSION="${STACK_VERSION:-9.6.0-SNAPSHOT}"  # serverless agentless == elastic-agent main (~9.6.0-SNAPSHOT); not a GA tag
+export AGENT_IMAGE="${AGENT_IMAGE:-docker.elastic.co/elastic-agent/elastic-agent:$STACK_VERSION}"
 export ALERTS_PER_INCIDENT="${ALERTS_PER_INCIDENT:-100}"
 
 case "$STREAM" in

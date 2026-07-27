@@ -89,9 +89,25 @@ STREAM=incident SWEEP_CAP=6g SWEEP_EVENTS="10 25 50 100" ALERTS_PER_INCIDENT=100
 STREAM=vulnerability SWEEP_CAP=6g SWEEP_EVENTS="2500 5000 10000 20000" ./sweep.sh
 ```
 
-Key env: `STREAM` (required), `STACK_VERSION` (match the shipped agent, default
-9.4.2), `MEM_LIMIT`, `TOTAL_EVENTS` (records per page), `ALERTS_PER_INCIDENT`
-(incident only), `SWEEP_CAP`, `SWEEP_EVENTS`, `KEEP=1` (leave containers up), `TOOL`.
+Key env: `STREAM` (required), `STACK_VERSION` (default `9.6.0-SNAPSHOT`),
+`AGENT_IMAGE` (override to pin an exact serverless build), `MEM_LIMIT`,
+`TOTAL_EVENTS` (records per page), `ALERTS_PER_INCIDENT` (incident only),
+`SWEEP_CAP`, `SWEEP_EVENTS`, `KEEP=1` (leave containers up), `TOOL`.
+
+### Which agent version to profile
+
+Serverless agentless runs **elastic-agent `main`**, shipped as the
+`docker.elastic.co/observability-ci/ecp-elastic-agent-service:git-<sha>` image,
+which rotates every ~1-2 days as `main` advances. The pod's `agent.version` metric
+field is stale metadata (it can read e.g. `9.4.2` while the binary is a `main`
+build). `main` currently declares **9.6.0**, so the default `STACK_VERSION` is
+`9.6.0-SNAPSHOT` (the standard, publicly pullable proxy for the same code line) -
+**not** a `cloud-release` GA tag like `9.4.x`, which is the stateful/ESH fleet, not
+serverless agentless. For maximum fidelity, set
+`AGENT_IMAGE=docker.elastic.co/observability-ci/ecp-elastic-agent-service:git-<sha>`
+to the exact serverless build (requires registry access; re-pin as it rotates).
+Record the exact build measured in the ORR, and lean on the memory *driver*
+(`page_size x record_size x multiplier`) as the version-independent quantity.
 
 ## Output and analysis
 
@@ -126,7 +142,16 @@ Copy the summary numbers into the ORR load-test / memory-profile sections; the r
 
 ## Result (recorded for the ORR)
 
-_TODO: fill in after the first full sweep on the shipped agent version._
+_TODO: fill in after the first full sweep._
+
+**Agent build measured:** _TODO_ — record the exact serverless build the numbers
+came from, since serverless agentless tracks `main` (a moving target). Capture all
+three:
+- version string: _TODO_ (e.g. `9.6.0-SNAPSHOT`; from
+  `docker exec m365-agent elastic-agent version --binary-only`)
+- image / commit: _TODO_ (e.g. `ecp-elastic-agent-service:git-893784d73b64`, i.e.
+  elastic-agent commit `893784d`; the `run.sh` RESULT block prints `agent image`)
+- date measured: _TODO_ (the serverless image rotates every ~1-2 days)
 
 | stream          | fit (base + k·page)      | 1Gi boundary | 512Mi boundary |
 | --------------- | ------------------------ | ------------ | -------------- |

@@ -30,14 +30,20 @@
 #   STREAM=vulnerability MEM_LIMIT=512m TOTAL_EVENTS=10000 ./run.sh
 # Or use ./sweep.sh to fit the peak/page multiplier across several page sizes.
 #
-# Match STACK_VERSION to the agent version agentless actually ships, otherwise the
-# numbers are not representative for the ORR.
+# Match STACK_VERSION to the agent build agentless actually ships, otherwise the
+# numbers are not representative for the ORR. Serverless agentless runs elastic-agent
+# `main` (the observability-ci ecp-elastic-agent-service:git-<sha> image, which
+# rotates every ~1-2 days), NOT a cloud-release GA tag - the pod's `agent.version`
+# field is stale metadata. main currently declares 9.6.0, so 9.6.0-SNAPSHOT is the
+# closest reproducible, publicly pullable proxy. Use AGENT_IMAGE to pin the exact
+# serverless image instead (e.g. the ecp-...:git-<sha> build) for max fidelity.
 
 set -euo pipefail
 
 # --------------------------- config (override via env) ---------------------------
 STREAM="${STREAM:?set STREAM=alert|incident|vulnerability}"
-STACK_VERSION="${STACK_VERSION:-9.4.2}"           # MUST match the shipped agent version
+STACK_VERSION="${STACK_VERSION:-9.6.0-SNAPSHOT}"  # serverless agentless == elastic-agent main (~9.6.0-SNAPSHOT)
+AGENT_IMAGE="${AGENT_IMAGE:-docker.elastic.co/elastic-agent/elastic-agent:$STACK_VERSION}"  # override to pin the exact ecp-...:git-<sha> serverless build
 MEM_LIMIT="${MEM_LIMIT:-1g}"                       # cgroup cap = agentless pod mem limit
 STREAM_IMAGE="${STREAM_IMAGE:-docker.elastic.co/observability/stream:v0.20.0}"
 KEEP="${KEEP:-0}"                                  # KEEP=1 to leave containers up
@@ -150,7 +156,7 @@ docker run -d --name "$AGENT" --network "$NET" \
   -e "BEATS_ADD_CLOUD_METADATA_PROVIDERS= " \
   -e GODEBUG=madvdontneed=1 \
   -v "$AGENT_YML":/usr/share/elastic-agent/elastic-agent.yml:ro \
-  "docker.elastic.co/elastic-agent/elastic-agent:$STACK_VERSION" >/dev/null
+  "$AGENT_IMAGE" >/dev/null
 
 # memory.peak is monotonic; read it ONCE at the very end with a single exec. We do
 # NOT exec inside the loop (each exec joins the container cgroup and ratchets the
@@ -201,6 +207,7 @@ echo
 echo "================= RESULT (elastic-agent) ================="
 echo " stream          : $STREAM"
 echo " agent version   : $STACK_VERSION"
+echo " agent image     : $AGENT_IMAGE"
 echo " records in page : $TOTAL_EVENTS"
 [ "$STREAM" = "incident" ] && echo " alerts/incident : $ALERTS_PER_INCIDENT"
 echo " raw page bytes  : $BLOB (~$((BLOB/1024/1024)) MB)"
