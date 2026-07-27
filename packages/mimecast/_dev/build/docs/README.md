@@ -1,6 +1,6 @@
 # Mimecast Integration
 
-The Mimecast integration collects events from the [Mimecast API](https://integrations.mimecast.com/documentation/).
+The Mimecast integration collects events from the [Mimecast API](https://developer.services.mimecast.com/apis).
 
 ## Agentless Enabled Integration
 
@@ -9,22 +9,28 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ## Configuration
 
-### v1 API Endpoints
-
-Authorization parameters for the Mimecast API (`Application Key`, `Application
-ID`, `Access Key`, and `Secret Key`) should be provided by a Mimecast
-representative for this integration. Under `Advanced options` you can set the
-time interval between two API requests as well as the API URL. A Mimecast
-representative should also be able to give you this information in case you need
-to change the defaults.
-
-> Note: Rate limit quotas may require you to set up different credentials for the different available log types.
-
 ### v2 API Endpoints
 
 Authorization parameters for the Mimecast API (`Client ID` and `Client Key`) should
 be provided by a Mimecast representative for this integration. Under `Advanced options`
 you can set the time interval between two API requests as well as the API URL. A Mimecast
+representative should also be able to give you this information in case you need
+to change the defaults.
+
+> Note: Rate limit quotas may require you to set up different credentials for the different available log types.
+
+### v1 API Endpoints (deprecated)
+
+> **Deprecated:** Mimecast API 1.0 is [end-of-life](https://mimecastsupport.zendesk.com/hc/en-us/articles/43572890309651-API-Integrations-API-1-0-End-of-Life-Project-Extension-Aug-2025).
+> New installations should use the v2 API. Existing v1 configurations continue
+> to work but will stop functioning when Mimecast retires API 1.0 application
+> credentials. See the [API 1.0 to 2.0 Migration Guide](https://developer.services.mimecast.com/api-1-0-to-2-0-migration-guide)
+> for details on provisioning v2 API credentials.
+
+Authorization parameters for the Mimecast API (`Application Key`, `Application
+ID`, `Access Key`, and `Secret Key`) should be provided by a Mimecast
+representative for this integration. Under `Advanced options` you can set the
+time interval between two API requests as well as the API URL. A Mimecast
 representative should also be able to give you this information in case you need
 to change the defaults.
 
