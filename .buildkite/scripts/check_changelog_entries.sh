@@ -189,6 +189,7 @@ main() {
             notify_changelog_mismatch "${message}" "${BUILDKITE_PULL_REQUEST}"
         fi
         if [[ "${_sentinel_errors}" -gt 0 ]]; then
+            echo "FATAL: ${_sentinel_errors} changelog link(s) still contain the REPLACE_ME sentinel — the auto-fix step likely failed to push the link-fix commit."
             exit 1
         fi
         exit 2
