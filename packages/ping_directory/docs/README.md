@@ -289,7 +289,7 @@ An example event for `http_access` looks as following:
 
 ### Audit
 
-The `audit` data stream provides audit logs from ping_directory.
+The `audit` data stream provides audit logs from PingDirectory.
 
 #### Audit fields
 
@@ -347,9 +347,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-05-25T18:48:06.786+05:30",
     "agent": {
-        "ephemeral_id": "9d9fa5b8-1cc4-4e51-b53b-7c5342e396a5",
-        "id": "7ebf0f90-b6ef-4f4d-a9cf-998138324151",
-        "name": "elastic-agent-26003",
+        "ephemeral_id": "9bacaab2-66d4-4e94-a112-7aa823784190",
+        "id": "3e32e0fa-c65e-46e2-bbc6-1f82cdc05987",
+        "name": "elastic-agent-10567",
         "type": "filebeat",
         "version": "8.19.0"
     },
@@ -358,14 +358,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "ping_directory.audit",
-        "namespace": "36409",
+        "namespace": "76370",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "7ebf0f90-b6ef-4f4d-a9cf-998138324151",
+        "id": "3e32e0fa-c65e-46e2-bbc6-1f82cdc05987",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -376,7 +376,7 @@ An example event for `audit` looks as following:
             "iam"
         ],
         "dataset": "ping_directory.audit",
-        "ingested": "2026-07-21T12:19:05Z",
+        "ingested": "2026-07-27T10:37:12Z",
         "kind": "event",
         "original": "# 25/May/2026:18:48:06.786 +0530; conn=13; op=28; instanceName=\"pingdirectory-elastic-test\"; threadID=29; clientIP=10.50.15.29; requesterDN=\"cn=Directory Manager,cn=Root DNs,cn=config\"; usingAdminSessionWorkerThread=true; operationPurpose={ \"applicationName\":\"PingDirectory\", \"applicationVersion\":\"11.0.0.2\", \"codeLocation\":\"DSConfig.getReason:2978 SetPropSubCommandHandler.modifyManagedObject:541 SetPropSubCommandHandler.run:1246 DSConfig.runSubCommand:2574 DSConfig.execute:1698\" }\ndn: cn=File-Based Audit Logger,cn=Loggers,cn=config\nchangetype: modify\nreplace: ds-cfg-enabled\nds-cfg-enabled: true\n-\nreplace: modifiersName\nmodifiersName: cn=Directory Manager,cn=Root DNs,cn=config\n-\nreplace: modifyTimestamp\nmodifyTimestamp: 20260525131806.681Z",
         "reason": "DSConfig.getReason:2978 SetPropSubCommandHandler.modifyManagedObject:541 SetPropSubCommandHandler.run:1246 DSConfig.runSubCommand:2574 DSConfig.execute:1698",
@@ -391,7 +391,7 @@ An example event for `audit` looks as following:
     "log": {
         "file": {
             "device_id": "64768",
-            "inode": "1444588",
+            "inode": "1852090",
             "path": "/tmp/service_logs/test-audit.log"
         },
         "flags": [
@@ -409,6 +409,13 @@ An example event for `audit` looks as following:
             "dn": {
                 "cn": "File-Based Audit Logger",
                 "meta": "cn=Loggers,cn=config"
+            },
+            "ds_cfg": {
+                "enabled": true
+            },
+            "modifiers_name": {
+                "cn": "Directory Manager",
+                "meta": "cn=Root DNs,cn=config"
             },
             "modify_timestamp": "2026-05-25T13:18:06.681Z",
             "op": 28,
@@ -457,4 +464,3 @@ To collect logs via Filestream, select **Collect logs via Filestream** and confi
 
 - Filestream paths: The full path to the related log file.
 </details>
-

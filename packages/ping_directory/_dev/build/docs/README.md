@@ -112,7 +112,7 @@ The `http_access` data stream provides HTTP access logs from PingDirectory.
 
 ### Audit
 
-The `audit` data stream provides audit logs from ping_directory.
+The `audit` data stream provides audit logs from PingDirectory.
 
 #### Audit fields
 

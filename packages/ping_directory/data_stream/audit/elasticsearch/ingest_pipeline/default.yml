@@ -36,14 +36,23 @@ processors:
         - drop:
             tag: drop_event_on_grok_failure
             description: Drop event if audit header grok fails; unable to extract core fields (timestamp, clientIP, etc.).
+  - gsub:
+      field: event.original
+      tag: normalize_multiline_to_space
+      pattern: '\n'
+      replacement: ' '
+      target_field: _tmp.audit_body
+      if: ctx.event?.original != null
+      description: >-
+        Normalize multiline LDIF records by converting newlines to spaces, so regex parsing in LDIF extraction scripts matches DN-valued attributes (modifiersName, ds_cfg) correctly.
   - script:
       tag: parse_audit_ldif_fields
       lang: painless
-      if: ctx.event?.original != null
+      if: ctx._tmp?.audit_body != null
       description: >-
-        Extracts LDIF body fields (dn, changetype, modifiersName, modifyTimestamp, creatorsName, createTimestamp, entryUUID) from the multiline audit record in event.original using regex matching, storing raw values under ping_directory.audit for further processing.
+        Extracts LDIF body fields (dn, changetype, modifiersName, modifyTimestamp, creatorsName, createTimestamp, entryUUID) from the normalized audit record in _tmp.audit_body using regex matching, storing raw values under ping_directory.audit for further processing.
       source: |-
-        def raw = ctx.event.original;
+        def raw = ctx._tmp.audit_body;
 
         // Remove operationPurpose JSON block to avoid false matches
         String body = raw;
@@ -193,11 +202,11 @@ processors:
   - script:
       tag: parse_ds_cfg_and_object_class_fields
       lang: painless
-      if: ctx.event?.original != null
+      if: ctx._tmp?.audit_body != null
       description: >-
-        Extracts ds-cfg-* attribute fields into ping_directory.audit.ds_cfg and objectClass values into ping_directory.audit.object_classes from the LDIF body of the audit record.
+        Extracts ds-cfg-* attribute fields into ping_directory.audit.ds_cfg and objectClass values into ping_directory.audit.object_classes from the normalized LDIF body in _tmp.audit_body.
       source: |-
-        String raw = ctx.event.original;
+        String raw = ctx._tmp.audit_body;
 
         String body = raw;
         int dnIdx = body.indexOf(' dn:');
@@ -274,9 +283,14 @@ processors:
       value: iam
   - append:
       field: event.type
+      tag: append_creation_into_event_type
+      value: creation
+      if: ctx.ping_directory?.audit?.changetype != null && ['add','ADD'].contains(ctx.ping_directory.audit.changetype)
+  - append:
+      field: event.type
       tag: append_change_into_event_type
       value: change
-      if: ctx.ping_directory?.audit?.changetype != null && !['delete','DELETE'].contains(ctx.ping_directory.audit.changetype)
+      if: ctx.ping_directory?.audit?.changetype != null && ['modify','MODIFY'].contains(ctx.ping_directory.audit.changetype)
   - append:
       field: event.type
       tag: append_deletion_into_event_type
@@ -484,6 +498,8 @@ processors:
       ignore_empty_value: true
   - remove:
       field:
+        - _tmp
+        - _conf.tz_offset
         - ping_directory.audit.client_ip
         - ping_directory.audit.instance_name
         - ping_directory.audit.operation_purpose.application_version
