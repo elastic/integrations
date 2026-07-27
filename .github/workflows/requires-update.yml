@@ -12,11 +12,9 @@ on:
         description: 'Print what would be published without touching git or GitHub'
         type: boolean
         default: false
-  # Manual-only for now: adoption of `requires:` blocks is just starting (first
-  # package is landing). Re-enable the schedule once a manual run has been
-  # verified end-to-end against a real package (PR/issue creation included).
-  # schedule:
-  #   - cron: '0 9 * * 1'
+  schedule:
+    # Every weekday at 02:30 UTC.
+    - cron: '30 2 * * 1-5'
 
 permissions:
   contents: read
@@ -59,8 +57,8 @@ jobs:
       - name: Run RequiresUpdate
         # Scans packages, applies proposals, and opens one PR (or issue) per
         # package — see dev/requiresupdate.
-        # Scheduled runs (when cron is enabled) always use dryRun=false and
-        # preview=false; workflow_dispatch inputs are only read for manual runs.
+        # Scheduled runs always use dryRun=false and preview=false;
+        # workflow_dispatch inputs are only read for manual runs.
         id: requires_update
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
