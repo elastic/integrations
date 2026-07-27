@@ -825,6 +825,9 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.aggregate_id |  | keyword |
 | crowdstrike.alert.alert_attributes |  | long |
 | crowdstrike.alert.alleged_filetype |  | keyword |
+| crowdstrike.alert.anode_indicators.explanation_metrics_v2.category_distribution_difference_values | Difference between expected and current ANODE category distribution values (polymorphic float/integer array). | float |
+| crowdstrike.alert.anode_indicators.explanation_metrics_v2.current_category_distribution_values | Observed ANODE category distribution values (polymorphic float/integer array). | float |
+| crowdstrike.alert.anode_indicators.explanation_metrics_v2.expected_category_distribution_values | Expected ANODE category distribution values (polymorphic float/integer array). | float |
 | crowdstrike.alert.assigned_to.name |  | keyword |
 | crowdstrike.alert.assigned_to.uid |  | keyword |
 | crowdstrike.alert.assigned_to.uuid |  | keyword |
@@ -1283,7 +1286,20 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.AgentId |  | keyword |
 | crowdstrike.event.AgentIdString |  | keyword |
 | crowdstrike.event.AggregateId |  | keyword |
-| crowdstrike.event.AnodeIndicators |  | nested |
+| crowdstrike.event.AnodeIndicators.DataVolumeIncreasePercentage | Observed data volume as a multiple of the entity's baseline. | float |
+| crowdstrike.event.AnodeIndicators.Destination |  | keyword |
+| crowdstrike.event.AnodeIndicators.Detected |  | boolean |
+| crowdstrike.event.AnodeIndicators.Entity |  | keyword |
+| crowdstrike.event.AnodeIndicators.Explanation |  | keyword |
+| crowdstrike.event.AnodeIndicators.FileCategoryDistributions.CurrentPercentage |  | float |
+| crowdstrike.event.AnodeIndicators.FileCategoryDistributions.ExpectedPercentage |  | float |
+| crowdstrike.event.AnodeIndicators.FileCategoryDistributions.ID |  | keyword |
+| crowdstrike.event.AnodeIndicators.FileCategoryDistributions.IncreasePercentage |  | float |
+| crowdstrike.event.AnodeIndicators.FileCategoryDistributions.Name |  | keyword |
+| crowdstrike.event.AnodeIndicators.FileCountIncreasePercentage | Observed file count as a multiple of the entity's baseline. | float |
+| crowdstrike.event.AnodeIndicators.Name |  | keyword |
+| crowdstrike.event.AnodeIndicators.Score | Anomaly score for the indicator. | float |
+| crowdstrike.event.AnodeIndicators.Type |  | keyword |
 | crowdstrike.event.AnomalousTicketContentClassification | Ticket signature analysis. | keyword |
 | crowdstrike.event.AssociatedFile | The file associated with the triggering indicator. | keyword |
 | crowdstrike.event.Attributes | JSON objects containing additional information about the event. | flattened |
@@ -1836,7 +1852,20 @@ An example event for `fdr` looks as following:
 | crowdstrike.AggregateId |  | keyword |
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
 | crowdstrike.AllowlistingFilterId |  | keyword |
-| crowdstrike.AnodeIndicators |  | nested |
+| crowdstrike.AnodeIndicators.DataVolumeIncreasePercentage | Observed data volume as a multiple of the entity's baseline. | float |
+| crowdstrike.AnodeIndicators.Destination |  | keyword |
+| crowdstrike.AnodeIndicators.Detected |  | boolean |
+| crowdstrike.AnodeIndicators.Entity |  | keyword |
+| crowdstrike.AnodeIndicators.Explanation |  | keyword |
+| crowdstrike.AnodeIndicators.FileCategoryDistributions.CurrentPercentage |  | float |
+| crowdstrike.AnodeIndicators.FileCategoryDistributions.ExpectedPercentage |  | float |
+| crowdstrike.AnodeIndicators.FileCategoryDistributions.ID |  | keyword |
+| crowdstrike.AnodeIndicators.FileCategoryDistributions.IncreasePercentage |  | float |
+| crowdstrike.AnodeIndicators.FileCategoryDistributions.Name |  | keyword |
+| crowdstrike.AnodeIndicators.FileCountIncreasePercentage | Observed file count as a multiple of the entity's baseline. | float |
+| crowdstrike.AnodeIndicators.Name |  | keyword |
+| crowdstrike.AnodeIndicators.Score | Anomaly score for the indicator. | float |
+| crowdstrike.AnodeIndicators.Type |  | keyword |
 | crowdstrike.AntiTamperStateFlag |  | keyword |
 | crowdstrike.ApiReturnValue |  | keyword |
 | crowdstrike.ApplicationName |  | match_only_text |
