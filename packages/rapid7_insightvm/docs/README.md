@@ -252,6 +252,7 @@ An example event for `asset` looks as following:
 | rapid7.insightvm.asset.same.port | For services vulnerabilities, the port that is vulnerable. | long |
 | rapid7.insightvm.asset.same.proof | The identifier of the vulnerability proof. | keyword |
 | rapid7.insightvm.asset.same.protocol | For services vulnerabilities, the protocol that is vulnerable. | keyword |
+| rapid7.insightvm.asset.same.reintroduced |  | date |
 | rapid7.insightvm.asset.same.solution.fix | The solution fix for the vulnerability. | keyword |
 | rapid7.insightvm.asset.same.solution.id | The identifier of the solution for the vulnerability. | keyword |
 | rapid7.insightvm.asset.same.solution.summary | The summary for the solution for the vulnerability. | keyword |
