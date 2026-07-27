@@ -18,6 +18,9 @@ state:
   api_type: {{api_type}}
   initial_interval: "{{initial_interval}}"
   page_size: {{page_size}}
+{{#if commercial_url}}
+  commercial_url: {{commercial_url}}
+{{/if}}
 {{#if auth_key}}
   auth_key: {{auth_key}}
 {{/if}}
@@ -34,9 +37,9 @@ redact:
     - token.access_token
 program: |-
   state.with(
-    state.?api_type.orValue("community") == "commercial" ?
+    (state.?api_type.orValue("community") == "commercial") ?
       (
-        !has(state.username) || !has(state.password) ?
+        (!has(state.username) || !has(state.password)) ?
           {
             "events": {
               "error": {
@@ -45,137 +48,142 @@ program: |-
             },
             "want_more": false,
           }
-        : (has(state.?token.access_token) && has(state.?token.expires) && now() < timestamp(int(state.token.expires) - 60)) ?
-          state.token
         :
-          request(
-            "POST",
-            state.url.trim_right("/") + "/v1/login",
-            {
-              "username": state.username,
-              "password": state.password,
-              "realm": "abusech",
-            }.encode_json()
-          ).with(
-            {
-              "Header": {
-                "Content-Type": ["application/json"],
-              },
-            }
-          ).do_request().as(auth_resp, (auth_resp.StatusCode == 200) ?
-            auth_resp.Body.decode_json().as(auth_body,
-              {
-                "access_token": auth_body.token,
-                "expires": auth_body.expires,
-              }
-            )
-          :
-            {
-              "events": {
-                "error": {
-                  "code": string(auth_resp.StatusCode),
-                  "id": auth_resp.Status,
-                  "message": "POST " + state.url.trim_right("/") + "/v1/login: " + (
-                    size(auth_resp.Body) != 0 ?
-                      string(auth_resp.Body)
-                    :
-                      auth_resp.Status + " (" + string(auth_resp.StatusCode) + ")"
-                  ),
-                },
-              },
-              "want_more": false,
-            }
-          )
-      ).as(token, !has(token.access_token) ?
-        token
-      :
-        (
-          has(state.?cursor.after) ?
-            state.cursor.since
-          :
-            state.?cursor.first_seen.orValue(
-              state.?cursor.since.orValue(
-                (now - duration(string(int(state.initial_interval) * 24) + "h")).format(time_layout.RFC3339)
+          state.?commercial_url.orValue(state.url).as(base_url,
+            (
+              (has(state.?token.access_token) && has(state.?token.expires) && now() < timestamp(int(state.token.expires) - 60)) ?
+                state.token
+              :
+                request(
+                  "POST",
+                  base_url.trim_right("/") + "/v1/login",
+                  {
+                    "username": state.username,
+                    "password": state.password,
+                    "realm": "abusech",
+                  }.encode_json()
+                ).with(
+                  {
+                    "Header": {
+                      "Content-Type": ["application/json"],
+                    },
+                  }
+                ).do_request().as(auth_resp, (auth_resp.StatusCode == 200) ?
+                  auth_resp.Body.decode_json().as(auth_body,
+                    {
+                      "access_token": auth_body.token,
+                      "expires": auth_body.expires,
+                    }
+                  )
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(auth_resp.StatusCode),
+                        "id": auth_resp.Status,
+                        "message": "POST " + base_url.trim_right("/") + "/v1/login: " + (
+                          (size(auth_resp.Body) != 0) ?
+                            string(auth_resp.Body)
+                          :
+                            auth_resp.Status + " (" + string(auth_resp.StatusCode) + ")"
+                        ),
+                      },
+                    },
+                    "want_more": false,
+                  }
+                )
+            ).as(token, !has(token.access_token) ?
+              token
+            :
+              (
+                has(state.?cursor.after) ?
+                  state.cursor.since
+                :
+                  state.?cursor.first_seen.orValue(
+                    state.?cursor.since.orValue(
+                      (now - duration(string(int(state.initial_interval) * 24) + "h")).format(time_layout.RFC3339)
+                    )
+                  )
+              ).as(since,
+                request(
+                  "GET",
+                  base_url.trim_right("/") + "/threatfox/v1/iocs?" + {
+                    "since": [since],
+                    "page_size": [string(state.page_size)],
+                    ?"after": state.?cursor.after.optMap(v, [v]),
+                  }.format_query()
+                ).with(
+                  {
+                    "Header": {
+                      "Authorization": ["Bearer " + token.access_token],
+                    },
+                  }
+                ).do_request().as(resp, (resp.StatusCode == 200) ?
+                  resp.Body.decode_json().as(body,
+                    {
+                      "events": body.items.map(ind,
+                        {
+                          "message": ind.encode_json(),
+                        }
+                      ),
+                      "want_more": has(body.?meta.next_cursor),
+                      "cursor": (
+                        (body.items.size() > 0) ?
+                          optional.of(
+                            (
+                              has(state.?cursor.first_seen) ?
+                                (max(timestamp(state.cursor.first_seen), body.items.map(ind, timestamp(ind.first_seen)).max()))
+                              :
+                                body.items.map(ind, timestamp(ind.first_seen)).max()
+                            ).format(time_layout.RFC3339)
+                          )
+                        :
+                          state.?cursor.first_seen
+                      ).as(first_seen,
+                        has(body.?meta.next_cursor) ?
+                          {
+                            "since": since,
+                            "after": body.meta.next_cursor,
+                            ?"first_seen": first_seen,
+                          }
+                        :
+                          {
+                            "since": since,
+                            ?"first_seen": first_seen,
+                          }
+                      ),
+                      "token": {
+                        "access_token": token.access_token,
+                        "expires": token.expires,
+                      },
+                    }
+                  )
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": resp.Status,
+                        "message": "GET " + base_url.trim_right("/") + "/threatfox/v1/iocs: " + (
+                          (size(resp.Body) != 0) ?
+                            string(resp.Body)
+                          :
+                            resp.Status + " (" + string(resp.StatusCode) + ")"
+                        ),
+                      },
+                    },
+                    "want_more": false,
+                  }
+                )
               )
             )
-        ).as(since,
-          request(
-            "GET",
-            state.url.trim_right("/") + "/threatfox/v1/iocs?" + {
-              "since": [since],
-              "page_size": [string(state.page_size)],
-              ?"after": state.?cursor.after.optMap(v, [v]),
-            }.format_query()
-          ).with(
-            {
-              "Header": {
-                "Authorization": ["Bearer " + token.access_token],
-              },
-            }
-          ).do_request().as(resp, resp.StatusCode == 200 ?
-            resp.Body.decode_json().as(body,
-              {
-                "events": body.items.map(ind,
-                  {
-                    "message": ind.encode_json(),
-                  }
-                ),
-                "want_more": has(body.?meta.next_cursor),
-                "cursor": (
-                body.items.size() > 0 ?
-                    optional.of(
-                      (
-                        has(state.?cursor.first_seen) ?
-                          max(timestamp(state.cursor.first_seen), body.items.map(ind, timestamp(ind.first_seen)).max())
-                        :
-                          body.items.map(ind, timestamp(ind.first_seen)).max()
-                      ).format(time_layout.RFC3339)
-                    )
-                  :
-                    state.?cursor.first_seen
-                ).as(first_seen,
-                  has(body.?meta.next_cursor) ?
-                    {
-                      "since": since,
-                      "after": body.meta.next_cursor,
-                      ?"first_seen": first_seen,
-                    }
-                  :
-                    {
-                      "since": since,
-                      ?"first_seen": first_seen,
-                    }
-                ),
-                "token": {
-                  "access_token": token.access_token,
-                  "expires": token.expires,
-                },
-              }
-            )
-          :
-            {
-              "events": {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": resp.Status,
-                  "message": "GET " + state.url.trim_right("/") + "/threatfox/v1/iocs: " + (
-                    size(resp.Body) != 0 ?
-                      string(resp.Body)
-                    :
-                      resp.Status + " (" + string(resp.StatusCode) + ")"
-                  ),
-                },
-              },
-              "want_more": false,
-            }
           )
-        )
       )
     :
       request(
         "POST",
         state.url,
-        '{ "query": "get_iocs", "days": ' + state.?cursor.days.orValue(state.initial_interval) + ' }'
+        "{ \"query\": \"get_iocs\", \"days\": " + state.?cursor.days.orValue(state.initial_interval) + " }"
       ).with(
         {
           "Header": {
@@ -187,7 +195,7 @@ program: |-
           },
         }
       ).as(req,
-        req.do_request().as(resp, resp.StatusCode == 200 ?
+        req.do_request().as(resp, (resp.StatusCode == 200) ?
           resp.Body.decode_json().as(body,
             {
               "events": has(body.data) ?
@@ -206,10 +214,10 @@ program: |-
                 "code": string(resp.StatusCode),
                 "id": resp.Status,
                 "message": "POST " + state.url.trim_right("/") + ":" + (
-                  size(resp.Body) != 0 ?
+                  (size(resp.Body) != 0) ?
                     string(resp.Body)
                   :
-                  resp.Status + ' (' + string(resp.StatusCode) + ')'
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
                 ),
               },
             },
