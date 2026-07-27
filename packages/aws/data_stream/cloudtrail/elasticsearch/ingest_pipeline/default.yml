@@ -1104,12 +1104,10 @@ processors:
       if: ctx._tmp?.session_name != null
       allow_duplicates: false
       ignore_failure: true
-  - grok:
+  - dissect:
       tag: extract_session_name_email_prefix
       field: _tmp.session_name
-      patterns:
-        - "%{DATA:_tmp.session_name_prefix}@"
-      ignore_missing: true
+      pattern: '%{_tmp.session_name_prefix}@%{}'
       if: ctx._tmp?.session_name != null && ctx._tmp.session_name.contains('@')
   - append:
       tag: append_related_user_session_name_prefix
