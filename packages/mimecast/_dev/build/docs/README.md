@@ -11,7 +11,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ### v2 API Endpoints
 
-Authorization parameters for the Mimecast API (`Client ID` and `Client Key`) should
+Authorization parameters for the Mimecast API (`Client ID` and `Client Secret`) should
 be provided by a Mimecast representative for this integration. Under `Advanced options`
 you can set the time interval between two API requests as well as the API URL. A Mimecast
 representative should also be able to give you this information in case you need

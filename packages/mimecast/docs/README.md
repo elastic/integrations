@@ -11,7 +11,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ### v2 API Endpoints
 
-Authorization parameters for the Mimecast API (`Client ID` and `Client Key`) should
+Authorization parameters for the Mimecast API (`Client ID` and `Client Secret`) should
 be provided by a Mimecast representative for this integration. Under `Advanced options`
 you can set the time interval between two API requests as well as the API URL. A Mimecast
 representative should also be able to give you this information in case you need
@@ -51,22 +51,22 @@ An example event for `archive_search` looks as following:
 {
     "@timestamp": "2024-11-12T16:21:27.000Z",
     "agent": {
-        "ephemeral_id": "712264c3-42b0-4983-a2e9-b5e19d441677",
-        "id": "4e4a2d59-04b0-48e0-9415-100e5ec7edfd",
-        "name": "elastic-agent-65711",
+        "ephemeral_id": "c28fe82d-b778-437e-8bca-cd19f65ce426",
+        "id": "774a7e89-0464-43ea-870d-42c8a6304863",
+        "name": "elastic-agent-68546",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.archive_search_logs",
-        "namespace": "36492",
+        "namespace": "78572",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4e4a2d59-04b0-48e0-9415-100e5ec7edfd",
+        "id": "774a7e89-0464-43ea-870d-42c8a6304863",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -77,9 +77,9 @@ An example event for `archive_search` looks as following:
         ],
         "created": "2024-11-12T16:21:27.000Z",
         "dataset": "mimecast.archive_search_logs",
-        "ingested": "2026-07-27T03:45:27Z",
+        "ingested": "2026-07-27T21:30:21Z",
         "kind": "event",
-        "original": "{\"createTime\":\"2024-11-12T16:21:27+0000\",\"description\":\"Message Tracking Search\",\"emailAddr\":\"\\u003c\\u003e\",\"searchReason\":\"\",\"searchText\":\"[User : dhamilton@mimecast.local]\",\"source\":\"archive\"}",
+        "original": "{\"createTime\":\"2024-11-12T16:21:27+0000\",\"description\":\"Message Tracking Search\",\"emailAddr\":\"\\u003c\\u003e\",\"searchReason\":\"\",\"searchText\":\"[User : user1@example.net]\",\"source\":\"archive\"}",
         "type": [
             "admin"
         ]
@@ -91,7 +91,7 @@ An example event for `archive_search` looks as following:
         "search_details": {
             "description": "Message Tracking Search",
             "source": "archive",
-            "text": "[User : dhamilton@mimecast.local]"
+            "text": "[User : user1@example.net]"
         }
     },
     "tags": [
@@ -139,25 +139,43 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2024-10-17T02:06:50.000Z",
     "agent": {
-        "ephemeral_id": "0946062c-42e0-474c-af42-be08e8ddce68",
-        "id": "a51b277d-6db7-41bb-b9a8-cb8349478d27",
-        "name": "elastic-agent-65639",
+        "ephemeral_id": "7b2346a4-f48b-4dd0-8526-1c95c9bec91c",
+        "id": "b8edebe1-b5f6-43b8-9eae-992861cc32e6",
+        "name": "elastic-agent-26155",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "client": {
-        "ip": "203.59.201.168"
+        "as": {
+            "number": 64501,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Amsterdam",
+            "continent_name": "Europe",
+            "country_iso_code": "NL",
+            "country_name": "Netherlands",
+            "location": {
+                "lat": 52.37404,
+                "lon": 4.88969
+            },
+            "region_iso_code": "NL-NH",
+            "region_name": "North Holland"
+        },
+        "ip": "198.51.100.44"
     },
     "data_stream": {
         "dataset": "mimecast.audit_events",
-        "namespace": "86121",
+        "namespace": "47381",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a51b277d-6db7-41bb-b9a8-cb8349478d27",
+        "id": "b8edebe1-b5f6-43b8-9eae-992861cc32e6",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -170,8 +188,8 @@ An example event for `audit_events` looks as following:
         "created": "2024-10-17T02:06:50.000Z",
         "dataset": "mimecast.audit_events",
         "id": "eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f",
-        "ingested": "2026-07-27T03:47:27Z",
-        "original": "{\"auditType\":\"API Application Updated\",\"category\":\"account_logs\",\"eventInfo\":\"API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 203.59.201.168, Application: Administration Console\",\"eventTime\":\"2024-10-17T02:06:50+0000\",\"id\":\"eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f\",\"user\":\"user.name@company.mime-api.com\"}"
+        "ingested": "2026-07-27T21:32:10Z",
+        "original": "{\"auditType\":\"API Application Updated\",\"category\":\"account_logs\",\"eventInfo\":\"API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 198.51.100.44, Application: Administration Console\",\"eventTime\":\"2024-10-17T02:06:50+0000\",\"id\":\"eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f\",\"user\":\"user.name@example.com\"}"
     },
     "input": {
         "type": "cel"
@@ -179,15 +197,15 @@ An example event for `audit_events` looks as following:
     "mimecast": {
         "application": "Administration Console",
         "category": "account_logs",
-        "eventInfo": "API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 203.59.201.168, Application: Administration Console"
+        "eventInfo": "API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 198.51.100.44, Application: Administration Console"
     },
     "related": {
         "ip": [
-            "203.59.201.168"
+            "198.51.100.44"
         ],
         "user": [
             "user.name",
-            "user.name@company.mime-api.com"
+            "user.name@example.com"
         ]
     },
     "tags": [
@@ -196,8 +214,8 @@ An example event for `audit_events` looks as following:
         "mimecast-audit-events"
     ],
     "user": {
-        "domain": "company.mime-api.com",
-        "email": "user.name@company.mime-api.com",
+        "domain": "example.com",
+        "email": "user.name@example.com",
         "name": "user.name"
     }
 }
@@ -244,27 +262,27 @@ An example event for `cloud_integrated` looks as following:
 {
     "@timestamp": "2024-11-21T18:03:26.960Z",
     "agent": {
-        "ephemeral_id": "99bf6ab8-a8a1-4d80-9696-03a2061a40f9",
-        "id": "7dbee897-d739-4c22-9551-6bafc2dc3dfe",
-        "name": "elastic-agent-28175",
+        "ephemeral_id": "f4436d4b-4588-4855-b8d0-a1b40d365790",
+        "id": "5ae7b2ce-717c-4d4a-b112-6739f55dc239",
+        "name": "elastic-agent-36980",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.cloud_integrated_logs",
-        "namespace": "72129",
+        "namespace": "26086",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7dbee897-d739-4c22-9551-6bafc2dc3dfe",
+        "id": "5ae7b2ce-717c-4d4a-b112-6739f55dc239",
         "snapshot": false,
         "version": "8.19.4"
     },
     "email": {
-        "message_id": "<2ae37333-38e7-89ff-dc36-c8d48c6e3df3@demovation-ci.b41.one>"
+        "message_id": "<2ae37333-38e7-89ff-dc36-c8d48c6e3df3@mail.example.org>"
     },
     "event": {
         "agent_id_status": "verified",
@@ -273,8 +291,8 @@ An example event for `cloud_integrated` looks as following:
         ],
         "created": "2024-11-21T18:03:26.960Z",
         "dataset": "mimecast.cloud_integrated_logs",
-        "ingested": "2026-07-27T03:48:16Z",
-        "original": "{\"_offset\":1803841,\"_partition\":53,\"accountId\":\"AUS2474\",\"aggregateId\":\"4XvR1B4m7BzFB8L-qk59b4szrgayciaagczc977rzb_1732212206\",\"authResults\":[{\"aligned\":true,\"result\":\"pass\",\"type\":\"SPF\"},{\"aligned\":false,\"result\":\"none\",\"type\":\"DKIM\"},{\"aligned\":null,\"result\":\"pass\",\"type\":\"DMARC\"}],\"messageId\":\"\\u003c2ae37333-38e7-89ff-dc36-c8d48c6e3df3@demovation-ci.b41.one\\u003e\",\"processingId\":\"c40337e6860db0301575d8d09362bff214c0b010d6c4d41da9d770759ff54d10_1732212206\",\"subtype\":null,\"timestamp\":1732212206960,\"type\":\"mailflow\"}"
+        "ingested": "2026-07-27T21:33:04Z",
+        "original": "{\"_offset\":1803841,\"_partition\":53,\"accountId\":\"AUS2474\",\"aggregateId\":\"4XvR1B4m7BzFB8L-qk59b4szrgayciaagczc977rzb_1732212206\",\"authResults\":[{\"aligned\":true,\"result\":\"pass\",\"type\":\"SPF\"},{\"aligned\":false,\"result\":\"none\",\"type\":\"DKIM\"},{\"aligned\":null,\"result\":\"pass\",\"type\":\"DMARC\"}],\"messageId\":\"\\u003c2ae37333-38e7-89ff-dc36-c8d48c6e3df3@mail.example.org\\u003e\",\"processingId\":\"c40337e6860db0301575d8d09362bff214c0b010d6c4d41da9d770759ff54d10_1732212206\",\"subtype\":null,\"timestamp\":1732212206960,\"type\":\"mailflow\"}"
     },
     "input": {
         "type": "cel"
@@ -371,22 +389,22 @@ An example event for `dlp` looks as following:
 {
     "@timestamp": "2024-11-17T19:47:39.000Z",
     "agent": {
-        "ephemeral_id": "e138432c-aa29-446f-b2a9-f2ae8cd53584",
-        "id": "88366ad8-cc4e-456e-8e73-d83f12e82043",
-        "name": "elastic-agent-62334",
+        "ephemeral_id": "7a20afc6-bf6d-4a71-83e9-69e8c0a251c6",
+        "id": "d6ee16c4-81eb-43f0-8b84-47854a597170",
+        "name": "elastic-agent-84675",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.dlp_logs",
-        "namespace": "15852",
+        "namespace": "85443",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "88366ad8-cc4e-456e-8e73-d83f12e82043",
+        "id": "d6ee16c4-81eb-43f0-8b84-47854a597170",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -394,14 +412,14 @@ An example event for `dlp` looks as following:
         "direction": "inbound",
         "from": {
             "address": [
-                "webmaster@empirepartners.b41.one"
+                "webmaster@example.org"
             ]
         },
-        "message_id": "<ae9f2f0678ed116f-152138@hapi.b41.one>",
+        "message_id": "<ae9f2f0678ed116f-152138@mail.example.net>",
         "subject": "New CERA.com Coming Soon! - CERA Alert",
         "to": {
             "address": [
-                "vkamins@demo-int.elastic.mime-api.com"
+                "vkamins@example.com"
             ]
         }
     },
@@ -413,8 +431,8 @@ An example event for `dlp` looks as following:
         ],
         "created": "2024-11-17T19:47:39+0000",
         "dataset": "mimecast.dlp_logs",
-        "ingested": "2026-07-27T03:50:06Z",
-        "original": "{\"action\":\"hold\",\"eventTime\":\"2024-11-17T19:47:39+0000\",\"messageId\":\"\\u003cae9f2f0678ed116f-152138@hapi.b41.one\\u003e\",\"policy\":\"Confidential\",\"recipientAddress\":\"vkamins@demo-int.elastic.mime-api.com\",\"route\":\"inbound\",\"senderAddress\":\"webmaster@empirepartners.b41.one\",\"subject\":\"New CERA.com Coming Soon! - CERA Alert\"}"
+        "ingested": "2026-07-27T21:34:50Z",
+        "original": "{\"action\":\"hold\",\"eventTime\":\"2024-11-17T19:47:39+0000\",\"messageId\":\"\\u003cae9f2f0678ed116f-152138@mail.example.net\\u003e\",\"policy\":\"Confidential\",\"recipientAddress\":\"vkamins@example.com\",\"route\":\"inbound\",\"senderAddress\":\"webmaster@example.org\",\"subject\":\"New CERA.com Coming Soon! - CERA Alert\"}"
     },
     "input": {
         "type": "cel"
@@ -461,22 +479,22 @@ An example event for `message_release` looks as following:
 {
     "@timestamp": "2024-10-28T14:16:51.000Z",
     "agent": {
-        "ephemeral_id": "6c0e8312-3440-4870-891b-2076d51aa699",
-        "id": "e5b36e4d-84ee-4bc3-93a2-69a173f04325",
-        "name": "elastic-agent-58786",
+        "ephemeral_id": "2d1b712e-504c-4cd7-b474-9181085c82b6",
+        "id": "fbdcd635-f38b-43ec-b3c2-df54c9c6c41d",
+        "name": "elastic-agent-69652",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.message_release_logs",
-        "namespace": "53420",
+        "namespace": "95418",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e5b36e4d-84ee-4bc3-93a2-69a173f04325",
+        "id": "fbdcd635-f38b-43ec-b3c2-df54c9c6c41d",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -484,14 +502,14 @@ An example event for `message_release` looks as following:
         "direction": "inbound",
         "from": {
             "address": [
-                "yahoo-delivers@evaluation-fuzz.b41.one"
+                "yahoo-delivers@example.org"
             ]
         },
         "local_id": "eNoNjt0KgjAYQN9ltwlNMVZBF...",
         "subject": "Yahoo! Newsletter, November 2001",
         "to": {
             "address": [
-                "monika.causholli@demo-int.elastic.mime-api.com"
+                "monika.causholli@example.com"
             ]
         }
     },
@@ -503,9 +521,9 @@ An example event for `message_release` looks as following:
         ],
         "dataset": "mimecast.message_release_logs",
         "id": "eNoNjt0KgjAYQN9ltwlNMVZBF...",
-        "ingested": "2026-07-27T03:50:56Z",
+        "ingested": "2026-07-27T21:35:40Z",
         "kind": "alert",
-        "original": "{\"attachments\":true,\"detectionLevel\":\"relaxed\",\"fromEnv\":{\"emailAddress\":\"yahoo-delivers@evaluation-fuzz.b41.one\"},\"fromHdr\":{\"emailAddress\":\"yahoo-delivers@evaluation-fuzz.b41.one\"},\"heldReason\":\"Default Spam Scanning Definition\",\"id\":\"eNoNjt0KgjAYQN9ltwlNMVZBF...\",\"messageInfo\":\"Graymail\",\"operator\":{\"emailAddress\":\"monika.causholli@demo-int.elastic.mime-api.com\"},\"policy\":\"Default Spam Scanning Definition\",\"rejectReason\":\"Message goes against email policies\",\"released\":\"2024-10-28T14:16:51+0000\",\"route\":\"inbound\",\"size\":3670056,\"spamProcessingDetail\":{\"dkim\":{\"allow\":true,\"info\":\"unknown\"},\"dmarc\":{\"allow\":true,\"info\":\"allow\"},\"greyEmail\":false,\"managedSender\":{\"allow\":true,\"info\":\"unknown\"},\"permittedSender\":{\"allow\":true,\"info\":\"none\"},\"rbl\":{\"allow\":true,\"info\":\"\"},\"spf\":{\"allow\":true,\"info\":\"allow\"},\"verdict\":{\"categories\":[{\"name\":\"spam\",\"risk\":\"high\",\"subcategories\":[{\"augmentations\":[],\"name\":\"technology_feed\",\"risk\":\"high\"},{\"augmentations\":[{\"name\":\"body\",\"risk\":\"negligible\"}],\"name\":\"content\",\"risk\":\"negligible\"}]},{\"name\":\"graymail\",\"risk\":\"negligible\",\"subcategories\":[]}],\"decision\":\"spam\",\"description\":\"\",\"risk\":\"high\"}},\"spamScore\":20,\"status\":\"rejected\",\"subject\":\"Yahoo! Newsletter, November 2001\",\"to\":[{\"emailAddress\":\"monika.causholli@demo-int.elastic.mime-api.com\"}]}",
+        "original": "{\"attachments\":true,\"detectionLevel\":\"relaxed\",\"fromEnv\":{\"emailAddress\":\"yahoo-delivers@example.org\"},\"fromHdr\":{\"emailAddress\":\"yahoo-delivers@example.org\"},\"heldReason\":\"Default Spam Scanning Definition\",\"id\":\"eNoNjt0KgjAYQN9ltwlNMVZBF...\",\"messageInfo\":\"Graymail\",\"operator\":{\"emailAddress\":\"monika.causholli@example.com\"},\"policy\":\"Default Spam Scanning Definition\",\"rejectReason\":\"Message goes against email policies\",\"released\":\"2024-10-28T14:16:51+0000\",\"route\":\"inbound\",\"size\":3670056,\"spamProcessingDetail\":{\"dkim\":{\"allow\":true,\"info\":\"unknown\"},\"dmarc\":{\"allow\":true,\"info\":\"allow\"},\"greyEmail\":false,\"managedSender\":{\"allow\":true,\"info\":\"unknown\"},\"permittedSender\":{\"allow\":true,\"info\":\"none\"},\"rbl\":{\"allow\":true,\"info\":\"\"},\"spf\":{\"allow\":true,\"info\":\"allow\"},\"verdict\":{\"categories\":[{\"name\":\"spam\",\"risk\":\"high\",\"subcategories\":[{\"augmentations\":[],\"name\":\"technology_feed\",\"risk\":\"high\"},{\"augmentations\":[{\"name\":\"body\",\"risk\":\"negligible\"}],\"name\":\"content\",\"risk\":\"negligible\"}]},{\"name\":\"graymail\",\"risk\":\"negligible\",\"subcategories\":[]}],\"decision\":\"spam\",\"description\":\"\",\"risk\":\"high\"}},\"spamScore\":20,\"status\":\"rejected\",\"subject\":\"Yahoo! Newsletter, November 2001\",\"to\":[{\"emailAddress\":\"monika.causholli@example.com\"}]}",
         "reason": "Message goes against email policies",
         "risk_score": 20,
         "type": [
@@ -520,15 +538,15 @@ An example event for `message_release` looks as following:
             "attachments": true,
             "detectionLevel": "relaxed",
             "fromEnv": {
-                "emailAddress": "yahoo-delivers@evaluation-fuzz.b41.one"
+                "emailAddress": "yahoo-delivers@example.org"
             },
             "fromHdr": {
-                "emailAddress": "yahoo-delivers@evaluation-fuzz.b41.one"
+                "emailAddress": "yahoo-delivers@example.org"
             },
             "heldReason": "Default Spam Scanning Definition",
             "id": "eNoNjt0KgjAYQN9ltwlNMVZBF...",
             "messageInfo": "Graymail",
-            "operator": "monika.causholli@demo-int.elastic.mime-api.com",
+            "operator": "monika.causholli@example.com",
             "policy": "Default Spam Scanning Definition",
             "rejectReason": "Message goes against email policies",
             "released": "2024-10-28T14:16:51+0000",
@@ -595,21 +613,21 @@ An example event for `message_release` looks as following:
             "subject": "Yahoo! Newsletter, November 2001",
             "to": [
                 {
-                    "emailAddress": "monika.causholli@demo-int.elastic.mime-api.com"
+                    "emailAddress": "monika.causholli@example.com"
                 }
             ]
         }
     },
     "related": {
         "hosts": [
-            "demo-int.elastic.mime-api.com",
-            "evaluation-fuzz.b41.one"
+            "example.com",
+            "example.org"
         ],
         "user": [
             "monika.causholli",
-            "monika.causholli@demo-int.elastic.mime-api.com",
+            "monika.causholli@example.com",
             "yahoo-delivers",
-            "yahoo-delivers@evaluation-fuzz.b41.one"
+            "yahoo-delivers@example.org"
         ]
     },
     "tags": [
@@ -619,7 +637,7 @@ An example event for `message_release` looks as following:
     ],
     "user": {
         "email": [
-            "monika.causholli@demo-int.elastic.mime-api.com"
+            "monika.causholli@example.com"
         ]
     }
 }
@@ -695,22 +713,22 @@ An example event for `siem` looks as following:
 {
     "@timestamp": "2024-11-12T18:52:07.130Z",
     "agent": {
-        "ephemeral_id": "8f4c4456-65bb-4015-9f4c-468054b8229c",
-        "id": "e1eea35a-de76-4839-b5d4-d06668f3ccc7",
-        "name": "elastic-agent-78188",
+        "ephemeral_id": "0b763c82-ffca-4953-af86-7bf79ab57bd0",
+        "id": "3d392d70-5a2b-4c45-97a7-e5b156050a28",
+        "name": "elastic-agent-30190",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.siem_logs",
-        "namespace": "33493",
+        "namespace": "91723",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e1eea35a-de76-4839-b5d4-d06668f3ccc7",
+        "id": "3d392d70-5a2b-4c45-97a7-e5b156050a28",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -718,14 +736,14 @@ An example event for `siem` looks as following:
         "direction": "outbound",
         "from": {
             "address": [
-                "chris.germany@demo-int.elastic.mime-api.com"
+                "sender@example.com"
             ]
         },
-        "message_id": "<23b9843f48f8d349-99325@hapi.b41.one>",
+        "message_id": "<23b9843f48f8d349-99325@mail.example.net>",
         "subject": "Out of office",
         "to": {
             "address": [
-                "dkinney@pacific-concept.b41.one"
+                "recipient@example.net"
             ]
         }
     },
@@ -737,8 +755,8 @@ An example event for `siem` looks as following:
         ],
         "created": "2024-11-12T18:52:07.130Z",
         "dataset": "mimecast.siem_logs",
-        "ingested": "2026-07-27T03:52:37Z",
-        "original": "{\"_offset\":70595,\"_partition\":60,\"accountId\":\"CUSB4A274\",\"action\":\"Acc\",\"aggregateId\":\"q1h3LjgrN46b12GlX0By9Q_1731437523\",\"direction\":\"Outbound\",\"messageId\":\"\\u003c23b9843f48f8d349-99325@hapi.b41.one\\u003e\",\"numberAttachments\":\"0\",\"processingId\":\"X7OQopo8177ryv7KXWXxytbksk3qv0Ct8NSYWcQkhJM_1731437523\",\"receiptErrors\":null,\"recipients\":\"dkinney@pacific-concept.b41.one\",\"rejectionCode\":null,\"rejectionInfo\":null,\"rejectionType\":null,\"senderEnvelope\":\"chris.germany@demo-int.elastic.mime-api.com\",\"senderHeader\":\"chris.germany@demo-int.elastic.mime-api.com\",\"senderIp\":\"54.236.186.184\",\"spamDetectionLevel\":\"28\",\"spamInfo\":\"[]\",\"spamProcessingDetail\":null,\"spamScore\":\"0\",\"subject\":\"Out of office\",\"subtype\":\"Acc\",\"timestamp\":1731437527130,\"tlsCipher\":\"TLS_AES_256_GCM_SHA384\",\"tlsVersion\":\"TLSv1.3\",\"type\":\"receipt\",\"virusFound\":null}",
+        "ingested": "2026-07-27T21:37:21Z",
+        "original": "{\"_offset\":70595,\"_partition\":60,\"accountId\":\"CUSB4A274\",\"action\":\"Acc\",\"aggregateId\":\"q1h3LjgrN46b12GlX0By9Q_1731437523\",\"direction\":\"Outbound\",\"messageId\":\"\\u003c23b9843f48f8d349-99325@mail.example.net\\u003e\",\"numberAttachments\":\"0\",\"processingId\":\"X7OQopo8177ryv7KXWXxytbksk3qv0Ct8NSYWcQkhJM_1731437523\",\"receiptErrors\":null,\"recipients\":\"recipient@example.net\",\"rejectionCode\":null,\"rejectionInfo\":null,\"rejectionType\":null,\"senderEnvelope\":\"sender@example.com\",\"senderHeader\":\"sender@example.com\",\"senderIp\":\"198.51.100.18\",\"spamDetectionLevel\":\"28\",\"spamInfo\":\"[]\",\"spamProcessingDetail\":null,\"spamScore\":\"0\",\"subject\":\"Out of office\",\"subtype\":\"Acc\",\"timestamp\":1731437527130,\"tlsCipher\":\"TLS_AES_256_GCM_SHA384\",\"tlsVersion\":\"TLSv1.3\",\"type\":\"receipt\",\"virusFound\":null}",
         "outcome": "unknown"
     },
     "input": {
@@ -750,7 +768,7 @@ An example event for `siem` looks as following:
         "log_type": "receipt",
         "numberAttachments": "0",
         "processingId": "X7OQopo8177ryv7KXWXxytbksk3qv0Ct8NSYWcQkhJM_1731437523",
-        "senderHeader": "chris.germany@demo-int.elastic.mime-api.com",
+        "senderHeader": "sender@example.com",
         "spamDetectionLevel": "28",
         "spamInfo": "[]",
         "spamScore": "0",
@@ -759,12 +777,30 @@ An example event for `siem` looks as following:
     },
     "related": {
         "user": [
-            "chris.germany@demo-int.elastic.mime-api.com",
-            "dkinney@pacific-concept.b41.one"
+            "sender@example.com",
+            "recipient@example.net"
         ]
     },
     "source": {
-        "ip": "54.236.186.184"
+        "as": {
+            "number": 64501,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Amsterdam",
+            "continent_name": "Europe",
+            "country_iso_code": "NL",
+            "country_name": "Netherlands",
+            "location": {
+                "lat": 52.37404,
+                "lon": 4.88969
+            },
+            "region_iso_code": "NL-NH",
+            "region_name": "North Holland"
+        },
+        "ip": "198.51.100.18"
     },
     "tags": [
         "preserve_original_event",
@@ -933,22 +969,22 @@ An example event for `threat_intel_malware_customer` looks as following:
 {
     "@timestamp": "2024-11-18T16:08:00.000Z",
     "agent": {
-        "ephemeral_id": "2663181c-f6e6-4e05-84aa-4dfc36f7ecc8",
-        "id": "0ab5ac39-8125-4421-b4aa-a3eb8122baef",
-        "name": "elastic-agent-11497",
+        "ephemeral_id": "1fe461ea-1dbc-4674-bff8-4c9ac095f607",
+        "id": "40a830ad-e58f-4e72-a8ca-9fd4c517e038",
+        "name": "elastic-agent-71745",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.threat_intel_malware_customer",
-        "namespace": "76777",
+        "namespace": "45715",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0ab5ac39-8125-4421-b4aa-a3eb8122baef",
+        "id": "40a830ad-e58f-4e72-a8ca-9fd4c517e038",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -960,7 +996,7 @@ An example event for `threat_intel_malware_customer` looks as following:
             "malware"
         ],
         "dataset": "mimecast.threat_intel_malware_customer",
-        "ingested": "2026-07-27T03:54:17Z",
+        "ingested": "2026-07-27T21:39:01Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2024-11-18T16:08Z\",\"id\":\"indicator--366fad17-1142-4f18-a488-802b2127b30c\",\"labels\":[\"malicious-activity\"],\"modified\":\"2024-11-18T16:08Z\",\"pattern\":\"[file:hashes.'SHA-256' = '275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f']\",\"type\":\"indicator\",\"valid_from\":\"2024-11-18T16:08Z\"}",
         "type": [
@@ -1054,22 +1090,22 @@ An example event for `threat_intel_malware_grid` looks as following:
 {
     "@timestamp": "2024-11-18T23:45:00.000Z",
     "agent": {
-        "ephemeral_id": "67cadaf5-c0dd-4e05-b108-50698ac52469",
-        "id": "80b88f3a-4c01-4036-8f3b-9dffb72cf552",
-        "name": "elastic-agent-73632",
+        "ephemeral_id": "1ce8a3d0-6a85-4038-8b63-a70b76ae4f4e",
+        "id": "97ebdfa3-58b7-4cdc-8892-e3faf047717a",
+        "name": "elastic-agent-10317",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.threat_intel_malware_grid",
-        "namespace": "67937",
+        "namespace": "14663",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "80b88f3a-4c01-4036-8f3b-9dffb72cf552",
+        "id": "97ebdfa3-58b7-4cdc-8892-e3faf047717a",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -1081,7 +1117,7 @@ An example event for `threat_intel_malware_grid` looks as following:
             "malware"
         ],
         "dataset": "mimecast.threat_intel_malware_grid",
-        "ingested": "2026-07-27T03:56:07Z",
+        "ingested": "2026-07-27T21:40:41Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2024-11-18T23:45Z\",\"id\":\"indicator--46e1c0cf-a90c-413d-94b2-7fa889e79fe7\",\"labels\":[\"malicious-activity\"],\"modified\":\"2024-11-18T23:45Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'f4cbcb0b434a2376bf50ba8949dd83bc866dab481fe49595983bba1f76044670']\",\"type\":\"indicator\",\"valid_from\":\"2024-11-18T23:45Z\"}",
         "type": [
@@ -1178,22 +1214,22 @@ An example event for `ttp_ap` looks as following:
 {
     "@timestamp": "2024-11-17T00:52:30.000Z",
     "agent": {
-        "ephemeral_id": "060bb222-9654-4438-ae59-cb756a7bf8f1",
-        "id": "04b32089-35a8-4f1b-a216-ed25218dc8d9",
-        "name": "elastic-agent-27179",
+        "ephemeral_id": "6c35dc2e-0998-4c38-ab0f-4c724b471421",
+        "id": "6d90727b-56a3-4d70-852c-4c594dd67e21",
+        "name": "elastic-agent-84142",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_ap_logs",
-        "namespace": "32017",
+        "namespace": "77305",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "04b32089-35a8-4f1b-a216-ed25218dc8d9",
+        "id": "6d90727b-56a3-4d70-852c-4c594dd67e21",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -1211,14 +1247,14 @@ An example event for `ttp_ap` looks as following:
         "direction": "internal",
         "from": {
             "address": [
-                "eric.boyt@demo-int.elastic.mime-api.com"
+                "eric.boyt@example.com"
             ]
         },
-        "message_id": "<675ddc8ccedda6a7-363046@hapi.b41.one>",
+        "message_id": "<675ddc8ccedda6a7-363046@mail.example.net>",
         "subject": "RE",
         "to": {
             "address": [
-                "charles.weldon@demo-int.elastic.mime-api.com"
+                "charles.weldon@example.com"
             ]
         }
     },
@@ -1230,9 +1266,9 @@ An example event for `ttp_ap` looks as following:
         ],
         "created": "2024-11-17T00:52:30+0000",
         "dataset": "mimecast.ttp_ap_logs",
-        "ingested": "2026-07-27T03:58:37Z",
+        "ingested": "2026-07-27T21:42:31Z",
         "kind": "alert",
-        "original": "{\"actionTriggered\":\"none\",\"date\":\"2024-11-17T00:52:30+0000\",\"definition\":\"Default Internal Attachment Protect Definition\",\"details\":\"Malicious                                         \\r\\nTime taken: 0 hrs, 0 min, 1 sec\",\"fileHash\":\"168dde02cf41aed3bf31ad831b75d8ee0b738304baa6957c40e29b2487f15116\",\"fileName\":\"Sandbox Test.xlsx\",\"fileType\":\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\",\"messageId\":\"\\u003c675ddc8ccedda6a7-363046@hapi.b41.one\\u003e\",\"recipientAddress\":\"charles.weldon@demo-int.elastic.mime-api.com\",\"result\":\"malicious\",\"route\":\"internal\",\"senderAddress\":\"eric.boyt@demo-int.elastic.mime-api.com\",\"subject\":\"RE\"}"
+        "original": "{\"actionTriggered\":\"none\",\"date\":\"2024-11-17T00:52:30+0000\",\"definition\":\"Default Internal Attachment Protect Definition\",\"details\":\"Malicious                                         \\r\\nTime taken: 0 hrs, 0 min, 1 sec\",\"fileHash\":\"168dde02cf41aed3bf31ad831b75d8ee0b738304baa6957c40e29b2487f15116\",\"fileName\":\"Sandbox Test.xlsx\",\"fileType\":\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\",\"messageId\":\"\\u003c675ddc8ccedda6a7-363046@mail.example.net\\u003e\",\"recipientAddress\":\"charles.weldon@example.com\",\"result\":\"malicious\",\"route\":\"internal\",\"senderAddress\":\"eric.boyt@example.com\",\"subject\":\"RE\"}"
     },
     "input": {
         "type": "cel"
@@ -1305,22 +1341,22 @@ An example event for `ttp_ip` looks as following:
 {
     "@timestamp": "2021-11-12T15:27:14.000Z",
     "agent": {
-        "ephemeral_id": "1515093a-d57d-47f3-92b4-43e92566537b",
-        "id": "371ca90f-fbfb-471a-8737-fde77aebb026",
-        "name": "elastic-agent-49684",
+        "ephemeral_id": "7836d37b-77c8-46f3-a57f-b71673ea32de",
+        "id": "50458d13-e7ba-49fa-9205-baae2462b578",
+        "name": "elastic-agent-22398",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_ip_logs",
-        "namespace": "35934",
+        "namespace": "24544",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "371ca90f-fbfb-471a-8737-fde77aebb026",
+        "id": "50458d13-e7ba-49fa-9205-baae2462b578",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -1347,7 +1383,7 @@ An example event for `ttp_ip` looks as following:
         "created": "2021-11-12T15:27:14+0000",
         "dataset": "mimecast.ttp_ip_logs",
         "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzCw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGP7Ehc",
-        "ingested": "2026-07-27T04:00:27Z",
+        "ingested": "2026-07-27T21:45:16Z",
         "kind": "alert",
         "original": "{\"action\":\"none\",\"definition\":\"IP - 1 hit (Tag email)\",\"eventTime\":\"2021-11-12T15:27:14+0000\",\"hits\":1,\"id\":\"MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzCw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGP7Ehc\",\"identifiers\":[\"internal_user_name\"],\"impersonationResults\":[{\"checkerResult\":\"hit\",\"impersonationDomainSource\":\"internal_user_name\",\"similarDomain\":\"John Doe \\u003cjohndoe_nu@example.com\\u003e\",\"stringSimilarToDomain\":\"John Doe\"}],\"messageId\":\"\\u003c2-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.example.outlook.com\\u003e\",\"recipientAddress\":\"johndoejr@exampple.com\",\"senderAddress\":\"johndoe@example.com\",\"senderIpAddress\":\"8.8.8.8\",\"subject\":\"Don't read, just fill out!\",\"taggedExternal\":false,\"taggedMalicious\":true}"
     },
@@ -1442,22 +1478,22 @@ An example event for `ttp_url` looks as following:
 {
     "@timestamp": "2024-11-13T13:03:11.000Z",
     "agent": {
-        "ephemeral_id": "dfddd436-6ec3-4767-a19a-75e932782b7b",
-        "id": "b1c6f208-689d-48d5-ad95-0e959c477e9c",
-        "name": "elastic-agent-60888",
+        "ephemeral_id": "b7d9f19d-7919-43ed-86fa-31ac220ebd1d",
+        "id": "073b3ca7-4566-4379-8ddb-1024cb115517",
+        "name": "elastic-agent-93533",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_url_logs",
-        "namespace": "64188",
+        "namespace": "89520",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b1c6f208-689d-48d5-ad95-0e959c477e9c",
+        "id": "073b3ca7-4566-4379-8ddb-1024cb115517",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -1465,14 +1501,14 @@ An example event for `ttp_url` looks as following:
         "direction": "inbound",
         "from": {
             "address": [
-                "gregoryhunt@thejunglegroup.b41.one"
+                "gregoryhunt@example.org"
             ]
         },
-        "message_id": "<cc11f61d32d018de-152846@hapi.b41.one>",
+        "message_id": "<cc11f61d32d018de-152846@mail.example.net>",
         "subject": "Re",
         "to": {
             "address": [
-                "mike.a.roberts@demo-int.elastic.mime-api.com"
+                "mike.a.roberts@example.com"
             ]
         }
     },
@@ -1484,9 +1520,9 @@ An example event for `ttp_url` looks as following:
         ],
         "created": "2024-11-13T13:03:11+0000",
         "dataset": "mimecast.ttp_url_logs",
-        "ingested": "2026-07-27T04:02:42Z",
+        "ingested": "2026-07-27T21:46:51Z",
         "kind": "alert",
-        "original": "{\"action\":\"warn\",\"actions\":\"Block\",\"adminOverride\":\"N/A\",\"category\":\"Dangerous file extension\",\"creationMethod\":\"Entry Scan\",\"date\":\"2024-11-13T13:03:11+0000\",\"emailPartsDescription\":[\"Attachment\"],\"fromUserEmailAddress\":\"gregoryhunt@thejunglegroup.b41.one\",\"messageId\":\"\\u003ccc11f61d32d018de-152846@hapi.b41.one\\u003e\",\"route\":\"inbound\",\"scanResult\":\"malicious\",\"sendingIp\":\"54.243.138.179\",\"subject\":\"Re\",\"tagMap\":{\"DangerousFileExt\":{\"ContentCheck:ContentScannersBlocked\":[\".exe\"],\"ContentCheck:DangerousExtsUrlFileDownload\":[\"dll\"],\"ContentCheck:DangerousMimetypesUrlFileDownload\":[\"application/x-msdownload\"],\"Inspect:FileExts\":[\"[exe]\"],\"Inspect:MimeTypes\":[\"[]\"],\"Status\":[\"CustomerSpecific\",\"VerdictBlock\"]}},\"ttpDefinition\":\"Default Inbound URL Protect Definition\",\"url\":\"https://oneclient.sfx.ms/Win/Preview/OneDriveSetup.exe\",\"userAwarenessAction\":\"N/A\",\"userEmailAddress\":\"mike.a.roberts@demo-int.elastic.mime-api.com\",\"userOverride\":\"None\"}"
+        "original": "{\"action\":\"warn\",\"actions\":\"Block\",\"adminOverride\":\"N/A\",\"category\":\"Dangerous file extension\",\"creationMethod\":\"Entry Scan\",\"date\":\"2024-11-13T13:03:11+0000\",\"emailPartsDescription\":[\"Attachment\"],\"fromUserEmailAddress\":\"gregoryhunt@example.org\",\"messageId\":\"\\u003ccc11f61d32d018de-152846@mail.example.net\\u003e\",\"route\":\"inbound\",\"scanResult\":\"malicious\",\"sendingIp\":\"203.0.113.42\",\"subject\":\"Re\",\"tagMap\":{\"DangerousFileExt\":{\"ContentCheck:ContentScannersBlocked\":[\".exe\"],\"ContentCheck:DangerousExtsUrlFileDownload\":[\"dll\"],\"ContentCheck:DangerousMimetypesUrlFileDownload\":[\"application/x-msdownload\"],\"Inspect:FileExts\":[\"[exe]\"],\"Inspect:MimeTypes\":[\"[]\"],\"Status\":[\"CustomerSpecific\",\"VerdictBlock\"]}},\"ttpDefinition\":\"Default Inbound URL Protect Definition\",\"url\":\"https://oneclient.sfx.ms/Win/Preview/OneDriveSetup.exe\",\"userAwarenessAction\":\"N/A\",\"userEmailAddress\":\"mike.a.roberts@example.com\",\"userOverride\":\"None\"}"
     },
     "input": {
         "type": "cel"
@@ -1528,18 +1564,18 @@ An example event for `ttp_url` looks as following:
     },
     "related": {
         "ip": [
-            "54.243.138.179"
+            "203.0.113.42"
         ],
         "user": [
-            "gregoryhunt@thejunglegroup.b41.one",
-            "mike.a.roberts@demo-int.elastic.mime-api.com"
+            "gregoryhunt@example.org",
+            "mike.a.roberts@example.com"
         ]
     },
     "rule": {
         "name": "Default Inbound URL Protect Definition"
     },
     "source": {
-        "ip": "54.243.138.179"
+        "ip": "203.0.113.42"
     },
     "tags": [
         "preserve_original_event",
@@ -1555,7 +1591,7 @@ An example event for `ttp_url` looks as following:
     },
     "user": {
         "email": [
-            "mike.a.roberts@demo-int.elastic.mime-api.com"
+            "mike.a.roberts@example.com"
         ]
     }
 }
