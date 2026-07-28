@@ -1,0 +1,44 @@
+{
+  "id": "kubernetes_otel-node-filesystem-saturation-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "kind": "alert",
+    "metadata": {
+      "name": "[Kubernetes OTel] Node filesystem saturation",
+      "description": "Alerts when a node's filesystem usage exceeds 85% of capacity. Disk pressure triggers pod evictions and can destabilise the node.",
+      "tags": [
+        "Kubernetes"
+      ]
+    },
+    "schedule": {
+      "every": "5m",
+      "lookback": "15m"
+    },
+    "state_transition": {
+      "pending_count": 3
+    },
+    "recovery_strategy": "no_breach",
+    "artifacts": [
+      {
+        "id": "kubernetes_otel-node-filesystem-saturation-v2-runbook",
+        "type": "runbook",
+        "value": "## Node Filesystem Saturation\n\n### Triage Steps\n1. Identify the affected node(s) from the alert results.\n2. Open the Storage & Volumes dashboard to see filesystem and volume usage trends.\n3. Check what is consuming disk space: container images, logs, ephemeral storage, or emptyDir volumes.\n4. Run `df -h` on the affected node to confirm disk usage.\n5. Check for pods using large ephemeral storage without limits.\n\n### Common Causes\n- Container log accumulation without rotation\n- Large container images or unused image layers\n- Ephemeral storage abuse by workloads\n- Persistent volume data growth\n\n### Tuning\n- Adjust the 85% usage threshold based on your operational tolerance.\n- For nodes with smaller disks, consider a lower threshold (e.g. 80%).\n\n### Escalation\nDisk pressure causes pod evictions. Clean up unused images (`crictl rmi --prune`), rotate logs, or expand node disk capacity."
+      }
+    ],
+    "engine": "v2",
+    "query": {
+      "format": "composed",
+      "base": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.node.filesystem.usage IS NOT NULL\n    AND k8s.node.filesystem.capacity IS NOT NULL\n    AND k8s.node.filesystem.capacity > 0\n| STATS\n    avg_usage = AVG(k8s.node.filesystem.usage),\n    avg_capacity = AVG(k8s.node.filesystem.capacity)\n    BY k8s.node.name\n| EVAL usage_pct = ROUND(avg_usage / avg_capacity * 100, 1)",
+      "breach": {
+        "segment": "WHERE usage_pct > 85\n| KEEP k8s.node.name, usage_pct"
+      }
+    },
+    "grouping": {
+      "fields": [
+        "k8s.node.name"
+      ]
+    },
+    "time_field": "@timestamp"
+  }
+}

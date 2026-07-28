@@ -1,0 +1,46 @@
+{
+  "id": "kubernetes_otel-pods-pending-phase-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "kind": "alert",
+    "metadata": {
+      "name": "[Kubernetes OTel] Pods stuck in Pending phase",
+      "description": "Alerts when pods are stuck in Pending phase (phase == 1). Pending pods cannot be scheduled — typically due to insufficient node resources, node affinity/taint mismatches, or missing PVCs. Sustained Pending pods are a proxy for scheduling latency.",
+      "tags": [
+        "Kubernetes"
+      ]
+    },
+    "schedule": {
+      "every": "1m",
+      "lookback": "1m"
+    },
+    "state_transition": {
+      "pending_count": 5
+    },
+    "recovery_strategy": "no_breach",
+    "artifacts": [
+      {
+        "id": "kubernetes_otel-pods-pending-phase-v2-runbook",
+        "type": "runbook",
+        "value": "## Pods Stuck in Pending Phase\n\n### Triage Steps\n1. Identify the affected pod(s) from the alert results.\n2. Run `kubectl describe pod <pod_name> -n <namespace>` — the Events section shows why scheduling failed.\n3. Check the Cluster Overview dashboard for node resource availability.\n4. Verify node resources: `kubectl describe nodes | grep -A 5 'Allocated resources'`.\n5. Check for PVC binding issues: `kubectl get pvc -n <namespace>`.\n\n### Common Causes\n- Insufficient CPU or memory on available nodes\n- Node affinity, anti-affinity, or taint/toleration mismatches\n- PersistentVolumeClaim not bound (no available PV)\n- Pod topology spread constraints cannot be satisfied\n- Resource quotas exceeded in the namespace\n\n### Tuning\n- The `alertDelay` of 5 runs (5 minutes at 1m interval) allows for normal scheduling delays.\n- Increase `alertDelay` for clusters with slow autoscaling (e.g. cloud node provisioning).\n- Add namespace filters to exclude namespaces where Pending pods are expected (e.g. batch workloads waiting for resources).\n\n### Escalation\nSustained Pending pods indicate the cluster cannot meet workload demand. Consider scaling up the node pool or reviewing resource requests."
+      }
+    ],
+    "engine": "v2",
+    "query": {
+      "format": "composed",
+      "base": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.phase IS NOT NULL\n| STATS max_phase = MAX(k8s.pod.phase)\n    BY k8s.pod.name, k8s.namespace.name, k8s.node.name",
+      "breach": {
+        "segment": "WHERE max_phase == 1\n| EVAL status = \"Pending\"\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.node.name, status\n| SORT k8s.namespace.name ASC, k8s.pod.name ASC\n| LIMIT 100"
+      }
+    },
+    "grouping": {
+      "fields": [
+        "k8s.pod.name",
+        "k8s.namespace.name",
+        "k8s.node.name"
+      ]
+    },
+    "time_field": "@timestamp"
+  }
+}
