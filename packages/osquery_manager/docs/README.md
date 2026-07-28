@@ -33,7 +33,7 @@ Assign the pack matching each agent's OS to your Osquery Manager policy in Fleet
 
 ### What it inventories
 
-- **Running AI tools** — local LLM runtimes, AI coding agents, and MCP servers, classified by role in `osquery.process_category` (`llm_runtime`, `agent`, `mcp`).
+- **Running AI tools** — local LLM runtimes, AI coding agents, and MCP servers, classified by role in `labels.process_category` (`llm_runtime`, `agent`, `mcp`).
 - **Installed AI software** — desktop apps, OS packages, Python and npm packages, and browser/editor extensions (Chrome, Firefox, Safari, VS Code).
 - **AI configuration and models** — MCP and AI tool config files, large model files, and model cache usage.
 - **AI network and persistence footprint** — listening ports, outbound sockets for AI processes, and auto-start entries (Windows services, scheduled tasks, launchd, systemd, cron).
