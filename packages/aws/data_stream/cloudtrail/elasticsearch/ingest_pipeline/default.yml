@@ -1116,6 +1116,12 @@ processors:
       if: ctx._tmp?.session_name_prefix != null
       allow_duplicates: false
       ignore_failure: true
+  - set:
+      tag: set_user_email_from_session_name
+      field: user.email
+      copy_from: _tmp.session_name
+      if: ctx.user?.email == null && ctx._tmp?.session_name_prefix != null
+      ignore_empty_value: true
   - rename:
       field: json.userIdentity.onBehalfOf.userId
       target_field: user.id
@@ -2214,4 +2220,5 @@ on_failure:
       field:
         - json
         - _conf
+        - _tmp
       ignore_missing: true
