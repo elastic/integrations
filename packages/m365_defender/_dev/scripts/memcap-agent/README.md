@@ -87,7 +87,20 @@ STREAM=vulnerability MEM_LIMIT=512m TOTAL_EVENTS=10000 ./run.sh
 STREAM=alert    SWEEP_CAP=6g SWEEP_EVENTS="250 500 1000 2000" ./sweep.sh
 STREAM=incident SWEEP_CAP=6g SWEEP_EVENTS="10 25 50 100" ALERTS_PER_INCIDENT=100 ./sweep.sh
 STREAM=vulnerability SWEEP_CAP=6g SWEEP_EVENTS="2500 5000 10000 20000" ./sweep.sh
+
+# one-shot: sweep all three streams, fill the Result table below + emit an ORR snippet
+./autofill.sh
+SKIP_SWEEP=1 ./autofill.sh                                  # reuse existing logs/*.csv, just refill
+ORR_DOC=/path/to/ingest-dev/docs/agentless-orr/reviews/m365_defender.md ./autofill.sh   # also inject into the ORR
 ```
+
+`autofill.sh` runs `sweep.sh` for each stream, recomputes the fit + 1Gi/512Mi
+boundaries from `logs/*.csv`, writes them into the **Result** table and the **Agent
+build measured** provenance below, and writes a paste-ready block to
+`logs/orr-snippet-*.md`. If `ORR_DOC` is set and the target contains
+`<!-- AUTOFILL:START -->` / `<!-- AUTOFILL:END -->` markers, it injects the block
+between them (otherwise it only writes the snippet). Same host caveats as the sweep
+(Docker cgroup ≥ `SWEEP_CAP`, image pull, corpus tool, ~tens of minutes).
 
 Key env: `STREAM` (required), `STACK_VERSION` (default `9.6.0-SNAPSHOT`),
 `AGENT_IMAGE` (override to pin an exact serverless build), `MEM_LIMIT`,
