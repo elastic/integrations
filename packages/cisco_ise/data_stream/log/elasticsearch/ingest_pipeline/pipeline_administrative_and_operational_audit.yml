@@ -287,13 +287,25 @@ processors:
       tag: set_event_outcome_success_administrative_audit
       field: event.outcome
       value: success
-      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','60078','60080','60115','60116','61077','60084'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','60078','60080','60115','60116','61077'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - set:
       tag: set_event_outcome_failure_administrative_audit
       field: event.outcome
       value: failure
       if: ctx.cisco_ise?.log?.message?.code != null && ['51000','51020','51021','60077','60081','60188'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - set:
+      tag: set_event_outcome_success_60084_adf14b2c
+      field: event.outcome
+      value: success
+      if: ctx.cisco_ise?.log?.message?.code == '60084' && ctx.cisco_ise?.log?.log_details?.OperationMessageText =~ /successfully/i
+      ignore_failure: true
+  - set:
+      tag: set_event_outcome_failure_60084_e7c92a51
+      field: event.outcome
+      value: failure
+      if: ctx.cisco_ise?.log?.message?.code == '60084' && !(ctx.cisco_ise?.log?.log_details?.OperationMessageText =~ /successfully/i)
       ignore_failure: true
   - script:
       tag: script_23b4afd0
@@ -569,13 +581,19 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - grok:
-      tag: grok_cisco_ise_log_log_details_OperationMessageText_user_name
+      tag: grok_cisco_ise_log_log_details_OperationMessageText_user_name_b2f5e4a1
       field: cisco_ise.log.log_details.OperationMessageText
       if: ctx.cisco_ise?.log?.message?.code != null && ['60080','60081'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
       patterns:
         - "(?:Accepted|Failed) password for %{DATA:user.name} from %{IP}"
         - "Invalid user %{DATA:user.name} from %{IP}"
+  - set:
+      tag: set_user_name_from_client_user_name_admin_audit_a3f7c2d1
+      field: user.name
+      copy_from: client.user.name
+      if: ctx.user?.name == null && ctx.client?.user?.name != null
+      ignore_failure: true
   - rename:
       tag: rename_cisco_ise_log_log_details_OperationMessageText_to_cisco_ise_log_operation_message_text_97b4604f
       field: cisco_ise.log.log_details.OperationMessageText
