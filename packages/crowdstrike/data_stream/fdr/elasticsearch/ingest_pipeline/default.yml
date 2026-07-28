@@ -1022,15 +1022,21 @@ processors:
       source: |-
         def history = ctx.crowdstrike.CommandHistory;
         ctx.process = ctx.process ?: [:];
-        ctx.process.command_line = history;
-        def parts = history.splitOnToken('¶');
         def commands = new ArrayList();
-        for (def cmd : parts) {
-          def trimmed = cmd.trim();
-          if (!trimmed.isEmpty()) {
-            commands.add(trimmed);
+        def remaining = history;
+        int idx = remaining.indexOf("¶");
+        while (idx >= 0) {
+          def cmd = remaining.substring(0, idx).trim();
+          if (!cmd.isEmpty()) {
+            commands.add(cmd);
           }
+          remaining = remaining.substring(idx + 1);
+          idx = remaining.indexOf("¶");
         }
+        if (!remaining.trim().isEmpty()) {
+          commands.add(remaining.trim());
+        }
+        ctx.process.command_line = commands.size() > 0 ? commands.get(0) : history.trim();
         ctx.crowdstrike.CommandHistory = commands;
       on_failure:
         - append:
