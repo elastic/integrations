@@ -311,6 +311,16 @@ processors:
             tag: append_error_message_for_convert_clientIP_to_ip
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ping_directory.audit.using_admin_session_worker_thread
+      tag: convert_using_admin_session_worker_thread_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_using_admin_session_worker_thread
+            field: ping_directory.audit.using_admin_session_worker_thread
+            ignore_missing: true
   - set:
       field: client.ip
       tag: set_client_ip_from_audit_client_ip
@@ -413,11 +423,15 @@ processors:
   - append:
       field: related.user
       tag: append_ping_directory_audit_dn_cn_into_related_user
-      if: ctx.ping_directory?.audit?.dn?.cn != null && ctx.ping_directory.audit.dn.cn != ''
+      if: >-
+        ctx.ping_directory?.audit?.dn?.cn != null && ctx.ping_directory.audit.dn.cn != '' &&
+        ctx.ping_directory?.audit?.object_classes != null &&
+        (ctx.ping_directory.audit.object_classes.contains('inetOrgPerson') ||
+         ctx.ping_directory.audit.object_classes.contains('person'))
       value: '{{{ping_directory.audit.dn.cn}}}'
       allow_duplicates: false
       description: >-
-        Appends the target entry DN common name to related.user. Particularly important for delete operations where the dn is the only identity field.
+        Appends the target entry DN common name to related.user when the entry represents a person (inetOrgPerson or person object class).
   - set:
       field: event.reason
       tag: set_event_reason_from_audit_operation_purpose_code_location
@@ -432,8 +446,9 @@ processors:
       field: event.timezone
       tag: set_event_timezone_from_tz_offset
       copy_from: _conf.tz_offset
+      if: ctx._conf?.tz_offset != null && ctx.event?.timezone == null
       ignore_empty_value: true
-      override: true
+      override: false
   - date:
       field: ping_directory.audit.timestamp
       tag: date_timestamp_with_timezone

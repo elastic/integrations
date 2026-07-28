@@ -347,9 +347,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-05-25T18:48:06.786+05:30",
     "agent": {
-        "ephemeral_id": "9bacaab2-66d4-4e94-a112-7aa823784190",
-        "id": "3e32e0fa-c65e-46e2-bbc6-1f82cdc05987",
-        "name": "elastic-agent-10567",
+        "ephemeral_id": "346ab112-d13e-41bf-a332-d604bdf69cc6",
+        "id": "3d6c220b-d13f-4201-a9c5-dbb9445a7949",
+        "name": "elastic-agent-47828",
         "type": "filebeat",
         "version": "8.19.0"
     },
@@ -358,14 +358,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "ping_directory.audit",
-        "namespace": "76370",
+        "namespace": "60077",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "3e32e0fa-c65e-46e2-bbc6-1f82cdc05987",
+        "id": "3d6c220b-d13f-4201-a9c5-dbb9445a7949",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -376,7 +376,7 @@ An example event for `audit` looks as following:
             "iam"
         ],
         "dataset": "ping_directory.audit",
-        "ingested": "2026-07-27T10:37:12Z",
+        "ingested": "2026-07-28T07:12:51Z",
         "kind": "event",
         "original": "# 25/May/2026:18:48:06.786 +0530; conn=13; op=28; instanceName=\"pingdirectory-elastic-test\"; threadID=29; clientIP=10.50.15.29; requesterDN=\"cn=Directory Manager,cn=Root DNs,cn=config\"; usingAdminSessionWorkerThread=true; operationPurpose={ \"applicationName\":\"PingDirectory\", \"applicationVersion\":\"11.0.0.2\", \"codeLocation\":\"DSConfig.getReason:2978 SetPropSubCommandHandler.modifyManagedObject:541 SetPropSubCommandHandler.run:1246 DSConfig.runSubCommand:2574 DSConfig.execute:1698\" }\ndn: cn=File-Based Audit Logger,cn=Loggers,cn=config\nchangetype: modify\nreplace: ds-cfg-enabled\nds-cfg-enabled: true\n-\nreplace: modifiersName\nmodifiersName: cn=Directory Manager,cn=Root DNs,cn=config\n-\nreplace: modifyTimestamp\nmodifyTimestamp: 20260525131806.681Z",
         "reason": "DSConfig.getReason:2978 SetPropSubCommandHandler.modifyManagedObject:541 SetPropSubCommandHandler.run:1246 DSConfig.runSubCommand:2574 DSConfig.execute:1698",
@@ -391,7 +391,7 @@ An example event for `audit` looks as following:
     "log": {
         "file": {
             "device_id": "64768",
-            "inode": "1852090",
+            "inode": "1835154",
             "path": "/tmp/service_logs/test-audit.log"
         },
         "flags": [
@@ -427,7 +427,7 @@ An example event for `audit` looks as following:
                 "meta": "cn=Root DNs,cn=config"
             },
             "thread_id": "29",
-            "using_admin_session_worker_thread": "true"
+            "using_admin_session_worker_thread": true
         }
     },
     "related": {
@@ -435,8 +435,7 @@ An example event for `audit` looks as following:
             "10.50.15.29"
         ],
         "user": [
-            "Directory Manager",
-            "File-Based Audit Logger"
+            "Directory Manager"
         ]
     },
     "tags": [
