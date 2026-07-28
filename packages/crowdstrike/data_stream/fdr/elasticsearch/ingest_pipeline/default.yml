@@ -521,24 +521,100 @@ processors:
         - _id
       ignore_missing: true
 
+  # Classify FDR object type for the fingerprint discriminator.
+  # Object-key layout places the type mid-path, e.g.
+  #   c9ec061c00000000-ec39fe72/fdrv2/aidmaster/<uuid>/part-00000.gz
+  #   <cid>/data/<uuid>/part-00000.gz
+  # so match path segments rather than basename alone.
+  - set:
+      tag: set__temp_path_d3cfbbfe
+      field: _temp.path
+      copy_from: log.file.path
+      ignore_empty_value: true
+  - set:
+      tag: set__temp_path_7459eddc
+      if: ctx._temp?.path == null
+      field: _temp.path
+      copy_from: aws.s3.object.key
+      ignore_empty_value: true
+  - set:
+      tag: set__temp_type_1874950f
+      if: ctx._temp?.path != null
+      field: _temp.type
+      value: data
+  - set:
+      tag: set__temp_type_89a2e27b
+      if: >-
+        ctx._temp?.path != null &&
+        (ctx._temp.path == 'aidmaster' ||
+         ctx._temp.path.endsWith('/aidmaster') ||
+         ctx._temp.path.contains('/aidmaster/'))
+      field: _temp.type
+      value: aidmaster
+  - set:
+      tag: set__temp_type_ce5d5927
+      if: >-
+        ctx._temp?.path != null &&
+        (ctx._temp.path == 'userinfo' ||
+         ctx._temp.path.endsWith('/userinfo') ||
+         ctx._temp.path.contains('/userinfo/'))
+      field: _temp.type
+      value: userinfo
+
+  # CSPM fields — run before fingerprint so @timestamp and rule/resource identity
+  # are final for Cloud Security events.
+  # Can be both string and int, fields are mapped as keyword.
+  - convert:
+      tag: convert_crowdstrike_service_to_string_2a8687e8
+      field: crowdstrike.service
+      type: string
+      ignore_missing: true
+  - convert:
+      tag: convert_crowdstrike_cloudplatform_to_string_1f6df19b
+      field: crowdstrike.cloudplatform
+      type: string
+      ignore_missing: true
+
+  - rename:
+      description: Rename crowdstrike.resource in case concrete value field is mapped as object.
+      tag: rename_crowdstrike_resource_to_crowdstrike_resource_name_9899a394
+      if: ctx.crowdstrike?.resource instanceof String
+      field: crowdstrike.resource
+      target_field: crowdstrike.resource_name
+  - remove:
+      tag: remove_cloud_4d018ef3
+      field:
+        - cloud
+      ignore_missing: true
+
+  - pipeline:
+      tag: pipeline_cspm_iom_62dcd2f9
+      if: (ctx.crowdstrike?.disposition != null && ctx.crowdstrike.disposition.equalsIgnoreCase('Failed')) ||(ctx.crowdstrike?.event_simpleName != null && ctx.crowdstrike.event_simpleName.equalsIgnoreCase('CloudSecurityIOMEvaluation'))
+      name: '{{ IngestPipeline "cspm_iom" }}'
+  - pipeline:
+      tag: pipeline_cspm_ioa_8a985b05
+      if: ctx.crowdstrike?.vertex_type != null && ctx.crowdstrike.vertex_type.equalsIgnoreCase('ioa')
+      name: '{{ IngestPipeline "cspm_ioa" }}'
+
+  # Resolve a stable CSPM resource identity for fingerprinting.
   - script:
-      tag: script_data_type_89bd92f4
-      if: ctx.log?.file?.path != null && ctx.log.file.path != ''
+      tag: script_cspm_resource_id_for_fingerprint_7c3e9a12
+      if: ctx.rule?.id != null
       source: |-
-        int lastSlash = ctx.log.file.path.lastIndexOf("/");
-        if (lastSlash == -1) {
-          return;
-        }
         ctx._temp = ctx._temp ?: [:];
-        ctx._temp.type = ctx.log.file.path.substring(lastSlash + 1);
-        // aidmaster and userinfo are bucket keys we depend on, the data
-        // path suffix is tested, but not depended on. So make sure this
-        // is present for the fingerprint processor.
-        if (ctx._temp.type != 'aidmaster' && ctx._temp.type != 'userinfo') {
-          ctx._temp.type = 'data';
+        if (ctx.crowdstrike?.ResourceId != null && ctx.crowdstrike.ResourceId != '') {
+          ctx._temp.cspm_resource_id = ctx.crowdstrike.ResourceId.toString();
+        } else if (ctx.crowdstrike?.resource?.resourceId != null && ctx.crowdstrike.resource.resourceId != '') {
+          ctx._temp.cspm_resource_id = ctx.crowdstrike.resource.resourceId.toString();
+        } else if (ctx.crowdstrike?.crn != null && ctx.crowdstrike.crn != '') {
+          ctx._temp.cspm_resource_id = ctx.crowdstrike.crn.toString();
+        } else if (ctx.event?.id != null && ctx.event.id != '') {
+          // IOA: cspm_ioa renames crowdstrike.event_id -> event.id
+          ctx._temp.cspm_resource_id = ctx.event.id.toString();
         }
+
   - fingerprint:
-      description: When deduplication is enabled, fingerprint the a set of crowdstrike fields in attempt to prevent the same event from being indexed more than once.
+      description: When deduplication is enabled, fingerprint a set of crowdstrike fields to prevent the same event from being indexed more than once. CSPM events also include rule.id and resource id so distinct findings that share timestamp/cid stay unique.
       tag: fingerprint_crowdstrike_fdr_0e5ffd3f
       if: ctx._conf?.enable_deduplication == true
       fields:
@@ -547,6 +623,8 @@ processors:
         - crowdstrike.aid
         - crowdstrike.cid
         - _temp.type
+        - rule.id
+        - _temp.cspm_resource_id
       target_field: _id
       ignore_missing: true
 
@@ -615,40 +693,6 @@ processors:
       if: ctx.event?.category?.contains('driver') == true
       field: _temp.isDriver
       value: true
-
-  # CSPM fields
-  # Can be both string and int, fields are mapped as keyword.
-  - convert:
-      tag: convert_crowdstrike_service_to_string_2a8687e8
-      field: crowdstrike.service
-      type: string
-      ignore_missing: true
-  - convert:
-      tag: convert_crowdstrike_cloudplatform_to_string_1f6df19b
-      field: crowdstrike.cloudplatform
-      type: string
-      ignore_missing: true
-
-  - rename:
-      description: Rename crowdstrike.resource in case concrete value field is mapped as object.
-      tag: rename_crowdstrike_resource_to_crowdstrike_resource_name_9899a394
-      if: ctx.crowdstrike?.resource instanceof String
-      field: crowdstrike.resource
-      target_field: crowdstrike.resource_name
-  - remove:
-      tag: remove_cloud_4d018ef3
-      field:
-        - cloud
-      ignore_missing: true
-
-  - pipeline:
-      tag: pipeline_cspm_iom_62dcd2f9
-      if: (ctx.crowdstrike?.disposition != null && ctx.crowdstrike.disposition.equalsIgnoreCase('Failed')) ||(ctx.crowdstrike?.event_simpleName != null && ctx.crowdstrike.event_simpleName.equalsIgnoreCase('CloudSecurityIOMEvaluation'))
-      name: '{{ IngestPipeline "cspm_iom" }}'
-  - pipeline:
-      tag: pipeline_cspm_ioa_8a985b05
-      if: ctx.crowdstrike?.vertex_type != null && ctx.crowdstrike.vertex_type.equalsIgnoreCase('ioa')
-      name: '{{ IngestPipeline "cspm_ioa" }}'
 
   # Event fields.
   - set:
