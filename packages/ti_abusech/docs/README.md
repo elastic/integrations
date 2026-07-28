@@ -86,7 +86,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
     * To **Collect abuse.ch logs via API**, you'll need to:
 
         - Configure **Auth Key** for Community API datasets.
-        - For ThreatFox Commercial API collection, set **API Type** to **Commercial API**, set the **URL** to the commercial API base URL (for example `https://api.spamhaus.com`), and configure **Username** and **Password**.
+        - For Commercial API collection, set **API Type** to **Commercial API**, set the **URL** to the commercial API base URL (for example `https://api.spamhaus.com`), and configure **Username** and **Password**.
         - Enable/Disable the required datasets.
         - For each dataset, adjust the integration configuration parameters if required, including the URL, Interval, etc. to enable data collection.
 
