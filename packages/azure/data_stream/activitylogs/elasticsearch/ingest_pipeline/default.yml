@@ -81,10 +81,27 @@ processors:
       field: azure.activitylogs.level
       target_field: log.level
       ignore_missing: true
+  - convert:
+      field: azure.activitylogs.durationMs
+      tag: convert_activitylogs_durationms_to_event_duration
+      target_field: event.duration
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+      if: "ctx.azure?.activitylogs?.durationMs != null && ctx.azure.activitylogs.durationMs instanceof String"
+      description: 'Convert durationMs to event.duration as long (if it is a string).'
   - rename:
       field: azure.activitylogs.durationMs
+      tag: rename_activitylogs_durationms_to_event_duration
       target_field: event.duration
       ignore_missing: true
+      if: "ctx.azure?.activitylogs?.durationMs != null && !(ctx.azure.activitylogs.durationMs instanceof String)"
+      description: 'Rename durationMs to event.duration (if it is not a string).'
+  - remove:
+      field: azure.activitylogs.durationMs
+      tag: remove_activitylogs_durationms
+      ignore_missing: true
+      description: 'Clean up durationMs field, if it is still there after the conversion.'
   - script:
       lang: painless
       source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration

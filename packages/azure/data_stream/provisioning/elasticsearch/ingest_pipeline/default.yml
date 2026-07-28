@@ -86,10 +86,27 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+  - convert:
+      field: azure.provisioning.durationMs
+      tag: convert_provisioning_durationms_to_event_duration
+      target_field: event.duration
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+      if: "ctx.azure?.provisioning?.durationMs != null && ctx.azure.provisioning.durationMs instanceof String"
+      description: 'Convert durationMs to event.duration as long (if it is a string).'
   - rename:
       field: azure.provisioning.durationMs
+      tag: rename_provisioning_durationms_to_event_duration
       target_field: event.duration
       ignore_missing: true
+      if: "ctx.azure?.provisioning?.durationMs != null && !(ctx.azure.provisioning.durationMs instanceof String)"
+      description: 'Rename durationMs to event.duration (if it is not a string).'
+  - remove:
+      field: azure.provisioning.durationMs
+      tag: remove_provisioning_durationms
+      ignore_missing: true
+      description: 'Clean up durationMs field, if it is still there after the conversion.'
   - script:
       lang: painless
       source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration
