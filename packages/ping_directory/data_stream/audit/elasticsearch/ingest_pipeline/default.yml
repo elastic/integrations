@@ -32,10 +32,6 @@ processors:
       patterns:
         - '# (?<ping_directory.audit.timestamp>\d{2}\/[A-Za-z]{3}\/\d{4}:\d{2}:\d{2}:\d{2}\.\d{3}) (?<ping_directory.audit.timezone>[+-]\d{4});(?: conn=%{INT:ping_directory.audit.conn:long};)?(?: op=%{NUMBER:ping_directory.audit.op:long};)?(?: triggeredByConn=%{NUMBER:ping_directory.audit.triggered_by_conn:long};)?(?: triggeredByOp=%{NUMBER:ping_directory.audit.triggered_by_op:long};)?(?: origin="%{DATA:ping_directory.audit.origin}";)?(?: instanceName="%{DATA:ping_directory.audit.instance_name}";)?(?: threadID=%{NUMBER:ping_directory.audit.thread_id};)?(?: clientIP=%{IP:ping_directory.audit.client_ip};)?(?: requesterDN="%{DATA:ping_directory.audit.requester_dn_raw}";)?(?: usingAdminSessionWorkerThread=%{WORD:ping_directory.audit.using_admin_session_worker_thread};)?'
       if: ctx.event?.original != null
-      on_failure:
-        - drop:
-            tag: drop_event_on_grok_failure
-            description: Drop event if audit header grok fails; unable to extract core fields (timestamp, clientIP, etc.).
   - gsub:
       field: event.original
       tag: normalize_multiline_to_space
