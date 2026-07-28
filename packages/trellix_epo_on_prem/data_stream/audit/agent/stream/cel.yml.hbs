@@ -1,0 +1,96 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  username: {{username}}
+  password: {{password}}
+  initial_interval: {{initial_interval}}
+  page_size: {{page_size}}
+  columns: >-
+    OrionAuditLog.AutoId OrionAuditLog.UserId OrionAuditLog.UserName
+    OrionAuditLog.Priority OrionAuditLog.CmdName OrionAuditLog.Message
+    OrionAuditLog.Success OrionAuditLog.StartTime OrionAuditLog.EndTime
+redact:
+  fields:
+    - password
+program: |-
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "start_time": state.?cursor.last_start_time.orValue(
+          string(now - duration(state.initial_interval)).substring(0, 19)
+        )
+      })
+  ).as(state,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/remote/core.executeQuery?" +
+        {
+          "target": ["OrionAuditLog"],
+          // (top N) keyset page ordered by StartTime ascending.
+          "select": ['(select (top ' + string(state.page_size) + ') ' + state.columns + ')'],
+          // ge (inclusive) so same-second ties on the boundary are not skipped;
+          "where": ['(where (ge OrionAuditLog.StartTime "' + state.start_time + '"))'],
+          "order": ["(order (asc OrionAuditLog.StartTime))"]
+        }.format_query() + "&:output=json"
+      ).basic_authentication(state.username, state.password).do_request().as(resp,
+        resp.StatusCode == 200 ?
+          string(resp.Body).trim_space().trim_prefix("OK:").trim_space().decode_json().as(rows,
+            // Advance the start_time to the newest StartTime in this page (UTC, naive).
+            (size(rows) > 0 ?
+              string(timestamp(int(timestamp(
+                string(rows[size(rows) - 1]["OrionAuditLog.StartTime"])
+              )))).substring(0, 19)
+            :
+              state.start_time
+            ).as(new_start_time, {
+              "events": rows.map(e, {"message": e.encode_json()}),
+              "start_time": new_start_time,
+              "cursor": {"last_start_time": new_start_time},
+              "want_more": size(rows) == int(state.page_size)
+            })
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "message": "GET core.executeQuery failed: " + (
+                  size(resp.Body) != 0 ? string(resp.Body) : string(resp.StatusCode)
+                )
+              }
+            },
+            "want_more": false
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
