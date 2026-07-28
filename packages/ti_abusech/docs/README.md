@@ -210,6 +210,7 @@ For more information on architectures that can be used for scaling this integrat
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | abusech.malwarebazaar.anonymous | Identifies if the sample was submitted anonymously. | long |
+| abusech.malwarebazaar.archive_pw | Password to decrypt a password-protected archive sample. | keyword |
 | abusech.malwarebazaar.code_sign.algorithm | Algorithm used to generate the public key. | keyword |
 | abusech.malwarebazaar.code_sign.cscb_listed | Whether the certificate is present on the Code Signing Certificate Blocklist (CSCB). | boolean |
 | abusech.malwarebazaar.code_sign.cscb_reason | Why the certificate is present on the Code Signing Certificate Blocklist (CSCB). | keyword |
@@ -220,13 +221,23 @@ For more information on architectures that can be used for scaling this integrat
 | abusech.malwarebazaar.code_sign.thumbprint_algorithm | Algorithm used to create thumbprint. | keyword |
 | abusech.malwarebazaar.code_sign.valid_from | Time at which the certificate is first considered valid. | date |
 | abusech.malwarebazaar.code_sign.valid_to | Time at which the certificate is no longer considered valid. | keyword |
+| abusech.malwarebazaar.comment | Comment provided by the submitter. | keyword |
+| abusech.malwarebazaar.comments.comment | The escaped comment text itself. | keyword |
+| abusech.malwarebazaar.comments.date_added | Timestamp when this comment has been made (RFC3339). | date |
+| abusech.malwarebazaar.comments.display_name | Twitter display name. | keyword |
+| abusech.malwarebazaar.comments.id | Unique ID that identifies this comment. | keyword |
+| abusech.malwarebazaar.comments.twitter_handle | Twitter handle who wrote this comment. | keyword |
 | abusech.malwarebazaar.deleted_at | The indicator expiration timestamp. | date |
+| abusech.malwarebazaar.delivery_method | Delivery method used to spread the malware sample. | keyword |
 | abusech.malwarebazaar.dhash_icon | In case the file is a PE executable: dhash of the samples icon. | keyword |
+| abusech.malwarebazaar.file_information.context | The context type for the information value. | keyword |
+| abusech.malwarebazaar.file_information.value | The contextual information value. | keyword |
 | abusech.malwarebazaar.file_name | Name of the malware sample file. | keyword |
 | abusech.malwarebazaar.file_size | Size of the file in bytes. | long |
 | abusech.malwarebazaar.file_type | Type of the file. | keyword |
 | abusech.malwarebazaar.file_type_mime | MIME type of the file. | keyword |
 | abusech.malwarebazaar.gimphash | GIMP hash of the sample. | keyword |
+| abusech.malwarebazaar.humanhash | The file's HumanHash - a human-readable representation of digests. | keyword |
 | abusech.malwarebazaar.imphash | Import hash of the PE file. | keyword |
 | abusech.malwarebazaar.intelligence.clamav | ClamAV detection name for the sample. | keyword |
 | abusech.malwarebazaar.intelligence.downloads | Number of downloads from MalwareBazaar. | long |
@@ -234,7 +245,23 @@ For more information on architectures that can be used for scaling this integrat
 | abusech.malwarebazaar.intelligence.mail.IT | Malware seen in IT spam traffic. | keyword |
 | abusech.malwarebazaar.intelligence.uploads | Number of uploads from MalwareBazaar. | long |
 | abusech.malwarebazaar.ioc_expiration_duration | The configured expiration duration. | keyword |
+| abusech.malwarebazaar.magika | Magika AI-powered file type identification result. | keyword |
 | abusech.malwarebazaar.md5_hash | MD5 hash of the sample. | keyword |
+| abusech.malwarebazaar.ole_information.oleid.application_name | The name of the application that created the file, if retrievable from metadata. | keyword |
+| abusech.malwarebazaar.ole_information.oleid.encrypted | Indicates whether the file is encrypted or password-protected, which can hinder analysis of its content. | boolean |
+| abusech.malwarebazaar.ole_information.oleid.excel | True if the file appears to be a Microsoft Excel workbook. | boolean |
+| abusech.malwarebazaar.ole_information.oleid.flash_objects | True if the file contains embedded Flash objects, which are considered risky as they can execute code. | boolean |
+| abusech.malwarebazaar.ole_information.oleid.has_summaryinfo_stream | Shows whether the file contains a SummaryInformation stream, which stores standard metadata such as title, author, and creation date. | boolean |
+| abusech.malwarebazaar.ole_information.oleid.maldoc_score | A heuristic score from 0 to 100 reflecting how suspicious the document is for being a malicious document (maldoc). Higher scores mean higher risk. | long |
+| abusech.malwarebazaar.ole_information.oleid.objectpool | Indicates if the file contains an ObjectPool storage, which holds embedded OLE objects. These can hide malicious payloads. | boolean |
+| abusech.malwarebazaar.ole_information.oleid.ole_format | The overall file format. Common values include OLE, OpenXML, or Unknown. | keyword |
+| abusech.malwarebazaar.ole_information.oleid.powerpoint | True if the file appears to be a Microsoft PowerPoint presentation. | boolean |
+| abusech.malwarebazaar.ole_information.oleid.vba_macros | Shows whether the file contains VBA macros, which are often used for automation but also frequently exploited for malware. | boolean |
+| abusech.malwarebazaar.ole_information.oleid.visio | True if the file appears to be a Microsoft Visio document. | boolean |
+| abusech.malwarebazaar.ole_information.oleid.word | True if the file appears to be a Microsoft Word document. | boolean |
+| abusech.malwarebazaar.ole_information.olevba.description | A description of the detection. | keyword |
+| abusech.malwarebazaar.ole_information.olevba.keyword | The keyword that triggered the detection. | keyword |
+| abusech.malwarebazaar.ole_information.olevba.type | The type of the detection. | keyword |
 | abusech.malwarebazaar.reporter | Reporter who submitted the sample. | keyword |
 | abusech.malwarebazaar.sha1_hash | SHA-1 hash of the sample. | keyword |
 | abusech.malwarebazaar.sha256_hash | SHA-256 hash of the sample. | keyword |
@@ -242,7 +269,12 @@ For more information on architectures that can be used for scaling this integrat
 | abusech.malwarebazaar.ssdeep | SSDEEP hash of the sample. | keyword |
 | abusech.malwarebazaar.telfhash | TLSH hash of the sample. | keyword |
 | abusech.malwarebazaar.tlsh | TLSH hash of the sample. | keyword |
+| abusech.malwarebazaar.trid | TrID file type identification results. | keyword |
 | abusech.malwarebazaar.trid_percent | TRID file type identification confidence percentage. | float |
+| abusech.malwarebazaar.vendor_intel.cape.detection | The detection name of the malware sample. | keyword |
+| abusech.malwarebazaar.vendor_intel.cape.link | The URL to the analysis report. | keyword |
+| abusech.malwarebazaar.vendor_intel.spamhaus_hbl.detection | The detection label. | keyword |
+| abusech.malwarebazaar.vendor_intel.spamhaus_hbl.link | The link to the HBL. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -539,37 +571,40 @@ An example event for `malwarebazaar` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-07-16T06:30:59.281Z",
+    "@timestamp": "2026-07-21T06:07:08.418Z",
     "abusech": {
         "malwarebazaar": {
-            "anonymous": 0,
+            "comment": "Commercial API test sample",
             "deleted_at": "2021-10-10T14:02:45.000Z",
+            "delivery_method": "email_attachment",
             "intelligence": {
+                "clamav": "Win.Trojan.RedLineStealer.UNOFFICIAL",
                 "downloads": 11,
                 "uploads": 1
             },
-            "ioc_expiration_duration": "5d"
+            "ioc_expiration_duration": "5d",
+            "magika": "pebin"
         }
     },
     "agent": {
-        "ephemeral_id": "f5b70b3f-5d2b-4d55-96b0-dc8e46e10b9a",
-        "id": "372b884d-d232-4e1e-806c-d08ae525f868",
-        "name": "elastic-agent-37187",
+        "ephemeral_id": "566c9dd5-0925-4373-8f9e-afceddad643e",
+        "id": "87f8e459-7960-4e81-8a78-4d7059ac2206",
+        "name": "elastic-agent-97488",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ti_abusech.malwarebazaar",
-        "namespace": "64456",
+        "namespace": "50283",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "372b884d-d232-4e1e-806c-d08ae525f868",
-        "snapshot": true,
-        "version": "8.18.0"
+        "id": "87f8e459-7960-4e81-8a78-4d7059ac2206",
+        "snapshot": false,
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -577,15 +612,19 @@ An example event for `malwarebazaar` looks as following:
             "threat"
         ],
         "dataset": "ti_abusech.malwarebazaar",
-        "ingested": "2025-07-16T06:31:02Z",
+        "ingested": "2026-07-21T06:07:11Z",
         "kind": "enrichment",
-        "original": "{\"anonymous\":0,\"code_sign\":[],\"dhash_icon\":null,\"file_name\":\"7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e.exe\",\"file_size\":432640,\"file_type\":\"exe\",\"file_type_mime\":\"application/x-dosexec\",\"first_seen\":\"2021-10-05 14:02:45\",\"imphash\":\"f34d5f2d4577ed6d9ceec516c1f5a744\",\"intelligence\":{\"clamav\":null,\"downloads\":\"11\",\"mail\":null,\"uploads\":\"1\"},\"last_seen\":null,\"md5_hash\":\"1fc1c2997c8f55ac10496b88e23f5320\",\"origin_country\":\"FR\",\"reporter\":\"abuse_ch\",\"sha1_hash\":\"42c7153680d7402e56fe022d1024aab49a9901a0\",\"sha256_hash\":\"7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e78fd28b2253ea755c28\",\"sha3_384_hash\":\"d63e73b68973bc73ab559549aeee2141a48b8a3724aabc0d81fb14603c163a098a5a10be9f6d33b888602906c0d89955\",\"signature\":\"RedLineStealer\",\"ssdeep\":\"12288:jhhl1Eo+iEXvpb1C7drqAd1uUaJvzXGyO2F5V3bS1jsTacr:7lL\",\"tags\":[\"exe\",\"RedLineStealer\"],\"telfhash\":null,\"tlsh\":\"T13794242864BFC05994E3EEA12DDCA8FBD99A55E3640C743301B4633B8B52B84DE4F479\"}",
+        "module": "ti_abusech",
+        "original": "{\"anonymous\":false,\"comment\":\"Commercial API test sample\",\"delivery_method\":\"email_attachment\",\"file_name\":\"7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e78fd28b2253ea755c28.exe\",\"file_size\":432640,\"file_type\":\"exe\",\"file_type_mime\":\"application/x-dosexec\",\"first_seen\":\"2021-10-05T14:02:45Z\",\"imphash\":\"f34d5f2d4577ed6d9ceec516c1f5a744\",\"intelligence\":{\"clamav\":[\"Win.Trojan.RedLineStealer.UNOFFICIAL\"],\"downloads\":11,\"uploads\":1},\"magika\":\"pebin\",\"md5_hash\":\"1fc1c2997c8f55ac10496b88e23f5320\",\"origin_country\":\"FR\",\"reporter\":\"abuse_ch\",\"sha1_hash\":\"42c7153680d7402e56fe022d1024aab49a9901a0\",\"sha256_hash\":\"7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e78fd28b2253ea755c28\",\"sha3_384_hash\":\"d63e73b68973bc73ab559549aeee2141a48b8a3724aabc0d81fb14603c163a098a5a10be9f6d33b888602906c0d89955\",\"signature\":\"RedLineStealer\",\"ssdeep\":\"12288:jhhl1Eo+iEXvpb1C7drqAd1uUaJvzXGyO2F5V3bS1jsTacr:7lL\",\"tags\":[\"exe\",\"RedLineStealer\"],\"tlsh\":\"T13794242864BFC05994E3EEA12DDCA8FBD99A55E3640C743301B4633B8B52B84DE4F479\"}",
         "type": [
             "indicator"
         ]
     },
     "input": {
         "type": "cel"
+    },
+    "labels": {
+        "is_ioc_transform_source": "true"
     },
     "related": {
         "hash": [
@@ -606,6 +645,10 @@ An example event for `malwarebazaar` looks as following:
         "RedLineStealer"
     ],
     "threat": {
+        "feed": {
+            "dashboard_id": "ti_abusech-c0d8d1f0-3b20-11ec-ae50-2fdf1e96c6a6",
+            "name": "AbuseCH MalwareBazaar"
+        },
         "indicator": {
             "file": {
                 "extension": "exe",
@@ -618,7 +661,7 @@ An example event for `malwarebazaar` looks as following:
                     "tlsh": "T13794242864BFC05994E3EEA12DDCA8FBD99A55E3640C743301B4633B8B52B84DE4F479"
                 },
                 "mime_type": "application/x-dosexec",
-                "name": "7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e.exe",
+                "name": "7a6c03013a2f2ab8b9e8e7e5d226ea89e75da72c1519e78fd28b2253ea755c28.exe",
                 "pe": {
                     "imphash": "f34d5f2d4577ed6d9ceec516c1f5a744"
                 },

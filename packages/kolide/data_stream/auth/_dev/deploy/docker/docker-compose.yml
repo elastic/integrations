@@ -13,3 +13,15 @@ services:
       - http-server
       - --addr=:8090
       - --config=/files/config-auth.yml
+  gcs-mock:
+    image: shourieg/gcs-mock-service:latest
+    ports:
+      - "4443/tcp"
+    volumes:
+      - ./files/gcs-manifest.yml:/app/manifest.yml:ro
+      - ./files/gcs:/data:ro
+    healthcheck:
+      test: "wget --no-verbose --tries=1 --spider http://localhost:4443/health || exit 1"
+      interval: 10s
+      timeout: 5s
+    command: ["./gcs-mock-service", "--manifest", "/app/manifest.yml"]

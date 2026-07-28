@@ -1,15 +1,24 @@
 rules:
-  # Round 2+ (convergence): the cursor is the exact max detected_at from round 1
-  # (2026-06-15T12:00:00.000Z), so the initial query carries that timestamp.
+  # Round 2+ (convergence): the cursor's last_timestamp is the max of
+  # detected_at/resolved_at/blocks_device_at across round 1 -- here that's
+  # 2026-06-15T13:59:00Z, the *resolved_at* of issue 500000012, not its
+  # detected_at (2026-06-15T12:00:00Z). This is the regression test for the
+  # cursor-advancement bug: if last_timestamp were computed from detected_at
+  # alone, the query below would carry the earlier (wrong) timestamp instead,
+  # this rule would never match, every poll would fall through to the page-1
+  # catch-all below, and the same 5 records would be re-fetched on every poll
+  # forever instead of the query converging to an empty result set. (CEL's
+  # string(timestamp(...)) omits fractional seconds when they are zero, hence
+  # no ".000" here, unlike the RFC3339 timestamps in the source records.)
   # Return an empty page so polling converges and hit_count stays stable. (Against
-  # the real inclusive API the boundary record is re-returned and collapses via the
-  # _id fingerprint; the mock returns empty for simplicity.) Must precede the
-  # page-1 catch-all so it wins for the advanced-cursor query.
+  # the real inclusive API the boundary record is re-returned and dropped as a
+  # duplicate via the _id fingerprint; the mock returns empty for simplicity.)
+  # Must precede the page-1 catch-all so it wins for the advanced-cursor query.
   - path: /issues
     methods: ['GET']
     query_params:
       per_page: '{per_page:.*}'
-      query: 'detected_at>2026-06-15T12:00:00.000Z'
+      query: 'detected_at>2026-06-15T13:59:00Z OR resolved_at>2026-06-15T13:59:00Z OR blocks_device_at>2026-06-15T13:59:00Z'
     request_headers:
       Authorization:
         - 'Bearer k2sk_v1_exampleexampleexample'
