@@ -127,21 +127,26 @@ processors:
   - script:
       description: Populate related.ip and related.hosts from scan details.
       lang: painless
+      tag: populate_related_from_scan_details
       if: ctx.tenable_io?.scan?.scan_details != null
       source: |
         def details = ctx.tenable_io.scan.scan_details;
+        def ipPat = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
         if (ctx.related == null) { ctx.related = new HashMap(); }
-        if (details.info?.targets != null) {
-          if (ctx.related.ip == null) { ctx.related.ip = new ArrayList(); }
+        if (details.info?.targets instanceof String) {
           for (def t : details.info.targets.splitOnToken(',')) {
-            def ip = t.trim();
-            if (ip.length() > 0 && !ctx.related.ip.contains(ip)) {
-              ctx.related.ip.add(ip);
+            def target = t.trim();
+            if (target.length() == 0 || target.indexOf('/') >= 0) { continue; }
+            if (ipPat.matcher(target).matches()) {
+              if (ctx.related.ip == null) { ctx.related.ip = new ArrayList(); }
+              if (!ctx.related.ip.contains(target)) { ctx.related.ip.add(target); }
+            } else {
+              if (ctx.related.hosts == null) { ctx.related.hosts = new ArrayList(); }
+              if (!ctx.related.hosts.contains(target)) { ctx.related.hosts.add(target); }
             }
           }
         }
         if (details.hosts instanceof List) {
-          def ipPat = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
           for (def host : (List) details.hosts) {
             if (host?.hostname != null && host.hostname.length() > 0) {
               if (ipPat.matcher(host.hostname).matches()) {
