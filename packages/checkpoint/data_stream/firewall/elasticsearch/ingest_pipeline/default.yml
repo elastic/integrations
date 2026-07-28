@@ -441,14 +441,14 @@ processors:
       tag: set_event_outcome_e1548f1e
       field: event.outcome
       value: success
-      if: "['Accept', 'Allow'].contains(ctx.checkpoint?.rule_action)"
+      if: "['Accept', 'Allow'].contains(ctx.checkpoint?.rule_action) || (ctx.checkpoint?.rule_action == null && ['Accept', 'Allow'].contains(ctx.checkpoint?.action))"
   - append:
       tag: append_event_type_c2ef1ab7
       field: event.type
       value:
         - allowed
         - connection
-      if: "['Accept', 'Allow'].contains(ctx.checkpoint?.rule_action) && (ctx.checkpoint?.operation != 'Log In' && ctx.checkpoint?.operation != 'Log Out')"
+      if: "(['Accept', 'Allow'].contains(ctx.checkpoint?.rule_action) || (ctx.checkpoint?.rule_action == null && ['Accept', 'Allow'].contains(ctx.checkpoint?.action))) && (ctx.checkpoint?.operation != 'Log In' && ctx.checkpoint?.operation != 'Log Out')"
   - set:
       tag: set_event_outcome_5c62bf3d
       field: event.outcome
