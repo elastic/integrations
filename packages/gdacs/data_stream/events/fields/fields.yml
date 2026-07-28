@@ -1,25 +1,6 @@
 - name: event.modified
   type: date
   description: Timestamp when the GDACS event was last modified.
-- name: geo.country_iso_code
-  type: keyword
-  description: ISO 3166-1 alpha-2 country code of the primary affected country.
-- name: geo.country_name
-  type: keyword
-  description: Name of the primary affected country.
-- name: geo.location
-  type: geo_point
-  description: Centroid coordinates of the event or affected area.
-- name: geo.location.coordinates
-  type: object
-  object_type: double
-  description: Coordinates of the geo_point as [lon, lat].
-- name: geo.location.type
-  type: keyword
-  description: GeoJSON type of the geo_point (always "Point").
-- name: geo.name
-  type: keyword
-  description: Human-readable name of the event location.
 - name: gdacs
   type: group
   description: >-
@@ -94,6 +75,11 @@
     - name: polygon_label
       type: keyword
       description: Label for the geometry type (Centroid, Affected Area).
+    - name: geometry_role
+      type: keyword
+      description: >-
+        Role of a tropical cyclone child geometry document: wind (wind band polygon),
+        cone (forecast cone polygon), or track (track line).
     - name: icon
       type: keyword
       description: URL to the GDACS map icon for this event.
@@ -142,7 +128,7 @@
     - name: affected_area
       type: geo_shape
       description: >-
-        GeoJSON polygon or multipolygon representing the affected area of the disaster.
+        WKT polygon, multipolygon or line representing the affected area of the disaster.
     - name: affected_area.coordinates
       type: object
       object_type: double
@@ -150,3 +136,22 @@
     - name: affected_area.type
       type: keyword
       description: GeoJSON geometry type (e.g. "Polygon", "MultiPolygon").
+    - name: geo.location
+      type: geo_point
+      description: Centroid coordinates of the event or affected area.
+    - name: geo.location.coordinates
+      type: object
+      object_type: double
+      description: Coordinates of the geo_point as [lon, lat].
+    - name: geo.location.type
+      type: keyword
+      description: GeoJSON type of the geo_point (always "Point").
+    - name: geo.country_iso_code
+      type: keyword
+      description: ISO 3166-1 alpha-2 country code of the primary affected country.
+    - name: geo.country_name
+      type: keyword
+      description: Name of the primary affected country.
+    - name: geo.name
+      type: keyword
+      description: Human-readable name of the event location.

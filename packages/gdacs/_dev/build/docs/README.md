@@ -83,10 +83,6 @@ The `events` data stream provides natural disaster alert events from the GDACS S
 
 {{ event "events" }}
 
-{{ ilm }}
-
-{{ transform }}
-
 ### Inputs used
 
 {{ inputDocs }}

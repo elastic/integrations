@@ -2,6 +2,10 @@ config_version: 2
 interval: {{interval}}
 resource.url: {{url}}
 resource.timeout: 120s
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
 
 state:
   event_types: '{{event_types}}'
@@ -11,29 +15,36 @@ state:
 {{#if country}}
   country: '{{country}}'
 {{/if}}
+redact:
+  fields: ~
 
 program: |
-  request(
-    "GET",
-    state.url.trim_right("/") + "/events/geteventlist/SEARCH?" + {
-      "eventlist": [state.event_types],
-      "alertlevel": [state.alert_levels],
-      "pageSize": [string(state.page_size)],
-      "pageNumber": [string(state.?cursor.page_number.orValue(1))],
-      "fromDate": [state.?cursor.from_date.orValue(
-        (now - duration(string(state.lookback_hours) + "h")).format("01/02/2006")
-      )],
-      "toDate": [state.?cursor.to_date.orValue(now.format("01/02/2006"))],
-  {{#if country}}
-      "country": [state.country],
-  {{/if}}
-    }.format_query()
-  ).do_request().as(resp, resp.StatusCode == 204 ?
+  (
+    state.?country.orValue("") != "" ?
+      {"country": [state.country]}
+    :
+      {}
+  ).as(countryParams,
+    request(
+      "GET",
+      state.url.trim_right("/") + "/events/geteventlist/SEARCH?" + {
+        "eventlist": [state.event_types],
+        "alertlevel": [state.alert_levels],
+        "pageSize": [string(state.page_size)],
+        "pageNumber": [string(state.?cursor.page_number.orValue(1))],
+        "fromDate": [state.?cursor.from_date.orValue(
+          (now - duration(string(state.lookback_hours) + "h")).format("01/02/2006")
+        )],
+        "toDate": [state.?cursor.to_date.orValue(now.format("01/02/2006"))],
+      }.with(countryParams).format_query()
+    ).do_request().as(resp, resp.StatusCode == 204 ?
     state.with({
       "events": [],
       "want_more": false,
       "cursor": {
-        "last_poll_date": now.format("01/02/2006"),
+        "from_date": state.?cursor.to_date.orValue(now.format("01/02/2006")),
+        "to_date": now.format("01/02/2006"),
+        "page_number": 1,
       },
     })
   : resp.StatusCode != 200 ?
@@ -115,12 +126,16 @@ program: |
             :
               [{"message": f.encode_json()}]
           ).flatten(),
-          "cursor": {
+          "cursor": size(body.features) >= state.page_size ? {
             "page_number": int(state.?cursor.page_number.orValue(1)) + 1,
             "from_date": state.?cursor.from_date.orValue(
               (now - duration(string(state.lookback_hours) + "h")).format("01/02/2006")
             ),
             "to_date": state.?cursor.to_date.orValue(now.format("01/02/2006")),
+          } : {
+            "from_date": state.?cursor.to_date.orValue(now.format("01/02/2006")),
+            "to_date": now.format("01/02/2006"),
+            "page_number": 1,
           },
           "want_more": size(body.features) >= state.page_size,
         })
@@ -129,10 +144,13 @@ program: |
           "events": [],
           "want_more": false,
           "cursor": {
-            "last_poll_date": now.format("01/02/2006"),
+            "from_date": state.?cursor.to_date.orValue(now.format("01/02/2006")),
+            "to_date": now.format("01/02/2006"),
+            "page_number": 1,
           },
         })
     )
+  )
   )
 
 tags:

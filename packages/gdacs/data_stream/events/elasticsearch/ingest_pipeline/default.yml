@@ -1,6 +1,10 @@
 ---
 description: "Normalizes GDACS GeoJSON features to ECS + gdacs.* fields."
 processors:
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - rename:
       tag: rename_message_to_event_original
       field: message
@@ -12,6 +16,7 @@ processors:
       field: event.original
       add_to_root: true
       add_to_root_conflict_strategy: replace
+      if: ctx.event?.original != null
   - remove:
       tag: remove_message
       field: message
@@ -193,7 +198,10 @@ processors:
       formats:
         - "yyyy-MM-dd'T'HH:mm:ss"
         - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       tag: date_todate
       field: properties.todate
@@ -201,7 +209,10 @@ processors:
       formats:
         - "yyyy-MM-dd'T'HH:mm:ss"
         - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       tag: date_datemodified
       field: properties.datemodified
@@ -209,7 +220,10 @@ processors:
       formats:
         - "yyyy-MM-dd'T'HH:mm:ss"
         - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       tag: set_timestamp_modified
       field: "@timestamp"
@@ -297,14 +311,15 @@ processors:
           return null;
         }
 
-        if (ctx.geo == null) { ctx.geo = new HashMap(); }
+        if (ctx.gdacs == null) { ctx.gdacs = new HashMap(); }
+        if (ctx.gdacs.geo == null) { ctx.gdacs.geo = new HashMap(); }
 
         // Extract centroid from the event-level Point geometry.
         def geom = ctx.geometry;
         if (geom != null) {
           String geomType = geom.type;
           if (geomType == "Point" && geom.coordinates != null && geom.coordinates.size() >= 2) {
-            ctx.geo.location = ['lon': geom.coordinates[0], 'lat': geom.coordinates[1]];
+            ctx.gdacs.geo.location = ['lon': geom.coordinates[0], 'lat': geom.coordinates[1]];
           }
         }
 
@@ -344,43 +359,59 @@ processors:
         ctx.gdacs.affected_country_iso2 = iso2_codes;
         ctx.gdacs.affected_country_iso3 = iso3_codes;
 
-        if (ctx.geo == null) { ctx.geo = new HashMap(); }
+        if (ctx.gdacs == null) { ctx.gdacs = new HashMap(); }
+        if (ctx.gdacs.geo == null) { ctx.gdacs.geo = new HashMap(); }
         if (iso2_codes.size() > 0) {
-          ctx.geo.country_iso_code = iso2_codes[0];
+          ctx.gdacs.geo.country_iso_code = iso2_codes[0];
         }
         if (names.size() > 0) {
-          ctx.geo.country_name = names[0];
+          ctx.gdacs.geo.country_name = names[0];
         }
   - convert:
       tag: convert_severity_value
       field: gdacs.severity.value
       type: double
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_alert_score
       field: gdacs.alert_score
       type: double
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_episode_alert_score
       field: gdacs.episode_alert_score
       type: double
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_event_id
       field: gdacs.event_id
       type: string
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_episode_id
       field: gdacs.episode_id
       type: string
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       tag: map_event_type_name
       lang: painless
@@ -432,16 +463,6 @@ processors:
       tag: set_event_module
       field: event.module
       value: gdacs
-  - append:
-      tag: append_event_category
-      field: event.category
-      value: threat
-      allow_duplicates: false
-  - append:
-      tag: append_event_type
-      field: event.type
-      value: indicator
-      allow_duplicates: false
   - set:
       tag: set_event_provider
       field: event.provider
@@ -482,7 +503,7 @@ processors:
       ignore_failure: true
   - set:
       tag: set_geo_name
-      field: geo.name
+      field: gdacs.geo.name
       copy_from: gdacs.name
       ignore_empty_value: true
   - remove:
@@ -501,8 +522,33 @@ processors:
         - gdacs.geometry_type
         - gdacs.geometry_doc
         - gdacs.geometry_id
-        - gdacs.geometry_role
       ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
 on_failure:
   - append:
       field: error.message
