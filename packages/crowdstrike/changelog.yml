@@ -1,9 +1,22 @@
 # newer versions go on top
-- version: "4.4.2"
+- version: "4.4.3"
   changes:
     - description: Add `ignore_above` for flattened attribute blobs in the falcon, fdr, and alert data streams to avoid dropping events. Requires Kibana 8.19.8+ or 9.1.0+ so Fleet applies the mapping option.
       type: bugfix
       link: https://github.com/elastic/integrations/pull/16398
+- version: "4.4.2"
+  changes:
+    - description: Classify FDR aidmaster/userinfo/data object types from aws.s3.object.key when log.file.path is absent.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20331
+    - description: >-
+        Run CSPM pipelines before the deduplication fingerprint and include rule.id
+        (when present) plus a CSPM resource id so distinct Cloud Security findings are
+        retained and re-ingested duplicates are dropped. Because rule.id is also set on
+        EPP, FIM, and Data Protection events, enabling deduplication after upgrade
+        produces a one-time _id change for those event types on re-delivery.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20331
 - version: "4.4.1"
   changes:
     - description: Declare the ANODE anomaly-indicator numeric leaves as `float` in the `falcon`, `fdr`, and `alert` data streams. These values are polymorphic (usually fractional, occasionally whole numbers), so leaving them undeclared let dynamic mapping lock them to `long` on integer-first indices and reject later fractional values to the failure store.
