@@ -167,7 +167,7 @@ Pack `id`s are platform-suffixed (`_windows`, `_macos`, `_linux`); the shared `e
 | 16 | `ai_model_files_*` | `osquery.ai_model_files` | file | 24h | ✅ | ✅ | ✅ | Large model files (>100 MiB) by path and extension |
 | 17 | `ai_model_cache_size_*` | `osquery.ai_model_cache_size` | file | 24h | ✅ | ✅ | ✅ | AI model cache disk usage by directory (>100 MiB) |
 | 18 | `ai_docker_containers_*` | `osquery.ai_docker_containers` | host | 1h | — | ✅ | ✅ | Docker containers running AI workloads |
-| 19 | `ai_sensitive_file_proximity_*` | `osquery.ai_sensitive_file_proximity` | process, file | mac/lin 1h · win 24h | ✅ | ✅ | ✅ | AI-process proximity to credential-adjacent paths (metadata only); slice on `osquery.process_category`. macOS/Linux use open-file access evidence; Windows is uid co-occurrence inventory, **not** access proof |
+| 19 | `ai_sensitive_file_proximity_*` | `osquery.ai_sensitive_file_proximity` | process, file | mac/lin 1h · win 24h | ✅ | ✅ | ✅ | AI-process proximity to credential-adjacent paths (metadata only); slice on `labels.process_category`. macOS/Linux use open-file access evidence; Windows is uid co-occurrence inventory, **not** access proof |
 | 20 | `ai_windows_services` | `osquery.ai_windows_services` | configuration | 24h | ✅ | — | — | AI auto-start Windows services |
 | 21 | `ai_scheduled_tasks_windows` | `osquery.ai_scheduled_tasks` | configuration | 24h | ✅ | — | — | AI scheduled tasks (Windows) |
 | 22 | `ai_launchd_services` | `osquery.ai_launchd_services` | configuration | 24h | — | ✅ | — | AI auto-start macOS launchd services |
