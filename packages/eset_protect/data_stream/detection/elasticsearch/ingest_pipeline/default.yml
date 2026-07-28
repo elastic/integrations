@@ -122,12 +122,127 @@ processors:
       tag: set_host_id_from_detection_context_device_uuid
       copy_from: eset_protect.detection.context.device_uuid
       ignore_empty_value: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_device_display_name
+      copy_from: json.deviceDisplayName
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_host_name_into_related_hosts
+      value: "{{{host.name}}}"
+      allow_duplicates: false
+      if: ctx.host?.name != null
   - append:
       field: related.hosts
       tag: append_context_device_uuid_into_related_hosts
       value: "{{{eset_protect.detection.context.device_uuid}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.detection?.context?.device_uuid != null
+  - convert:
+      field: json.deviceInfo.primaryIp
+      tag: convert_device_primary_ip
+      target_field: json.deviceInfo.primaryIp
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.deviceInfo.primaryIp
+            ignore_missing: true
+  - append:
+      field: host.ip
+      tag: append_device_primary_ip_into_host_ip
+      value: "{{{json.deviceInfo.primaryIp}}}"
+      allow_duplicates: false
+      if: ctx.json?.deviceInfo?.primaryIp != null
+  - append:
+      field: related.ip
+      tag: append_device_primary_ip_into_related_ip
+      value: "{{{json.deviceInfo.primaryIp}}}"
+      allow_duplicates: false
+      if: ctx.json?.deviceInfo?.primaryIp != null
+  - convert:
+      field: json.deviceInfo.publicIp
+      tag: convert_device_public_ip
+      target_field: json.deviceInfo.publicIp
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.deviceInfo.publicIp
+            ignore_missing: true
+  - append:
+      field: host.ip
+      tag: append_device_public_ip_into_host_ip
+      value: "{{{json.deviceInfo.publicIp}}}"
+      allow_duplicates: false
+      if: ctx.json?.deviceInfo?.publicIp != null
+  - append:
+      field: related.ip
+      tag: append_device_public_ip_into_related_ip
+      value: "{{{json.deviceInfo.publicIp}}}"
+      allow_duplicates: false
+      if: ctx.json?.deviceInfo?.publicIp != null
+  - set:
+      field: host.os.full
+      tag: set_host_os_full_from_device_info
+      copy_from: json.deviceInfo.osFull
+      ignore_empty_value: true
+  - set:
+      field: host.os.version
+      tag: set_host_os_version_from_device_info
+      copy_from: json.deviceInfo.osVersion
+      ignore_empty_value: true
+  - set:
+      field: host.os.type
+      tag: set_host_os_type_windows
+      value: windows
+      if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('windows')
+  - set:
+      field: host.os.type
+      tag: set_host_os_type_linux
+      value: linux
+      if: ctx.host?.os?.full != null && ctx.host.os.full.toLowerCase().contains('linux')
+  - set:
+      field: host.os.type
+      tag: set_host_os_type_macos
+      value: macos
+      if: ctx.host?.os?.full != null && (ctx.host.os.full.toLowerCase().contains('mac os') || ctx.host.os.full.toLowerCase().contains('macos'))
+  - set:
+      field: host.os.name
+      tag: set_host_os_name_from_os_full
+      copy_from: host.os.full
+      ignore_empty_value: true
+  - set:
+      field: host.os.platform
+      tag: set_host_os_platform_windows
+      value: windows
+      if: ctx.host?.os?.type == 'windows'
+  - set:
+      field: host.os.platform
+      tag: set_host_os_platform_linux
+      value: linux
+      if: ctx.host?.os?.type == 'linux'
+  - set:
+      field: host.os.platform
+      tag: set_host_os_platform_macos
+      value: darwin
+      if: ctx.host?.os?.type == 'macos'
+  - set:
+      field: host.os.family
+      tag: set_host_os_family_windows
+      value: windows
+      if: ctx.host?.os?.type == 'windows'
+  - set:
+      field: host.os.family
+      tag: set_host_os_family_linux
+      value: linux
+      if: ctx.host?.os?.type == 'linux'
+  - set:
+      field: host.os.family
+      tag: set_host_os_family_macos
+      value: darwin
+      if: ctx.host?.os?.type == 'macos'
   - rename:
       field: json.context.process.path
       tag: rename_context_process_path

@@ -1,0 +1,105 @@
+{
+    "attributes": {
+        "columns": [
+            "host.hostname",
+            "crowdstrike.host.last_seen",
+            "crowdstrike.host.status",
+            "crowdstrike.host.agent.version",
+            "host.ip"
+        ],
+        "description": "",
+        "grid": {},
+        "hideChart": false,
+        "isTextBasedQuery": false,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "crowdstrike.host"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "crowdstrike.host"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "crowdstrike.host.last_seen",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "crowdstrike.host.last_seen",
+                            "negate": false,
+                            "params": {
+                                "lt": "now-7d"
+                            },
+                            "type": "range",
+                            "value": {
+                                "lt": "now-7d"
+                            }
+                        },
+                        "query": {
+                            "range": {
+                                "crowdstrike.host.last_seen": {
+                                    "lt": "now-7d"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "sort": [
+            [
+                "crowdstrike.host.last_seen",
+                "asc"
+            ]
+        ],
+        "timeRestore": false,
+        "title": "[CrowdStrike] Stale hosts (7d)"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-06-02T06:36:00.330Z",
+    "id": "crowdstrike-af5b7c0c-ca1a-4d78-8539-6bcbc90f9953",
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "search",
+    "typeMigrationVersion": "10.5.0"
+}

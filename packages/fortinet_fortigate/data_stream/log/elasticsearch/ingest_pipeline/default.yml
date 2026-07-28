@@ -170,9 +170,12 @@ processors:
   - script:
       lang: painless
       tag: script_tz_mapping
-      if: ctx.event?.timezone == null && ctx._conf?.tz_map != null &&ctx.fortinet?.firewall?.timezone != null && ctx.fortinet?.firewall?.timezone != ''
+      if: >- 
+        (ctx.fortinet?.firewall?.timezone != null && ctx.fortinet?.firewall?.timezone != '') ||
+        (ctx.event?.timezone != null && ctx.event?.timezone != '') &&
+        ctx._conf?.tz_map != null
       source: |
-        def tz = ctx.fortinet?.firewall?.timezone;
+        def tz = ctx.fortinet?.firewall?.timezone != null ? ctx.fortinet?.firewall?.timezone : ctx.event?.timezone;
         for (def item : ctx._conf.tz_map) {
           if (item.tz_match_value == tz) {
             ctx.event.timezone = item.tz_replace_value;
@@ -269,6 +272,7 @@ processors:
       lang: painless
       source: "ctx.event.duration = Long.parseLong(ctx.fortinet.firewall.duration) * 1000000000"
       if: ctx.fortinet?.firewall?.duration != null
+      ignore_failure: true
   - rename:
       tag: rename_fortinet_firewall_devid_to_observer_serial_number_60129b13
       field: fortinet.firewall.devid
@@ -402,10 +406,31 @@ processors:
       target_field: network.direction
       ignore_missing: true
       if: ctx.network?.direction == null
+  - convert:
+      tag: convert_source_ip_d1d4ef25
+      field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_source_ip_a34d8ade
+            field: source.ip
+            ignore_missing: true
+  - convert:
+      tag: convert_destination_ip_3561ff45
+      field: destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_destination_ip_4e25a91b
+            field: destination.ip
+            ignore_missing: true
   - network_direction:
       tag: network_direction_af8b6e3d
       internal_networks_field: _temp.internal_networks
       ignore_missing: true
+      ignore_failure: true
       if: ctx.network?.direction == null
   # Handle interface-based network directionality
   - set:

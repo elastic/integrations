@@ -1,0 +1,53 @@
+{
+  "attributes": {
+    "name": "[AWS ELB OTel] Application Load Balancer target response time average 99.5% rolling 30 days",
+    "description": "Tracks typical backend latency for Application Load Balancer target groups by keeping average TargetResponseTime below 1 second in each 1-minute interval. Scoped per target group, load balancer, and region. A rolling 30-day target of 99.5% ensures users experience responsive service even when errors are absent.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"aws.elb.otel\" AND Namespace: \"AWS/ApplicationELB\" AND MetricName: \"TargetResponseTime\" AND stat: \"Average\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime",
+              "filter": "MetricName: \"TargetResponseTime\" AND stat: \"Average\""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "aws_elb",
+      "otel"
+    ],
+    "groupBy": [
+      "cloud.region",
+      "LoadBalancer",
+      "TargetGroup"
+    ],
+    "artifacts": {
+      "dashboards": [
+        { "id": "aws_elb_metrics_otel-5a9019c8-e8b0-489c-a6b7-35a976e4cd07" }
+      ]
+    }
+  },
+  "id": "aws_elb_metrics_otel-target-response-time-avg-99.5-Rolling30Days",
+  "type": "slo_template"
+}

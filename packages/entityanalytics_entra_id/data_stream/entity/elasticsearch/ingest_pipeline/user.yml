@@ -197,6 +197,78 @@ processors:
       copy_from: user.group
       tag: set_asset_group
       ignore_empty_value: true
+  - date:
+      field: entityanalytics_entra_id.user.sign_in_activity.last_sign_in_date_time
+      tag: date_sign_in_activity_last_sign_in_date_time
+      target_field: entityanalytics_entra_id.user.sign_in_activity.last_sign_in_date_time
+      formats:
+        - ISO8601
+      if: ctx.entityanalytics_entra_id?.user?.sign_in_activity?.last_sign_in_date_time != null && ctx.entityanalytics_entra_id.user.sign_in_activity.last_sign_in_date_time != ''
+      on_failure:
+        - remove:
+            field: entityanalytics_entra_id.user.sign_in_activity.last_sign_in_date_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.entity.lifecycle.last_activity
+      copy_from: entityanalytics_entra_id.user.sign_in_activity.last_sign_in_date_time
+      tag: set_user_entity_lifecycle_last_activity
+      ignore_empty_value: true
+  - convert:
+      field: entityanalytics_entra_id.user.mfa.is_mfa_registered
+      tag: convert_isMfaRegistered_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: entityanalytics_entra_id.user.mfa.is_mfa_registered
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.entity.attributes.mfa_enabled
+      copy_from: entityanalytics_entra_id.user.mfa.is_mfa_registered
+      tag: set_user_entity_attributes_mfa_enabled
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      tag: script_set_user_entity_relationships_supervises
+      description: Build user.entity.relationships.supervises from direct reports list.
+      if: ctx.entityanalytics_entra_id?.user?.direct_reports instanceof List
+      source: |
+        def ids = new ArrayList();
+        def names = new ArrayList();
+        def emails = new ArrayList();
+        for (def report : ctx.entityanalytics_entra_id.user.direct_reports) {
+          if (report == null) { continue; }
+          if (report.id != null) { ids.add(report.id); }
+          if (report.user_principal_name != null) { names.add(report.user_principal_name); }
+          if (report.mail != null) { emails.add(report.mail); }
+        }
+        def userObj = new HashMap();
+        if (!ids.isEmpty()) { userObj.put("id", ids); }
+        if (!names.isEmpty()) { userObj.put("name", names); }
+        if (!emails.isEmpty()) { userObj.put("email", emails); }
+        if (!userObj.isEmpty()) {
+          ctx.user = ctx.user ?: new HashMap();
+          ctx.user.entity = ctx.user.entity ?: new HashMap();
+          ctx.user.entity.relationships = ctx.user.entity.relationships ?: new HashMap();
+          ctx.user.entity.relationships.put("supervises", ["user": userObj]);
+        }
+  - foreach:
+      field: entityanalytics_entra_id.user.app_role_assignments
+      if: ctx.entityanalytics_entra_id?.user?.app_role_assignments instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: user.entity.attributes.permissions
+          value: "{{{_ingest._value.app_role_display_name}}}"
+          tag: append_app_role_display_name_to_permissions
+          allow_duplicates: false
+          ignore_empty_values: true
 on_failure:
   - append:
       field: error.message

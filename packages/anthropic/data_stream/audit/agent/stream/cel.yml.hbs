@@ -1,0 +1,137 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.rate_limit.limit: 10
+resource.rate_limit.burst: 10
+resource.url: {{url}}
+resource.headers:
+  anthropic-version:
+    - {{anthropic_version}}
+  Accept:
+    - application/json
+state:
+  url: {{url}}
+  api_key: {{api_key}}
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+  activity_types: {{activity_types}}
+  actor_ids: {{actor_ids}}
+  organization_ids: {{organization_ids}}
+redact:
+  fields:
+    - api_key
+program: |-
+  (
+    state.?cursor.first_id.hasValue() ?
+      {
+        ?"before_id": state.?cursor.page_id.hasValue() ?
+          (state.?cursor.page_id.optMap(id, [id]))
+        : state.?cursor.first_id.optMap(id, [id]),
+      }
+    :
+      {
+        "created_at.gte": [string(now - duration(state.initial_interval))],
+        "created_at.lt": [string(now)],
+        ?"after_id": state.?cursor.page_id.optMap(id, [id]),
+      }
+  ).with(
+    {
+      "limit": [string(int(state.batch_size))],
+      ?"activity_types[]": (size(state.?activity_types.orValue([])) != 0) ?
+        optional.of(state.activity_types)
+      :
+        optional.none(),
+      ?"actor_ids[]": (size(state.?actor_ids.orValue([])) != 0) ?
+        optional.of(state.actor_ids)
+      :
+        optional.none(),
+      ?"organization_ids[]": (size(state.?organization_ids.orValue([])) != 0) ?
+        optional.of(state.organization_ids)
+      :
+        optional.none(),
+    }
+  ).as(query,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/v1/compliance/activities?" + query.format_query()
+      ).with(
+        {
+          "Header": {
+            "x-api-key": [state.api_key],
+          },
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            {
+              "events": body.?data.orValue([]).map(e, {"message": e.encode_json()}),
+              "cursor": body.?has_more.orValue(false) ?
+                {
+                  ?"first_id": state.?cursor.first_id,
+                  "page_id": state.?cursor.first_id.hasValue() ?
+                    body.first_id
+                  :
+                    body.last_id,
+                  ?"run_first_id": (!state.?cursor.page_id.hasValue() && has(body.first_id)) ?
+                    optional.of(body.first_id)
+                  :
+                    state.?cursor.run_first_id,
+                }
+              :
+                {
+                  ?"first_id": state.?cursor.run_first_id.hasValue() ?
+                    state.?cursor.run_first_id
+                  : (!state.?cursor.page_id.hasValue() && has(body.first_id)) ?
+                    optional.of(body.first_id)
+                  :
+                    state.?cursor.first_id,
+                },
+              "want_more": body.?has_more.orValue(false),
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /v1/compliance/activities: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

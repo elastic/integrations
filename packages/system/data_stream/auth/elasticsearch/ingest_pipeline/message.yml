@@ -20,13 +20,91 @@ processors:
         - '^Did not receive identification string from %{IPORHOST:system.auth.ssh.dropped_ip}'
         - '^%{DATA:user.name} :( %{DATA:system.auth.sudo.error} ;)? TTY=%{DATA:system.auth.sudo.tty} ; PWD=%{DATA:system.auth.sudo.pwd} ; USER=%{DATA:system.auth.sudo.user} ; COMMAND=%{GREEDYDATA:system.auth.sudo.command}'
         - '^new group: name=%{DATA:group.name}, GID=%{NUMBER:group.id}'
-        - '^new user: name=%{DATA:user.name}, UID=%{NUMBER:user.id}, GID=%{NUMBER:group.id}, home=%{DATA:system.auth.useradd.home}, shell=%{DATA:system.auth.useradd.shell}$'
+        - '^new user: name=%{DATA:user.target.name}, UID=%{NUMBER:user.target.id}, GID=%{NUMBER:group.id}, home=%{DATA:system.auth.useradd.home}, shell=%{DATA:system.auth.useradd.shell}$'
+  - set:
+      description: >-
+        Deprecated duplication of user.target.name for backward compatibility;
+        will be removed for useradd events in a future major version.
+      tag: set_user_name_useradd_compat
+      field: user.name
+      copy_from: user.target.name
+      ignore_empty_value: true
+      if: ctx.user?.target?.name != null
+  - set:
+      description: >-
+        Deprecated duplication of user.target.id for backward compatibility;
+        will be removed for useradd events in a future major version.
+      tag: set_user_id_useradd_compat
+      field: user.id
+      copy_from: user.target.id
+      ignore_empty_value: true
+      if: ctx.user?.target?.id != null
   - append:
       tag: append_category_process
       field: event.category
       value: process
       allow_duplicates: false
       if: ctx.system?.auth?.sudo?.command != null
+  - append:
+      tag: append_type_start_sudo
+      field: event.type
+      value: start
+      allow_duplicates: false
+      if: ctx.system?.auth?.sudo?.command != null
+  - grok:
+      description: Extract username from pam_faillock account lockout messages.
+      tag: grok-pam-faillock
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.message != null && ctx.message.contains('pam_faillock(')
+      patterns:
+        - 'for user %{USERNAME:_temp.pam_user}'
+  - grok:
+      description: Extract username from unix_chkpwd password check failure messages.
+      tag: grok-unix-chkpwd
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.message != null && ctx.message.contains('password check failed')
+      patterns:
+        - 'for user \(?%{USERNAME:_temp.pam_user}\)?'
+  - set:
+      tag: set_process_name-log_syslog_appname
+      field: process.name
+      copy_from: log.syslog.appname
+      override: false
+      ignore_empty_value: true
+  - grok:
+      description: Extract actor, target, and group from gpasswd membership change messages.
+      tag: grok-gpasswd
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.process?.name == 'gpasswd'
+      patterns:
+        - 'user %{USERNAME:_temp.gpasswd_target} %{WORD:_temp.gpasswd_action} by %{USERNAME:_temp.pam_user} (?:to|from) group %{DATA:group.name}$'
+  - grok:
+      description: Extract target user and group from usermod add-to-group messages.
+      tag: grok-usermod-group
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.process?.name == 'usermod'
+      patterns:
+        - "^add '%{USERNAME:_temp.usermod_user}' to (?:shadow )?group '%{DATA:_temp.usermod_group}'"
+        - "user '%{USERNAME:_temp.usermod_user}'"
+  - grok:
+      description: Extract target user and group from userdel messages.
+      tag: grok-userdel
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.process?.name == 'userdel'
+      patterns:
+        - "^delete '%{USERNAME:_temp.userdel_user}' from (?:shadow )?group '%{DATA:_temp.userdel_group}'$"
+        - "^delete user '%{USERNAME:_temp.userdel_user}'$"
+        - "^removed (?:shadow )?group '%{DATA:_temp.userdel_group}'"
   - grok:
       description: Grok usernames from PAM messages.
       tag: grok-pam-users
@@ -41,7 +119,10 @@ processors:
       pattern_definitions:
         QUOTE: "['\"]"
         BOUNDARY: "(?<! )"
-      if: ctx.message != null && ctx.message != ""
+      if: >-
+        ctx.message != null && ctx.message != "" &&
+        !ctx.message.contains('pam_faillock(') && !ctx.message.contains('password check failed') &&
+        (ctx.process?.name == null || !['usermod', 'userdel'].contains(ctx.process.name))
   - grok:
       description: Grok category from PAM messages.
       tag: grok-pam-category
@@ -67,12 +148,98 @@ processors:
       tag: set_outcome_success_chauthtok
       field: event.outcome
       value: success
-      if: ctx._temp?.category == 'chauthtok'
+      if: ctx._temp?.category == 'chauthtok' && ctx.message != null && ctx.message.contains('password changed')
+  - set:
+      tag: set_outcome_failure_chauthtok
+      field: event.outcome
+      value: failure
+      if: ctx._temp?.category == 'chauthtok' && ctx.message != null && !ctx.message.contains('password changed')
   - set:
       tag: set_action_password_changed
       field: event.action
       value: password-changed
       if: ctx._temp?.category == 'chauthtok'
+  - append:
+      tag: append_category_iam_gpasswd
+      field: event.category
+      value: iam
+      allow_duplicates: false
+      if: ctx._temp?.gpasswd_target != null
+  - append:
+      tag: append_type_change_gpasswd
+      field: event.type
+      value: change
+      allow_duplicates: false
+      if: ctx._temp?.gpasswd_target != null
+  - set:
+      tag: set_outcome_success_gpasswd
+      field: event.outcome
+      value: success
+      if: ctx._temp?.gpasswd_target != null
+  - set:
+      tag: set_action_group_user_added
+      field: event.action
+      value: group-user-added
+      if: ctx._temp?.gpasswd_action == 'added'
+  - set:
+      tag: set_action_group_user_removed
+      field: event.action
+      value: group-user-removed
+      if: ctx._temp?.gpasswd_action == 'removed'
+  - set:
+      tag: set_user_target_name_usermod_group
+      field: user.target.name
+      copy_from: _temp.usermod_user
+      ignore_empty_value: true
+      if: ctx._temp?.usermod_user != null
+  - set:
+      description: >-
+        Deprecated duplication of user.target.name for backward compatibility;
+        will be removed for usermod events in a future major version.
+      tag: set_user_name_usermod_compat
+      field: user.name
+      copy_from: _temp.usermod_user
+      ignore_empty_value: true
+      if: ctx._temp?.usermod_user != null
+  - set:
+      tag: set_group_name_usermod_group
+      field: group.name
+      copy_from: _temp.usermod_group
+      ignore_empty_value: true
+      if: ctx._temp?.usermod_group != null
+  - set:
+      tag: set_action_group_member_added
+      field: event.action
+      value: group-member-added
+      if: ctx._temp?.usermod_group != null
+  - set:
+      tag: set_user_target_name_userdel
+      field: user.target.name
+      copy_from: _temp.userdel_user
+      ignore_empty_value: true
+      if: ctx._temp?.userdel_user != null
+  - set:
+      description: >-
+        Deprecated duplication of user.target.name for backward compatibility;
+        will be removed for userdel events in a future major version. Limited
+        to "delete user" messages, matching the events that populated
+        user.name before user.target.name was introduced.
+      tag: set_user_name_userdel_compat
+      field: user.name
+      copy_from: _temp.userdel_user
+      ignore_empty_value: true
+      if: ctx._temp?.userdel_user != null && ctx.message != null && ctx.message.startsWith("delete user '")
+  - set:
+      tag: set_group_name_userdel
+      field: group.name
+      copy_from: _temp.userdel_group
+      ignore_empty_value: true
+      if: ctx._temp?.userdel_group != null
+  - set:
+      tag: set_action_group_member_removed
+      field: event.action
+      value: group-member-removed
+      if: ctx._temp?.userdel_user != null && ctx._temp?.userdel_group != null
   - grok:
       description: Extract rhost and user from PAM key-value messages.
       tag: grok-pam-kv
@@ -91,7 +258,7 @@ processors:
       ignore_failure: true
       if: ctx.message != null && ctx.message.contains('password changed for')
       patterns:
-        - 'password changed for %{USERNAME:_temp.pam_user}$'
+        - 'password changed for %{USERNAME:_temp.pam_target}$'
   - kv:
       tag: "kv_syslog_structured_semicolon_colon"
       if: ctx.syslog5424_sd != null && ctx.syslog5424_sd != ''
@@ -167,6 +334,61 @@ processors:
       allow_duplicates: false
       if: ctx.message != null && ctx.message.contains('authentication failure')
   - set:
+      tag: set_action_authentication_failure
+      field: event.action
+      value: authentication_failure
+      if: ctx.message != null && ctx.message.contains('authentication failure')
+  - append:
+      tag: append_type_info_auth_failure
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx.message != null && ctx.message.contains('authentication failure')
+  - append:
+      tag: append_category_authentication_faillock
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+      if: ctx.message != null && ctx.message.contains('pam_faillock(')
+  - set:
+      tag: set_outcome_failure_faillock
+      field: event.outcome
+      value: failure
+      if: ctx.message != null && ctx.message.contains('pam_faillock(')
+  - set:
+      tag: set_action_account_locked
+      field: event.action
+      value: account-locked
+      if: ctx.message != null && ctx.message.contains('pam_faillock(')
+  - append:
+      tag: append_type_info_faillock
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx.message != null && ctx.message.contains('pam_faillock(')
+  - append:
+      tag: append_category_authentication_chkpwd
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+      if: ctx.message != null && ctx.message.contains('password check failed')
+  - set:
+      tag: set_outcome_failure_chkpwd
+      field: event.outcome
+      value: failure
+      if: ctx.message != null && ctx.message.contains('password check failed')
+  - append:
+      tag: append_type_info_chkpwd
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx.message != null && ctx.message.contains('password check failed')
+  - set:
+      tag: set_action_authentication_failure_chkpwd
+      field: event.action
+      value: authentication_failure
+      if: ctx.message != null && ctx.message.contains('password check failed')
+  - set:
       tag: set_action_logged-on
       field: event.action
       value: 'logged-on'
@@ -224,11 +446,34 @@ processors:
       ignore_failure: true
       if: ctx._temp?.pam_user != null && ctx._temp.pam_user != '' && (ctx.user?.name == null || ctx.user?.name == '')
   - set:
+      description: >-
+        Deprecated duplication of user.target.name for backward compatibility;
+        will be removed for password change events in a future major version.
+      tag: set_user_name_pam_target_compat
+      field: user.name
+      copy_from: _temp.pam_target
+      ignore_empty_value: true
+      if: ctx._temp?.pam_target != null && ctx._temp.pam_target != '' && (ctx.user?.name == null || ctx.user?.name == '')
+  - set:
       tag: set_user_target_name_chauthtok
       field: user.target.name
       copy_from: user.name
       ignore_empty_value: true
       if: ctx._temp?.category == 'chauthtok' && ctx.user?.name != null && ctx.user?.name != ''
+  - rename:
+      tag: rename_pam_target
+      field: _temp.pam_target
+      target_field: user.target.name
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx._temp?.pam_target != null && ctx._temp.pam_target != '' && (ctx.user?.target?.name == null || ctx.user?.target?.name == '')
+  - rename:
+      tag: rename_gpasswd_target
+      field: _temp.gpasswd_target
+      target_field: user.target.name
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx._temp?.gpasswd_target != null && ctx._temp.gpasswd_target != ''
   - remove:
       tag: remove_temp
       field: _temp
@@ -336,12 +581,6 @@ processors:
           ctx.event.action = "ssh_login";
           ctx.event.outcome = "failure";
         }
-  - set:
-      tag: set_process_name-log_syslog_appname
-      field: process.name
-      copy_from: log.syslog.appname
-      override: false
-      ignore_empty_value: true
   - append:
       tag: append_category-iam
       field: event.category

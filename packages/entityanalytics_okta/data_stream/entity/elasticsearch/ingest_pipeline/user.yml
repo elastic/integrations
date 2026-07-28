@@ -179,6 +179,11 @@ processors:
       copy_from: entityanalytics_okta.user.last_login
       tag: set_asset_last_seen
       ignore_empty_value: true
+  - set:
+      field: user.entity.lifecycle.last_activity
+      copy_from: entityanalytics_okta.user.last_login
+      tag: set_user_entity_lifecycle_last_activity
+      ignore_empty_value: true
   - date:
       field: okta.lastUpdated
       target_field: entityanalytics_okta.user.last_updated
@@ -295,6 +300,133 @@ processors:
                 field: _ingest._value.last_updated
                 target_field: _ingest._value.lastUpdated
                 ignore_failure: true
+  - foreach:
+      field: entityanalytics_okta.roles
+      if: ctx.entityanalytics_okta?.roles instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.permissions
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.lastUpdated
+              target_field: _ingest._value.last_updated
+              tag: rename_user_roles_permissions.lastUpdated
+              ignore_missing: true
+  - script:
+      lang: painless
+      tag: painless_extract_role_permissions
+      description: Extract permission labels from custom role permissions into user.entity.attributes.permissions.
+      if: ctx.entityanalytics_okta?.roles instanceof List
+      source: |
+        for (def role : ctx.entityanalytics_okta.roles) {
+          if (!(role?.permissions instanceof List)) {
+            continue;
+          }
+          for (def perm : role.permissions) {
+            def label = perm?.label;
+            if (label == null || label == '') {
+              continue;
+            }
+            ctx.user = ctx.user ?: new HashMap();
+            ctx.user.entity = ctx.user.entity ?: new HashMap();
+            ctx.user.entity.attributes = ctx.user.entity.attributes ?: new HashMap();
+            ctx.user.entity.attributes.permissions = ctx.user.entity.attributes.permissions ?: new HashSet();
+            ctx.user.entity.attributes.permissions.add(label);
+          }
+        }
+  - rename:
+      field: factors
+      target_field: entityanalytics_okta.user.factors
+      tag: rename_user_factors
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: painless_set_mfa_enabled
+      description: Set user.entity.attributes.mfa_enabled based on active MFA factors.
+      if: ctx.entityanalytics_okta?.user?.factors instanceof List
+      source: |
+        for (def f : ctx.entityanalytics_okta.user.factors) {
+          if (f == null || f.status != "ACTIVE") {
+            continue;
+          }
+          ctx.user = ctx.user ?: new HashMap();
+          ctx.user.entity = ctx.user.entity ?: new HashMap();
+          ctx.user.entity.attributes = ctx.user.entity.attributes ?: new HashMap();
+          ctx.user.entity.attributes.put("mfa_enabled", true);
+          return;
+        }
+  - rename:
+      field: devices
+      target_field: entityanalytics_okta.user.devices
+      tag: rename_user_devices
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: painless_set_user_entity_relationships_owns
+      description: Build user.entity.relationships.owns from enrolled device list.
+      if: ctx.entityanalytics_okta?.user?.devices instanceof List
+      source: |
+        def ids = new ArrayList();
+        def names = new ArrayList();
+        for (def device : ctx.entityanalytics_okta.user.devices) {
+          if (device == null) { continue; }
+          if (device.id != null) { ids.add(device.id); }
+          def displayName = device?.profile?.displayName;
+          if (displayName != null) { names.add(displayName); }
+        }
+        def hostObj = new HashMap();
+        if (!ids.isEmpty()) { hostObj.put("id", ids); }
+        if (!names.isEmpty()) { hostObj.put("name", names); }
+        if (!hostObj.isEmpty()) {
+          ctx.user = ctx.user ?: new HashMap();
+          ctx.user.entity = ctx.user.entity ?: new HashMap();
+          ctx.user.entity.relationships = ctx.user.entity.relationships ?: new HashMap();
+          ctx.user.entity.relationships.put("owns", ["host": hostObj]);
+        }
+  - rename:
+      field: supervises
+      target_field: entityanalytics_okta.user.supervises
+      tag: rename_user_supervises
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: painless_set_user_entity_relationships_supervises
+      description: Build user.entity.relationships.supervises from supervised user list.
+      if: ctx.entityanalytics_okta?.user?.supervises instanceof List
+      source: |
+        def ids = new ArrayList();
+        def names = new ArrayList();
+        def emails = new ArrayList();
+        def renamedSupervises = new ArrayList();
+        for (def supervised : ctx.entityanalytics_okta.user.supervises) {
+          if (supervised == null) { continue; }
+          def raw = new HashMap();
+          if (supervised?.user_id != null) {
+            ids.add(supervised.user_id);
+            raw.put("user.id", supervised.user_id);
+          }
+          if (supervised?.username != null) {
+            names.add(supervised.username);
+            raw.put("user.name", supervised.username);
+          }
+          if (supervised?.email != null) {
+            emails.add(supervised.email);
+            raw.put("user.email", supervised.email);
+          }
+          renamedSupervises.add(raw);
+        }
+        ctx.entityanalytics_okta.user.supervises = renamedSupervises;
+        def userObj = new HashMap();
+        if (!ids.isEmpty()) { userObj.put("id", ids); }
+        if (!names.isEmpty()) { userObj.put("name", names); }
+        if (!emails.isEmpty()) { userObj.put("email", emails); }
+        if (!userObj.isEmpty()) {
+          ctx.user = ctx.user ?: new HashMap();
+          ctx.user.entity = ctx.user.entity ?: new HashMap();
+          ctx.user.entity.relationships = ctx.user.entity.relationships ?: new HashMap();
+          ctx.user.entity.relationships.put("supervises", ["user": userObj]);
+        }
   - rename:
       field: okta.transitioningToStatus
       target_field: entityanalytics_okta.user.transitioning_to_status
@@ -716,6 +848,7 @@ processors:
         - entityanalytics_okta.user.profile.country_code
         - entityanalytics_okta.user.profile.second_email
         - entityanalytics_okta.user.profile.user_type
+        - entityanalytics_okta.user.factors
       tag: remove_duplicate_custom_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))

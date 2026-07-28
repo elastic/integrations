@@ -33,6 +33,7 @@ The primary aggregation value will be retrieved for all the metrics contained in
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | azure.application_id | The application ID | keyword |  |  |
 | azure.compute_vm_scaleset.available_memory_bytes.avg | Amount of physical memory, in bytes, immediately available for allocation to a process or for system use in the Virtual Machine | float | byte | gauge |
+| azure.compute_vm_scaleset.available_memory_percentage.avg | Amount of physical memory, as a percentage, immediately available for allocation to a process or for system use in the Virtual Machine | float | percent | gauge |
 | azure.compute_vm_scaleset.cpu_credits_consumed.avg | Total number of credits consumed by the Virtual Machine. Only available on B-series burstable VMs | float |  | gauge |
 | azure.compute_vm_scaleset.cpu_credits_remaining.avg | Total number of credits available to burst. Only available on B-series burstable VMs | float |  | gauge |
 | azure.compute_vm_scaleset.data_disk_bandwidth_consumed_percentage.avg | Percentage of data disk bandwidth consumed per minute | float | percent | gauge |

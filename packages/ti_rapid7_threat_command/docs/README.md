@@ -351,6 +351,7 @@ An example event for `ioc` looks as following:
 | rapid7.tc.ioc.type | IOC type. | keyword |
 | rapid7.tc.ioc.value | IOC value. | keyword |
 | rapid7.tc.ioc.whitelisted | An indicator which states if the IOC was checked and found as whitelisted or not. | keyword |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
@@ -671,4 +672,5 @@ An example event for `vulnerability` looks as following:
 | rapid7.tc.vulnerability.related.threat_actors | List of related threat actors. | keyword |
 | rapid7.tc.vulnerability.severity | CVE severity. Allowed values: 'Critical', 'High', 'Medium', 'Low'. | keyword |
 | rapid7.tc.vulnerability.update_date | CVE's update date in ISO 8601 format. | date |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 

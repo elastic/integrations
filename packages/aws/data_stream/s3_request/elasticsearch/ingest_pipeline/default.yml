@@ -3,90 +3,112 @@ description: "Pipeline for S3 request metrics"
 
 processors:
   - dot_expander:
+      tag: dot_expander_*_c2762c23
       field: "*"
       ignore_failure: true
   - set:
+      tag: set_cloud_account_name_20733914
       field: cloud.account.name
       copy_from: cloud.account.id
       override: false
       ignore_empty_value: true
   - rename:
+      tag: rename_aws_s3_metrics_AllRequests_sum_to_aws_s3_request_requests_total_ef72d2c3
       field: aws.s3.metrics.AllRequests.sum
       target_field: aws.s3_request.requests.total
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_GetRequests_sum_to_aws_s3_request_requests_get_6aba47e6
       field: aws.s3.metrics.GetRequests.sum
       target_field: aws.s3_request.requests.get
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_PutRequests_sum_to_aws_s3_request_requests_put_f80854c4
       field: aws.s3.metrics.PutRequests.sum
       target_field: aws.s3_request.requests.put
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_DeleteRequests_sum_to_aws_s3_request_requests_delete_b5e0fbe8
       field: aws.s3.metrics.DeleteRequests.sum
       target_field: aws.s3_request.requests.delete
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_HeadRequests_sum_to_aws_s3_request_requests_head_88d4b7b0
       field: aws.s3.metrics.HeadRequests.sum
       target_field: aws.s3_request.requests.head
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_PostRequests_sum_to_aws_s3_request_requests_post_af040874
       field: aws.s3.metrics.PostRequests.sum
       target_field: aws.s3_request.requests.post
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_SelectRequests_sum_to_aws_s3_request_requests_select_f54599f0
       field: aws.s3.metrics.SelectRequests.sum
       target_field: aws.s3_request.requests.select
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_SelectScannedBytes_avg_to_aws_s3_request_requests_select_scanned_bytes_1b1b4bdc
       field: aws.s3.metrics.SelectScannedBytes.avg
       target_field: aws.s3_request.requests.select_scanned.bytes
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_SelectReturnedBytes_avg_to_aws_s3_request_requests_select_returned_bytes_56bd0fec
       field: aws.s3.metrics.SelectReturnedBytes.avg
       target_field: aws.s3_request.requests.select_returned.bytes
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_ListRequests_sum_to_aws_s3_request_requests_list_11b02b4c
       field: aws.s3.metrics.ListRequests.sum
       target_field: aws.s3_request.requests.list
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_BytesDownloaded_avg_to_aws_s3_request_downloaded_bytes_41e74135
       field: aws.s3.metrics.BytesDownloaded.avg
       target_field: aws.s3_request.downloaded.bytes
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_BytesUploaded_avg_to_aws_s3_request_uploaded_bytes_10c10c17
       field: aws.s3.metrics.BytesUploaded.avg
       target_field: aws.s3_request.uploaded.bytes
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_BytesDownloaded_sum_to_aws_s3_request_downloaded_bytes_per_period_1504560a
       field: aws.s3.metrics.BytesDownloaded.sum
       target_field: aws.s3_request.downloaded.bytes_per_period
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_BytesUploaded_sum_to_aws_s3_request_uploaded_bytes_per_period_110bee5c
       field: aws.s3.metrics.BytesUploaded.sum
       target_field: aws.s3_request.uploaded.bytes_per_period
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_4xxErrors_avg_to_aws_s3_request_errors_4xx_d8047c6f
       field: aws.s3.metrics.4xxErrors.avg
       target_field: aws.s3_request.errors.4xx
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_5xxErrors_avg_to_aws_s3_request_errors_5xx_9d6dd6bd
       field: aws.s3.metrics.5xxErrors.avg
       target_field: aws.s3_request.errors.5xx
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_FirstByteLatency_avg_to_aws_s3_request_latency_first_byte_ms_180386fe
       field: aws.s3.metrics.FirstByteLatency.avg
       target_field: aws.s3_request.latency.first_byte.ms
       ignore_missing: true
   - rename:
+      tag: rename_aws_s3_metrics_TotalRequestLatency_avg_to_aws_s3_request_latency_total_request_ms_8896ad92
       field: aws.s3.metrics.TotalRequestLatency.avg
       target_field: aws.s3_request.latency.total_request.ms
       ignore_missing: true
   - rename:
+      tag: rename_aws_dimensions_BucketName_to_aws_s3_bucket_name_377e3325
       field: aws.dimensions.BucketName
       target_field: aws.s3.bucket.name
       ignore_missing: true
   - remove:
+      tag: remove_30570c1b
       field:
         - aws.s3.metrics
       if: ctx.agent?.type != "firehose"
@@ -100,4 +122,4 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

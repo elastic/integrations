@@ -1,0 +1,62 @@
+---
+description: >-
+  Pipeline for categorizing ECS event fields for Kolide device check-run
+  results. Maps the resolved event.action to event.kind/category/type using an
+  exact lookup table. Check-run results are point-in-time compliance/posture
+  evaluations of a device, so they are event.kind: state with the host category
+  and event.type info. event.outcome is derived from the check status (passing
+  -> success, failing -> failure, inapplicable/unknown -> unknown).
+processors:
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Map Kolide device_check event.action to ECS categorization fields using exact lookups.
+      if: ctx.event?.action != null
+      params:
+        exact:
+          check_result: { kind: state, category: ['host'], type: ['info'] }
+      source: |-
+        def action = ctx.event.action;
+        def m = params.exact.get(action);
+        if (m != null) {
+          ctx.event.kind = m.kind;
+          ctx.event.category = new ArrayList(m.category);
+          ctx.event.type = new ArrayList(m.type);
+        } else {
+          ctx.event.kind = 'state';
+          ctx.event.category = ['host'];
+          ctx.event.type = ['info'];
+        }
+
+  # event.outcome is driven by the check status, not the action.
+  - set:
+      field: event.outcome
+      tag: set_outcome_success
+      value: success
+      if: ctx.kolide?.device_check?.status == 'passing' && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      tag: set_outcome_failure
+      value: failure
+      if: ctx.kolide?.device_check?.status == 'failing' && ctx.event?.outcome == null
+  - set:
+      field: event.outcome
+      tag: set_outcome_unknown
+      value: unknown
+      if: (ctx.kolide?.device_check?.status == 'inapplicable' || ctx.kolide?.device_check?.status == 'unknown') && ctx.event?.outcome == null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

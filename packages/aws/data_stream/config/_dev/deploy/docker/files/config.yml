@@ -89,6 +89,23 @@ rules:
                 }
               },
               {
+                "ConfigRuleArn": "arn:aws:config:us-east-1:11223344556:config-rule/config-rule-slr",
+                "ConfigRuleId": "config-rule-slr",
+                "ConfigRuleName": "service-linked-config-rule",
+                "ConfigRuleState": "ACTIVE",
+                "CreatedBy": "securityhub.amazonaws.com",
+                "Description": "AWS service-linked rule owned by AWS Security Hub. Querying its compliance details is blocked by AWS with AccessDeniedException, so the integration must skip it.",
+                "EvaluationModes": [
+                  {
+                    "Mode": "DETECTIVE"
+                  }
+                ],
+                "Source": {
+                  "Owner": "AWS",
+                  "SourceIdentifier": "SECURITYHUB_SERVICE_LINKED"
+                }
+              },
+              {
                 "ConfigRuleArn": "arn:aws:config:us-east-1:11223344556:config-rule/config-rule-id2",
                 "ConfigRuleId": "config-rule-id2",
                 "ConfigRuleName": "account-part-of-organizations",
@@ -232,5 +249,27 @@ rules:
                 "ResultRecordedTime": 1844799480.061
               }
             ]
+          }
+          `}}
+  # Safety net: AWS blocks GetComplianceDetailsByConfigRule for service-linked
+  # rules. The integration must skip them via the CreatedBy filter and never
+  # reach this response. If the filter regresses and this rule is queried, AWS
+  # returns this 400 AccessDeniedException, which the program must treat as
+  # non-fatal (advance past it) rather than aborting the whole collection cycle.
+  - path: /
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/x-amz-json-1.1"
+      X-Amz-Target:
+        - "StarlingDoveService.GetComplianceDetailsByConfigRule"
+    request_body: '{"ConfigRuleName":"service-linked-config-rule","Limit":2}'
+    responses:
+      - status_code: 400
+        body: |-
+          {{ minify_json `
+          {
+            "__type": "AccessDeniedException",
+            "Message": "An AWS service owns ServiceLinkedConfigRule. You do not have permissions to take action on this rule."
           }
           `}}

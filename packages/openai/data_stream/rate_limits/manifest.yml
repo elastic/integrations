@@ -1,0 +1,73 @@
+title: "Rate limits"
+type: logs
+streams:
+  - input: cel
+    title: Rate limits
+    template_path: cel.yml.hbs
+    description: Collect per-project, per-model rate limits for the organization.
+    vars:
+      - name: api_url
+        type: text
+        title: API URL
+        description: URL for the OpenAI projects API. Rate limits are collected per project from `{api_url}/{project_id}/rate_limits`.
+        multi: false
+        required: true
+        show_user: true
+        default: https://api.openai.com/v1/organization/projects
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the API. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Number of records requested per page from the OpenAI API. The maximum supported value is 100.
+        multi: false
+        required: true
+        show_user: false
+        default: 100
+      - name: include_archived
+        type: bool
+        title: Include archived projects
+        description: Whether to include archived projects when listing projects.
+        multi: false
+        required: true
+        show_user: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - openai-rate-limits
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.  This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.

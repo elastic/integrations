@@ -1,0 +1,42 @@
+- name: anthropic
+  type: group
+  fields:
+    - name: rate_limit
+      type: group
+      description: Anthropic organization rate limit configuration fields.
+      fields:
+        - name: type
+          type: keyword
+          description: Object type (rate_limit).
+        - name: group_type
+          type: keyword
+          description: Rate limit group type (e.g. model_group, batch, token_count).
+        - name: models
+          type: keyword
+          description: Model names included in the group when group_type is model_group (array of keywords).
+        - name: limits
+          type: group
+          description: Raw limit entries for the group (array of type/value pairs).
+          fields:
+            - name: type
+              type: keyword
+              description: Limit metric type (e.g. requests_per_minute, input_tokens_per_minute).
+            - name: value
+              type: long
+              description: Limit value for the metric type.
+        - name: requests_per_minute
+          type: long
+          description: Maximum requests per minute allowed for the model group.
+        - name: input_tokens_per_minute
+          type: long
+          description: Maximum input tokens per minute allowed for the model group.
+        - name: input_tokens_per_minute_cache_aware
+          type: long
+          description: >-
+            Maximum cache-aware input tokens per minute for the model group. Only uncached and cache-creation tokens count against this limit; cache-read tokens are excluded for most models.
+        - name: output_tokens_per_minute
+          type: long
+          description: Maximum output tokens per minute allowed for the model group.
+        - name: enqueued_batch_requests
+          type: long
+          description: Maximum enqueued batch requests allowed.

@@ -98,6 +98,7 @@ An example event for `log` looks as following:
 | auditd.log.FSGID |  | keyword |
 | auditd.log.FSUID |  | keyword |
 | auditd.log.GID |  | keyword |
+| auditd.log.ID |  | keyword |
 | auditd.log.SGID |  | keyword |
 | auditd.log.SUID |  | keyword |
 | auditd.log.SYSCALL |  | keyword |
@@ -108,6 +109,7 @@ An example event for `log` looks as following:
 | auditd.log.a3 | The fourth argument to the system call. | keyword |
 | auditd.log.addr |  | ip |
 | auditd.log.apparmor |  | keyword |
+| auditd.log.audit_backlog_limit |  | keyword |
 | auditd.log.audit_failure |  | keyword |
 | auditd.log.avc.action |  | keyword |
 | auditd.log.avc.request |  | keyword |
@@ -116,6 +118,7 @@ An example event for `log` looks as following:
 | auditd.log.context |  | keyword |
 | auditd.log.data |  | keyword |
 | auditd.log.default-context |  | keyword |
+| auditd.log.denied_mask |  | keyword |
 | auditd.log.dev |  | keyword |
 | auditd.log.direction |  | keyword |
 | auditd.log.dst_prefixlen |  | long |
@@ -168,6 +171,7 @@ An example event for `log` looks as following:
 | auditd.log.operation |  | keyword |
 | auditd.log.original_field | The original field name if the event was parsed from an enriched format auditd log. | keyword |
 | auditd.log.path |  | keyword |
+| auditd.log.peer |  | keyword |
 | auditd.log.permissive |  | keyword |
 | auditd.log.pfs |  | keyword |
 | auditd.log.proctitle |  | keyword |
@@ -176,6 +180,7 @@ An example event for `log` looks as following:
 | auditd.log.reason |  | keyword |
 | auditd.log.record_type |  | keyword |
 | auditd.log.request |  | keyword |
+| auditd.log.requested_mask |  | keyword |
 | auditd.log.reset |  | keyword |
 | auditd.log.root_dir |  | keyword |
 | auditd.log.rport |  | long |
@@ -185,6 +190,7 @@ An example event for `log` looks as following:
 | auditd.log.scontext |  | keyword |
 | auditd.log.selected-context |  | keyword |
 | auditd.log.sequence | The audit event sequence number. | long |
+| auditd.log.seresult |  | keyword |
 | auditd.log.ses |  | keyword |
 | auditd.log.sig |  | keyword |
 | auditd.log.spid |  | keyword |
@@ -267,6 +273,7 @@ An example event for `log` looks as following:
 | process.pid | Process id. | long |
 | process.working_directory | The working directory of the process. | keyword |
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -294,6 +301,7 @@ An example event for `log` looks as following:
 | user.filesystem.id | One or multiple unique identifiers of the user. | keyword |
 | user.filesystem.name | Short name or login of the user. | keyword |
 | user.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.group.name | Name of the group. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |

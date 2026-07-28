@@ -1,0 +1,217 @@
+config_version: 2
+interval: {{interval}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+resource.url: {{base_url}}
+
+fields_under_root: true
+fields:
+  _conf:
+{{#if ioc_expiration_duration}}
+    ioc_expiration_duration: {{ioc_expiration_duration}}
+{{/if}}
+
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+  maxsize: 5
+
+state:
+  base_url: {{base_url}}
+  username: {{username}}
+  password: {{password}}
+  accept_header: application/taxii+json;version=2.1
+  content_header: application/taxii+json;version=2.1
+{{#if initial_interval}}
+  initial_interval: {{initial_interval}}
+{{/if}}
+{{#if limit}}
+  limit: {{limit}}
+{{/if}}
+  collections:
+    {{collections_config}}
+  collection_index: 0
+  next_url: ""
+
+redact:
+  fields:
+    - username
+    - password
+
+# CEL program — multi-collection round-robin TAXII 2.1 poller.
+# Each interval tick processes ONE collection: either continues pagination
+# (if a previous tick had `next` cursor) or starts a new fetch for the
+# current collection_index. After processing, if pagination is exhausted,
+# advances collection_index by 1 (wraps around). Errors on a single
+# collection are isolated — the tick records the error event and rotates
+# to the next collection without halting the whole input.
+program: |-
+  (state.collections.size() == 0) ?
+    {
+      "events": {
+        "error": {
+          "code": "config",
+          "id": "no_collections",
+          "message": "Collections Configuration is empty. Add at least one {api_root, collection_id} entry.",
+        },
+      },
+      "want_more": false,
+      "next_url": "",
+      "collection_index": 0,
+      "collections": state.collections,
+      "base_url": state.base_url,
+      "username": state.username,
+      "password": state.password,
+      "accept_header": state.accept_header,
+      "content_header": state.content_header,
+      ?"initial_interval": state.?initial_interval,
+      ?"limit": state.?limit,
+    }
+  :
+    state.collections[int(state.collection_index)].as(current,
+      {
+        "api_root": current.?api_root.orValue("radar_alpha"),
+        ?"cid": current.?collection_id,
+        "checkpoint": current.?last_added_after.orValue(""),
+      }
+    ).as(cc,
+      !has(cc.cid) ?
+        {
+          "events": {
+            "error": {
+              "code": "config",
+              "id": "missing_collection_id",
+              "message": "Collection at index " + string(state.collection_index) + " has empty collection_id; skipping.",
+            },
+          },
+          "want_more": false,
+          "collection_index": (int(state.collection_index) + 1) % state.collections.size(),
+          "next_url": "",
+          "collections": state.collections,
+          "base_url": state.base_url,
+          "username": state.username,
+          "password": state.password,
+          "accept_header": state.accept_header,
+          "content_header": state.content_header,
+          ?"initial_interval": state.?initial_interval,
+          ?"limit": state.?limit,
+        }
+      :
+        request(
+          "GET",
+          (state.?next_url.orValue("") != "") ?
+            state.next_url
+          :
+            state.base_url.trim_right("/") + "/" + cc.api_root + "/collections/" + cc.cid + "/objects/?" + {
+              ?"added_after": (cc.checkpoint != "") ?
+                optional.of([cc.checkpoint])
+              : state.?initial_interval.optMap(i, [(now() - duration(i)).format(time_layout.RFC3339)]),
+              ?"limit": state.?limit.optMap(l, [string(int(l))]),
+            }.format_query()
+        ).with(
+          {
+            "Header": {
+              "Accept": [string(state.accept_header)],
+              ?"Content-Type": (state.?content_header.orValue("") != "") ?
+                optional.of([state.content_header])
+              :
+                optional.none(),
+              "Authorization": ["Basic " + (state.username + ":" + state.password).base64()],
+            },
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode == 200 || resp.StatusCode == 206) ?
+            resp.Body.decode_json().as(body,
+              {
+                "events": (has(body.objects) && type(body.objects) == list) ?
+                  body.objects.map(e, {"message": e.encode_json()})
+                :
+                  [],
+                "want_more": has(body.next) && body.next != null && body.next != "",
+                "next_url": (has(body.next) && body.next != null && body.next != "") ?
+                  (
+                    state.base_url.trim_right("/") + "/" + cc.api_root + "/collections/" + cc.cid + "/objects/?" + {
+                      "next": [body.next],
+                      ?"limit": state.?limit.optMap(l, [string(int(l))]),
+                    }.format_query()
+                  )
+                :
+                  "",
+                "collection_index": (has(body.next) && body.next != null && body.next != "") ?
+                  state.collection_index
+                :
+                  (int(state.collection_index) + 1) % state.collections.size(),
+                "collections": (has(body.next) && body.next != null && body.next != "") ?
+                  state.collections
+                :
+                  state.collections.map(c,
+                    (
+                      c.?collection_id.orValue("") == cc.cid && c.?api_root.orValue("radar_alpha") == cc.api_root
+                    ) ?
+                      {
+                        "api_root": cc.api_root,
+                        "collection_id": cc.cid,
+                        "last_added_after": (resp.Header[?"X-Taxii-Date-Added-Last"].optMap(v, v[0])).orValue(now().format(time_layout.RFC3339)),
+                      }
+                    :
+                      c
+                  ),
+                "base_url": state.base_url,
+                "username": state.username,
+                "password": state.password,
+                "accept_header": state.accept_header,
+                "content_header": state.content_header,
+                ?"initial_interval": state.?initial_interval,
+                ?"limit": state.?limit,
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + cc.api_root + "/" + cc.cid + ": " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+              "next_url": "",
+              "collection_index": (int(state.collection_index) + 1) % state.collections.size(),
+              "collections": state.collections,
+              "base_url": state.base_url,
+              "username": state.username,
+              "password": state.password,
+              "accept_header": state.accept_header,
+              "content_header": state.content_header,
+              ?"initial_interval": state.?initial_interval,
+              ?"limit": state.?limit,
+            }
+        )
+    )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
