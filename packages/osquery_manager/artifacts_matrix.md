@@ -149,10 +149,10 @@ Pack `id`s are platform-suffixed (`_windows`, `_macos`, `_linux`); the shared `e
 
 | #  | Query (pack `id`) | `event.action` | Category | Interval | Win | macOS | Linux | Description |
 |:--:|-------------------|----------------|----------|:--------:|:--:|:-----:|:-----:|-------------|
-| 1  | `ai_processes_*` | `osquery.ai_processes` | process | 1h | ✅ | ✅ | ✅ | Running AI processes — LLM runtimes, coding agents, MCP servers; slice on `osquery.process_category` (`llm_runtime`, `agent`, `mcp`) |
+| 1  | `ai_processes_*` | `osquery.ai_processes` | process | 1h | ✅ | ✅ | ✅ | Running AI processes — LLM runtimes, coding agents, MCP servers; slice on `labels.process_category` (`llm_runtime`, `agent`, `mcp`) |
 | 2  | `ai_process_envs_*` | `osquery.ai_process_envs` | process | 1h | — | ✅ | ✅ | Processes whose environment exposes known AI/LLM provider API-key variable names (names only, values never collected) |
 | 3  | `ai_listening_ports_*` | `osquery.ai_listening_ports` | network | 1h | ✅ | ✅ | ✅ | AI services listening on non-loopback addresses |
-| 4  | `ai_process_network_summary_*` | `osquery.ai_process_network_summary` | network, process | 1h | ✅ | ✅ | ✅ | Outbound sockets for classified AI processes; `network.direction` (internal/egress); slice on `osquery.process_category` |
+| 4  | `ai_process_network_summary_*` | `osquery.ai_process_network_summary` | network, process | 1h | ✅ | ✅ | ✅ | Outbound sockets for classified AI processes; `network.direction` (internal/egress); slice on `labels.process_category` |
 | 5  | `ai_dns_cache_windows` | `osquery.ai_dns_cache` | network | 1h | ✅ | — | — | AI service DNS lookups (Windows) |
 | 6  | `ai_programs_windows` / `ai_apps_macos` / `ai_packages_linux` | `osquery.ai_programs` / `osquery.ai_apps` / `osquery.ai_packages` | package | 24h | ✅ | ✅ | ✅ | Installed AI desktop applications / OS packages |
 | 7  | `ai_python_packages_*` | `osquery.ai_python_packages` | package | 24h | ✅ | ✅ | ✅ | AI/ML Python packages (torch, transformers, langchain, openai, …) |
