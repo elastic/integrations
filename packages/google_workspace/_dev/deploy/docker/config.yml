@@ -3659,6 +3659,36 @@ rules:
           {"kind": "reports#auditActivities","items": [{"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"events":[{"name":"login_failure","parameters":[{"name":"application_name","value":"app"},{"name":"failure_type","value":"failure_app_not_configured_for_user"},{"name":"initiated_by","value":"idp"},{"name":"orgunit_path","value":"ounit"},{"name":"saml_second_level_status_code","value":"SUCCESS_URI"},
           {"name":"saml_status_code","value":"SUCCESS_URI"}],"type":"login"},{"name":"login_success","parameters":[{"name":"application_name","value":"app"},{"name":"initiated_by","value":"idp"},{"name":"orgunit_path","value":"ounit"},{"name":"saml_status_code","value":"SUCCESS_URI"}],"type":"login"}],"id":{"applicationName":"saml","customerId":"1","time":"2021-10-02T15:00:00Z",
           "uniqueQualifier":1},"ipAddress":"98.235.162.24","kind":"admin#reports#activity","ownerDomain":"elastic.com"}]}
+  # Empty-response recovery scenario.
+  # Reached only by the "empty-response" system test via application_name_for_url=saml_empty.
+  # Responses cycle empty -> data: the first poll returns no items (so first_event has
+  # no "id"), which must not fail the next_start_date cursor template. The stream must
+  # recover and ingest the events returned by the following poll.
+  - path: /admin/reports/v1/activity/users/all/applications/saml_empty
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"kind": "reports#auditActivities"}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"kind": "reports#auditActivities","items": [{"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"events":[{"name":"login_failure","parameters":[{"name":"application_name","value":"app"},{"name":"failure_type","value":"failure_app_not_configured_for_user"},{"name":"initiated_by","value":"idp"},{"name":"orgunit_path","value":"ounit"},{"name":"saml_second_level_status_code","value":"SUCCESS_URI"},
+          {"name":"saml_status_code","value":"SUCCESS_URI"}],"type":"login"},{"name":"login_success","parameters":[{"name":"application_name","value":"app"},{"name":"initiated_by","value":"idp"},{"name":"orgunit_path","value":"ounit"},{"name":"saml_status_code","value":"SUCCESS_URI"}],"type":"login"}],"id":{"applicationName":"saml","customerId":"1","time":"2021-10-02T15:00:00Z",
+          "uniqueQualifier":1},"ipAddress":"98.235.162.24","kind":"admin#reports#activity","ownerDomain":"elastic.com"}]}
   - path: /admin/reports/v1/activity/users/all/applications/user_accounts
     methods: [GET]
     query_params:
