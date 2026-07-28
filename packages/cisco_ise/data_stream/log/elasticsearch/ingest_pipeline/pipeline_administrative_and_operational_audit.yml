@@ -203,7 +203,7 @@ processors:
       tag: append_event_category_297dcf3e
       field: event.category
       value: iam
-      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','51020','51021','52000','52001','52002','60077','60078','60461','61077','58005','60094','60093','60134','60188','60116','60080','60115','60081'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','51020','51021','52000','52001','52002','60077','60078','60461','61077','58005','60094','60093','60134','60188','60116','60080','60115','60081','60084'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_category_ef7b5f9f
@@ -227,7 +227,7 @@ processors:
       tag: append_event_category_5ac54d7a
       field: event.category
       value: configuration
-      if: ctx.cisco_ise?.log?.message?.code != null && ['52000','52001','52002'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['52000','52001','52002','60084'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_type_5d9c5257
@@ -239,7 +239,7 @@ processors:
       tag: append_event_type_e76aa382
       field: event.type
       value: change
-      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '52001'
+      if: ctx.cisco_ise?.log?.message?.code != null && ['52001','60084'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_type_138f3e6b
@@ -275,13 +275,25 @@ processors:
       tag: append_event_type_4b5bb9b7
       field: event.type
       value: info
-      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','51020','51021','52000','52001','52002','60067','60070','60077','60078','60456','60461','61025','61026','61077','58005','60094','60093','60134','60188','60116','60080','60115','60081'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','51020','51021','52000','52001','52002','60067','60070','60077','60078','60456','60461','61025','61026','61077','58005','60094','60093','60134','60188','60116','60080','60115','60081','60084'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_type_7106400e
       field: event.type
       value: start
       if: ctx.cisco_ise?.log?.message?.code != null && ['60067','60456','61025'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - set:
+      tag: set_event_outcome_success_administrative_audit
+      field: event.outcome
+      value: success
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51001','51002','60078','60080','60115','60116','61077','60084'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - set:
+      tag: set_event_outcome_failure_administrative_audit
+      field: event.outcome
+      value: failure
+      if: ctx.cisco_ise?.log?.message?.code != null && ['51000','51020','51021','60077','60081','60188'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - script:
       tag: script_23b4afd0
@@ -291,21 +303,21 @@ processors:
         def eventCategory = new ArrayList();
         def eventType = new ArrayList();
         def categoryReferenceTable = [
-          ["messageCodeArray": ["51001","51002","51020","51021","52000","52001","52002","60077","60078","60461","61077","58005","60094","60093","60134","60188","60116","60080","60115","60081"], "name": "iam"],
+          ["messageCodeArray": ["51001","51002","51020","51021","52000","52001","52002","60077","60078","60461","61077","58005","60094","60093","60134","60188","60116","60080","60115","60081","60084"], "name": "iam"],
           ["messageCodeArray": ["51001","51002","51020","51021","60077","60078","61077","60188","60116","60080","60115","60081"], "name": "authentication"],
           ["messageCodeArray": ["61025","61026","60134"], "name": "network"],
           ["messageCodeArray": ["60067","60070","60456","58005"], "name": "process"],
-          ["messageCodeArray": ["52000","52001","52002"], "name": "configuration"]
+          ["messageCodeArray": ["52000","52001","52002","60084"], "name": "configuration"]
         ];
         def typeReferenceTable = [
           ["messageCodeArray": ["51001","51002","51020","51021"], "name": "admin"],
-          ["messageCodeArray": ["52001"], "name": "change"],
+          ["messageCodeArray": ["52001","60084"], "name": "change"],
           ["messageCodeArray": ["61025", "61026"], "name": "connection"],
           ["messageCodeArray": ["52000"], "name": "creation"],
           ["messageCodeArray": ["52002"], "name": "deletion"],
           ["messageCodeArray": ["61026"], "name": "end"],
           ["messageCodeArray": ["60116","60080","60115","60081"], "name": "user"],
-          ["messageCodeArray": ["51001","51002","51020","51021","52000","52001","52002","60067","60070","60077","60078","60456","60461","61025","61026","61077","58005","60094","60093","60134","60188","60116","60080","60115","60081"], "name": "info"],
+          ["messageCodeArray": ["51001","51002","51020","51021","52000","52001","52002","60067","60070","60077","60078","60456","60461","61025","61026","61077","58005","60094","60093","60134","60188","60116","60080","60115","60081","60084"], "name": "info"],
           ["messageCodeArray": ["60067","60456","61025"], "name": "start"]
         ];
 
@@ -556,6 +568,14 @@ processors:
       target_field: cisco_ise.log.object.type
       ignore_failure: true
       ignore_missing: true
+  - grok:
+      tag: grok_cisco_ise_log_log_details_OperationMessageText_user_name
+      field: cisco_ise.log.log_details.OperationMessageText
+      if: ctx.cisco_ise?.log?.message?.code != null && ['60080','60081'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+      patterns:
+        - "(?:Accepted|Failed) password for %{DATA:user.name} from %{IP}"
+        - "Invalid user %{DATA:user.name} from %{IP}"
   - rename:
       tag: rename_cisco_ise_log_log_details_OperationMessageText_to_cisco_ise_log_operation_message_text_97b4604f
       field: cisco_ise.log.log_details.OperationMessageText
