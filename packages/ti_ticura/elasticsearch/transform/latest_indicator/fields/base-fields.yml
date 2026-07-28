@@ -1,0 +1,41 @@
+- name: data_stream.type
+  type: constant_keyword
+  description: Data stream type.
+- name: data_stream.dataset
+  type: constant_keyword
+  description: Data stream dataset.
+- name: data_stream.namespace
+  # Not constant_keyword: the transform aggregates the source data stream across
+  # all namespaces, so namespace is not a single constant value in the dest index.
+  type: keyword
+  description: Data stream namespace.
+- name: '@timestamp'
+  type: date
+  description: Event timestamp.
+- name: event.module
+  type: constant_keyword
+  description: Event module
+  value: ti_ticura
+- name: event.dataset
+  type: constant_keyword
+  description: Event dataset
+  value: ti_ticura.indicator
+# Declare threat.feed as a group so it can hold multiple feed entries per indicator.
+- name: threat.feed
+  type: group
+  fields:
+    - name: name
+      external: ecs
+    - name: description
+      external: ecs
+    - name: reference
+      external: ecs
+    - name: dashboard_id
+      external: ecs
+# In the transform destination (the deduplicated "latest" index) this is "false";
+# the raw source data stream tags docs "true". Kibana/Security query the latest
+# set by filtering labels.is_ioc_transform_source: "false".
+- name: labels.is_ioc_transform_source
+  type: constant_keyword
+  value: "false"
+  description: Indicates whether an IOC is in the raw source data stream, or in the latest destination index.

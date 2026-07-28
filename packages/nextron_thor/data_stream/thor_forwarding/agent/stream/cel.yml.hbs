@@ -19,105 +19,186 @@ max_executions: {{max_executions}}
 {{/if}}
 state:
   initial_interval: {{initial_interval}}
-  want_more: false
+  # offset is the starting index into the /v1/scan/search result set held by the API.
+  offset: 0
   api_key: {{api_key}}
   batch_size: {{batch_size}}
-program: |
-  state.with(
-    {
-      "Header": {
-        "Accept": ["application/json"],
-        "Authorization": [state.?api_key],
-      },
-    }.as(auth_header,
-      state.?cursor.latest_scan_ts.orValue(0).as(latest_scan_ts,
-        state.?cursor.latest_scan_id.orValue("").as(latest_scan_id,
-          state.?initial_interval.orValue("").as(initial_interval,
-            (initial_interval == "") ? 0 : int(now() - duration(initial_interval))
-          ).as(initial_timestamp,
-            ((latest_scan_ts == 0 || latest_scan_ts <= initial_timestamp) ? initial_timestamp : latest_scan_ts).as(timestamp_offset,
-              state.?batch_size.orValue(10).as(batch_size,
-                get_request(state.url + "/v1/scan/search?limit=" + string(batch_size) + "&condition=last_launcher_update%20%3E=%20" + string(int(timestamp_offset)) + "%20AND%20(status%20%3D%20%22successful%22%20OR%20status%20%3D%20%22failed%22)&order_dir=ASC&order_field=last_launcher_update").with(auth_header).do_request().as(sr,
-                  (sr.StatusCode == 200) ?
-                    sr.Body.decode_json().as(body,
-                      (body.data.size() == 0) ?
-                        {
-                          "events": [],
-                          "cursor": {
-                            "latest_scan_ts": timestamp_offset,
-                            "latest_scan_id": latest_scan_id,
-                          },
-                          "want_more": false,
-                        }
-                      :
-                        body.data.as(page,
-                          page.filter(s, s.logs_encrypted == false && s.available_logs.exists(l, l == "thor.json")).as(new_items,
-                            new_items.map(s,
-                              get_request(state.url + "/v1/scan/log?scan=" + s.id + "&log=thor.json").with(auth_header).do_request().as(lr,
-                                (lr.StatusCode == 200) ?
-                                  string(lr.Body).split("\n").filter(line, line != "").map(line, {"message": line.decode_json().with({?"campaign_id": s.?campaign_id}).encode_json()})
-                                :
-                                  []
-                              )
-                            ).flatten().as(events,
-                              page.filter(s,
-                                (has(s.last_launcher_update) ? int(s.last_launcher_update) : int(s.creation_date)) >= latest_scan_ts &&
-                                s.id != latest_scan_id
-                              ).size().as(new_count_all,
-                                (body.total > batch_size).as(more_pages,
-                                  (
-                                    (events.size() > 0) ?
-                                      (has(page[page.size() - 1].last_launcher_update) ? int(page[page.size() - 1].last_launcher_update) : int(page[page.size() - 1].creation_date))
-                                    :
-                                      latest_scan_ts
-                                  ).as(new_latest_scan_ts,
-                                    ((events.size() > 0) ? page[page.size() - 1].id : latest_scan_id).as(new_latest_scan_id,
-                                      {
-                                        "events": events,
-                                        "cursor": {
-                                          "latest_scan_ts": new_latest_scan_ts,
-                                          "latest_scan_id": new_latest_scan_id,
-                                        },
-                                        "want_more": more_pages,
-                                        "total_scans": body.total,
-                                      }
-                                    )
-                                  )
-                                )
-                              )
-                            )
-                          )
-                        )
-                    )
-                  :
-                    {
-                      "events": {
-                        "error": {
-                          "code": string(sr.StatusCode),
-                          "id": string(sr.Status),
-                          "message": "GET " + state.url.trim_right("/") + "/v1/scan/search " + (
-                            (size(sr.Body) != 0) ?
-                              string(sr.Body)
-                            :
-                              string(sr.Status) + " (" + string(sr.StatusCode) + ")"
-                          ),
-                        },
+# This program writes a set of scan ids into a worklist, then loops over the ids
+# querying each scan id to retrieve the list of logs for each scan.
+# When 'worklist' is empty, this triggers another API call to fill the worklist
+# with more scan ids. The pattern is a single call to the scan search API
+# followed by a multiple calls to the scan log API to retrieve logs.
+program: |-
+  (
+    // if the first api calls to scan search have filled 'worklist'
+    // return the state and skip calls to scan search API.
+    // When the first set of scans are worked off,
+    // 'worklist' will exist but will be empty, triggering another call
+    // to scan search API to retrieve more scan ids.
+    (has(state.worklist) && size(state.worklist) > 0) ?
+      state
+    :
+      (
+        // 'want_more' is missing on initial call and false at the beginning of each periodic
+        // run. 'want_more' == false triggers initialization of time range parameters.
+        state.?want_more.orValue(false) ?
+          state
+        :
+          state.with(
+            {
+              "start_time": state.?cursor.latest_scan_ts.orValue(int(now - duration(state.initial_interval))),
+            }
+          )
+      ).as(state,
+        state.with(
+          request(
+            "GET",
+            state.url.trim_right("/") + "/v1/scan/search?" + {
+              "limit": [string(state.batch_size)],
+              "offset": [string(state.offset)],
+              "condition": ["last_launcher_update >= " + string(int(state.start_time)) + " AND (status = \"successful\" OR status = \"failed\")"],
+              "order_dir": ["ASC"],
+              "order_field": ["last_launcher_update"],
+            }.format_query()
+          ).with(
+            {
+              "Header": {
+                "Accept": ["application/json"],
+                "Authorization": [state.api_key],
+              },
+            }
+          ).do_request().as(resp, (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              {
+                "worklist": (size(body.data) > 0) ?
+                  body.data.filter(s,
+                    s.logs_encrypted == false && s.available_logs.exists(l, l == "thor.json") &&
+                    s.id != state.?cursor.latest_scan_id.orValue("")
+                  ).as(new_scans,
+                    new_scans.map(new_scan,
+                      {
+                        "id": new_scan.id,
+                        ?"last_launcher_update": new_scan.?last_launcher_update,
+                        ?"creation_date": new_scan.?creation_date,
+                        ?"campaign_id": new_scan.?campaign_id,
                       }
-                    }
-                )
-              )
+                    )
+                  )
+                :
+                  [],
+                // Prefer body.total to detect the last page without an extra empty search call.
+                // Fall back to page size when total is absent from the API response.
+                "more_pages": has(body.total) ?
+                  (int(state.offset) + int(state.batch_size) < int(body.total))
+                :
+                  (body.data.size() >= int(state.batch_size)),
+              }
             )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + state.url.trim_right("/") + "/v1/scan/search: " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "offset": 0,
+              "want_more": false,
+            }
           )
         )
       )
-    )
+  ).as(state,
+    // If the scan-search stage already produced an error, surface it and halt;
+    // do not let the empty-worklist branch overwrite it with an empty page.
+    (has(state.events) && type(state.events) == map) ?
+      state
+    :
+      state.with(
+        !has(state.worklist) ?
+          state
+        : (size(state.worklist) > 0) ?
+          request(
+            "GET",
+            state.url.trim_right("/") + "/v1/scan/log?" + {
+              "scan": [state.worklist[0].id],
+              "log": ["thor.json"],
+            }.format_query()
+          ).with(
+            {
+              "Header": {
+                "Accept": ["application/json"],
+                "Authorization": [state.api_key],
+              },
+            }
+          ).do_request().as(resp, (resp.StatusCode == 200) ?
+            string(resp.Body).split("\n").filter(line, line != "").transformList(i, line,
+              {
+                "message": has(state.worklist[0].campaign_id) ?
+                  line.decode_json().with({"campaign_id": state.worklist[0].campaign_id}).encode_json()
+                :
+                  line,
+                "log_line": string(i + 1),
+              }
+            ).as(events,
+              state.with(
+                {
+                  "events": events,
+                  "worklist": tail(state.worklist),
+                  // offset is a variable used to control paging on the scan search API that fills 'worklist'
+                  // increment when the worklist is empty
+                  "offset": (size(state.worklist) == 1) ?
+                    (state.more_pages ? (int(state.offset) + int(state.batch_size)) : 0)
+                  :
+                    state.offset,
+                  "cursor": {
+                    "latest_scan_ts": has(state.worklist[0].last_launcher_update) ?
+                      int(state.worklist[0].last_launcher_update)
+                    :
+                      int(state.worklist[0].creation_date),
+                    "latest_scan_id": state.worklist[0].id,
+                  },
+                  "want_more": size(state.worklist) > 1 || state.more_pages,
+                }
+              )
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + state.url.trim_right("/") + "/v1/scan/log: " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "offset": 0,
+              "want_more": false,
+            }
+          )
+        :
+          {
+            // Placeholder event lets pagination continue when a search page has no eligible scans.
+            "events": [{"retry": true}],
+            // Advance offset into the scan search result set, or reset to 0 on the last page.
+            "offset": state.more_pages ? (int(state.offset) + int(state.batch_size)) : 0,
+            "want_more": state.more_pages,
+          }
+      )
   )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
-{{/if}}
-{{#if preserve_duplicate_custom_fields}}
-  - preserve_duplicate_custom_fields
 {{/if}}
 {{#each tags as |tag|}}
   - {{tag}}
@@ -125,8 +206,9 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
 {{processors}}
 {{/if}}
 redact:

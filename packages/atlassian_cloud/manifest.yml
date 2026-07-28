@@ -1,0 +1,83 @@
+format_version: "3.4.2"
+name: atlassian_cloud
+title: Atlassian Cloud
+version: 0.1.0
+description: Collect organization-wide audit logs from Atlassian Cloud with Elastic Agent.
+type: integration
+categories:
+  - security
+  - productivity_security
+conditions:
+  kibana:
+    version: "^8.19.0 || ^9.1.0"
+screenshots:
+  - src: /img/screenshot1.png
+    title: Atlassian Cloud Authentication Events
+    size: 1280x1329
+    type: image/png
+  - src: /img/screenshot2.png
+    title: Atlassian Cloud Overview
+    size: 1280x1329
+    type: image/png
+icons:
+  - src: /img/cloud-logo.svg
+    title: Atlassian Cloud Logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: atlassian_cloud
+    title: Atlassian Cloud Organization Audit Logs
+    description: Collect organization-wide audit logs from Atlassian Cloud.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: integration-experience
+    inputs:
+      - type: cel
+        title: Collect Atlassian Cloud organization audit logs via API
+        description: Collect organization-wide audit events from the Atlassian Cloud Organizations REST API.
+        vars:
+          - name: url
+            type: url
+            title: API URL
+            description: Base URL for the Atlassian Admin API.
+            multi: false
+            required: true
+            show_user: true
+            default: https://api.atlassian.com
+          - name: org_id
+            type: text
+            title: Organization ID
+            description: The Atlassian Organization ID (UUID). Found in Atlassian Administration under Organization settings.
+            multi: false
+            required: true
+            show_user: true
+          - name: api_key
+            type: password
+            title: API Key
+            description: API key with the read:events:admin scope. Created in Atlassian Administration under Organization settings → API keys.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL of the HTTP proxy to use.
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL/TLS configuration for the connection.
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/integration-experience
+  type: elastic

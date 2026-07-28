@@ -1,0 +1,124 @@
+---
+name: Backport — post checklist
+
+on:
+  workflow_run:
+    workflows: ["Backport — detect packages"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  post-checklist:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    # Cancel any in-progress run for the same branch when rapid pushes trigger
+    # overlapping workflow_run jobs — the newest run wins.
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      pull-requests: write
+      # Required by actions/download-artifact when fetching from another workflow run.
+      actions: read
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: .go-version
+
+      - name: Install mage
+        run: go install github.com/magefile/mage
+
+      - name: Download artifact
+        # continue-on-error so a missing artifact (e.g. detect job was skipped due to
+        # backport:sync-changelog label) does not fail the job — the next step checks
+        # for the file and exits cleanly when it is absent.
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: pr-packages-${{ github.event.workflow_run.id }}
+          path: artifacts
+
+      - name: Validate artifact and find checklist comment
+        id: find-comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ARTIFACT: artifacts/pr-packages.json
+        run: |
+          if [[ ! -f "$ARTIFACT" ]]; then
+            echo "Artifact not found — exiting"
+            exit 0
+          fi
+
+          PR_NUMBER=$(jq -r '.pr_number' "$ARTIFACT")
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+          # Collect all comments that contain the checklist marker across all pages.
+          MATCHING=$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
+            --paginate \
+            --jq '.[] | select(.body | contains("<!-- backport-checklist -->"))' \
+            | jq -s '.')
+
+          COUNT=$(jq 'length' <<< "$MATCHING")
+          if [[ "$COUNT" -gt 1 ]]; then
+            IDS=$(jq -r '.[].id' <<< "$MATCHING" | paste -sd ', ')
+            gh api --method POST \
+              "repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
+              --field body=":warning: **Backport checklist error**: found ${COUNT} duplicate checklist comments (IDs: ${IDS}). Please delete the extras manually so the checklist can be updated automatically."
+            echo "Duplicate checklist comments found — posted notice to PR #$PR_NUMBER" >&2
+            exit 1
+          fi
+
+          echo "comment_id=$(jq -r 'first.id // empty' <<< "$MATCHING")" >> "$GITHUB_OUTPUT"
+
+      - name: Render and post checklist comment
+        if: steps.find-comment.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ARTIFACT: artifacts/pr-packages.json
+          PR_NUMBER: ${{ steps.find-comment.outputs.pr_number }}
+          COMMENT_ID: ${{ steps.find-comment.outputs.comment_id }}
+        run: |
+          EXISTING_BODY=""
+          if [[ -n "$COMMENT_ID" ]]; then
+            EXISTING_BODY=$(gh api "repos/$REPOSITORY/issues/comments/$COMMENT_ID" \
+              --jq '.body // empty')
+          fi
+
+          # Render the new comment body. The existing body is piped into stdin so
+          # the mage target can parse previously-checked branches and preserve their
+          # state. Prints nothing when no package has any active branch.
+          NEW_BODY=$(printf '%s' "$EXISTING_BODY" | \
+            mage -d "$GITHUB_WORKSPACE" renderBackportChecklist "$ARTIFACT")
+
+          if [[ -z "$NEW_BODY" ]]; then
+            echo "No active backport branches — nothing to post"
+            exit 0
+          fi
+
+          # Write to a file to avoid quoting issues when passing to gh api.
+          BODY_FILE=$(mktemp)
+          trap 'rm -f "$BODY_FILE"' EXIT
+          printf '%s' "$NEW_BODY" > "$BODY_FILE"
+
+          if [[ -n "$COMMENT_ID" ]]; then
+            gh api --method PATCH \
+              "repos/$REPOSITORY/issues/comments/$COMMENT_ID" \
+              --field body=@"$BODY_FILE"
+            echo "Updated checklist comment #$COMMENT_ID on PR #$PR_NUMBER"
+          else
+            gh api --method POST \
+              "repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
+              --field body=@"$BODY_FILE"
+            echo "Created checklist comment on PR #$PR_NUMBER"
+          fi

@@ -28,7 +28,6 @@ rules:
           Content-Type:
             - 'application/json'
         body: |-
-          {{ minify_json `
           {
             "Findings": [
               {
@@ -49,14 +48,14 @@ rules:
                 },
                 "finding_info": {
                   "created_time": 1774214368239,
-                  "created_time_dt": "2026-03-22T21:19:28.239Z",
+                  "created_time_dt": "{{ (now "-720h").Format "2006-01-02T15:04:05Z07:00" }}",
                   "desc": "If the PATH environment variable contains paths which are executables (rather than just directories), passing certain strings to LookPath (\"\", \".\", and \"..\"), can result in the binaries listed in the PATH being unexpectedly returned.",
                   "first_seen_time": 1774214368239,
-                  "first_seen_time_dt": "2026-03-22T21:19:28.239Z",
+                  "first_seen_time_dt": "{{ (now "-720h").Format "2006-01-02T15:04:05Z07:00" }}",
                   "last_seen_time": 1774214368239,
-                  "last_seen_time_dt": "2026-03-22T21:19:28.239Z",
+                  "last_seen_time_dt": "{{ (now "-720h").Format "2006-01-02T15:04:05Z07:00" }}",
                   "modified_time": 1774214368239,
-                  "modified_time_dt": "2026-03-22T21:19:28.239Z",
+                  "modified_time_dt": "{{ (now "-720h").Format "2006-01-02T15:04:05Z07:00" }}",
                   "title": "CVE-2025-47906 - go/stdlib",
                   "types": [
                     "Software and Configuration Checks/Vulnerabilities/CVE"
@@ -127,7 +126,7 @@ rules:
                 "status": "New",
                 "status_id": 1,
                 "time": 1774214368239,
-                "time_dt": "2026-03-22T21:19:28.239Z",
+                "time_dt": "{{ (now "-720h").Format "2006-01-02T15:04:05Z07:00" }}",
                 "type_name": "Vulnerability Finding: Create",
                 "type_uid": 200201,
                 "vendor_attributes": {
@@ -260,7 +259,6 @@ rules:
             ],
             "NextToken": "next_token_2"
           }
-          `}}
   - path: /findingsv2
     methods: ['POST']
     request_body: /^\{"Filters":\{"CompositeFilters":\[\{"DateFilters":\[\{"FieldName":"finding_info\.modified_time_dt","Filter":\{"End":.*,"Start":.*\}\}\]\}\]\},"MaxResults":2,"SortCriteria":\[\{"Field":"finding_info\.modified_time_dt","SortOrder":"asc"\}\]\}/

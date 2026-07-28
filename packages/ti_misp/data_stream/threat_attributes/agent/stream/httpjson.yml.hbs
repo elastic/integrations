@@ -49,8 +49,11 @@ request.transforms:
     target: body.returnFormat
     value: json
 {{#if daily_refetch}}
-# Daily refetch mode: every 24 hours, reset cursor to re-fetch all attributes from initial_interval.
-# When a daily refetch occurs, the timestamp is reset to initial_interval and last_daily_refetch is updated.
+# Daily refetch mode: every 24 hours, reset the request window to initial_interval to re-fetch all
+# attributes (picking up current decay scores). The decision is made here in the request transform,
+# where the cursor state is readable. The chosen refetch marker is echoed through url.params so the
+# cursor value template can persist it: httpjson evaluates cursor templates with an empty .cursor, so
+# the cursor field cannot read its own previous value, but it can read .last_response.url.params.
 - set:
     target: body.timestamp
     value: |-
@@ -80,6 +83,39 @@ request.transforms:
         [[- $initialTimestamp -]]
       [[- end -]]
     default: '[[ (now (parseDuration "-{{initial_interval}}")).Unix ]]'
+- set:
+    # Echo the refetch marker through url.params so the cursor value template can persist it: httpjson
+    # evaluates cursor templates with an empty .cursor, so a cursor field cannot read its own previous
+    # value, but it can read .last_response.url.params. When this poll performs a refetch (or it is the
+    # first poll), the marker advances to now; otherwise the existing marker is carried forward.
+    #
+    # This param is sent to MISP on the wire, but MISP restSearch reads its filters from the POST JSON
+    # body (and CakePHP-style /key:value/ path params), not from the ?query=string, so this extra query
+    # parameter is ignored by the server. This mirrors the existing url.params.timestamp workaround.
+    target: url.params.daily_refetch_at
+    value: |-
+      [[- $dailyRefetchDuration := (parseDuration "24h") -]]
+      [[- $isDailyRefetch := true -]]
+      [[- if index .cursor "last_daily_refetch" -]]
+        [[- $lastRefetch := (parseDate .cursor.last_daily_refetch "RFC3339") -]]
+        [[- $nextRefetch := 0 -]]
+        [[- with $lastRefetch -]]
+          [[- $nextRefetch = .Add $dailyRefetchDuration -]]
+        [[- end -]]
+        [[- with $nextRefetch -]]
+          [[- if .Before now -]]
+            [[- $isDailyRefetch = true -]]
+          [[- else -]]
+            [[- $isDailyRefetch = false -]]
+          [[- end -]]
+        [[- end -]]
+      [[- end -]]
+      [[- if $isDailyRefetch -]]
+        [[- formatDate now "RFC3339" -]]
+      [[- else -]]
+        [[- .cursor.last_daily_refetch -]]
+      [[- end -]]
+    default: '[[ formatDate now "RFC3339" ]]'
 {{else}}
 - set:
     target: body.timestamp
@@ -120,27 +156,26 @@ response.pagination:
 - set:
     target: url.params.timestamp
     value: '[[.last_response.url.params.Get "timestamp"]]'
+{{#if daily_refetch}}
+- set:
+    # Carry the refetch marker across pagination so it survives onto the final response that the
+    # cursor value template reads.
+    target: url.params.daily_refetch_at
+    value: '[[.last_response.url.params.Get "daily_refetch_at"]]'
+{{/if}}
 cursor:
   timestamp:
     value: '[[.last_event.timestamp]]'
 {{#if daily_refetch}}
   last_daily_refetch:
-    # Track when the last daily refetch started. Updated when 24h has passed since previous refetch.
+    # Persist the refetch marker chosen by the request transform. The cursor template runs with an
+    # empty .cursor, so it reads the marker back from the request's url.params instead of from cursor
+    # state. See the request transform above for how the marker advances. Fall back to now if the
+    # marker is missing so the cursor is never stored empty.
     value: |-
-      [[- $dailyRefetchDuration := (parseDuration "24h") -]]
-      [[- if index .cursor "last_daily_refetch" -]]
-        [[- $lastRefetch := (parseDate .cursor.last_daily_refetch "RFC3339") -]]
-        [[- $nextRefetch := 0 -]]
-        [[- with $lastRefetch -]]
-          [[- $nextRefetch = .Add $dailyRefetchDuration -]]
-        [[- end -]]
-        [[- with $nextRefetch -]]
-          [[- if .Before now -]]
-            [[- formatDate now "RFC3339" -]]
-          [[- else -]]
-            [[- $.cursor.last_daily_refetch -]]
-          [[- end -]]
-        [[- end -]]
+      [[- $marker := .last_response.url.params.Get "daily_refetch_at" -]]
+      [[- if $marker -]]
+        [[- $marker -]]
       [[- else -]]
         [[- formatDate now "RFC3339" -]]
       [[- end -]]

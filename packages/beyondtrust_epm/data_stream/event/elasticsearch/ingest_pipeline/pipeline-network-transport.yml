@@ -1,0 +1,3643 @@
+---
+description: Pipeline for processing network and transport fields (client, server, source, destination, network, url, dns, http, tls).
+processors:
+  - set:
+      field: client.address
+      tag: set_client_address_from_event_client_address
+      copy_from: beyondtrust_epm.event.client.address
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.client.as.number
+      tag: convert_client_as_number_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.as.number
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.as.number
+      tag: set_client_as_number_from_event_client_as_number
+      copy_from: beyondtrust_epm.event.client.as.number
+      ignore_empty_value: true
+  - set:
+      field: client.as.organization.name
+      tag: set_client_as_organization_name_from_event_client_as_organization_name
+      copy_from: beyondtrust_epm.event.client.as.organization.name
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.client.bytes
+      tag: convert_client_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.bytes
+      tag: set_client_bytes_from_event_client_bytes
+      copy_from: beyondtrust_epm.event.client.bytes
+      ignore_empty_value: true
+  - set:
+      field: client.domain
+      tag: set_client_domain_from_event_client_domain
+      copy_from: beyondtrust_epm.event.client.domain
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.client.geo.TimezoneOffset
+      tag: convert_client_geo_TimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.geo.TimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.geo.city_name
+      tag: set_client_geo_city_name_from_event_client_geo_city_name
+      copy_from: beyondtrust_epm.event.client.geo.city_name
+      ignore_empty_value: true
+  - set:
+      field: client.geo.continent_code
+      tag: set_client_geo_continent_code_from_event_client_geo_continent_code
+      copy_from: beyondtrust_epm.event.client.geo.continent_code
+      ignore_empty_value: true
+  - set:
+      field: client.geo.continent_name
+      tag: set_client_geo_continent_name_from_event_client_geo_continent_name
+      copy_from: beyondtrust_epm.event.client.geo.continent_name
+      ignore_empty_value: true
+  - set:
+      field: client.geo.country_iso_code
+      tag: set_client_geo_country_iso_code_from_event_client_geo_country_iso_code
+      copy_from: beyondtrust_epm.event.client.geo.country_iso_code
+      ignore_empty_value: true
+  - set:
+      field: client.geo.country_name
+      tag: set_client_geo_country_name_from_event_client_geo_country_name
+      copy_from: beyondtrust_epm.event.client.geo.country_name
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.client.geo.location.lat
+      tag: convert_client_geo_location_lat_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.geo.location.lat
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.client.geo.location.lon
+      tag: convert_client_geo_location_lon_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.geo.location.lon
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: set_client_geo_location_from_lat_lon
+      lang: painless
+      description: Combine lat/lon into geo_point.
+      if: >-
+        ctx.beyondtrust_epm?.event?.client?.geo?.location?.lat != null
+        && ctx.beyondtrust_epm?.event?.client?.geo?.location?.lon != null
+      source: |-
+        def location = new HashMap();
+        location.put('lat', ctx.beyondtrust_epm.event.client.geo.location.lat);
+        location.put('lon', ctx.beyondtrust_epm.event.client.geo.location.lon);
+        ctx.beyondtrust_epm.event.client.geo.location = location;
+  - set:
+      field: client.geo.location
+      tag: set_client_geo_location_from_event
+      copy_from: beyondtrust_epm.event.client.geo.location
+      ignore_empty_value: true
+  - set:
+      field: client.geo.name
+      tag: set_client_geo_name_from_event_client_geo_name
+      copy_from: beyondtrust_epm.event.client.geo.name
+      ignore_empty_value: true
+  - set:
+      field: client.geo.postal_code
+      tag: set_client_geo_postal_code_from_event_client_geo_postal_code
+      copy_from: beyondtrust_epm.event.client.geo.postal_code
+      ignore_empty_value: true
+  - set:
+      field: client.geo.region_iso_code
+      tag: set_client_geo_region_iso_code_from_event_client_geo_region_iso_code
+      copy_from: beyondtrust_epm.event.client.geo.region_iso_code
+      ignore_empty_value: true
+  - set:
+      field: client.geo.region_name
+      tag: set_client_geo_region_name_from_event_client_geo_region_name
+      copy_from: beyondtrust_epm.event.client.geo.region_name
+      ignore_empty_value: true
+  - set:
+      field: client.geo.timezone
+      tag: set_client_geo_timezone_from_event_client_geo_timezone
+      copy_from: beyondtrust_epm.event.client.geo.timezone
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.client.ip
+      tag: convert_client_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.beyondtrust_epm?.event?.client?.ip != null
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.ip
+      tag: set_client_ip_from_event_client_ip
+      copy_from: beyondtrust_epm.event.client.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_event_client_ip_into_related_ip
+      if: ctx.beyondtrust_epm?.event?.client?.ip != null
+      value: '{{{beyondtrust_epm.event.client.ip}}}'
+      allow_duplicates: false
+  - gsub:
+      field: beyondtrust_epm.event.client.mac
+      pattern: '[:.]'
+      replacement: '-'
+      tag: gsub_client_mac
+      ignore_missing: true
+  - uppercase:
+      field: beyondtrust_epm.event.client.mac
+      tag: uppercase_client_mac
+      ignore_missing: true
+  - set:
+      field: client.mac
+      tag: set_client_mac_from_event_client_mac
+      copy_from: beyondtrust_epm.event.client.mac
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.client.nat.ip
+      tag: convert_client_nat_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.beyondtrust_epm?.event?.client?.nat?.ip != null
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.nat.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.nat.ip
+      tag: set_client_nat_ip_from_event_client_nat_ip
+      copy_from: beyondtrust_epm.event.client.nat.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_event_client_nat_ip_into_related_ip
+      if: ctx.beyondtrust_epm?.event?.client?.nat?.ip != null
+      value: '{{{beyondtrust_epm.event.client.nat.ip}}}'
+      allow_duplicates: false
+  - convert:
+      field: beyondtrust_epm.event.client.nat.port
+      tag: convert_client_nat_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.nat.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.nat.port
+      tag: set_client_nat_port_from_event_client_nat_port
+      copy_from: beyondtrust_epm.event.client.nat.port
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.client.packets
+      tag: convert_client_packets_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.packets
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.packets
+      tag: set_client_packets_from_event_client_packets
+      copy_from: beyondtrust_epm.event.client.packets
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.client.port
+      tag: convert_client_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.port
+      tag: set_client_port_from_event_client_port
+      copy_from: beyondtrust_epm.event.client.port
+      ignore_empty_value: true
+  - set:
+      field: client.registered_domain
+      tag: set_client_registered_domain_from_event_client_registered_domain
+      copy_from: beyondtrust_epm.event.client.registered_domain
+      ignore_empty_value: true
+  - set:
+      field: client.subdomain
+      tag: set_client_subdomain_from_event_client_subdomain
+      copy_from: beyondtrust_epm.event.client.subdomain
+      ignore_empty_value: true
+  - set:
+      field: client.top_level_domain
+      tag: set_client_top_level_domain_from_event_client_top_level_domain
+      copy_from: beyondtrust_epm.event.client.top_level_domain
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.client.user.DefaultTimezoneOffset
+      tag: convert_client_user_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.user.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.client.user.LocalIdentifier
+      tag: convert_client_user_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.user.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.client.user.changes.DefaultTimezoneOffset
+      tag: convert_client_user_changes_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.user.changes.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.client.user.changes.LocalIdentifier
+      tag: convert_client_user_changes_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.user.changes.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_client_user_changes_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.changes?.email != null
+      value: '{{{beyondtrust_epm.event.client.user.changes.email}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_client_user_changes_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.changes?.full_name != null
+      value: '{{{beyondtrust_epm.event.client.user.changes.full_name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_event_client_user_changes_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.client?.user?.changes?.hash != null
+      value: '{{{beyondtrust_epm.event.client.user.changes.hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_client_user_changes_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.changes?.name != null
+      value: '{{{beyondtrust_epm.event.client.user.changes.name}}}'
+      allow_duplicates: false
+  - set:
+      field: client.user.domain
+      tag: set_client_user_domain_from_event_client_user_domain
+      copy_from: beyondtrust_epm.event.client.user.domain
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.client.user.effective.DefaultTimezoneOffset
+      tag: convert_client_user_effective_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.user.effective.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.client.user.effective.LocalIdentifier
+      tag: convert_client_user_effective_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.user.effective.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_client_user_effective_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.effective?.email != null
+      value: '{{{beyondtrust_epm.event.client.user.effective.email}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_client_user_effective_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.effective?.full_name != null
+      value: '{{{beyondtrust_epm.event.client.user.effective.full_name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_event_client_user_effective_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.client?.user?.effective?.hash != null
+      value: '{{{beyondtrust_epm.event.client.user.effective.hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_client_user_effective_id_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.effective?.id != null
+      value: '{{{beyondtrust_epm.event.client.user.effective.id}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_client_user_effective_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.effective?.name != null
+      value: '{{{beyondtrust_epm.event.client.user.effective.name}}}'
+      allow_duplicates: false
+  - set:
+      field: client.user.email
+      tag: set_client_user_email_from_event_client_user_email
+      copy_from: beyondtrust_epm.event.client.user.email
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_client_user_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.email != null
+      value: '{{{beyondtrust_epm.event.client.user.email}}}'
+      allow_duplicates: false
+  - set:
+      field: client.user.full_name
+      tag: set_client_user_full_name_from_event_client_user_full_name
+      copy_from: beyondtrust_epm.event.client.user.full_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_client_user_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.full_name != null
+      value: '{{{beyondtrust_epm.event.client.user.full_name}}}'
+      allow_duplicates: false
+  - set:
+      field: client.user.group.domain
+      tag: set_client_user_group_domain_from_event_client_user_group_domain
+      copy_from: beyondtrust_epm.event.client.user.group.domain
+      ignore_empty_value: true
+  - set:
+      field: client.user.group.id
+      tag: set_client_user_group_id_from_event_client_user_group_id
+      copy_from: beyondtrust_epm.event.client.user.group.id
+      ignore_empty_value: true
+  - set:
+      field: client.user.group.name
+      tag: set_client_user_group_name_from_event_client_user_group_name
+      copy_from: beyondtrust_epm.event.client.user.group.name
+      ignore_empty_value: true
+  - set:
+      field: client.user.hash
+      tag: set_client_user_hash_from_event_client_user_hash
+      copy_from: beyondtrust_epm.event.client.user.hash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_client_user_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.client?.user?.hash != null
+      value: '{{{beyondtrust_epm.event.client.user.hash}}}'
+      allow_duplicates: false
+  - set:
+      field: client.user.id
+      tag: set_client_user_id_from_event_client_user_id
+      copy_from: beyondtrust_epm.event.client.user.id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_client_user_id_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.id != null
+      value: '{{{beyondtrust_epm.event.client.user.id}}}'
+      allow_duplicates: false
+  - set:
+      field: client.user.name
+      tag: set_client_user_name_from_event_client_user_name
+      copy_from: beyondtrust_epm.event.client.user.name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_client_user_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.name != null
+      value: '{{{beyondtrust_epm.event.client.user.name}}}'
+      allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.client.user.roles
+      tag: foreach_client_user_roles
+      if: ctx.beyondtrust_epm?.event?.client?.user?.roles instanceof List
+      processor:
+        append:
+          field: client.user.roles
+          tag: append_client_user_roles_into_client_user_roles
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - convert:
+      field: beyondtrust_epm.event.client.user.target.DefaultTimezoneOffset
+      tag: convert_client_user_target_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.user.target.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.client.user.target.LocalIdentifier
+      tag: convert_client_user_target_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.client.user.target.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_client_user_target_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.target?.email != null
+      value: '{{{beyondtrust_epm.event.client.user.target.email}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_client_user_target_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.target?.full_name != null
+      value: '{{{beyondtrust_epm.event.client.user.target.full_name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_event_client_user_target_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.client?.user?.target?.hash != null
+      value: '{{{beyondtrust_epm.event.client.user.target.hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_client_user_target_id_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.target?.id != null
+      value: '{{{beyondtrust_epm.event.client.user.target.id}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_client_user_target_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.target?.name != null
+      value: '{{{beyondtrust_epm.event.client.user.target.name}}}'
+      allow_duplicates: false
+  - set:
+      field: destination.address
+      tag: set_destination_address_from_event_destination_address
+      copy_from: beyondtrust_epm.event.destination.address
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.destination.as.number
+      tag: convert_destination_as_number_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.as.number
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.as.number
+      tag: set_destination_as_number_from_event_destination_as_number
+      copy_from: beyondtrust_epm.event.destination.as.number
+      ignore_empty_value: true
+  - set:
+      field: destination.as.organization.name
+      tag: set_destination_as_organization_name_from_event_destination_as_organization_name
+      copy_from: beyondtrust_epm.event.destination.as.organization.name
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.destination.bytes
+      tag: convert_destination_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.bytes
+      tag: set_destination_bytes_from_event_destination_bytes
+      copy_from: beyondtrust_epm.event.destination.bytes
+      ignore_empty_value: true
+  - set:
+      field: destination.domain
+      tag: set_destination_domain_from_event_destination_domain
+      copy_from: beyondtrust_epm.event.destination.domain
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.destination.geo.TimezoneOffset
+      tag: convert_destination_geo_TimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.geo.TimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.geo.city_name
+      tag: set_destination_geo_city_name_from_event_destination_geo_city_name
+      copy_from: beyondtrust_epm.event.destination.geo.city_name
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.continent_code
+      tag: set_destination_geo_continent_code_from_event_destination_geo_continent_code
+      copy_from: beyondtrust_epm.event.destination.geo.continent_code
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.continent_name
+      tag: set_destination_geo_continent_name_from_event_destination_geo_continent_name
+      copy_from: beyondtrust_epm.event.destination.geo.continent_name
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.country_iso_code
+      tag: set_destination_geo_country_iso_code_from_event_destination_geo_country_iso_code
+      copy_from: beyondtrust_epm.event.destination.geo.country_iso_code
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.country_name
+      tag: set_destination_geo_country_name_from_event_destination_geo_country_name
+      copy_from: beyondtrust_epm.event.destination.geo.country_name
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.destination.geo.location.lat
+      tag: convert_destination_geo_location_lat_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.geo.location.lat
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.destination.geo.location.lon
+      tag: convert_destination_geo_location_lon_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.geo.location.lon
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: set_destination_geo_location_from_lat_lon
+      lang: painless
+      description: Combine lat/lon into geo_point.
+      if: >-
+        ctx.beyondtrust_epm?.event?.destination?.geo?.location?.lat != null
+        && ctx.beyondtrust_epm?.event?.destination?.geo?.location?.lon != null
+      source: |-
+        def location = new HashMap();
+        location.put('lat', ctx.beyondtrust_epm.event.destination.geo.location.lat);
+        location.put('lon', ctx.beyondtrust_epm.event.destination.geo.location.lon);
+        ctx.beyondtrust_epm.event.destination.geo.location = location;
+  - set:
+      field: destination.geo.location
+      tag: set_destination_geo_location_from_event
+      copy_from: beyondtrust_epm.event.destination.geo.location
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.name
+      tag: set_destination_geo_name_from_event_destination_geo_name
+      copy_from: beyondtrust_epm.event.destination.geo.name
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.postal_code
+      tag: set_destination_geo_postal_code_from_event_destination_geo_postal_code
+      copy_from: beyondtrust_epm.event.destination.geo.postal_code
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.region_iso_code
+      tag: set_destination_geo_region_iso_code_from_event_destination_geo_region_iso_code
+      copy_from: beyondtrust_epm.event.destination.geo.region_iso_code
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.region_name
+      tag: set_destination_geo_region_name_from_event_destination_geo_region_name
+      copy_from: beyondtrust_epm.event.destination.geo.region_name
+      ignore_empty_value: true
+  - set:
+      field: destination.geo.timezone
+      tag: set_destination_geo_timezone_from_event_destination_geo_timezone
+      copy_from: beyondtrust_epm.event.destination.geo.timezone
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.destination.ip
+      tag: convert_destination_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.beyondtrust_epm?.event?.destination?.ip != null
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_event_destination_ip
+      copy_from: beyondtrust_epm.event.destination.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_event_destination_ip_into_related_ip
+      if: ctx.beyondtrust_epm?.event?.destination?.ip != null
+      value: '{{{beyondtrust_epm.event.destination.ip}}}'
+      allow_duplicates: false
+  - gsub:
+      field: beyondtrust_epm.event.destination.mac
+      pattern: '[:.]'
+      replacement: '-'
+      tag: gsub_destination_mac
+      ignore_missing: true
+  - uppercase:
+      field: beyondtrust_epm.event.destination.mac
+      tag: uppercase_gsub_destination_mac
+      ignore_missing: true
+  - set:
+      field: destination.mac
+      tag: set_destination_mac_from_event_destination_mac
+      copy_from: beyondtrust_epm.event.destination.mac
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.destination.nat.ip
+      tag: convert_destination_nat_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.beyondtrust_epm?.event?.destination?.nat?.ip != null
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.nat.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.nat.ip
+      tag: set_destination_nat_ip_from_event_destination_nat_ip
+      copy_from: beyondtrust_epm.event.destination.nat.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_event_destination_nat_ip_into_related_ip
+      if: ctx.beyondtrust_epm?.event?.destination?.nat?.ip != null
+      value: '{{{beyondtrust_epm.event.destination.nat.ip}}}'
+      allow_duplicates: false
+  - convert:
+      field: beyondtrust_epm.event.destination.nat.port
+      tag: convert_destination_nat_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.nat.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.nat.port
+      tag: set_destination_nat_port_from_event_destination_nat_port
+      copy_from: beyondtrust_epm.event.destination.nat.port
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.destination.packets
+      tag: convert_destination_packets_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.packets
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.packets
+      tag: set_destination_packets_from_event_destination_packets
+      copy_from: beyondtrust_epm.event.destination.packets
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.destination.port
+      tag: convert_destination_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_event_destination_port
+      copy_from: beyondtrust_epm.event.destination.port
+      ignore_empty_value: true
+  - set:
+      field: destination.registered_domain
+      tag: set_destination_registered_domain_from_event_destination_registered_domain
+      copy_from: beyondtrust_epm.event.destination.registered_domain
+      ignore_empty_value: true
+  - set:
+      field: destination.subdomain
+      tag: set_destination_subdomain_from_event_destination_subdomain
+      copy_from: beyondtrust_epm.event.destination.subdomain
+      ignore_empty_value: true
+  - set:
+      field: destination.top_level_domain
+      tag: set_destination_top_level_domain_from_event_destination_top_level_domain
+      copy_from: beyondtrust_epm.event.destination.top_level_domain
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.destination.user.DefaultTimezoneOffset
+      tag: convert_destination_user_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.user.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.destination.user.LocalIdentifier
+      tag: convert_destination_user_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.user.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.destination.user.changes.DefaultTimezoneOffset
+      tag: convert_destination_user_changes_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.user.changes.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.destination.user.changes.LocalIdentifier
+      tag: convert_destination_user_changes_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.user.changes.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_destination_user_changes_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.changes?.email != null
+      value: '{{{beyondtrust_epm.event.destination.user.changes.email}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_destination_user_changes_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.changes?.full_name != null
+      value: '{{{beyondtrust_epm.event.destination.user.changes.full_name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_event_destination_user_changes_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.changes?.hash != null
+      value: '{{{beyondtrust_epm.event.destination.user.changes.hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_destination_user_changes_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.changes?.name != null
+      value: '{{{beyondtrust_epm.event.destination.user.changes.name}}}'
+      allow_duplicates: false
+  - set:
+      field: destination.user.domain
+      tag: set_destination_user_domain_from_event_destination_user_domain
+      copy_from: beyondtrust_epm.event.destination.user.domain
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.destination.user.effective.DefaultTimezoneOffset
+      tag: convert_destination_user_effective_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.user.effective.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.destination.user.effective.LocalIdentifier
+      tag: convert_destination_user_effective_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.user.effective.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_destination_user_effective_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.effective?.email != null
+      value: '{{{beyondtrust_epm.event.destination.user.effective.email}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_destination_user_effective_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.effective?.full_name != null
+      value: '{{{beyondtrust_epm.event.destination.user.effective.full_name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_event_destination_user_effective_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.effective?.hash != null
+      value: '{{{beyondtrust_epm.event.destination.user.effective.hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_destination_user_effective_id_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.effective?.id != null
+      value: '{{{beyondtrust_epm.event.destination.user.effective.id}}}'
+      allow_duplicates: false
+  - set:
+      field: destination.user.email
+      tag: set_destination_user_email_from_event_destination_user_email
+      copy_from: beyondtrust_epm.event.destination.user.email
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_destination_user_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.email != null
+      value: '{{{beyondtrust_epm.event.destination.user.email}}}'
+      allow_duplicates: false
+  - set:
+      field: destination.user.full_name
+      tag: set_destination_user_full_name_from_event_destination_user_full_name
+      copy_from: beyondtrust_epm.event.destination.user.full_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_destination_user_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.full_name != null
+      value: '{{{beyondtrust_epm.event.destination.user.full_name}}}'
+      allow_duplicates: false
+  - set:
+      field: destination.user.group.domain
+      tag: set_destination_user_group_domain_from_event_destination_user_group_domain
+      copy_from: beyondtrust_epm.event.destination.user.group.domain
+      ignore_empty_value: true
+  - set:
+      field: destination.user.group.id
+      tag: set_destination_user_group_id_from_event_destination_user_group_id
+      copy_from: beyondtrust_epm.event.destination.user.group.id
+      ignore_empty_value: true
+  - set:
+      field: destination.user.group.name
+      tag: set_destination_user_group_name_from_event_destination_user_group_name
+      copy_from: beyondtrust_epm.event.destination.user.group.name
+      ignore_empty_value: true
+  - set:
+      field: destination.user.hash
+      tag: set_destination_user_hash_from_event_destination_user_hash
+      copy_from: beyondtrust_epm.event.destination.user.hash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_destination_user_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.hash != null
+      value: '{{{beyondtrust_epm.event.destination.user.hash}}}'
+      allow_duplicates: false
+  - set:
+      field: destination.user.id
+      tag: set_destination_user_id_from_event_destination_user_id
+      copy_from: beyondtrust_epm.event.destination.user.id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_destination_user_id_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.id != null
+      value: '{{{beyondtrust_epm.event.destination.user.id}}}'
+      allow_duplicates: false
+  - set:
+      field: destination.user.name
+      tag: set_destination_user_name_from_event_destination_user_name
+      copy_from: beyondtrust_epm.event.destination.user.name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_destination_user_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.name != null
+      value: '{{{beyondtrust_epm.event.destination.user.name}}}'
+      allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.destination.user.roles
+      tag: foreach_destination_user_roles
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.roles instanceof List
+      processor:
+        append:
+          field: destination.user.roles
+          tag: append_destination_user_roles_into_destination_user_roles
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - convert:
+      field: beyondtrust_epm.event.destination.user.target.DefaultTimezoneOffset
+      tag: convert_destination_user_target_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.user.target.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.destination.user.target.LocalIdentifier
+      tag: convert_destination_user_target_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.destination.user.target.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_destination_user_target_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.target?.email != null
+      value: '{{{beyondtrust_epm.event.destination.user.target.email}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_destination_user_target_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.target?.full_name != null
+      value: '{{{beyondtrust_epm.event.destination.user.target.full_name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_event_destination_user_target_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.target?.hash != null
+      value: '{{{beyondtrust_epm.event.destination.user.target.hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_destination_user_target_id_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.target?.id != null
+      value: '{{{beyondtrust_epm.event.destination.user.target.id}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_destination_user_target_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.destination?.user?.target?.name != null
+      value: '{{{beyondtrust_epm.event.destination.user.target.name}}}'
+      allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.dns.header_flags
+      tag: foreach_dns_header_flags
+      if: ctx.beyondtrust_epm?.event?.dns?.header_flags instanceof List
+      processor:
+        append:
+          field: dns.header_flags
+          tag: append_dns_header_flags_into_dns_header_flags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: dns.id
+      tag: set_dns_id_from_event_dns_id
+      copy_from: beyondtrust_epm.event.dns.id
+      ignore_empty_value: true
+  - set:
+      field: dns.op_code
+      tag: set_dns_op_code_from_event_dns_op_code
+      copy_from: beyondtrust_epm.event.dns.op_code
+      ignore_empty_value: true
+  - set:
+      field: dns.question.class
+      tag: set_dns_question_class_from_event_dns_question_class
+      copy_from: beyondtrust_epm.event.dns.question.class
+      ignore_empty_value: true
+  - set:
+      field: dns.question.name
+      tag: set_dns_question_name_from_event_dns_question_name
+      copy_from: beyondtrust_epm.event.dns.question.name
+      ignore_empty_value: true
+  - set:
+      field: dns.question.registered_domain
+      tag: set_dns_question_registered_domain_from_event_dns_question_registered_domain
+      copy_from: beyondtrust_epm.event.dns.question.registered_domain
+      ignore_empty_value: true
+  - set:
+      field: dns.question.subdomain
+      tag: set_dns_question_subdomain_from_event_dns_question_subdomain
+      copy_from: beyondtrust_epm.event.dns.question.subdomain
+      ignore_empty_value: true
+  - set:
+      field: dns.question.top_level_domain
+      tag: set_dns_question_top_level_domain_from_event_dns_question_top_level_domain
+      copy_from: beyondtrust_epm.event.dns.question.top_level_domain
+      ignore_empty_value: true
+  - set:
+      field: dns.question.type
+      tag: set_dns_question_type_from_event_dns_question_type
+      copy_from: beyondtrust_epm.event.dns.question.type
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.dns.resolved_ip
+      tag: foreach_convert_dns_resolved_ip_to_ip
+      if: ctx.beyondtrust_epm?.event?.dns?.resolved_ip instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_dns_resolved_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: beyondtrust_epm.event.dns.resolved_ip
+      tag: foreach_dns_resolved_ip
+      if: ctx.beyondtrust_epm?.event?.dns?.resolved_ip instanceof List
+      processor:
+        append:
+          field: dns.resolved_ip
+          tag: append_dns_resolved_ip_into_dns_resolved_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.dns.resolved_ip
+      tag: foreach_dns_resolved_ip
+      if: ctx.beyondtrust_epm?.event?.dns?.resolved_ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_dns_resolved_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: dns.response_code
+      tag: set_dns_response_code_from_event_dns_response_code
+      copy_from: beyondtrust_epm.event.dns.response_code
+      ignore_empty_value: true
+  - set:
+      field: dns.type
+      tag: set_dns_type_from_event_dns_type
+      copy_from: beyondtrust_epm.event.dns.type
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.http.request.body.bytes
+      tag: convert_http_request_body_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.http.request.body.bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.request.body.bytes
+      tag: set_http_request_body_bytes_from_event_http_request_body_bytes
+      copy_from: beyondtrust_epm.event.http.request.body.bytes
+      ignore_empty_value: true
+  - set:
+      field: http.request.body.content
+      tag: set_http_request_body_content_from_event_http_request_body_content
+      copy_from: beyondtrust_epm.event.http.request.body.content
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.http.request.bytes
+      tag: convert_http_request_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.http.request.bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.request.bytes
+      tag: set_http_request_bytes_from_event_http_request_bytes
+      copy_from: beyondtrust_epm.event.http.request.bytes
+      ignore_empty_value: true
+  - set:
+      field: http.request.id
+      tag: set_http_request_id_from_event_http_request_id
+      copy_from: beyondtrust_epm.event.http.request.id
+      ignore_empty_value: true
+  - set:
+      field: http.request.method
+      tag: set_http_request_method_from_event_http_request_method
+      copy_from: beyondtrust_epm.event.http.request.method
+      ignore_empty_value: true
+  - set:
+      field: http.request.mime_type
+      tag: set_http_request_mime_type_from_event_http_request_mime_type
+      copy_from: beyondtrust_epm.event.http.request.mime_type
+      ignore_empty_value: true
+  - set:
+      field: http.request.referrer
+      tag: set_http_request_referrer_from_event_http_request_referrer
+      copy_from: beyondtrust_epm.event.http.request.referrer
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.http.response.body.bytes
+      tag: convert_http_response_body_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.http.response.body.bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.body.bytes
+      tag: set_http_response_body_bytes_from_event_http_response_body_bytes
+      copy_from: beyondtrust_epm.event.http.response.body.bytes
+      ignore_empty_value: true
+  - set:
+      field: http.response.body.content
+      tag: set_http_response_body_content_from_event_http_response_body_content
+      copy_from: beyondtrust_epm.event.http.response.body.content
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.http.response.bytes
+      tag: convert_http_response_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.http.response.bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.bytes
+      tag: set_http_response_bytes_from_event_http_response_bytes
+      copy_from: beyondtrust_epm.event.http.response.bytes
+      ignore_empty_value: true
+  - set:
+      field: http.response.mime_type
+      tag: set_http_response_mime_type_from_event_http_response_mime_type
+      copy_from: beyondtrust_epm.event.http.response.mime_type
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.http.response.status_code
+      tag: convert_http_response_status_code_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.http.response.status_code
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code_from_event_http_response_status_code
+      copy_from: beyondtrust_epm.event.http.response.status_code
+      ignore_empty_value: true
+  - set:
+      field: http.version
+      tag: set_http_version_from_event_http_version
+      copy_from: beyondtrust_epm.event.http.version
+      ignore_empty_value: true
+  - set:
+      field: network.application
+      tag: set_network_application_from_event_network_application
+      copy_from: beyondtrust_epm.event.network.application
+      ignore_empty_value: true
+  - lowercase:
+      field: network.application
+      tag: lowercase_network_application
+      ignore_missing: true
+  - convert:
+      field: beyondtrust_epm.event.network.bytes
+      tag: convert_network_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.network.bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: network.bytes
+      tag: set_network_bytes_from_event_network_bytes
+      copy_from: beyondtrust_epm.event.network.bytes
+      ignore_empty_value: true
+  - set:
+      field: network.community_id
+      tag: set_network_community_id_from_event_network_community_id
+      copy_from: beyondtrust_epm.event.network.community_id
+      ignore_empty_value: true
+  - set:
+      field: network.direction
+      tag: set_network_direction_from_event_network_direction
+      copy_from: beyondtrust_epm.event.network.direction
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.network.forwarded_ip
+      tag: convert_network_forwarded_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.beyondtrust_epm?.event?.network?.forwarded_ip != null
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.network.forwarded_ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: network.forwarded_ip
+      tag: set_network_forwarded_ip_from_event_network_forwarded_ip
+      copy_from: beyondtrust_epm.event.network.forwarded_ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_event_network_forwarded_ip_into_related_ip
+      if: ctx.beyondtrust_epm?.event?.network?.forwarded_ip != null
+      value: '{{{beyondtrust_epm.event.network.forwarded_ip}}}'
+      allow_duplicates: false
+  - set:
+      field: network.iana_number
+      tag: set_network_iana_number_from_event_network_iana_number
+      copy_from: beyondtrust_epm.event.network.iana_number
+      ignore_empty_value: true
+  - set:
+      field: network.name
+      tag: set_network_name_from_event_network_name
+      copy_from: beyondtrust_epm.event.network.name
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.network.packets
+      tag: convert_network_packets_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.network.packets
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: network.packets
+      tag: set_network_packets_from_event_network_packets
+      copy_from: beyondtrust_epm.event.network.packets
+      ignore_empty_value: true
+  - set:
+      field: network.protocol
+      tag: set_network_protocol_from_event_network_protocol
+      copy_from: beyondtrust_epm.event.network.protocol
+      ignore_empty_value: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - set:
+      field: network.transport
+      tag: set_network_transport_from_event_network_transport
+      copy_from: beyondtrust_epm.event.network.transport
+      ignore_empty_value: true
+  - lowercase:
+      field: network.transport
+      tag: lowercase_network_transport
+      ignore_missing: true
+  - set:
+      field: network.type
+      tag: set_network_type_from_event_network_type
+      copy_from: beyondtrust_epm.event.network.type
+      ignore_empty_value: true
+  - lowercase:
+      field: network.type
+      tag: lowercase_network_type
+      ignore_missing: true
+  - set:
+      field: network.vlan.id
+      tag: set_network_vlan_id_from_event_network_vlan_id
+      copy_from: beyondtrust_epm.event.network.vlan.id
+      ignore_empty_value: true
+  - set:
+      field: network.vlan.name
+      tag: set_network_vlan_name_from_event_network_vlan_name
+      copy_from: beyondtrust_epm.event.network.vlan.name
+      ignore_empty_value: true
+  - set:
+      field: server.address
+      tag: set_server_address_from_event_server_address
+      copy_from: beyondtrust_epm.event.server.address
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.server.as.number
+      tag: convert_server_as_number_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.as.number
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.as.number
+      tag: set_server_as_number_from_event_server_as_number
+      copy_from: beyondtrust_epm.event.server.as.number
+      ignore_empty_value: true
+  - set:
+      field: server.as.organization.name
+      tag: set_server_as_organization_name_from_event_server_as_organization_name
+      copy_from: beyondtrust_epm.event.server.as.organization.name
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.server.bytes
+      tag: convert_server_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.bytes
+      tag: set_server_bytes_from_event_server_bytes
+      copy_from: beyondtrust_epm.event.server.bytes
+      ignore_empty_value: true
+  - set:
+      field: server.domain
+      tag: set_server_domain_from_event_server_domain
+      copy_from: beyondtrust_epm.event.server.domain
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.server.geo.TimezoneOffset
+      tag: convert_server_geo_TimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.geo.TimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.geo.city_name
+      tag: set_server_geo_city_name_from_event_server_geo_city_name
+      copy_from: beyondtrust_epm.event.server.geo.city_name
+      ignore_empty_value: true
+  - set:
+      field: server.geo.continent_code
+      tag: set_server_geo_continent_code_from_event_server_geo_continent_code
+      copy_from: beyondtrust_epm.event.server.geo.continent_code
+      ignore_empty_value: true
+  - set:
+      field: server.geo.continent_name
+      tag: set_server_geo_continent_name_from_event_server_geo_continent_name
+      copy_from: beyondtrust_epm.event.server.geo.continent_name
+      ignore_empty_value: true
+  - set:
+      field: server.geo.country_iso_code
+      tag: set_server_geo_country_iso_code_from_event_server_geo_country_iso_code
+      copy_from: beyondtrust_epm.event.server.geo.country_iso_code
+      ignore_empty_value: true
+  - set:
+      field: server.geo.country_name
+      tag: set_server_geo_country_name_from_event_server_geo_country_name
+      copy_from: beyondtrust_epm.event.server.geo.country_name
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.server.geo.location.lat
+      tag: convert_server_geo_location_lat_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.geo.location.lat
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.server.geo.location.lon
+      tag: convert_server_geo_location_lon_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.geo.location.lon
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: set_server_geo_location_from_lat_lon
+      lang: painless
+      description: Combine lat/lon into geo_point.
+      if: >-
+        ctx.beyondtrust_epm?.event?.server?.geo?.location?.lat != null
+        && ctx.beyondtrust_epm?.event?.server?.geo?.location?.lon != null
+      source: |-
+        def location = new HashMap();
+        location.put('lat', ctx.beyondtrust_epm.event.server.geo.location.lat);
+        location.put('lon', ctx.beyondtrust_epm.event.server.geo.location.lon);
+        ctx.beyondtrust_epm.event.server.geo.location = location;
+  - set:
+      field: server.geo.location
+      tag: set_server_geo_location_from_event
+      copy_from: beyondtrust_epm.event.server.geo.location
+      ignore_empty_value: true
+  - set:
+      field: server.geo.name
+      tag: set_server_geo_name_from_event_server_geo_name
+      copy_from: beyondtrust_epm.event.server.geo.name
+      ignore_empty_value: true
+  - set:
+      field: server.geo.postal_code
+      tag: set_server_geo_postal_code_from_event_server_geo_postal_code
+      copy_from: beyondtrust_epm.event.server.geo.postal_code
+      ignore_empty_value: true
+  - set:
+      field: server.geo.region_iso_code
+      tag: set_server_geo_region_iso_code_from_event_server_geo_region_iso_code
+      copy_from: beyondtrust_epm.event.server.geo.region_iso_code
+      ignore_empty_value: true
+  - set:
+      field: server.geo.region_name
+      tag: set_server_geo_region_name_from_event_server_geo_region_name
+      copy_from: beyondtrust_epm.event.server.geo.region_name
+      ignore_empty_value: true
+  - set:
+      field: server.geo.timezone
+      tag: set_server_geo_timezone_from_event_server_geo_timezone
+      copy_from: beyondtrust_epm.event.server.geo.timezone
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.server.ip
+      tag: convert_server_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.beyondtrust_epm?.event?.server?.ip != null
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.ip
+      tag: set_server_ip_from_event_server_ip
+      copy_from: beyondtrust_epm.event.server.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_event_server_ip_into_related_ip
+      if: ctx.beyondtrust_epm?.event?.server?.ip != null
+      value: '{{{beyondtrust_epm.event.server.ip}}}'
+      allow_duplicates: false
+  - gsub:
+      field: beyondtrust_epm.event.server.mac
+      pattern: '[:.]'
+      replacement: '-'
+      tag: gsub_server_mac
+      ignore_missing: true
+  - uppercase:
+      field: beyondtrust_epm.event.server.mac
+      tag: uppercase_server_mac
+      ignore_missing: true
+  - set:
+      field: server.mac
+      tag: set_server_mac_from_event_server_mac
+      copy_from: beyondtrust_epm.event.server.mac
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.server.nat.ip
+      tag: convert_server_nat_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.beyondtrust_epm?.event?.server?.nat?.ip != null
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.nat.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.nat.ip
+      tag: set_server_nat_ip_from_event_server_nat_ip
+      copy_from: beyondtrust_epm.event.server.nat.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_event_server_nat_ip_into_related_ip
+      if: ctx.beyondtrust_epm?.event?.server?.nat?.ip != null
+      value: '{{{beyondtrust_epm.event.server.nat.ip}}}'
+      allow_duplicates: false
+  - convert:
+      field: beyondtrust_epm.event.server.nat.port
+      tag: convert_server_nat_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.nat.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.nat.port
+      tag: set_server_nat_port_from_event_server_nat_port
+      copy_from: beyondtrust_epm.event.server.nat.port
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.server.packets
+      tag: convert_server_packets_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.packets
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.packets
+      tag: set_server_packets_from_event_server_packets
+      copy_from: beyondtrust_epm.event.server.packets
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.server.port
+      tag: convert_server_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.port
+      tag: set_server_port_from_event_server_port
+      copy_from: beyondtrust_epm.event.server.port
+      ignore_empty_value: true
+  - set:
+      field: server.registered_domain
+      tag: set_server_registered_domain_from_event_server_registered_domain
+      copy_from: beyondtrust_epm.event.server.registered_domain
+      ignore_empty_value: true
+  - set:
+      field: server.subdomain
+      tag: set_server_subdomain_from_event_server_subdomain
+      copy_from: beyondtrust_epm.event.server.subdomain
+      ignore_empty_value: true
+  - set:
+      field: server.top_level_domain
+      tag: set_server_top_level_domain_from_event_server_top_level_domain
+      copy_from: beyondtrust_epm.event.server.top_level_domain
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.server.user.DefaultTimezoneOffset
+      tag: convert_server_user_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.user.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.server.user.LocalIdentifier
+      tag: convert_server_user_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.user.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.server.user.changes.DefaultTimezoneOffset
+      tag: convert_server_user_changes_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.user.changes.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.server.user.changes.LocalIdentifier
+      tag: convert_server_user_changes_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.user.changes.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_server_user_changes_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.changes?.email != null
+      value: '{{{beyondtrust_epm.event.server.user.changes.email}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_server_user_changes_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.changes?.full_name != null
+      value: '{{{beyondtrust_epm.event.server.user.changes.full_name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_event_server_user_changes_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.server?.user?.changes?.hash != null
+      value: '{{{beyondtrust_epm.event.server.user.changes.hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_server_user_changes_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.changes?.name != null
+      value: '{{{beyondtrust_epm.event.server.user.changes.name}}}'
+      allow_duplicates: false
+  - set:
+      field: server.user.domain
+      tag: set_server_user_domain_from_event_server_user_domain
+      copy_from: beyondtrust_epm.event.server.user.domain
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.server.user.effective.DefaultTimezoneOffset
+      tag: convert_server_user_effective_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.user.effective.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.server.user.effective.LocalIdentifier
+      tag: convert_server_user_effective_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.user.effective.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_server_user_effective_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.effective?.email != null
+      value: '{{{beyondtrust_epm.event.server.user.effective.email}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_server_user_effective_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.effective?.full_name != null
+      value: '{{{beyondtrust_epm.event.server.user.effective.full_name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_event_server_user_effective_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.server?.user?.effective?.hash != null
+      value: '{{{beyondtrust_epm.event.server.user.effective.hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_server_user_effective_id_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.effective?.id != null
+      value: '{{{beyondtrust_epm.event.server.user.effective.id}}}'
+      allow_duplicates: false
+  - set:
+      field: server.user.email
+      tag: set_server_user_email_from_event_server_user_email
+      copy_from: beyondtrust_epm.event.server.user.email
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_server_user_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.email != null
+      value: '{{{beyondtrust_epm.event.server.user.email}}}'
+      allow_duplicates: false
+  - set:
+      field: server.user.full_name
+      tag: set_server_user_full_name_from_event_server_user_full_name
+      copy_from: beyondtrust_epm.event.server.user.full_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_server_user_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.full_name != null
+      value: '{{{beyondtrust_epm.event.server.user.full_name}}}'
+      allow_duplicates: false
+  - set:
+      field: server.user.group.domain
+      tag: set_server_user_group_domain_from_event_server_user_group_domain
+      copy_from: beyondtrust_epm.event.server.user.group.domain
+      ignore_empty_value: true
+  - set:
+      field: server.user.group.id
+      tag: set_server_user_group_id_from_event_server_user_group_id
+      copy_from: beyondtrust_epm.event.server.user.group.id
+      ignore_empty_value: true
+  - set:
+      field: server.user.group.name
+      tag: set_server_user_group_name_from_event_server_user_group_name
+      copy_from: beyondtrust_epm.event.server.user.group.name
+      ignore_empty_value: true
+  - set:
+      field: server.user.hash
+      tag: set_server_user_hash_from_event_server_user_hash
+      copy_from: beyondtrust_epm.event.server.user.hash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_server_user_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.server?.user?.hash != null
+      value: '{{{beyondtrust_epm.event.server.user.hash}}}'
+      allow_duplicates: false
+  - set:
+      field: server.user.id
+      tag: set_server_user_id_from_event_server_user_id
+      copy_from: beyondtrust_epm.event.server.user.id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_server_user_id_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.id != null
+      value: '{{{beyondtrust_epm.event.server.user.id}}}'
+      allow_duplicates: false
+  - set:
+      field: server.user.name
+      tag: set_server_user_name_from_event_server_user_name
+      copy_from: beyondtrust_epm.event.server.user.name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_server_user_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.name != null
+      value: '{{{beyondtrust_epm.event.server.user.name}}}'
+      allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.server.user.roles
+      tag: foreach_server_user_roles
+      if: ctx.beyondtrust_epm?.event?.server?.user?.roles instanceof List
+      processor:
+        append:
+          field: server.user.roles
+          tag: append_server_user_roles_into_server_user_roles
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - convert:
+      field: beyondtrust_epm.event.server.user.target.DefaultTimezoneOffset
+      tag: convert_server_user_target_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.user.target.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.server.user.target.LocalIdentifier
+      tag: convert_server_user_target_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.server.user.target.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_server_user_target_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.target?.email != null
+      value: '{{{beyondtrust_epm.event.server.user.target.email}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_server_user_target_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.target?.full_name != null
+      value: '{{{beyondtrust_epm.event.server.user.target.full_name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_event_server_user_target_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.server?.user?.target?.hash != null
+      value: '{{{beyondtrust_epm.event.server.user.target.hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_server_user_target_id_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.target?.id != null
+      value: '{{{beyondtrust_epm.event.server.user.target.id}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_server_user_target_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.server?.user?.target?.name != null
+      value: '{{{beyondtrust_epm.event.server.user.target.name}}}'
+      allow_duplicates: false
+  - set:
+      field: source.address
+      tag: set_source_address_from_event_source_address
+      copy_from: beyondtrust_epm.event.source.address
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.source.as.number
+      tag: convert_source_as_number_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.as.number
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.as.number
+      tag: set_source_as_number_from_event_source_as_number
+      copy_from: beyondtrust_epm.event.source.as.number
+      ignore_empty_value: true
+  - set:
+      field: source.as.organization.name
+      tag: set_source_as_organization_name_from_event_source_as_organization_name
+      copy_from: beyondtrust_epm.event.source.as.organization.name
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.source.bytes
+      tag: convert_source_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.bytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.bytes
+      tag: set_source_bytes_from_event_source_bytes
+      copy_from: beyondtrust_epm.event.source.bytes
+      ignore_empty_value: true
+  - set:
+      field: source.domain
+      tag: set_source_domain_from_event_source_domain
+      copy_from: beyondtrust_epm.event.source.domain
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.source.geo.TimezoneOffset
+      tag: convert_source_geo_TimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.geo.TimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.geo.city_name
+      tag: set_source_geo_city_name_from_event_source_geo_city_name
+      copy_from: beyondtrust_epm.event.source.geo.city_name
+      ignore_empty_value: true
+  - set:
+      field: source.geo.continent_code
+      tag: set_source_geo_continent_code_from_event_source_geo_continent_code
+      copy_from: beyondtrust_epm.event.source.geo.continent_code
+      ignore_empty_value: true
+  - set:
+      field: source.geo.continent_name
+      tag: set_source_geo_continent_name_from_event_source_geo_continent_name
+      copy_from: beyondtrust_epm.event.source.geo.continent_name
+      ignore_empty_value: true
+  - set:
+      field: source.geo.country_iso_code
+      tag: set_source_geo_country_iso_code_from_event_source_geo_country_iso_code
+      copy_from: beyondtrust_epm.event.source.geo.country_iso_code
+      ignore_empty_value: true
+  - set:
+      field: source.geo.country_name
+      tag: set_source_geo_country_name_from_event_source_geo_country_name
+      copy_from: beyondtrust_epm.event.source.geo.country_name
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.source.geo.location.lat
+      tag: convert_source_geo_location_lat_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.geo.location.lat
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.source.geo.location.lon
+      tag: convert_source_geo_location_lon_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.geo.location.lon
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: set_source_geo_location_from_lat_lon
+      lang: painless
+      description: Combine lat/lon into geo_point.
+      if: >-
+        ctx.beyondtrust_epm?.event?.source?.geo?.location?.lat != null
+        && ctx.beyondtrust_epm?.event?.source?.geo?.location?.lon != null
+      source: |-
+        def location = new HashMap();
+        location.put('lat', ctx.beyondtrust_epm.event.source.geo.location.lat);
+        location.put('lon', ctx.beyondtrust_epm.event.source.geo.location.lon);
+        ctx.beyondtrust_epm.event.source.geo.location = location;
+  - set:
+      field: source.geo.location
+      tag: set_source_geo_location_from_event
+      copy_from: beyondtrust_epm.event.source.geo.location
+      ignore_empty_value: true
+  - set:
+      field: source.geo.name
+      tag: set_source_geo_name_from_event_source_geo_name
+      copy_from: beyondtrust_epm.event.source.geo.name
+      ignore_empty_value: true
+  - set:
+      field: source.geo.postal_code
+      tag: set_source_geo_postal_code_from_event_source_geo_postal_code
+      copy_from: beyondtrust_epm.event.source.geo.postal_code
+      ignore_empty_value: true
+  - set:
+      field: source.geo.region_iso_code
+      tag: set_source_geo_region_iso_code_from_event_source_geo_region_iso_code
+      copy_from: beyondtrust_epm.event.source.geo.region_iso_code
+      ignore_empty_value: true
+  - set:
+      field: source.geo.region_name
+      tag: set_source_geo_region_name_from_event_source_geo_region_name
+      copy_from: beyondtrust_epm.event.source.geo.region_name
+      ignore_empty_value: true
+  - set:
+      field: source.geo.timezone
+      tag: set_source_geo_timezone_from_event_source_geo_timezone
+      copy_from: beyondtrust_epm.event.source.geo.timezone
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.source.ip
+      tag: convert_source_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.beyondtrust_epm?.event?.source?.ip != null
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_event_source_ip
+      copy_from: beyondtrust_epm.event.source.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_event_source_ip_into_related_ip
+      if: ctx.beyondtrust_epm?.event?.source?.ip != null
+      value: '{{{beyondtrust_epm.event.source.ip}}}'
+      allow_duplicates: false
+  - gsub:
+      field: beyondtrust_epm.event.source.mac
+      pattern: '[:.]'
+      replacement: '-'
+      tag: gsub_source_mac
+      ignore_missing: true
+  - uppercase:
+      field: beyondtrust_epm.event.source.mac
+      tag: uppercase_source_mac
+      ignore_missing: true
+  - set:
+      field: source.mac
+      tag: set_source_mac_from_event_source_mac
+      copy_from: beyondtrust_epm.event.source.mac
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.source.nat.ip
+      tag: convert_source_nat_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.beyondtrust_epm?.event?.source?.nat?.ip != null
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.nat.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.nat.ip
+      tag: set_source_nat_ip_from_event_source_nat_ip
+      copy_from: beyondtrust_epm.event.source.nat.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_event_source_nat_ip_into_related_ip
+      if: ctx.beyondtrust_epm?.event?.source?.nat?.ip != null
+      value: '{{{beyondtrust_epm.event.source.nat.ip}}}'
+      allow_duplicates: false
+  - convert:
+      field: beyondtrust_epm.event.source.nat.port
+      tag: convert_source_nat_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.nat.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.nat.port
+      tag: set_source_nat_port_from_event_source_nat_port
+      copy_from: beyondtrust_epm.event.source.nat.port
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.source.packets
+      tag: convert_source_packets_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.packets
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.packets
+      tag: set_source_packets_from_event_source_packets
+      copy_from: beyondtrust_epm.event.source.packets
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.source.port
+      tag: convert_source_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_event_source_port
+      copy_from: beyondtrust_epm.event.source.port
+      ignore_empty_value: true
+  - set:
+      field: source.registered_domain
+      tag: set_source_registered_domain_from_event_source_registered_domain
+      copy_from: beyondtrust_epm.event.source.registered_domain
+      ignore_empty_value: true
+  - set:
+      field: source.subdomain
+      tag: set_source_subdomain_from_event_source_subdomain
+      copy_from: beyondtrust_epm.event.source.subdomain
+      ignore_empty_value: true
+  - set:
+      field: source.top_level_domain
+      tag: set_source_top_level_domain_from_event_source_top_level_domain
+      copy_from: beyondtrust_epm.event.source.top_level_domain
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.source.user.DefaultTimezoneOffset
+      tag: convert_source_user_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.user.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.source.user.LocalIdentifier
+      tag: convert_source_user_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.user.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.source.user.changes.DefaultTimezoneOffset
+      tag: convert_source_user_changes_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.user.changes.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.source.user.changes.LocalIdentifier
+      tag: convert_source_user_changes_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.user.changes.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_source_user_changes_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.changes?.email != null
+      value: '{{{beyondtrust_epm.event.source.user.changes.email}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_source_user_changes_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.changes?.full_name != null
+      value: '{{{beyondtrust_epm.event.source.user.changes.full_name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_event_source_user_changes_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.source?.user?.changes?.hash != null
+      value: '{{{beyondtrust_epm.event.source.user.changes.hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_source_user_changes_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.changes?.name != null
+      value: '{{{beyondtrust_epm.event.source.user.changes.name}}}'
+      allow_duplicates: false
+  - set:
+      field: source.user.domain
+      tag: set_source_user_domain_from_event_source_user_domain
+      copy_from: beyondtrust_epm.event.source.user.domain
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.source.user.effective.DefaultTimezoneOffset
+      tag: convert_source_user_effective_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.user.effective.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.source.user.effective.LocalIdentifier
+      tag: convert_source_user_effective_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.user.effective.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_source_user_effective_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.effective?.email != null
+      value: '{{{beyondtrust_epm.event.source.user.effective.email}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_source_user_effective_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.effective?.full_name != null
+      value: '{{{beyondtrust_epm.event.source.user.effective.full_name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_event_source_user_effective_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.source?.user?.effective?.hash != null
+      value: '{{{beyondtrust_epm.event.source.user.effective.hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_source_user_effective_id_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.effective?.id != null
+      value: '{{{beyondtrust_epm.event.source.user.effective.id}}}'
+      allow_duplicates: false
+  - set:
+      field: source.user.email
+      tag: set_source_user_email_from_event_source_user_email
+      copy_from: beyondtrust_epm.event.source.user.email
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_source_user_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.email != null
+      value: '{{{beyondtrust_epm.event.source.user.email}}}'
+      allow_duplicates: false
+  - set:
+      field: source.user.full_name
+      tag: set_source_user_full_name_from_event_source_user_full_name
+      copy_from: beyondtrust_epm.event.source.user.full_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_source_user_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.full_name != null
+      value: '{{{beyondtrust_epm.event.source.user.full_name}}}'
+      allow_duplicates: false
+  - set:
+      field: source.user.group.domain
+      tag: set_source_user_group_domain_from_event_source_user_group_domain
+      copy_from: beyondtrust_epm.event.source.user.group.domain
+      ignore_empty_value: true
+  - set:
+      field: source.user.group.id
+      tag: set_source_user_group_id_from_event_source_user_group_id
+      copy_from: beyondtrust_epm.event.source.user.group.id
+      ignore_empty_value: true
+  - set:
+      field: source.user.group.name
+      tag: set_source_user_group_name_from_event_source_user_group_name
+      copy_from: beyondtrust_epm.event.source.user.group.name
+      ignore_empty_value: true
+  - set:
+      field: source.user.hash
+      tag: set_source_user_hash_from_event_source_user_hash
+      copy_from: beyondtrust_epm.event.source.user.hash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_source_user_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.source?.user?.hash != null
+      value: '{{{beyondtrust_epm.event.source.user.hash}}}'
+      allow_duplicates: false
+  - set:
+      field: source.user.id
+      tag: set_source_user_id_from_event_source_user_id
+      copy_from: beyondtrust_epm.event.source.user.id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_source_user_id_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.id != null
+      value: '{{{beyondtrust_epm.event.source.user.id}}}'
+      allow_duplicates: false
+  - set:
+      field: source.user.name
+      tag: set_source_user_name_from_event_source_user_name
+      copy_from: beyondtrust_epm.event.source.user.name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_source_user_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.name != null
+      value: '{{{beyondtrust_epm.event.source.user.name}}}'
+      allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.source.user.roles
+      tag: foreach_source_user_roles
+      if: ctx.beyondtrust_epm?.event?.source?.user?.roles instanceof List
+      processor:
+        append:
+          field: source.user.roles
+          tag: append_source_user_roles_into_source_user_roles
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - convert:
+      field: beyondtrust_epm.event.source.user.target.DefaultTimezoneOffset
+      tag: convert_source_user_target_DefaultTimezoneOffset_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.user.target.DefaultTimezoneOffset
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.source.user.target.LocalIdentifier
+      tag: convert_source_user_target_LocalIdentifier_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.source.user.target.LocalIdentifier
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_source_user_target_email_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.target?.email != null
+      value: '{{{beyondtrust_epm.event.source.user.target.email}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_source_user_target_full_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.target?.full_name != null
+      value: '{{{beyondtrust_epm.event.source.user.target.full_name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_event_source_user_target_hash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.source?.user?.target?.hash != null
+      value: '{{{beyondtrust_epm.event.source.user.target.hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_source_user_target_id_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.target?.id != null
+      value: '{{{beyondtrust_epm.event.source.user.target.id}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_source_user_target_name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.source?.user?.target?.name != null
+      value: '{{{beyondtrust_epm.event.source.user.target.name}}}'
+      allow_duplicates: false
+  - set:
+      field: tls.cipher
+      tag: set_tls_cipher_from_event_tls_cipher
+      copy_from: beyondtrust_epm.event.tls.cipher
+      ignore_empty_value: true
+  - set:
+      field: tls.client.certificate
+      tag: set_tls_client_certificate_from_event_tls_client_certificate
+      copy_from: beyondtrust_epm.event.tls.client.certificate
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.certificate_chain
+      tag: foreach_tls_client_certificate_chain
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.certificate_chain instanceof List
+      processor:
+        append:
+          field: tls.client.certificate_chain
+          tag: append_tls_client_certificate_chain_into_tls_client_certificate_chain
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: tls.client.hash.md5
+      tag: set_tls_client_hash_md5_from_event_tls_client_hash_md5
+      copy_from: beyondtrust_epm.event.tls.client.hash.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_tls_client_hash_md5_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.hash?.md5 != null
+      value: '{{{beyondtrust_epm.event.tls.client.hash.md5}}}'
+      allow_duplicates: false
+  - set:
+      field: tls.client.hash.sha1
+      tag: set_tls_client_hash_sha1_from_event_tls_client_hash_sha1
+      copy_from: beyondtrust_epm.event.tls.client.hash.sha1
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_tls_client_hash_sha1_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.hash?.sha1 != null
+      value: '{{{beyondtrust_epm.event.tls.client.hash.sha1}}}'
+      allow_duplicates: false
+  - set:
+      field: tls.client.hash.sha256
+      tag: set_tls_client_hash_sha256_from_event_tls_client_hash_sha256
+      copy_from: beyondtrust_epm.event.tls.client.hash.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_tls_client_hash_sha256_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.hash?.sha256 != null
+      value: '{{{beyondtrust_epm.event.tls.client.hash.sha256}}}'
+      allow_duplicates: false
+  - set:
+      field: tls.client.issuer
+      tag: set_tls_client_issuer_from_event_tls_client_issuer
+      copy_from: beyondtrust_epm.event.tls.client.issuer
+      ignore_empty_value: true
+  - set:
+      field: tls.client.ja3
+      tag: set_tls_client_ja3_from_event_tls_client_ja3
+      copy_from: beyondtrust_epm.event.tls.client.ja3
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.tls.client.not_after
+      tag: date_tls_client_not_after
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.not_after != null && ctx.beyondtrust_epm.event.tls.client.not_after != ''
+      target_field: beyondtrust_epm.event.tls.client.not_after
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.client.not_after
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.client.not_after
+      tag: set_tls_client_not_after_from_event_tls_client_not_after
+      copy_from: beyondtrust_epm.event.tls.client.not_after
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.tls.client.not_before
+      tag: date_tls_client_not_before
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.not_before != null && ctx.beyondtrust_epm.event.tls.client.not_before != ''
+      target_field: beyondtrust_epm.event.tls.client.not_before
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.client.not_before
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.client.not_before
+      tag: set_tls_client_not_before_from_event_tls_client_not_before
+      copy_from: beyondtrust_epm.event.tls.client.not_before
+      ignore_empty_value: true
+  - set:
+      field: tls.client.server_name
+      tag: set_tls_client_server_name_from_event_tls_client_server_name
+      copy_from: beyondtrust_epm.event.tls.client.server_name
+      ignore_empty_value: true
+  - set:
+      field: tls.client.subject
+      tag: set_tls_client_subject_from_event_tls_client_subject
+      copy_from: beyondtrust_epm.event.tls.client.subject
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.supported_ciphers
+      tag: foreach_tls_client_supported_ciphers
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.supported_ciphers instanceof List
+      processor:
+        append:
+          field: tls.client.supported_ciphers
+          tag: append_tls_client_supported_ciphers_into_tls_client_supported_ciphers
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.x509.alternative_names
+      tag: foreach_tls_client_x509_alternative_names
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.alternative_names instanceof List
+      processor:
+        append:
+          field: tls.client.x509.alternative_names
+          tag: append_tls_client_x509_alternative_names_into_tls_client_x509_alternative_names
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.x509.issuer.common_name
+      tag: foreach_tls_client_x509_issuer_common_name
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.issuer?.common_name instanceof List
+      processor:
+        append:
+          field: tls.client.x509.issuer.common_name
+          tag: append_tls_client_x509_issuer_common_name_into_tls_client_x509_issuer_common_name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.x509.issuer.country
+      tag: foreach_tls_client_x509_issuer_country
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.issuer?.country instanceof List
+      processor:
+        append:
+          field: tls.client.x509.issuer.country
+          tag: append_tls_client_x509_issuer_country_into_tls_client_x509_issuer_country
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: tls.client.x509.issuer.distinguished_name
+      tag: set_tls_client_x509_issuer_distinguished_name_from_event_tls_client_x509_issuer_distinguished_name
+      copy_from: beyondtrust_epm.event.tls.client.x509.issuer.distinguished_name
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.x509.issuer.locality
+      tag: foreach_tls_client_x509_issuer_locality
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.issuer?.locality instanceof List
+      processor:
+        append:
+          field: tls.client.x509.issuer.locality
+          tag: append_tls_client_x509_issuer_locality_into_tls_client_x509_issuer_locality
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.x509.issuer.organization
+      tag: foreach_tls_client_x509_issuer_organization
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.issuer?.organization instanceof List
+      processor:
+        append:
+          field: tls.client.x509.issuer.organization
+          tag: append_tls_client_x509_issuer_organization_into_tls_client_x509_issuer_organization
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.x509.issuer.organizational_unit
+      tag: foreach_tls_client_x509_issuer_organizational_unit
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.issuer?.organizational_unit instanceof List
+      processor:
+        append:
+          field: tls.client.x509.issuer.organizational_unit
+          tag: append_tls_client_x509_issuer_organizational_unit_into_tls_client_x509_issuer_organizational_unit
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.x509.issuer.state_or_province
+      tag: foreach_tls_client_x509_issuer_state_or_province
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.issuer?.state_or_province instanceof List
+      processor:
+        append:
+          field: tls.client.x509.issuer.state_or_province
+          tag: append_tls_client_x509_issuer_state_or_province_into_tls_client_x509_issuer_state_or_province
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - date:
+      field: beyondtrust_epm.event.tls.client.x509.not_after
+      tag: date_tls_client_x509_not_after
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.not_after != null && ctx.beyondtrust_epm.event.tls.client.x509.not_after != ''
+      target_field: beyondtrust_epm.event.tls.client.x509.not_after
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.client.x509.not_after
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.client.x509.not_after
+      tag: set_tls_client_x509_not_after_from_event_tls_client_x509_not_after
+      copy_from: beyondtrust_epm.event.tls.client.x509.not_after
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.tls.client.x509.not_before
+      tag: date_tls_client_x509_not_before
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.not_before != null && ctx.beyondtrust_epm.event.tls.client.x509.not_before != ''
+      target_field: beyondtrust_epm.event.tls.client.x509.not_before
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.client.x509.not_before
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.client.x509.not_before
+      tag: set_tls_client_x509_not_before_from_event_tls_client_x509_not_before
+      copy_from: beyondtrust_epm.event.tls.client.x509.not_before
+      ignore_empty_value: true
+  - set:
+      field: tls.client.x509.public_key_algorithm
+      tag: set_tls_client_x509_public_key_algorithm_from_event_tls_client_x509_public_key_algorithm
+      copy_from: beyondtrust_epm.event.tls.client.x509.public_key_algorithm
+      ignore_empty_value: true
+  - set:
+      field: tls.client.x509.public_key_curve
+      tag: set_tls_client_x509_public_key_curve_from_event_tls_client_x509_public_key_curve
+      copy_from: beyondtrust_epm.event.tls.client.x509.public_key_curve
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.tls.client.x509.public_key_exponent
+      tag: convert_tls_client_x509_public_key_exponent_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.client.x509.public_key_exponent
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.client.x509.public_key_exponent
+      tag: set_tls_client_x509_public_key_exponent_from_event_tls_client_x509_public_key_exponent
+      copy_from: beyondtrust_epm.event.tls.client.x509.public_key_exponent
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.tls.client.x509.public_key_size
+      tag: convert_tls_client_x509_public_key_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.client.x509.public_key_size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.client.x509.public_key_size
+      tag: set_tls_client_x509_public_key_size_from_event_tls_client_x509_public_key_size
+      copy_from: beyondtrust_epm.event.tls.client.x509.public_key_size
+      ignore_empty_value: true
+  - set:
+      field: tls.client.x509.serial_number
+      tag: set_tls_client_x509_serial_number_from_event_tls_client_x509_serial_number
+      copy_from: beyondtrust_epm.event.tls.client.x509.serial_number
+      ignore_empty_value: true
+  - set:
+      field: tls.client.x509.signature_algorithm
+      tag: set_tls_client_x509_signature_algorithm_from_event_tls_client_x509_signature_algorithm
+      copy_from: beyondtrust_epm.event.tls.client.x509.signature_algorithm
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.x509.subject.common_name
+      tag: foreach_tls_client_x509_subject_common_name
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.subject?.common_name instanceof List
+      processor:
+        append:
+          field: tls.client.x509.subject.common_name
+          tag: append_tls_client_x509_subject_common_name_into_tls_client_x509_subject_common_name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.x509.subject.country
+      tag: foreach_tls_client_x509_subject_country
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.subject?.country instanceof List
+      processor:
+        append:
+          field: tls.client.x509.subject.country
+          tag: append_tls_client_x509_subject_country_into_tls_client_x509_subject_country
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: tls.client.x509.subject.distinguished_name
+      tag: set_tls_client_x509_subject_distinguished_name_from_event_tls_client_x509_subject_distinguished_name
+      copy_from: beyondtrust_epm.event.tls.client.x509.subject.distinguished_name
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.x509.subject.locality
+      tag: foreach_tls_client_x509_subject_locality
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.subject?.locality instanceof List
+      processor:
+        append:
+          field: tls.client.x509.subject.locality
+          tag: append_tls_client_x509_subject_locality_into_tls_client_x509_subject_locality
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.x509.subject.organization
+      tag: foreach_tls_client_x509_subject_organization
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.subject?.organization instanceof List
+      processor:
+        append:
+          field: tls.client.x509.subject.organization
+          tag: append_tls_client_x509_subject_organization_into_tls_client_x509_subject_organization
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.x509.subject.organizational_unit
+      tag: foreach_tls_client_x509_subject_organizational_unit
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.subject?.organizational_unit instanceof List
+      processor:
+        append:
+          field: tls.client.x509.subject.organizational_unit
+          tag: append_tls_client_x509_subject_organizational_unit_into_tls_client_x509_subject_organizational_unit
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.client.x509.subject.state_or_province
+      tag: foreach_tls_client_x509_subject_state_or_province
+      if: ctx.beyondtrust_epm?.event?.tls?.client?.x509?.subject?.state_or_province instanceof List
+      processor:
+        append:
+          field: tls.client.x509.subject.state_or_province
+          tag: append_tls_client_x509_subject_state_or_province_into_tls_client_x509_subject_state_or_province
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: tls.client.x509.version_number
+      tag: set_tls_client_x509_version_number_from_event_tls_client_x509_version_number
+      copy_from: beyondtrust_epm.event.tls.client.x509.version_number
+      ignore_empty_value: true
+  - set:
+      field: tls.curve
+      tag: set_tls_curve_from_event_tls_curve
+      copy_from: beyondtrust_epm.event.tls.curve
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.tls.established
+      tag: convert_tls_established_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.established
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.established
+      tag: set_tls_established_from_event_tls_established
+      copy_from: beyondtrust_epm.event.tls.established
+      ignore_empty_value: true
+  - set:
+      field: tls.next_protocol
+      tag: set_tls_next_protocol_from_event_tls_next_protocol
+      copy_from: beyondtrust_epm.event.tls.next_protocol
+      ignore_empty_value: true
+  - lowercase:
+      field: tls.next_protocol
+      tag: lowercase_tls_next_protocol
+      ignore_missing: true
+  - convert:
+      field: beyondtrust_epm.event.tls.resumed
+      tag: convert_tls_resumed_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.resumed
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.resumed
+      tag: set_tls_resumed_from_event_tls_resumed
+      copy_from: beyondtrust_epm.event.tls.resumed
+      ignore_empty_value: true
+  - set:
+      field: tls.server.certificate
+      tag: set_tls_server_certificate_from_event_tls_server_certificate
+      copy_from: beyondtrust_epm.event.tls.server.certificate
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.certificate_chain
+      tag: foreach_tls_server_certificate_chain
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.certificate_chain instanceof List
+      processor:
+        append:
+          field: tls.server.certificate_chain
+          tag: append_tls_server_certificate_chain_into_tls_server_certificate_chain
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: tls.server.hash.md5
+      tag: set_tls_server_hash_md5_from_event_tls_server_hash_md5
+      copy_from: beyondtrust_epm.event.tls.server.hash.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_tls_server_hash_md5_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.hash?.md5 != null
+      value: '{{{beyondtrust_epm.event.tls.server.hash.md5}}}'
+      allow_duplicates: false
+  - set:
+      field: tls.server.hash.sha1
+      tag: set_tls_server_hash_sha1_from_event_tls_server_hash_sha1
+      copy_from: beyondtrust_epm.event.tls.server.hash.sha1
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_tls_server_hash_sha1_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.hash?.sha1 != null
+      value: '{{{beyondtrust_epm.event.tls.server.hash.sha1}}}'
+      allow_duplicates: false
+  - set:
+      field: tls.server.hash.sha256
+      tag: set_tls_server_hash_sha256_from_event_tls_server_hash_sha256
+      copy_from: beyondtrust_epm.event.tls.server.hash.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_tls_server_hash_sha256_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.hash?.sha256 != null
+      value: '{{{beyondtrust_epm.event.tls.server.hash.sha256}}}'
+      allow_duplicates: false
+  - set:
+      field: tls.server.issuer
+      tag: set_tls_server_issuer_from_event_tls_server_issuer
+      copy_from: beyondtrust_epm.event.tls.server.issuer
+      ignore_empty_value: true
+  - set:
+      field: tls.server.ja3s
+      tag: set_tls_server_ja3s_from_event_tls_server_ja3s
+      copy_from: beyondtrust_epm.event.tls.server.ja3s
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.tls.server.not_after
+      tag: date_tls_server_not_after
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.not_after != null && ctx.beyondtrust_epm.event.tls.server.not_after != ''
+      target_field: beyondtrust_epm.event.tls.server.not_after
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.server.not_after
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.server.not_after
+      tag: set_tls_server_not_after_from_event_tls_server_not_after
+      copy_from: beyondtrust_epm.event.tls.server.not_after
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.tls.server.not_before
+      tag: date_tls_server_not_before
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.not_before != null && ctx.beyondtrust_epm.event.tls.server.not_before != ''
+      target_field: beyondtrust_epm.event.tls.server.not_before
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.server.not_before
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.server.not_before
+      tag: set_tls_server_not_before_from_event_tls_server_not_before
+      copy_from: beyondtrust_epm.event.tls.server.not_before
+      ignore_empty_value: true
+  - set:
+      field: tls.server.subject
+      tag: set_tls_server_subject_from_event_tls_server_subject
+      copy_from: beyondtrust_epm.event.tls.server.subject
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.x509.alternative_names
+      tag: foreach_tls_server_x509_alternative_names
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.alternative_names instanceof List
+      processor:
+        append:
+          field: tls.server.x509.alternative_names
+          tag: append_tls_server_x509_alternative_names_into_tls_server_x509_alternative_names
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.x509.issuer.common_name
+      tag: foreach_tls_server_x509_issuer_common_name
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.issuer?.common_name instanceof List
+      processor:
+        append:
+          field: tls.server.x509.issuer.common_name
+          tag: append_tls_server_x509_issuer_common_name_into_tls_server_x509_issuer_common_name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.x509.issuer.country
+      tag: foreach_tls_server_x509_issuer_country
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.issuer?.country instanceof List
+      processor:
+        append:
+          field: tls.server.x509.issuer.country
+          tag: append_tls_server_x509_issuer_country_into_tls_server_x509_issuer_country
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: tls.server.x509.issuer.distinguished_name
+      tag: set_tls_server_x509_issuer_distinguished_name_from_event_tls_server_x509_issuer_distinguished_name
+      copy_from: beyondtrust_epm.event.tls.server.x509.issuer.distinguished_name
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.x509.issuer.locality
+      tag: foreach_tls_server_x509_issuer_locality
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.issuer?.locality instanceof List
+      processor:
+        append:
+          field: tls.server.x509.issuer.locality
+          tag: append_tls_server_x509_issuer_locality_into_tls_server_x509_issuer_locality
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.x509.issuer.organization
+      tag: foreach_tls_server_x509_issuer_organization
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.issuer?.organization instanceof List
+      processor:
+        append:
+          field: tls.server.x509.issuer.organization
+          tag: append_tls_server_x509_issuer_organization_into_tls_server_x509_issuer_organization
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.x509.issuer.organizational_unit
+      tag: foreach_tls_server_x509_issuer_organizational_unit
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.issuer?.organizational_unit instanceof List
+      processor:
+        append:
+          field: tls.server.x509.issuer.organizational_unit
+          tag: append_tls_server_x509_issuer_organizational_unit_into_tls_server_x509_issuer_organizational_unit
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.x509.issuer.state_or_province
+      tag: foreach_tls_server_x509_issuer_state_or_province
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.issuer?.state_or_province instanceof List
+      processor:
+        append:
+          field: tls.server.x509.issuer.state_or_province
+          tag: append_tls_server_x509_issuer_state_or_province_into_tls_server_x509_issuer_state_or_province
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - date:
+      field: beyondtrust_epm.event.tls.server.x509.not_after
+      tag: date_tls_server_x509_not_after
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.not_after != null && ctx.beyondtrust_epm.event.tls.server.x509.not_after != ''
+      target_field: beyondtrust_epm.event.tls.server.x509.not_after
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.server.x509.not_after
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.server.x509.not_after
+      tag: set_tls_server_x509_not_after_from_event_tls_server_x509_not_after
+      copy_from: beyondtrust_epm.event.tls.server.x509.not_after
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.tls.server.x509.not_before
+      tag: date_tls_server_x509_not_before
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.not_before != null && ctx.beyondtrust_epm.event.tls.server.x509.not_before != ''
+      target_field: beyondtrust_epm.event.tls.server.x509.not_before
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.server.x509.not_before
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.server.x509.not_before
+      tag: set_tls_server_x509_not_before_from_event_tls_server_x509_not_before
+      copy_from: beyondtrust_epm.event.tls.server.x509.not_before
+      ignore_empty_value: true
+  - set:
+      field: tls.server.x509.public_key_algorithm
+      tag: set_tls_server_x509_public_key_algorithm_from_event_tls_server_x509_public_key_algorithm
+      copy_from: beyondtrust_epm.event.tls.server.x509.public_key_algorithm
+      ignore_empty_value: true
+  - set:
+      field: tls.server.x509.public_key_curve
+      tag: set_tls_server_x509_public_key_curve_from_event_tls_server_x509_public_key_curve
+      copy_from: beyondtrust_epm.event.tls.server.x509.public_key_curve
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.tls.server.x509.public_key_exponent
+      tag: convert_tls_server_x509_public_key_exponent_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.server.x509.public_key_exponent
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.server.x509.public_key_exponent
+      tag: set_tls_server_x509_public_key_exponent_from_event_tls_server_x509_public_key_exponent
+      copy_from: beyondtrust_epm.event.tls.server.x509.public_key_exponent
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.tls.server.x509.public_key_size
+      tag: convert_tls_server_x509_public_key_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.tls.server.x509.public_key_size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.server.x509.public_key_size
+      tag: set_tls_server_x509_public_key_size_from_event_tls_server_x509_public_key_size
+      copy_from: beyondtrust_epm.event.tls.server.x509.public_key_size
+      ignore_empty_value: true
+  - set:
+      field: tls.server.x509.serial_number
+      tag: set_tls_server_x509_serial_number_from_event_tls_server_x509_serial_number
+      copy_from: beyondtrust_epm.event.tls.server.x509.serial_number
+      ignore_empty_value: true
+  - set:
+      field: tls.server.x509.signature_algorithm
+      tag: set_tls_server_x509_signature_algorithm_from_event_tls_server_x509_signature_algorithm
+      copy_from: beyondtrust_epm.event.tls.server.x509.signature_algorithm
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.x509.subject.common_name
+      tag: foreach_tls_server_x509_subject_common_name
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.subject?.common_name instanceof List
+      processor:
+        append:
+          field: tls.server.x509.subject.common_name
+          tag: append_tls_server_x509_subject_common_name_into_tls_server_x509_subject_common_name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.x509.subject.country
+      tag: foreach_tls_server_x509_subject_country
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.subject?.country instanceof List
+      processor:
+        append:
+          field: tls.server.x509.subject.country
+          tag: append_tls_server_x509_subject_country_into_tls_server_x509_subject_country
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: tls.server.x509.subject.distinguished_name
+      tag: set_tls_server_x509_subject_distinguished_name_from_event_tls_server_x509_subject_distinguished_name
+      copy_from: beyondtrust_epm.event.tls.server.x509.subject.distinguished_name
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.x509.subject.locality
+      tag: foreach_tls_server_x509_subject_locality
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.subject?.locality instanceof List
+      processor:
+        append:
+          field: tls.server.x509.subject.locality
+          tag: append_tls_server_x509_subject_locality_into_tls_server_x509_subject_locality
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.x509.subject.organization
+      tag: foreach_tls_server_x509_subject_organization
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.subject?.organization instanceof List
+      processor:
+        append:
+          field: tls.server.x509.subject.organization
+          tag: append_tls_server_x509_subject_organization_into_tls_server_x509_subject_organization
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.x509.subject.organizational_unit
+      tag: foreach_tls_server_x509_subject_organizational_unit
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.subject?.organizational_unit instanceof List
+      processor:
+        append:
+          field: tls.server.x509.subject.organizational_unit
+          tag: append_tls_server_x509_subject_organizational_unit_into_tls_server_x509_subject_organizational_unit
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.tls.server.x509.subject.state_or_province
+      tag: foreach_tls_server_x509_subject_state_or_province
+      if: ctx.beyondtrust_epm?.event?.tls?.server?.x509?.subject?.state_or_province instanceof List
+      processor:
+        append:
+          field: tls.server.x509.subject.state_or_province
+          tag: append_tls_server_x509_subject_state_or_province_into_tls_server_x509_subject_state_or_province
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: tls.server.x509.version_number
+      tag: set_tls_server_x509_version_number_from_event_tls_server_x509_version_number
+      copy_from: beyondtrust_epm.event.tls.server.x509.version_number
+      ignore_empty_value: true
+  - set:
+      field: tls.version
+      tag: set_tls_version_from_event_tls_version
+      copy_from: beyondtrust_epm.event.tls.version
+      ignore_empty_value: true
+  - set:
+      field: tls.version_protocol
+      tag: set_tls_version_protocol_from_event_tls_version_protocol
+      copy_from: beyondtrust_epm.event.tls.version_protocol
+      ignore_empty_value: true
+  - lowercase:
+      field: tls.version_protocol
+      tag: lowercase_tls_version_protocol
+      ignore_missing: true
+  - set:
+      field: url.domain
+      tag: set_url_domain_from_event_url_domain
+      copy_from: beyondtrust_epm.event.url.domain
+      ignore_empty_value: true
+  - set:
+      field: url.extension
+      tag: set_url_extension_from_event_url_extension
+      copy_from: beyondtrust_epm.event.url.extension
+      ignore_empty_value: true
+  - set:
+      field: url.fragment
+      tag: set_url_fragment_from_event_url_fragment
+      copy_from: beyondtrust_epm.event.url.fragment
+      ignore_empty_value: true
+  - set:
+      field: url.full
+      tag: set_url_full_from_event_url_full
+      copy_from: beyondtrust_epm.event.url.full
+      ignore_empty_value: true
+  - set:
+      field: url.original
+      tag: set_url_original_from_event_url_original
+      copy_from: beyondtrust_epm.event.url.original
+      ignore_empty_value: true
+  - set:
+      field: url.password
+      tag: set_url_password_from_event_url_password
+      copy_from: beyondtrust_epm.event.url.password
+      ignore_empty_value: true
+  - set:
+      field: url.path
+      tag: set_url_path_from_event_url_path
+      copy_from: beyondtrust_epm.event.url.path
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.url.port
+      tag: convert_url_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.url.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: url.port
+      tag: set_url_port_from_event_url_port
+      copy_from: beyondtrust_epm.event.url.port
+      ignore_empty_value: true
+  - set:
+      field: url.query
+      tag: set_url_query_from_event_url_query
+      copy_from: beyondtrust_epm.event.url.query
+      ignore_empty_value: true
+  - set:
+      field: url.registered_domain
+      tag: set_url_registered_domain_from_event_url_registered_domain
+      copy_from: beyondtrust_epm.event.url.registered_domain
+      ignore_empty_value: true
+  - set:
+      field: url.scheme
+      tag: set_url_scheme_from_event_url_scheme
+      copy_from: beyondtrust_epm.event.url.scheme
+      ignore_empty_value: true
+  - set:
+      field: url.subdomain
+      tag: set_url_subdomain_from_event_url_subdomain
+      copy_from: beyondtrust_epm.event.url.subdomain
+      ignore_empty_value: true
+  - set:
+      field: url.top_level_domain
+      tag: set_url_top_level_domain_from_event_url_top_level_domain
+      copy_from: beyondtrust_epm.event.url.top_level_domain
+      ignore_empty_value: true
+  - set:
+      field: url.username
+      tag: set_url_username_from_event_url_username
+      copy_from: beyondtrust_epm.event.url.username
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_event_url_username_into_related_user
+      if: ctx.beyondtrust_epm?.event?.url?.username != null
+      value: '{{{beyondtrust_epm.event.url.username}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_event_client_Name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.Name != null
+      value: '{{{beyondtrust_epm.event.client.Name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_client_user_DomainIdentifier_into_related_user
+      if: ctx.beyondtrust_epm?.event?.client?.user?.DomainIdentifier != null
+      value: '{{{beyondtrust_epm.event.client.user.DomainIdentifier}}}'
+      allow_duplicates: false
+  - remove:
+      field:
+        - beyondtrust_epm.event.client.address
+        - beyondtrust_epm.event.client.as.number
+        - beyondtrust_epm.event.client.as.organization.name
+        - beyondtrust_epm.event.client.bytes
+        - beyondtrust_epm.event.client.domain
+        - beyondtrust_epm.event.client.geo.city_name
+        - beyondtrust_epm.event.client.geo.continent_code
+        - beyondtrust_epm.event.client.geo.continent_name
+        - beyondtrust_epm.event.client.geo.country_iso_code
+        - beyondtrust_epm.event.client.geo.country_name
+        - beyondtrust_epm.event.client.geo.name
+        - beyondtrust_epm.event.client.geo.postal_code
+        - beyondtrust_epm.event.client.geo.region_iso_code
+        - beyondtrust_epm.event.client.geo.region_name
+        - beyondtrust_epm.event.client.geo.timezone
+        - beyondtrust_epm.event.client.ip
+        - beyondtrust_epm.event.client.mac
+        - beyondtrust_epm.event.client.nat.ip
+        - beyondtrust_epm.event.client.nat.port
+        - beyondtrust_epm.event.client.packets
+        - beyondtrust_epm.event.client.port
+        - beyondtrust_epm.event.client.registered_domain
+        - beyondtrust_epm.event.client.subdomain
+        - beyondtrust_epm.event.client.top_level_domain
+        - beyondtrust_epm.event.client.user.domain
+        - beyondtrust_epm.event.client.user.email
+        - beyondtrust_epm.event.client.user.full_name
+        - beyondtrust_epm.event.client.user.group.domain
+        - beyondtrust_epm.event.client.user.group.id
+        - beyondtrust_epm.event.client.user.group.name
+        - beyondtrust_epm.event.client.user.hash
+        - beyondtrust_epm.event.client.user.id
+        - beyondtrust_epm.event.client.user.name
+        - beyondtrust_epm.event.client.user.roles
+        - beyondtrust_epm.event.destination.address
+        - beyondtrust_epm.event.destination.as.number
+        - beyondtrust_epm.event.destination.as.organization.name
+        - beyondtrust_epm.event.destination.bytes
+        - beyondtrust_epm.event.destination.domain
+        - beyondtrust_epm.event.destination.geo.city_name
+        - beyondtrust_epm.event.destination.geo.continent_code
+        - beyondtrust_epm.event.destination.geo.continent_name
+        - beyondtrust_epm.event.destination.geo.country_iso_code
+        - beyondtrust_epm.event.destination.geo.country_name
+        - beyondtrust_epm.event.destination.geo.name
+        - beyondtrust_epm.event.destination.geo.postal_code
+        - beyondtrust_epm.event.destination.geo.region_iso_code
+        - beyondtrust_epm.event.destination.geo.region_name
+        - beyondtrust_epm.event.destination.geo.timezone
+        - beyondtrust_epm.event.destination.ip
+        - beyondtrust_epm.event.destination.mac
+        - beyondtrust_epm.event.destination.nat.ip
+        - beyondtrust_epm.event.destination.nat.port
+        - beyondtrust_epm.event.destination.packets
+        - beyondtrust_epm.event.destination.port
+        - beyondtrust_epm.event.destination.registered_domain
+        - beyondtrust_epm.event.destination.subdomain
+        - beyondtrust_epm.event.destination.top_level_domain
+        - beyondtrust_epm.event.destination.user.domain
+        - beyondtrust_epm.event.destination.user.email
+        - beyondtrust_epm.event.destination.user.full_name
+        - beyondtrust_epm.event.destination.user.group.domain
+        - beyondtrust_epm.event.destination.user.group.id
+        - beyondtrust_epm.event.destination.user.group.name
+        - beyondtrust_epm.event.destination.user.hash
+        - beyondtrust_epm.event.destination.user.id
+        - beyondtrust_epm.event.destination.user.name
+        - beyondtrust_epm.event.destination.user.roles
+        - beyondtrust_epm.event.dns.header_flags
+        - beyondtrust_epm.event.dns.id
+        - beyondtrust_epm.event.dns.op_code
+        - beyondtrust_epm.event.dns.question.class
+        - beyondtrust_epm.event.dns.question.name
+        - beyondtrust_epm.event.dns.question.registered_domain
+        - beyondtrust_epm.event.dns.question.subdomain
+        - beyondtrust_epm.event.dns.question.top_level_domain
+        - beyondtrust_epm.event.dns.question.type
+        - beyondtrust_epm.event.dns.resolved_ip
+        - beyondtrust_epm.event.dns.response_code
+        - beyondtrust_epm.event.dns.type
+        - beyondtrust_epm.event.http.request.body.bytes
+        - beyondtrust_epm.event.http.request.body.content
+        - beyondtrust_epm.event.http.request.bytes
+        - beyondtrust_epm.event.http.request.id
+        - beyondtrust_epm.event.http.request.method
+        - beyondtrust_epm.event.http.request.mime_type
+        - beyondtrust_epm.event.http.request.referrer
+        - beyondtrust_epm.event.http.response.body.bytes
+        - beyondtrust_epm.event.http.response.body.content
+        - beyondtrust_epm.event.http.response.bytes
+        - beyondtrust_epm.event.http.response.mime_type
+        - beyondtrust_epm.event.http.response.status_code
+        - beyondtrust_epm.event.http.version
+        - beyondtrust_epm.event.network.application
+        - beyondtrust_epm.event.network.bytes
+        - beyondtrust_epm.event.network.community_id
+        - beyondtrust_epm.event.network.direction
+        - beyondtrust_epm.event.network.forwarded_ip
+        - beyondtrust_epm.event.network.iana_number
+        - beyondtrust_epm.event.network.name
+        - beyondtrust_epm.event.network.packets
+        - beyondtrust_epm.event.network.protocol
+        - beyondtrust_epm.event.network.transport
+        - beyondtrust_epm.event.network.type
+        - beyondtrust_epm.event.network.vlan.id
+        - beyondtrust_epm.event.network.vlan.name
+        - beyondtrust_epm.event.server.address
+        - beyondtrust_epm.event.server.as.number
+        - beyondtrust_epm.event.server.as.organization.name
+        - beyondtrust_epm.event.server.bytes
+        - beyondtrust_epm.event.server.domain
+        - beyondtrust_epm.event.server.geo.city_name
+        - beyondtrust_epm.event.server.geo.continent_code
+        - beyondtrust_epm.event.server.geo.continent_name
+        - beyondtrust_epm.event.server.geo.country_iso_code
+        - beyondtrust_epm.event.server.geo.country_name
+        - beyondtrust_epm.event.server.geo.name
+        - beyondtrust_epm.event.server.geo.postal_code
+        - beyondtrust_epm.event.server.geo.region_iso_code
+        - beyondtrust_epm.event.server.geo.region_name
+        - beyondtrust_epm.event.server.geo.timezone
+        - beyondtrust_epm.event.server.ip
+        - beyondtrust_epm.event.server.mac
+        - beyondtrust_epm.event.server.nat.ip
+        - beyondtrust_epm.event.server.nat.port
+        - beyondtrust_epm.event.server.packets
+        - beyondtrust_epm.event.server.port
+        - beyondtrust_epm.event.server.registered_domain
+        - beyondtrust_epm.event.server.subdomain
+        - beyondtrust_epm.event.server.top_level_domain
+        - beyondtrust_epm.event.server.user.domain
+        - beyondtrust_epm.event.server.user.email
+        - beyondtrust_epm.event.server.user.full_name
+        - beyondtrust_epm.event.server.user.group.domain
+        - beyondtrust_epm.event.server.user.group.id
+        - beyondtrust_epm.event.server.user.group.name
+        - beyondtrust_epm.event.server.user.hash
+        - beyondtrust_epm.event.server.user.id
+        - beyondtrust_epm.event.server.user.name
+        - beyondtrust_epm.event.server.user.roles
+        - beyondtrust_epm.event.source.address
+        - beyondtrust_epm.event.source.as.number
+        - beyondtrust_epm.event.source.as.organization.name
+        - beyondtrust_epm.event.source.bytes
+        - beyondtrust_epm.event.source.domain
+        - beyondtrust_epm.event.source.geo.city_name
+        - beyondtrust_epm.event.source.geo.continent_code
+        - beyondtrust_epm.event.source.geo.continent_name
+        - beyondtrust_epm.event.source.geo.country_iso_code
+        - beyondtrust_epm.event.source.geo.country_name
+        - beyondtrust_epm.event.source.geo.name
+        - beyondtrust_epm.event.source.geo.postal_code
+        - beyondtrust_epm.event.source.geo.region_iso_code
+        - beyondtrust_epm.event.source.geo.region_name
+        - beyondtrust_epm.event.source.geo.timezone
+        - beyondtrust_epm.event.source.ip
+        - beyondtrust_epm.event.source.mac
+        - beyondtrust_epm.event.source.nat.ip
+        - beyondtrust_epm.event.source.nat.port
+        - beyondtrust_epm.event.source.packets
+        - beyondtrust_epm.event.source.port
+        - beyondtrust_epm.event.source.registered_domain
+        - beyondtrust_epm.event.source.subdomain
+        - beyondtrust_epm.event.source.top_level_domain
+        - beyondtrust_epm.event.source.user.domain
+        - beyondtrust_epm.event.source.user.email
+        - beyondtrust_epm.event.source.user.full_name
+        - beyondtrust_epm.event.source.user.group.domain
+        - beyondtrust_epm.event.source.user.group.id
+        - beyondtrust_epm.event.source.user.group.name
+        - beyondtrust_epm.event.source.user.hash
+        - beyondtrust_epm.event.source.user.id
+        - beyondtrust_epm.event.source.user.name
+        - beyondtrust_epm.event.source.user.roles
+        - beyondtrust_epm.event.tls.cipher
+        - beyondtrust_epm.event.tls.client.certificate
+        - beyondtrust_epm.event.tls.client.certificate_chain
+        - beyondtrust_epm.event.tls.client.hash.md5
+        - beyondtrust_epm.event.tls.client.hash.sha1
+        - beyondtrust_epm.event.tls.client.hash.sha256
+        - beyondtrust_epm.event.tls.client.issuer
+        - beyondtrust_epm.event.tls.client.ja3
+        - beyondtrust_epm.event.tls.client.not_after
+        - beyondtrust_epm.event.tls.client.not_before
+        - beyondtrust_epm.event.tls.client.server_name
+        - beyondtrust_epm.event.tls.client.subject
+        - beyondtrust_epm.event.tls.client.supported_ciphers
+        - beyondtrust_epm.event.tls.client.x509.alternative_names
+        - beyondtrust_epm.event.tls.client.x509.issuer.common_name
+        - beyondtrust_epm.event.tls.client.x509.issuer.country
+        - beyondtrust_epm.event.tls.client.x509.issuer.distinguished_name
+        - beyondtrust_epm.event.tls.client.x509.issuer.locality
+        - beyondtrust_epm.event.tls.client.x509.issuer.organization
+        - beyondtrust_epm.event.tls.client.x509.issuer.organizational_unit
+        - beyondtrust_epm.event.tls.client.x509.issuer.state_or_province
+        - beyondtrust_epm.event.tls.client.x509.not_after
+        - beyondtrust_epm.event.tls.client.x509.not_before
+        - beyondtrust_epm.event.tls.client.x509.public_key_algorithm
+        - beyondtrust_epm.event.tls.client.x509.public_key_curve
+        - beyondtrust_epm.event.tls.client.x509.public_key_exponent
+        - beyondtrust_epm.event.tls.client.x509.public_key_size
+        - beyondtrust_epm.event.tls.client.x509.serial_number
+        - beyondtrust_epm.event.tls.client.x509.signature_algorithm
+        - beyondtrust_epm.event.tls.client.x509.subject.common_name
+        - beyondtrust_epm.event.tls.client.x509.subject.country
+        - beyondtrust_epm.event.tls.client.x509.subject.distinguished_name
+        - beyondtrust_epm.event.tls.client.x509.subject.locality
+        - beyondtrust_epm.event.tls.client.x509.subject.organization
+        - beyondtrust_epm.event.tls.client.x509.subject.organizational_unit
+        - beyondtrust_epm.event.tls.client.x509.subject.state_or_province
+        - beyondtrust_epm.event.tls.client.x509.version_number
+        - beyondtrust_epm.event.tls.curve
+        - beyondtrust_epm.event.tls.established
+        - beyondtrust_epm.event.tls.next_protocol
+        - beyondtrust_epm.event.tls.resumed
+        - beyondtrust_epm.event.tls.server.certificate
+        - beyondtrust_epm.event.tls.server.certificate_chain
+        - beyondtrust_epm.event.tls.server.hash.md5
+        - beyondtrust_epm.event.tls.server.hash.sha1
+        - beyondtrust_epm.event.tls.server.hash.sha256
+        - beyondtrust_epm.event.tls.server.issuer
+        - beyondtrust_epm.event.tls.server.ja3s
+        - beyondtrust_epm.event.tls.server.not_after
+        - beyondtrust_epm.event.tls.server.not_before
+        - beyondtrust_epm.event.tls.server.subject
+        - beyondtrust_epm.event.tls.server.x509.alternative_names
+        - beyondtrust_epm.event.tls.server.x509.issuer.common_name
+        - beyondtrust_epm.event.tls.server.x509.issuer.country
+        - beyondtrust_epm.event.tls.server.x509.issuer.distinguished_name
+        - beyondtrust_epm.event.tls.server.x509.issuer.locality
+        - beyondtrust_epm.event.tls.server.x509.issuer.organization
+        - beyondtrust_epm.event.tls.server.x509.issuer.organizational_unit
+        - beyondtrust_epm.event.tls.server.x509.issuer.state_or_province
+        - beyondtrust_epm.event.tls.server.x509.not_after
+        - beyondtrust_epm.event.tls.server.x509.not_before
+        - beyondtrust_epm.event.tls.server.x509.public_key_algorithm
+        - beyondtrust_epm.event.tls.server.x509.public_key_curve
+        - beyondtrust_epm.event.tls.server.x509.public_key_exponent
+        - beyondtrust_epm.event.tls.server.x509.public_key_size
+        - beyondtrust_epm.event.tls.server.x509.serial_number
+        - beyondtrust_epm.event.tls.server.x509.signature_algorithm
+        - beyondtrust_epm.event.tls.server.x509.subject.common_name
+        - beyondtrust_epm.event.tls.server.x509.subject.country
+        - beyondtrust_epm.event.tls.server.x509.subject.distinguished_name
+        - beyondtrust_epm.event.tls.server.x509.subject.locality
+        - beyondtrust_epm.event.tls.server.x509.subject.organization
+        - beyondtrust_epm.event.tls.server.x509.subject.organizational_unit
+        - beyondtrust_epm.event.tls.server.x509.subject.state_or_province
+        - beyondtrust_epm.event.tls.server.x509.version_number
+        - beyondtrust_epm.event.tls.version
+        - beyondtrust_epm.event.tls.version_protocol
+        - beyondtrust_epm.event.url.domain
+        - beyondtrust_epm.event.url.extension
+        - beyondtrust_epm.event.url.fragment
+        - beyondtrust_epm.event.url.full
+        - beyondtrust_epm.event.url.original
+        - beyondtrust_epm.event.url.password
+        - beyondtrust_epm.event.url.path
+        - beyondtrust_epm.event.url.port
+        - beyondtrust_epm.event.url.query
+        - beyondtrust_epm.event.url.registered_domain
+        - beyondtrust_epm.event.url.scheme
+        - beyondtrust_epm.event.url.subdomain
+        - beyondtrust_epm.event.url.top_level_domain
+        - beyondtrust_epm.event.url.username
+      tag: remove_fields_mapped_with_ecs
+      ignore_missing: true

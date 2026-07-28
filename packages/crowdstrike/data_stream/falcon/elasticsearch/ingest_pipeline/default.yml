@@ -256,7 +256,6 @@ processors:
           ]
         }
 
-
   - pipeline:
       name: '{{ IngestPipeline "automated_lead_summary" }}'
       tag: pipeline_automated_lead_summary
@@ -281,6 +280,10 @@ processors:
       name: '{{ IngestPipeline "mobile_detection_summary" }}'
       tag: pipeline_mobile_detection_summary
       if: ctx.crowdstrike?.metadata?.eventType == "MobileDetectionSummaryEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "overwatch_generic_detection_summary" }}'
+      tag: pipeline_overwatch_generic_detection_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "OverwatchGenericDetectionSummaryEvent"
   - pipeline:
       name: '{{ IngestPipeline "incident_summary" }}'
       tag: pipeline_incident_summary
@@ -577,6 +580,7 @@ processors:
         ctx.threat.framework = frameworks.iterator().next();
       on_failure:
         - append:
+            tag: append_error_message_95be3cd6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # This removes any fields that are mapped to ECS, but have not been renamed.

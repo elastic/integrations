@@ -49,6 +49,20 @@ For existing users of the AWS integration, before upgrading to `4.0.0` please en
    For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
 3. Because the latest copy of vulnerabilities is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly.
 
+## Vulnerability status
+
+The integration maps the Amazon Inspector finding status (`aws.inspector.status`) to the `vulnerability.status` field so the [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) can distinguish active from remediated findings. `vulnerability.status` is a package-defined field that aligns with the ECS `vulnerability.status` field (added in ECS 9.5):
+
+| `aws.inspector.status` | `vulnerability.status` |
+|------------------------|------------------------|
+| `ACTIVE`               | `open`                 |
+| `SUPPRESSED`           | `open`                 |
+| `CLOSED`               | `fixed`                |
+
+`CLOSED` findings are mapped to `fixed`. `SUPPRESSED` findings are mapped to `open` because the vulnerability is still present on the resource; suppression in Amazon Inspector is a triage decision (for example, via a suppression rule) rather than a remediation.
+
+Note: the Vulnerability Findings page does not currently filter on `vulnerability.status`, so by default all findings are shown regardless of status. To exclude remediated findings, add a filter such as `NOT vulnerability.status: fixed`. To also hide suppressed findings, add `NOT aws.inspector.status: SUPPRESSED`.
+
 ## Logs
 
 ### Inspector
@@ -59,13 +73,13 @@ An example event for `inspector` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-06-05T23:23:16.162Z",
+    "@timestamp": "2026-06-03T09:09:10.000Z",
     "agent": {
-        "ephemeral_id": "298d11b5-7677-42b9-b1d3-9e35584a76e0",
-        "id": "c0caf694-09ce-4dae-b92d-0e7b52f94631",
-        "name": "elastic-agent-63222",
+        "ephemeral_id": "5c286f08-b0ad-4f2b-9d8b-88a8ae8d1332",
+        "id": "cf4610ce-0e27-4914-9f62-db80866b7437",
+        "name": "elastic-agent-56574",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "9.4.1"
     },
     "aws": {
         "inspector": {
@@ -74,7 +88,7 @@ An example event for `inspector` looks as following:
             },
             "exploit_available": "NO",
             "finding_arn": "arn:aws:inspector2:us-east-2:123456789012:finding/fb6294abcdef0123456789abcdef8123",
-            "first_observed_at": "2025-05-29T17:28:07.919Z",
+            "first_observed_at": "2026-03-13T17:28:07.919Z",
             "fix_available": "YES",
             "inspector_score": 6.5,
             "inspector_score_details": {
@@ -86,74 +100,154 @@ An example event for `inspector` looks as following:
                     "scoring_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L"
                 }
             },
-            "last_observed_at": "2025-06-05T23:23:16.162Z",
+            "last_observed_at": "2026-06-03T09:09:10.000Z",
             "package_nested": [
                 {
-                    "epoch": 0,
-                    "file_path": "vol-0e47545061282cd35:/p1:opt/cni/bin/aws-cni",
-                    "fixed_in_version": "0.38.0",
-                    "name": "golang.org/x/net",
-                    "package_manager": "GOBINARY",
-                    "version": "v0.1.0"
+                    "epoch": [
+                        0
+                    ],
+                    "file_path": [
+                        "vol-0e47545061282cd35:/p1:opt/cni/bin/aws-cni"
+                    ],
+                    "fixed_in_version": [
+                        "0.38.0"
+                    ],
+                    "name": [
+                        "golang.org/x/net"
+                    ],
+                    "package_manager": [
+                        "GOBINARY"
+                    ],
+                    "version": [
+                        "v0.1.0"
+                    ]
                 },
                 {
-                    "epoch": 0,
-                    "file_path": "vol-0e47545061282cd35:/p1:etc/eks/image-credential-provider/ecr-credential-provider",
-                    "fixed_in_version": "0.38.0",
-                    "name": "golang.org/x/net",
-                    "package_manager": "GOBINARY",
-                    "version": "v0.30.0"
+                    "epoch": [
+                        0
+                    ],
+                    "file_path": [
+                        "vol-0e47545061282cd35:/p1:etc/eks/image-credential-provider/ecr-credential-provider"
+                    ],
+                    "fixed_in_version": [
+                        "0.38.0"
+                    ],
+                    "name": [
+                        "golang.org/x/net"
+                    ],
+                    "package_manager": [
+                        "GOBINARY"
+                    ],
+                    "version": [
+                        "v0.30.0"
+                    ]
                 },
                 {
-                    "epoch": 0,
-                    "file_path": "vol-0e47545061282cd35:/p1:opt/cni/bin/dhcp",
-                    "fixed_in_version": "0.38.0",
-                    "name": "golang.org/x/net",
-                    "package_manager": "GOBINARY",
-                    "version": "v0.30.0"
+                    "epoch": [
+                        0
+                    ],
+                    "file_path": [
+                        "vol-0e47545061282cd35:/p1:opt/cni/bin/dhcp"
+                    ],
+                    "fixed_in_version": [
+                        "0.38.0"
+                    ],
+                    "name": [
+                        "golang.org/x/net"
+                    ],
+                    "package_manager": [
+                        "GOBINARY"
+                    ],
+                    "version": [
+                        "v0.30.0"
+                    ]
                 },
                 {
-                    "epoch": 0,
-                    "file_path": "vol-0e47545061282cd35:/p1:usr/bin/aws-iam-authenticator",
-                    "fixed_in_version": "0.38.0",
-                    "name": "golang.org/x/net",
-                    "package_manager": "GOBINARY",
-                    "version": "v0.30.0"
+                    "epoch": [
+                        0
+                    ],
+                    "file_path": [
+                        "vol-0e47545061282cd35:/p1:usr/bin/aws-iam-authenticator"
+                    ],
+                    "fixed_in_version": [
+                        "0.38.0"
+                    ],
+                    "name": [
+                        "golang.org/x/net"
+                    ],
+                    "package_manager": [
+                        "GOBINARY"
+                    ],
+                    "version": [
+                        "v0.30.0"
+                    ]
                 },
                 {
-                    "epoch": 0,
-                    "file_path": "vol-0e47545061282cd35:/p1:usr/bin/kubelet",
-                    "fixed_in_version": "0.38.0",
-                    "name": "golang.org/x/net",
-                    "package_manager": "GOBINARY",
-                    "version": "v0.30.0"
+                    "epoch": [
+                        0
+                    ],
+                    "file_path": [
+                        "vol-0e47545061282cd35:/p1:usr/bin/kubelet"
+                    ],
+                    "fixed_in_version": [
+                        "0.38.0"
+                    ],
+                    "name": [
+                        "golang.org/x/net"
+                    ],
+                    "package_manager": [
+                        "GOBINARY"
+                    ],
+                    "version": [
+                        "v0.30.0"
+                    ]
                 },
                 {
-                    "arch": "X86_64",
-                    "epoch": 0,
-                    "fixed_in_version": "0:2.0.5-1.amzn2.0.1",
-                    "name": "nerdctl",
-                    "package_manager": "OS",
-                    "release": "1.amzn2.0.1",
-                    "remediation": "yum update nerdctl",
-                    "version": "2.0.4"
+                    "arch": [
+                        "X86_64"
+                    ],
+                    "epoch": [
+                        0
+                    ],
+                    "fixed_in_version": [
+                        "0:2.0.5-1.amzn2.0.1"
+                    ],
+                    "name": [
+                        "nerdctl"
+                    ],
+                    "package_manager": [
+                        "OS"
+                    ],
+                    "release": [
+                        "1.amzn2.0.1"
+                    ],
+                    "remediation": [
+                        "yum update nerdctl"
+                    ],
+                    "version": [
+                        "2.0.4"
+                    ]
                 }
             ],
             "package_vulnerability_details": {
-                "cvss": [
-                    {
-                        "base_score": 6.5,
-                        "scoring_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L",
-                        "source": "NVD",
-                        "version": "3.1"
-                    },
-                    {
-                        "base_score": 6.5,
-                        "scoring_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L",
-                        "source": "NVD",
-                        "version": "3.1"
-                    }
-                ],
+                "cvss": {
+                    "base_score": [
+                        6.5,
+                        6.5
+                    ],
+                    "scoring_vector": [
+                        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L",
+                        "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L"
+                    ],
+                    "source": [
+                        "NVD",
+                        "NVD"
+                    ],
+                    "version": [
+                        "3.1",
+                        "3.1"
+                    ]
+                },
                 "source": {
                     "url": {
                         "domain": "nvd.nist.gov",
@@ -165,118 +259,116 @@ An example event for `inspector` looks as following:
                 },
                 "vendor": {
                     "severity": "MEDIUM",
-                    "updated_at": "2025-05-16T23:15:19.000Z"
+                    "updated_at": "2026-02-28T23:15:19.000Z"
                 },
-                "vulnerable_packages": [
-                    {
-                        "epoch": 0,
-                        "file_path": "vol-0e47545061282cd35:/p1:opt/cni/bin/aws-cni",
-                        "fixed_in_version": "0.38.0",
-                        "name": "golang.org/x/net",
-                        "package_manager": "GOBINARY",
-                        "version": "v0.1.0"
-                    },
-                    {
-                        "epoch": 0,
-                        "file_path": "vol-0e47545061282cd35:/p1:etc/eks/image-credential-provider/ecr-credential-provider",
-                        "fixed_in_version": "0.38.0",
-                        "name": "golang.org/x/net",
-                        "package_manager": "GOBINARY",
-                        "version": "v0.30.0"
-                    },
-                    {
-                        "epoch": 0,
-                        "file_path": "vol-0e47545061282cd35:/p1:opt/cni/bin/dhcp",
-                        "fixed_in_version": "0.38.0",
-                        "name": "golang.org/x/net",
-                        "package_manager": "GOBINARY",
-                        "version": "v0.30.0"
-                    },
-                    {
-                        "epoch": 0,
-                        "file_path": "vol-0e47545061282cd35:/p1:usr/bin/aws-iam-authenticator",
-                        "fixed_in_version": "0.38.0",
-                        "name": "golang.org/x/net",
-                        "package_manager": "GOBINARY",
-                        "version": "v0.30.0"
-                    },
-                    {
-                        "epoch": 0,
-                        "file_path": "vol-0e47545061282cd35:/p1:usr/bin/kubelet",
-                        "fixed_in_version": "0.38.0",
-                        "name": "golang.org/x/net",
-                        "package_manager": "GOBINARY",
-                        "version": "v0.30.0"
-                    },
-                    {
-                        "arch": "X86_64",
-                        "epoch": 0,
-                        "fixed_in_version": "0:2.0.5-1.amzn2.0.1",
-                        "name": "nerdctl",
-                        "package_manager": "OS",
-                        "release": "1.amzn2.0.1",
-                        "remediation": "yum update nerdctl",
-                        "version": "2.0.4"
-                    }
-                ]
+                "vulnerable_packages": {
+                    "arch": "X86_64",
+                    "epoch": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "file_path": [
+                        "vol-0e47545061282cd35:/p1:opt/cni/bin/aws-cni",
+                        "vol-0e47545061282cd35:/p1:etc/eks/image-credential-provider/ecr-credential-provider",
+                        "vol-0e47545061282cd35:/p1:opt/cni/bin/dhcp",
+                        "vol-0e47545061282cd35:/p1:usr/bin/aws-iam-authenticator",
+                        "vol-0e47545061282cd35:/p1:usr/bin/kubelet"
+                    ],
+                    "fixed_in_version": [
+                        "0.38.0",
+                        "0.38.0",
+                        "0.38.0",
+                        "0.38.0",
+                        "0.38.0",
+                        "0:2.0.5-1.amzn2.0.1"
+                    ],
+                    "name": [
+                        "golang.org/x/net",
+                        "golang.org/x/net",
+                        "golang.org/x/net",
+                        "golang.org/x/net",
+                        "golang.org/x/net",
+                        "nerdctl"
+                    ],
+                    "package_manager": [
+                        "GOBINARY",
+                        "GOBINARY",
+                        "GOBINARY",
+                        "GOBINARY",
+                        "GOBINARY",
+                        "OS"
+                    ],
+                    "release": "1.amzn2.0.1",
+                    "remediation": "yum update nerdctl",
+                    "version": [
+                        "v0.1.0",
+                        "v0.30.0",
+                        "v0.30.0",
+                        "v0.30.0",
+                        "v0.30.0",
+                        "2.0.4"
+                    ]
+                }
             },
             "remediation": {
                 "recommendation": {
                     "text": "None Provided"
                 }
             },
-            "resources": [
-                {
-                    "details": {
-                        "aws": {
-                            "ec2_instance": {
-                                "iam_instance_profile_arn": "arn:aws:iam::123456789012:instance-profile/eks-0012345a-1234-5678-1234-6c1abcdef012",
-                                "image_id": "ami-0e0f0123456789abd",
-                                "ipv4_addresses": [
-                                    "10.90.1.245",
-                                    "10.90.1.45",
-                                    "10.90.1.168",
-                                    "10.90.1.157",
-                                    "1.128.0.1",
-                                    "10.90.1.103",
-                                    "10.90.1.197",
-                                    "10.90.1.220",
-                                    "10.90.1.86",
-                                    "10.90.1.29",
-                                    "10.90.1.18",
-                                    "10.90.1.181",
-                                    "10.90.1.161",
-                                    "10.90.1.229",
-                                    "10.90.1.108",
-                                    "10.90.1.219",
-                                    "10.90.1.9",
-                                    "10.90.1.106",
-                                    "10.90.1.206"
-                                ],
-                                "launched_at": "2025-05-29T16:06:08.000Z",
-                                "platform": "AMAZON_LINUX_2",
-                                "subnet_id": "subnet-0ababcdefabcdef8b",
-                                "type": "t3.medium",
-                                "vpc_id": "vpc-04ab0123456789123"
-                            }
+            "resources": {
+                "details": {
+                    "aws": {
+                        "ec2_instance": {
+                            "iam_instance_profile_arn": "arn:aws:iam::123456789012:instance-profile/eks-0012345a-1234-5678-1234-6c1abcdef012",
+                            "image_id": "ami-0e0f0123456789abd",
+                            "ipv4_addresses": [
+                                "10.90.1.245",
+                                "10.90.1.45",
+                                "10.90.1.168",
+                                "10.90.1.157",
+                                "1.128.0.1",
+                                "10.90.1.103",
+                                "10.90.1.197",
+                                "10.90.1.220",
+                                "10.90.1.86",
+                                "10.90.1.29",
+                                "10.90.1.18",
+                                "10.90.1.181",
+                                "10.90.1.161",
+                                "10.90.1.229",
+                                "10.90.1.108",
+                                "10.90.1.219",
+                                "10.90.1.9",
+                                "10.90.1.106",
+                                "10.90.1.206"
+                            ],
+                            "launched_at": "2026-03-13T16:06:08.000Z",
+                            "platform": "AMAZON_LINUX_2",
+                            "subnet_id": "subnet-0ababcdefabcdef8b",
+                            "type": "t3.medium",
+                            "vpc_id": "vpc-04ab0123456789123"
                         }
-                    },
-                    "id": "i-0fabcdefabcdef50b",
-                    "partition": "aws",
-                    "region": "us-east-2",
-                    "tags": {
-                        "aws:autoscaling:groupName": "eks-sei_demo_prod_linux-00c12345-abcd-1234-5678-601234567896",
-                        "aws:ec2launchtemplate:version": "6",
-                        "aws:eks:cluster-name": "sei_demo_prod",
-                        "eks:cluster-name": "sei_demo_prod",
-                        "eks:nodegroup-name": "sei_demo_prod_linux",
-                        "k8s.io/cluster-autoscaler/enabled": "true",
-                        "k8s.io/cluster-autoscaler/sei_demo_prod": "owned",
-                        "kubernetes.io/cluster/sei_demo_prod": "owned"
-                    },
-                    "type": "AWS_EC2_INSTANCE"
-                }
-            ],
+                    }
+                },
+                "id": "i-0fabcdefabcdef50b",
+                "partition": "aws",
+                "region": "us-east-2",
+                "tags": {
+                    "aws:autoscaling:groupName": "eks-sei_demo_prod_linux-00c12345-abcd-1234-5678-601234567896",
+                    "aws:ec2launchtemplate:version": "6",
+                    "aws:eks:cluster-name": "sei_demo_prod",
+                    "eks:cluster-name": "sei_demo_prod",
+                    "eks:nodegroup-name": "sei_demo_prod_linux",
+                    "k8s.io/cluster-autoscaler/enabled": "true",
+                    "k8s.io/cluster-autoscaler/sei_demo_prod": "owned",
+                    "kubernetes.io/cluster/sei_demo_prod": "owned"
+                },
+                "type": "AWS_EC2_INSTANCE"
+            },
             "severity": "MEDIUM",
             "status": "ACTIVE",
             "transform_unique_id": "CVE-2025-22872|i-0fabcdefabcdef50b|{0=golang.org/x/net, 1=nerdctl}|{0=v0.1.0, 1=v0.30.0, 2=2.0.4}",
@@ -298,28 +390,29 @@ An example event for `inspector` looks as following:
     },
     "data_stream": {
         "dataset": "aws.inspector",
-        "namespace": "35676",
+        "namespace": "62586",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c0caf694-09ce-4dae-b92d-0e7b52f94631",
+        "id": "cf4610ce-0e27-4914-9f62-db80866b7437",
         "snapshot": false,
-        "version": "8.19.4"
+        "version": "9.4.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "vulnerability"
         ],
-        "created": "2025-11-12T05:49:57.024Z",
+        "created": "2026-07-03T09:09:10.375Z",
         "dataset": "aws.inspector",
-        "id": "CVE-2025-22872|i-0fabcdefabcdef50b|{0=golang.org/x/net, 1=nerdctl}|{0=v0.1.0, 1=v0.30.0, 2=2.0.4}|2025-06-05T23:23:16.162Z",
-        "ingested": "2025-11-12T05:50:00Z",
+        "id": "CVE-2025-22872|i-0fabcdefabcdef50b|{0=golang.org/x/net, 1=nerdctl}|{0=v0.1.0, 1=v0.30.0, 2=2.0.4}|2026-06-03T09:09:10.000Z",
+        "ingested": "2026-07-03T09:09:13Z",
         "kind": "event",
-        "original": "{\"awsAccountId\":\"123456789012\",\"description\":\"The tokenizer incorrectly interprets tags with unquoted attribute values that end with a solidus character (/) as self-closing. When directly using Tokenizer, this can result in such tags incorrectly being marked as self-closing, and when using the Parse functions, this can result in content following such tags as being placed in the wrong scope during DOM construction, but only when tags are in foreign content (e.g. \\u003cmath\\u003e, \\u003csvg\\u003e, etc contexts).\",\"epss\":{\"score\":0.00024},\"exploitAvailable\":\"NO\",\"findingArn\":\"arn:aws:inspector2:us-east-2:123456789012:finding/fb6294abcdef0123456789abcdef8123\",\"firstObservedAt\":1748539687.919,\"fixAvailable\":\"YES\",\"inspectorScore\":6.5,\"inspectorScoreDetails\":{\"adjustedCvss\":{\"adjustments\":[],\"cvssSource\":\"NVD\",\"score\":6.5,\"scoreSource\":\"NVD\",\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"version\":\"3.1\"}},\"lastObservedAt\":1749165796.162,\"packageVulnerabilityDetails\":{\"cvss\":[{\"baseScore\":6.5,\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"source\":\"NVD\",\"version\":\"3.1\"},{\"baseScore\":6.5,\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"source\":\"NVD\",\"version\":\"3.1\"}],\"referenceUrls\":[\"https://groups.google.com/g/golang-announce/c/ezSKR9vqbqA\",\"https://nvd.nist.gov/vuln/detail/CVE-2025-22872\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-981.html\",\"https://alas.aws.amazon.com/AL2/ALASDOCKER-2025-064.html\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-980.html\",\"https://alas.aws.amazon.com/AL2/ALASDOCKER-2025-063.html\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-979.html\",\"https://alas.aws.amazon.com/cve/json/v1/CVE-2025-22872.json\",\"https://alas.aws.amazon.com/AL2/ALAS-2025-2863.html\",\"https://alas.aws.amazon.com/cve/json/v1/CVE-2025-22872.json\"],\"relatedVulnerabilities\":[],\"source\":\"NVD\",\"sourceUrl\":\"https://nvd.nist.gov/vuln/detail/CVE-2025-22872\",\"vendorCreatedAt\":1744827364,\"vendorSeverity\":\"MEDIUM\",\"vendorUpdatedAt\":1747437319,\"vulnerabilityId\":\"CVE-2025-22872\",\"vulnerablePackages\":[{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:opt/cni/bin/aws-cni\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.1.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:etc/eks/image-credential-provider/ecr-credential-provider\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:opt/cni/bin/dhcp\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:usr/bin/aws-iam-authenticator\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:usr/bin/kubelet\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"arch\":\"X86_64\",\"epoch\":0,\"fixedInVersion\":\"0:2.0.5-1.amzn2.0.1\",\"name\":\"nerdctl\",\"packageManager\":\"OS\",\"release\":\"1.amzn2.0.1\",\"remediation\":\"yum update nerdctl\",\"version\":\"2.0.4\"}]},\"remediation\":{\"recommendation\":{\"text\":\"None Provided\"}},\"resources\":[{\"details\":{\"awsEc2Instance\":{\"iamInstanceProfileArn\":\"arn:aws:iam::123456789012:instance-profile/eks-0012345a-1234-5678-1234-6c1abcdef012\",\"imageId\":\"ami-0e0f0123456789abd\",\"ipV4Addresses\":[\"10.90.1.245\",\"10.90.1.45\",\"10.90.1.168\",\"10.90.1.157\",\"1.128.0.1\",\"10.90.1.103\",\"10.90.1.197\",\"10.90.1.220\",\"10.90.1.86\",\"10.90.1.29\",\"10.90.1.18\",\"10.90.1.181\",\"10.90.1.161\",\"10.90.1.229\",\"10.90.1.108\",\"10.90.1.219\",\"10.90.1.9\",\"10.90.1.106\",\"10.90.1.206\"],\"ipV6Addresses\":[],\"launchedAt\":1748534768,\"platform\":\"AMAZON_LINUX_2\",\"subnetId\":\"subnet-0ababcdefabcdef8b\",\"type\":\"t3.medium\",\"vpcId\":\"vpc-04ab0123456789123\"}},\"id\":\"i-0fabcdefabcdef50b\",\"partition\":\"aws\",\"region\":\"us-east-2\",\"tags\":{\"aws:autoscaling:groupName\":\"eks-sei_demo_prod_linux-00c12345-abcd-1234-5678-601234567896\",\"aws:ec2launchtemplate:version\":\"6\",\"aws:eks:cluster-name\":\"sei_demo_prod\",\"eks:cluster-name\":\"sei_demo_prod\",\"eks:nodegroup-name\":\"sei_demo_prod_linux\",\"k8s.io/cluster-autoscaler/enabled\":\"true\",\"k8s.io/cluster-autoscaler/sei_demo_prod\":\"owned\",\"kubernetes.io/cluster/sei_demo_prod\":\"owned\"},\"type\":\"AWS_EC2_INSTANCE\"}],\"severity\":\"MEDIUM\",\"status\":\"ACTIVE\",\"title\":\"CVE-2025-22872 - golang.org/x/net, golang.org/x/net and 4 more\",\"type\":\"PACKAGE_VULNERABILITY\",\"updatedAt\":1749165796.162}",
+        "module": "aws",
+        "original": "{\"awsAccountId\":\"123456789012\",\"description\":\"The tokenizer incorrectly interprets tags with unquoted attribute values that end with a solidus character (/) as self-closing. When directly using Tokenizer, this can result in such tags incorrectly being marked as self-closing, and when using the Parse functions, this can result in content following such tags as being placed in the wrong scope during DOM construction, but only when tags are in foreign content (e.g. \\u003cmath\\u003e, \\u003csvg\\u003e, etc contexts).\",\"epss\":{\"score\":0.00024},\"exploitAvailable\":\"NO\",\"findingArn\":\"arn:aws:inspector2:us-east-2:123456789012:finding/fb6294abcdef0123456789abcdef8123\",\"firstObservedAt\":1773422887.919,\"fixAvailable\":\"YES\",\"inspectorScore\":6.5,\"inspectorScoreDetails\":{\"adjustedCvss\":{\"adjustments\":[],\"cvssSource\":\"NVD\",\"score\":6.5,\"scoreSource\":\"NVD\",\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"version\":\"3.1\"}},\"lastObservedAt\":1780477750,\"packageVulnerabilityDetails\":{\"cvss\":[{\"baseScore\":6.5,\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"source\":\"NVD\",\"version\":\"3.1\"},{\"baseScore\":6.5,\"scoringVector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:L/I:L/A:L\",\"source\":\"NVD\",\"version\":\"3.1\"}],\"referenceUrls\":[\"https://groups.google.com/g/golang-announce/c/ezSKR9vqbqA\",\"https://nvd.nist.gov/vuln/detail/CVE-2025-22872\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-981.html\",\"https://alas.aws.amazon.com/AL2/ALASDOCKER-2025-064.html\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-980.html\",\"https://alas.aws.amazon.com/AL2/ALASDOCKER-2025-063.html\",\"https://alas.aws.amazon.com/AL2023/ALAS-2025-979.html\",\"https://alas.aws.amazon.com/cve/json/v1/CVE-2025-22872.json\",\"https://alas.aws.amazon.com/AL2/ALAS-2025-2863.html\",\"https://alas.aws.amazon.com/cve/json/v1/CVE-2025-22872.json\"],\"relatedVulnerabilities\":[],\"source\":\"NVD\",\"sourceUrl\":\"https://nvd.nist.gov/vuln/detail/CVE-2025-22872\",\"vendorCreatedAt\":1769710564,\"vendorSeverity\":\"MEDIUM\",\"vendorUpdatedAt\":1772320519,\"vulnerabilityId\":\"CVE-2025-22872\",\"vulnerablePackages\":[{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:opt/cni/bin/aws-cni\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.1.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:etc/eks/image-credential-provider/ecr-credential-provider\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:opt/cni/bin/dhcp\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:usr/bin/aws-iam-authenticator\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"epoch\":0,\"filePath\":\"vol-0e47545061282cd35:/p1:usr/bin/kubelet\",\"fixedInVersion\":\"0.38.0\",\"name\":\"golang.org/x/net\",\"packageManager\":\"GOBINARY\",\"version\":\"v0.30.0\"},{\"arch\":\"X86_64\",\"epoch\":0,\"fixedInVersion\":\"0:2.0.5-1.amzn2.0.1\",\"name\":\"nerdctl\",\"packageManager\":\"OS\",\"release\":\"1.amzn2.0.1\",\"remediation\":\"yum update nerdctl\",\"version\":\"2.0.4\"}]},\"remediation\":{\"recommendation\":{\"text\":\"None Provided\"}},\"resources\":[{\"details\":{\"awsEc2Instance\":{\"iamInstanceProfileArn\":\"arn:aws:iam::123456789012:instance-profile/eks-0012345a-1234-5678-1234-6c1abcdef012\",\"imageId\":\"ami-0e0f0123456789abd\",\"ipV4Addresses\":[\"10.90.1.245\",\"10.90.1.45\",\"10.90.1.168\",\"10.90.1.157\",\"1.128.0.1\",\"10.90.1.103\",\"10.90.1.197\",\"10.90.1.220\",\"10.90.1.86\",\"10.90.1.29\",\"10.90.1.18\",\"10.90.1.181\",\"10.90.1.161\",\"10.90.1.229\",\"10.90.1.108\",\"10.90.1.219\",\"10.90.1.9\",\"10.90.1.106\",\"10.90.1.206\"],\"ipV6Addresses\":[],\"launchedAt\":1773417968,\"platform\":\"AMAZON_LINUX_2\",\"subnetId\":\"subnet-0ababcdefabcdef8b\",\"type\":\"t3.medium\",\"vpcId\":\"vpc-04ab0123456789123\"}},\"id\":\"i-0fabcdefabcdef50b\",\"partition\":\"aws\",\"region\":\"us-east-2\",\"tags\":{\"aws:autoscaling:groupName\":\"eks-sei_demo_prod_linux-00c12345-abcd-1234-5678-601234567896\",\"aws:ec2launchtemplate:version\":\"6\",\"aws:eks:cluster-name\":\"sei_demo_prod\",\"eks:cluster-name\":\"sei_demo_prod\",\"eks:nodegroup-name\":\"sei_demo_prod_linux\",\"k8s.io/cluster-autoscaler/enabled\":\"true\",\"k8s.io/cluster-autoscaler/sei_demo_prod\":\"owned\",\"kubernetes.io/cluster/sei_demo_prod\":\"owned\"},\"type\":\"AWS_EC2_INSTANCE\"}],\"severity\":\"MEDIUM\",\"status\":\"ACTIVE\",\"title\":\"CVE-2025-22872 - golang.org/x/net, golang.org/x/net and 4 more\",\"type\":\"PACKAGE_VULNERABILITY\",\"updatedAt\":1780477750}",
         "type": [
             "info"
         ]
@@ -361,9 +454,7 @@ An example event for `inspector` looks as following:
         "vendor": "Amazon Inspector"
     },
     "package": {
-        "architecture": [
-            "X86_64"
-        ],
+        "architecture": "X86_64",
         "fixed_version": [
             "0.38.0",
             "0:2.0.5-1.amzn2.0.1"
@@ -420,7 +511,7 @@ An example event for `inspector` looks as following:
     "vulnerability": {
         "description": "The tokenizer incorrectly interprets tags with unquoted attribute values that end with a solidus character (/) as self-closing. When directly using Tokenizer, this can result in such tags incorrectly being marked as self-closing, and when using the Parse functions, this can result in content following such tags as being placed in the wrong scope during DOM construction, but only when tags are in foreign content (e.g. <math>, <svg>, etc contexts).",
         "id": "CVE-2025-22872",
-        "published_date": "2025-04-16T18:16:04.000Z",
+        "published_date": "2026-01-29T18:16:04.000Z",
         "reference": [
             "https://groups.google.com/g/golang-announce/c/ezSKR9vqbqA",
             "https://nvd.nist.gov/vuln/detail/CVE-2025-22872",
@@ -441,6 +532,7 @@ An example event for `inspector` looks as following:
             "version": "3.1"
         },
         "severity": "Medium",
+        "status": "open",
         "title": "CVE-2025-22872 - golang.org/x/net, golang.org/x/net and 4 more"
     }
 }
@@ -603,5 +695,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | vulnerability.cve | The CVE id of the vulnerability. | keyword |
 | vulnerability.published_date | When the vulnerability was published. | date |
 | vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
+| vulnerability.status | Lifecycle state of the vulnerability finding on the asset. Expected values: open, fixed, reopened, unknown. Package-defined field that aligns with the ECS `vulnerability.status` field added in ECS 9.5. | keyword |
 | vulnerability.title | The human readeable title of the vulnerability. | keyword |
 

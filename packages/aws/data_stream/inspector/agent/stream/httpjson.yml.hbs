@@ -27,14 +27,18 @@ request.transforms:
       target: body.sortCriteria
       value: '{"field":"LAST_OBSERVED_AT","sortOrder":"ASC"}'
       value_type: json
-{{!-- endInclusive is a static far-future epoch value because using (now) caused
-      nextToken invalidation when the value changed between pagination pages. A CEL
-      rewrite can use a dynamic upper bound safely since it can pin the value once per
-      collection interval. Inspector validates that dates fall within
-      [1970-01-01, 2033-01-01). --}}
+{{!-- Poll on updatedAt (not lastObservedAt) so status transitions such as CLOSED
+      and SUPPRESSED are collected. AWS advances updatedAt on those transitions but
+      leaves lastObservedAt unchanged, so a lastObservedAt window silently misses
+      them. The Inspector API cannot sort by updatedAt (SortField has no UPDATED_AT),
+      so the cursor cannot use the last event as a high-water mark; instead it stores
+      the poll time and the window re-scans from there on each interval. endInclusive
+      is a static far-future epoch value because using (now) caused nextToken
+      invalidation when the value changed between pagination pages. Inspector
+      validates that dates fall within [1970-01-01, 2033-01-01). --}}
   - set:
-      target: body.filterCriteria.lastObservedAt
-      value: '[{ "startInclusive": [[mul (div (toInt .cursor.last_observe_datetime) 1000) 1000]], "endInclusive": 1956528000 }]'
+      target: body.filterCriteria.updatedAt
+      value: '[{ "startInclusive": [[mul (div (toInt .cursor.last_update_datetime) 1000) 1000]], "endInclusive": 1956528000 }]'
       default: '[{ "startInclusive": [[mul (div (toInt (now (parseDuration "-{{initial_interval}}")).Unix) 1000) 1000]], "endInclusive": 1956528000 }]'
       value_type: json
   - set:
@@ -52,9 +56,14 @@ response.pagination:
   - set:
       target: header.Authorization
       value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/inspector2/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "inspector2")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/inspector2/aws4_request") (hash "sha256" "POST\n" "/findings/list\n" "\n" "host:inspector2.{{aws_region}}.{{tld}}\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
+{{!-- Store the poll time minus lag_time as the watermark. Because the window advances
+      by wall-clock time (not by a value seen in the data), a finding whose updatedAt
+      predates the poll but only becomes visible later would be missed; the lag_time
+      backoff re-scans a small overlap window to prevent that. Re-fetched findings share
+      the same fingerprint _id and are de-duplicated on ingest. --}}
 cursor:
-  last_observe_datetime:
-    value: '[[if (ne (len .last_response.body.findings) 100)]][[.last_event.lastObservedAt]][[end]]'
+  last_update_datetime:
+    value: '[[if (ne (len .last_response.body.findings) 100)]][[(now (parseDuration "-{{lag_time}}")).Unix]][[end]]'
 response.split:
   target: body.findings
 tags:
