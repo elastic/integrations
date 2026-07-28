@@ -43,7 +43,7 @@ to change the defaults.
 This is the `mimecast.archive_search_logs` dataset. These logs contain Mimecast archive
 search logs with the following details: search source, description and detailed
 information about the search performed. More information about these logs is available [here](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-archive-search-logs/).
+https://developer.services.mimecast.com/docs/auditevents/1/routes/api/archive/get-archive-search-logs/post).
 
 {{event "archive_search_logs"}}
 
@@ -54,7 +54,7 @@ https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-stat
 This is the `mimecast.audit_events` dataset. These logs contain Mimecast audit
 events with the following details: audit type, event category and detailed
 information about the event. More information about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/).
+https://developer.services.mimecast.com/docs/auditevents/1/routes/api/audit/get-audit-events/post).
 
 {{event "audit_events"}}
 
@@ -76,7 +76,7 @@ https://developer.services.mimecast.com/docs/threatssecurityeventsanddataforci/1
 This is the `mimecast.dlp_logs` dataset. These logs contain information about
 messages that triggered a DLP or Content Examination policy. More information
 about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/). 
+https://developer.services.mimecast.com/docs/securityevents/1/routes/api/dlp/get-logs/post). 
 
 {{event "dlp_logs"}}
 
@@ -87,7 +87,7 @@ https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-stat
 This is the `mimecast.message_release_logs` dataset. These logs contain information about
 messages that were either released to the recipient, with details about the user that
 processed the release. More information about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-message-release-logs/). 
+https://developer.services.mimecast.com/docs/auditevents/1/routes/api/gateway/get-held-release-logs/post). 
 
 {{event "message_release_logs"}}
 
@@ -98,7 +98,7 @@ https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-stat
 This is the `mimecast.siem_logs` dataset. These logs contain information about
 messages that contains MTA (message transfer agent) log – all inbound,
 outbound, and internal messages. More about [these logs](
-https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/).
+https://developer.services.mimecast.com/docs/threatssecurityeventsanddataforcg/1/routes/siem/v1/batch/events/cg/get).
 
 {{event "siem_logs"}}
 
@@ -109,7 +109,7 @@ https://integrations.mimecast.com/documentation/tutorials/understanding-siem-log
 This is the `mimecast.threat_intel_malware_customer` dataset. These logs contain
 information about messages that return identified malware threats at a customer
 level.  Learn more about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/).
+https://developer.services.mimecast.com/docs/threatmanagement/1/routes/api/ttp/threat-intel/get-feed/post).
 
 {{event "threat_intel_malware_customer"}}
 
@@ -120,7 +120,7 @@ https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/
 This is the `mimecast.threat_intel_malware_grid` dataset. These logs contain
 information about messages that return identified malware threats at a regional 
 grid level. More about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/).
+https://developer.services.mimecast.com/docs/threatmanagement/1/routes/api/ttp/threat-intel/get-feed/post).
 
 {{event "threat_intel_malware_grid"}}
 
@@ -134,7 +134,7 @@ analysis (if it is malicious or not etc.), date when file is released, sender
 and recipient address, filename and type, action triggered for the attachment, 
 the route of the original email containing the attachment and details. 
 Learn more about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/).
+https://developer.services.mimecast.com/docs/securityevents/1/routes/api/ttp/attachment/get-logs/post).
 
 {{event "ttp_ap_logs"}}
 
@@ -145,7 +145,7 @@ https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-stat
 This is the `mimecast.ttp_ip_logs` dataset. These logs contain information about
 messages containing information flagged by an Impersonation Protection
 configuration. Learn more about [these logs]
-(https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/).
+(https://developer.services.mimecast.com/docs/securityevents/1/routes/api/ttp/impersonation/get-logs/post).
 
 {{event "ttp_ip_logs"}}
 
@@ -162,7 +162,7 @@ URL, the date that the URL was clicked, url scan result, the action that was
 taken for the click, the description of the definition that triggered the URL to
 be rewritten by Mimecast, the action requested by the user, an array of
 components of the message where the URL was found. More about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/).
+https://developer.services.mimecast.com/docs/securityevents/1/routes/api/ttp/url/get-logs/post).
 
 {{event "ttp_url_logs"}}
 
