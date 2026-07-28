@@ -1,0 +1,12 @@
+version: '2.3'
+services:
+  trellix_epo_on_prem-event-tcp:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=tcp /sample_logs/trellix_epo_on_prem-event.log
+  trellix_epo_on_prem-event-udp:
+    image: docker.elastic.co/observability/stream:v0.22.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=udp /sample_logs/trellix_epo_on_prem-event.log
