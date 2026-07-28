@@ -1,0 +1,214 @@
+---
+description: Pipeline for processing XM Cyber VRM products.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 9.4.0
+  - terminate:
+      description: Error message set and no data to process.
+      tag: terminate_data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  - drop:
+      description: Drop the CEL token-refresh placeholder event before JSON parsing.
+      tag: drop_cel_retry_placeholder
+      if: ctx.message instanceof String && ctx.message == 'retry'
+  - remove:
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+  - rename:
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - remove:
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      tag: remove_message
+      if: ctx.event?.original != null
+      field: message
+      ignore_missing: true
+  - json:
+      tag: json_event_original_into_xm_cyber_product
+      field: event.original
+      target_field: xm_cyber.product
+      if: ctx.event?.original != null
+  - set:
+      tag: set_event_kind_event
+      field: event.kind
+      value: event
+  - script:
+      description: Convert field names from camelCase to snake_case recursively under xm_cyber.product.
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      source: |-
+        String camelToSnake(String str) {
+            def result = "";
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (Character.isUpperCase(c)) {
+                    if (i > 0 && Character.isLowerCase(str.charAt(i - 1))) {
+                        result += "_";
+                    }
+                    result += Character.toLowerCase(c);
+                } else {
+                    result += c;
+                }
+            }
+            return result;
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              String newKey = camelToSnake(entry.getKey());
+              newObj[newKey] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        if (ctx.xm_cyber?.product != null) {
+          ctx.xm_cyber.product = convertToSnakeCase(ctx.xm_cyber.product);
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_script_camel_to_snake
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      tag: fingerprint_with_event_original
+      description: Stable document id from the canonical raw payload (product rows lack a unique id field).
+      fields:
+        - xm_cyber.product.product_name
+      target_field: _id
+      ignore_missing: true
+  - convert:
+      tag: convert_affected_critical_assets_long
+      field: xm_cyber.product.affected_critical_assets
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.product?.affected_critical_assets != ''
+      on_failure:
+        - remove:
+            field: xm_cyber.product.affected_critical_assets
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_choke_points_found_on_long
+      field: xm_cyber.product.choke_points_found_on
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.product?.choke_points_found_on != ''
+      on_failure:
+        - remove:
+            field: xm_cyber.product.choke_points_found_on
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_devices_found_on_long
+      field: xm_cyber.product.devices_found_on
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.product?.devices_found_on != ''
+      on_failure:
+        - remove:
+            field: xm_cyber.product.devices_found_on
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_product_vulnerabilities_long
+      field: xm_cyber.product.product_vulnerabilities
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.product?.product_vulnerabilities != ''
+      on_failure:
+        - remove:
+            field: xm_cyber.product.product_vulnerabilities
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_products_critical_assets_at_risk_long
+      field: xm_cyber.product.products_critical_assets_at_risk
+      type: long
+      ignore_missing: true
+      if: ctx.xm_cyber?.product?.products_critical_assets_at_risk != ''
+      on_failure:
+        - remove:
+            field: xm_cyber.product.products_critical_assets_at_risk
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+
+  - append:
+      tag: append_preserve_on_collector_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: pipeline_on_failure_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: pipeline_on_failure_preserve_original
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

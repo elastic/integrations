@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -21,9 +22,18 @@ import (
 
 	"github.com/elastic/integrations/dev/backports"
 	"github.com/elastic/integrations/dev/backports/changelog"
-	"github.com/elastic/integrations/dev/backports/gitutil"
+	"github.com/elastic/integrations/dev/backports/owners"
 	"github.com/elastic/integrations/dev/citools"
+	"github.com/elastic/integrations/dev/codeowners"
+	"github.com/elastic/integrations/dev/gitutil"
 )
+
+// ownersSourceBranch is the ownership source of truth for syncOwners — main
+// is always authoritative. A named constant (not an env var or Options
+// field) purely so the value lives in one place, easy to tweak here for
+// local debugging/testing; check_backport_owners.sh keeps its own identical
+// constant since the two run in separate processes.
+const ownersSourceBranch = "main"
 
 // Options controls the behaviour of Apply.
 type Options struct {
@@ -49,6 +59,7 @@ type Result struct {
 	PRURL            string   `json:"pr_url,omitempty"`
 	ConflictingFiles []string `json:"conflicting_files,omitempty"`
 	SuggestedCommand string   `json:"suggested_command,omitempty"`
+	OwnerSyncWarning string   `json:"owner_sync_warning,omitempty"` // non-empty when owner sync was skipped
 }
 
 // branchRE matches valid backport branch names (mirrors dev/backports/inventory.go).
@@ -156,14 +167,17 @@ func Apply(opts Options) (*Result, error) {
 		return nil, err
 	}
 
+	ownerSyncWarning := a.syncOwners(remote, ownersSourceBranch, opts.Package, pkgDir)
+
 	if opts.DryRun {
 		success = true
 		return &Result{
-			Status:        "success",
-			SHA:           opts.SHA,
-			TargetBranch:  branchName,
-			NewVersion:    newVersion,
-			WorkingBranch: workingBranch,
+			Status:           "success",
+			SHA:              opts.SHA,
+			TargetBranch:     branchName,
+			NewVersion:       newVersion,
+			WorkingBranch:    workingBranch,
+			OwnerSyncWarning: ownerSyncWarning,
 		}, nil
 	}
 
@@ -178,11 +192,12 @@ func Apply(opts Options) (*Result, error) {
 
 	success = true
 	return &Result{
-		Status:       "success",
-		SHA:          opts.SHA,
-		TargetBranch: branchName,
-		NewVersion:   newVersion,
-		PRURL:        prURL,
+		Status:           "success",
+		SHA:              opts.SHA,
+		TargetBranch:     branchName,
+		NewVersion:       newVersion,
+		PRURL:            prURL,
+		OwnerSyncWarning: ownerSyncWarning,
 	}, nil
 }
 
@@ -550,6 +565,176 @@ func (a applier) commitChanges(pkgDir, sha, newVersion string) error {
 	return nil
 }
 
+// syncOwners brings pkgDir's manifest.yml owner and CODEOWNERS entries in
+// line with sourceBranch's, as its own commit on top of the cherry-pick. It is
+// best-effort: any failure reading or parsing sourceBranch's state (fetch
+// failure, unparsable manifest, missing CODEOWNERS) is returned as a warning
+// string (and printed to stderr for human-mode callers) rather than failing the
+// whole backport. The CI check on PRs targeting backport-* branches
+// (elastic/integrations#19686) is the actual enforcement mechanism; this is a
+// convenience that keeps most backport PRs correct without it.
+// Returns "" on success or no-op, or a non-empty warning message when skipped.
+func (a applier) syncOwners(remote, sourceBranch, pkg, pkgDir string) string {
+	warn := func(format string, args ...any) string {
+		msg := fmt.Sprintf(format, args...)
+		fmt.Fprintf(os.Stderr, "warning: %s\n", msg)
+		return msg
+	}
+
+	plan, pkgPath, err := a.computeOwnerSyncPlan(remote, sourceBranch, pkgDir)
+	if err != nil {
+		return warn("skipping owner sync for %s: %v", pkg, err)
+	}
+	if plan.Empty() {
+		return ""
+	}
+
+	manifestPath := filepath.Join(pkgDir, "manifest.yml")
+	codeownersPath := filepath.Join(a.workDir, codeowners.DefaultCodeownersPath)
+	rollback := func() {
+		if rbErr := a.git.Run("checkout", "--", manifestPath, codeownersPath); rbErr != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not restore files after owner sync failure for %s: %v\n", pkg, rbErr)
+		}
+	}
+
+	if err := writeOwnerSyncPlan(a.workDir, pkgDir, pkgPath, plan); err != nil {
+		rollback()
+		return warn("skipping owner sync for %s: %v", pkg, err)
+	}
+	if err := a.commitOwnerSync(pkg, manifestPath); err != nil {
+		rollback()
+		return warn("committing owner sync for %s: %v", pkg, err)
+	}
+	return ""
+}
+
+// computeOwnerSyncPlan fetches remote/sourceBranch and compares pkgDir's
+// current CODEOWNERS/manifest.yml owner against sourceBranch's, returning the
+// changes needed (if any) and pkgDir's CODEOWNERS path (e.g.
+// "/packages/aws"). A found-false result from owners.Plan (e.g. the package
+// no longer exists on sourceBranch) is reported as an empty, no-error plan:
+// it's a normal skip, not a failure.
+//
+// This fetch is a second network round-trip on top of the backport-branch
+// fetch already done in prepareWorkingBranch. It is intentional: ownership
+// comparison requires a current view of sourceBranch — a cached remote ref
+// could be arbitrarily stale — and there is no safe way to skip it.
+func (a applier) computeOwnerSyncPlan(remote, sourceBranch, pkgDir string) (plan owners.SyncPlan, pkgPath string, err error) {
+	if err := a.git.Run("fetch", remote, sourceBranch); err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("fetching %s: %w", sourceBranch, err)
+	}
+	remoteRef := remote + "/" + sourceBranch
+
+	relPkgDir, err := filepath.Rel(a.workDir, pkgDir)
+	if err != nil {
+		return owners.SyncPlan{}, "", fmt.Errorf("resolving package path: %w", err)
+	}
+	relPkgDir = filepath.ToSlash(relPkgDir)
+	pkgPath = "/" + relPkgDir
+
+	syncPlan, found, err := owners.Compare(a.git, a.workDir, pkgDir, relPkgDir, remoteRef)
+	if err != nil {
+		return owners.SyncPlan{}, "", err
+	}
+	if !found {
+		return owners.SyncPlan{}, pkgPath, nil
+	}
+	return syncPlan, pkgPath, nil
+}
+
+// writeOwnerSyncPlan applies plan's changes to pkgDir/manifest.yml and
+// workDir/.github/CODEOWNERS.
+func writeOwnerSyncPlan(workDir, pkgDir, pkgPath string, plan owners.SyncPlan) error {
+	if plan.ManifestOwner != "" {
+		if err := setManifestOwner(filepath.Join(pkgDir, "manifest.yml"), plan.ManifestOwner); err != nil {
+			return fmt.Errorf("updating manifest owner: %w", err)
+		}
+	}
+
+	updates := make(map[string][]string, len(plan.SubPaths)+1)
+	if plan.PackageOwner != nil {
+		updates[pkgPath] = plan.PackageOwner
+	}
+	maps.Copy(updates, plan.SubPaths)
+	if len(updates) == 0 {
+		return nil
+	}
+
+	codeownersPath := filepath.Join(workDir, codeowners.DefaultCodeownersPath)
+	data, err := os.ReadFile(codeownersPath)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", codeowners.DefaultCodeownersPath, err)
+	}
+	info, err := os.Stat(codeownersPath)
+	if err != nil {
+		return err
+	}
+
+	updated := owners.ApplyUpdates(string(data), updates, pkgPath)
+	if err := os.WriteFile(codeownersPath, []byte(updated), info.Mode()); err != nil {
+		return fmt.Errorf("writing %s: %w", codeowners.DefaultCodeownersPath, err)
+	}
+	return nil
+}
+
+// setManifestOwner rewrites the "github:" line inside manifest.yml's "owner:"
+// block to newOwner, preserving the rest of the file's formatting.
+func setManifestOwner(manifestPath, newOwner string) error {
+	data, err := os.ReadFile(manifestPath)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", manifestPath, err)
+	}
+	info, err := os.Stat(manifestPath)
+	if err != nil {
+		return err
+	}
+
+	lines := bytes.Split(data, []byte("\n"))
+	ownerIdx := slices.IndexFunc(lines, func(l []byte) bool {
+		return bytes.HasPrefix(l, []byte("owner:"))
+	})
+	if ownerIdx == -1 {
+		return fmt.Errorf("owner block not found in %s", manifestPath)
+	}
+
+	githubIdx := -1
+	for i := ownerIdx + 1; i < len(lines); i++ {
+		if len(lines[i]) > 0 && lines[i][0] != ' ' && lines[i][0] != '\t' {
+			break // left the owner block
+		}
+		// TrimLeft drops the indentation so the prefix check matches the key
+		// itself, not a comment mentioning "github:" further into the line.
+		if bytes.HasPrefix(bytes.TrimLeft(lines[i], " \t"), []byte("github:")) {
+			githubIdx = i
+			break
+		}
+	}
+	if githubIdx == -1 {
+		return fmt.Errorf("owner.github line not found in %s", manifestPath)
+	}
+
+	prefixEnd := bytes.Index(lines[githubIdx], []byte("github:")) + len("github:")
+	lines[githubIdx] = append(append([]byte{}, lines[githubIdx][:prefixEnd]...), []byte(" "+newOwner)...)
+
+	updated := bytes.Join(lines, []byte("\n"))
+	return os.WriteFile(manifestPath, updated, info.Mode())
+}
+
+// commitOwnerSync stages manifest.yml and CODEOWNERS and commits them
+// separately from the cherry-pick commit.
+func (a applier) commitOwnerSync(pkg, manifestPath string) error {
+	if err := a.git.Run("add", manifestPath); err != nil {
+		return fmt.Errorf("staging manifest.yml: %w", err)
+	}
+	if err := a.git.Run("add", filepath.Join(a.workDir, codeowners.DefaultCodeownersPath)); err != nil {
+		return fmt.Errorf("staging CODEOWNERS: %w", err)
+	}
+	if err := a.git.Run("commit", "-m", fmt.Sprintf("Sync %s package owners from main", pkg)); err != nil {
+		return fmt.Errorf("committing owner sync: %w", err)
+	}
+	return nil
+}
+
 // conflictingFiles returns files in a conflict state after a failed cherry-pick.
 func (a applier) conflictingFiles() ([]string, error) {
 	out, err := a.git.Output("status", "--porcelain")
@@ -557,7 +742,8 @@ func (a applier) conflictingFiles() ([]string, error) {
 		return nil, err
 	}
 	var files []string
-	for line := range strings.SplitSeq(string(out), "\n") {
+	// strings.SplitSeq requires go1.23; go.mod pins go1.22 for backport compatibility with older base commits.
+	for _, line := range strings.Split(string(out), "\n") {
 		if len(line) < 3 {
 			continue
 		}

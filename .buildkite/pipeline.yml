@@ -3,8 +3,8 @@ env:
   SETUP_GVM_VERSION: "v0.6.0"
   DOCKER_COMPOSE_VERSION: "v2.24.1"
   DOCKER_VERSION: "26.1.2"
-  KIND_VERSION: 'v0.27.0'
-  K8S_VERSION: 'v1.33.0'
+  KIND_VERSION: 'v0.32.0'
+  K8S_VERSION: 'v1.36.1'
   YQ_VERSION: 'v4.35.2'
   JQ_VERSION: '1.7'
   GH_CLI_VERSION: "2.29.0"
@@ -83,6 +83,9 @@ steps:
       - ".buildkite/scripts/run_dev_scripts_tests.sh"
       - "dev/scripts/**.sh"
       - "dev/backports/**"
+    if: |
+      (build.env('BUILDKITE_PULL_REQUEST') != "false" && build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main") ||
+      (build.env('BUILDKITE_PULL_REQUEST') == "false" && build.branch == "main")
 
   - label: ":git: Trigger backport dry-runs"
     key: "trigger-backport-dryrun"
@@ -154,6 +157,25 @@ steps:
     if_changed:
       - "**/changelog.yml"
 
+  - label: ":busts_in_silhouette: Check backport package owners"
+    key: "check-backport-owners"
+    command: ".buildkite/scripts/check_backport_owners.sh"
+    soft_fail: true
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "2"
+      memory: "1G"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
+    depends_on:
+      - step: "check-buildkite-scripts"
+        allow_failure: false
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
+      build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') =~ /^backport-/
+    if_changed:
+      - "packages/**"
+      - ".github/CODEOWNERS"
 
   - label: "Trigger integrations"
     key: "test-integrations"
