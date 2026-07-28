@@ -1,0 +1,103 @@
+type: logs
+ilm_policy: logs-ti_abusech.yaraify-default_policy
+title: YARAify Rules
+streams:
+  - input: cel
+    enabled: false
+    template_path: cel.yml.hbs
+    title: YARAify Rules
+    description: Collect YARA rule metadata from the abuse.ch YARAify Community or Commercial API.
+    vars:
+      - name: url
+        type: text
+        title: URL
+        description: >-
+          URL for the YARAify API. For the Community API, use the full endpoint URL (for example `https://yaraify-api.abuse.ch/api/v1/`). For the Commercial API, use the API base URL (for example `https://api.spamhaus.com`).
+        multi: false
+        required: true
+        show_user: true
+        default: https://yaraify-api.abuse.ch/api/v1/
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 10m
+        description: Duration between requests to the YARAify API. Supported units are h/m/s. Example `10m`.
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+        description: How far back to pull YARA rule metadata on the first run when using the Commercial API. Supported units are h/m/s. Example `120h`. Default value is `24h`.
+      - name: page_size
+        type: integer
+        title: Page Size
+        multi: false
+        required: false
+        show_user: false
+        default: 100
+        description: Number of YARA rules to request per page when using the Commercial API (1–100).
+      - name: ioc_expiration_duration
+        type: text
+        title: IOC Expiration Duration
+        multi: false
+        required: true
+        show_user: true
+        default: "90d"
+        description: Indicator is expired after this duration since it was first seen. Supported units are d/h/m. Example `10d`. Default value is `90d`.
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: false
+        show_user: false
+        default: 30s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        multi: false
+        required: false
+        show_user: false
+        description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - abusech-yaraify
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

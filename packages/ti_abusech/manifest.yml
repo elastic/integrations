@@ -1,15 +1,15 @@
 name: ti_abusech
 title: abuse.ch
 version: "4.2.0"
-description: Ingest threat intelligence indicators from URL Haus, Malware Bazaar, and Threat Fox feeds with Elastic Agent.
+description: Ingest threat intelligence indicators from URL Haus, Malware Bazaar, Threat Fox, and YARAify feeds with Elastic Agent.
 type: integration
-format_version: "3.3.2"
+format_version: "3.4.2"
 categories:
   - security
   - threat_intel
 conditions:
   kibana:
-    version: "^8.19.0 || ^9.1.0"
+    version: "^9.1.0"
 icons:
   - src: /img/abusech2.svg
     title: abuse.ch
@@ -28,6 +28,10 @@ screenshots:
     title: abuse.ch URLs Dashboard Screenshot
     size: 600x600
     type: image/png
+  - src: /img/abusech-rules.png
+    title: abuse.ch Rules Dashboard Screenshot
+    size: 600x600
+    type: image/png
   - src: /img/abusech-softwares.png
     title: abuse.ch Softwares and x509 Certificates Dashboard Screenshot
     size: 600x600
@@ -39,7 +43,7 @@ screenshots:
 policy_templates:
   - name: ti_abusech
     title: abuse.ch API
-    description: Ingest threat intelligence indicators from URL Haus, Malware Bazaar, and Threat Fox feeds with Elastic Agent.
+    description: Ingest threat intelligence indicators from URL Haus, Malware Bazaar, Threat Fox, and YARAify feeds with Elastic Agent.
     deployment_modes:
       default:
         enabled: true
@@ -56,7 +60,32 @@ policy_templates:
       - type: cel
         title: Collect abuse.ch logs via API
         description: Collect abuse.ch logs via API
+        required_vars:
+          community:
+            - name: api_type
+              value: community
+            - name: auth_key
+          commercial:
+            - name: api_type
+              value: commercial
+            - name: username
+            - name: password
         vars:
+          - name: api_type
+            type: select
+            title: API Type
+            description: >-
+              Select the abuse.ch API to use for URLhaus, MalwareBazaar, and YARAify. Community API uses an Auth Key.
+              Commercial API uses Spamhaus credentials and JWT authentication. Other data streams always use the Community API.
+            multi: false
+            required: false
+            show_user: true
+            default: community
+            options:
+              - text: Community API
+                value: community
+              - text: Commercial API
+                value: commercial
           - name: auth_key
             type: password
             title: Auth Key (Community)
@@ -65,7 +94,24 @@ policy_templates:
             show_user: true
             secret: true
             description: >-
-              abuse.ch Auth Key for the Community API. Required when API Type is Community API. See [documentation](https://abuse.ch/blog/community-first/) for details.
+              abuse.ch Auth Key for the Community API. Required when API Type is Community API for data streams that use the Community API (Threat Fox, Malware Bazaar, URLhaus, YARAify). Not used when API Type is Commercial API. See [documentation](https://abuse.ch/blog/community-first/) for details.
+          - name: username
+            type: text
+            title: Username (Commercial)
+            description: >-
+              Email address for the abuse.ch Commercial API account from the [Spamhaus Customer Portal](https://portal.spamhaus.com).
+              Required when API Type is Commercial API (URLhaus, MalwareBazaar, and YARAify).
+            multi: false
+            required: false
+            show_user: true
+          - name: password
+            type: password
+            title: Password (Commercial)
+            description: Password for the abuse.ch Commercial API account. Required when API Type is Commercial API (URLhaus, MalwareBazaar, and YARAify).
+            multi: false
+            required: false
+            show_user: true
+            secret: true
           - name: enable_request_tracer
             type: bool
             title: Enable request tracing

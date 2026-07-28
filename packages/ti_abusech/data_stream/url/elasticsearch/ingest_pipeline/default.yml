@@ -58,6 +58,11 @@ processors:
       tag: json_event_original_to_abusech_url_61325982
       field: event.original
       target_field: abusech.url
+  - convert:
+      tag: convert_abusech_url_id_to_string
+      field: abusech.url.id
+      type: string
+      ignore_missing: true
   #####################
   # Threat ECS Fields #
   #####################
@@ -65,6 +70,21 @@ processors:
       tag: set_threat_indicator_type_2f871b98
       field: threat.indicator.type
       value: url
+  - date:
+      tag: date_abusech_url_first_seen_to_threat_indicator_first_seen_a8f3c2d1
+      field: abusech.url.first_seen
+      target_field: threat.indicator.first_seen
+      formats:
+        - ISO8601
+      if: ctx.abusech?.url?.first_seen != null && ctx.abusech?.url?.first_seen != ""
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_date_abusech_url_first_seen_to_threat_indicator_first_seen_a8f3c2d1
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - date:
       tag: date_abusech_url_date_added_to_threat_indicator_first_seen_fb078f17
       field: abusech.url.date_added
@@ -86,6 +106,7 @@ processors:
       field: abusech.url.last_online
       target_field: threat.indicator.last_seen
       formats:
+        - ISO8601
         - "yyyy-MM-dd HH:mm:ss z"
         - "yyyy-MM-dd HH:mm:ss Z"
       if: ctx.abusech?.url?.last_online != null
@@ -244,6 +265,7 @@ processors:
       field:
         - abusech.url.date_added
         - abusech.url.dateadded
+        - abusech.url.first_seen
         - abusech.url.url
         - abusech.url.host
         - message

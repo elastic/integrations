@@ -23,29 +23,7 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "event.module",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "event.module",
-                            "negate": false,
-                            "params": {
-                                "query": "ti_abusech"
-                            },
-                            "type": "phrase"
-                        },
-                        "query": {
-                            "match_phrase": {
-                                "event.module": "ti_abusech"
-                            }
-                        }
-                    },
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": null,
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
                             "key": "threat.indicator.type",
                             "negate": false,
                             "params": {
@@ -66,8 +44,165 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "labels.is_ioc_transform_source",
+                            "field": "threat.indicator.type",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "threat.indicator.type",
+                            "negate": false,
+                            "params": [
+                                "software",
+                                "x509-certificate"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "threat.indicator.type": "software"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "threat.indicator.type": "x509-certificate"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "event.kind",
+                            "negate": false,
+                            "params": {
+                                "query": "enrichment"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.kind": "enrichment"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
+                            "key": "threat.indicator.type",
+                            "negate": false,
+                            "params": {
+                                "query": "file"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "threat.indicator.type": "file"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[4].meta.index",
+                            "key": "threat.indicator.file.hash.ssdeep",
+                            "negate": false,
+                            "type": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "threat.indicator.file.hash.ssdeep"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "event.module",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[5].meta.index",
+                            "key": "event.module",
+                            "negate": false,
+                            "params": {
+                                "query": "ti_abusech"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.module": "ti_abusech"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "threat.indicator.type",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[6].meta.index",
+                            "key": "threat.indicator.type",
+                            "negate": false,
+                            "params": [
+                                "domain-name",
+                                "ipv4-addr",
+                                "ipv6-addr"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "threat.indicator.type": "domain-name"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "threat.indicator.type": "ipv4-addr"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "threat.indicator.type": "ipv6-addr"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "labels.is_ioc_transform_source",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[7].meta.index",
                             "key": "labels.is_ioc_transform_source",
                             "negate": true,
                             "params": {
@@ -96,47 +231,6 @@
             "useMargins": true
         },
         "panelsJSON": [
-            {
-                "embeddableConfig": {
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "hidePanelTitles": false,
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "fontSize": 12,
-                            "markdown": "**Overview**\n\nThis dashboard is an overview of the different threat intelligence indicators with a **threat.indicator.type: url**.  \n\nThe dashboard is made to provide general statistics and show the health of your indicators like popular domains, file extensions, statistics about how many unique indicators are ingested and other relevant information.\n\n**[Integrations Page](/app/integrations/detail/ti_abusech/overview)**\n",
-                            "openLinksInNewTab": false
-                        },
-                        "title": "",
-                        "type": "markdown",
-                        "uiState": {}
-                    },
-                    "title": "Table of Contents"
-                },
-                "gridData": {
-                    "h": 31,
-                    "i": "4c3ed6e1-8b4e-4eab-8d84-70ed4f506216",
-                    "w": 7,
-                    "x": 0,
-                    "y": 9
-                },
-                "panelIndex": "4c3ed6e1-8b4e-4eab-8d84-70ed4f506216",
-                "type": "visualization"
-            },
             {
                 "embeddableConfig": {
                     "attributes": {
@@ -1014,17 +1108,29 @@
                                 "type": "dashboardLink"
                             },
                             {
+                                "destinationRefName": "link_9430c835-47b8-42b1-bc0e-6a9edb5ba490_dashboard",
+                                "id": "9430c835-47b8-42b1-bc0e-6a9edb5ba490",
+                                "label": "Rules",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 3,
+                                "type": "dashboardLink"
+                            },
+                            {
                                 "destinationRefName": "link_6fec6efb-d037-43f0-a28c-0dd6a49db6ce_dashboard",
                                 "id": "6fec6efb-d037-43f0-a28c-0dd6a49db6ce",
                                 "label": "Software and X-509 Certificates",
-                                "order": 3,
+                                "order": 4,
                                 "type": "dashboardLink"
                             },
                             {
                                 "destinationRefName": "link_28350cf4-92cf-4b91-b1c8-76efbca03f7a_dashboard",
                                 "id": "28350cf4-92cf-4b91-b1c8-76efbca03f7a",
                                 "label": "URLs",
-                                "order": 4,
+                                "order": 5,
                                 "type": "dashboardLink"
                             }
                         ]
@@ -1032,7 +1138,7 @@
                     "title": "Navigation"
                 },
                 "gridData": {
-                    "h": 9,
+                    "h": 10,
                     "i": "925f725b-f912-4db9-85f3-2298a6dd5c82",
                     "w": 7,
                     "x": 0,
@@ -1040,6 +1146,47 @@
                 },
                 "panelIndex": "925f725b-f912-4db9-85f3-2298a6dd5c82",
                 "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": false,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**Overview**\n\nThis dashboard is an overview of the different threat intelligence indicators with a **threat.indicator.type: url**.  \n\nThe dashboard is made to provide general statistics and show the health of your indicators like popular domains, file extensions, statistics about how many unique indicators are ingested and other relevant information.\n\n**[Integrations Page](/app/integrations/detail/ti_abusech/overview)**\n",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    },
+                    "title": "Table of Contents"
+                },
+                "gridData": {
+                    "h": 30,
+                    "i": "4c3ed6e1-8b4e-4eab-8d84-70ed4f506216",
+                    "w": 7,
+                    "x": 0,
+                    "y": 10
+                },
+                "panelIndex": "4c3ed6e1-8b4e-4eab-8d84-70ed4f506216",
+                "type": "visualization"
             }
         ],
         "timeRestore": false,
@@ -1047,7 +1194,7 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-09-19T10:51:07.301Z",
+    "created_at": "2026-07-27T06:44:05.879Z",
     "id": "ti_abusech-2457fb50-3bc3-11ec-ae8c-7d00429ad420",
     "references": [
         {
@@ -1064,6 +1211,36 @@
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[4].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[5].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[6].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[7].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "ti_abusech-73511520-3b32-11ec-ae50-2fdf1e96c6a6",
+            "name": "tag-ref-ti_abusech-73511520-3b32-11ec-ae50-2fdf1e96c6a6",
+            "type": "tag"
         },
         {
             "id": "logs-*",
@@ -1146,6 +1323,11 @@
             "type": "dashboard"
         },
         {
+            "id": "ti_abusech-18caef63-b36a-4e7b-95c7-3c0b1e882425",
+            "name": "925f725b-f912-4db9-85f3-2298a6dd5c82:link_9430c835-47b8-42b1-bc0e-6a9edb5ba490_dashboard",
+            "type": "dashboard"
+        },
+        {
             "id": "ti_abusech-68ac01ad-dddf-476c-9a54-8c33c1047e53",
             "name": "925f725b-f912-4db9-85f3-2298a6dd5c82:link_6fec6efb-d037-43f0-a28c-0dd6a49db6ce_dashboard",
             "type": "dashboard"
@@ -1171,11 +1353,32 @@
             "type": "index-pattern"
         },
         {
-            "id": "ti_abusech-73511520-3b32-11ec-ae50-2fdf1e96c6a6",
-            "name": "tag-ref-ti_abusech-73511520-3b32-11ec-ae50-2fdf1e96c6a6",
-            "type": "tag"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[4].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[5].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[6].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[7].meta.index",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.3.0"
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }
