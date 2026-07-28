@@ -1,141 +1,131 @@
-{{- generatedHeader }}
-{{/*
-This template can be used as a starting point for writing documentation for your new integration. For each section, fill in the details
-described in the comments.
-
-Find more detailed documentation guidelines in https://www.elastic.co/docs/extend/integrations/documentation-guidelines
-*/}}
-# Trellix ePO on-prem Integration for Elastic
+# Trellix ePO On-Premises Integration for Elastic
 
 ## Overview
-{{/* Complete this section with a short summary of what data this integration collects and the service it integrates with. */}}
-The Trellix ePO on-prem integration for Elastic enables collection of ...
+
+[Trellix ePolicy Orchestrator (ePO) On-Premises](https://www.trellix.com/products/epolicy-orchestrator/) is a centralized security management platform for managing endpoint policies, products, systems, and security events across an organization. It offers comprehensive audit logging for system administration, user activity, policy changes, and security-related actions across hybrid endpoint deployments — combining authentication, authorization, and detailed audit trails into a unified platform for **critical security infrastructure monitoring and compliance**.
+
+The Trellix ePO On-Premises integration for Elastic collects audit logs using the **REST API** via CEL input, and visualizes them in Kibana.
 
 ### Compatibility
-{{/* Complete this section with information on what 3rd party software or hardware versions this integration is compatible with */}}
-This integration is compatible with ...
+
+The Trellix ePO On-Premises integration is compatible with **Trellix ePO On-Premises 5.10.0 and above** with REST API support enabled.
 
 ### How it works
-{{/* Add a high level overview on how this integration works. For example, does it collect data from API calls or receiving data from a network or file.*/}}
+
+This integration uses the Elastic Agent CEL input to poll the Trellix ePO REST API at configurable intervals. It retrieves audit log records from the `OrionAuditLog` table and implements keyset-based pagination using cursor timestamps for efficient, non-blocking retrieval without missing or duplicating records. Each audit event is mapped to Elastic Common Schema (ECS) for standardized field naming and ingested as an individual event for enrichment by the built-in ingest pipeline.
 
 ## What data does this integration collect?
-{{/* Complete this section with information on what types of data the integration collects, and link to reference documentation if available
-*/}}
-The Trellix ePO on-prem integration collects log messages of the following types:
-* ...
+
+The Trellix ePO On-Premises integration collects the following types of data:
+
+| Data stream | Description | Source |
+|---|---|---|
+| `audit` | Trellix ePO audit log records, including system administration, policy changes, user activity, and security-related actions retrieved from the ePO REST API. | `/remote/core.executeQuery` API |
 
 ### Supported use cases
-{{/* Add details on the use cases that can be enabled by using this integration. Explain why a user would want to install and use this integration. */}}
+
+Integrating Trellix ePO with Elastic provides centralized visibility into system administration, user activity, and policy changes across your ePO deployment, enabling efficient audit trail monitoring, compliance reporting, and security investigation within Kibana dashboards.
 
 ## What do I need to use this integration?
-{{/* List any Elastic or vendor-specific prerequisites needed before starting to install the integration. For example, Elastic self-managed or cloud deployment, or a vendor-specific credentials or accounts */}}
+
+### From Trellix ePO On-Premises
+
+To collect data via the REST API, you need the following:
+
+1. **Trellix ePO server**: Trellix ePO On-Premises 5.10.0 or above with REST API enabled
+2. **User account**: A Trellix ePO user account with:
+   - **Query permissions** to the `OrionAuditLog` table (or `OrionAuditLogMT` for multitenant deployments)
+   - Sufficient role permissions to execute queries via the Web API
+3. **API credentials**: Username and password for basic authentication
+4. **Server URL**: Base URL of the Trellix ePO server (default port: 2400, e.g., `https://epo.example.com:2400`)
+5. **Network access**: The Elastic Agent must have outbound HTTPS access to the ePO server
+
+For more information on configuring REST API access in Trellix ePO, refer to the [Trellix ePO Web API Scripting Reference Guide](https://docs.trellix.com/bundle/trellix-epolicy-orchestrator-on-prem-web-api-scripting-reference-guide/page/UUID-8df5c181-2be6-8b3e-f562-e5b292a385ca.html).
 
 ## How do I deploy this integration?
 
-### Agent-based deployment
+This integration supports both Elastic Agentless-based and Agent-based installations.
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
+### Agentless-based installation
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-{{/* If agentless is available for this integration, include the following section. You can determine if agentless is available for this integration by checking the `manifest.yml` file, and looking for the existence of `policy_templates.deployment_modes.agentless.enabled: "true"`.
-### Agentless deployment
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+### Agent-based installation
 
-For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html)
-*/}}
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-### Set up steps in Trellix ePO on-prem
-{{/* List the steps that are required to set up the 3rd party system to send data to Elastic.
-This should be specific to the steps needed to set up the 3rd party system to send data to Elastic. It should not include generic information about how to install or set up the 3rd party system itself.
-*/}}
+### Configure
 
-#### Vendor resources
-{{/* Add vendor documentation links that are specific to the steps needed to set up the vendor system to send data to Elastic. Exclude this section if no vendor setup links are available. */}}
-- [Vendor documentation link 1](https://www.vendor.com/documentation/link1)
-- [Vendor documentation link 2](https://www.vendor.com/documentation/link2)
-- [Vendor documentation link 3](https://www.vendor.com/documentation/link3)
+1. In the top search bar in Kibana, search for **Integrations**.
+2. In the search bar, type **Trellix ePO On-Premises**.
+3. Select the **Trellix ePO On-Premises** integration from the search results.
+4. Select **Add Trellix ePO On-Premises** to add the integration.
+5. Enable and configure the **Collect audit logs using Trellix ePO REST API (CEL)** collection method.
 
-### Set up steps in Kibana
-{{/* List the steps that are required to set up the integration in Kibana.
-This includes how to add the integration, and how to configure the integration, with descriptions of each available configuration option.
+    * Set the **URL** to the base URL of your Trellix ePO server (e.g., `https://epo.example.com:2400`)
+    * Set the **Username** for the ePO user account with audit log query permissions
+    * Set the **Password** for the ePO user account
+    * **Initial Interval**: The lookback period for the first API request (default: `24h`)
+    * **Page Size**: Number of audit log records to retrieve per API call (default: `500`)
+    * Optionally adjust **Interval** and **HTTP Client Timeout** as needed
 
-If multiple input types are supported, add instructions for each in a subsection.
-*/}}
-
-### Validation
-{{/* In this section, describe the actions required to validate that the integration is working properly, and data is flowing into Elasticsearch.
-If required, list the steps needed in the vendor product to start sending events or trigger alerts.
-Then list how to validate that the data is in Elasticsearch, using Kibana. This could be which indices to check in the Discover table, or which built in dashboards to look at to see the data.
-*/}}
+6. Select **Save and continue** to save the integration.
 
 ## Troubleshooting
-{{/* The troubleshooting section should contain troubleshooting for common issues specific to this integration. Do not include generic troubleshooting information. Where appropriate, include details specific to each input type.
-Whenever possible, link to the troubleshooting documentation provided by the third-party software.
 
-IMPORTANT: Use plain text for issue descriptions, NOT bold. Example:
-- No data is being collected: Verify network connectivity and credentials
-- TCP framing issues: Check that both sides use the same framing method
-Do NOT use **bold** for issue names like "**No data is being collected**:".
-*/}}
+* **No data collected**: Verify that the Trellix ePO API URL is correct, credentials are valid, and the Elastic Agent has network access to the ePO server. Check that the user account has permissions to query the `OrionAuditLog` table.
+* **Authentication failures**: Ensure the username and password are correct and the user account has not been locked or disabled in Trellix ePO. Verify the account has sufficient permissions to access the `OrionAuditLog` table.
+* **Incomplete or missing fields**: Confirm that the ePO user account has sufficient permissions to access all audit log fields configured in the integration (select clause in the CEL template).
+* **Pagination issues**: If audit logs are not advancing beyond the initial set, verify that the `StartTime` field is present in all returned records and that pagination timestamps are being correctly updated.
+* **SSL certificate errors**: If your Trellix ePO server uses a self-signed certificate, extract the certificate and configure it under the SSL settings of the integration, or add it to the Elastic Agent's trusted certificate store.
+* **Network connectivity issues**: Verify firewall rules allow outbound HTTPS traffic from the Elastic Agent host to the Trellix ePO server on the configured port.
 
-## Performance and scaling
-{{/* Add any vendor specific performance and scaling information to this section.
-Performance and scaling information should be specific to sending data to Elasticsearch. It should not include information about the vendor product itself or generic information about performance and scaling.
-*/}}
+For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
+
+### Validation
+
+#### Dashboard populated
+
+1. In the top search bar in Kibana, search for **Dashboards**.
+2. In the search bar, type **Trellix ePO On-Premises**, and verify the dashboard information is populated.
+3. Open the **[Logs Trellix ePO On-Premises] Audit Overview** dashboard to verify audit event data is being collected.
+
+## Scaling
+
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
 ## Reference
 
+### Vendor documentation links
+
+- [Trellix ePO Web API Scripting Reference Guide](https://docs.trellix.com/bundle/trellix-epolicy-orchestrator-on-prem-web-api-scripting-reference-guide/page/UUID-8df5c181-2be6-8b3e-f562-e5b292a385ca.html)
+- [Trellix ePO Web API Query Language](https://docs.trellix.com/bundle/trellix-epolicy-orchestrator-on-prem-web-api-scripting-reference-guide/page/UUID-cd01321d-b19b-5095-c79b-eabc7c0726bb.html)
+- [Trellix ePO 5.10.0 Product Guide](https://docs.trellix.com/bundle/trellix-epolicy-orchestrator-on-prem-5.10.0-product-guide/page/UUID-3946078c-6e32-df76-6296-216ee05a2176.html)
+
+### Audit
+
+The `audit` data stream provides Trellix ePO On-Premises audit logs collected from the REST API.
+
+#### Audit fields
+
+{{ fields "audit" }}
+
+### Example event
+
+#### Audit
+
+{{ event "audit" }}
+
 ### Inputs used
-{{/* All inputs used by this package will be automatically listed here. Do not modify this section. */}}
-{{ inputDocs }}
+
+These inputs are used in the integration:
+
+- [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 
 ### API usage
-{{/* For integrations that use APIs to collect data, document all the APIs that are used, and link to relevant information. For integrations that do not use APIs, do not include this section. */}}
-These APIs are used with this integration:
-* ...
 
-### Vendor documentation links
-{{/* Add vendor documentation links which provide useful general information about the integration.*/}}
-- [Vendor documentation link 1](https://www.vendor.com/documentation/link1)
-- [Vendor documentation link 2](https://www.vendor.com/documentation/link2)
-- [Vendor documentation link 3](https://www.vendor.com/documentation/link3)
+This integration uses the following API:
 
-### Data streams
-{{/* Repeat all information in this section for each data stream the package collects.*/}}
-
-#### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}.
-
-For each data_stream_name, include an optional summary of the datastream, the exported fields reference table and the sample event.
-
-The fields template function will be replaced by a generated list of all fields from the `fields/` directory of the data stream when building the integration.
-
-##### {data stream name} fields
-
-To include a generated list of fields from the `fields/` directory, uncomment and use:
-{{/* {{ fields "data_stream_name" }} */}}
-
-##### {data stream name} sample event
-The event template function will be replace by a sample event, taken from `sample_event.json`, when building this integration.
-
-To include a sample event from `sample_event.json`, uncomment and use:
-{{/* {{ event "data_stream_name" }}  */}}
-
-{{/* Export ILM Policies
-     This accepts a list of data stream names as arguments, and will export the ILM Policies
-     for each given data stream name. If no arguments are provided, all ILM Policies will be
-     exported.
-
-     If there are no ILM Policies defined, this will be an empty string.
-*/}}
-{{ ilm }}
-
-{{/* Export Transforms
-     This will export the transforms used by this integration.
-     If there are no transforms defined, this will be an empty string.
-*/}}
-{{ transform }}
+* **Audit**: Collects audit log records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `OrionAuditLog` table using keyset-based pagination with the `StartTime` field as a cursor to ensure efficient and non-duplicating retrieval.

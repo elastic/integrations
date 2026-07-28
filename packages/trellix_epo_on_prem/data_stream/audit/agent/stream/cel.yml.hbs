@@ -12,10 +12,14 @@ resource.ssl: {{ssl}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
 resource.url: {{url}}
-state:
-  username: {{username}}
+auth.basic:
+  user: {{username}}
   password: {{password}}
+state:
   initial_interval: {{initial_interval}}
   page_size: {{page_size}}
   columns: >-
@@ -25,7 +29,7 @@ state:
 redact:
   fields:
     - password
-program: |-
+program: |
   (
     state.?want_more.orValue(false) ?
       state
@@ -37,8 +41,7 @@ program: |-
       })
   ).as(state,
     state.with(
-      request(
-        "GET",
+      get(
         state.url.trim_right("/") + "/remote/core.executeQuery?" +
         {
           "target": ["OrionAuditLog"],
@@ -48,7 +51,7 @@ program: |-
           "where": ['(where (ge OrionAuditLog.StartTime "' + state.start_time + '"))'],
           "order": ["(order (asc OrionAuditLog.StartTime))"]
         }.format_query() + "&:output=json"
-      ).basic_authentication(state.username, state.password).do_request().as(resp,
+      ).as(resp,
         resp.StatusCode == 200 ?
           string(resp.Body).trim_space().trim_prefix("OK:").trim_space().decode_json().as(rows,
             // Advance the start_time to the newest StartTime in this page (UTC, naive).
