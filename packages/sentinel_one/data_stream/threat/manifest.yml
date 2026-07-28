@@ -22,6 +22,24 @@ streams:
         multi: false
         required: true
         show_user: true
+      - name: enable_star_rule_enrichment
+        type: bool
+        title: Enable Threat Timeline Collection
+        description: >-
+          When enabled, each threat is followed by paginated requests to the threat timeline endpoint (`/web/api/v2.1/threats/{threat_id}/timeline`). For each timeline history entry, one document is emitted containing the full threat response with that entry nested under `timeline`. Threats whose timeline returns HTTP 200 with an empty `data` array emit a single threat document. If the timeline endpoint returns HTTP 404 (for example, when the token lacks timeline read permissions or the feature is unavailable for the tenant), the threat document is still emitted and collection advances to the next threat. Turn off to collect threats from the list endpoint only.
+        default: false
+        multi: false
+        required: true
+        show_user: true
+      - name: max_executions
+        type: integer
+        title: Maximum Executions
+        description: >-
+          Maximum number of CEL program re-evaluations per collection interval. Threat enrichment makes one timeline API call per threat, so large environments may need a higher budget than the input default of 1000. Set to 0 for unlimited.
+        default: 1000
+        multi: false
+        required: true
+        show_user: false
       - name: page_size
         type: integer
         title: Page Size

@@ -940,6 +940,10 @@ processors:
   - convert:
       field: trend_micro_vision_one.detection.risk_level
       tag: convert_risk_level_to_long
+      description: >-
+        The upstream API sometimes sends non-numeric strings in this
+        field despite documenting it as int. Drop silently on failure
+        rather than marking the event as a pipeline error.
       type: long
       ignore_missing: true
       on_failure:
@@ -947,10 +951,6 @@ processors:
             tag: remove_trend_micro_vision_one_detection_risk_level_d57f054f
             field: trend_micro_vision_one.detection.risk_level
             ignore_missing: true
-        - append:
-            tag: append_error_message_4c9d2b67
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: Resolve numeric risk level to text value.
@@ -1194,11 +1194,7 @@ processors:
       field: trend_micro_vision_one.detection.request
       tag: uri_parts_request
       ignore_missing: true
-      on_failure:
-        - append:
-            tag: append_error_message_3575cae8
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      ignore_failure: true
   - user_agent:
       field: trend_micro_vision_one.detection.request_client_application
       tag: user_agent_request_client_application
