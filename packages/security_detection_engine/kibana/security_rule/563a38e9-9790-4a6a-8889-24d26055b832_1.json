@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Flags an existing GKE Role or ClusterRole being changed (patch or update) so the effective rules become cluster-admin-like: wildcard on every API resource and wildcard on every verb. That is usually a deliberate privilege expansion, not a typo. GKE audit logs with response body capture are required so the detection reads the merged role after apply; loopback source IPs are ignored.",
+        "false_positives": [
+            "Platform installers, GitOps controllers, and emergency break-glass roles sometimes ship or widen wildcard ClusterRoles; correlate with change records and narrow by user or service account when baselined."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "gcp.audit.resource_name",
+                "gcp.audit.request.kind",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE RBAC Wildcard Elevation on Existing Role",
+        "note": "## Triage and analysis\n\n### Investigating GKE RBAC Wildcard Elevation on Existing Role\n\nSomeone patched or updated a Role or ClusterRole so the stored rules grant star verbs and star resources\u2014near\ncluster-admin breadth on that scope. Confirm the actor (user.email, groups), client, and non-loopback source IP;\nthen see who can bind that role.\n\n### Possible investigation steps\n\n- Diff the role YAML before and after; list RoleBindings and ClusterRoleBindings that reference it and which subjects\n  gained the widened access.\n- Review `gcp.audit.resource_name`, `gcp.audit.response.rules.verbs`, and `gcp.audit.response.rules.resources`.\n- In the same window, check secret reads, exec, and further RBAC changes from the same identity.\n\n### False positive analysis\n\n- Approved GitOps or vendor upgrades sometimes widen a known ClusterRole; allowlist stable automation when documented.\n\n### Response and remediation\n\n- Revert the role, drop unexpected bindings, rotate credentials for the actor, and block future wildcard RBAC outside\n  governed pipelines (policy-as-code, PR-only RBAC).\n\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:\"k8s.io\" and event.outcome:success and\nevent.action:(\n  \"io.k8s.authorization.rbac.v1.roles.update\" or\n  \"io.k8s.authorization.rbac.v1.roles.patch\" or\n  \"io.k8s.authorization.rbac.v1.clusterroles.update\" or\n  \"io.k8s.authorization.rbac.v1.clusterroles.patch\"\n) and source.ip:(* and not (\"127.0.0.1\" or \"::1\")) and not (\n  client.user.email:\"system:addon-manager\" and\n  event.action:(\n    \"io.k8s.authorization.rbac.v1.roles.patch\" or\n    \"io.k8s.authorization.rbac.v1.clusterroles.patch\"\n  )\n) and\ngcp.audit.response.rules.verbs:\"*\" and gcp.audit.response.rules.resources:\"*\"\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/access-authn-authz/rbac/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.response.rules.resources",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.response.rules.verbs",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "563a38e9-9790-4a6a-8889-24d26055b832",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "563a38e9-9790-4a6a-8889-24d26055b832_1",
+    "type": "security-rule"
+}

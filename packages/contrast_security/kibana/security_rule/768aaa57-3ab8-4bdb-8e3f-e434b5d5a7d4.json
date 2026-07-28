@@ -1,0 +1,111 @@
+{
+    "attributes": {
+        "enabled": false,
+        "author": [
+            "Contrast Security"
+        ],
+        "description": "Correlates a Contrast ADR confirmed SQL injection exploit with a Data Loss Prevention (DLP) alert on the same host within one hour. ADR confirms the SQL injection reached the database driver at the application code level; the DLP alert confirms sensitive data was accessed or moved. Neither tool alone proves data was exfiltrated as a result of the application-layer attack. This rule is shipped disabled because the DLP index pattern varies per customer and must be configured before enabling.",
+        "false_positives": [
+            "Scheduled penetration testing in environments with DLP monitoring may produce both events on the same host without indicating a real breach.",
+            "Backup jobs or admin data exports running concurrently with attack traffic can produce DLP alerts unrelated to the SQL injection."
+        ],
+        "index": [
+            "logs-contrast_security.attack_event-*",
+            "logs-CUSTOMIZE_DLP_INDEX-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Contrast ADR: SQL Injection Followed by DLP Alert on Same Host",
+        "note": "## Triage and analysis\n\n### Investigating SQL Injection with DLP Correlation\n\nThis rule fires when Contrast ADR confirms a SQL injection exploit and a DLP product on the same host raises an alert within one hour. Treat as a likely data exfiltration event.\n\n#### Possible investigation steps:\n\n- Review the ADR attack event: `rule.name`, `source.ip`, `url.path`, `http.request.body.content`.\n- Follow the `event.url` link on the ADR side to view full attack details in the Contrast Security console.\n- Pivot to the matched DLP event on the same host to see which data was flagged.\n- Determine whether the data classified by DLP corresponds to what the SQL injection could have accessed (table, column, query result).\n- Check for additional ADR exploit attempts from the same `source.ip` to scope the campaign.\n\n### Response and remediation:\n\n- Visit the SQL injection runbook at https://contrastsecurity.dev/adr-runbooks/runbooks/sql-injection/\n- If the data is sensitive, initiate your data breach response process per your organization's policy.\n- Block the source IP at the perimeter and enable Contrast ADR Block Mode for sql-injection on the affected application.\n- Work with the development team to remediate the underlying SQL injection vulnerability.",
+        "query": "sequence by host.hostname with maxspan=1h\n  [any where event.dataset == \"contrast_security.attack_event\" and rule.name == \"sql-injection\" and event.outcome == \"success\"]\n  [any where event.kind == \"alert\" and not event.dataset like \"contrast_security.*\"]",
+        "references": [
+            "https://www.contrastsecurity.com/contrast-adr",
+            "https://contrastsecurity.dev/adr-runbooks/runbooks/sql-injection/",
+            "https://attack.mitre.org/techniques/T1530/",
+            "https://attack.mitre.org/techniques/T1567/"
+        ],
+        "related_integrations": [
+            {
+                "package": "contrast_security",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.hostname",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "rule.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 95,
+        "rule_id": "768aaa57-3ab8-4bdb-8e3f-e434b5d5a7d4",
+        "setup": "This rule is shipped disabled and requires per-customer configuration before it can be enabled.\n\n1. In the rule's `index` array, replace `logs-CUSTOMIZE_DLP_INDEX-*` with the index pattern for your DLP product (e.g., `logs-symantec_dlp.alert-*`, `logs-microsoft_purview-*`).\n2. Tighten the second EQL pattern if needed to match only your DLP product's alert events (the default `event.kind == \"alert\"` is broad and may match unrelated alerts on the same host).\n3. Confirm `host.hostname` is populated consistently across ADR and your DLP product. In Kubernetes environments, you may need to align hostnames or change the join key.\n4. Enable the rule.",
+        "severity": "critical",
+        "tags": [
+            "Data Source: Contrast Security",
+            "Use Case: Application Security",
+            "Use Case: Threat Detection",
+            "Use Case: Cross-Tool Correlation",
+            "Tactic: Collection",
+            "Tactic: Exfiltration",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1530",
+                        "name": "Data from Cloud Storage",
+                        "reference": "https://attack.mitre.org/techniques/T1530/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1567",
+                        "name": "Exfiltration Over Web Service",
+                        "reference": "https://attack.mitre.org/techniques/T1567/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "768aaa57-3ab8-4bdb-8e3f-e434b5d5a7d4",
+    "type": "security-rule"
+}

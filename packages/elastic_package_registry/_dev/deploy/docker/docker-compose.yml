@@ -1,15 +1,19 @@
 version: '2.3'
 services:
   elastic_package_registry:
-    build: .
+    build:
+      context: .
+      args:
+        SERVICE_VERSION: ${SERVICE_VERSION}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:8081 && curl -sf http://localhost:9110/metrics"]
       retries: 300
-      interval: 1s
+      interval: 0.5s
     environment:
       - "EPR_ADDRESS=0.0.0.0:8081"
       - "EPR_METRICS_ADDRESS=0.0.0.0:9110"
       - "EPR_DISABLE_PACKAGE_VALIDATION=true"
+      - "EPR_REQUIRE_PACKAGE_SIGNATURES=false"
     ports:
       - 9110
       - 8081

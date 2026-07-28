@@ -1,0 +1,20 @@
+input: httpjson
+service: google_workspace
+vars:
+  preserve_original_event: true
+  jwt_file: "{{SERVICE_LOGS_DIR}}/credentials.json"
+  delegated_account: test@example.com
+  api_host: http://{{Hostname}}:{{Port}}
+  enable_request_tracer: true
+data_stream:
+  vars:
+    preserve_original_event: true
+    interval: 10s
+    # Routes requests to the saml_empty mock rule, whose responses cycle
+    # empty -> data. The first (empty) poll must not fail the next_start_date
+    # cursor template; this asserts the stream recovers and still ingests the
+    # events from the following poll.
+    application_name_for_url: saml_empty
+wait_for_data_timeout: 1m
+assert:
+  hit_count: 2

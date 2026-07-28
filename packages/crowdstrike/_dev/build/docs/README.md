@@ -108,6 +108,7 @@ The following event types are supported for CrowdStrike Event Streams (whether y
 - IDP Incidents
 - IDP Summary events
 - Mobile Detection events
+- OverwatchGenericDetectionSummaryEvent
 - Recon Notification events
 - XDR Detection events
 - Scheduled Report Notification events
@@ -274,11 +275,11 @@ The FDR dataset includes:
 5. Configure the integration.
 6. Click **Save and Continue** to save the integration.
 
-### Agentless enabled integration
+### Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent based installation
 
@@ -287,6 +288,20 @@ You can install only one Elastic Agent per host.
 Elastic Agent is required to stream data from the AWS SQS, Event Streams API, REST API, or SIEM Connector and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
 ## Troubleshooting
+
+### Event Streams input stops collecting after repeated connection failures
+
+The **Falcon events** data stream's **Event Streams API** input (`streaming`) reconnects to the CrowdStrike stream with a bounded number of retries. Failures such as a non-200 response or an authentication error from bad credentials count toward **Retry - Maximum Attempts**; once that limit is reached the input terminates and the Elastic Agent must be restarted to resume collection.
+
+On Elastic Agent 8.19.19, 9.3.8, 9.4.4, or later, transient connection-level failures (an empty response, a network error, or a timeout) are instead retried indefinitely with back-off and do not count toward the limit, so the input self-heals once the upstream recovers. On earlier agents these transient failures count toward the limit and can terminate the input.
+
+If the Falcon Event Streams input goes **Degraded** and then stops, and the agent logs show repeated discover or connection errors, tune the retry settings on the integration policy:
+
+- Increase **Retry - Maximum Attempts** to tolerate longer upstream outages.
+- Enable **Retry - Infinite Retries** to never terminate on repeated failures. The input keeps retrying with capped back-off until the upstream recovers.
+- Under **Advanced options**, adjust **Retry - Minimum Wait** and **Retry - Maximum Wait** to control the back-off window between attempts.
+
+Values above 10 for **Retry - Maximum Attempts**, and **Retry - Infinite Retries**, also require Elastic Agent 8.19.19, 9.3.8, 9.4.4, or later; on earlier agents they are silently capped at 10 attempts.
 
 ### Vulnerability API returns 404 Not found
 
@@ -299,6 +314,8 @@ To resolve this, adjust the `Batch Size` setting in the integration to reduce th
 ### Duplicate Events
 
 The option `Enable Data Deduplication` allows you to avoid consuming duplicate events. By default, this option is set to `false`, and so duplicate events can be ingested. When this option is enabled, a [fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) is used to calculate a hash from a set of CrowdStrike fields that uniquely identify the event. The hash is assigned to the Elasticsearch [`_id`](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-id-field.html) field that makes the document unique and prevent duplicates.
+
+The fingerprint includes `@timestamp`, CrowdStrike `id`/`aid`/`cid`, and the FDR object type (`aidmaster`, `userinfo`, or `data`), derived from `log.file.path` or `aws.s3.object.key`. When present, `rule.id` is also included — for Cloud Security (CSPM) findings and for other event types that map a rule id (for example EPP detection summary, FIM rule matched, and Data Protection detection summary). For Cloud Security findings, a resource identifier is included as well so distinct findings that share a timestamp and customer id stay unique.
 
 If duplicate events are ingested, to help find them, the integration's `event.id` field is populated by concatenating a few CrowdStrike fields that uniquely identify the event. These fields are `id`, `aid`, and `cid` from the CrowdStrike event. The fields are separated with pipe `|`.
 For example, if your CrowdStrike event contains `id: 123`, `aid: 456`, and `cid: 789` then the `event.id` would be `123|456|789`.

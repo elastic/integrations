@@ -67,6 +67,20 @@ processors:
       target_field: kolide.issues.check.tags
       tag: rename_check_tags_webhook
       ignore_missing: true
+  - date:
+      field: json.timestamp
+      target_field: kolide.issues.resolved_at
+      formats:
+        - ISO8601
+      tag: date_resolved_at_webhook
+      if: ctx.json?.timestamp != null && ctx.event?.action == 'issues.resolved'
+  - date:
+      field: json.timestamp
+      target_field: kolide.issues.detected_at
+      formats:
+        - ISO8601
+      tag: date_detected_at_webhook
+      if: ctx.json?.timestamp != null && ctx.event?.action == 'issues.new'
 
 on_failure:
   - append:

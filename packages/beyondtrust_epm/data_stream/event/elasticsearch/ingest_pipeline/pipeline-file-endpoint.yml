@@ -1,0 +1,1682 @@
+---
+description: Pipeline for processing file and endpoint resource fields (file, registry, dll, package, EPMWinMac).
+processors:
+  - rename:
+      field: beyondtrust_epm.event.file.owner
+      tag: rename_file_owner
+      target_field: beyondtrust_epm.event.file.owner_keyword
+      if: ctx.beyondtrust_epm?.event?.file?.owner instanceof String
+  - convert:
+      field: beyondtrust_epm.event.EPMWinMac.AuthorizationRequest.ControlAuthorization
+      tag: convert_EPMWinMac_AuthorizationRequest_ControlAuthorization_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.EPMWinMac.AuthorizationRequest.ControlAuthorization
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_EPMWinMac_AuthorizingUser_Identifier_into_related_user
+      if: ctx.beyondtrust_epm?.event?.EPMWinMac?.AuthorizingUser?.Identifier != null
+      value: '{{{beyondtrust_epm.event.EPMWinMac.AuthorizingUser.Identifier}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_EPMWinMac_AuthorizingUser_Name_into_related_user
+      if: ctx.beyondtrust_epm?.event?.EPMWinMac?.AuthorizingUser?.Name != null
+      value: '{{{beyondtrust_epm.event.EPMWinMac.AuthorizingUser.Name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_event_EPMWinMac_Configuration_Message_Authentication_User_into_related_user
+      if: ctx.beyondtrust_epm?.event?.EPMWinMac?.Configuration?.Message?.Authentication?.User != null
+      value: '{{{beyondtrust_epm.event.EPMWinMac.Configuration.Message.Authentication.User}}}'
+      allow_duplicates: false
+  - convert:
+      field: beyondtrust_epm.event.EPMWinMac.Configuration.Rule.MatchedChild
+      tag: convert_EPMWinMac_Configuration_Rule_MatchedChild_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.EPMWinMac.Configuration.Rule.MatchedChild
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.EPMWinMac.Configuration.Rule.OnDemand
+      tag: convert_EPMWinMac_Configuration_Rule_OnDemand_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.EPMWinMac.Configuration.Rule.OnDemand
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.EPMWinMac.Configuration.RuleScript.Outcome.RuleAffected
+      tag: convert_EPMWinMac_Configuration_RuleScript_Outcome_RuleAffected_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.EPMWinMac.Configuration.RuleScript.Outcome.RuleAffected
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.EPMWinMac.Session.Administrator
+      tag: convert_EPMWinMac_Session_Administrator_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.EPMWinMac.Session.Administrator
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_EPMWinMac_Session_JITAdmin_Configuration_Message_Authentication_User_into_related_user
+      if: ctx.beyondtrust_epm?.event?.EPMWinMac?.Session?.JITAdmin?.Configuration?.Message?.Authentication?.User != null
+      value: '{{{beyondtrust_epm.event.EPMWinMac.Session.JITAdmin.Configuration.Message.Authentication.User}}}'
+      allow_duplicates: false
+  - convert:
+      field: beyondtrust_epm.event.EPMWinMac.Session.JITAdmin.Configuration.Rule.MatchedChild
+      tag: convert_EPMWinMac_Session_JITAdmin_Configuration_Rule_MatchedChild_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.EPMWinMac.Session.JITAdmin.Configuration.Rule.MatchedChild
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.EPMWinMac.Session.JITAdmin.Configuration.Rule.OnDemand
+      tag: convert_EPMWinMac_Session_JITAdmin_Configuration_Rule_OnDemand_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.EPMWinMac.Session.JITAdmin.Configuration.Rule.OnDemand
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.EPMWinMac.Session.JITAdmin.Configuration.RuleScript.Outcome.RuleAffected
+      tag: convert_EPMWinMac_Session_JITAdmin_Configuration_RuleScript_Outcome_RuleAffected_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.EPMWinMac.Session.JITAdmin.Configuration.RuleScript.Outcome.RuleAffected
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: beyondtrust_epm.event.EPMWinMac.Session.PowerUser
+      tag: convert_EPMWinMac_Session_PowerUser_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.EPMWinMac.Session.PowerUser
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: dll.code_signature.digest_algorithm
+      tag: set_dll_code_signature_digest_algorithm_from_event_dll_code_signature_digest_algorithm
+      copy_from: beyondtrust_epm.event.dll.code_signature.digest_algorithm
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.dll.code_signature.exists
+      tag: convert_dll_code_signature_exists_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.dll.code_signature.exists
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: dll.code_signature.exists
+      tag: set_dll_code_signature_exists_from_event_dll_code_signature_exists
+      copy_from: beyondtrust_epm.event.dll.code_signature.exists
+      ignore_empty_value: true
+  - set:
+      field: dll.code_signature.signing_id
+      tag: set_dll_code_signature_signing_id_from_event_dll_code_signature_signing_id
+      copy_from: beyondtrust_epm.event.dll.code_signature.signing_id
+      ignore_empty_value: true
+  - set:
+      field: dll.code_signature.status
+      tag: set_dll_code_signature_status_from_event_dll_code_signature_status
+      copy_from: beyondtrust_epm.event.dll.code_signature.status
+      ignore_empty_value: true
+  - set:
+      field: dll.code_signature.subject_name
+      tag: set_dll_code_signature_subject_name_from_event_dll_code_signature_subject_name
+      copy_from: beyondtrust_epm.event.dll.code_signature.subject_name
+      ignore_empty_value: true
+  - set:
+      field: dll.code_signature.team_id
+      tag: set_dll_code_signature_team_id_from_event_dll_code_signature_team_id
+      copy_from: beyondtrust_epm.event.dll.code_signature.team_id
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.dll.code_signature.timestamp
+      tag: date_dll_code_signature_timestamp
+      if: ctx.beyondtrust_epm?.event?.dll?.code_signature?.timestamp != null && ctx.beyondtrust_epm.event.dll.code_signature.timestamp != ''
+      target_field: beyondtrust_epm.event.dll.code_signature.timestamp
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.dll.code_signature.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: dll.code_signature.timestamp
+      tag: set_dll_code_signature_timestamp_from_event_dll_code_signature_timestamp
+      copy_from: beyondtrust_epm.event.dll.code_signature.timestamp
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.dll.code_signature.trusted
+      tag: convert_dll_code_signature_trusted_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.dll.code_signature.trusted
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: dll.code_signature.trusted
+      tag: set_dll_code_signature_trusted_from_event_dll_code_signature_trusted
+      copy_from: beyondtrust_epm.event.dll.code_signature.trusted
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.dll.code_signature.valid
+      tag: convert_dll_code_signature_valid_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.dll.code_signature.valid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: dll.code_signature.valid
+      tag: set_dll_code_signature_valid_from_event_dll_code_signature_valid
+      copy_from: beyondtrust_epm.event.dll.code_signature.valid
+      ignore_empty_value: true
+  - set:
+      field: dll.hash.md5
+      tag: set_dll_hash_md5_from_event_dll_hash_md5
+      copy_from: beyondtrust_epm.event.dll.hash.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_dll_hash_md5_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.dll?.hash?.md5 != null
+      value: '{{{beyondtrust_epm.event.dll.hash.md5}}}'
+      allow_duplicates: false
+  - set:
+      field: dll.hash.sha1
+      tag: set_dll_hash_sha1_from_event_dll_hash_sha1
+      copy_from: beyondtrust_epm.event.dll.hash.sha1
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_dll_hash_sha1_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.dll?.hash?.sha1 != null
+      value: '{{{beyondtrust_epm.event.dll.hash.sha1}}}'
+      allow_duplicates: false
+  - set:
+      field: dll.hash.sha256
+      tag: set_dll_hash_sha256_from_event_dll_hash_sha256
+      copy_from: beyondtrust_epm.event.dll.hash.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_dll_hash_sha256_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.dll?.hash?.sha256 != null
+      value: '{{{beyondtrust_epm.event.dll.hash.sha256}}}'
+      allow_duplicates: false
+  - set:
+      field: dll.hash.sha384
+      tag: set_dll_hash_sha384_from_event_dll_hash_sha384
+      copy_from: beyondtrust_epm.event.dll.hash.sha384
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_dll_hash_sha384_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.dll?.hash?.sha384 != null
+      value: '{{{beyondtrust_epm.event.dll.hash.sha384}}}'
+      allow_duplicates: false
+  - set:
+      field: dll.hash.sha512
+      tag: set_dll_hash_sha512_from_event_dll_hash_sha512
+      copy_from: beyondtrust_epm.event.dll.hash.sha512
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_dll_hash_sha512_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.dll?.hash?.sha512 != null
+      value: '{{{beyondtrust_epm.event.dll.hash.sha512}}}'
+      allow_duplicates: false
+  - set:
+      field: dll.hash.ssdeep
+      tag: set_dll_hash_ssdeep_from_event_dll_hash_ssdeep
+      copy_from: beyondtrust_epm.event.dll.hash.ssdeep
+      ignore_empty_value: true
+  - set:
+      field: dll.hash.tlsh
+      tag: set_dll_hash_tlsh_from_event_dll_hash_tlsh
+      copy_from: beyondtrust_epm.event.dll.hash.tlsh
+      ignore_empty_value: true
+  - set:
+      field: dll.name
+      tag: set_dll_name_from_event_dll_name
+      copy_from: beyondtrust_epm.event.dll.name
+      ignore_empty_value: true
+  - set:
+      field: dll.path
+      tag: set_dll_path_from_event_dll_path
+      copy_from: beyondtrust_epm.event.dll.path
+      ignore_empty_value: true
+  - set:
+      field: dll.pe.architecture
+      tag: set_dll_pe_architecture_from_event_dll_pe_architecture
+      copy_from: beyondtrust_epm.event.dll.pe.architecture
+      ignore_empty_value: true
+  - set:
+      field: dll.pe.company
+      tag: set_dll_pe_company_from_event_dll_pe_company
+      copy_from: beyondtrust_epm.event.dll.pe.company
+      ignore_empty_value: true
+  - set:
+      field: dll.pe.description
+      tag: set_dll_pe_description_from_event_dll_pe_description
+      copy_from: beyondtrust_epm.event.dll.pe.description
+      ignore_empty_value: true
+  - set:
+      field: dll.pe.file_version
+      tag: set_dll_pe_file_version_from_event_dll_pe_file_version
+      copy_from: beyondtrust_epm.event.dll.pe.file_version
+      ignore_empty_value: true
+  - set:
+      field: dll.pe.imphash
+      tag: set_dll_pe_imphash_from_event_dll_pe_imphash
+      copy_from: beyondtrust_epm.event.dll.pe.imphash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_dll_pe_imphash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.dll?.pe?.imphash != null
+      value: '{{{beyondtrust_epm.event.dll.pe.imphash}}}'
+      allow_duplicates: false
+  - set:
+      field: dll.pe.original_file_name
+      tag: set_dll_pe_original_file_name_from_event_dll_pe_original_file_name
+      copy_from: beyondtrust_epm.event.dll.pe.original_file_name
+      ignore_empty_value: true
+  - set:
+      field: dll.pe.pehash
+      tag: set_dll_pe_pehash_from_event_dll_pe_pehash
+      copy_from: beyondtrust_epm.event.dll.pe.pehash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_dll_pe_pehash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.dll?.pe?.pehash != null
+      value: '{{{beyondtrust_epm.event.dll.pe.pehash}}}'
+      allow_duplicates: false
+  - set:
+      field: dll.pe.product
+      tag: set_dll_pe_product_from_event_dll_pe_product
+      copy_from: beyondtrust_epm.event.dll.pe.product
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.file.accessed
+      tag: date_file_accessed
+      if: ctx.beyondtrust_epm?.event?.file?.accessed != null && ctx.beyondtrust_epm.event.file.accessed != ''
+      target_field: beyondtrust_epm.event.file.accessed
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.accessed
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.accessed
+      tag: set_file_accessed_from_event_file_accessed
+      copy_from: beyondtrust_epm.event.file.accessed
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.file.attributes
+      tag: foreach_file_attributes
+      if: ctx.beyondtrust_epm?.event?.file?.attributes instanceof List
+      processor:
+        append:
+          field: file.attributes
+          tag: append_file_attributes_into_file_attributes
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: file.code_signature.digest_algorithm
+      tag: set_file_code_signature_digest_algorithm_from_event_file_code_signature_digest_algorithm
+      copy_from: beyondtrust_epm.event.file.code_signature.digest_algorithm
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.file.code_signature.exists
+      tag: convert_file_code_signature_exists_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.code_signature.exists
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.code_signature.exists
+      tag: set_file_code_signature_exists_from_event_file_code_signature_exists
+      copy_from: beyondtrust_epm.event.file.code_signature.exists
+      ignore_empty_value: true
+  - set:
+      field: file.code_signature.signing_id
+      tag: set_file_code_signature_signing_id_from_event_file_code_signature_signing_id
+      copy_from: beyondtrust_epm.event.file.code_signature.signing_id
+      ignore_empty_value: true
+  - set:
+      field: file.code_signature.status
+      tag: set_file_code_signature_status_from_event_file_code_signature_status
+      copy_from: beyondtrust_epm.event.file.code_signature.status
+      ignore_empty_value: true
+  - set:
+      field: file.code_signature.subject_name
+      tag: set_file_code_signature_subject_name_from_event_file_code_signature_subject_name
+      copy_from: beyondtrust_epm.event.file.code_signature.subject_name
+      ignore_empty_value: true
+  - set:
+      field: file.code_signature.team_id
+      tag: set_file_code_signature_team_id_from_event_file_code_signature_team_id
+      copy_from: beyondtrust_epm.event.file.code_signature.team_id
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.file.code_signature.timestamp
+      tag: date_file_code_signature_timestamp
+      if: ctx.beyondtrust_epm?.event?.file?.code_signature?.timestamp != null && ctx.beyondtrust_epm.event.file.code_signature.timestamp != ''
+      target_field: beyondtrust_epm.event.file.code_signature.timestamp
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.code_signature.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.code_signature.timestamp
+      tag: set_file_code_signature_timestamp_from_event_file_code_signature_timestamp
+      copy_from: beyondtrust_epm.event.file.code_signature.timestamp
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.file.code_signature.trusted
+      tag: convert_file_code_signature_trusted_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.code_signature.trusted
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.code_signature.trusted
+      tag: set_file_code_signature_trusted_from_event_file_code_signature_trusted
+      copy_from: beyondtrust_epm.event.file.code_signature.trusted
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.file.code_signature.valid
+      tag: convert_file_code_signature_valid_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.code_signature.valid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.code_signature.valid
+      tag: set_file_code_signature_valid_from_event_file_code_signature_valid
+      copy_from: beyondtrust_epm.event.file.code_signature.valid
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.file.created
+      tag: date_file_created
+      if: ctx.beyondtrust_epm?.event?.file?.created != null && ctx.beyondtrust_epm.event.file.created != ''
+      target_field: beyondtrust_epm.event.file.created
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.created
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.created
+      tag: set_file_created_from_event_file_created
+      copy_from: beyondtrust_epm.event.file.created
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.file.ctime
+      tag: date_file_ctime
+      if: ctx.beyondtrust_epm?.event?.file?.ctime != null && ctx.beyondtrust_epm.event.file.ctime != ''
+      target_field: beyondtrust_epm.event.file.ctime
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.ctime
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.ctime
+      tag: set_file_ctime_from_event_file_ctime
+      copy_from: beyondtrust_epm.event.file.ctime
+      ignore_empty_value: true
+  - set:
+      field: file.device
+      tag: set_file_device_from_event_file_device
+      copy_from: beyondtrust_epm.event.file.device
+      ignore_empty_value: true
+  - set:
+      field: file.directory
+      tag: set_file_directory_from_event_file_directory
+      copy_from: beyondtrust_epm.event.file.directory
+      ignore_empty_value: true
+  - set:
+      field: file.drive_letter
+      tag: set_file_drive_letter_from_event_file_drive_letter
+      copy_from: beyondtrust_epm.event.file.drive_letter
+      ignore_empty_value: true
+  - set:
+      field: file.elf.architecture
+      tag: set_file_elf_architecture_from_event_file_elf_architecture
+      copy_from: beyondtrust_epm.event.file.elf.architecture
+      ignore_empty_value: true
+  - set:
+      field: file.elf.byte_order
+      tag: set_file_elf_byte_order_from_event_file_elf_byte_order
+      copy_from: beyondtrust_epm.event.file.elf.byte_order
+      ignore_empty_value: true
+  - set:
+      field: file.elf.cpu_type
+      tag: set_file_elf_cpu_type_from_event_file_elf_cpu_type
+      copy_from: beyondtrust_epm.event.file.elf.cpu_type
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.file.elf.creation_date
+      tag: date_file_elf_creation_date
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.creation_date != null && ctx.beyondtrust_epm.event.file.elf.creation_date != ''
+      target_field: beyondtrust_epm.event.file.elf.creation_date
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.elf.creation_date
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.elf.creation_date
+      tag: set_file_elf_creation_date_from_event_file_elf_creation_date
+      copy_from: beyondtrust_epm.event.file.elf.creation_date
+      ignore_empty_value: true
+  - set:
+      field: file.elf.header.abi_version
+      tag: set_file_elf_header_abi_version_from_event_file_elf_header_abi_version
+      copy_from: beyondtrust_epm.event.file.elf.header.abi_version
+      ignore_empty_value: true
+  - set:
+      field: file.elf.header.class
+      tag: set_file_elf_header_class_from_event_file_elf_header_class
+      copy_from: beyondtrust_epm.event.file.elf.header.class
+      ignore_empty_value: true
+  - set:
+      field: file.elf.header.data
+      tag: set_file_elf_header_data_from_event_file_elf_header_data
+      copy_from: beyondtrust_epm.event.file.elf.header.data
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.file.elf.header.entrypoint
+      tag: convert_file_elf_header_entrypoint_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.elf.header.entrypoint
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.elf.header.entrypoint
+      tag: set_file_elf_header_entrypoint_from_event_file_elf_header_entrypoint
+      copy_from: beyondtrust_epm.event.file.elf.header.entrypoint
+      ignore_empty_value: true
+  - set:
+      field: file.elf.header.object_version
+      tag: set_file_elf_header_object_version_from_event_file_elf_header_object_version
+      copy_from: beyondtrust_epm.event.file.elf.header.object_version
+      ignore_empty_value: true
+  - set:
+      field: file.elf.header.os_abi
+      tag: set_file_elf_header_os_abi_from_event_file_elf_header_os_abi
+      copy_from: beyondtrust_epm.event.file.elf.header.os_abi
+      ignore_empty_value: true
+  - set:
+      field: file.elf.header.type
+      tag: set_file_elf_header_type_from_event_file_elf_header_type
+      copy_from: beyondtrust_epm.event.file.elf.header.type
+      ignore_empty_value: true
+  - set:
+      field: file.elf.header.version
+      tag: set_file_elf_header_version_from_event_file_elf_header_version
+      copy_from: beyondtrust_epm.event.file.elf.header.version
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_chi2
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        convert:
+          field: _ingest._value.chi2
+          tag: convert_file_elf_sections_chi2_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.chi2
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_chi2
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        append:
+          field: file.elf.sections.chi2
+          tag: append_file_elf_sections_chi2_into_file_elf_sections_chi2
+          value: '{{{_ingest._value.chi2}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_entropy
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        convert:
+          field: _ingest._value.entropy
+          tag: convert_file_elf_sections_entropy_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.entropy
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_entropy
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        append:
+          field: file.elf.sections.entropy
+          tag: append_file_elf_sections_entropy_into_file_elf_sections_entropy
+          value: '{{{_ingest._value.entropy}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_flags
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        append:
+          field: file.elf.sections.flags
+          tag: append_file_elf_sections_flags_into_file_elf_sections_flags
+          value: '{{{_ingest._value.flags}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_name
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        append:
+          field: file.elf.sections.name
+          tag: append_file_elf_sections_name_into_file_elf_sections_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_physical_offset
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        append:
+          field: file.elf.sections.physical_offset
+          tag: append_file_elf_sections_physical_offset_into_file_elf_sections_physical_offset
+          value: '{{{_ingest._value.physical_offset}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_physical_size
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        convert:
+          field: _ingest._value.physical_size
+          tag: convert_file_elf_sections_physical_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.physical_size
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_physical_size
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        append:
+          field: file.elf.sections.physical_size
+          tag: append_file_elf_sections_physical_size_into_file_elf_sections_physical_size
+          value: '{{{_ingest._value.physical_size}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_type
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        append:
+          field: file.elf.sections.type
+          tag: append_file_elf_sections_type_into_file_elf_sections_type
+          value: '{{{_ingest._value.type}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_virtual_address
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        convert:
+          field: _ingest._value.virtual_address
+          tag: convert_file_elf_sections_virtual_address_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.virtual_address
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_virtual_address
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        append:
+          field: file.elf.sections.virtual_address
+          tag: append_file_elf_sections_virtual_address_into_file_elf_sections_virtual_address
+          value: '{{{_ingest._value.virtual_address}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_virtual_size
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        convert:
+          field: _ingest._value.virtual_size
+          tag: convert_file_elf_sections_virtual_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.virtual_size
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections_virtual_size
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        append:
+          field: file.elf.sections.virtual_size
+          tag: append_file_elf_sections_virtual_size_into_file_elf_sections_virtual_size
+          value: '{{{_ingest._value.virtual_size}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.segments
+      tag: foreach_file_elf_segments_sections
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.segments instanceof List
+      processor:
+        append:
+          field: file.elf.segments.sections
+          tag: append_file_elf_segments_sections_into_file_elf_segments_sections
+          value: '{{{_ingest._value.sections}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.segments
+      tag: foreach_file_elf_segments_type
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.segments instanceof List
+      processor:
+        append:
+          field: file.elf.segments.type
+          tag: append_file_elf_segments_type_into_file_elf_segments_type
+          value: '{{{_ingest._value.type}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.shared_libraries
+      tag: foreach_file_elf_shared_libraries
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.shared_libraries instanceof List
+      processor:
+        append:
+          field: file.elf.shared_libraries
+          tag: append_file_elf_shared_libraries_into_file_elf_shared_libraries
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: file.elf.telfhash
+      tag: set_file_elf_telfhash_from_event_file_elf_telfhash
+      copy_from: beyondtrust_epm.event.file.elf.telfhash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_file_elf_telfhash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.telfhash != null
+      value: '{{{beyondtrust_epm.event.file.elf.telfhash}}}'
+      allow_duplicates: false
+  - set:
+      field: file.extension
+      tag: set_file_extension_from_event_file_extension
+      copy_from: beyondtrust_epm.event.file.extension
+      ignore_empty_value: true
+  - set:
+      field: file.fork_name
+      tag: set_file_fork_name_from_event_file_fork_name
+      copy_from: beyondtrust_epm.event.file.fork_name
+      ignore_empty_value: true
+  - set:
+      field: file.gid
+      tag: set_file_gid_from_event_file_gid
+      copy_from: beyondtrust_epm.event.file.gid
+      ignore_empty_value: true
+  - set:
+      field: file.group
+      tag: set_file_group_from_event_file_group
+      copy_from: beyondtrust_epm.event.file.group
+      ignore_empty_value: true
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_event_file_hash_md5
+      copy_from: beyondtrust_epm.event.file.hash.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_file_hash_md5_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.file?.hash?.md5 != null
+      value: '{{{beyondtrust_epm.event.file.hash.md5}}}'
+      allow_duplicates: false
+  - set:
+      field: file.hash.sha1
+      tag: set_file_hash_sha1_from_event_file_hash_sha1
+      copy_from: beyondtrust_epm.event.file.hash.sha1
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_file_hash_sha1_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.file?.hash?.sha1 != null
+      value: '{{{beyondtrust_epm.event.file.hash.sha1}}}'
+      allow_duplicates: false
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256_from_event_file_hash_sha256
+      copy_from: beyondtrust_epm.event.file.hash.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_file_hash_sha256_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.file?.hash?.sha256 != null
+      value: '{{{beyondtrust_epm.event.file.hash.sha256}}}'
+      allow_duplicates: false
+  - set:
+      field: file.hash.sha384
+      tag: set_file_hash_sha384_from_event_file_hash_sha384
+      copy_from: beyondtrust_epm.event.file.hash.sha384
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_file_hash_sha384_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.file?.hash?.sha384 != null
+      value: '{{{beyondtrust_epm.event.file.hash.sha384}}}'
+      allow_duplicates: false
+  - set:
+      field: file.hash.sha512
+      tag: set_file_hash_sha512_from_event_file_hash_sha512
+      copy_from: beyondtrust_epm.event.file.hash.sha512
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_file_hash_sha512_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.file?.hash?.sha512 != null
+      value: '{{{beyondtrust_epm.event.file.hash.sha512}}}'
+      allow_duplicates: false
+  - set:
+      field: file.hash.ssdeep
+      tag: set_file_hash_ssdeep_from_event_file_hash_ssdeep
+      copy_from: beyondtrust_epm.event.file.hash.ssdeep
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_file_hash_ssdeep_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.file?.hash?.ssdeep != null
+      value: '{{{beyondtrust_epm.event.file.hash.ssdeep}}}'
+      allow_duplicates: false
+  - set:
+      field: file.hash.tlsh
+      tag: set_file_hash_tlsh_from_event_file_hash_tlsh
+      copy_from: beyondtrust_epm.event.file.hash.tlsh
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_file_hash_tlsh_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.file?.hash?.tlsh != null
+      value: '{{{beyondtrust_epm.event.file.hash.tlsh}}}'
+      allow_duplicates: false
+  - set:
+      field: file.inode
+      tag: set_file_inode_from_event_file_inode
+      copy_from: beyondtrust_epm.event.file.inode
+      ignore_empty_value: true
+  - set:
+      field: file.mime_type
+      tag: set_file_mime_type_from_event_file_mime_type
+      copy_from: beyondtrust_epm.event.file.mime_type
+      ignore_empty_value: true
+  - set:
+      field: file.mode
+      tag: set_file_mode_from_event_file_mode
+      copy_from: beyondtrust_epm.event.file.mode
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.file.mtime
+      tag: date_file_mtime
+      if: ctx.beyondtrust_epm?.event?.file?.mtime != null && ctx.beyondtrust_epm.event.file.mtime != ''
+      target_field: beyondtrust_epm.event.file.mtime
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.mtime
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.mtime
+      tag: set_file_mtime_from_event_file_mtime
+      copy_from: beyondtrust_epm.event.file.mtime
+      ignore_empty_value: true
+  - set:
+      field: file.name
+      tag: set_file_name_from_event_file_name
+      copy_from: beyondtrust_epm.event.file.name
+      ignore_empty_value: true
+  - set:
+      field: file.path
+      tag: set_file_path_from_event_file_path
+      copy_from: beyondtrust_epm.event.file.path
+      ignore_empty_value: true
+  - set:
+      field: file.pe.architecture
+      tag: set_file_pe_architecture_from_event_file_pe_architecture
+      copy_from: beyondtrust_epm.event.file.pe.architecture
+      ignore_empty_value: true
+  - set:
+      field: file.pe.company
+      tag: set_file_pe_company_from_event_file_pe_company
+      copy_from: beyondtrust_epm.event.file.pe.company
+      ignore_empty_value: true
+  - set:
+      field: file.pe.description
+      tag: set_file_pe_description_from_event_file_pe_description
+      copy_from: beyondtrust_epm.event.file.pe.description
+      ignore_empty_value: true
+  - set:
+      field: file.pe.file_version
+      tag: set_file_pe_file_version_from_event_file_pe_file_version
+      copy_from: beyondtrust_epm.event.file.pe.file_version
+      ignore_empty_value: true
+  - set:
+      field: file.pe.imphash
+      tag: set_file_pe_imphash_from_event_file_pe_imphash
+      copy_from: beyondtrust_epm.event.file.pe.imphash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_file_pe_imphash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.file?.pe?.imphash != null
+      value: '{{{beyondtrust_epm.event.file.pe.imphash}}}'
+      allow_duplicates: false
+  - set:
+      field: file.pe.original_file_name
+      tag: set_file_pe_original_file_name_from_event_file_pe_original_file_name
+      copy_from: beyondtrust_epm.event.file.pe.original_file_name
+      ignore_empty_value: true
+  - set:
+      field: file.pe.pehash
+      tag: set_file_pe_pehash_from_event_file_pe_pehash
+      copy_from: beyondtrust_epm.event.file.pe.pehash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_event_file_pe_pehash_into_related_hash
+      if: ctx.beyondtrust_epm?.event?.file?.pe?.pehash != null
+      value: '{{{beyondtrust_epm.event.file.pe.pehash}}}'
+      allow_duplicates: false
+  - set:
+      field: file.pe.product
+      tag: set_file_pe_product_from_event_file_pe_product
+      copy_from: beyondtrust_epm.event.file.pe.product
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.file.size
+      tag: convert_file_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.size
+      tag: set_file_size_from_event_file_size
+      copy_from: beyondtrust_epm.event.file.size
+      ignore_empty_value: true
+  - set:
+      field: file.target_path
+      tag: set_file_target_path_from_event_file_target_path
+      copy_from: beyondtrust_epm.event.file.target_path
+      ignore_empty_value: true
+  - set:
+      field: file.type
+      tag: set_file_type_from_event_file_type
+      copy_from: beyondtrust_epm.event.file.type
+      ignore_empty_value: true
+  - set:
+      field: file.uid
+      tag: set_file_uid_from_event_file_uid
+      copy_from: beyondtrust_epm.event.file.uid
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.file.x509.alternative_names
+      tag: foreach_file_x509_alternative_names
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.alternative_names instanceof List
+      processor:
+        append:
+          field: file.x509.alternative_names
+          tag: append_file_x509_alternative_names_into_file_x509_alternative_names
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.x509.issuer.common_name
+      tag: foreach_file_x509_issuer_common_name
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.issuer?.common_name instanceof List
+      processor:
+        append:
+          field: file.x509.issuer.common_name
+          tag: append_file_x509_issuer_common_name_into_file_x509_issuer_common_name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.x509.issuer.country
+      tag: foreach_file_x509_issuer_country
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.issuer?.country instanceof List
+      processor:
+        append:
+          field: file.x509.issuer.country
+          tag: append_file_x509_issuer_country_into_file_x509_issuer_country
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: file.x509.issuer.distinguished_name
+      tag: set_file_x509_issuer_distinguished_name_from_event_file_x509_issuer_distinguished_name
+      copy_from: beyondtrust_epm.event.file.x509.issuer.distinguished_name
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.file.x509.issuer.locality
+      tag: foreach_file_x509_issuer_locality
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.issuer?.locality instanceof List
+      processor:
+        append:
+          field: file.x509.issuer.locality
+          tag: append_file_x509_issuer_locality_into_file_x509_issuer_locality
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.x509.issuer.organization
+      tag: foreach_file_x509_issuer_organization
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.issuer?.organization instanceof List
+      processor:
+        append:
+          field: file.x509.issuer.organization
+          tag: append_file_x509_issuer_organization_into_file_x509_issuer_organization
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.x509.issuer.organizational_unit
+      tag: foreach_file_x509_issuer_organizational_unit
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.issuer?.organizational_unit instanceof List
+      processor:
+        append:
+          field: file.x509.issuer.organizational_unit
+          tag: append_file_x509_issuer_organizational_unit_into_file_x509_issuer_organizational_unit
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.x509.issuer.state_or_province
+      tag: foreach_file_x509_issuer_state_or_province
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.issuer?.state_or_province instanceof List
+      processor:
+        append:
+          field: file.x509.issuer.state_or_province
+          tag: append_file_x509_issuer_state_or_province_into_file_x509_issuer_state_or_province
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - date:
+      field: beyondtrust_epm.event.file.x509.not_after
+      tag: date_file_x509_not_after
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.not_after != null && ctx.beyondtrust_epm.event.file.x509.not_after != ''
+      target_field: beyondtrust_epm.event.file.x509.not_after
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.x509.not_after
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.x509.not_after
+      tag: set_file_x509_not_after_from_event_file_x509_not_after
+      copy_from: beyondtrust_epm.event.file.x509.not_after
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.file.x509.not_before
+      tag: date_file_x509_not_before
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.not_before != null && ctx.beyondtrust_epm.event.file.x509.not_before != ''
+      target_field: beyondtrust_epm.event.file.x509.not_before
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.x509.not_before
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.x509.not_before
+      tag: set_file_x509_not_before_from_event_file_x509_not_before
+      copy_from: beyondtrust_epm.event.file.x509.not_before
+      ignore_empty_value: true
+  - set:
+      field: file.x509.public_key_algorithm
+      tag: set_file_x509_public_key_algorithm_from_event_file_x509_public_key_algorithm
+      copy_from: beyondtrust_epm.event.file.x509.public_key_algorithm
+      ignore_empty_value: true
+  - set:
+      field: file.x509.public_key_curve
+      tag: set_file_x509_public_key_curve_from_event_file_x509_public_key_curve
+      copy_from: beyondtrust_epm.event.file.x509.public_key_curve
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.file.x509.public_key_exponent
+      tag: convert_file_x509_public_key_exponent_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.x509.public_key_exponent
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.x509.public_key_exponent
+      tag: set_file_x509_public_key_exponent_from_event_file_x509_public_key_exponent
+      copy_from: beyondtrust_epm.event.file.x509.public_key_exponent
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.file.x509.public_key_size
+      tag: convert_file_x509_public_key_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.file.x509.public_key_size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.x509.public_key_size
+      tag: set_file_x509_public_key_size_from_event_file_x509_public_key_size
+      copy_from: beyondtrust_epm.event.file.x509.public_key_size
+      ignore_empty_value: true
+  - set:
+      field: file.x509.serial_number
+      tag: set_file_x509_serial_number_from_event_file_x509_serial_number
+      copy_from: beyondtrust_epm.event.file.x509.serial_number
+      ignore_empty_value: true
+  - set:
+      field: file.x509.signature_algorithm
+      tag: set_file_x509_signature_algorithm_from_event_file_x509_signature_algorithm
+      copy_from: beyondtrust_epm.event.file.x509.signature_algorithm
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.file.x509.subject.common_name
+      tag: foreach_file_x509_subject_common_name
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.subject?.common_name instanceof List
+      processor:
+        append:
+          field: file.x509.subject.common_name
+          tag: append_file_x509_subject_common_name_into_file_x509_subject_common_name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.x509.subject.country
+      tag: foreach_file_x509_subject_country
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.subject?.country instanceof List
+      processor:
+        append:
+          field: file.x509.subject.country
+          tag: append_file_x509_subject_country_into_file_x509_subject_country
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: file.x509.subject.distinguished_name
+      tag: set_file_x509_subject_distinguished_name_from_event_file_x509_subject_distinguished_name
+      copy_from: beyondtrust_epm.event.file.x509.subject.distinguished_name
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.file.x509.subject.locality
+      tag: foreach_file_x509_subject_locality
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.subject?.locality instanceof List
+      processor:
+        append:
+          field: file.x509.subject.locality
+          tag: append_file_x509_subject_locality_into_file_x509_subject_locality
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.x509.subject.organization
+      tag: foreach_file_x509_subject_organization
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.subject?.organization instanceof List
+      processor:
+        append:
+          field: file.x509.subject.organization
+          tag: append_file_x509_subject_organization_into_file_x509_subject_organization
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.x509.subject.organizational_unit
+      tag: foreach_file_x509_subject_organizational_unit
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.subject?.organizational_unit instanceof List
+      processor:
+        append:
+          field: file.x509.subject.organizational_unit
+          tag: append_file_x509_subject_organizational_unit_into_file_x509_subject_organizational_unit
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.x509.subject.state_or_province
+      tag: foreach_file_x509_subject_state_or_province
+      if: ctx.beyondtrust_epm?.event?.file?.x509?.subject?.state_or_province instanceof List
+      processor:
+        append:
+          field: file.x509.subject.state_or_province
+          tag: append_file_x509_subject_state_or_province_into_file_x509_subject_state_or_province
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: file.x509.version_number
+      tag: set_file_x509_version_number_from_event_file_x509_version_number
+      copy_from: beyondtrust_epm.event.file.x509.version_number
+      ignore_empty_value: true
+  - set:
+      field: package.architecture
+      tag: set_package_architecture_from_event_package_architecture
+      copy_from: beyondtrust_epm.event.package.architecture
+      ignore_empty_value: true
+  - set:
+      field: package.build_version
+      tag: set_package_build_version_from_event_package_build_version
+      copy_from: beyondtrust_epm.event.package.build_version
+      ignore_empty_value: true
+  - set:
+      field: package.checksum
+      tag: set_package_checksum_from_event_package_checksum
+      copy_from: beyondtrust_epm.event.package.checksum
+      ignore_empty_value: true
+  - set:
+      field: package.description
+      tag: set_package_description_from_event_package_description
+      copy_from: beyondtrust_epm.event.package.description
+      ignore_empty_value: true
+  - set:
+      field: package.install_scope
+      tag: set_package_install_scope_from_event_package_install_scope
+      copy_from: beyondtrust_epm.event.package.install_scope
+      ignore_empty_value: true
+  - date:
+      field: beyondtrust_epm.event.package.installed
+      tag: date_package_installed
+      if: ctx.beyondtrust_epm?.event?.package?.installed != null && ctx.beyondtrust_epm.event.package.installed != ''
+      target_field: beyondtrust_epm.event.package.installed
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.package.installed
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: package.installed
+      tag: set_package_installed_from_event_package_installed
+      copy_from: beyondtrust_epm.event.package.installed
+      ignore_empty_value: true
+  - set:
+      field: package.license
+      tag: set_package_license_from_event_package_license
+      copy_from: beyondtrust_epm.event.package.license
+      ignore_empty_value: true
+  - set:
+      field: package.name
+      tag: set_package_name_from_event_package_name
+      copy_from: beyondtrust_epm.event.package.name
+      ignore_empty_value: true
+  - set:
+      field: package.path
+      tag: set_package_path_from_event_package_path
+      copy_from: beyondtrust_epm.event.package.path
+      ignore_empty_value: true
+  - set:
+      field: package.reference
+      tag: set_package_reference_from_event_package_reference
+      copy_from: beyondtrust_epm.event.package.reference
+      ignore_empty_value: true
+  - convert:
+      field: beyondtrust_epm.event.package.size
+      tag: convert_package_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: beyondtrust_epm.event.package.size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: package.size
+      tag: set_package_size_from_event_package_size
+      copy_from: beyondtrust_epm.event.package.size
+      ignore_empty_value: true
+  - set:
+      field: package.type
+      tag: set_package_type_from_event_package_type
+      copy_from: beyondtrust_epm.event.package.type
+      ignore_empty_value: true
+  - set:
+      field: package.version
+      tag: set_package_version_from_event_package_version
+      copy_from: beyondtrust_epm.event.package.version
+      ignore_empty_value: true
+  - set:
+      field: registry.data.bytes
+      tag: set_registry_data_bytes_from_event_registry_data_bytes
+      copy_from: beyondtrust_epm.event.registry.data.bytes
+      ignore_empty_value: true
+  - foreach:
+      field: beyondtrust_epm.event.registry.data.strings
+      tag: foreach_registry_data_strings
+      if: ctx.beyondtrust_epm?.event?.registry?.data?.strings instanceof List
+      processor:
+        append:
+          field: registry.data.strings
+          tag: append_registry_data_strings_into_registry_data_strings
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: registry.data.type
+      tag: set_registry_data_type_from_event_registry_data_type
+      copy_from: beyondtrust_epm.event.registry.data.type
+      ignore_empty_value: true
+  - set:
+      field: registry.hive
+      tag: set_registry_hive_from_event_registry_hive
+      copy_from: beyondtrust_epm.event.registry.hive
+      ignore_empty_value: true
+  - set:
+      field: registry.key
+      tag: set_registry_key_from_event_registry_key
+      copy_from: beyondtrust_epm.event.registry.key
+      ignore_empty_value: true
+  - set:
+      field: registry.path
+      tag: set_registry_path_from_event_registry_path
+      copy_from: beyondtrust_epm.event.registry.path
+      ignore_empty_value: true
+  - set:
+      field: registry.value
+      tag: set_registry_value_from_event_registry_value
+      copy_from: beyondtrust_epm.event.registry.value
+      ignore_empty_value: true
+  - set:
+      field: file.owner
+      tag: set_file_owner_from_file_Owner_Name
+      copy_from: beyondtrust_epm.event.file.Owner.Name
+      ignore_empty_value: true
+      override: false
+  - append:
+      field: related.user
+      tag: append_event_file_owner_into_related_user
+      if: ctx.beyondtrust_epm?.event?.file?.Owner?.Name != null
+      value: '{{{beyondtrust_epm.event.file.Owner.Name}}}'
+      allow_duplicates: false
+  - set:
+      field: file.origin_url
+      tag: set_file_origin_url_from_file_SourceUrl
+      copy_from: beyondtrust_epm.event.file.SourceUrl
+      ignore_empty_value: true
+      override: false
+  - foreach:
+      field: file.elf.sections.chi2
+      tag: foreach_file_elf_sections_chi2_convert_to_long
+      if: ctx.file?.elf?.sections?.chi2 instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_ecs_file_elf_sections_chi2_elements_to_long
+          type: long
+          ignore_missing: true
+          ignore_failure: true
+  - foreach:
+      field: file.elf.sections.entropy
+      tag: foreach_file_elf_sections_entropy_convert_to_long
+      if: ctx.file?.elf?.sections?.entropy instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_ecs_file_elf_sections_entropy_elements_to_long
+          type: long
+          ignore_missing: true
+          ignore_failure: true
+  - foreach:
+      field: file.elf.sections.physical_size
+      tag: foreach_file_elf_sections_physical_size_convert_to_long
+      if: ctx.file?.elf?.sections?.physical_size instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_ecs_file_elf_sections_physical_size_elements_to_long
+          type: long
+          ignore_missing: true
+          ignore_failure: true
+  - foreach:
+      field: file.elf.sections.virtual_address
+      tag: foreach_file_elf_sections_virtual_address_convert_to_long
+      if: ctx.file?.elf?.sections?.virtual_address instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_ecs_file_elf_sections_virtual_address_elements_to_long
+          type: long
+          ignore_missing: true
+          ignore_failure: true
+  - foreach:
+      field: file.elf.sections.virtual_size
+      tag: foreach_file_elf_sections_virtual_size_convert_to_long
+      if: ctx.file?.elf?.sections?.virtual_size instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_ecs_file_elf_sections_virtual_size_elements_to_long
+          type: long
+          ignore_missing: true
+          ignore_failure: true
+  - append:
+      field: event.category
+      tag: append_event_category_file
+      if: >-
+        ctx.file != null
+        && (ctx.event?.category == null || !ctx.event.category.contains('file'))
+      value: file
+      allow_duplicates: false
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.sections
+      tag: foreach_file_elf_sections
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.sections instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.chi2
+            - _ingest._value.entropy
+            - _ingest._value.flags
+            - _ingest._value.name
+            - _ingest._value.physical_offset
+            - _ingest._value.physical_size
+            - _ingest._value.type
+            - _ingest._value.virtual_address
+            - _ingest._value.virtual_size
+          tag: remove_fields_mapped_with_ecs_from_file_elf_sections
+          ignore_missing: true
+  - foreach:
+      field: beyondtrust_epm.event.file.elf.segments
+      tag: foreach_file_elf_segments
+      if: ctx.beyondtrust_epm?.event?.file?.elf?.segments instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.sections
+            - _ingest._value.type
+          tag: remove_fields_mapped_with_ecs_from_file_elf_segments
+          ignore_missing: true
+  - remove:
+      field:
+        - beyondtrust_epm.event.dll.code_signature.digest_algorithm
+        - beyondtrust_epm.event.dll.code_signature.exists
+        - beyondtrust_epm.event.dll.code_signature.signing_id
+        - beyondtrust_epm.event.dll.code_signature.status
+        - beyondtrust_epm.event.dll.code_signature.subject_name
+        - beyondtrust_epm.event.dll.code_signature.team_id
+        - beyondtrust_epm.event.dll.code_signature.timestamp
+        - beyondtrust_epm.event.dll.code_signature.trusted
+        - beyondtrust_epm.event.dll.code_signature.valid
+        - beyondtrust_epm.event.dll.hash.md5
+        - beyondtrust_epm.event.dll.hash.sha1
+        - beyondtrust_epm.event.dll.hash.sha256
+        - beyondtrust_epm.event.dll.hash.sha384
+        - beyondtrust_epm.event.dll.hash.sha512
+        - beyondtrust_epm.event.dll.hash.ssdeep
+        - beyondtrust_epm.event.dll.hash.tlsh
+        - beyondtrust_epm.event.dll.name
+        - beyondtrust_epm.event.dll.path
+        - beyondtrust_epm.event.dll.pe.architecture
+        - beyondtrust_epm.event.dll.pe.company
+        - beyondtrust_epm.event.dll.pe.description
+        - beyondtrust_epm.event.dll.pe.file_version
+        - beyondtrust_epm.event.dll.pe.imphash
+        - beyondtrust_epm.event.dll.pe.original_file_name
+        - beyondtrust_epm.event.dll.pe.pehash
+        - beyondtrust_epm.event.dll.pe.product
+        - beyondtrust_epm.event.file.accessed
+        - beyondtrust_epm.event.file.attributes
+        - beyondtrust_epm.event.file.code_signature.digest_algorithm
+        - beyondtrust_epm.event.file.code_signature.exists
+        - beyondtrust_epm.event.file.code_signature.signing_id
+        - beyondtrust_epm.event.file.code_signature.status
+        - beyondtrust_epm.event.file.code_signature.subject_name
+        - beyondtrust_epm.event.file.code_signature.team_id
+        - beyondtrust_epm.event.file.code_signature.timestamp
+        - beyondtrust_epm.event.file.code_signature.trusted
+        - beyondtrust_epm.event.file.code_signature.valid
+        - beyondtrust_epm.event.file.created
+        - beyondtrust_epm.event.file.ctime
+        - beyondtrust_epm.event.file.device
+        - beyondtrust_epm.event.file.directory
+        - beyondtrust_epm.event.file.drive_letter
+        - beyondtrust_epm.event.file.elf.architecture
+        - beyondtrust_epm.event.file.elf.byte_order
+        - beyondtrust_epm.event.file.elf.cpu_type
+        - beyondtrust_epm.event.file.elf.creation_date
+        - beyondtrust_epm.event.file.elf.header.abi_version
+        - beyondtrust_epm.event.file.elf.header.class
+        - beyondtrust_epm.event.file.elf.header.data
+        - beyondtrust_epm.event.file.elf.header.entrypoint
+        - beyondtrust_epm.event.file.elf.header.object_version
+        - beyondtrust_epm.event.file.elf.header.os_abi
+        - beyondtrust_epm.event.file.elf.header.type
+        - beyondtrust_epm.event.file.elf.header.version
+        - beyondtrust_epm.event.file.elf.shared_libraries
+        - beyondtrust_epm.event.file.elf.telfhash
+        - beyondtrust_epm.event.file.extension
+        - beyondtrust_epm.event.file.fork_name
+        - beyondtrust_epm.event.file.gid
+        - beyondtrust_epm.event.file.group
+        - beyondtrust_epm.event.file.hash.md5
+        - beyondtrust_epm.event.file.hash.sha1
+        - beyondtrust_epm.event.file.hash.sha256
+        - beyondtrust_epm.event.file.hash.sha384
+        - beyondtrust_epm.event.file.hash.sha512
+        - beyondtrust_epm.event.file.hash.ssdeep
+        - beyondtrust_epm.event.file.hash.tlsh
+        - beyondtrust_epm.event.file.inode
+        - beyondtrust_epm.event.file.mime_type
+        - beyondtrust_epm.event.file.mode
+        - beyondtrust_epm.event.file.mtime
+        - beyondtrust_epm.event.file.name
+        - beyondtrust_epm.event.file.path
+        - beyondtrust_epm.event.file.pe.architecture
+        - beyondtrust_epm.event.file.pe.company
+        - beyondtrust_epm.event.file.pe.description
+        - beyondtrust_epm.event.file.pe.file_version
+        - beyondtrust_epm.event.file.pe.imphash
+        - beyondtrust_epm.event.file.pe.original_file_name
+        - beyondtrust_epm.event.file.pe.pehash
+        - beyondtrust_epm.event.file.pe.product
+        - beyondtrust_epm.event.file.size
+        - beyondtrust_epm.event.file.target_path
+        - beyondtrust_epm.event.file.type
+        - beyondtrust_epm.event.file.uid
+        - beyondtrust_epm.event.file.x509.alternative_names
+        - beyondtrust_epm.event.file.x509.issuer.common_name
+        - beyondtrust_epm.event.file.x509.issuer.country
+        - beyondtrust_epm.event.file.x509.issuer.distinguished_name
+        - beyondtrust_epm.event.file.x509.issuer.locality
+        - beyondtrust_epm.event.file.x509.issuer.organization
+        - beyondtrust_epm.event.file.x509.issuer.organizational_unit
+        - beyondtrust_epm.event.file.x509.issuer.state_or_province
+        - beyondtrust_epm.event.file.x509.not_after
+        - beyondtrust_epm.event.file.x509.not_before
+        - beyondtrust_epm.event.file.x509.public_key_algorithm
+        - beyondtrust_epm.event.file.x509.public_key_curve
+        - beyondtrust_epm.event.file.x509.public_key_exponent
+        - beyondtrust_epm.event.file.x509.public_key_size
+        - beyondtrust_epm.event.file.x509.serial_number
+        - beyondtrust_epm.event.file.x509.signature_algorithm
+        - beyondtrust_epm.event.file.x509.subject.common_name
+        - beyondtrust_epm.event.file.x509.subject.country
+        - beyondtrust_epm.event.file.x509.subject.distinguished_name
+        - beyondtrust_epm.event.file.x509.subject.locality
+        - beyondtrust_epm.event.file.x509.subject.organization
+        - beyondtrust_epm.event.file.x509.subject.organizational_unit
+        - beyondtrust_epm.event.file.x509.subject.state_or_province
+        - beyondtrust_epm.event.file.x509.version_number
+        - beyondtrust_epm.event.package.architecture
+        - beyondtrust_epm.event.package.build_version
+        - beyondtrust_epm.event.package.checksum
+        - beyondtrust_epm.event.package.description
+        - beyondtrust_epm.event.package.install_scope
+        - beyondtrust_epm.event.package.installed
+        - beyondtrust_epm.event.package.license
+        - beyondtrust_epm.event.package.name
+        - beyondtrust_epm.event.package.path
+        - beyondtrust_epm.event.package.reference
+        - beyondtrust_epm.event.package.size
+        - beyondtrust_epm.event.package.type
+        - beyondtrust_epm.event.package.version
+        - beyondtrust_epm.event.registry.data.bytes
+        - beyondtrust_epm.event.registry.data.strings
+        - beyondtrust_epm.event.registry.data.type
+        - beyondtrust_epm.event.registry.hive
+        - beyondtrust_epm.event.registry.key
+        - beyondtrust_epm.event.registry.path
+        - beyondtrust_epm.event.registry.value
+      tag: remove_fields_mapped_with_ecs
+      ignore_missing: true

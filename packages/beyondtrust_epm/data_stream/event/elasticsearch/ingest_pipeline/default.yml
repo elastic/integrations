@@ -1,0 +1,272 @@
+---
+description: Pipeline for processing event logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      ignore_missing: true
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+  - remove:
+      field: message
+      tag: remove_message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: beyondtrust_epm.event
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: BeyondTrust
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Endpoint Privilege Management
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+      allow_duplicates: false
+      description: BeyondTrust EPM events are informational; set the ECS event.type companion required alongside event.category.
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-network-transport" }}'
+      tag: route_network_transport
+      if: >-
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.client != null
+        || ctx.beyondtrust_epm.event.destination != null
+        || ctx.beyondtrust_epm.event.dns != null
+        || ctx.beyondtrust_epm.event.http != null
+        || ctx.beyondtrust_epm.event.network != null
+        || ctx.beyondtrust_epm.event.server != null
+        || ctx.beyondtrust_epm.event.source != null
+        || ctx.beyondtrust_epm.event.tls != null
+        || ctx.beyondtrust_epm.event.url != null)
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-threat-security" }}'
+      tag: route_threat_security
+      if: >-
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.threat != null
+        || ctx.beyondtrust_epm.event.EPMWinMac != null
+        || ctx.beyondtrust_epm.event.rule != null
+        || ctx.beyondtrust_epm.event.vulnerability != null)
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-file-endpoint" }}'
+      tag: route_file_endpoint
+      if: >-
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.file != null
+        || ctx.beyondtrust_epm.event.EPMWinMac != null
+        || ctx.beyondtrust_epm.event.dll != null
+        || ctx.beyondtrust_epm.event.package != null
+        || ctx.beyondtrust_epm.event.registry != null)
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-process" }}'
+      tag: route_process
+      if: >-
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.process != null
+        || ctx.beyondtrust_epm.event.EPMWinMac != null)
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-host-infrastructure" }}'
+      tag: route_host_infrastructure
+      if: >-
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.EPMWinMac != null
+        || ctx.beyondtrust_epm.event.cloud != null
+        || ctx.beyondtrust_epm.event.container != null
+        || ctx.beyondtrust_epm.event.faas != null
+        || ctx.beyondtrust_epm.event.host != null
+        || ctx.beyondtrust_epm.event.observer != null
+        || ctx.beyondtrust_epm.event.orchestrator != null
+        || ctx.beyondtrust_epm.event.client != null)
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-identity-user" }}'
+      tag: route_identity_user
+      if: >-
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.EPMWinMac != null
+        || ctx.beyondtrust_epm.event.email != null
+        || ctx.beyondtrust_epm.event.group != null
+        || ctx.beyondtrust_epm.event.user != null
+        || ctx.beyondtrust_epm.event.user_agent != null
+        || ctx.beyondtrust_epm.event.client != null)
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-service-application" }}'
+      tag: route_service_application
+      if: >-
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event.EPMWinMac != null
+        || ctx.beyondtrust_epm.event.error != null
+        || ctx.beyondtrust_epm.event.event != null
+        || ctx.beyondtrust_epm.event.log != null
+        || ctx.beyondtrust_epm.event.service != null)
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-metadata-observability" }}'
+      tag: route_metadata_observability
+      if: >-
+        ctx.beyondtrust_epm?.event != null
+        && (ctx.beyondtrust_epm.event['@timestamp'] != null
+        || ctx.beyondtrust_epm.event.timestamp != null
+        || ctx.beyondtrust_epm.event.EPMWinMac != null
+        || ctx.beyondtrust_epm.event.message != null
+        || ctx.beyondtrust_epm.event.organization != null
+        || ctx.beyondtrust_epm.event.related != null
+        || ctx.beyondtrust_epm.event.span != null
+        || ctx.beyondtrust_epm.event.tags != null
+        || ctx.beyondtrust_epm.event.trace != null
+        || ctx.beyondtrust_epm.event.transaction != null)
+  # rename all fields name to snake case
+  - script:
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      description: Convert camelCase to snake_case.
+      source: |
+        // Helper function to convert camelCase to snake_case
+        String camelToSnake(String str) {
+          def result = "";
+          def lastCharWasUpperCase = false;
+          for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0 && !lastCharWasUpperCase) {
+                result += "_";
+              }
+              result += Character.toLowerCase(c);
+              lastCharWasUpperCase = true;
+            } else {
+              result += c;
+              lastCharWasUpperCase = false;
+            }
+          }
+          return result;
+        }
+        // Recursive function to handle nested fields
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            // Convert each key in the map
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              if (entry.getKey().contains("@")) {
+                newObj[entry.getKey()] = convertToSnakeCase(entry.getValue());
+              } else {
+                String newKey = camelToSnake(entry.getKey());
+                newObj[newKey] = convertToSnakeCase(entry.getValue());
+              }
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            // If it's a list, process each item recursively
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        if (ctx.beyondtrust_epm.event != null) {
+          ctx.beyondtrust_epm.event = convertToSnakeCase(ctx.beyondtrust_epm.event);
+        }
+  # rename fields to more readable format for better clarity
+  - rename:
+      field: beyondtrust_epm.event.epmwin_mac
+      tag: rename_epmwin_mac_to_epm_win_mac
+      target_field: beyondtrust_epm.event.epm_win_mac
+      ignore_missing: true
+  - rename:
+      field: beyondtrust_epm.event.epm_win_mac.session.jitadmin
+      tag: rename_epm_win_mac_session_jitadmin_to_jit_admin
+      target_field: beyondtrust_epm.event.epm_win_mac.session.jit_admin
+      ignore_missing: true
+  - rename:
+      field: beyondtrust_epm.event.host.default_uilanguage
+      tag: rename_host_default_uilanguage_to_default_ui_language
+      target_field: beyondtrust_epm.event.host.default_ui_language
+      ignore_missing: true
+  - rename:
+      field: beyondtrust_epm.event.epm_win_mac.session.uilanguage
+      tag: rename_epmwin_mac_session_default_uilanguage_to_ui_language
+      target_field: beyondtrust_epm.event.epm_win_mac.session.ui_language
+      ignore_missing: true
+
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      if: ctx.error?.message != null
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{_ingest.on_failure_processor_type}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
