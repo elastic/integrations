@@ -1,0 +1,240 @@
+---
+description: Parse Trellix ePO on-prem DLP incident events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.4.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+  - dot_expander:
+      field: '*'
+      path: json
+      tag: dot_expander_json
+      if: ctx.json != null
+  - rename:
+      field: json.UDLP_EPD_Incidents
+      target_field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents
+      ignore_missing: true
+      tag: rename_json_to_vendor_namespace
+      if: ctx.json?.UDLP_EPD_Incidents != null
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_json
+  - convert:
+      field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.IncidentId
+      type: string
+      ignore_missing: true
+      tag: convert_incident_id_to_string
+  - fingerprint:
+      fields:
+        - trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.IncidentId
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_incident_id
+  - set:
+      field: event.kind
+      tag: set_alert_into_event_kind
+      value: alert
+  - set:
+      field: event.id
+      copy_from: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.IncidentId
+      ignore_empty_value: true
+      tag: set_event_id_from_incident_id
+  - convert:
+      field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.IncidentType
+      type: string
+      ignore_missing: true
+      tag: convert_incident_type_to_string
+  - convert:
+      field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.Severity
+      type: long
+      ignore_missing: true
+      if: ctx.trellix_epo_on_prem?.dlp_incident?.UDLP_EPD_Incidents?.Severity != ''
+      tag: convert_incident_type_to_long
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.Severity
+            ignore_missing: true
+            tag: remove_severity_on_convert_failure
+        - append:
+            field: error.message
+            tag: append_severity_convert_failure_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.code
+      copy_from: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.IncidentType
+      ignore_empty_value: true
+      tag: set_event_code_from_incident_type
+  - append:
+      field: related.user
+      tag: append_reviewer_to_related_user
+      value: '{{{trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.Reviewer}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.dlp_incident?.UDLP_EPD_Incidents?.Reviewer != null
+  - set:
+      field: user.email
+      copy_from: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.Reviewer
+      ignore_empty_value: true
+      tag: set_user_email_from_reviewer
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_failure: true
+      if: ctx.user?.email != null && ctx.user.email.contains('@')
+  - set:
+      field: rule.name
+      copy_from: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.RulesToDisplay
+      ignore_empty_value: true
+      tag: set_rule_name_from_rules_to_display
+  - set:
+      field: rule.ruleset
+      copy_from: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.RuleSetToDisplay
+      ignore_empty_value: true
+      tag: set_rule_ruleset_from_rule_set_to_display
+  - set:
+      field: event.timezone
+      copy_from: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationTimezone
+      ignore_empty_value: true
+      tag: set_event_timezone_from_violation_timezone
+  - date:
+      field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationUTCTime
+      target_field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationUTCTime
+      formats:
+        - ISO8601
+      tag: date_violation_utc_time
+      if: ctx.trellix_epo_on_prem?.dlp_incident?.UDLP_EPD_Incidents?.ViolationUTCTime != null
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationUTCTime
+            ignore_missing: true
+            tag: remove_violation_utc_time_on_date_failure
+        - append:
+            field: error.message
+            tag: append_date_violation_utc_time_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationUTCTime
+      ignore_empty_value: true
+      tag: set_timestamp_from_violation_utc_time
+  - date:
+      field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationLocalTime
+      target_field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationLocalTime
+      formats:
+        - ISO8601
+      tag: date_violation_local_time
+      if: ctx.trellix_epo_on_prem?.dlp_incident?.UDLP_EPD_Incidents?.ViolationLocalTime != null
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationLocalTime
+            ignore_missing: true
+            tag: remove_violation_local_time_on_date_failure
+        - append:
+            field: error.message
+            tag: append_date_violation_local_time_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationCustomTime
+      target_field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationCustomTime
+      formats:
+        - ISO8601
+      tag: date_violation_custom_time
+      if: ctx.trellix_epo_on_prem?.dlp_incident?.UDLP_EPD_Incidents?.ViolationCustomTime != null
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationCustomTime
+            ignore_missing: true
+            tag: remove_violation_custom_time_on_date_failure
+        - append:
+            field: error.message
+            tag: append_date_violation_custom_time_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.LastUpdateTimestamp
+      target_field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.LastUpdateTimestamp
+      formats:
+        - ISO8601
+      tag: date_last_update_timestamp
+      if: ctx.trellix_epo_on_prem?.dlp_incident?.UDLP_EPD_Incidents?.LastUpdateTimestamp != null
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.LastUpdateTimestamp
+            ignore_missing: true
+            tag: remove_last_update_timestamp_on_date_failure
+        - append:
+            field: error.message
+            tag: append_date_last_update_timestamp_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.IncidentId
+        - trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.IncidentType
+        - trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.Reviewer
+        - trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.RulesToDisplay
+        - trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.RuleSetToDisplay
+        - trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationTimezone
+        - trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationUTCTime
+      ignore_missing: true
+      tag: remove_custom_mapped_ecs_fields
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      if: ctx.error?.message != null
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
