@@ -51,19 +51,21 @@ processors:
       description: Drop non-SignInLogs.
       if: ctx.azure?.signinlogs?.category == null || !ctx.azure.signinlogs.category.endsWith('SignInLogs')
     # Unfortunately, some Azure services generate logs with
-    # `created_date_time` field instead of `time` field.
+    # `created_date_time` at **the root level** instead of `time`
+    # field.
     #
-    # We need to rename `created_date_time` as `time` to
-    # apply the correct timestamp processing.
-    # 
+    # We need to rename `azure.signinlogs.created_date_time`
+    # as `azure.signinlogs.time` to apply the correct timestamp
+    # processing.
+    #
     # Refs;
-    # - https://github.com/elastic/integrations/issues/15083  
+    # - https://github.com/elastic/integrations/issues/15083
   - rename:
-     field: azure.signinlogs.created_date_time
-     target_field: azure.signinlogs.time
-     ignore_missing: true
-     if: ctx.azure?.signinlogs?.time == null
-     description: 'Fallback to handle special cases for log category: use `created_date_time` as `time` if `time` is not already set.'
+      field: azure.signinlogs.created_date_time
+      target_field: azure.signinlogs.time
+      ignore_missing: true
+      if: ctx.azure?.signinlogs?.time == null
+      description: 'Fallback to handle special cases for log category: use `created_date_time` as `time` if `time` is not already set.'
   - date:
       field: azure.signinlogs.time
       # Order is prioritized by observed frequency for this log
@@ -71,12 +73,30 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
         - "M/d/yyyy H:mm:ss"
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
+  # For SignInLogs, `.properties.createdDateTime` is the actual
+  # sign-in event time; the top-level `time` is a processing
+  # timestamp that arrives slightly later. Attempt to override
+  # `@timestamp` with it, retaining the value parsed from `time`
+  # if it is malformed.
+  - date:
+      field: azure.signinlogs.properties.created_date_time
+      if: ctx.azure?.signinlogs?.properties?.created_date_time != null
+      formats:
+        - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
+      on_failure:
+        - remove:
+            field: azure.signinlogs.properties.created_date_time
+            ignore_missing: true
   - remove:
       field: azure.signinlogs.time
   - rename:
@@ -205,10 +225,10 @@ processors:
         } else if (details != null) {
             ctx['message'] = details;
         }"
-  - remove: 
+  - remove:
       field: azure.signinlogs.properties.status.failure_reason
       ignore_missing: true
-  - remove: 
+  - remove:
       field: azure.signinlogs.properties.status.additional_details
       ignore_missing: true
   - rename:
