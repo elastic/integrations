@@ -528,6 +528,36 @@ func RenderBackportChecklist(artifactPath string) error {
 	return nil
 }
 
+// ParseBackportChecklist reads a checklist comment body from bodyFile and prints
+// a JSON array of ChecklistItem to stdout. Used by auto-backport.yml to enumerate
+// which branches need backport PRs created.
+func ParseBackportChecklist(bodyFile string) error {
+	data, err := os.ReadFile(bodyFile)
+	if err != nil {
+		return fmt.Errorf("reading body file: %w", err)
+	}
+	items := bpchecklist.ParseChecklistItems(string(data))
+	out, err := json.Marshal(items)
+	if err != nil {
+		return fmt.Errorf("marshalling checklist items: %w", err)
+	}
+	fmt.Println(string(out))
+	return nil
+}
+
+// UpdateChecklistBranchStatus reads a checklist comment body from bodyFile, appends
+// the given status to the line for branch, and prints the updated body to stdout.
+// If the line already carries a ✅ or ⚠️ suffix the body is printed unchanged.
+// Used by auto-backport.yml to mark each branch after its PR is processed.
+func UpdateChecklistBranchStatus(bodyFile, branch, status string) error {
+	data, err := os.ReadFile(bodyFile)
+	if err != nil {
+		return fmt.Errorf("reading body file: %w", err)
+	}
+	fmt.Print(bpchecklist.UpdateBranchStatus(string(data), branch, status))
+	return nil
+}
+
 // IsElasticPackageDependencyLessThan checks whether or not the elastic-package version set in go.mod is less than the given version
 func IsElasticPackageDependencyLessThan(version string) error {
 	foundVersion, err := citools.PackageVersionGoMod("go.mod", elasticPackageModulePath)
@@ -556,6 +586,34 @@ func IsElasticPackageDependencyLessThan(version string) error {
 //
 // Required env vars: BEFORE, AFTER, REPOSITORY, BACKPORT_BRANCH.
 // Optional env vars: PACKAGES_DIR (defaults to "packages").
+// CheckChangelogVersionsInMain verifies that changelog versions introduced in the
+// current PR do not already exist in origin/main. It exits non-zero when any
+// conflict is found. Intended to run on PRs targeting backport-* branches.
+//
+// baseBranch is the PR's target branch (e.g. "backport-aws-1.x"); only changes
+// relative to that branch are examined, not the full backport history.
+func CheckChangelogVersionsInMain(baseBranch string) error {
+	if baseBranch == "" {
+		return fmt.Errorf("baseBranch is required")
+	}
+	before := "origin/" + baseBranch
+
+	git := gitutil.Git{}
+	conflicts, err := changelog.CheckVersionsAgainstMain(git, before, "HEAD")
+	if err != nil {
+		return err
+	}
+	if len(conflicts) > 0 {
+		fmt.Fprintln(os.Stderr, "ERROR: the following changelog versions are already present in main:")
+		for _, c := range conflicts {
+			fmt.Fprintf(os.Stderr, "  - %s\n", c)
+		}
+		return fmt.Errorf("found %d changelog version(s) already in main", len(conflicts))
+	}
+	fmt.Println("All changelog versions are new — no conflicts with main.")
+	return nil
+}
+
 func SyncBackportChangelog() error {
 	before := os.Getenv("BEFORE")
 	after := os.Getenv("AFTER")
@@ -629,10 +687,10 @@ func PostBackportComment() error {
 //
 // Usage: mage ApplyBackport <sha> <package> <target> [-openPR] [-asJSON] [-dryRun] \
 //
-//	[repository] [packagesDir]
+//	[-remote=<remote>] [-repository=<org/repo>] [-packagesDir=<path>]
 //
 // sha, pkg, target are required. All remaining parameters are optional (nil = unset).
-// *bool flags may be passed as -openPR / -asJSON / -dryRun on the command line.
+// All optional flags use -name=value format on the command line.
 func ApplyBackport(sha, pkg, target string, openPR, asJSON, dryRun *bool, remote, repository, packagesDir *string) error {
 	opts := apply.Options{
 		SHA:         sha,
