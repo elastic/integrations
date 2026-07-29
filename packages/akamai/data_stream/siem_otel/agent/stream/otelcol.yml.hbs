@@ -20,7 +20,7 @@ receivers:
 {{/if}}
     data_stream:
       type: logs
-      dataset: akamai.siem
+      dataset: "{{data_stream.dataset}}"
       namespace: "{{namespace}}"
 {{#if enable_storage}}
     storage: file_storage
@@ -36,7 +36,7 @@ processors:
     log_statements:
       - context: log
         statements:
-          - set(log.body["tags"], [{{#each tags}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}{{#if preserve_original_event}}, "preserve_original_event"{{/if}}])
+          - set(log.body["tags"], [{{#if preserve_original_event}}"preserve_original_event"{{#if tags}}, {{/if}}{{/if}}{{#each tags}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}])
 {{#if enable_storage}}
 extensions:
   file_storage:
