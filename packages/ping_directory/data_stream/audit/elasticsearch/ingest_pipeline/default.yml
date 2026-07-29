@@ -23,14 +23,14 @@ processors:
       tag: drop_non_audit_header_lines
       if: >-
         ctx.event?.original == null ||
-        !(ctx.event.original =~ /^# \d{2}\/[A-Za-z]{3}\/\d{4}:\d{2}:\d{2}:\d{2}\.\d{3} [+-]\d{4};(?: conn=-?\d+;)?(?: op=\d+;)?(?: triggeredByConn=\d+;)?(?: triggeredByOp=\d+;)?(?: origin='[^']*";)?(?: instanceName="[^"]*";)?(?: threadID=\d+;)?(?: clientIP=[^;]+;)?(?: requesterDN="[^"]*";)?(?: usingAdminSessionWorkerThread=\w+;)?/)
+        !(ctx.event.original =~ /^# \d{2}\/[A-Za-z]{3}\/\d{4}:\d{2}:\d{2}:\d{2}\.\d{3} [+-]\d{4};/)
       description: >-
-        Drops any event where event.original does not match the PingDirectory audit header pattern. This covers logger initialization lines, log rotation markers, log file creation markers, and any other non-audit content before the grok processor runs.
+        Drops any event where event.original does not start with the PingDirectory audit header timestamp. This covers logger initialization lines, log rotation markers, log file creation markers, and any other non-audit content before the grok processor runs.
   - grok:
       field: event.original
       tag: parse_audit_header
       patterns:
-        - '# (?<ping_directory.audit.timestamp>\d{2}\/[A-Za-z]{3}\/\d{4}:\d{2}:\d{2}:\d{2}\.\d{3}) (?<ping_directory.audit.timezone>[+-]\d{4});(?: conn=%{INT:ping_directory.audit.conn:long};)?(?: op=%{NUMBER:ping_directory.audit.op:long};)?(?: triggeredByConn=%{NUMBER:ping_directory.audit.triggered_by_conn:long};)?(?: triggeredByOp=%{NUMBER:ping_directory.audit.triggered_by_op:long};)?(?: origin="%{DATA:ping_directory.audit.origin}";)?(?: instanceName="%{DATA:ping_directory.audit.instance_name}";)?(?: threadID=%{NUMBER:ping_directory.audit.thread_id};)?(?: clientIP=%{IP:ping_directory.audit.client_ip};)?(?: requesterDN="%{DATA:ping_directory.audit.requester_dn_raw}";)?(?: usingAdminSessionWorkerThread=%{WORD:ping_directory.audit.using_admin_session_worker_thread};)?'
+        - '^# (?<ping_directory.audit.timestamp>\d{2}\/[A-Za-z]{3}\/\d{4}:\d{2}:\d{2}:\d{2}\.\d{3}) (?<ping_directory.audit.timezone>[+-]\d{4});(?: conn=%{INT:ping_directory.audit.conn:long};?)?(?: op=%{NUMBER:ping_directory.audit.op:long};?)?(?: triggeredByConn=%{NUMBER:ping_directory.audit.triggered_by_conn:long};?)?(?: triggeredByOp=%{NUMBER:ping_directory.audit.triggered_by_op:long};?)?(?: origin="%{DATA:ping_directory.audit.origin}";?)?(?: instanceName="%{DATA:ping_directory.audit.instance_name}";?)?(?: threadID=%{NUMBER:ping_directory.audit.thread_id};?)?(?: clientIP=%{IP:ping_directory.audit.client_ip};?)?(?: requesterDN="%{DATA:ping_directory.audit.requester_dn_raw}";?)?(?: usingAdminSessionWorkerThread=%{WORD:ping_directory.audit.using_admin_session_worker_thread};?)?'
       if: ctx.event?.original != null
   - gsub:
       field: event.original
@@ -136,8 +136,12 @@ processors:
             }
             result.put('meta', rest);
           } else {
-            result.put('cn', raw);
-            result.put('meta', '');
+            int eqIdx = raw.indexOf('=');
+            if (eqIdx > 0) {
+              result.put('cn', raw.substring(eqIdx + 1).trim());
+            } else {
+              result.put('cn', raw);
+            }
           }
           return result;
         }
@@ -278,6 +282,14 @@ processors:
       tag: append_iam_into_event_category
       value: iam
   - append:
+      field: event.category
+      tag: append_configuration_into_event_category
+      value: configuration
+      allow_duplicates: false
+      if: >-
+        ctx.ping_directory?.audit?.dn?.meta != null &&
+        ctx.ping_directory.audit.dn.meta.endsWith('cn=config')
+  - append:
       field: event.type
       tag: append_creation_into_event_type
       value: creation
@@ -292,6 +304,13 @@ processors:
       tag: append_deletion_into_event_type
       value: deletion
       if: ctx.ping_directory?.audit?.changetype != null && ['delete','DELETE'].contains(ctx.ping_directory.audit.changetype)
+  - append:
+      field: event.type
+      tag: append_change_into_event_type_for_rename
+      value: change
+      if: >-
+        ctx.ping_directory?.audit?.changetype != null &&
+        ['modrdn','moddn','MODRDN','MODDN'].contains(ctx.ping_directory.audit.changetype)
   - convert:
       field: ping_directory.audit.client_ip
       tag: convert_clientIP_to_ip
@@ -400,6 +419,11 @@ processors:
       allow_duplicates: false
       description: >-
         Appends the requester DN common name to related.user.
+  - set:
+      field: user.name
+      tag: set_user_name_from_audit_requester_dn_cn
+      copy_from: ping_directory.audit.requester_dn.cn
+      ignore_empty_value: true
   - append:
       field: related.user
       tag: append_ping_directory_audit_modifiers_name_cn_into_related_user
@@ -520,6 +544,11 @@ processors:
         - ping_directory.audit.changetype
       tag: remove_fields_map_to_ecs
       ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
   - append:
       field: tags
       tag: append_preserve_original_event_tag

@@ -44,7 +44,7 @@ The PingDirectory integration collects the following types of data:
 * **HTTP Access logging enabled**: The HTTP Access Logger must be enabled and configured to record HTTP request and response activity.
 * **Audit logging enabled**: The File-Based Audit Logger must be enabled and configured to record directory change operations.
 * **Log access**: Elastic Agent must have access to the HTTP Access and Audit log files on the PingDirectory host.
-* **Elastic Agent**: Version 8.18+ or 9.1.0+ with Fleet enrollment.
+* **Elastic Agent**: Version 8.19+ or 9.1.0+ with Fleet enrollment.
 
 ## How do I deploy this integration?
 
