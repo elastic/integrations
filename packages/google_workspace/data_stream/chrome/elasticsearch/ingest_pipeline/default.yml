@@ -142,16 +142,18 @@ processors:
         extension_request: configuration
         login_event: authentication
         malware_transfer: malware
-        password_breach: authentication
         sensitive_data_transfer: file
         unsafe_site_visit: web
       source: |-
         if (ctx.event == null) {
           ctx.event = new HashMap();
         }
-        def category = new ArrayList();
-        category.add(params.get(ctx.google_workspace.chrome.name.toLowerCase()));
-        ctx.event.put('category', category);
+        def category = params.get(ctx.google_workspace.chrome.name.toLowerCase());
+        if (category == null) {
+          ctx.event.remove('category');
+        } else {
+          ctx.event.put('category', [category]);
+        }
       on_failure:
         - append:
             field: error.message

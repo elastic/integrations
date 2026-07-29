@@ -111,14 +111,10 @@ processors:
         attachment_upload: file
         block_room: configuration
         block_user: configuration
-        custom_status_updated: configuration
         emoji_created: configuration
         emoji_deleted: configuration
         history_turned_off: configuration
         history_turned_on: configuration
-        invite_accept: configuration
-        invite_decline: configuration
-        invite_send: configuration
         remove_room_member: configuration
         room_created: configuration
         room_deleted: configuration
@@ -131,9 +127,12 @@ processors:
         role_updated: iam
       source: |-
         ctx.event = ctx.event ?: [:];
-        def category = [];
-        category.add(params.get(ctx.google_workspace.chat.name));
-        ctx.event.category = category;
+        def category = params.get(ctx.google_workspace.chat.name);
+        if (category == null) {
+          ctx.event.remove('category');
+        } else {
+          ctx.event.category = [category];
+        }
       on_failure:
         - append:
             field: error.message

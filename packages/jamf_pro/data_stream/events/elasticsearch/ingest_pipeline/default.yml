@@ -193,7 +193,7 @@ processors:
         ComputerCheckIn: { category: [host], type: [] }
         ComputerInventoryCompleted: { category: [host], type: [] }
         ComputerPushCapabilityChanged: { category: [host], type: [change] }
-        MobileDeviceEnrolled: { category: [host], type: [change] }
+        MobileDeviceEnrolled: { category: [host], type: [change, start] }
         MobileDeviceUnEnrolled: { category: [host], type: [change, end] }
         MobileDeviceCheckIn: { category: [host], type: [] }
         MobileDeviceInventoryCompleted: { category: [host], type: [] }
@@ -212,17 +212,19 @@ processors:
         RestAPIOperation: { category: [api], type: [change, admin] }
         SmartGroupUserMembershipChange: { category: [iam], type: [change, group] }
     source: |-
+      def action = ctx.event?.action;
+      if (action == null) {
+        return;
+      }
+      def entry = params.actions.get(action);
+      if (entry == null) {
+        return;
+      }
       def cats = new ArrayList();
       def types = new ArrayList();
-      def action = ctx.event?.action;
-      if (action != null) {
-        def entry = params.actions.get(action);
-        if (entry != null) {
-          if (entry.category != null) { cats.addAll(entry.category); }
-          if (entry.type != null) { types.addAll(entry.type); }
-        }
-      }
-      types.add('info');
+      if (entry.category != null) { cats.addAll(entry.category); }
+      if (entry.type != null) { types.addAll(entry.type); }
+      if (types.isEmpty()) { types.add('info'); }
       ctx.event = ctx.event ?: [:];
       if (!cats.isEmpty()) { ctx.event.category = cats; }
       ctx.event.type = types;
