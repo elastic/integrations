@@ -42,6 +42,35 @@ streams:
         required: false
         show_user: false
         description: If set, ignore S3 objects whose Last-Modified time is before the ignore older timespan. Timespan is checked from the current time to S3 object's Last-Modified time. Accepts a duration like `48h`, `2h30m`.
+      - name: backup_to_bucket_arn
+        type: text
+        title: "[S3] Backup Bucket ARN"
+        multi: false
+        required: false
+        show_user: false
+        description: Backup the CloudTrail logs to a different S3 bucket after processing. Must be a valid ARN of an S3 bucket or storage resource.
+      - name: backup_to_bucket_prefix
+        type: text
+        title: "[S3] Backup Bucket Prefix"
+        multi: false
+        required: false
+        show_user: false
+        description: Prefix to prepend to the object key when copying processed files to the backup bucket.
+      - name: non_aws_backup_to_bucket_name
+        type: text
+        title: "[S3] Non-AWS Backup Bucket Name"
+        multi: false
+        required: false
+        show_user: false
+        description: Name of the non-AWS S3-compatible bucket to backup CloudTrail logs to (e.g., MinIO, DigitalOcean Spaces). Only used if `backup_to_bucket_arn` is not specified.
+      - name: delete_after_backup
+        type: bool
+        title: "[S3] Delete After Backup"
+        multi: false
+        required: false
+        show_user: false
+        default: false
+        description: Delete the source S3 objects after they have been successfully backed up. Set to `true` to enable automatic deletion of processed logs.
       - name: queue_url
         type: text
         title: "[SQS] Queue URL"
