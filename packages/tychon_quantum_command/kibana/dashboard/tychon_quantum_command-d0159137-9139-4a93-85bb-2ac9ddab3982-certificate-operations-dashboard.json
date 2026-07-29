@@ -1,0 +1,653 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        },
+        "description": "Operational view of all discovered certificates — quantum readiness, hygiene, key algorithms, and issuer coverage",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": true,
+            "useMargins": false
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "[Inventory](/app/dashboards#/view/tychon_quantum_command-32c01eb5-0d80-4a28-9de7-55b2046f7c45-inventory) | [Application Report](/app/dashboards#/view/tychon_quantum_command-443e5928-b1c4-4e07-b0b9-c675dd057e2f-application-report) | [Application Detail](/app/dashboards#/view/tychon_quantum_command-6dfff015-3cc9-48b6-9410-7d8c01ff0d9a-application-detail) | Certificate Report | [Application Connections Topology](/app/dashboards#/view/tychon_quantum_command-6f3d60d5-b5fb-45a5-9298-acf3ceb3ea1b-application-connections-topology) | [Cost Analysis](/app/dashboards#/view/tychon_quantum_command-02366033-dee4-4ea4-8458-7c8a8b58987e-cost-analysis)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "tychon-quantum-command-nav",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "tychon-quantum-command-nav",
+                "title": "",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"padding\": {\"top\": 0, \"bottom\": 0, \"left\": 0, \"right\": 0}, \"background\": \"#111111\", \"signals\": [{\"name\": \"total\", \"update\": \"length(data('d_total'))>0   ? data('d_total')[0].n   : 0\"}, {\"name\": \"expired\", \"update\": \"length(data('d_expired'))>0 ? data('d_expired')[0].n : 0\"}, {\"name\": \"exp30\", \"update\": \"length(data('d_exp30'))>0   ? data('d_exp30')[0].n   : 0\"}, {\"name\": \"self\", \"update\": \"length(data('d_self'))>0    ? data('d_self')[0].n    : 0\"}, {\"name\": \"legacy\", \"update\": \"length(data('d_legacy'))>0  ? data('d_legacy')[0].n  : 0\"}, {\"name\": \"pqcvuln\", \"update\": \"length(data('d_pqcvuln'))>0 ? data('d_pqcvuln')[0].n : 0\"}, {\"name\": \"bw\", \"update\": \"floor((width - 10) / 6) - 4\"}, {\"name\": \"sel\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"tile\"}, \"update\": \"datum.filt ? (datum.k === sel ? null : datum.k) : sel\", \"force\": true}]}, {\"name\": \"_kf\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"tile\"}, \"update\": \"datum.filt ? (datum.k === sel ? kibanaRemoveFilter(datum.filt) : kibanaAddFilter(datum.filt)) : null\", \"force\": true}]}], \"data\": [{\"name\": \"d_total\", \"url\": {\"%context%\": true, \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"v\": {\"value_count\": {\"field\": \"tychon.type\"}}}}, \"%timefield%\": \"@timestamp\"}, \"format\": {\"property\": \"aggregations.v\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.value\"}]}, {\"name\": \"d_expired\", \"url\": {\"%context%\": true, \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"f\": {\"filter\": {\"range\": {\"certificate.not_after\": {\"lt\": \"now\"}}}}}}, \"%timefield%\": \"@timestamp\"}, \"format\": {\"property\": \"aggregations.f\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.doc_count\"}]}, {\"name\": \"d_exp30\", \"url\": {\"%context%\": true, \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"f\": {\"filter\": {\"range\": {\"certificate.not_after\": {\"gte\": \"now\", \"lt\": \"now+30d\"}}}}}}, \"%timefield%\": \"@timestamp\"}, \"format\": {\"property\": \"aggregations.f\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.doc_count\"}]}, {\"name\": \"d_self\", \"url\": {\"%context%\": true, \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"f\": {\"filter\": {\"term\": {\"certificate.is_self_signed\": true}}}}}, \"%timefield%\": \"@timestamp\"}, \"format\": {\"property\": \"aggregations.f\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.doc_count\"}]}, {\"name\": \"d_legacy\", \"url\": {\"%context%\": true, \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"f\": {\"filter\": {\"term\": {\"omb.sig_tier\": \"LEGACY\"}}}}}, \"%timefield%\": \"@timestamp\"}, \"format\": {\"property\": \"aggregations.f\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.doc_count\"}]}, {\"name\": \"d_pqcvuln\", \"url\": {\"%context%\": true, \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"f\": {\"filter\": {\"terms\": {\"omb.sig_tier\": [\"CLASSICAL\", \"MODERN\", \"LEGACY\"]}}}}}, \"%timefield%\": \"@timestamp\"}, \"format\": {\"property\": \"aggregations.f\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.doc_count\"}]}, {\"name\": \"tiles\", \"values\": [{\"k\": \"TOTAL\", \"ord\": 0, \"clr\": \"#448aff\", \"bg\": \"#448aff18\", \"sig\": \"total\", \"filt\": null}, {\"k\": \"EXPIRED\", \"ord\": 1, \"clr\": \"#ef5350\", \"bg\": \"#ef535018\", \"sig\": \"expired\", \"filt\": {\"range\": {\"certificate.not_after\": {\"lt\": \"now\"}}}}, {\"k\": \"EXP 30D\", \"ord\": 2, \"clr\": \"#ff7043\", \"bg\": \"#ff704318\", \"sig\": \"exp30\", \"filt\": {\"range\": {\"certificate.not_after\": {\"gte\": \"now\", \"lt\": \"now+30d\"}}}}, {\"k\": \"SELF-SIGNED\", \"ord\": 3, \"clr\": \"#ffa726\", \"bg\": \"#ffa72618\", \"sig\": \"self\", \"filt\": {\"term\": {\"certificate.is_self_signed\": true}}}, {\"k\": \"LEGACY\", \"ord\": 4, \"clr\": \"#ef5350\", \"bg\": \"#ef535018\", \"sig\": \"legacy\", \"filt\": {\"term\": {\"omb.sig_tier\": \"LEGACY\"}}}, {\"k\": \"PQC VULN\", \"ord\": 5, \"clr\": \"#ab47bc\", \"bg\": \"#ab47bc18\", \"sig\": \"pqcvuln\", \"filt\": {\"terms\": {\"omb.sig_tier\": [\"CLASSICAL\", \"MODERN\", \"LEGACY\"]}}}], \"transform\": [{\"type\": \"formula\", \"as\": \"x\", \"expr\": \"datum.ord * (bw + 4) + 8\"}, {\"type\": \"formula\", \"as\": \"val\", \"expr\": \"datum.sig === 'total' ? total : datum.sig === 'expired' ? expired : datum.sig === 'exp30' ? exp30 : datum.sig === 'self' ? self : datum.sig === 'legacy' ? legacy : pqcvuln\"}]}], \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 18}, \"text\": {\"value\": \"CERTIFICATE INVENTORY\"}, \"fill\": {\"value\": \"#cccccc\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1.5}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 34}, \"text\": {\"value\": \"OPERATIONAL OVERVIEW  \\u2014  click a tile to filter the dashboard\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 42}, \"stroke\": {\"value\": \"#252525\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"name\": \"tile\", \"from\": {\"data\": \"tiles\"}, \"encode\": {\"update\": {\"x\": {\"field\": \"x\"}, \"y\": {\"value\": 52}, \"width\": {\"signal\": \"bw\"}, \"height\": {\"value\": 72}, \"fill\": {\"signal\": \"datum.k === sel ? datum.bg : '#161616'\"}, \"cornerRadius\": {\"value\": 3}, \"stroke\": {\"signal\": \"datum.k === sel ? datum.clr : (datum.val > 0 && datum.filt ? '#2a2a3a' : '#222222')\"}, \"strokeWidth\": {\"signal\": \"datum.k === sel ? 2 : 1\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"tiles\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"datum.x + bw/2\"}, \"y\": {\"value\": 88}, \"text\": {\"signal\": \"datum.val >= 1000 ? format(datum.val,'.3~s') : format(datum.val,',')\"}, \"fill\": {\"signal\": \"datum.k === sel ? datum.clr : (datum.val > 0 ? datum.clr : '#3a3a3a')\"}, \"fontSize\": {\"value\": 22}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"tiles\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"datum.x + bw/2\"}, \"y\": {\"value\": 108}, \"text\": {\"field\": \"k\"}, \"fill\": {\"signal\": \"datum.k === sel ? datum.clr : '#666666'\"}, \"fontSize\": {\"value\": 9}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 - 8\"}, \"text\": {\"signal\": \"length(data('d_total')) === 0 ? 'NO DATA FOR CURRENT FILTERS / TIME RANGE' : ''\"}, \"fill\": {\"value\": \"#666666\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 + 12\"}, \"text\": {\"signal\": \"length(data('d_total')) === 0 ? 'Adjust dashboard filters or expand the selected time range.' : ''\"}, \"fill\": {\"value\": \"#444444\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 9}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}]}"
+                        },
+                        "title": "CERT OPS — Inventory Header",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "74b385d6-da5a-438e-a0af-f1a77dab28db",
+                    "w": 48,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "74b385d6-da5a-438e-a0af-f1a77dab28db",
+                "title": "CERT OPS — Inventory Header",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Inventory"
+                                    },
+                                    "eventId": "f676853f-014e-5857-89ba-97b22fb271af",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"padding\": {\"top\": 0, \"bottom\": 0, \"left\": 0, \"right\": 0}, \"background\": \"#111111\", \"signals\": [{\"name\": \"sel\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.t === sel ? null : datum.t\", \"force\": true}]}, {\"name\": \"_kf\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.t === sel ? kibanaRemoveFilter({'match_phrase': {'omb.sig_tier': datum.t}}) : kibanaAddFilter({'match_phrase': {'omb.sig_tier': datum.t}})\", \"force\": true}]}], \"data\": [{\"name\": \"raw\", \"url\": {\"%context%\": true, \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"k\": {\"terms\": {\"field\": \"omb.sig_tier\", \"size\": 10}}}}, \"%timefield%\": \"@timestamp\"}, \"format\": {\"property\": \"aggregations.k.buckets\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"t\", \"expr\": \"datum.key\"}, {\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.doc_count\"}]}, {\"name\": \"tc\", \"source\": \"raw\", \"transform\": [{\"type\": \"aggregate\", \"groupby\": [\"t\"], \"ops\": [\"sum\"], \"fields\": [\"n\"], \"as\": [\"n\"]}]}, {\"name\": \"mx\", \"source\": \"tc\", \"transform\": [{\"type\": \"aggregate\", \"ops\": [\"max\"], \"fields\": [\"n\"], \"as\": [\"v\"]}]}, {\"name\": \"rows\", \"values\": [{\"t\": \"PQC READY\", \"lbl\": \"ML-DSA / Dilithium\", \"desc\": \"Post-quantum lattice signature \\u2014 quantum-resistant, CNSA 2.0 approved\", \"badge\": \"PQC READY\", \"clr\": \"#00c853\", \"bg\": \"#00c85318\", \"ord\": 0}, {\"t\": \"MODERN\", \"lbl\": \"ECDSA  (P-256 / P-384)\", \"desc\": \"Elliptic curve \\u2014 quantum-vulnerable via Shor's algorithm, must be replaced pre-2035\", \"badge\": \"QUANTUM VULN\", \"clr\": \"#ffa726\", \"bg\": \"#ffa72618\", \"ord\": 1}, {\"t\": \"CLASSICAL\", \"lbl\": \"RSA / SHA-256 RSA\", \"desc\": \"RSA \\u2014 quantum-vulnerable via Shor's algorithm, harvest-now-decrypt-later risk today\", \"badge\": \"QUANTUM VULN\", \"clr\": \"#ef5350\", \"bg\": \"#ef535018\", \"ord\": 2}, {\"t\": \"LEGACY\", \"lbl\": \"MD5 / SHA-1 RSA\", \"desc\": \"SHA-1/MD5 hash \\u2014 classically broken and quantum-vulnerable, replace immediately\", \"badge\": \"QUANTUM VULN\", \"clr\": \"#b71c1c\", \"bg\": \"#b71c1c22\", \"ord\": 3}], \"transform\": [{\"type\": \"lookup\", \"from\": \"tc\", \"key\": \"t\", \"fields\": [\"t\"], \"values\": [\"n\"], \"as\": [\"n\"], \"default\": 0}, {\"type\": \"formula\", \"as\": \"y\", \"expr\": \"datum.ord * 72 + 60\"}]}], \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 16}, \"y\": {\"value\": 18}, \"text\": {\"value\": \"CERTIFICATE SIGNATURE\"}, \"fill\": {\"value\": \"#cccccc\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1.5}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 16}, \"y\": {\"value\": 38}, \"text\": {\"value\": \"SIGNATURE ALGORITHM  \\u2014  click a tier to filter\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 48}, \"stroke\": {\"value\": \"#252525\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"name\": \"bg\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 66}, \"fill\": {\"signal\": \"datum.t===sel?'#1c1c2e':datum.n>0?'#161622':'#161616'\"}, \"cursor\": {\"value\": \"pointer\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"value\": 4}, \"height\": {\"value\": 66}, \"fill\": {\"signal\": \"datum.n>0?datum.clr:'#2a2a2a'\"}}}}, {\"type\": \"rule\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"signal\": \"datum.y + 65\"}, \"stroke\": {\"value\": \"#222222\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 14}, \"y\": {\"signal\": \"datum.y + 8\"}, \"width\": {\"value\": 82}, \"height\": {\"value\": 16}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"signal\": \"datum.n>0 ? datum.bg : '#1a1a1a'\"}, \"stroke\": {\"signal\": \"datum.n>0 ? datum.clr : '#2a2a2a'\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 55}, \"y\": {\"signal\": \"datum.y + 20\"}, \"text\": {\"field\": \"badge\"}, \"fill\": {\"signal\": \"datum.n>0 ? datum.clr : '#383838'\"}, \"fontSize\": {\"value\": 8}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}, \"letterSpacing\": {\"value\": 0.8}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 106}, \"y\": {\"signal\": \"datum.y + 24\"}, \"text\": {\"field\": \"lbl\"}, \"limit\": {\"signal\": \"width * 0.5\"}, \"fill\": {\"signal\": \"datum.n>0?'#e8e8e8':'#444444'\"}, \"fontSize\": {\"value\": 13}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 106}, \"y\": {\"signal\": \"datum.y + 44\"}, \"text\": {\"field\": \"desc\"}, \"limit\": {\"signal\": \"width * 0.56\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 38\"}, \"text\": {\"signal\": \"datum.n >= 1000 ? format(datum.n,'.3~s') : format(datum.n,',')\"}, \"fill\": {\"signal\": \"datum.t===sel ? datum.clr : datum.n>0 ? '#dddddd' : '#333333'\"}, \"fontSize\": {\"value\": 20}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.62\"}, \"y\": {\"signal\": \"datum.y + 50\"}, \"width\": {\"signal\": \"length(data('mx'))>0 && data('mx')[0].v > 0 ? (datum.n / data('mx')[0].v) * (width * 0.30) : 0\"}, \"height\": {\"value\": 6}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"signal\": \"datum.clr + '55'\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 - 8\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'NO DATA FOR CURRENT FILTERS / TIME RANGE' : ''\"}, \"fill\": {\"value\": \"#666666\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 + 12\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'Adjust dashboard filters or expand the selected time range.' : ''\"}, \"fill\": {\"value\": \"#444444\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 9}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}]}"
+                        },
+                        "title": "CERT OPS — Quantum Tier",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 29,
+                    "i": "187d7c49-96d6-43fe-a3d7-ee51f605e0f5",
+                    "w": 16,
+                    "x": 0,
+                    "y": 10
+                },
+                "panelIndex": "187d7c49-96d6-43fe-a3d7-ee51f605e0f5",
+                "title": "CERT OPS — Quantum Tier",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Cost Analysis"
+                                    },
+                                    "eventId": "c9ef7c09-bbcf-57c7-bcbc-d3fae0140da2",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"padding\": {\"top\": 0, \"bottom\": 0, \"left\": 0, \"right\": 0}, \"background\": \"#111111\", \"signals\": [{\"name\": \"sel\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.k === sel ? null : datum.k\", \"force\": true}]}, {\"name\": \"_kf\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.n > 0 ? (datum.k === sel ? kibanaRemoveFilter(datum.filt) : kibanaAddFilter(datum.filt)) : null\", \"force\": true}]}], \"data\": [{\"name\": \"raw\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"expired\": {\"filter\": {\"range\": {\"certificate.not_after\": {\"lt\": \"now\"}}}}, \"exp30\": {\"filter\": {\"range\": {\"certificate.not_after\": {\"gte\": \"now\", \"lt\": \"now+30d\"}}}}, \"exp90\": {\"filter\": {\"range\": {\"certificate.not_after\": {\"gte\": \"now+30d\", \"lt\": \"now+90d\"}}}}, \"selfsign\": {\"filter\": {\"term\": {\"certificate.is_self_signed\": true}}}, \"weakkey\": {\"filter\": {\"terms\": {\"certificate.subject_public_key_info.bit_size\": [512, 1024]}}}, \"total\": {\"value_count\": {\"field\": \"certificate.not_after\"}}}}}, \"format\": {\"property\": \"aggregations\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"expired\", \"expr\": \"datum.expired  ? datum.expired.doc_count  : 0\"}, {\"type\": \"formula\", \"as\": \"exp30\", \"expr\": \"datum.exp30    ? datum.exp30.doc_count    : 0\"}, {\"type\": \"formula\", \"as\": \"exp90\", \"expr\": \"datum.exp90    ? datum.exp90.doc_count    : 0\"}, {\"type\": \"formula\", \"as\": \"selfsign\", \"expr\": \"datum.selfsign ? datum.selfsign.doc_count : 0\"}, {\"type\": \"formula\", \"as\": \"weakkey\", \"expr\": \"datum.weakkey  ? datum.weakkey.doc_count  : 0\"}, {\"type\": \"formula\", \"as\": \"total\", \"expr\": \"datum.total    ? datum.total.value        : 0\"}]}, {\"name\": \"rows\", \"values\": [{\"k\": \"EXPIRED\", \"lbl\": \"Expired\", \"desc\": \"certificate.not_after < now \\u2014 no longer trusted by any client\", \"sev\": \"critical\", \"clr\": \"#ef5350\", \"bg\": \"#ef535018\", \"ord\": 0, \"field\": \"expired\", \"filt\": {\"range\": {\"certificate.not_after\": {\"lt\": \"now\"}}}}, {\"k\": \"EXP 30D\", \"lbl\": \"Expiring in 30 days\", \"desc\": \"certificate.not_after within 30 days \\u2014 immediate renewal required\", \"sev\": \"high\", \"clr\": \"#ff7043\", \"bg\": \"#ff704318\", \"ord\": 1, \"field\": \"exp30\", \"filt\": {\"range\": {\"certificate.not_after\": {\"gte\": \"now\", \"lt\": \"now+30d\"}}}}, {\"k\": \"EXP 90D\", \"lbl\": \"Expiring in 90 days\", \"desc\": \"certificate.not_after within 90 days \\u2014 plan renewal now\", \"sev\": \"medium\", \"clr\": \"#ffa726\", \"bg\": \"#ffa72618\", \"ord\": 2, \"field\": \"exp90\", \"filt\": {\"range\": {\"certificate.not_after\": {\"gte\": \"now+30d\", \"lt\": \"now+90d\"}}}}, {\"k\": \"SELF-SIGNED\", \"lbl\": \"Self-Signed\", \"desc\": \"certificate.is_self_signed = true \\u2014 no CA trust chain, browser errors\", \"sev\": \"medium\", \"clr\": \"#ffa726\", \"bg\": \"#ffa72618\", \"ord\": 3, \"field\": \"selfsign\", \"filt\": {\"term\": {\"certificate.is_self_signed\": true}}}, {\"k\": \"WEAK KEY\", \"lbl\": \"Weak Key \\u22641024-bit\", \"desc\": \"RSA/DSA key \\u22641024 bits \\u2014 computationally breakable, must be replaced\", \"sev\": \"critical\", \"clr\": \"#ef5350\", \"bg\": \"#ef535018\", \"ord\": 4, \"field\": \"weakkey\", \"filt\": {\"terms\": {\"certificate.subject_public_key_info.bit_size\": [512, 1024]}}}], \"transform\": [{\"type\": \"lookup\", \"from\": \"raw\", \"key\": \"total\", \"fields\": [\"ord\"], \"values\": [\"expired\", \"exp30\", \"exp90\", \"selfsign\", \"weakkey\", \"total\"], \"as\": [\"v_expired\", \"v_exp30\", \"v_exp90\", \"v_selfsign\", \"v_weakkey\", \"v_total\"], \"default\": 0}, {\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.field==='expired' ? (length(data('raw'))>0?data('raw')[0].expired:0) : datum.field==='exp30' ? (length(data('raw'))>0?data('raw')[0].exp30:0) : datum.field==='exp90' ? (length(data('raw'))>0?data('raw')[0].exp90:0) : datum.field==='selfsign' ? (length(data('raw'))>0?data('raw')[0].selfsign:0) : (length(data('raw'))>0?data('raw')[0].weakkey:0)\"}, {\"type\": \"formula\", \"as\": \"tot\", \"expr\": \"length(data('raw'))>0 ? data('raw')[0].total : 1\"}, {\"type\": \"formula\", \"as\": \"pct\", \"expr\": \"datum.tot > 0 ? datum.n / datum.tot : 0\"}, {\"type\": \"formula\", \"as\": \"y\", \"expr\": \"datum.ord * 68 + 52\"}]}], \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 18}, \"text\": {\"value\": \"CERTIFICATE HYGIENE\"}, \"fill\": {\"value\": \"#cccccc\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1.5}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 34}, \"text\": {\"value\": \"OPERATIONAL ISSUES  \\u2014  expiry \\u00b7 trust \\u00b7 key strength\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 42}, \"stroke\": {\"value\": \"#252525\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"name\": \"bg\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 62}, \"fill\": {\"signal\": \"datum.k===sel ? '#1c1c2e' : datum.n>0 ? datum.bg : '#161616'\"}, \"cursor\": {\"value\": \"pointer\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"value\": 4}, \"height\": {\"value\": 62}, \"fill\": {\"signal\": \"datum.n>0 ? datum.clr : '#2a2a2a'\"}}}}, {\"type\": \"rule\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"signal\": \"datum.y + 61\"}, \"stroke\": {\"value\": \"#1e1e1e\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 16}, \"y\": {\"signal\": \"datum.y + 22\"}, \"text\": {\"field\": \"lbl\"}, \"limit\": {\"signal\": \"width * 0.55\"}, \"fill\": {\"signal\": \"datum.n>0 ? '#e8e8e8' : '#444444'\"}, \"fontSize\": {\"value\": 13}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 16}, \"y\": {\"signal\": \"datum.y + 40\"}, \"text\": {\"field\": \"desc\"}, \"limit\": {\"signal\": \"width * 0.55\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.62\"}, \"y\": {\"signal\": \"datum.y + 7\"}, \"width\": {\"value\": 72}, \"height\": {\"value\": 16}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"signal\": \"datum.n>0 ? datum.bg : '#1a1a1a'\"}, \"stroke\": {\"signal\": \"datum.n>0 ? datum.clr : '#2a2a2a'\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.62 + 36\"}, \"y\": {\"signal\": \"datum.y + 19\"}, \"text\": {\"field\": \"sev\"}, \"fill\": {\"signal\": \"datum.n>0 ? datum.clr : '#383838'\"}, \"fontSize\": {\"value\": 8}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.62\"}, \"y\": {\"signal\": \"datum.y + 29\"}, \"width\": {\"value\": 72}, \"height\": {\"value\": 14}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"value\": \"#1a1a1a\"}, \"stroke\": {\"signal\": \"datum.n > 0 ? '#333333' : '#222222'\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.62 + 36\"}, \"y\": {\"signal\": \"datum.y + 40\"}, \"text\": {\"signal\": \"datum.tot > 0 ? format(datum.pct * 100, '.1f') + '%' : '\\u2014'\"}, \"fill\": {\"value\": \"#666666\"}, \"fontSize\": {\"value\": 8}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 36\"}, \"text\": {\"signal\": \"datum.n > 0 ? (datum.n >= 1000 ? format(datum.n,'.3~s') : format(datum.n,',')) : '\\u2014'\"}, \"fill\": {\"signal\": \"datum.k===sel ? datum.clr : datum.n>0 ? '#dddddd' : '#333333'\"}, \"fontSize\": {\"value\": 20}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 - 8\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'NO DATA FOR CURRENT FILTERS / TIME RANGE' : ''\"}, \"fill\": {\"value\": \"#666666\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 + 12\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'Adjust dashboard filters or expand the selected time range.' : ''\"}, \"fill\": {\"value\": \"#444444\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 9}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}]}"
+                        },
+                        "title": "Certificate Hygiene",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 29,
+                    "i": "48d7d98f-27df-4c04-a736-8e772da0b028",
+                    "w": 16,
+                    "x": 16,
+                    "y": 10
+                },
+                "panelIndex": "48d7d98f-27df-4c04-a736-8e772da0b028",
+                "title": "Certificate Hygiene",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Inventory"
+                                    },
+                                    "eventId": "5a19f6d5-01ea-5a0d-9469-870400433156",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"padding\": {\"top\": 0, \"bottom\": 0, \"left\": 0, \"right\": 0}, \"background\": \"#111111\", \"signals\": [{\"name\": \"sel\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.k === sel ? null : datum.k\", \"force\": true}]}, {\"name\": \"_kf\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.k === sel ? kibanaRemoveFilter({'match_phrase': {'certificate.issuer_organization': datum.k}}) : kibanaAddFilter({'match_phrase': {'certificate.issuer_organization': datum.k}})\", \"force\": true}]}], \"data\": [{\"name\": \"raw\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"by_issuer\": {\"terms\": {\"field\": \"certificate.issuer_organization\", \"size\": 10, \"order\": {\"_count\": \"desc\"}}}}}}, \"format\": {\"property\": \"aggregations.by_issuer.buckets\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"k\", \"expr\": \"datum.key\"}, {\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.doc_count\"}, {\"type\": \"collect\", \"sort\": {\"field\": \"n\", \"order\": \"descending\"}}, {\"type\": \"window\", \"ops\": [\"rank\"], \"as\": [\"rnk\"]}, {\"type\": \"formula\", \"as\": \"y\", \"expr\": \"(datum.rnk - 1) * 52 + 52\"}, {\"type\": \"formula\", \"as\": \"clr\", \"expr\": \"datum.rnk === 1 ? '#448aff' : datum.rnk === 2 ? '#4db6ac' : datum.rnk <= 5 ? '#546e7a' : '#37474f'\"}]}, {\"name\": \"mx\", \"source\": \"raw\", \"transform\": [{\"type\": \"aggregate\", \"ops\": [\"max\"], \"fields\": [\"n\"], \"as\": [\"v\"]}]}], \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 18}, \"text\": {\"value\": \"TOP ISSUING CAs\"}, \"fill\": {\"value\": \"#cccccc\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1.5}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 34}, \"text\": {\"value\": \"CERTIFICATE AUTHORITY  \\u2014  who issued your certificates  \\u00b7  click to filter\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 42}, \"stroke\": {\"value\": \"#252525\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"name\": \"bg\", \"from\": {\"data\": \"raw\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 46}, \"fill\": {\"signal\": \"datum.k===sel ? '#1c1c2e' : '#161616'\"}, \"cursor\": {\"value\": \"pointer\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"raw\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"value\": 3}, \"height\": {\"value\": 46}, \"fill\": {\"field\": \"clr\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"raw\"}, \"encode\": {\"update\": {\"x\": {\"value\": 30}, \"y\": {\"signal\": \"datum.y + 17\"}, \"text\": {\"signal\": \"format(datum.rnk, 'd') + '.'\"}, \"fill\": {\"value\": \"#444444\"}, \"fontSize\": {\"value\": 10}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"raw\"}, \"encode\": {\"update\": {\"x\": {\"value\": 36}, \"y\": {\"signal\": \"datum.y + 17\"}, \"text\": {\"field\": \"k\"}, \"limit\": {\"signal\": \"width * 0.62\"}, \"fill\": {\"signal\": \"datum.k===sel ? datum.clr : '#dddddd'\"}, \"fontSize\": {\"value\": 12}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"raw\"}, \"encode\": {\"update\": {\"x\": {\"value\": 36}, \"y\": {\"signal\": \"datum.y + 24\"}, \"width\": {\"signal\": \"length(data('mx'))>0 && data('mx')[0].v > 0 ? (datum.n / data('mx')[0].v) * (width * 0.62) : 0\"}, \"height\": {\"value\": 5}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"signal\": \"datum.k===sel ? datum.clr : datum.clr + '66'\"}}}}, {\"type\": \"rule\", \"from\": {\"data\": \"raw\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"signal\": \"datum.y + 45\"}, \"stroke\": {\"value\": \"#1e1e1e\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"raw\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 20\"}, \"text\": {\"signal\": \"datum.n >= 1000 ? format(datum.n,'.3~s') : format(datum.n,',')\"}, \"fill\": {\"signal\": \"datum.k===sel ? datum.clr : '#888888'\"}, \"fontSize\": {\"value\": 14}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 - 8\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'NO DATA FOR CURRENT FILTERS / TIME RANGE' : ''\"}, \"fill\": {\"value\": \"#666666\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 + 12\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'Adjust dashboard filters or expand the selected time range.' : ''\"}, \"fill\": {\"value\": \"#444444\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 9}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}]}"
+                        },
+                        "title": "CERT OPS — Top Issuing CAs",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 29,
+                    "i": "df2ef032-250b-40c9-93de-3f6211bddac5",
+                    "w": 16,
+                    "x": 32,
+                    "y": 10
+                },
+                "panelIndex": "df2ef032-250b-40c9-93de-3f6211bddac5",
+                "title": "CERT OPS — Top Issuing CAs",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Application Report"
+                                    },
+                                    "eventId": "195b2262-1d5d-50e1-86d2-f404cd493030",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"padding\": {\"top\": 0, \"bottom\": 0, \"left\": 0, \"right\": 0}, \"background\": \"#111111\", \"signals\": [{\"name\": \"sel\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.k === sel ? null : datum.k\", \"force\": true}]}, {\"name\": \"_kf\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.k === sel ? kibanaRemoveFilter({'match_phrase': {'certificate.subject_public_key_info.algorithm': datum.k}}) : kibanaAddFilter({'match_phrase': {'certificate.subject_public_key_info.algorithm': datum.k}})\", \"force\": true}]}], \"data\": [{\"name\": \"raw\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"by_algo\": {\"terms\": {\"field\": \"certificate.subject_public_key_info.algorithm\", \"size\": 10}}, \"total\": {\"value_count\": {\"field\": \"id\"}}}}}, \"format\": {\"property\": \"aggregations.by_algo.buckets\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"k\", \"expr\": \"datum.key\"}, {\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.doc_count\"}]}, {\"name\": \"tot\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"v\": {\"value_count\": {\"field\": \"id\"}}}}}, \"format\": {\"property\": \"aggregations.v\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.value\"}]}, {\"name\": \"palette\", \"values\": [{\"k\": \"RSA\", \"clr\": \"#ffa726\", \"bg\": \"#ffa72618\", \"lbl\": \"RSA\", \"desc\": \"Rivest\\u2013Shamir\\u2013Adleman \\u2014 quantum-vulnerable via Shor's algorithm\"}, {\"k\": \"ECDSA\", \"clr\": \"#448aff\", \"bg\": \"#448aff18\", \"lbl\": \"ECDSA\", \"desc\": \"Elliptic curve \\u2014 quantum-vulnerable, efficient on classical hardware\"}, {\"k\": \"DSA\", \"clr\": \"#ef5350\", \"bg\": \"#ef535018\", \"lbl\": \"DSA\", \"desc\": \"Digital Signature Algorithm \\u2014 deprecated, should not be in new certs\"}, {\"k\": \"unknown_der\", \"clr\": \"#78909c\", \"bg\": \"#78909c18\", \"lbl\": \"Unknown DER\", \"desc\": \"DER-encoded cert with unrecognized key OID\"}, {\"k\": \"unknown_pem\", \"clr\": \"#78909c\", \"bg\": \"#78909c18\", \"lbl\": \"Unknown PEM\", \"desc\": \"PEM-encoded cert with unrecognized key OID\"}, {\"k\": \"ML-DSA\", \"clr\": \"#00c853\", \"bg\": \"#00c85318\", \"lbl\": \"ML-DSA\", \"desc\": \"Lattice-based PQC signature \\u2014 CNSA 2.0 quantum-resistant\"}, {\"k\": \"SLH-DSA\", \"clr\": \"#00c853\", \"bg\": \"#00c85318\", \"lbl\": \"SLH-DSA\", \"desc\": \"Hash-based PQC signature \\u2014 CNSA 2.0 quantum-resistant\"}, {\"k\": \"FN-DSA\", \"clr\": \"#00c853\", \"bg\": \"#00c85318\", \"lbl\": \"FN-DSA\", \"desc\": \"Falcon lattice signature \\u2014 CNSA 2.0 quantum-resistant\"}]}, {\"name\": \"rows\", \"source\": \"raw\", \"transform\": [{\"type\": \"lookup\", \"from\": \"palette\", \"key\": \"k\", \"fields\": [\"k\"], \"values\": [\"clr\", \"bg\", \"lbl\", \"desc\"], \"as\": [\"clr\", \"bg\", \"lbl\", \"desc\"], \"default\": \"#78909c\"}, {\"type\": \"formula\", \"as\": \"clr\", \"expr\": \"datum.clr  || '#78909c'\"}, {\"type\": \"formula\", \"as\": \"bg\", \"expr\": \"datum.bg   || '#78909c18'\"}, {\"type\": \"formula\", \"as\": \"lbl\", \"expr\": \"datum.lbl  || datum.k\"}, {\"type\": \"formula\", \"as\": \"desc\", \"expr\": \"datum.desc || 'Unrecognized key algorithm'\"}, {\"type\": \"collect\", \"sort\": {\"field\": \"n\", \"order\": \"descending\"}}, {\"type\": \"window\", \"ops\": [\"rank\"], \"as\": [\"rnk\"]}, {\"type\": \"formula\", \"as\": \"y\", \"expr\": \"(datum.rnk - 1) * 70 + 52\"}, {\"type\": \"formula\", \"as\": \"tot\", \"expr\": \"length(data('tot'))>0 ? data('tot')[0].n : 1\"}, {\"type\": \"formula\", \"as\": \"pct\", \"expr\": \"datum.tot > 0 ? datum.n / datum.tot : 0\"}, {\"type\": \"formula\", \"as\": \"bw\", \"expr\": \"width * 0.58 - 110\"}]}, {\"name\": \"mx\", \"source\": \"rows\", \"transform\": [{\"type\": \"aggregate\", \"ops\": [\"max\"], \"fields\": [\"n\"], \"as\": [\"v\"]}]}], \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 18}, \"text\": {\"value\": \"KEY ALGORITHM\"}, \"fill\": {\"value\": \"#cccccc\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1.5}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 34}, \"text\": {\"value\": \"PUBLIC KEY TYPE  \\u2014  click to filter\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 42}, \"stroke\": {\"value\": \"#252525\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"name\": \"bg\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 64}, \"fill\": {\"signal\": \"datum.k===sel ? '#1c1c2e' : datum.n>0 ? '#161622' : '#161616'\"}, \"cursor\": {\"value\": \"pointer\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"value\": 4}, \"height\": {\"value\": 64}, \"fill\": {\"field\": \"clr\"}}}}, {\"type\": \"rule\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"signal\": \"datum.y + 63\"}, \"stroke\": {\"value\": \"#222222\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 14}, \"y\": {\"signal\": \"datum.y + 22\"}, \"text\": {\"field\": \"lbl\"}, \"limit\": {\"signal\": \"width * 0.4\"}, \"fill\": {\"value\": \"#e8e8e8\"}, \"fontSize\": {\"value\": 13}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 14}, \"y\": {\"signal\": \"datum.y + 40\"}, \"text\": {\"field\": \"desc\"}, \"limit\": {\"signal\": \"width * 0.56\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.58\"}, \"y\": {\"signal\": \"datum.y + 22\"}, \"width\": {\"signal\": \"length(data('mx'))>0 && data('mx')[0].v > 0 ? (datum.n / data('mx')[0].v) * (width * 0.30) : 0\"}, \"height\": {\"value\": 10}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"signal\": \"datum.k===sel ? datum.clr : datum.clr + '88'\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 36\"}, \"text\": {\"signal\": \"datum.n >= 1000 ? format(datum.n,'.3~s') : format(datum.n,',')\"}, \"fill\": {\"signal\": \"datum.k===sel ? datum.clr : '#dddddd'\"}, \"fontSize\": {\"value\": 18}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 50\"}, \"text\": {\"signal\": \"format(datum.pct * 100, '.1f') + '%'\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 - 8\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'NO DATA FOR CURRENT FILTERS / TIME RANGE' : ''\"}, \"fill\": {\"value\": \"#666666\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 + 12\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'Adjust dashboard filters or expand the selected time range.' : ''\"}, \"fill\": {\"value\": \"#444444\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 9}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}]}"
+                        },
+                        "title": "CERT OPS — Key Algorithm",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 30,
+                    "i": "65669cd8-396b-410c-bc9b-ee3389ef8017",
+                    "w": 16,
+                    "x": 0,
+                    "y": 39
+                },
+                "panelIndex": "65669cd8-396b-410c-bc9b-ee3389ef8017",
+                "title": "CERT OPS — Key Algorithm",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Application Report"
+                                    },
+                                    "eventId": "4cb43ecb-be8e-5b80-8c8e-32e171de9e03",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"padding\": {\"top\": 0, \"bottom\": 0, \"left\": 0, \"right\": 0}, \"background\": \"#111111\", \"signals\": [{\"name\": \"sel\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.k === sel ? null : datum.k\", \"force\": true}]}, {\"name\": \"_kf\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.k === sel ? kibanaRemoveFilter({'match_phrase': {'certificate.subject_public_key_info.bit_size': datum.sz}}) : kibanaAddFilter({'match_phrase': {'certificate.subject_public_key_info.bit_size': datum.sz}})\", \"force\": true}]}], \"data\": [{\"name\": \"raw\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"by_size\": {\"terms\": {\"field\": \"certificate.subject_public_key_info.bit_size\", \"size\": 15, \"order\": {\"_count\": \"desc\"}}}, \"total\": {\"value_count\": {\"field\": \"id\"}}}}}, \"format\": {\"property\": \"aggregations.by_size.buckets\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"sz\", \"expr\": \"datum.key\"}, {\"type\": \"formula\", \"as\": \"k\", \"expr\": \"toString(datum.key) + '-bit'\"}, {\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.doc_count\"}, {\"type\": \"formula\", \"as\": \"clr\", \"expr\": \"datum.key <= 1024 ? '#ef5350' : datum.key <= 2048 ? '#ffa726' : datum.key <= 3072 ? '#448aff' : '#00c853'\"}, {\"type\": \"formula\", \"as\": \"bg\", \"expr\": \"datum.key <= 1024 ? '#ef535018' : datum.key <= 2048 ? '#ffa72618' : datum.key <= 3072 ? '#448aff18' : '#00c85318'\"}, {\"type\": \"formula\", \"as\": \"tier\", \"expr\": \"datum.key <= 512 ? 'CRITICAL' : datum.key <= 1024 ? 'WEAK' : datum.key <= 2048 ? 'CLASSICAL' : datum.key <= 3072 ? 'STRONG' : 'CNSA 2.0'\"}, {\"type\": \"formula\", \"as\": \"desc\", \"expr\": \"datum.key <= 512 ? 'Trivially breakable \\u2014 remove immediately' : datum.key <= 1024 ? 'Below NIST minimum \\u2014 must be replaced' : datum.key === 2048 ? 'RSA-2048 / ECDSA-P256 \\u2014 classical standard, quantum-vulnerable' : datum.key === 3072 ? 'RSA-3072 \\u2014 transitional strength, quantum-vulnerable' : datum.key === 4096 ? 'RSA-4096 \\u2014 strong classical, quantum-vulnerable' : datum.key === 256 ? 'ECDSA-P256 \\u2014 modern elliptic curve' : datum.key === 384 ? 'ECDSA-P384 \\u2014 strong elliptic curve (CNSA 1.0)' : 'Key size ' + datum.key\"}, {\"type\": \"collect\", \"sort\": {\"field\": \"n\", \"order\": \"descending\"}}, {\"type\": \"window\", \"ops\": [\"rank\"], \"as\": [\"rnk\"]}, {\"type\": \"formula\", \"as\": \"y\", \"expr\": \"(datum.rnk - 1) * 70 + 52\"}]}, {\"name\": \"tot\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"v\": {\"value_count\": {\"field\": \"id\"}}}}}, \"format\": {\"property\": \"aggregations.v\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.value\"}]}, {\"name\": \"mx\", \"source\": \"raw\", \"transform\": [{\"type\": \"aggregate\", \"ops\": [\"max\"], \"fields\": [\"n\"], \"as\": [\"v\"]}]}, {\"name\": \"rows\", \"source\": \"raw\", \"transform\": [{\"type\": \"formula\", \"as\": \"tot\", \"expr\": \"length(data('tot'))>0 ? data('tot')[0].n : 1\"}, {\"type\": \"formula\", \"as\": \"pct\", \"expr\": \"datum.tot > 0 ? datum.n / datum.tot : 0\"}]}], \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 18}, \"text\": {\"value\": \"KEY SIZE DISTRIBUTION\"}, \"fill\": {\"value\": \"#cccccc\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1.5}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 34}, \"text\": {\"value\": \"BIT STRENGTH  \\u2014  click to filter  \\u00b7  CNSA 2.0 requires RSA \\u22653072 or ECDSA P-384\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 42}, \"stroke\": {\"value\": \"#252525\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"name\": \"bg\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 64}, \"fill\": {\"signal\": \"datum.k===sel ? '#1c1c2e' : '#161616'\"}, \"cursor\": {\"value\": \"pointer\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"value\": 4}, \"height\": {\"value\": 64}, \"fill\": {\"field\": \"clr\"}}}}, {\"type\": \"rule\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"signal\": \"datum.y + 63\"}, \"stroke\": {\"value\": \"#222222\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 14}, \"y\": {\"signal\": \"datum.y + 22\"}, \"text\": {\"field\": \"k\"}, \"fill\": {\"value\": \"#e8e8e8\"}, \"fontSize\": {\"value\": 13}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 14}, \"y\": {\"signal\": \"datum.y + 40\"}, \"text\": {\"field\": \"desc\"}, \"limit\": {\"signal\": \"width * 0.55\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.58\"}, \"y\": {\"signal\": \"datum.y + 7\"}, \"width\": {\"value\": 64}, \"height\": {\"value\": 16}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"field\": \"bg\"}, \"stroke\": {\"field\": \"clr\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.58 + 32\"}, \"y\": {\"signal\": \"datum.y + 19\"}, \"text\": {\"field\": \"tier\"}, \"fill\": {\"field\": \"clr\"}, \"fontSize\": {\"value\": 8}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}, \"letterSpacing\": {\"value\": 0.8}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.58\"}, \"y\": {\"signal\": \"datum.y + 27\"}, \"width\": {\"signal\": \"length(data('mx'))>0 && data('mx')[0].v > 0 ? (datum.n / data('mx')[0].v) * 64 : 0\"}, \"height\": {\"value\": 12}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"signal\": \"datum.clr + '55'\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 36\"}, \"text\": {\"signal\": \"datum.n >= 1000 ? format(datum.n,'.3~s') : format(datum.n,',')\"}, \"fill\": {\"signal\": \"datum.k===sel ? datum.clr : '#dddddd'\"}, \"fontSize\": {\"value\": 18}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 50\"}, \"text\": {\"signal\": \"format(datum.pct * 100, '.1f') + '%'\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 - 8\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'NO DATA FOR CURRENT FILTERS / TIME RANGE' : ''\"}, \"fill\": {\"value\": \"#666666\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 + 12\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'Adjust dashboard filters or expand the selected time range.' : ''\"}, \"fill\": {\"value\": \"#444444\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 9}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}]}"
+                        },
+                        "title": "CERT OPS — Key Size Distribution",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 30,
+                    "i": "3a8c4d30-8553-4034-91da-f7010ef7b182",
+                    "w": 16,
+                    "x": 16,
+                    "y": 39
+                },
+                "panelIndex": "3a8c4d30-8553-4034-91da-f7010ef7b182",
+                "title": "CERT OPS — Key Size Distribution",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Application Report"
+                                    },
+                                    "eventId": "5e8c06e1-fcf5-5aab-b7bc-c3cdc891baee",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"padding\": {\"top\": 0, \"bottom\": 0, \"left\": 0, \"right\": 0}, \"background\": \"#111111\", \"signals\": [{\"name\": \"sel\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.k === sel ? null : datum.k\", \"force\": true}]}, {\"name\": \"_kf\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.k === sel ? kibanaRemoveFilter({'match_phrase': {'certificate.signature_algorithm': datum.k}}) : kibanaAddFilter({'match_phrase': {'certificate.signature_algorithm': datum.k}})\", \"force\": true}]}], \"data\": [{\"name\": \"raw\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"by_sig\": {\"terms\": {\"field\": \"certificate.signature_algorithm\", \"size\": 15, \"order\": {\"_count\": \"desc\"}}}, \"total\": {\"value_count\": {\"field\": \"id\"}}}}}, \"format\": {\"property\": \"aggregations.by_sig.buckets\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"k\", \"expr\": \"datum.key\"}, {\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.doc_count\"}, {\"type\": \"formula\", \"as\": \"clr\", \"expr\": \"datum.key === 'MD5-RSA' ? '#ef5350' : datum.key === 'DSA-SHA1' || datum.key === 'SHA1-RSA' ? '#ef5350' : datum.key === 'ECDSA-SHA256' || datum.key === 'ECDSA-SHA384' || datum.key === 'ECDSA-SHA512' ? '#448aff' : datum.key === 'SHA256-RSA' || datum.key === 'SHA384-RSA' || datum.key === 'SHA512-RSA' ? '#ffa726' : datum.key === 'N/A' || datum.key === '0' ? '#555555' : '#00c853'\"}, {\"type\": \"formula\", \"as\": \"bg\", \"expr\": \"datum.key === 'MD5-RSA' ? '#ef535018' : datum.key === 'DSA-SHA1' || datum.key === 'SHA1-RSA' ? '#ef535018' : datum.key === 'ECDSA-SHA256' || datum.key === 'ECDSA-SHA384' || datum.key === 'ECDSA-SHA512' ? '#448aff18' : datum.key === 'SHA256-RSA' || datum.key === 'SHA384-RSA' || datum.key === 'SHA512-RSA' ? '#ffa72618' : '#55555518'\"}, {\"type\": \"formula\", \"as\": \"tier\", \"expr\": \"datum.key === 'MD5-RSA' ? 'BROKEN' : datum.key === 'DSA-SHA1' || datum.key === 'SHA1-RSA' ? 'LEGACY' : datum.key === 'ECDSA-SHA256' || datum.key === 'ECDSA-SHA384' || datum.key === 'ECDSA-SHA512' ? 'MODERN' : datum.key === 'SHA256-RSA' || datum.key === 'SHA384-RSA' || datum.key === 'SHA512-RSA' ? 'CLASSICAL' : datum.key === 'N/A' || datum.key === '0' ? 'UNKNOWN' : 'PQC READY'\"}, {\"type\": \"formula\", \"as\": \"desc\", \"expr\": \"datum.key === 'MD5-RSA' ? 'MD5 collision attacks are trivial \\u2014 critically broken' : datum.key === 'SHA1-RSA' ? 'SHA-1 deprecated \\u2014 browsers reject, fails compliance' : datum.key === 'DSA-SHA1' ? 'DSA with SHA-1 \\u2014 both deprecated, remove immediately' : datum.key === 'SHA256-RSA' ? 'RSA with SHA-256 \\u2014 dominant classical standard' : datum.key === 'SHA384-RSA' ? 'RSA with SHA-384 \\u2014 stronger hash, still quantum-vulnerable' : datum.key === 'SHA512-RSA' ? 'RSA with SHA-512 \\u2014 strongest classical RSA variant' : datum.key === 'ECDSA-SHA256' ? 'ECDSA with SHA-256 \\u2014 modern, efficient, quantum-vulnerable' : datum.key === 'ECDSA-SHA384' ? 'ECDSA with SHA-384 \\u2014 CNSA 1.0 approved, quantum-vulnerable' : 'Signature algorithm'\"}, {\"type\": \"filter\", \"expr\": \"datum.k !== 'N/A' && datum.k !== '0'\"}, {\"type\": \"collect\", \"sort\": {\"field\": \"n\", \"order\": \"descending\"}}, {\"type\": \"window\", \"ops\": [\"rank\"], \"as\": [\"rnk\"]}, {\"type\": \"formula\", \"as\": \"y\", \"expr\": \"(datum.rnk - 1) * 66 + 52\"}]}, {\"name\": \"tot\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"v\": {\"value_count\": {\"field\": \"id\"}}}}}, \"format\": {\"property\": \"aggregations.v\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.value\"}]}, {\"name\": \"mx\", \"source\": \"raw\", \"transform\": [{\"type\": \"aggregate\", \"ops\": [\"max\"], \"fields\": [\"n\"], \"as\": [\"v\"]}]}, {\"name\": \"rows\", \"source\": \"raw\", \"transform\": [{\"type\": \"formula\", \"as\": \"tot\", \"expr\": \"length(data('tot'))>0 ? data('tot')[0].n : 1\"}, {\"type\": \"formula\", \"as\": \"pct\", \"expr\": \"datum.tot > 0 ? datum.n / datum.tot : 0\"}]}], \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 18}, \"text\": {\"value\": \"SIGNATURE ALGORITHM\"}, \"fill\": {\"value\": \"#cccccc\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1.5}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 34}, \"text\": {\"value\": \"HOW CERTIFICATES ARE SIGNED  \\u2014  click to filter\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 42}, \"stroke\": {\"value\": \"#252525\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"name\": \"bg\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 60}, \"fill\": {\"signal\": \"datum.k===sel ? '#1c1c2e' : '#161616'\"}, \"cursor\": {\"value\": \"pointer\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"value\": 4}, \"height\": {\"value\": 60}, \"fill\": {\"field\": \"clr\"}}}}, {\"type\": \"rule\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"signal\": \"datum.y + 59\"}, \"stroke\": {\"value\": \"#222222\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 14}, \"y\": {\"signal\": \"datum.y + 20\"}, \"text\": {\"field\": \"k\"}, \"limit\": {\"signal\": \"width * 0.42\"}, \"fill\": {\"value\": \"#e8e8e8\"}, \"fontSize\": {\"value\": 13}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 14}, \"y\": {\"signal\": \"datum.y + 38\"}, \"text\": {\"field\": \"desc\"}, \"limit\": {\"signal\": \"width * 0.55\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.60\"}, \"y\": {\"signal\": \"datum.y + 6\"}, \"width\": {\"value\": 68}, \"height\": {\"value\": 15}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"field\": \"bg\"}, \"stroke\": {\"field\": \"clr\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.60 + 34\"}, \"y\": {\"signal\": \"datum.y + 18\"}, \"text\": {\"field\": \"tier\"}, \"fill\": {\"field\": \"clr\"}, \"fontSize\": {\"value\": 8}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}, \"letterSpacing\": {\"value\": 0.8}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 32\"}, \"text\": {\"signal\": \"datum.n >= 1000 ? format(datum.n,'.3~s') : format(datum.n,',')\"}, \"fill\": {\"signal\": \"datum.k===sel ? datum.clr : '#dddddd'\"}, \"fontSize\": {\"value\": 18}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 47\"}, \"text\": {\"signal\": \"format(datum.pct * 100, '.1f') + '%'\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 - 8\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'NO DATA FOR CURRENT FILTERS / TIME RANGE' : ''\"}, \"fill\": {\"value\": \"#666666\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 + 12\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'Adjust dashboard filters or expand the selected time range.' : ''\"}, \"fill\": {\"value\": \"#444444\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 9}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}]}"
+                        },
+                        "title": "CERT OPS — Signature Algorithm",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 30,
+                    "i": "3fa6122b-517f-47d6-b194-2fcea3de3332",
+                    "w": 16,
+                    "x": 32,
+                    "y": 39
+                },
+                "panelIndex": "3fa6122b-517f-47d6-b194-2fcea3de3332",
+                "title": "CERT OPS — Signature Algorithm",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "Certificate lifetime buckets: automated (≤90d) through legacy (>5yr) with key management system insight",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Cost Analysis"
+                                    },
+                                    "eventId": "8de715c9-8769-51a8-8672-32a3af72a8c7",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "Certificate lifetime buckets: automated (≤90d) through legacy (>5yr) with key management system insight",
+                        "id": "",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"padding\": {\"top\": 0, \"bottom\": 0, \"left\": 0, \"right\": 0}, \"background\": \"#111111\", \"signals\": [{\"name\": \"sel\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.k === sel ? null : datum.k\", \"force\": true}]}, {\"name\": \"_kf\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"bg\"}, \"update\": \"datum.n > 0 ? (datum.k === sel ? kibanaRemoveFilter(datum.filt) : kibanaAddFilter(datum.filt)) : null\", \"force\": true}]}], \"data\": [{\"name\": \"raw\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"le90d\": {\"filter\": {\"script\": {\"script\": {\"lang\": \"painless\", \"source\": \"if(doc['certificate.not_before'].size()==0||doc['certificate.not_after'].size()==0)return false;long nb=doc['certificate.not_before'].value.toInstant().toEpochMilli();long na=doc['certificate.not_after'].value.toInstant().toEpochMilli();if(na<=System.currentTimeMillis())return false;long d=(na-nb)/86400000L;return d>=0&&d<=90;\"}}}}, \"le1yr\": {\"filter\": {\"script\": {\"script\": {\"lang\": \"painless\", \"source\": \"if(doc['certificate.not_before'].size()==0||doc['certificate.not_after'].size()==0)return false;long nb=doc['certificate.not_before'].value.toInstant().toEpochMilli();long na=doc['certificate.not_after'].value.toInstant().toEpochMilli();long d=(na-nb)/86400000L;return d>90&&d<=365;\"}}}}, \"le825d\": {\"filter\": {\"script\": {\"script\": {\"lang\": \"painless\", \"source\": \"if(doc['certificate.not_before'].size()==0||doc['certificate.not_after'].size()==0)return false;long nb=doc['certificate.not_before'].value.toInstant().toEpochMilli();long na=doc['certificate.not_after'].value.toInstant().toEpochMilli();long d=(na-nb)/86400000L;return d>365&&d<=825;\"}}}}, \"le5yr\": {\"filter\": {\"script\": {\"script\": {\"lang\": \"painless\", \"source\": \"if(doc['certificate.not_before'].size()==0||doc['certificate.not_after'].size()==0)return false;long nb=doc['certificate.not_before'].value.toInstant().toEpochMilli();long na=doc['certificate.not_after'].value.toInstant().toEpochMilli();long d=(na-nb)/86400000L;return d>825&&d<=1825;\"}}}}, \"gt5yr\": {\"filter\": {\"script\": {\"script\": {\"lang\": \"painless\", \"source\": \"if(doc['certificate.not_before'].size()==0||doc['certificate.not_after'].size()==0)return false;long nb=doc['certificate.not_before'].value.toInstant().toEpochMilli();long na=doc['certificate.not_after'].value.toInstant().toEpochMilli();long d=(na-nb)/86400000L;return d>1825;\"}}}}}}}, \"format\": {\"property\": \"aggregations\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"le90d\", \"expr\": \"datum.le90d  ? datum.le90d.doc_count  : 0\"}, {\"type\": \"formula\", \"as\": \"le1yr\", \"expr\": \"datum.le1yr  ? datum.le1yr.doc_count  : 0\"}, {\"type\": \"formula\", \"as\": \"le825d\", \"expr\": \"datum.le825d ? datum.le825d.doc_count : 0\"}, {\"type\": \"formula\", \"as\": \"le5yr\", \"expr\": \"datum.le5yr  ? datum.le5yr.doc_count  : 0\"}, {\"type\": \"formula\", \"as\": \"gt5yr\", \"expr\": \"datum.gt5yr  ? datum.gt5yr.doc_count  : 0\"}]}, {\"name\": \"tot\", \"url\": {\"%context%\": true, \"%timefield%\": \"@timestamp\", \"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"aggs\": {\"v\": {\"value_count\": {\"field\": \"certificate.not_after\"}}}}}, \"format\": {\"property\": \"aggregations.v\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.value\"}]}, {\"name\": \"rows\", \"values\": [{\"k\": \"le90d\", \"lbl\": \"Automated  \\u226490 days\", \"mgmt\": \"KEY MGT SYSTEM\", \"desc\": \"Almost certainly managed by ACME / Let's Encrypt / cert-manager \\u2014 short lifetime is a signature of automated issuance\", \"clr\": \"#00c853\", \"bg\": \"#00c85318\", \"ord\": 0, \"field\": \"le90d\", \"filt\": {\"range\": {\"cert_total_days\": {\"gte\": 0, \"lte\": 90}}}}, {\"k\": \"le1yr\", \"lbl\": \"Short-lived  \\u22641 year\", \"mgmt\": \"LIKELY MANAGED\", \"desc\": \"Annual lifetime pattern \\u2014 may be automated renewal or disciplined manual rotation by an ops team\", \"clr\": \"#4db6ac\", \"bg\": \"#4db6ac18\", \"ord\": 1, \"field\": \"le1yr\", \"filt\": {\"range\": {\"cert_total_days\": {\"gt\": 90, \"lte\": 365}}}}, {\"k\": \"le825d\", \"lbl\": \"Modern  \\u2264825 days\", \"mgmt\": \"CA ISSUED\", \"desc\": \"Within Apple / browser maximum trust limit (825 days) \\u2014 actively issued by a real CA, rotation expected\", \"clr\": \"#448aff\", \"bg\": \"#448aff18\", \"ord\": 2, \"field\": \"le825d\", \"filt\": {\"range\": {\"cert_total_days\": {\"gt\": 365, \"lte\": 825}}}}, {\"k\": \"le5yr\", \"lbl\": \"Long-lived  \\u22645 years\", \"mgmt\": \"MANUAL\", \"desc\": \"826\\u20131825 day lifetime \\u2014 manually managed, no automated rotation, quantum risk grows over the certificate's life\", \"clr\": \"#ffa726\", \"bg\": \"#ffa72618\", \"ord\": 3, \"field\": \"le5yr\", \"filt\": {\"range\": {\"cert_total_days\": {\"gt\": 825, \"lte\": 1825}}}}, {\"k\": \"gt5yr\", \"lbl\": \"Legacy  > 5 years\", \"mgmt\": \"LEGACY / MANUAL\", \"desc\": \"5+ year validity \\u2014 definitely manually issued; each year of remaining life increases the window for harvest-now-decrypt-later attacks\", \"clr\": \"#ef5350\", \"bg\": \"#ef535018\", \"ord\": 4, \"field\": \"gt5yr\", \"filt\": {\"range\": {\"cert_total_days\": {\"gt\": 1825}}}}], \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"length(data('raw'))>0 ? (datum.field==='le90d' ? data('raw')[0].le90d : datum.field==='le1yr' ? data('raw')[0].le1yr : datum.field==='le825d' ? data('raw')[0].le825d : datum.field==='le5yr' ? data('raw')[0].le5yr : data('raw')[0].gt5yr) : 0\"}, {\"type\": \"formula\", \"as\": \"tot\", \"expr\": \"length(data('tot'))>0 ? data('tot')[0].n : 1\"}, {\"type\": \"formula\", \"as\": \"pct\", \"expr\": \"datum.tot > 0 ? datum.n / datum.tot : 0\"}, {\"type\": \"formula\", \"as\": \"y\", \"expr\": \"datum.ord * 72 + 52\"}]}, {\"name\": \"mx\", \"source\": \"rows\", \"transform\": [{\"type\": \"aggregate\", \"ops\": [\"max\"], \"fields\": [\"n\"], \"as\": [\"v\"]}]}], \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 18}, \"text\": {\"value\": \"CERTIFICATE LONGEVITY\"}, \"fill\": {\"value\": \"#cccccc\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1.5}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 34}, \"text\": {\"value\": \"CERTIFICATE LIFETIME  \\u2014  short = automated key management  \\u00b7  long = manual / legacy\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 42}, \"stroke\": {\"value\": \"#252525\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"name\": \"bg\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 66}, \"fill\": {\"signal\": \"datum.k===sel ? '#1c1c2e' : datum.n>0 ? '#161616' : '#121212'\"}, \"cursor\": {\"value\": \"pointer\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"value\": 4}, \"height\": {\"value\": 66}, \"fill\": {\"signal\": \"datum.n>0 ? datum.clr : '#2a2a2a'\"}}}}, {\"type\": \"rule\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"signal\": \"datum.y + 65\"}, \"stroke\": {\"value\": \"#1e1e1e\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 14}, \"y\": {\"signal\": \"datum.y + 22\"}, \"text\": {\"field\": \"lbl\"}, \"limit\": {\"signal\": \"width * 0.52\"}, \"fill\": {\"signal\": \"datum.n>0 ? '#e8e8e8' : '#444444'\"}, \"fontSize\": {\"value\": 12}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 14}, \"y\": {\"signal\": \"datum.y + 42\"}, \"text\": {\"field\": \"desc\"}, \"limit\": {\"signal\": \"width * 0.74\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.76\"}, \"y\": {\"signal\": \"datum.y + 8\"}, \"width\": {\"value\": 82}, \"height\": {\"value\": 16}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"signal\": \"datum.n>0 ? datum.bg : '#1a1a1a'\"}, \"stroke\": {\"signal\": \"datum.n>0 ? datum.clr : '#2a2a2a'\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.76 + 41\"}, \"y\": {\"signal\": \"datum.y + 20\"}, \"text\": {\"field\": \"mgmt\"}, \"fill\": {\"signal\": \"datum.n>0 ? datum.clr : '#383838'\"}, \"fontSize\": {\"value\": 8}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}, \"letterSpacing\": {\"value\": 0.8}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width * 0.76\"}, \"y\": {\"signal\": \"datum.y + 28\"}, \"width\": {\"signal\": \"length(data('mx'))>0 && data('mx')[0].v > 0 ? (datum.n / data('mx')[0].v) * 82 : 0\"}, \"height\": {\"value\": 8}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"signal\": \"datum.clr + '44'\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 36\"}, \"text\": {\"signal\": \"datum.n > 0 ? (datum.n >= 1000 ? format(datum.n,'.3~s') : format(datum.n,',')) : '\\u2014'\"}, \"fill\": {\"signal\": \"datum.k===sel ? datum.clr : datum.n>0 ? '#dddddd' : '#333333'\"}, \"fontSize\": {\"value\": 20}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 52\"}, \"text\": {\"signal\": \"datum.tot > 0 && datum.n > 0 ? format(datum.pct * 100, '.1f') + '%' : ''\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 - 8\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'NO DATA FOR CURRENT FILTERS / TIME RANGE' : ''\"}, \"fill\": {\"value\": \"#666666\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 + 12\"}, \"text\": {\"signal\": \"length(data('raw')) === 0 ? 'Adjust dashboard filters or expand the selected time range.' : ''\"}, \"fill\": {\"value\": \"#444444\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 9}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}]}"
+                        },
+                        "title": "Certificate Longevity",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 22,
+                    "i": "d2ae0bd5-2c42-4bb1-a4e7-a80b31524be2",
+                    "w": 24,
+                    "x": 0,
+                    "y": 69
+                },
+                "panelIndex": "d2ae0bd5-2c42-4bb1-a4e7-a80b31524be2",
+                "title": "Certificate Longevity",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "File system disk scan vs live TLS port capture — how each certificate was discovered",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": true
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "Open Inventory"
+                                    },
+                                    "eventId": "d14a762a-33a5-545d-9c69-b36b1279da31",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "File system disk scan vs live TLS port capture — how each certificate was discovered",
+                        "id": "",
+                        "params": {
+                            "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"padding\": {\"top\": 0, \"bottom\": 0, \"left\": 0, \"right\": 0}, \"background\": \"#111111\", \"signals\": [{\"name\": \"sel\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"row_bg\"}, \"update\": \"datum.k === sel ? null : datum.k\", \"force\": true}]}, {\"name\": \"_kf\", \"value\": null, \"on\": [{\"events\": {\"type\": \"click\", \"markname\": \"row_bg\"}, \"update\": \"datum.n > 0 ? (datum.k === sel ? kibanaRemoveFilter(datum.filt) : kibanaAddFilter(datum.filt)) : null\", \"force\": true}]}], \"data\": [{\"name\": \"d_fs\", \"url\": {\"index\": \"tychon-pqc-certificates*\", \"body\": {\"size\": 0, \"query\": {\"bool\": {\"must\": [\"%dashboard_context-must_clause%\", {\"range\": {\"@timestamp\": {\"%timefilter%\": true}}}, {\"term\": {\"tychon.type\": \"filesystem\"}}], \"filter\": [\"%dashboard_context-filter_clause%\"], \"must_not\": [\"%dashboard_context-must_not_clause%\"]}}, \"aggs\": {\"v\": {\"value_count\": {\"field\": \"id\"}}}}}, \"format\": {\"property\": \"aggregations.v\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.value || 0\"}]}, {\"name\": \"d_port\", \"url\": {\"index\": \"tychon-pqc-inventory*\", \"body\": {\"size\": 0, \"query\": {\"bool\": {\"must\": [\"%dashboard_context-must_clause%\", {\"range\": {\"@timestamp\": {\"%timefilter%\": true}}}, {\"exists\": {\"field\": \"x509.subject.common_name\"}}, {\"term\": {\"tychon.type\": \"cipher\"}}], \"filter\": [\"%dashboard_context-filter_clause%\"], \"must_not\": [\"%dashboard_context-must_not_clause%\"]}}, \"aggs\": {\"v\": {\"value_count\": {\"field\": \"tychon.type\"}}}}}, \"format\": {\"property\": \"aggregations.v\"}, \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.value || 0\"}]}, {\"name\": \"rows\", \"values\": [{\"k\": \"fs\", \"ord\": 0, \"lbl\": \"File System\", \"badge\": \"DISK\", \"sub\": \"Certificates read from disk \\u2014 PEM/DER files, keystores, application bundles\", \"desc\": \"Found by crawling the local filesystem. Source path is known. These certs may not be actively serving traffic \\u2014 they could be backups, bundled CA roots, or application trust stores.\", \"clr\": \"#448aff\", \"bg\": \"#448aff18\", \"icon\": \"\\u2399\", \"filt\": {\"match_phrase\": {\"tychon.type\": \"filesystem\"}}}, {\"k\": \"port\", \"ord\": 1, \"lbl\": \"Port / Network\", \"badge\": \"NETWORK\", \"sub\": \"Certificates captured live from TLS handshakes on open network ports\", \"desc\": \"Captured during an active TLS scan. These certs are definitely in use serving live traffic. Quantum readiness score and cipher suite are also available for these entries.\", \"clr\": \"#00c853\", \"bg\": \"#00c85318\", \"icon\": \"\\u26a1\", \"filt\": {\"match_phrase\": {\"tychon.type\": \"cipher\"}}}], \"transform\": [{\"type\": \"formula\", \"as\": \"n\", \"expr\": \"datum.k === 'fs' ? (length(data('d_fs'))>0 ? data('d_fs')[0].n : 0) : (length(data('d_port'))>0 ? data('d_port')[0].n : 0)\"}, {\"type\": \"formula\", \"as\": \"y\", \"expr\": \"datum.ord * 134 + 52\"}]}], \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 18}, \"text\": {\"value\": \"CERTIFICATE SOURCE\"}, \"fill\": {\"value\": \"#cccccc\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1.5}}}}, {\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 14}, \"y\": {\"value\": 34}, \"text\": {\"value\": \"HOW CERTIFICATES WERE DISCOVERED  \\u2014  file scan vs live TLS capture\"}, \"fill\": {\"value\": \"#555555\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"letterSpacing\": {\"value\": 1}}}}, {\"type\": \"rule\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"value\": 42}, \"stroke\": {\"value\": \"#252525\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"rect\", \"name\": \"row_bg\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"signal\": \"width\"}, \"height\": {\"value\": 128}, \"fill\": {\"signal\": \"datum.k === sel ? '#1c1c2e' : '#161616'\"}, \"cursor\": {\"value\": \"pointer\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"y\": {\"field\": \"y\"}, \"width\": {\"value\": 4}, \"height\": {\"value\": 128}, \"fill\": {\"signal\": \"datum.n > 0 ? datum.clr : '#2a2a2a'\"}}}}, {\"type\": \"rule\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y\": {\"signal\": \"datum.y + 127\"}, \"stroke\": {\"value\": \"#1e1e1e\"}}}}, {\"type\": \"rect\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 14}, \"y\": {\"signal\": \"datum.y + 10\"}, \"width\": {\"value\": 56}, \"height\": {\"value\": 18}, \"cornerRadius\": {\"value\": 2}, \"fill\": {\"signal\": \"datum.n > 0 ? datum.bg : '#1a1a1a'\"}, \"stroke\": {\"signal\": \"datum.n > 0 ? datum.clr : '#2a2a2a'\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 42}, \"y\": {\"signal\": \"datum.y + 23\"}, \"text\": {\"field\": \"badge\"}, \"fill\": {\"signal\": \"datum.n > 0 ? datum.clr : '#333333'\"}, \"fontSize\": {\"value\": 8}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"center\"}, \"letterSpacing\": {\"value\": 0.8}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 78}, \"y\": {\"signal\": \"datum.y + 24\"}, \"text\": {\"field\": \"lbl\"}, \"fill\": {\"signal\": \"datum.n > 0 ? '#e8e8e8' : '#444444'\"}, \"fontSize\": {\"value\": 14}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 14}, \"y\": {\"signal\": \"datum.y + 44\"}, \"text\": {\"field\": \"sub\"}, \"limit\": {\"signal\": \"width * 0.82\"}, \"fill\": {\"value\": \"#666666\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"value\": 14}, \"y\": {\"signal\": \"datum.y + 64\"}, \"text\": {\"field\": \"desc\"}, \"limit\": {\"signal\": \"width * 0.64\"}, \"fill\": {\"value\": \"#444444\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 70\"}, \"text\": {\"signal\": \"datum.n > 0 ? (datum.n >= 1000 ? format(datum.n, '.3~s') : format(datum.n, ',')) : '\\u2014'\"}, \"fill\": {\"signal\": \"datum.n > 0 ? datum.clr : '#333333'\"}, \"fontSize\": {\"value\": 32}, \"fontWeight\": {\"value\": \"bold\"}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"from\": {\"data\": \"rows\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - 10\"}, \"y\": {\"signal\": \"datum.y + 88\"}, \"text\": {\"value\": \"certificates\"}, \"fill\": {\"value\": \"#3a3a3a\"}, \"fontSize\": {\"value\": 9}, \"font\": {\"value\": \"monospace\"}, \"align\": {\"value\": \"right\"}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 - 8\"}, \"text\": {\"signal\": \"length(data('d_fs')) === 0 ? 'NO DATA FOR CURRENT FILTERS / TIME RANGE' : ''\"}, \"fill\": {\"value\": \"#666666\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}, {\"type\": \"text\", \"encode\": {\"update\": {\"x\": {\"signal\": \"width / 2\"}, \"y\": {\"signal\": \"height / 2 + 12\"}, \"text\": {\"signal\": \"length(data('d_fs')) === 0 ? 'Adjust dashboard filters or expand the selected time range.' : ''\"}, \"fill\": {\"value\": \"#444444\"}, \"font\": {\"value\": \"monospace\"}, \"fontSize\": {\"value\": 9}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"zindex\": {\"value\": 100}}}}]}"
+                        },
+                        "title": "Certificate Source Type",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 22,
+                    "i": "ce89de35-28cf-4f8c-82a1-215539f77bad",
+                    "w": 24,
+                    "x": 24,
+                    "y": 69
+                },
+                "panelIndex": "ce89de35-28cf-4f8c-82a1-215539f77bad",
+                "title": "Certificate Source Type",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "Per-cert records sorted by earliest expiry. FILE=disk scan, PORT=live TLS. Paginated server-side — scales to any size.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "grid": {}
+                },
+                "gridData": {
+                    "h": 38,
+                    "i": "3a5ae8e6-acd0-40f9-a6fb-488f44a55e32",
+                    "w": 48,
+                    "x": 0,
+                    "y": 91
+                },
+                "panelIndex": "3a5ae8e6-acd0-40f9-a6fb-488f44a55e32",
+                "panelRefName": "panel_3a5ae8e6-acd0-40f9-a6fb-488f44a55e32",
+                "title": "Certificate Inventory Detail",
+                "type": "search"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[TYCHON Quantum Command] Certificate Operations Dashboard",
+        "version": 3
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-07-20T16:55:14.701Z",
+    "id": "tychon_quantum_command-d0159137-9139-4a93-85bb-2ac9ddab3982-certificate-operations-dashboard",
+    "references": [
+        {
+            "id": "tychon_quantum_command-32c01eb5-0d80-4a28-9de7-55b2046f7c45-inventory",
+            "name": "187d7c49-96d6-43fe-a3d7-ee51f605e0f5:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:f676853f-014e-5857-89ba-97b22fb271af:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-443e5928-b1c4-4e07-b0b9-c675dd057e2f-application-report",
+            "name": "3a8c4d30-8553-4034-91da-f7010ef7b182:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:4cb43ecb-be8e-5b80-8c8e-32e171de9e03:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-443e5928-b1c4-4e07-b0b9-c675dd057e2f-application-report",
+            "name": "3fa6122b-517f-47d6-b194-2fcea3de3332:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:5e8c06e1-fcf5-5aab-b7bc-c3cdc891baee:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-02366033-dee4-4ea4-8458-7c8a8b58987e-cost-analysis",
+            "name": "48d7d98f-27df-4c04-a736-8e772da0b028:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:c9ef7c09-bbcf-57c7-bcbc-d3fae0140da2:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-443e5928-b1c4-4e07-b0b9-c675dd057e2f-application-report",
+            "name": "65669cd8-396b-410c-bc9b-ee3389ef8017:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:195b2262-1d5d-50e1-86d2-f404cd493030:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-32c01eb5-0d80-4a28-9de7-55b2046f7c45-inventory",
+            "name": "ce89de35-28cf-4f8c-82a1-215539f77bad:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:d14a762a-33a5-545d-9c69-b36b1279da31:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-02366033-dee4-4ea4-8458-7c8a8b58987e-cost-analysis",
+            "name": "d2ae0bd5-2c42-4bb1-a4e7-a80b31524be2:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:8de715c9-8769-51a8-8672-32a3af72a8c7:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-32c01eb5-0d80-4a28-9de7-55b2046f7c45-inventory",
+            "name": "df2ef032-250b-40c9-93de-3f6211bddac5:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:5a19f6d5-01ea-5a0d-9469-870400433156:dashboardId",
+            "type": "dashboard"
+        },
+        {
+            "id": "tychon_quantum_command-d7e8f9a0-2b3c-4d5e-9f0a-b1c2d3e40001-certificate-inventory-detail",
+            "name": "3a5ae8e6-acd0-40f9-a6fb-488f44a55e32:panel_3a5ae8e6-acd0-40f9-a6fb-488f44a55e32",
+            "type": "search"
+        },
+        {
+            "id": "tychon_quantum_command-07b6a21f-5bba-413b-8d49-e8c246dde2ba",
+            "name": "tag-ref-tychon_quantum_command-07b6a21f-5bba-413b-8d49-e8c246dde2ba",
+            "type": "tag"
+        },
+        {
+            "id": "tychon_quantum_command-dacb217e-57b4-4296-8545-cbf6b5739344",
+            "name": "tag-ref-tychon_quantum_command-dacb217e-57b4-4296-8545-cbf6b5739344",
+            "type": "tag"
+        },
+        {
+            "id": "tychon_quantum_command-e9b715ba-5f19-4f99-b837-2c1a24143212",
+            "name": "tag-ref-tychon_quantum_command-e9b715ba-5f19-4f99-b837-2c1a24143212",
+            "type": "tag"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0"
+}

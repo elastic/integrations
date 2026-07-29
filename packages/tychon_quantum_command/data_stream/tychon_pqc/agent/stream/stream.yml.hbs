@@ -1,0 +1,44 @@
+paths:
+{{#each windows_paths}}
+  - {{this}}
+{{/each}}
+{{#each linux_paths}}
+  - {{this}}
+{{/each}}
+{{#each paths}}
+  - {{this}}
+{{/each}}
+
+prospector.scanner.exclude_files: ['.gz$']
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if tags}}
+{{#each tags}}
+  - {{this}}
+{{/each}}
+{{else}}
+  - tychon
+  - quantum
+{{/if}}
+
+fields_under_root: true
+
+parsers:
+  - ndjson:
+      target: ""
+      overwrite_keys: true
+      expand_keys: true
+
+processors:
+  - add_locale: ~
+{{#if preserve_original_event}}
+  - copy_fields:
+      fields:
+        - from: message
+          to: event.original
+      fail_on_error: false
+      ignore_missing: true
+{{/if}}
