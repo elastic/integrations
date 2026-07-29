@@ -239,7 +239,7 @@ As part of the PR that modifies `.backports.yml`, CI automatically:
 
 By default, the created branch only contains the target package — all other packages in `packages/` are removed to keep the branch lean.
 
-On pull requests targeting a `backport-*` branch, an additional step (`check-changelog-versions-in-main`) is coming with the auto-backport workflow (PR #20197) — it will verify that no changelog version introduced by the PR already exists on `main`, catching sync collisions before merge.
+On pull requests targeting a `backport-*` branch, the `check-changelog-versions-in-main` step verifies that no changelog version introduced by the PR already exists on `main`, catching sync collisions before merge.
 
 The pipeline can also be triggered manually from the UI (restricted to members of the `ecosystem` team). The following parameters can be configured when triggering manually:
 - **REMOVE_OTHER_PACKAGES**: If `true`, only the target package is kept in the `packages/` directory; all others are removed. Default: `true`.

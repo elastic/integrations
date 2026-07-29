@@ -181,7 +181,7 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 
     If the cherry-pick conflicts on files beyond a version-line difference in `manifest.yml`, the script reports the conflicting files and cleans up. In this case, apply the fix manually (see the alternative path below).
 
-    > **Coming soon:** once the auto-backport workflow lands, checking a branch checkbox in the backport checklist comment will trigger the same process automatically on merge — no manual invocation of `backport_apply.sh` needed. The script remains useful for ad-hoc backports and retries.
+    > The `auto-backport.yml` workflow handles backports automatically: when the PR merges into `main`, the workflow reads the checklist comment and runs `mage applyBackport` for every checked branch, updating the comment in real time (✅ = success, ⚠️ = conflict or error). Checking a previously-unchecked branch after the PR has already merged also triggers the workflow to create the missing backport PR. `backport_apply.sh` remains useful for ad-hoc backports and retries.
 
     **Alternative: manual cherry-pick**
 
@@ -227,7 +227,7 @@ The step is currently `soft_fail: true` — a mismatch posts a warning comment b
 
 ## Backport checklist comment
 
-When you open or update a pull request targeting `main`, the `post-backport-checklist.yml` workflow automatically posts a comment listing the active backport branches for every package touched by that PR. The comment is updated on every push — any manual edits are overwritten. It only appears when at least one package in the PR's diff has active backport branches in `.backports.yml`.
+When you open or update a pull request targeting `main`, the `post-backport-checklist.yml` workflow automatically posts a comment listing the active backport branches for every package touched by that PR. The comment is recreated (deleted and re-posted) on every push — any manual edits are overwritten, and the PR author receives a fresh notification. It only appears when at least one package in the PR's diff has active backport branches in `.backports.yml`.
 
 Example comment:
 
@@ -238,11 +238,11 @@ Example comment:
 > Only branches for packages touched by this PR's current diff are shown.
 > This comment is updated automatically on each push — manual edits will be overwritten.
 
-Active backport branches for the packages touched by this PR:
+Tick the branches you want to backport to. PRs will be created automatically on merge, or when you update this checklist after merge.
 
 **aws**
-- `backport-aws-1.19` (maintained until 2027-06-30)
-- `backport-aws-6.x`
+- [ ] `backport-aws-1.19` (maintained until 2027-06-30)
+- [ ] `backport-aws-6.x`
 
 ---
 
@@ -251,7 +251,7 @@ Active backport branches for the packages touched by this PR:
 > If the branch has a known end-of-life date, prefer `maintained_until: "YYYY-MM-DD"` — it will be excluded automatically once that date passes.
 ```
 
-The comment is currently **informational only** — no checkboxes are rendered and no automation is triggered by it. If you do not intend to backport, you can safely ignore it.
+Tick a checkbox for each branch you want to backport to. When the PR merges into `main`, the `auto-backport.yml` workflow reads the comment and automatically creates a backport PR for every checked branch, updating the comment in real time (✅ = success, ⚠️ = conflict or error). Checking a previously-unchecked branch after the PR has already merged also triggers the workflow to create the missing backport PR. If you do not intend to backport, leave all checkboxes unticked.
 
 **Suppressing a branch from the checklist:**
 
@@ -261,6 +261,17 @@ To stop a branch appearing in the checklist, update its entry in `.backports.yml
 - **`maintained_until: "YYYY-MM-DD"`** — excludes the branch automatically once that date passes; preferred when the end-of-life date is known.
 
 Archiving a branch does not delete it. Packages can still be published from an archived branch; archiving only removes the branch from the checklist and branch creation.
+
+**Suppressing a package from the checklist:**
+
+To hide all checklist entries for a package across all PRs, add it to the top-level `skip_checklist_packages` list in `.backports.yml`:
+
+```yaml
+skip_checklist_packages:
+  - security_detection_engine
+```
+
+Packages in `skip_checklist_packages` are excluded from the checklist comment (no checkboxes are shown) but still participate in changelog syncing and other automated backport flows. Use this for packages whose backport workflow is managed separately.
 
 ## Known issues
 
