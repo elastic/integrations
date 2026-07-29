@@ -243,12 +243,12 @@ processors:
       field: event.category
       tag: append_iam_into_event_category
       value: iam
-      if: ctx?.event?.action != null
+      if: ctx.event?.action != null
   - append:
       field: event.type
       tag: append_creation_into_event_type
       value: creation
-      if: ctx.event?.action != null && ["IMPORT_SSH_PUBLIC_KEY"].contains(ctx.event.action)
+      if: ctx.event?.action == 'IMPORT_SSH_PUBLIC_KEY'
   - append:
       field: event.type
       tag: append_deletion_into_event_type
@@ -263,7 +263,7 @@ processors:
       field: event.type
       tag: append_change_into_event_type
       value: change
-      if: ctx.event?.action != null && ["UPDATE_SSH_PUBLIC_KEY"].contains(ctx.event.action)
+      if: ctx.event?.action == 'UPDATE_SSH_PUBLIC_KEY'
   - append:
       field: event.type
       tag: append_info_into_event_type_for_unknown_gcp_action

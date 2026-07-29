@@ -97,7 +97,7 @@ processors:
       field: event.category
       tag: append_network_into_event_category
       value: network
-      if: ctx.google_workspace?.meet?.name != null
+      if: '["call_ended","dialed_out","ring_sent","ring_answered","ring_missed"].contains(ctx.google_workspace?.meet?.name)'
   - script:
       description: Set event type based on event name.
       if: ctx.google_workspace?.meet?.name != null
@@ -146,9 +146,12 @@ processors:
         whiteboard_started: info
       source: |-
         ctx.event = ctx.event ?: [:];
-        def type = [];
-        type.add(params.get(ctx.google_workspace.meet.name));
-        ctx.event.type = type;
+        def type = params.get(ctx.google_workspace.meet.name);
+        if (type == null) {
+          ctx.event.remove('type');
+        } else {
+          ctx.event.type = [type];
+        }
       on_failure:
         - append:
             field: error.message

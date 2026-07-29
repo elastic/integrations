@@ -177,9 +177,12 @@ processors:
         user_unblocked: change
       source: |-
         ctx.event = ctx.event ?: [:];
-        def type = [];
-        type.add(params.get(ctx.google_workspace.chat.name));
-        ctx.event.type = type;
+        def type = params.get(ctx.google_workspace.chat.name);
+        if (type == null) {
+          ctx.event.remove('type');
+        } else {
+          ctx.event.type = [type];
+        }
       on_failure:
         - append:
             field: error.message

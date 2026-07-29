@@ -154,7 +154,7 @@ processors:
   - append:
       field: event.category
       value: iam
-      if: '["account_disabled_password_leak","2sv_disable","2sv_enroll","account_disabled_generic","account_disabled_spamming_through_relay","account_disabled_spamming","account_disabled_hijacked","titanium_enroll","titanium_unenroll","gov_attack_warning","passkey_enrolled","passkey_removed"].contains(ctx?.event?.action)'
+      if: '["account_disabled_password_leak","2sv_disable","2sv_enroll","account_disabled_generic","account_disabled_spamming_through_relay","account_disabled_spamming","account_disabled_hijacked","titanium_enroll","titanium_unenroll","gov_attack_warning","passkey_enrolled","passkey_removed"].contains(ctx.event?.action)'
   - append:
       field: event.category
       value: configuration
@@ -183,12 +183,12 @@ processors:
       field: event.type
       tag: append_creation_into_event_type_for_passkey_enrolled
       value: creation
-      if: '["passkey_enrolled"].contains(ctx?.event?.action)'
+      if: ctx.event?.action == 'passkey_enrolled'
   - append:
       field: event.type
       tag: append_deletion_into_event_type_for_passkey_removed
       value: deletion
-      if: '["passkey_removed"].contains(ctx?.event?.action)'
+      if: ctx.event?.action == 'passkey_removed'
   - append:
       field: event.type
       value: info

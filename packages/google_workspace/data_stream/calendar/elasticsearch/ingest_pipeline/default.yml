@@ -187,9 +187,12 @@ processors:
         interop_exchange_resource_list_lookup_unsuccessful: info
       source: |-
         ctx.event = ctx.event ?: [:];
-        def type = [];
-        type.add(params.get(ctx.google_workspace.calendar.name));
-        ctx.event.type = type;
+        def type = params.get(ctx.google_workspace.calendar.name);
+        if (type == null) {
+          ctx.event.remove('type');
+        } else {
+          ctx.event.type = [type];
+        }
       on_failure:
         - append:
             field: error.message

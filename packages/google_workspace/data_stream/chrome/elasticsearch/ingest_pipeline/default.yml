@@ -183,9 +183,12 @@ processors:
         if (ctx.event == null) {
           ctx.event = new HashMap();
         }
-        def type = new ArrayList();
-        type.add(params.get(ctx.google_workspace.chrome.name.toLowerCase()));
-        ctx.event.put('type', type);
+        def type = params.get(ctx.google_workspace.chrome.name.toLowerCase());
+        if (type == null) {
+          ctx.event.remove('type');
+        } else {
+          ctx.event.put('type', [type]);
+        }
       on_failure:
         - append:
             field: error.message
