@@ -26,12 +26,12 @@ memcap-agent/
 ├── run.sh                    # one run for STREAM={alert,incident,vulnerability}
 ├── sweep.sh                  # several page sizes at a big cap; fits + OOM boundary
 ├── alert/
-│   ├── elastic-agent.yml     # rendered copy of the shipping httpjson.yml.hbs
-│   ├── mock-config.yml       # token + alerts_v2 page serving the corpus
-│   └── corpus/               # template.ndjson, config.yml, fields.yml
+│   ├── elastic-agent.yml.tmpl # request/pagination/split/cursor spliced from httpjson.yml.hbs
+│   ├── mock-config.yml        # token + alerts_v2 page serving the corpus
+│   └── corpus/                # template.ndjson, config.yml, fields.yml
 ├── incident/
-│   ├── elastic-agent.yml     # rendered copy (include_alerts=true, nested split)
-│   ├── mock-config.yml       # token + incidents page (each incident has alerts[])
+│   ├── elastic-agent.yml.tmpl # spliced from httpjson.yml.hbs (include_alerts=true, nested split)
+│   ├── mock-config.yml        # token + incidents page (each incident has alerts[])
 │   └── corpus/
 └── vulnerability/
     ├── elastic-agent.yml.tmpl # CEL program spliced from cel.yml.hbs at run time
@@ -45,26 +45,38 @@ corpus). Re-run the harness to reproduce them.
 
 ## Keeping the configs in sync with the shipping inputs
 
-The numbers are only meaningful if the harness runs what the package ships.
+The numbers are only meaningful if the harness runs what the package ships, so **no
+stream stores a hand-maintained copy of its config** — each one splices the ship
+logic out of its `.hbs` at run time and errors if it can't. There is nothing to
+re-sync by hand.
 
-- **vulnerability (cel):** the CEL program is **not** stored here. On every run,
-  `run.sh` extracts the `program:` block verbatim from
+- **vulnerability (cel):** `run.sh` extracts the `program:` block verbatim from
   `../../../data_stream/vulnerability/agent/stream/cel.yml.hbs`, re-indents it, and
   splices it into `vulnerability/elastic-agent.yml.tmpl` in place of the
-  `#__CEL_PROGRAM__` placeholder. Change the `.hbs` and the next run picks it up.
-- **alert / incident (httpjson):** httpjson stream templates are Handlebars, not
-  cleanly extractable, so `alert/elastic-agent.yml` and `incident/elastic-agent.yml`
-  are **hand-maintained rendered copies** of the shipping `httpjson.yml.hbs`. If you
-  change `request.transforms`, `response.split`, or `tags` in the `.hbs`, re-sync
-  these two files. The memory-relevant parts to keep faithful are `response.split`
-  (and the nested `body.alerts` split with `keep_parent` for incidents) and the
-  `preserve_original_event` tag.
+  `#__CEL_PROGRAM__` placeholder.
+- **alert / incident (httpjson):** `run.sh` extracts the ship **behaviour block** —
+  `request.transforms` + `response.pagination` + `response.split` + `cursor` — from
+  `../../../data_stream/<stream>/agent/stream/httpjson.yml.hbs`, resolves the few
+  Handlebars tokens the harness needs (`batch_size`, `initial_interval`, and the
+  `include_*` conditionals — keeping the `include_alerts` bodies so `$expand=alerts`
+  and the nested `body.alerts` split with `keep_parent` are exercised for incidents),
+  re-indents it, and splices it into `<stream>/elastic-agent.yml.tmpl` in place of the
+  `#__STREAM_BEHAVIOR__` placeholder. Only connection/scaffolding (auth + URL → mock,
+  `interval`, output, `tags`) lives in the `.tmpl`, because those are harness
+  environment values, not ship logic.
 
-Both httpjson configs set `$top`/`batch_size` absurdly large so the single page the
-mock returns is smaller than `batch_size`: httpjson does not request a second page,
-and the whole page is decoded and held in memory. That isolates the **per-page**
-peak, which is what OOMs an agentless pod (see the pagination discussion in the ORR
-and elastic/integrations#20234).
+**Drift guard:** the splice only understands the tokens listed above. If a `.hbs`
+grows a new `{{...}}` token in the spliced region (a new `{{#if}}`, a new variable),
+`run.sh` aborts with the offending line instead of silently mis-rendering — so
+staleness becomes a one-line fix in `run.sh` section 1b, not a wrong ORR number.
+
+Both httpjson configs neutralise `batch_size` to a huge sentinel (`2000000000`) in
+the spliced block, so the **real** time-boundary pagination (`$filter … gt`,
+`$skip=0`) evaluates its full-page guard to false and halts after one page: the whole
+page is decoded and held in memory. That isolates the **per-page** peak, which is what
+OOMs an agentless pod, while still running the exact request shape 5.15.1 ships (see
+the pagination discussion in the ORR; the old `$skip`-cap bug was
+elastic/integrations#20234, fixed by elastic/integrations#20348).
 
 ## Prerequisites
 
@@ -178,10 +190,12 @@ three:
   drained), so the decoded page stays resident (conservative worst case) and drained
   events do not add page cache to the cgroup. This measures memory *capacity*
   (records per page at the OOM ceiling), **not** throughput / EPS.
-- httpjson `batch_size` is set huge to force a single page; production caps differ
-  (`alert` `$top` is server-clamped to 1000, `incident` ships `batch_size=50`). The
-  harness measures the *decode* cost of whatever page it is handed, independent of
-  how production paginates.
+- httpjson `batch_size` is neutralised to a huge sentinel (in the spliced block) to
+  force a single page; production defaults differ (`alert` ships `batch_size=1000` =
+  the Graph `$top` cap since 5.15.1, `incident` ships `batch_size=50`). The harness
+  measures the *decode* cost of whatever page it is handed, independent of how
+  production paginates; the spliced pagination is the real 5.15.1 time-boundary shape
+  (`$filter … gt`, `$skip=0`), just held to one page.
 - State store is local disk here (agentless uses Elasticsearch); the cursor is a few
   KB and irrelevant to the decode peak.
 - APM is off.

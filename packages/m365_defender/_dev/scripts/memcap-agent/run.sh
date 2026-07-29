@@ -18,11 +18,17 @@
 #                             (pageSize=10000 hard-coded); peak ~ records x size,
 #                             plus the CEL re-encode into message strings.
 #
-# The stream config is assembled at run time from this directory:
-#   - httpjson streams use <stream>/elastic-agent.yml verbatim (a rendered copy of
-#     the shipping httpjson.yml.hbs - re-sync by hand if the .hbs changes);
-#   - the cel stream uses <stream>/elastic-agent.yml.tmpl with the CEL program
-#     spliced verbatim from the shipping cel.yml.hbs, so it always matches ship.
+# The stream config is assembled at run time from this directory so it never drifts
+# from what the package ships - every stream splices the ship logic from its .hbs into
+# <stream>/elastic-agent.yml.tmpl:
+#   - httpjson streams (alert/incident) splice request.transforms + response.pagination
+#     + response.split + cursor from the shipping httpjson.yml.hbs, resolving the few
+#     Handlebars tokens the harness cares about (batch_size, initial_interval, the
+#     include_* conditionals);
+#   - the cel stream splices the CEL program from the shipping cel.yml.hbs.
+# Change the .hbs and the next run picks it up - no hand-maintained copy. run.sh errors
+# out if a .hbs grows a token the render step does not understand, so drift is caught,
+# not silently mis-rendered.
 #
 # Sweep the page size with TOTAL_EVENTS and the cap with MEM_LIMIT, e.g.:
 #   STREAM=alert         MEM_LIMIT=1g   TOTAL_EVENTS=1000  ./run.sh
@@ -64,6 +70,7 @@ TOOL="${TOOL:-$HOME/go/src/github.com/elastic/elastic-integration-corpus-generat
 PKG="$DIR/corpus"
 MOCK_CONFIG="$DIR/mock-config.yml"
 CEL_HBS="$HERE/../../../data_stream/vulnerability/agent/stream/cel.yml.hbs"
+HBS="$HERE/../../../data_stream/$STREAM/agent/stream/httpjson.yml.hbs"  # httpjson streams
 
 NET="m365d-memcap-net"
 SVC="svc-m365d"
@@ -118,11 +125,57 @@ if [ "$CEL" = "1" ]; then
     f { if ($0 ~ /^[[:space:]]*$/) print ""; else print "    " $0 }
   ' "$CEL_HBS" > "$WORK/program.indented"
   [ -s "$WORK/program.indented" ] || { echo "failed to extract 'program:' block from $CEL_HBS"; exit 1; }
+  # Drift guard: the program is spliced verbatim; a Handlebars token inside it would be
+  # copied literally into the config. The program is Handlebars-free today - fail loudly
+  # if that ever changes rather than run a broken config.
+  if grep -n '{{' "$WORK/program.indented" >/dev/null 2>&1; then
+    echo "ERROR: Handlebars token(s) inside the CEL program spliced from $CEL_HBS:"
+    grep -n '{{' "$WORK/program.indented"
+    echo "The harness splices the program verbatim and cannot resolve Handlebars inside it."
+    exit 1
+  fi
   awk 'FNR==NR { prog[++n]=$0; next }
        /^[[:space:]]*#__CEL_PROGRAM__[[:space:]]*$/ { for (i=1;i<=n;i++) print prog[i]; next }
        { print }' "$WORK/program.indented" "$DIR/elastic-agent.yml.tmpl" > "$AGENT_YML"
 else
-  cp "$DIR/elastic-agent.yml" "$AGENT_YML"
+  [ -f "$HBS" ] || { echo "missing $HBS (needed to assemble the httpjson config)"; exit 1; }
+  [ -f "$DIR/elastic-agent.yml.tmpl" ] || { echo "missing $DIR/elastic-agent.yml.tmpl"; exit 1; }
+  echo ">> assembling agent config (request/pagination/split/cursor from $HBS) ..."
+  # Extract the ship "behaviour" region: from `request.transforms:` up to `tags:`
+  # (request.transforms + response.pagination + response.split + cursor). These are
+  # column-0 keys in the .hbs; the second awk re-indents them by 4 to sit under
+  # inputs[].streams[]. We resolve only the tokens the harness needs and KEEP the
+  # include_* conditional bodies (worst case: alerts expanded + nested split).
+  # batch_size is neutralised to a huge sentinel so the real gt/$skip=0 pagination
+  # guard is false and the input halts after one page (single-page decode = the peak).
+  BATCH_SENTINEL=2000000000
+  awk '
+    /^request\.transforms:/ { f=1 }
+    /^tags:/                { f=0 }
+    f { print }
+  ' "$HBS" \
+  | awk -v batch="$BATCH_SENTINEL" -v initint="24h" '
+      /^[[:space:]]*\{\{#if include_alerts\}\}[[:space:]]*$/               { next }
+      /^[[:space:]]*\{\{#if include_unknown_enum_members\}\}[[:space:]]*$/ { next }
+      /^[[:space:]]*\{\{\/if\}\}[[:space:]]*$/                             { next }
+      {
+        gsub(/\{\{batch_size\}\}/, batch)
+        gsub(/\{\{initial_interval\}\}/, initint)
+        if ($0 ~ /^[[:space:]]*$/) print ""; else print "    " $0
+      }
+    ' > "$WORK/behavior.rendered"
+  [ -s "$WORK/behavior.rendered" ] || { echo "failed to extract behaviour block from $HBS"; exit 1; }
+  # Drift guard: any Handlebars token we did not resolve means the .hbs changed in a
+  # way this render step does not understand - fail loudly rather than run a broken config.
+  if grep -n '{{' "$WORK/behavior.rendered" >/dev/null 2>&1; then
+    echo "ERROR: unresolved Handlebars token(s) in the spliced block from $HBS:"
+    grep -n '{{' "$WORK/behavior.rendered"
+    echo "Update the render step (section 1b) in run.sh to handle them."
+    exit 1
+  fi
+  awk 'FNR==NR { body[++n]=$0; next }
+       /^[[:space:]]*#__STREAM_BEHAVIOR__[[:space:]]*$/ { for (i=1;i<=n;i++) print body[i]; next }
+       { print }' "$WORK/behavior.rendered" "$DIR/elastic-agent.yml.tmpl" > "$AGENT_YML"
 fi
 
 # --------------------------- 2. mock ---------------------------
