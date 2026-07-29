@@ -74,10 +74,10 @@ Enable the **Alerts v2** data stream to collect from the Chronicle API [`legacyS
 4. Select "Add Google SecOps" to add the integration.
 5. Add all the required integration configuration parameters to enable data collection:
    - For **Alerts v2**, enable the **Alerts v2** data stream and add the regional Chronicle API URL (for example, `https://us-chronicle.googleapis.com`), GCP project ID, location, instance ID, OAuth scope, Credentials Type, and Credentials.
-   - For **Alerts** (deprecated; existing Backstory users only), add the URL, Credentials Type, and Credentials.
+   - For **Alerts** (deprecated; existing Backstory users only), set the URL to `https://backstory.googleapis.com` and add the Credentials Type and Credentials.
 6. Select "Save and continue" to save the integration.
 
-**Note**: The default URL is `https://backstory.googleapis.com`, but this may vary depending on your region. Please refer to the [Documentation](https://cloud.google.com/chronicle/docs/reference/search-api#regional_endpoints) to find the correct URL for your region.
+**Note**: The default URL is `https://us-chronicle.googleapis.com`, but this may vary depending on your region. Please refer to the [Documentation](https://cloud.google.com/chronicle/docs/reference/search-api#regional_endpoints) to find the correct URL for your region.
 
 ## Logs reference
 

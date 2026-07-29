@@ -136,57 +136,27 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: google_secops.alert_v2.detection
-      tag: foreach_convert_detection_risk_score_to_long
-      processor:
-        convert:
-          field: _ingest._value.risk_score
-          tag: convert_detection_risk_score_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.risk_score
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-      ignore_missing: true
 
   # event.*
   - set:
       field: event.kind
       tag: set_event_kind_to_alert
       value: alert
+  - append:
+      field: event.category
+      tag: append_event_category_intrusion_detection
+      value: intrusion_detection
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+      allow_duplicates: false
   - set:
       field: event.created
       tag: set_event_created_from_alert_created_time
       copy_from: google_secops.alert_v2.created_time
       ignore_empty_value: true
-  - foreach:
-      field: google_secops.alert_v2.detection
-      tag: foreach_append_detection_risk_score_into_event_risk_score
-      processor:
-        append:
-          field: event.risk_score
-          tag: append_detection_risk_score_into_event_risk_score
-          value: '{{{_ingest._value.risk_score}}}'
-          allow_duplicates: false
-      ignore_missing: true
-  - convert:
-      field: event.risk_score
-      tag: convert_event_risk_score_to_long
-      type: long
-      ignore_missing: true
-      if: ctx.event?.risk_score != ""
-      on_failure:
-        - remove:
-            field: event.risk_score
-            ignore_missing: true
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: google_secops.alert_v2.event.security_result
       tag: foreach_append_event_security_result_action_into_event_action
@@ -751,17 +721,6 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert_v2.event.principal.ip_geo_artifact
-      tag: foreach_event_principal_ip_geo_artifact_location_country_or_region_into_host_geo_country_name
-      if: ctx.google_secops?.alert_v2?.event?.principal?.ip_geo_artifact instanceof List
-      processor:
-        append:
-          field: host.geo.country_name
-          tag: append_event_principal_ip_geo_artifact_location_country_or_region_into_host_geo_country_name
-          value: '{{{_ingest._value.location.country_or_region}}}'
-          allow_duplicates: false
-      ignore_missing: true
-  - foreach:
-      field: google_secops.alert_v2.event.principal.ip_geo_artifact
       tag: foreach_event_principal_ip_geo_artifact_location_region_coordinates_latitude_to_double
       if: ctx.google_secops?.alert_v2?.event?.principal?.ip_geo_artifact instanceof List
       processor:
@@ -800,17 +759,6 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert_v2.event.principal.ip_geo_artifact
-      tag: foreach_append_event_principal_ip_geo_artifact_location_state_into_host_geo_region_name
-      if: ctx.google_secops?.alert_v2?.event?.principal?.ip_geo_artifact instanceof List
-      processor:
-        append:
-          field: host.geo.region_name
-          tag: append_event_principal_ip_geo_artifact_location_state_into_host_geo_region_name
-          value: '{{{_ingest._value.location.state}}}'
-          allow_duplicates: false
-      ignore_missing: true
-  - foreach:
-      field: google_secops.alert_v2.event.principal.ip_geo_artifact
       tag: foreach_remove_event_principal_ip_geo_artifact
       if: ctx.google_secops?.alert_v2?.event?.principal?.ip_geo_artifact instanceof List
       processor:
@@ -821,30 +769,6 @@ processors:
           tag: remove_event_principal_ip_geo_artifact
           ignore_missing: true
       ignore_missing: true
-  - script:
-      description: Map host.geo.location field.
-      tag: map_host_geo_location
-      lang: painless
-      source: |-
-        def locationList = new ArrayList();
-        if (ctx.google_secops?.alert_v2?.event?.principal?.ip_geo_artifact instanceof List) {
-          for (list in ctx.google_secops.alert_v2.event.principal.ip_geo_artifact) {
-            if (list.location.region_coordinates != null && list.location.region_coordinates != ''){
-              locationList.add(list.location.region_coordinates);
-            }
-          }
-        }
-        if (!(ctx.host instanceof HashMap)) {
-          ctx.host = new HashMap();
-        }
-        if (!(ctx.host.geo instanceof HashMap)) {
-          ctx.host.geo = new HashMap();
-        }
-        ctx.host.geo.location = locationList;
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: google_secops.alert_v2.event.principal.ip
       tag: foreach_event_principal_ip_to_ip
@@ -1945,6 +1869,7 @@ processors:
       if: ctx.error?.message != null
   - append:
       field: tags
+      tag: append_preserve_original_event_tag_on_error
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
