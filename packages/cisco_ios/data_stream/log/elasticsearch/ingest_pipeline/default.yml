@@ -287,6 +287,14 @@ processors:
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.iana_number} %{source.address} %{} %{destination.address}, %{source.packets} packet"
       if: "['IPACCESSLOGNP', 'ACCESSLOGNP'].contains(ctx.event?.code)"
   - grok:
+      field: source.address
+      tag: grok_strip_mac_from_source_address
+      patterns:
+        - '^%{MAC:source.mac} %{IP:source.address}$'
+      if: "ctx.source?.address != null"
+      ignore_failure: true
+      ignore_missing: true
+  - grok:
       field: message
       tag: grok_login
       patterns: 
