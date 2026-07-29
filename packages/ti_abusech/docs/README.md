@@ -18,10 +18,10 @@ This integration collects threat intelligence indicators into the following data
 
 - `ja3_fingerprints`: Collects JA3 fingerprint based threat indicators identified by SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv).
 - `malware`: Collects malware payloads from URLs tracked by URLhaus via [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
-- `malwarebazaar`: Collects malware payloads from MalwareBazaar via [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
+- `malwarebazaar`: Collects malware payloads from MalwareBazaar via the Community [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions) or the Commercial API (`GET /malwarebazaar/v1/samples`). Community API uses Auth Key; Commercial API requires username and password from the [Spamhaus Customer Portal](https://portal.spamhaus.com).
 - `sslblacklist`: Collects SSL certificate based threat indicators blacklisted on SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
 - `threatfox`: Collects threat indicators from ThreatFox via [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
-- `url`: Collects recently added malware URL based threat indicators from URLhaus via [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent). The API returns at most 1000 entries from the last 3 days. The **Interval** setting must be short enough to avoid exceeding the 1000-entry limit between polls; otherwise the oldest URLs added in that window will be lost.
+- `url`: Collects recently added malware URL based threat indicators from URLhaus via the Community [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent) or the Commercial API (`GET /urlhaus/v1/urls`). The Community API returns at most 1000 entries from the last 3 days. The **Interval** setting must be short enough to avoid exceeding the 1000-entry limit between polls; otherwise the oldest URLs added in that window will be lost. Community API uses Auth Key; Commercial API requires username and password from the [Spamhaus Customer Portal](https://portal.spamhaus.com).
 - `yaraify`: Collects YARA rule metadata from YARAify via the Community [YARAify API](https://yaraify.abuse.ch/api/#recent-yararules) (`POST` with `query: recent_yararules`) or the Commercial API (`GET /yaraify/v1/rules`). Community API uses Auth Key; Commercial API requires username and password from the [Spamhaus Customer Portal](https://portal.spamhaus.com).
 
 ### Supported use cases
@@ -87,7 +87,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
     * To **Collect abuse.ch logs via API**, you'll need to:
 
         - Configure **Auth Key** for Community API datasets.
-        - For ThreatFox Commercial API collection, set **API Type** to **Commercial API**, set the **URL** to the commercial API base URL (for example `https://api.spamhaus.com`), and configure **Username** and **Password**.
+        - For Commercial API collection, set **API Type** to **Commercial API**, set the **URL** to the commercial API base URL (for example `https://api.spamhaus.com`), and configure **Username** and **Password**.
         - Enable/Disable the required datasets.
         - For each dataset, adjust the integration configuration parameters if required, including the URL, Interval, etc. to enable data collection.
 
@@ -369,7 +369,6 @@ For more information on architectures that can be used for scaling this integrat
 | abusech.url.blacklists.spamhaus_dbl | If the indicator is listed on the spamhaus blacklist. | keyword |
 | abusech.url.blacklists.surbl | If the indicator is listed on the surbl blacklist. | keyword |
 | abusech.url.deleted_at | The timestamp when the indicator is (will be) deleted. | date |
-| abusech.url.first_seen | The timestamp when the malware URL was added to URLhaus (RFC3339). | date |
 | abusech.url.id | The ID of the indicator. | keyword |
 | abusech.url.ioc_expiration_duration | The configured expiration duration. | keyword |
 | abusech.url.larted | Indicates whether the malware URL has been reported to the hosting provider (true or false). | boolean |
@@ -869,7 +868,7 @@ An example event for `url` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-07-27T09:15:15.628Z",
+    "@timestamp": "2026-07-29T05:58:47.965Z",
     "abusech": {
         "url": {
             "blacklists": {
@@ -885,24 +884,24 @@ An example event for `url` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "29dc93e5-461d-4b33-bdc7-ee5e66ab8090",
-        "id": "fd58c6de-b015-464d-a321-0d2cde704420",
-        "name": "elastic-agent-40794",
+        "ephemeral_id": "6f3e0e60-187c-4e33-8d86-7cedd4918215",
+        "id": "e20e15df-cdb6-4865-a35c-24fff0a8d7b9",
+        "name": "elastic-agent-80664",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "9.1.0"
     },
     "data_stream": {
         "dataset": "ti_abusech.url",
-        "namespace": "21558",
+        "namespace": "69182",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "fd58c6de-b015-464d-a321-0d2cde704420",
+        "id": "e20e15df-cdb6-4865-a35c-24fff0a8d7b9",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "9.1.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -910,8 +909,9 @@ An example event for `url` looks as following:
             "threat"
         ],
         "dataset": "ti_abusech.url",
-        "ingested": "2026-07-27T09:15:18Z",
+        "ingested": "2026-07-29T05:58:50Z",
         "kind": "enrichment",
+        "module": "ti_abusech",
         "original": "{\"blacklists\":{\"spamhaus_dbl\":\"not listed\",\"surbl\":\"not listed\"},\"date_added\":\"2021-10-05 13:57:05 UTC\",\"host\":\"81.2.69.142\",\"id\":\"1656008\",\"larted\":\"true\",\"reporter\":\"tammeto\",\"tags\":null,\"threat\":\"malware_download\",\"url\":\"http://81.2.69.142:55871/mozi.m\",\"url_status\":\"online\",\"urlhaus_reference\":\"https://urlhaus.abuse.ch/url/1656008/\"}",
         "type": [
             "indicator"
@@ -920,12 +920,19 @@ An example event for `url` looks as following:
     "input": {
         "type": "cel"
     },
+    "labels": {
+        "is_ioc_transform_source": "true"
+    },
     "tags": [
         "preserve_original_event",
         "forwarded",
         "abusech-url"
     ],
     "threat": {
+        "feed": {
+            "dashboard_id": "ti_abusech-c0d8d1f0-3b20-11ec-ae50-2fdf1e96c6a6",
+            "name": "AbuseCH URL"
+        },
         "indicator": {
             "first_seen": "2021-10-05T13:57:05.000Z",
             "ip": "81.2.69.142",
@@ -949,30 +956,95 @@ An example event for `url` looks as following:
 
 #### YARAify
 
-**Exported fields**
+An example event for `yaraify` looks as following:
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| abusech.yaraify.date | Date when the YARA rule was written (community API). Kept separate from date_written. | date |
-| abusech.yaraify.date_written | Date when the YARA rule was written (commercial API). Kept separate from date. | date |
-| abusech.yaraify.deleted_at | The indicator expiration timestamp. | date |
-| abusech.yaraify.ioc_expiration_duration | The configured indicator expiration duration. | keyword |
-| abusech.yaraify.malpedia_family | Malware family name using the Malpedia naming scheme. | keyword |
-| abusech.yaraify.time_stamp | Timestamp when the YARA rule was observed (community API). Kept separate from first_seen. | date |
-| abusech.yaraify.yarahub_author_twitter | Twitter handle of the YARA rule author on YARAhub. | keyword |
-| abusech.yaraify.yarahub_license | License under which the YARA rule is shared. | keyword |
-| abusech.yaraify.yarahub_rule_sharing_tlp | Traffic Light Protocol classification for sharing the YARA rule. | keyword |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| input.type | Type of filebeat input. | keyword |
-| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
-| threat.feed.dashboard_id | The saved object ID of the dashboard belonging to the threat feed for displaying dashboard links to threat feeds in Kibana. | constant_keyword |
-| threat.feed.name | The name of the threat feed in UI friendly format. | constant_keyword |
-
+```json
+{
+    "@timestamp": "2024-01-15T11:16:40.000Z",
+    "abusech": {
+        "yaraify": {
+            "date": "2024-01-08T00:00:00.000Z",
+            "deleted_at": "2024-01-20T11:16:40.000Z",
+            "ioc_expiration_duration": "5d",
+            "malpedia_family": "win.samplemw",
+            "time_stamp": "2024-01-15T11:16:40.000Z",
+            "yarahub_license": "CC BY-SA 4.0",
+            "yarahub_rule_sharing_tlp": "TLP:WHITE"
+        }
+    },
+    "agent": {
+        "ephemeral_id": "64793051-55c6-4b81-957c-554985ee088b",
+        "id": "6bebc018-1734-4daf-8e16-17cf7768ac39",
+        "name": "elastic-agent-57391",
+        "type": "filebeat",
+        "version": "9.1.0"
+    },
+    "data_stream": {
+        "dataset": "ti_abusech.yaraify",
+        "namespace": "50080",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "6bebc018-1734-4daf-8e16-17cf7768ac39",
+        "snapshot": false,
+        "version": "9.1.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_abusech.yaraify",
+        "id": "33333333-3333-4333-8333-333333333333",
+        "ingested": "2026-07-27T12:01:28Z",
+        "kind": "enrichment",
+        "module": "ti_abusech",
+        "original": "{\"author\":\"Third Author\",\"date\":\"2024-01-08\",\"description\":\"detects SampleMalware\",\"malpedia_family\":\"win.samplemw\",\"rule_name\":\"win_samplemw\",\"time_stamp\":\"2024-01-15 11:16:40 UTC\",\"yarahub_license\":\"CC BY-SA 4.0\",\"yarahub_rule_matching_tlp\":\"TLP:WHITE\",\"yarahub_rule_sharing_tlp\":\"TLP:WHITE\",\"yarahub_uuid\":\"33333333-3333-4333-8333-333333333333\"}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "labels": {
+        "is_ioc_transform_source": "true"
+    },
+    "related": {
+        "user": [
+            "Third Author"
+        ]
+    },
+    "rule": {
+        "name": "win_samplemw"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "abusech-yaraify"
+    ],
+    "threat": {
+        "feed": {
+            "dashboard_id": "ti_abusech-c0d8d1f0-3b20-11ec-ae50-2fdf1e96c6a6",
+            "name": "AbuseCH YARAify"
+        },
+        "indicator": {
+            "description": "detects SampleMalware",
+            "first_seen": "2024-01-15T11:16:40.000Z",
+            "marking": {
+                "tlp": "CLEAR"
+            },
+            "name": "win_samplemw"
+        }
+    },
+    "user": {
+        "name": "Third Author"
+    }
+}
+```
 
 ### Inputs used
 
@@ -986,10 +1058,10 @@ This integration datasets use the following APIs:
 
 - `ja3_fingerprints`: [SSLBL API](https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv).
 - `malware`: [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
-- `malwarebazaar`: [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
+- `malwarebazaar`: [MalwareBazaar Community API](https://bazaar.abuse.ch/api/#latest_additions) and [abuse.ch Commercial API — MalwareBazaar](https://abusech.docs.spamhaus.com/) (`GET /malwarebazaar/v1/samples`).
 - `sslblacklist`: [SSLBL API](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
 - `threatfox`: [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
-- `url`: [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent).
+- `url`: [URLhaus Community API](https://urlhaus-api.abuse.ch/#urls-recent) and [abuse.ch Commercial API — URLhaus](https://abusech.docs.spamhaus.com/) (`GET /urlhaus/v1/urls`).
 - `yaraify`: [YARAify Community API](https://yaraify.abuse.ch/api/#recent-yararules) (`recent_yararules`) and [abuse.ch Commercial API — YARAify](https://abusech.docs.spamhaus.com/) (`GET /yaraify/v1/rules`).
 
 ### Expiration of Indicators of Compromise (IOCs)

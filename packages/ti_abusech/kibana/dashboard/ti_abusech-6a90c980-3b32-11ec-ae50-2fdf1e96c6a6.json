@@ -23,67 +23,8 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "event.kind",
-                            "negate": false,
-                            "params": {
-                                "query": "enrichment"
-                            },
-                            "type": "phrase"
-                        },
-                        "query": {
-                            "match_phrase": {
-                                "event.kind": "enrichment"
-                            }
-                        }
-                    },
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": null,
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "threat.indicator.type",
-                            "negate": false,
-                            "params": {
-                                "query": "file"
-                            },
-                            "type": "phrase"
-                        },
-                        "query": {
-                            "match_phrase": {
-                                "threat.indicator.type": "file"
-                            }
-                        }
-                    },
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
-                            "key": "threat.indicator.file.hash.ssdeep",
-                            "negate": false,
-                            "type": "exists"
-                        },
-                        "query": {
-                            "exists": {
-                                "field": "threat.indicator.file.hash.ssdeep"
-                            }
-                        }
-                    },
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": null,
-                            "disabled": false,
                             "field": "event.module",
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
                             "key": "event.module",
                             "negate": false,
                             "params": {
@@ -104,37 +45,38 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "threat.indicator.type",
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[4].meta.index",
-                            "key": "threat.indicator.type",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "event.kind",
                             "negate": false,
-                            "params": [
-                                "domain-name",
-                                "ipv4-addr",
-                                "ipv6-addr"
-                            ],
-                            "type": "phrases"
+                            "params": {
+                                "query": "enrichment"
+                            },
+                            "type": "phrase"
                         },
                         "query": {
-                            "bool": {
-                                "minimum_should_match": 1,
-                                "should": [
-                                    {
-                                        "match_phrase": {
-                                            "threat.indicator.type": "domain-name"
-                                        }
-                                    },
-                                    {
-                                        "match_phrase": {
-                                            "threat.indicator.type": "ipv4-addr"
-                                        }
-                                    },
-                                    {
-                                        "match_phrase": {
-                                            "threat.indicator.type": "ipv6-addr"
-                                        }
-                                    }
-                                ]
+                            "match_phrase": {
+                                "event.kind": "enrichment"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "threat.indicator.type",
+                            "negate": false,
+                            "params": {
+                                "query": "file"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "threat.indicator.type": "file"
                             }
                         }
                     },
@@ -146,7 +88,7 @@
                             "alias": null,
                             "disabled": false,
                             "field": "labels.is_ioc_transform_source",
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[5].meta.index",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
                             "key": "labels.is_ioc_transform_source",
                             "negate": true,
                             "params": {
@@ -157,6 +99,23 @@
                         "query": {
                             "match_phrase": {
                                 "labels.is_ioc_transform_source": "true"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[4].meta.index",
+                            "key": "threat.indicator.file.hash.ssdeep",
+                            "negate": false,
+                            "type": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "threat.indicator.file.hash.ssdeep"
                             }
                         }
                     }
@@ -1211,21 +1170,36 @@
                                 "id": "3ed6b1ac-9a8c-4efe-a457-2065dd003c19",
                                 "label": "Domains and IP Addresses",
                                 "order": 0,
-                                "type": "dashboardLink"
+                                "type": "dashboardLink",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                }
                             },
                             {
                                 "destinationRefName": "link_716cf9a3-f3dc-4765-8c67-3419cb24b37a_dashboard",
                                 "id": "716cf9a3-f3dc-4765-8c67-3419cb24b37a",
                                 "label": "Files",
                                 "order": 1,
-                                "type": "dashboardLink"
+                                "type": "dashboardLink",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                }
                             },
                             {
                                 "destinationRefName": "link_ac4d090c-821e-4726-a20a-991761327800_dashboard",
                                 "id": "ac4d090c-821e-4726-a20a-991761327800",
                                 "label": "Overview",
                                 "order": 2,
-                                "type": "dashboardLink"
+                                "type": "dashboardLink",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                }
                             },
                             {
                                 "destinationRefName": "link_07a4f32e-4d0e-4bf6-a5ee-83911c3b7448_dashboard",
@@ -1244,14 +1218,24 @@
                                 "id": "a2821a5b-c71f-4224-872f-b9ac2de1365e",
                                 "label": "Software and X-509 Certificates",
                                 "order": 4,
-                                "type": "dashboardLink"
+                                "type": "dashboardLink",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                }
                             },
                             {
                                 "destinationRefName": "link_33cb36bc-1a81-49a2-ad41-239e2c7b8424_dashboard",
                                 "id": "33cb36bc-1a81-49a2-ad41-239e2c7b8424",
                                 "label": "URLs",
                                 "order": 5,
-                                "type": "dashboardLink"
+                                "type": "dashboardLink",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                }
                             }
                         ]
                     },
@@ -1346,11 +1330,6 @@
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[5].meta.index",
             "type": "index-pattern"
-        },
-        {
-            "id": "ti_abusech-73511520-3b32-11ec-ae50-2fdf1e96c6a6",
-            "name": "tag-ref-ti_abusech-73511520-3b32-11ec-ae50-2fdf1e96c6a6",
-            "type": "tag"
         },
         {
             "id": "logs-*",

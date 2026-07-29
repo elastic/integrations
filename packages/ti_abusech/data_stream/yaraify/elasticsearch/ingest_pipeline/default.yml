@@ -236,23 +236,18 @@ processors:
       tag: set_threat_indicator_marking_tlp
       description: Map YARAhub rule matching TLP values to ECS threat.indicator.marking.tlp.
       if: ctx.abusech?.yaraify?.yarahub_rule_matching_tlp != null
-      params:
-        "TLP:WHITE": CLEAR
-        "WHITE": CLEAR
-        "TLP:GREEN": GREEN
-        "GREEN": GREEN
-        "TLP:AMBER": AMBER
-        "AMBER": AMBER
-        "TLP:RED": RED
-        "RED": RED
       source: |-
         String tlp = ctx.abusech.yaraify.yarahub_rule_matching_tlp;
-        if (params.containsKey(tlp)) {
-          ctx.threat = ctx.threat ?: [:];
-          ctx.threat.indicator = ctx.threat.indicator ?: [:];
-          ctx.threat.indicator.marking = ctx.threat.indicator.marking ?: [:];
-          ctx.threat.indicator.marking.tlp = params[tlp];
+        if (tlp.startsWith("TLP:")) {
+          tlp = tlp.substring(4);
         }
+        if (tlp == "WHITE") {
+          tlp = "CLEAR";
+        }
+        ctx.threat = ctx.threat ?: [:];
+        ctx.threat.indicator = ctx.threat.indicator ?: [:];
+        ctx.threat.indicator.marking = ctx.threat.indicator.marking ?: [:];
+        ctx.threat.indicator.marking.tlp = tlp;
   - set:
       field: threat.indicator.marking.tlp
       tag: set_threat_indicator_marking_tlp_default
