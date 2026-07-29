@@ -23,14 +23,15 @@ rules:
       - status_code: 200
         body: |-
           {"@odata.nextLink":"http://localhost:8080/v1.0/reports/authenticationMethods/userRegistrationDetails?$skiptoken=1","value":[{"id":"aa534e49-edfd-4541-8256-8bbf34f122b4","userPrincipalName":"First21480.Last11836@example.com","userDisplayName":"First21480 Last11836","isMfaCapable":true,"isMfaRegistered":true,"isPasswordlessCapable":false,"isSsprCapable":false,"isSsprEnabled":false,"isSsprRegistered":false,"isSystemPreferredAuthenticationMethodEnabled":false,"methodsRegistered":["microsoftAuthenticatorPush","softwareOneTimePasscode"],"systemPreferredAuthenticationMethods":[],"userPreferredMethodForSecondaryAuthentication":"push","userType":"member"},{"id":"feb6a386-612a-4ed1-9b13-2adc73074a19","userPrincipalName":"First45375.Last58638@example.com","userDisplayName":"First45375 Last58638","isMfaCapable":false,"isMfaRegistered":false,"isPasswordlessCapable":false,"isSsprCapable":false,"isSsprEnabled":false,"isSsprRegistered":false,"isSystemPreferredAuthenticationMethodEnabled":false,"methodsRegistered":[],"systemPreferredAuthenticationMethods":[],"userPreferredMethodForSecondaryAuthentication":"","userType":"member"}]}
-  - path: /v1.0/users/delta
-    query:
-      $select: userPrincipalName,mail,displayName,givenName,surname,jobTitle,officeLocation,mobilePhone,businessPhones,accountEnabled,department,signInActivity
+  - path: /v1.0/users
+    query_params:
+      $select:
+        - id,signInActivity
     methods: ["GET"]
     responses:
       - status_code: 200
         body: |-
-          {"@odata.deltaLink":"http://localhost:8080/v1.0/users/delta?$skiptoken=1","value":[{"id":"aa534e49-edfd-4541-8256-8bbf34f122b4","userPrincipalName":"First21480.Last11836@example.com","mail":"First21480_Last11836@example.com","displayName":"First21480 Last11836","givenName":"First21480","surname":"Last11836","jobTitle":"Manager","officeLocation":"608 St N, Somewhere, ABC, XYZ","mobilePhone":"231-482-2649","businessPhones":["55-692-8856","552-265-6614"],"accountEnabled":true,"signInActivity":{"lastSignInDateTime":"2024-03-01T09:00:00Z","lastNonInteractiveSignInDateTime":"2024-02-28T22:00:00Z"}},{"id":"feb6a386-612a-4ed1-9b13-2adc73074a19","userPrincipalName":"First45375.Last58638@example.com","mail":"First45375_Last58638@example.com","displayName":"First45375 Last58638","givenName":"First45375","surname":"Last58638","jobTitle":"Tech Writer","officeLocation":"682 St N, Somewhere, ABC, XYZ","mobilePhone":"385-169-3671","businessPhones":null,"accountEnabled":false}]}
+          {"value":[{"id":"aa534e49-edfd-4541-8256-8bbf34f122b4","signInActivity":{"lastSignInDateTime":"2024-03-01T09:00:00Z","lastSignInRequestId":"req-001","lastNonInteractiveSignInDateTime":"2024-02-28T22:00:00Z","lastNonInteractiveSignInRequestId":"req-002","lastSuccessfulSignInDateTime":"2024-03-01T09:00:00Z","lastSuccessfulSignInRequestId":"req-001"}},{"id":"feb6a386-612a-4ed1-9b13-2adc73074a19","signInActivity":null}]}
   - path: /v1.0/users/delta
     query:
       $expand: directReports
