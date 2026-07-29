@@ -18,7 +18,7 @@ This integration collects threat intelligence indicators into the following data
 
 - `ja3_fingerprints`: Collects JA3 fingerprint based threat indicators identified by SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv).
 - `malware`: Collects malware payloads from URLs tracked by URLhaus via [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
-- `malwarebazaar`: Collects malware payloads from MalwareBazaar via the Community [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions) or the Commercial API (`GET /malwarebazaar/v1/samples`). Community API uses Auth Key; Commercial API requires username and password from the [Spamhaus Customer Portal](https://portal.spamhaus.com).
+- `malwarebazaar`: Collects malware payloads from MalwareBazaar via [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
 - `sslblacklist`: Collects SSL certificate based threat indicators blacklisted on SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
 - `threatfox`: Collects threat indicators from ThreatFox via [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
 - `url`: Collects recently added malware URL based threat indicators from URLhaus via [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent). The API returns at most 1000 entries from the last 3 days. The **Interval** setting must be short enough to avoid exceeding the 1000-entry limit between polls; otherwise the oldest URLs added in that window will be lost.
@@ -87,7 +87,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
     * To **Collect abuse.ch logs via API**, you'll need to:
 
         - Configure **Auth Key** for Community API datasets.
-        - For URLhaus, MalwareBazaar, or YARAify Commercial API collection, set **API Type** to **Commercial API**, set the **URL** to the commercial API base URL (for example `https://api.spamhaus.com`), and configure **Username** and **Password**.
+        - For ThreatFox Commercial API collection, set **API Type** to **Commercial API**, set the **URL** to the commercial API base URL (for example `https://api.spamhaus.com`), and configure **Username** and **Password**.
         - Enable/Disable the required datasets.
         - For each dataset, adjust the integration configuration parameters if required, including the URL, Interval, etc. to enable data collection.
 
