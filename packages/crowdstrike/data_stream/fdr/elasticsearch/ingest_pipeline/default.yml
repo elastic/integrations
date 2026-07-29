@@ -1053,11 +1053,10 @@ processors:
         ctx.process.args_count = ctx.process.args.length;
   - script:
       description: >-
-        Map the CommandHistory field to process.command_line and split into an
-        array at crowdstrike.CommandHistory. CrowdStrike uses U+00B6 PILCROW
-        SIGN (¶) as the delimiter between individual commands in the history
-        string; this character has no formal documentation from CrowdStrike but
-        is consistently observed in FDR CommandHistory events.
+        Split crowdstrike.CommandHistory on U+00B6 PILCROW SIGN into an array
+        and assign the result to both crowdstrike.CommandHistory and
+        process.command_line. Placed after split_command_line so that processor
+        only runs on string-valued command lines from crowdstrike.CommandLine.
       tag: script_command_history_to_process_command_line_8c3e1f92
       if: |-
         ctx.crowdstrike?.event_simpleName == 'CommandHistory' &&
@@ -1065,7 +1064,6 @@ processors:
         ctx.crowdstrike.CommandHistory != ''
       source: |-
         def history = ctx.crowdstrike.CommandHistory;
-        ctx.process = ctx.process ?: [:];
         def commands = new ArrayList();
         def remaining = history;
         int idx = remaining.indexOf("¶");
@@ -1080,8 +1078,9 @@ processors:
         if (!remaining.trim().isEmpty()) {
           commands.add(remaining.trim());
         }
-        ctx.process.command_line = commands.size() > 0 ? commands.get(0) : history.trim();
         ctx.crowdstrike.CommandHistory = commands;
+        ctx.process = ctx.process ?: [:];
+        ctx.process.command_line = commands;
       on_failure:
         - append:
             field: error.message

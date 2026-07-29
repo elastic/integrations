@@ -1996,7 +1996,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.CommandCountMax |  | match_only_text |
 | crowdstrike.CommandHistory |  | keyword |
 | crowdstrike.CommandHistory.text | Multi-field of `crowdstrike.CommandHistory`. | match_only_text |
-| crowdstrike.CommandSequence |  | match_only_text |
+| crowdstrike.CommandSequence |  | keyword |
 | crowdstrike.CompanyName |  | keyword |
 | crowdstrike.CompletionEventId |  | keyword |
 | crowdstrike.CompositeId | Global unique identifier that identifies a unique alert. | keyword |
