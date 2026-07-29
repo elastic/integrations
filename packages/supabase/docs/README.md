@@ -1,10 +1,10 @@
-# Supabase Integration (OTel)
+# Supabase OpenTelemetry Integration
 
 Collect metrics from [Supabase](https://supabase.com) using the OpenTelemetry Prometheus receiver.
 
 ## Overview
 
-This integration scrapes metrics from the Supabase Metrics API (Prometheus-compatible) using the OTel Collector's Prometheus receiver. All metrics are collected into a single data stream:
+This integration scrapes metrics from the Supabase Metrics API (Prometheus-compatible) using the OTel Collector's Prometheus receiver. All metrics are collected into a single data stream
 
 - **Metrics** (`supabase.metrics.otel`) — Infrastructure (CPU, memory, load, disk I/O, filesystem, network), PostgreSQL (size, connections, transactions, cache, WAL, replication, bgwriter, statements), Supavisor, PostgREST, Auth, Realtime, and Storage
 
@@ -43,7 +43,7 @@ This integration requires a Supabase **Pro**, **Team**, or **Enterprise** plan. 
 
 ## Dashboards
 
-Kibana dashboards are provided by the **Supabase Dashboards** (`supabase_otel`) content package, which is declared as a dependency and installed automatically. The following dashboards are included:
+Kibana dashboards are provided by the **Supabase Dashboards** (`supabase_otel`) content package, which is installed automatically. The following dashboards are included:
 
 - **Node & Infrastructure** — CPU, memory, load, disk I/O, filesystem, network
 - **Database & Postgres Health** — connections, transactions, cache hit ratio, WAL, replication, bgwriter
@@ -75,14 +75,3 @@ See the [Supabase Metrics documentation](https://supabase.com/docs/guides/teleme
 | HTTP | `http_*` | `http_server_request_duration_seconds_total`, `http_status_codes_total` |
 
 All metrics are stored under the `metrics.*` field namespace with their original Prometheus names (e.g., `metrics.node_load5`, `metrics.pg_stat_database_xact_commit_total`).
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| scope.attributes.service_type | Supabase service producing the metric. | keyword |
-
