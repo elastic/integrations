@@ -201,22 +201,8 @@ processors:
       tag: convert_springcloudlogs_durationms_to_event_duration
       target_field: event.duration
       type: long
-      ignore_missing: true
       ignore_failure: true
-      if: "ctx.azure?.springcloudlogs?.durationMs != null && ctx.azure.springcloudlogs.durationMs instanceof String"
-      description: 'Convert durationMs to event.duration as long (if it is a string).'
-  - rename:
-      field: azure.springcloudlogs.durationMs
-      tag: rename_springcloudlogs_durationms_to_event_duration
-      target_field: event.duration
-      ignore_missing: true
-      if: "ctx.azure?.springcloudlogs?.durationMs != null && !(ctx.azure.springcloudlogs.durationMs instanceof String)"
-      description: 'Rename durationMs to event.duration (if it is not a string).'
-  - remove:
-      field: azure.springcloudlogs.durationMs
-      tag: remove_springcloudlogs_durationms
-      ignore_missing: true
-      description: 'Clean up durationMs field, if it is still there after the conversion.'
+      if: ctx.azure?.springcloudlogs?.durationMs != null
   - script:
       lang: painless
       source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration

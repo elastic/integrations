@@ -422,6 +422,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | @timestamp | Event timestamp. | date |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.identityprotection.category | Category | keyword |
+| azure.identityprotection.durationMs | Duration of the operation in milliseconds, as reported by the source event. Kept in its original vendor representation (string or number); use `event.duration` for the normalized value. | keyword |
 | azure.identityprotection.operation_name | Operation name | keyword |
 | azure.identityprotection.operation_version | Operation version | keyword |
 | azure.identityprotection.properties.activity | Indicates the activity type the detected risk is linked to. Possible values are: signin, user, unknownFutureValue. | keyword |
@@ -641,6 +642,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | @timestamp | Event timestamp. | date |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.provisioning.category | Category | keyword |
+| azure.provisioning.durationMs | Duration of the operation in milliseconds, as reported by the source event. Kept in its original vendor representation (string or number); use `event.duration` for the normalized value. | keyword |
 | azure.provisioning.identity | Describes the identity of the user or application that performed the operation | keyword |
 | azure.provisioning.level | The severity level of the event | long |
 | azure.provisioning.operation_name | Operation name | keyword |
