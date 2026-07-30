@@ -1121,6 +1121,10 @@ An example event for `alert_v2` looks as following:
 | google_secops.alert_v2.event.security_result.about.user.email_addresses | Email addresses of the user. | keyword |
 | google_secops.alert_v2.event.security_result.action | Actions taken for this event. | keyword |
 | google_secops.alert_v2.event.security_result.alert_state | The alerting types of this security result. | keyword |
+| google_secops.alert_v2.event.security_result.attack_details.tactics.id | The tactic ID. | keyword |
+| google_secops.alert_v2.event.security_result.attack_details.tactics.name | The tactic name. | keyword |
+| google_secops.alert_v2.event.security_result.attack_details.techniques.id | The technique ID. | keyword |
+| google_secops.alert_v2.event.security_result.attack_details.techniques.name | The technique name. | keyword |
 | google_secops.alert_v2.event.security_result.category | The security category. | keyword |
 | google_secops.alert_v2.event.security_result.category_details | For vendor-specific categories. For web categorization, put type in here such as "gambling" or "porn". | keyword |
 | google_secops.alert_v2.event.security_result.description | A human readable description (e.g. "user password was wrong").' | keyword |
