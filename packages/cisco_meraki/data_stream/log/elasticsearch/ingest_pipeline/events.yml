@@ -119,6 +119,8 @@ processors:
 # Handle Blocked ARP
 ####################################################
 - grok:
+    description: Parse Blocked ARP, RA and DHCP packet events
+    tag: grok_blocked_packet_events
     field: event.original
     patterns:
       - '^%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}(?<message>%{BLOCKEDARP:_temp.blocked_arp} from %{MAC:source.mac} with IP %{IP:source.ip} on %{NOTSPACE} %{GREEDYDATA:observer.ingress.vlan.id})$'
