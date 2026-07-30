@@ -508,13 +508,29 @@ func RenderBackportChecklist(artifactPath string) error {
 
 	checked := bpchecklist.ParseCheckedBranches(string(existingBody))
 
-	branchesByPkg, err := backports.ListAllActiveBackportBranches(".backports.yml", artifact.Packages, time.Now().UTC())
+	skipPkgs, err := backports.ListSkipChecklistPackages(".backports.yml")
+	if err != nil {
+		return fmt.Errorf("loading skip checklist packages: %w", err)
+	}
+	skipSet := make(map[string]struct{}, len(skipPkgs))
+	for _, p := range skipPkgs {
+		skipSet[p] = struct{}{}
+	}
+
+	checklistPkgs := make([]string, 0, len(artifact.Packages))
+	for _, pkg := range artifact.Packages {
+		if _, skip := skipSet[pkg]; !skip {
+			checklistPkgs = append(checklistPkgs, pkg)
+		}
+	}
+
+	branchesByPkg, err := backports.ListAllActiveBackportBranches(".backports.yml", checklistPkgs, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("listing active backport branches: %w", err)
 	}
 
-	pkgs := make([]bpchecklist.PackageBranches, 0, len(artifact.Packages))
-	for _, pkg := range artifact.Packages {
+	pkgs := make([]bpchecklist.PackageBranches, 0, len(checklistPkgs))
+	for _, pkg := range checklistPkgs {
 		pkgs = append(pkgs, bpchecklist.PackageBranches{
 			Package:  pkg,
 			Branches: branchesByPkg[pkg],
