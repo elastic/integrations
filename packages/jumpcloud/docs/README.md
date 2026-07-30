@@ -191,6 +191,7 @@ All JumpCloud Directory Insights events are available in the `jumpcloud.events` 
 | jumpcloud.event.operation_type |  | keyword |
 | jumpcloud.event.organization |  | keyword |
 | jumpcloud.event.os_meta_family |  | keyword |
+| jumpcloud.event.payload_version |  | keyword |
 | jumpcloud.event.previous_state |  | keyword |
 | jumpcloud.event.process_name |  | keyword |
 | jumpcloud.event.profile_list.has_removal_passcode |  | boolean |
@@ -287,9 +288,9 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2023-01-14T08:16:06.495Z",
     "agent": {
-        "ephemeral_id": "4a631372-9507-42d9-be2e-1dc197eeb8a7",
-        "id": "833a0af2-bbc5-41a9-94b9-a6cf27b7e90b",
-        "name": "elastic-agent-38876",
+        "ephemeral_id": "998cb5b9-d3b3-40d3-b0ca-e50dbe12b16e",
+        "id": "9245d47e-88bb-440c-b3b2-487e9f78fd43",
+        "name": "elastic-agent-36319",
         "type": "filebeat",
         "version": "8.19.2"
     },
@@ -310,14 +311,14 @@ An example event for `events` looks as following:
     },
     "data_stream": {
         "dataset": "jumpcloud.events",
-        "namespace": "11482",
+        "namespace": "48811",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "833a0af2-bbc5-41a9-94b9-a6cf27b7e90b",
+        "id": "9245d47e-88bb-440c-b3b2-487e9f78fd43",
         "snapshot": false,
         "version": "8.19.2"
     },
@@ -327,10 +328,10 @@ An example event for `events` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2026-07-27T10:11:48.345Z",
+        "created": "2026-07-30T12:43:37.636Z",
         "dataset": "jumpcloud.events",
         "id": "63c264c6c1bd55c1b7e901a4",
-        "ingested": "2026-07-27T10:11:51Z",
+        "ingested": "2026-07-30T12:43:40Z",
         "module": "directory",
         "original": "{\"@version\":\"1\",\"changes\":[{\"field\":\"active\",\"to\":true},{\"field\":\"displayName\",\"to\":\"Willy Wonka\"},{\"field\":\"emails\",\"to\":[{\"primary\":true,\"type\":\"work\",\"value\":\"w.wonka@chocolate.biz\"}]},{\"field\":\"externalId\",\"to\":\"63ec9bba89a64e507ce0a4c2\"},{\"field\":\"schemas\",\"to\":[\"urn:ietf:params:scim:schemas:core:2.0:User\",\"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\"]}],\"client_ip\":\"81.2.69.144\",\"event_type\":\"admin_login_attempt\",\"geoip\":{\"continent_code\":\"OC\",\"country_code\":\"AU\",\"latitude\":-27.658,\"longitude\":152.8915,\"region_code\":\"QLD\",\"region_name\":\"Queensland\",\"timezone\":\"Australia/Brisbane\"},\"id\":\"63c264c6c1bd55c1b7e901a4\",\"initiated_by\":{\"email\":\"user.name@sub.domain.tld\",\"id\":\"123456789abcdef123456789\",\"type\":\"admin\"},\"mfa\":true,\"organization\":\"1234abcdef123456789abcde\",\"provider\":null,\"service\":\"directory\",\"success\":true,\"timestamp\":\"2023-01-14T08:16:06.495Z\",\"useragent\":{\"device\":\"Mac\",\"major\":\"109\",\"minor\":\"0\",\"name\":\"Chrome\",\"os\":\"Mac OS X\",\"os_full\":\"Mac OS X 10.15.7\",\"os_major\":\"10\",\"os_minor\":\"15\",\"os_name\":\"Mac OS X\",\"os_patch\":\"7\",\"os_version\":\"10.15.7\",\"patch\":\"0\",\"version\":\"109.0.0.0\"}}",
         "outcome": "success",
