@@ -100,29 +100,25 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 The `http_access` data stream provides HTTP access logs from PingDirectory.
 
+#### Example event
+
+{{event "http_access"}}
+
 #### HTTP Access fields
 
 {{fields "http_access"}}
-
-### Example event
-
-#### HTTP Access
-
-{{event "http_access"}}
 
 ### Audit
 
 The `audit` data stream provides audit logs from PingDirectory.
 
+#### Example event
+
+{{event "audit"}}
+
 #### Audit fields
 
 {{fields "audit"}}
-
-### Example event
-
-#### Audit
-
-{{event "audit"}}
 
 ### Inputs used
 

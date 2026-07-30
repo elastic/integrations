@@ -116,6 +116,22 @@ processors:
         if (uuidMatch.find()) {
           ctx.ping_directory.audit.entry_uuid = uuidMatch.group(1);
         }
+
+        // newrdn: new relative DN for rename (modrdn/moddn) operations
+        def newRdnMatch = /newrdn:\s*(.*?)(?=\s+[A-Za-z][A-Za-z0-9-]*:\s|$)/.matcher(body);
+        if (newRdnMatch.find()) {
+          String value = newRdnMatch.group(1).trim();
+          if (value.endsWith(' -')) {
+            value = value.substring(0, value.length() - 2).trim();
+          }
+          ctx.ping_directory.audit.new_rdn_raw = value;
+        }
+
+        // deleteoldrdn: single token
+        def delOldRdnMatch = /deleteoldrdn:\s*(\S+)/.matcher(body);
+        if (delOldRdnMatch.find()) {
+          ctx.ping_directory.audit.delete_old_rdn = delOldRdnMatch.group(1);
+        }
   - script:
       tag: parse_dn_objects
       lang: painless
@@ -164,6 +180,11 @@ processors:
         if (ctx.ping_directory.audit.creators_name_raw != null) {
           ctx.ping_directory.audit.creators_name = parseDN(ctx.ping_directory.audit.creators_name_raw);
           ctx.ping_directory.audit.remove('creators_name_raw');
+        }
+
+        if (ctx.ping_directory.audit.new_rdn_raw != null) {
+          ctx.ping_directory.audit.new_rdn = parseDN(ctx.ping_directory.audit.new_rdn_raw);
+          ctx.ping_directory.audit.remove('new_rdn_raw');
         }
   - script:
       tag: parse_operation_purpose
@@ -534,7 +555,7 @@ processors:
   - remove:
       field:
         - _tmp
-        - _conf.tz_offset
+        - _conf
         - ping_directory.audit.client_ip
         - ping_directory.audit.instance_name
         - ping_directory.audit.operation_purpose.application_version
@@ -574,4 +595,3 @@ on_failure:
       tag: append_preserve_original_event_tag
       value: preserve_original_event
       allow_duplicates: false
-      if: ctx.error?.message != null
