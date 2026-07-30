@@ -16,7 +16,7 @@ See [Akamai API get started](https://techdocs.akamai.com/siem-integration/refere
 
 ### To collect data via API, follow the steps below:
 - Enable the "Collect Akamai SIEM logs via API" toggle; it is disabled by default.
-- Configure the API Host, Security Configuration IDs and the EdgeGrid credentials (Client Token, Client Secret, Access Token) under the "Collect Akamai SIEM logs via API" section.
+- Configure the API Host, Zone IDs and the EdgeGrid credentials (Client Token, Client Secret, Access Token) under the "Collect Akamai SIEM logs via API" section.
 - If the integration policy uses a namespace other than `default`, set the "Data Stream Namespace" option to the same value.
 
 API collection uses the native OpenTelemetry `akamai_siem` receiver behind the scenes. This is an internal backend detail and does not change the data you collect.
