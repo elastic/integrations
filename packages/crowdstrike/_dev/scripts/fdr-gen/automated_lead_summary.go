@@ -1,3 +1,7 @@
+// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+// or more contributor license agreements. Licensed under the Elastic License;
+// you may not use this file except in compliance with the Elastic License.
+
 package main
 
 import (
@@ -112,8 +116,7 @@ func scoreFields() {
 			REMOVE("crowdstrike.Score").
 				TAG("remove_score").
 				IGNORE_MISSING(true),
-			APPEND("error.message", errorMessageQuoted).
-				TAG("append_error_message_63de0bbb"),
+			APPEND("error.message", errorMessageQuoted),
 		)
 	SCRIPT().
 		LANG("painless").
@@ -147,7 +150,7 @@ func threatgraphIndicatorConversions() {
 		{field: "PatternDisposition", typ: "long", tag: "pattern_disposition"},
 	} {
 		conv := CONVERT("", "_ingest._value."+c.field, c.typ).
-			TAG("convert_threatgraph_indicators_"+c.tag+"_to_"+c.typ).
+			TAG("convert_threatgraph_indicators_" + c.tag + "_to_" + c.typ).
 			IGNORE_MISSING(true)
 		if c.typ != "string" {
 			conv.ON_FAILURE(
@@ -158,7 +161,7 @@ func threatgraphIndicatorConversions() {
 			)
 		}
 		FOREACH("crowdstrike.ThreatgraphIndicators", conv).
-			TAG("convert_threatgraph_indicators_"+c.tag+"_to_"+c.typ+"_array").
+			TAG("convert_threatgraph_indicators_" + c.tag + "_to_" + c.typ + "_array").
 			IF(`ctx.crowdstrike?.ThreatgraphIndicators instanceof List`)
 	}
 }
@@ -185,7 +188,7 @@ func ecsMappings() {
 				TAG("append_threat_"+a.tag).
 				ALLOW_DUPLICATES(false),
 		).
-			TAG("foreach_threatgraph_indicators_"+a.tag).
+			TAG("foreach_threatgraph_indicators_" + a.tag).
 			IF(`ctx.crowdstrike?.ThreatgraphIndicators instanceof List`)
 	}
 

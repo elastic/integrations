@@ -1,3 +1,7 @@
+// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+// or more contributor license agreements. Licensed under the Elastic License;
+// you may not use this file except in compliance with the Elastic License.
+
 package main
 
 import (
@@ -295,7 +299,6 @@ func renameEventHandling() {
 
 	BLANK().COMMENT("file.path parsing and file.Ext.original.path parsing are handled by default.yml pipeline")
 	BLANK()
-
 
 	SCRIPT().
 		TAG("parse registry path to extract registry key and value").
