@@ -1,0 +1,179 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the SolarWinds Web Help Desk Java process loading an untrusted or remote native module (DLL) or spawning a suspicious child process such as cmd, PowerShell, or rundll32. This behavior is uncommon for the Web Help Desk server and may indicate successful exploitation of deserialization vulnerabilities (CVE-2025-40536, CVE-2025-40551), which allow attackers to load malicious SQLite extensions and achieve remote code execution.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.library-*",
+            "logs-endpoint.events.process-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.category",
+                "host.id",
+                "process.entity_id",
+                "process.executable",
+                "process.command_line",
+                "process.parent.entity_id",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "dll.path",
+                "dll.hash.sha256",
+                "dll.code_signature.exists",
+                "dll.code_signature.trusted",
+                "dll.code_signature.subject_name"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious SolarWinds Web Help Desk Java Module Load or Child Process",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious SolarWinds Web Help Desk Java Module Load or Child Process\n\n#### Possible investigation steps\n\n- Which path fired, and what alert-local evidence defines it?\n  - Why: The single-event branch decides whether DLL fields or child-process fields carry the decisive evidence.\n  - Focus: `event.category`, Java path in `process.executable` or `process.parent.executable`, `dll.path`, and child `process.command_line`.\n  - Hint: record `process.entity_id` for library alerts and `process.parent.entity_id` for child-process alerts before later pivots.\n  - Implication: Escalate quickly for Web Help Desk Java loading remote or untrusted native code, or spawning \"cmd.exe\", \"powershell.exe\", or \"rundll32.exe\" with payload behavior. Lower concern only when the exact branch maps to a recognized local extension, authorized validation, or vendor support action and process or DLL evidence stays consistent.\n\n- Does the Java-side identity match the expected Web Help Desk service instance?\n  - Focus: Java path from step 1 and Java command line: `process.command_line` for library alerts or `process.parent.command_line` for child-process alerts.\n  - Implication: Escalate when the Java path falls outside the WebHelpDesk install tree or the service command line is abnormal for the deployed server. Identity lowers suspicion only when exact Java path and service context match the installed server; it does not clear a remote DLL load or shell child.\n\n- For the DLL-load path, does the module look like a remote SQLite-extension payload or unsupported native component?\n  - Why: Malicious SQLite-extension style native loading makes DLL path and trust state the strongest branch evidence.\n  - Focus: `dll.path`, `dll.hash.sha256`, `dll.code_signature.exists`, `dll.code_signature.trusted`, and `dll.code_signature.subject_name`.\n  - Implication: Escalate when `dll.path` shows \"\\Device\\Mup\\\", a UNC-style share, temp or unrelated writable path, unsigned or untrusted module, or signer unrelated to Web Help Desk or its controlled extension set. Lower concern only when the module is local to the Web Help Desk or JDBC layout and has a recognized hash or signer.\n\n- For the child-process path, does the Java-spawned child show post-exploitation intent?\n  - Focus: `process.name`, `process.command_line`, and `process.parent.command_line`.\n  - Implication: Escalate when the command line decodes or stages payloads, loads DLLs, launches scripts, performs discovery, or changes persistence. Lower concern only for exact recognized validation or vendor-support command on this server with no contradictory DLL evidence.\n\n- Did the same Web Help Desk Java instance produce more DLL loads or suspicious children around the alert?\n  - Focus: process and library events scoped by `host.id` plus Java-side `process.entity_id` or `process.parent.entity_id`; review `process.command_line`, `dll.path`, and `dll.hash.sha256`. !{investigate{\"description\":\"\",\"label\":\"Process and DLL activity tied to the Web Help Desk Java instance\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"library\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"library\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: Escalate when the same Java instance loads multiple remote or untrusted DLLs, starts multiple shell or loader children, or shows child execution after a suspicious DLL load. No surrounding process or library events narrows scope, but does not clear the original alert.\n\n- If local evidence remains suspicious or unresolved, are there related exploit or post-exploitation alerts on this server?\n  - Focus: related alerts on `host.id`, especially Web Help Desk exploitation, suspicious Java children, DLL loads, persistence, or credential access. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: Expand scope when related alerts align with the same Java process, DLL hash, or child command pattern. Keep the case local when related-alert review is clean, but do not use alert isolation alone to close.\n\n- Escalate on remote or untrusted DLL loading, malicious child execution, or same-Java corroboration; close only when branch evidence tightly matches a recognized local extension, authorized validation, or vendor support action on this host with no contradictory process or DLL evidence; if visibility or authorization is incomplete, preserve evidence and escalate.\n\n### False positive analysis\n\n- Local native extension, JDBC, or vendor-support testing can explain the DLL path only when the module stays local to the Web Help Desk or controlled plugin layout; `dll.hash.sha256`, `dll.code_signature.subject_name`, and `dll.code_signature.trusted` match the expected component; Java identity matches the installed server; and no Java-spawned shell or loader appears. Without support or change records, require telemetry-only alignment across `host.id`, Java `process.executable` or `process.parent.executable`, `dll.path`, and `dll.hash.sha256`; otherwise treat as unresolved.\n- Java-spawned \"cmd.exe\", \"powershell.exe\", or \"rundll32.exe\" is a Web Help Desk operational anti-pattern. Close only for authorized validation or vendor support where `process.name`, `process.command_line`, `process.parent.executable`, and `host.id` match that exact activity and no remote or untrusted DLL evidence appears. Without exact support or validation context, treat the branch as suspicious.\n- Before creating an exception, validate stable benign behavior for the exact workflow and host. For DLL loads, anchor on Java identity, `dll.path`, `dll.hash.sha256`, `dll.code_signature.subject_name`, and `host.id`; for child processes, anchor on Java parent identity, exact `process.command_line`, and `host.id`. Avoid exceptions on \"java.exe\", the WebHelpDesk path prefix, a DLL directory prefix, or the server alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document the Java identity, DLL hash/path or child command line, `host.id`, and support, validation, or extension evidence that proved the workflow. Create an exception only from the narrow branch-specific anchors that proved that workflow.\n- If suspicious but unconfirmed, preserve the alert export, process tree, Java and child command lines, loaded DLL file, DLL hash/signature, and any \"\\Device\\Mup\\\" share path before containment. Apply reversible containment first, such as restricting Web Help Desk exposure or blocking the observed remote share path, and escalate to endpoint isolation only when DLL or child-process evidence suggests active payload execution.\n- If confirmed malicious, preserve process, DLL, and case artifacts before destructive action. Isolate the endpoint when the Java process is executing payloads or reaching remote native-code staging, block the malicious share path or DLL hash, collect the loaded DLL and relevant process evidence before termination, then remove only the payloads, persistence items, and service changes identified during the investigation.\n- Remediate the entry vector by upgrading or patching Web Help Desk to the vendor-fixed release, confirming the exposed service is no longer vulnerable, and reviewing whether public access, outbound SMB from the server, or native-extension/plugin controls need tighter restrictions.\n- Post-incident hardening: retain the process and library telemetry that proved the case, document remote SQLite-extension loading or Java-spawned shell activity for future triage, and record any authorized validation or support exception with its exact branch-specific anchors.\n",
+        "query": "any where host.os.type == \"windows\" and\n(\n (event.category == \"library\" and\n  process.executable : (\"C:\\\\Program Files\\\\WebHelpDesk\\\\*\\\\java*.exe\", \"C:\\\\Program Files (x86)\\\\WebHelpDesk\\\\*\\\\java*.exe\") and\n  (dll.path : \"\\\\Device\\\\Mup\\\\*\" or dll.code_signature.trusted == false or ?dll.code_signature.exists == false)) or\n\n (event.category == \"process\" and process.name : (\"cmd.exe\", \"powershell.exe\", \"rundll32.exe\") and\n  process.parent.executable : (\"C:\\\\Program Files\\\\WebHelpDesk\\\\*\\\\java*.exe\", \"C:\\\\Program Files (x86)\\\\WebHelpDesk\\\\*\\\\java*.exe\"))\n)\n",
+        "references": [
+            "https://horizon3.ai/attack-research/cve-2025-40551-another-solarwinds-web-help-desk-deserialization-issue/",
+            "https://github.com/rapid7/metasploit-framework/pull/20917"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "dll.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "dll.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "dll.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "a4f7a295-aba1-4382-9c00-f7b02097acbc",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Use Case: Vulnerability",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Tactic: Execution",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.011",
+                                "name": "Rundll32",
+                                "reference": "https://attack.mitre.org/techniques/T1218/011/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            },
+                            {
+                                "id": "T1059.003",
+                                "name": "Windows Command Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1129",
+                        "name": "Shared Modules",
+                        "reference": "https://attack.mitre.org/techniques/T1129/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 4
+    },
+    "id": "a4f7a295-aba1-4382-9c00-f7b02097acbc_4",
+    "type": "security-rule"
+}
