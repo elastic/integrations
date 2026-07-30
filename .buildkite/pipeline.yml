@@ -3,8 +3,8 @@ env:
   SETUP_GVM_VERSION: "v0.6.0"
   DOCKER_COMPOSE_VERSION: "v2.24.1"
   DOCKER_VERSION: "26.1.2"
-  KIND_VERSION: 'v0.27.0'
-  K8S_VERSION: 'v1.33.0'
+  KIND_VERSION: 'v0.32.0'
+  K8S_VERSION: 'v1.36.1'
   YQ_VERSION: 'v4.35.2'
   JQ_VERSION: '1.7'
   GH_CLI_VERSION: "2.29.0"
@@ -84,8 +84,8 @@ steps:
       - "dev/scripts/**.sh"
       - "dev/backports/**"
     if: |
-      (build.env('BUILDKITE_PULL_REQUEST') != "false" && build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main") ||
-      (build.env('BUILDKITE_PULL_REQUEST') == "false" && build.branch == "main")
+      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
+      build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main"
 
   - label: ":git: Trigger backport dry-runs"
     key: "trigger-backport-dryrun"
@@ -101,23 +101,6 @@ steps:
       build.env('BUILDKITE_PULL_REQUEST') != "false" &&
       build.env('BUILDKITE_PIPELINE_SLUG') == "integrations" &&
       build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main"
-
-  - label: ":git: Create backport branches for new entries"
-    key: "trigger-backport-create"
-    command: ".buildkite/scripts/trigger_backport.sh"
-    agents:
-      image: "${LINUX_AGENT_IMAGE}"
-    plugins:
-      - elastic/vault-github-token#v0.1.0:
-    depends_on:
-      - step: "check-backports-inventory"
-        allow_failure: false
-    if_changed:
-      - ".backports.yml"
-    if: |
-      build.env('BUILDKITE_PULL_REQUEST') == "false" &&
-      build.branch == "main" &&
-      build.env('BUILDKITE_PIPELINE_SLUG') == "integrations"
 
   - label: ":junit: Sources Junit annotate"
     agents:
