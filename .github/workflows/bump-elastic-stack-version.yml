@@ -22,10 +22,18 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: .go-version
+
+      - name: Install mage
+        run: go install github.com/magefile/mage
 
       - name: Install Updatecli in the runner
-        uses: updatecli/updatecli-action@d2e5d2667ba67a8599e636531baef731f54858bc #v2.78.1
+        uses: updatecli/updatecli-action@5dfc616e57b07d2302c3f37e5b72a4ead82dbbf8 #v3.4.0
 
       - name: Select diff action
         if: ${{ github.event_name == 'pull_request' }}
