@@ -160,7 +160,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Data Retention and ILM Configuration
 
-A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we have set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
+The Vulnerabilities data stream performs a full sync that pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, it ships an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days, keeping storage usage under control. The other data streams do not define a custom ILM policy and follow the default index lifecycle for their destination indices.
 
 > **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`.
 
