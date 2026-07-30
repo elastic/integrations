@@ -22,10 +22,10 @@ program: |
           (
             int(resp.Header["X-Pagination-Current-Page"][0]) <
             int(resp.Header["X-Pagination-Page-Count"][0])
-          ).as(has_more, {
+          ).as(has_more && page < int(state.max_pages)).as(want_more, {
             "events": body.map(item, item),
-            "page": has_more ? page + 1 : 1,
-            "want_more": has_more && page < int(state.max_pages),
+            "page": want_more ? page + 1 : 1,
+            "want_more": want_more,
             "api_key": state.api_key,
             "query": state.query,
             "max_pages": state.max_pages
