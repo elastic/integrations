@@ -118,10 +118,24 @@ steps:
           run-in-docker: false
           context: junit-sources
 
+  - label: ":scroll: Check changelog versions not in main"
+    key: "check-changelog-versions-in-main"
+    command: ".buildkite/scripts/check_changelog_versions_in_main.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "2"
+      memory: "1G"
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
+      build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') =~ /^backport-/
+    if_changed:
+      - "**/changelog.yml"
+
   - label: ":scroll: Check changelog PR links"
     key: "check-changelog-pr-links"
     command: ".buildkite/scripts/check_changelog_entries.sh"
-    soft_fail: true
+    soft_fail:
+      - exit_status: 2
     agents:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "2"

@@ -137,8 +137,8 @@ func Apply(opts Options) (*Result, error) {
 	success := false
 	defer func() {
 		if !success {
-			_ = a.git.Run("checkout", "-")
-			_ = a.git.Run("branch", "-D", workingBranch)
+			_ = a.git.RunToStderr("checkout", "-")
+			_ = a.git.RunToStderr("branch", "-D", workingBranch)
 		}
 	}()
 
@@ -156,6 +156,14 @@ func Apply(opts Options) (*Result, error) {
 	changes, err := a.extractChangelogFields(opts.SHA, changelogPath)
 	if err != nil {
 		return nil, err
+	}
+
+	// Replace every source-commit link with a sentinel: the actual backport PR
+	// URL is not known until after the PR is opened. The post-PR step calls
+	// changelog.UpdateEntryLinks to fix the sentinel once the URL is available.
+	sentinel := sentinelURL(repository)
+	for i := range changes {
+		changes[i].Link = sentinel
 	}
 
 	newVersion, err := a.resetAndWriteChanges(manifestPath, changelogPath, changes)
@@ -181,13 +189,28 @@ func Apply(opts Options) (*Result, error) {
 		}, nil
 	}
 
-	if err := a.git.Run("push", remote, "HEAD"); err != nil {
+	if err := a.git.RunToStderr("push", remote, "HEAD"); err != nil {
 		return nil, fmt.Errorf("pushing: %w", err)
 	}
 
 	prURL, err := maybeOpenPR(opts.OpenPR, workingBranch, branchName, opts.Package, changes[0].Description, newVersion, opts.SHA, repository)
 	if err != nil {
 		return nil, err
+	}
+
+	if prURL != "" {
+		if err := a.fixChangelogLink(changelogPath, newVersion, prURL, remote); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not update changelog link in backport PR: %v\n", err)
+		}
+	}
+
+	// Restore the branch that was active before Apply() started. The working
+	// branch has been pushed (and the PR opened if --open-pr was set), so local
+	// presence is no longer needed. Callers running mage targets after this
+	// function returns rely on the working tree still holding the tooling code
+	// from the calling branch, not the backport branch content.
+	if err := a.git.RunToStderr("checkout", "-"); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: could not restore original branch: %v\n", err)
 	}
 
 	success = true
@@ -199,6 +222,30 @@ func Apply(opts Options) (*Result, error) {
 		PRURL:            prURL,
 		OwnerSyncWarning: ownerSyncWarning,
 	}, nil
+}
+
+// fixChangelogLink replaces the sentinel link in changelog.yml with the real
+// backport PR URL, commits the change, and pushes it as a second commit on the
+// working branch. Failures are non-fatal: the caller logs a warning and returns
+// success since the PR already exists.
+func (a applier) fixChangelogLink(changelogPath, version, prURL, remote string) error {
+	if err := changelog.UpdateEntryLinks(changelogPath, version, prURL); err != nil {
+		return fmt.Errorf("updating changelog link failed: %w", err)
+	}
+	relPath, err := filepath.Rel(a.workDir, changelogPath)
+	if err != nil {
+		return fmt.Errorf("computing relative path for %s failed: %w", changelogPath, err)
+	}
+	if err := a.git.RunToStderr("add", relPath); err != nil {
+		return fmt.Errorf("staging changelog failed: %w", err)
+	}
+	if err := a.git.RunToStderr("commit", "-m", "Fix changelog link to backport PR"); err != nil {
+		return fmt.Errorf("committing changelog link fix failed: %w", err)
+	}
+	if err := a.git.RunToStderr("push", remote, "HEAD"); err != nil {
+		return fmt.Errorf("pushing changelog link fix failed: %w", err)
+	}
+	return nil
 }
 
 // resolvePackage looks up the package directory for the given package name.
@@ -243,13 +290,13 @@ func workingBranchName(pkg, branchName, sha8 string) string {
 // prepareWorkingBranch fetches the backport branch from remote and creates a
 // local working branch off it.
 func (a applier) prepareWorkingBranch(remote, branchName, workingBranch string) error {
-	if err := a.git.Run("fetch", remote, branchName); err != nil {
+	if err := a.git.RunToStderr("fetch", remote, branchName); err != nil {
 		return fmt.Errorf(
 			"fetching %q from remote %q failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w",
 			branchName, remote, err,
 		)
 	}
-	if err := a.git.Run("checkout", "-b", workingBranch, remote+"/"+branchName); err != nil {
+	if err := a.git.RunToStderr("checkout", "-b", workingBranch, remote+"/"+branchName); err != nil {
 		return fmt.Errorf("creating working branch %s: %w", workingBranch, err)
 	}
 	return nil
@@ -286,9 +333,9 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 	// git config: resolveManifestVersionConflict below parses "<<<<<<<"/"======="/
 	// ">>>>>>>" text directly, and a diff3/zdiff3 style would make every block
 	// look unresolvable.
-	cherryErr := a.git.Run("-c", "merge.conflictStyle=merge", "cherry-pick", "-n", sha)
+	cherryErr := a.git.RunToStderr("-c", "merge.conflictStyle=merge", "cherry-pick", "-n", sha)
 
-	if err := a.git.Run("checkout", "HEAD", "--", changelogPath); err != nil {
+	if err := a.git.RunToStderr("checkout", "HEAD", "--", changelogPath); err != nil {
 		a.abortCherryPick()
 		return nil, fmt.Errorf("restoring changelog after cherry-pick: %w", err)
 	}
@@ -304,7 +351,7 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 			return nil, fmt.Errorf("resolving manifest.yml conflict: %w", err)
 		}
 		if manifestResolved {
-			if err := a.git.Run("add", manifestPath); err != nil {
+			if err := a.git.RunToStderr("add", manifestPath); err != nil {
 				a.abortCherryPick()
 				return nil, fmt.Errorf("staging resolved manifest.yml: %w", err)
 			}
@@ -344,7 +391,7 @@ func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manif
 // with -n, git does not always write CHERRY_PICK_HEAD, so --abort may fail
 // and leave the index dirty.
 func (a applier) abortCherryPick() {
-	_ = a.git.Run("reset", "--hard", "HEAD")
+	_ = a.git.RunToStderr("reset", "--hard", "HEAD")
 }
 
 // manifestMissingConflict reports a conflict Result if manifestPath does not
@@ -530,7 +577,7 @@ func (a applier) resetAndWriteChanges(manifestPath, changelogPath string, change
 	// cherryPickOrConflict already restores changelog.yml on the success path, so
 	// this checkout is redundant in normal flow. It is kept here so this function
 	// remains self-contained and correct if ever called from a different context.
-	if err := a.git.Run("checkout", "HEAD", "--", changelogPath); err != nil {
+	if err := a.git.RunToStderr("checkout", "HEAD", "--", changelogPath); err != nil {
 		return "", fmt.Errorf("resetting changelog: %w", err)
 	}
 	newVersion, err := bumpPatchVersion(manifestPath)
@@ -556,10 +603,10 @@ func (a applier) commitChanges(pkgDir, sha, newVersion string) error {
 	}
 	commitMsg := strings.TrimRight(originalMsg, "\n") +
 		fmt.Sprintf("\n\n(cherry picked from commit %s)\n\nBackport version: %s", sha, newVersion)
-	if err := a.git.Run("add", pkgDir); err != nil {
+	if err := a.git.RunToStderr("add", pkgDir); err != nil {
 		return fmt.Errorf("staging changes: %w", err)
 	}
-	if err := a.git.Run("commit", "-m", commitMsg); err != nil {
+	if err := a.git.RunToStderr("commit", "-m", commitMsg); err != nil {
 		return fmt.Errorf("committing: %w", err)
 	}
 	return nil
@@ -753,6 +800,15 @@ func (a applier) conflictingFiles() ([]string, error) {
 		}
 	}
 	return files, nil
+}
+
+// sentinelURL returns the placeholder link written into changelog.yml before
+// the backport PR URL is known. UpdateEntryLinks replaces it once the PR exists.
+func sentinelURL(repository string) string {
+	if repository == "" {
+		repository = "elastic/integrations"
+	}
+	return "https://github.com/" + repository + "/pull/REPLACE_ME"
 }
 
 // maybeOpenPR creates a GitHub PR if openPR is true, returning the PR URL.
