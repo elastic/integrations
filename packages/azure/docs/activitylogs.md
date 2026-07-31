@@ -164,6 +164,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.activitylogs.category | Category | keyword |
+| azure.activitylogs.durationMs | Duration of the operation in milliseconds, as reported by the source event. Kept in its original vendor representation (string or number); use `event.duration` for the normalized value. | keyword |
 | azure.activitylogs.event_category | Event Category | keyword |
 | azure.activitylogs.identity.authorization.action | Action | keyword |
 | azure.activitylogs.identity.authorization.evidence.principal_id | Principal ID | keyword |

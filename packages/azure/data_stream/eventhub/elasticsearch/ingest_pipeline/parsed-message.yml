@@ -43,10 +43,13 @@ processors:
       field: azure.eventhub.resourceId
       target_field: azure.resource_id
       ignore_missing: true
-  - rename:
+  - convert:
       field: azure.eventhub.durationMs
+      tag: convert_eventhub_durationms_to_event_duration
       target_field: event.duration
-      ignore_missing: true
+      type: long
+      ignore_failure: true
+      if: ctx.azure?.eventhub?.durationMs != null
   - script:
       lang: painless
       source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration

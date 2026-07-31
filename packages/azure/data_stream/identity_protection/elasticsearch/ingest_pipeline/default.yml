@@ -95,10 +95,13 @@ processors:
       target_field: source.as.organization.name
       ignore_missing: true
 
-  - rename:
+  - convert:
       field: azure.identityprotection.durationMs
+      tag: convert_identityprotection_durationms_to_event_duration
       target_field: event.duration
-      ignore_missing: true
+      type: long
+      ignore_failure: true
+      if: ctx.azure?.identityprotection?.durationMs != null
   - script:
       lang: painless
       source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration
