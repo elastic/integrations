@@ -40,9 +40,9 @@ Assign the pack matching each agent's OS to your Osquery Manager policy in Fleet
 
 ### Interpreting results
 
-Inventory queries run in snapshot mode: every scheduled run emits a full, current-state set of rows. Expect the same asset to reappear on each interval, and use latest-per-host aggregation or time-range filters when building dashboards and hunts.
+Asset queries run in snapshot mode: every scheduled run emits a full, current-state set of rows. This covers packages, extensions, applications, services, scheduled tasks, and the `ai_config_files_*` inventory. Expect the same asset to reappear on each interval, and use latest-per-host aggregation or time-range filters when building dashboards and hunts.
 
-`ai_config_file_changes_*` is the exception. It runs in differential mode, so each run reports only the config files that appeared or disappeared since the previous run rather than the whole set. A host with no config activity produces no rows, and clearing an agent's data directory re-reports the current files once.
+Queries that observe live state run in differential mode instead: `ai_processes_*`, `ai_listening_ports_*`, `ai_process_network_summary_*`, `ai_docker_containers_*`, `ai_process_envs_*`, `ai_config_file_changes_*`, and `ai_dns_cache_windows`. Each run reports only what appeared or disappeared since the previous run, so a process that keeps running is reported once when it starts rather than on every interval, and a host with no activity produces no rows. This has two consequences for analysis: panels and rules over these datasets see transitions rather than current state, so widen the time range or aggregate on last-seen; and clearing an agent's data directory re-reports everything once as new.
 
 `ai_sensitive_file_proximity_*` needs one extra caveat. On macOS and Linux it reports credential paths that an AI process actually holds open. On Windows that evidence is not available, so it pairs AI processes with credential paths belonging to the same user: a row means both exist for that user, **not** that the process read the file.
 

@@ -135,7 +135,7 @@ listed above.
 
 ## Shadow AI Discovery Packs
 
-Unlike the forensic artifacts above (which are individual `kibana/osquery_saved_query/*.json` saved objects), Shadow AI discovery ships as three canonical **osquery packs** in `kibana/osquery_pack_asset/`. Assign the pack matching each agent's OS to the Osquery Manager policy in Fleet. See [`docs/README.md`](docs/README.md) for snapshot semantics and the metadata-only privacy boundary.
+Unlike the forensic artifacts above (which are individual `kibana/osquery_saved_query/*.json` saved objects), Shadow AI discovery ships as three canonical **osquery packs** in `kibana/osquery_pack_asset/`. Assign the pack matching each agent's OS to the Osquery Manager policy in Fleet. See [`docs/README.md`](docs/README.md) for which queries run in snapshot versus differential mode, and for the metadata-only privacy boundary.
 
 | Pack | OS | Queries | File |
 |------|:--:|:-------:|:----:|
