@@ -315,6 +315,8 @@ To resolve this, adjust the `Batch Size` setting in the integration to reduce th
 
 The option `Enable Data Deduplication` allows you to avoid consuming duplicate events. By default, this option is set to `false`, and so duplicate events can be ingested. When this option is enabled, a [fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) is used to calculate a hash from a set of CrowdStrike fields that uniquely identify the event. The hash is assigned to the Elasticsearch [`_id`](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-id-field.html) field that makes the document unique and prevent duplicates.
 
+The fingerprint includes `@timestamp`, CrowdStrike `id`/`aid`/`cid`, and the FDR object type (`aidmaster`, `userinfo`, or `data`), derived from `log.file.path` or `aws.s3.object.key`. When present, `rule.id` is also included — for Cloud Security (CSPM) findings and for other event types that map a rule id (for example EPP detection summary, FIM rule matched, and Data Protection detection summary). For Cloud Security findings, a resource identifier is included as well so distinct findings that share a timestamp and customer id stay unique.
+
 If duplicate events are ingested, to help find them, the integration's `event.id` field is populated by concatenating a few CrowdStrike fields that uniquely identify the event. These fields are `id`, `aid`, and `cid` from the CrowdStrike event. The fields are separated with pipe `|`.
 For example, if your CrowdStrike event contains `id: 123`, `aid: 456`, and `cid: 789` then the `event.id` would be `123|456|789`.
 
@@ -823,6 +825,9 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.aggregate_id |  | keyword |
 | crowdstrike.alert.alert_attributes |  | long |
 | crowdstrike.alert.alleged_filetype |  | keyword |
+| crowdstrike.alert.anode_indicators.explanation_metrics_v2.category_distribution_difference_values | Difference between expected and current ANODE category distribution values (polymorphic float/integer array). | float |
+| crowdstrike.alert.anode_indicators.explanation_metrics_v2.current_category_distribution_values | Observed ANODE category distribution values (polymorphic float/integer array). | float |
+| crowdstrike.alert.anode_indicators.explanation_metrics_v2.expected_category_distribution_values | Expected ANODE category distribution values (polymorphic float/integer array). | float |
 | crowdstrike.alert.assigned_to.name |  | keyword |
 | crowdstrike.alert.assigned_to.uid |  | keyword |
 | crowdstrike.alert.assigned_to.uuid |  | keyword |
@@ -1172,11 +1177,11 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2023-11-02T13:41:34.000Z",
     "agent": {
-        "ephemeral_id": "8f4a039c-66d4-439c-a43f-c5a95f653dd4",
-        "id": "67072e92-576d-47d8-8a43-ebb347b4250b",
-        "name": "elastic-agent-93422",
+        "ephemeral_id": "63cd5df9-a92f-4bdb-942b-300a4d8a2c93",
+        "id": "4eba9263-4610-49a5-8214-b55876ba9a56",
+        "name": "elastic-agent-11626",
         "type": "filebeat",
-        "version": "8.18.1"
+        "version": "8.19.8"
     },
     "crowdstrike": {
         "event": {
@@ -1192,16 +1197,16 @@ An example event for `falcon` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.falcon",
-        "namespace": "99576",
+        "namespace": "28440",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "67072e92-576d-47d8-8a43-ebb347b4250b",
+        "id": "4eba9263-4610-49a5-8214-b55876ba9a56",
         "snapshot": false,
-        "version": "8.18.1"
+        "version": "8.19.8"
     },
     "event": {
         "action": [
@@ -1214,7 +1219,7 @@ An example event for `falcon` looks as following:
         ],
         "created": "2023-11-02T13:41:34.000Z",
         "dataset": "crowdstrike.falcon",
-        "ingested": "2025-05-30T08:29:21Z",
+        "ingested": "2026-07-24T07:50:37Z",
         "kind": "event",
         "original": "{\"event\":{\"AgentIdString\":\"fffffffff33333\",\"HostnameField\":\"UKCHUDL00206\",\"SessionId\":\"1111-fffff-4bb4-99c1-74c13cfc3e5a\",\"StartTimestamp\":1698932494,\"UserName\":\"admin.rose@example.com\"},\"metadata\":{\"customerIDString\":\"abcabcabc22221\",\"eventCreationTime\":1698932494000,\"eventType\":\"RemoteResponseSessionStartEvent\",\"offset\":1,\"version\":\"1.0\"}}",
         "start": "2023-11-02T13:41:34.000Z",
@@ -1281,7 +1286,20 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.AgentId |  | keyword |
 | crowdstrike.event.AgentIdString |  | keyword |
 | crowdstrike.event.AggregateId |  | keyword |
-| crowdstrike.event.AnodeIndicators |  | nested |
+| crowdstrike.event.AnodeIndicators.DataVolumeIncreasePercentage | Observed data volume as a multiple of the entity's baseline. | float |
+| crowdstrike.event.AnodeIndicators.Destination |  | keyword |
+| crowdstrike.event.AnodeIndicators.Detected |  | boolean |
+| crowdstrike.event.AnodeIndicators.Entity |  | keyword |
+| crowdstrike.event.AnodeIndicators.Explanation |  | keyword |
+| crowdstrike.event.AnodeIndicators.FileCategoryDistributions.CurrentPercentage |  | float |
+| crowdstrike.event.AnodeIndicators.FileCategoryDistributions.ExpectedPercentage |  | float |
+| crowdstrike.event.AnodeIndicators.FileCategoryDistributions.ID |  | keyword |
+| crowdstrike.event.AnodeIndicators.FileCategoryDistributions.IncreasePercentage |  | float |
+| crowdstrike.event.AnodeIndicators.FileCategoryDistributions.Name |  | keyword |
+| crowdstrike.event.AnodeIndicators.FileCountIncreasePercentage | Observed file count as a multiple of the entity's baseline. | float |
+| crowdstrike.event.AnodeIndicators.Name |  | keyword |
+| crowdstrike.event.AnodeIndicators.Score | Anomaly score for the indicator. | float |
+| crowdstrike.event.AnodeIndicators.Type |  | keyword |
 | crowdstrike.event.AnomalousTicketContentClassification | Ticket signature analysis. | keyword |
 | crowdstrike.event.AssociatedFile | The file associated with the triggering indicator. | keyword |
 | crowdstrike.event.Attributes | JSON objects containing additional information about the event. | flattened |
@@ -1834,7 +1852,20 @@ An example event for `fdr` looks as following:
 | crowdstrike.AggregateId |  | keyword |
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
 | crowdstrike.AllowlistingFilterId |  | keyword |
-| crowdstrike.AnodeIndicators |  | nested |
+| crowdstrike.AnodeIndicators.DataVolumeIncreasePercentage | Observed data volume as a multiple of the entity's baseline. | float |
+| crowdstrike.AnodeIndicators.Destination |  | keyword |
+| crowdstrike.AnodeIndicators.Detected |  | boolean |
+| crowdstrike.AnodeIndicators.Entity |  | keyword |
+| crowdstrike.AnodeIndicators.Explanation |  | keyword |
+| crowdstrike.AnodeIndicators.FileCategoryDistributions.CurrentPercentage |  | float |
+| crowdstrike.AnodeIndicators.FileCategoryDistributions.ExpectedPercentage |  | float |
+| crowdstrike.AnodeIndicators.FileCategoryDistributions.ID |  | keyword |
+| crowdstrike.AnodeIndicators.FileCategoryDistributions.IncreasePercentage |  | float |
+| crowdstrike.AnodeIndicators.FileCategoryDistributions.Name |  | keyword |
+| crowdstrike.AnodeIndicators.FileCountIncreasePercentage | Observed file count as a multiple of the entity's baseline. | float |
+| crowdstrike.AnodeIndicators.Name |  | keyword |
+| crowdstrike.AnodeIndicators.Score | Anomaly score for the indicator. | float |
+| crowdstrike.AnodeIndicators.Type |  | keyword |
 | crowdstrike.AntiTamperStateFlag |  | keyword |
 | crowdstrike.ApiReturnValue |  | keyword |
 | crowdstrike.ApplicationName |  | match_only_text |
