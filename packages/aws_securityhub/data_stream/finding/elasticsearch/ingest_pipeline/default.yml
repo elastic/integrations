@@ -81,9 +81,10 @@ processors:
         processFields(ctx.aws_securityhub.finding);
       on_failure:
         - append:
+            tag: append_error_message_d83dd772
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  
+
   - convert:
       field: aws_securityhub.finding.action_id
       tag: convert_action_id_to_string
@@ -95,6 +96,7 @@ processors:
       type: string
       ignore_missing: true
   - foreach:
+      tag: foreach_aws_securityhub_finding_anomaly_analyses_42094361
       field: aws_securityhub.finding.anomaly_analyses
       if: ctx.aws_securityhub?.finding?.anomaly_analyses instanceof List
       processor:
@@ -119,6 +121,7 @@ processors:
                         field: error.message
                         value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_anomaly_analyses_25e26cf9
       field: aws_securityhub.finding.anomaly_analyses
       if: ctx.aws_securityhub?.finding?.anomaly_analyses instanceof List
       processor:
@@ -149,30 +152,38 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_api_response_code_020d20a8
             field: aws_securityhub.finding.api.response.code
             ignore_missing: true
         - append:
+            tag: append_error_message_243ed815
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - json:
+      tag: json_aws_securityhub_finding_api_request_data_c0e0d4ab
       field: aws_securityhub.finding.api.request.data
       if: ctx.aws_securityhub?.finding?.api?.request?.data instanceof String
       on_failure:
         - rename:
+            tag: rename_aws_securityhub_finding_api_request_data_to_aws_securityhub_finding_api_request_data_value_7c035954
             field: aws_securityhub.finding.api.request.data
             target_field: aws_securityhub.finding.api.request.data.value
   - rename:
+      tag: rename_aws_securityhub_finding_api_request_data_to_aws_securityhub_finding_api_request_data_value_b4081a90
       field: aws_securityhub.finding.api.request.data
       target_field: aws_securityhub.finding.api.request.data.value
       if: ctx.aws_securityhub?.finding?.api?.request?.data != null && !(ctx.aws_securityhub.finding.api.request.data instanceof Map)
   - json:
+      tag: json_aws_securityhub_finding_api_response_data_90139c39
       field: aws_securityhub.finding.api.response.data
       if: ctx.aws_securityhub?.finding?.api?.response?.data instanceof String
       on_failure:
         - rename:
+            tag: rename_aws_securityhub_finding_api_response_data_to_aws_securityhub_finding_api_response_data_value_35c267c4
             field: aws_securityhub.finding.api.response.data
             target_field: aws_securityhub.finding.api.response.data.value
   - rename:
+      tag: rename_aws_securityhub_finding_api_response_data_to_aws_securityhub_finding_api_response_data_value_c616b66c
       field: aws_securityhub.finding.api.response.data
       target_field: aws_securityhub.finding.api.response.data.value
       if: ctx.aws_securityhub?.finding?.api?.response?.data != null && !(ctx.aws_securityhub.finding.api.response.data instanceof Map)
@@ -188,8 +199,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_has_mfa_e1f4e780
             field: aws_securityhub.finding.assignee.has_mfa
         - append:
+            tag: append_error_message_140e48e9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -203,9 +216,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.created_time_dt != null && ctx.aws_securityhub.finding.assignee.ldap_person.created_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_ldap_person_created_time_dt_1f1e56b9
             field: aws_securityhub.finding.assignee.ldap_person.created_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_053809e9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -217,9 +232,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.created_time != null && ctx.aws_securityhub.finding.assignee.ldap_person.created_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_ldap_person_created_time_33e9fa51
             field: aws_securityhub.finding.assignee.ldap_person.created_time
             ignore_missing: true
         - append:
+            tag: append_error_message_7791e972
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -233,9 +250,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.deleted_time_dt != null && ctx.aws_securityhub.finding.assignee.ldap_person.deleted_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_ldap_person_deleted_time_dt_f18a8f84
             field: aws_securityhub.finding.assignee.ldap_person.deleted_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_bd84f2ff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -247,9 +266,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.deleted_time != null && ctx.aws_securityhub.finding.assignee.ldap_person.deleted_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_ldap_person_deleted_time_606221d8
             field: aws_securityhub.finding.assignee.ldap_person.deleted_time
             ignore_missing: true
         - append:
+            tag: append_error_message_a1b2f988
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -263,9 +284,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.hire_time_dt != null && ctx.aws_securityhub.finding.assignee.ldap_person.hire_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_ldap_person_hire_time_dt_189efd89
             field: aws_securityhub.finding.assignee.ldap_person.hire_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_cc22b535
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -277,9 +300,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.hire_time != null && ctx.aws_securityhub.finding.assignee.ldap_person.hire_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_ldap_person_hire_time_ed1230ed
             field: aws_securityhub.finding.assignee.ldap_person.hire_time
             ignore_missing: true
         - append:
+            tag: append_error_message_b9a1728a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -293,9 +318,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.last_login_time_dt != null && ctx.aws_securityhub.finding.assignee.ldap_person.last_login_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_ldap_person_last_login_time_dt_2beab121
             field: aws_securityhub.finding.assignee.ldap_person.last_login_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_9add4915
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -307,9 +334,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.last_login_time != null && ctx.aws_securityhub.finding.assignee.ldap_person.last_login_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_ldap_person_last_login_time_dd31ba5d
             field: aws_securityhub.finding.assignee.ldap_person.last_login_time
             ignore_missing: true
         - append:
+            tag: append_error_message_31b0fdc2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -323,9 +352,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.leave_time_dt != null && ctx.aws_securityhub.finding.assignee.ldap_person.leave_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_ldap_person_leave_time_dt_d993737e
             field: aws_securityhub.finding.assignee.ldap_person.leave_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_b9840317
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -337,9 +368,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.leave_time != null && ctx.aws_securityhub.finding.assignee.ldap_person.leave_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_ldap_person_leave_time_0a178a52
             field: aws_securityhub.finding.assignee.ldap_person.leave_time
             ignore_missing: true
         - append:
+            tag: append_error_message_80990fa0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -353,9 +386,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.modified_time_dt != null && ctx.aws_securityhub.finding.assignee.ldap_person.modified_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_ldap_person_modified_time_dt_f569ddd6
             field: aws_securityhub.finding.assignee.ldap_person.modified_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_e070431d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -367,9 +402,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.assignee?.ldap_person?.modified_time != null && ctx.aws_securityhub.finding.assignee.ldap_person.modified_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_ldap_person_modified_time_12166af2
             field: aws_securityhub.finding.assignee.ldap_person.modified_time
             ignore_missing: true
         - append:
+            tag: append_error_message_2dfc1dae
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -384,8 +421,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_assignee_risk_score_b5346cb8
             field: aws_securityhub.finding.assignee.risk_score
         - append:
+            tag: append_error_message_403e03b0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -409,6 +448,7 @@ processors:
       type: string
       ignore_missing: true
   - foreach:
+      tag: foreach_aws_securityhub_finding_compliance_assessments_7c7d219c
       field: aws_securityhub.finding.compliance.assessments
       if: ctx.aws_securityhub?.finding?.compliance?.assessments instanceof List
       processor:
@@ -424,6 +464,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_compliance_assessments_21c12d7f
       field: aws_securityhub.finding.compliance.assessments
       if: ctx.aws_securityhub?.finding?.compliance?.assessments instanceof List
       processor:
@@ -439,6 +480,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_compliance_checks_72ea7a28
       field: aws_securityhub.finding.compliance.checks
       if: ctx.aws_securityhub?.finding?.compliance?.checks instanceof List
       processor:
@@ -448,6 +490,7 @@ processors:
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_aws_securityhub_finding_compliance_checks_7a4142dc
       field: aws_securityhub.finding.compliance.checks
       if: ctx.aws_securityhub?.finding?.compliance?.checks instanceof List
       processor:
@@ -473,8 +516,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_confidence_score_f998a04f
             field: aws_securityhub.finding.confidence_score
         - append:
+            tag: append_error_message_69881d49
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -484,8 +529,10 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_count_dd41dc5d
             field: aws_securityhub.finding.count
         - append:
+            tag: append_error_message_7f2218d7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -500,9 +547,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_duration_e54d7af2
             field: aws_securityhub.finding.duration
             ignore_missing: true
         - append:
+            tag: append_error_message_39b6d28f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -516,9 +565,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.end_time_dt != null && ctx.aws_securityhub.finding.end_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_end_time_dt_fe41467c
             field: aws_securityhub.finding.end_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_df5f1975
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -530,12 +581,15 @@ processors:
       if: ctx.aws_securityhub?.finding?.end_time != null && ctx.aws_securityhub.finding.end_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_end_time_b1998704
             field: aws_securityhub.finding.end_time
             ignore_missing: true
         - append:
+            tag: append_error_message_b4535bb2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_enrichments_0b1cfe1a
       field: aws_securityhub.finding.enrichments
       if: ctx.aws_securityhub?.finding?.enrichments instanceof List
       processor:
@@ -551,6 +605,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_enrichments_08d1628f
       field: aws_securityhub.finding.enrichments
       if: ctx.aws_securityhub?.finding?.enrichments instanceof List
       processor:
@@ -560,6 +615,7 @@ processors:
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_aws_securityhub_finding_enrichments_67a4ee09
       field: aws_securityhub.finding.enrichments
       if: ctx.aws_securityhub?.finding?.enrichments instanceof List
       processor:
@@ -576,6 +632,7 @@ processors:
                 field: _ingest._value.reputation.base_score
                 ignore_missing: true
   - foreach:
+      tag: foreach_aws_securityhub_finding_enrichments_82ca69c1
       field: aws_securityhub.finding.enrichments
       if: ctx.aws_securityhub?.finding?.enrichments instanceof List
       processor:
@@ -596,9 +653,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_firewall_rule_duration_33f45cb7
             field: aws_securityhub.finding.firewall_rule.duration
             ignore_missing: true
         - append:
+            tag: append_error_message_9e1142b5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -608,9 +667,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_firewall_rule_rate_limit_830541b3
             field: aws_securityhub.finding.firewall_rule.rate_limit
             ignore_missing: true
         - append:
+            tag: append_error_message_007cfe57
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -625,9 +686,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_impact_score_dfd13156
             field: aws_securityhub.finding.impact_score
             ignore_missing: true
         - append:
+            tag: append_error_message_32638be8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -637,9 +700,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_is_alert_171ad8ae
             field: aws_securityhub.finding.is_alert
             ignore_missing: true
         - append:
+            tag: append_error_message_22c881ae
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -649,9 +714,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_is_suspected_breach_7de8befe
             field: aws_securityhub.finding.is_suspected_breach
             ignore_missing: true
         - append:
+            tag: append_error_message_b9b04af0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -665,9 +732,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.malware_scan_info?.end_time_dt != null && ctx.aws_securityhub.finding.malware_scan_info.end_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_malware_scan_info_end_time_dt_1ad8d49a
             field: aws_securityhub.finding.malware_scan_info.end_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_a1b5e831
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -679,9 +748,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.malware_scan_info?.end_time != null && ctx.aws_securityhub.finding.malware_scan_info.end_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_malware_scan_info_end_time_e84dbc82
             field: aws_securityhub.finding.malware_scan_info.end_time
             ignore_missing: true
         - append:
+            tag: append_error_message_dd432fcc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -691,9 +762,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_malware_scan_info_num_files_408ae907
             field: aws_securityhub.finding.malware_scan_info.num_files
             ignore_missing: true
         - append:
+            tag: append_error_message_3a9b6b8e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -703,9 +776,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_malware_scan_info_num_infected_1fc57d6b
             field: aws_securityhub.finding.malware_scan_info.num_infected
             ignore_missing: true
         - append:
+            tag: append_error_message_91bcba63
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -715,9 +790,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_malware_scan_info_num_volumes_e88a67cf
             field: aws_securityhub.finding.malware_scan_info.num_volumes
             ignore_missing: true
         - append:
+            tag: append_error_message_3233d9f6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -727,9 +804,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_malware_scan_info_size_8c88c163
             field: aws_securityhub.finding.malware_scan_info.size
             ignore_missing: true
         - append:
+            tag: append_error_message_f784cb1f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -743,9 +822,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.malware_scan_info?.start_time_dt != null && ctx.aws_securityhub.finding.malware_scan_info.start_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_malware_scan_info_start_time_dt_89c3e79d
             field: aws_securityhub.finding.malware_scan_info.start_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_f25a570f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -757,9 +838,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.malware_scan_info?.start_time != null && ctx.aws_securityhub.finding.malware_scan_info.start_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_malware_scan_info_start_time_8f175c95
             field: aws_securityhub.finding.malware_scan_info.start_time
             ignore_missing: true
         - append:
+            tag: append_error_message_6441eae6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -774,12 +857,15 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_malware_scan_info_unique_malware_count_8254452b
             field: aws_securityhub.finding.malware_scan_info.unique_malware_count
             ignore_missing: true
         - append:
+            tag: append_error_message_74e86de9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_observables_d0e278ae
       field: aws_securityhub.finding.observables
       if: ctx.aws_securityhub?.finding?.observables instanceof List
       processor:
@@ -796,6 +882,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_observables_5c289cc1
       field: aws_securityhub.finding.observables
       if: ctx.aws_securityhub?.finding?.observables instanceof List
       processor:
@@ -805,6 +892,7 @@ processors:
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_aws_securityhub_finding_observables_21b47d00
       field: aws_securityhub.finding.observables
       if: ctx.aws_securityhub?.finding?.observables instanceof List
       processor:
@@ -820,9 +908,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_policy_is_applied_8b83eaa5
             field: aws_securityhub.finding.policy.is_applied
             ignore_missing: true
         - append:
+            tag: append_error_message_e33f98ca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -836,6 +926,7 @@ processors:
       tag: json_decoding_raw_data
       on_failure:
         - rename:
+            tag: rename_aws_securityhub_finding_raw_data_to_aws_securityhub_finding_raw_data_keyword_08557e5a
             field: aws_securityhub.finding.raw_data
             target_field: aws_securityhub.finding.raw_data_keyword
             ignore_missing: true
@@ -846,12 +937,15 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_raw_data_size_1610c25a
             field: aws_securityhub.finding.raw_data_size
             ignore_missing: true
         - append:
+            tag: append_error_message_d9fa892c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_remediation_kb_article_list_8e3cb575
       field: aws_securityhub.finding.remediation.kb_article_list
       if: ctx.aws_securityhub?.finding?.remediation?.kb_article_list instanceof List
       processor:
@@ -868,6 +962,7 @@ processors:
                 field: _ingest._value.created_time_dt
                 ignore_missing: true
   - foreach:
+      tag: foreach_aws_securityhub_finding_remediation_kb_article_list_491503fa
       field: aws_securityhub.finding.remediation.kb_article_list
       if: ctx.aws_securityhub?.finding?.remediation?.kb_article_list instanceof List
       processor:
@@ -882,6 +977,7 @@ processors:
                 field: _ingest._value.created_time
                 ignore_missing: true
   - foreach:
+      tag: foreach_aws_securityhub_finding_remediation_kb_article_list_5892a888
       field: aws_securityhub.finding.remediation.kb_article_list
       if: ctx.aws_securityhub?.finding?.remediation?.kb_article_list instanceof List
       processor:
@@ -891,6 +987,7 @@ processors:
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_aws_securityhub_finding_remediation_kb_article_list_a0a52ca5
       field: aws_securityhub.finding.remediation.kb_article_list
       if: ctx.aws_securityhub?.finding?.remediation?.kb_article_list instanceof List
       processor:
@@ -907,6 +1004,7 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_remediation_kb_article_list_c47b3677
       field: aws_securityhub.finding.remediation.kb_article_list
       if: ctx.aws_securityhub?.finding?.remediation?.kb_article_list instanceof List
       processor:
@@ -934,9 +1032,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_risk_score_aea1d60c
             field: aws_securityhub.finding.risk_score
             ignore_missing: true
         - append:
+            tag: append_error_message_ce4e04ab
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -955,9 +1055,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.start_time_dt != null && ctx.aws_securityhub.finding.start_time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_start_time_dt_366d8f45
             field: aws_securityhub.finding.start_time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_df8e9357
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -969,9 +1071,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.start_time != null && ctx.aws_securityhub.finding.start_time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_start_time_7a6260af
             field: aws_securityhub.finding.start_time
             ignore_missing: true
         - append:
+            tag: append_error_message_f333c436
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -980,6 +1084,7 @@ processors:
       type: string
       ignore_missing: true
   - foreach:
+      tag: foreach_aws_securityhub_finding_tickets_7b659475
       field: aws_securityhub.finding.tickets
       if: ctx.aws_securityhub?.finding?.tickets instanceof List
       processor:
@@ -989,6 +1094,7 @@ processors:
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_aws_securityhub_finding_tickets_a6ed2ef1
       field: aws_securityhub.finding.tickets
       if: ctx.aws_securityhub?.finding?.tickets instanceof List
       processor:
@@ -1008,9 +1114,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.time_dt != null && ctx.aws_securityhub.finding.time_dt != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_time_dt_b3644038
             field: aws_securityhub.finding.time_dt
             ignore_missing: true
         - append:
+            tag: append_error_message_8c6de387
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -1022,9 +1130,11 @@ processors:
       if: ctx.aws_securityhub?.finding?.time != null && ctx.aws_securityhub.finding.time != ''
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_time_abfb8498
             field: aws_securityhub.finding.time
             ignore_missing: true
         - append:
+            tag: append_error_message_efb42808
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1034,9 +1144,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_aws_securityhub_finding_timezone_offset_d634548e
             field: aws_securityhub.finding.timezone_offset
             ignore_missing: true
         - append:
+            tag: append_error_message_3dfafd56
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1045,13 +1157,16 @@ processors:
       type: string
       ignore_missing: true
   - json:
+      tag: json_aws_securityhub_finding_unmapped_cd7b265b
       field: aws_securityhub.finding.unmapped
       if: ctx.aws_securityhub?.finding?.unmapped instanceof String
       on_failure:
         - rename:
+            tag: rename_aws_securityhub_finding_unmapped_to_aws_securityhub_finding_unmapped_value_3041ebbc
             field: aws_securityhub.finding.unmapped
             target_field: aws_securityhub.finding.unmapped.value
   - rename:
+      tag: rename_aws_securityhub_finding_unmapped_to_aws_securityhub_finding_unmapped_value_968ed43c
       field: aws_securityhub.finding.unmapped
       target_field: aws_securityhub.finding.unmapped.value
       if: ctx.aws_securityhub?.finding?.unmapped != null && !(ctx.aws_securityhub.finding.unmapped instanceof Map)
@@ -1065,7 +1180,6 @@ processors:
       tag: convert_finding_verdict_id_to_string
       type: string
       ignore_missing: true
-
 
   # convert values
   - pipeline:
@@ -1086,7 +1200,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_evidence" }}'
       if: ctx.aws_securityhub?.finding?.class_uid != null && ['2003','2004'].contains(ctx.aws_securityhub.finding.class_uid) && ctx.aws_securityhub.finding.evidences instanceof List
-      tag: pipeline_object_device
+      tag: pipeline_object_evidence
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_finding" }}'
@@ -1114,8 +1228,8 @@ processors:
       tag: pipeline_object_vulnerabilities
       ignore_missing_pipeline: true
 
-# populate ECS fields
 
+  # populate ECS fields
   - set:
       field: '@timestamp'
       tag: set_@timestamp_from_finding_info_modified_time_dt
@@ -1243,7 +1357,8 @@ processors:
           ctx.aws_securityhub.finding.status_id.equals('3') ||
           ctx.aws_securityhub.finding.status_id.equals('4')
         )
-  
+
+
   - script:
       description: Extract ECS fields from aws.securityhub_findings.resources.
       tag: script_extract_fields_from_resource
@@ -1361,9 +1476,10 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_d0c2e3f7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  
+
   # cloud.*
   - set:
       field: cloud.account.id
@@ -1408,13 +1524,13 @@ processors:
       tag: set_organization_name_from_metadata_product_vendor_name
       copy_from: aws_securityhub.finding.metadata.product.vendor_name
       ignore_empty_value: true
-  
+
   # observer.*
   - set:
       field: observer.vendor
       tag: set_observer_vendor
       value: AWS Security Hub
-  
+
   # rule.*
   - set:
       field: rule.id
@@ -1466,9 +1582,10 @@ processors:
         ctx.rule.reference = remediation?.references;
       on_failure:
         - append:
+            tag: append_error_message_1dbb93e7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  
+
   # result.*
   - set:
       field: result.evaluation
@@ -1485,14 +1602,14 @@ processors:
       tag: set_result_evaluation_failed
       value: failed
       if: ctx.aws_securityhub?.finding?.compliance?.status_id == '3'
-    
+
   # url.*
   - set:
       field: url.full
       tag: set_url_full_from_finding_info_src_url
       copy_from: aws_securityhub.finding.finding_info.src_url
       ignore_empty_value: true
-  
+
   # vulnerability.*, package.*
   - script:
       description: Extract fields from aws.securityhub_findings.vulnerabilities with single vulnerability.
@@ -1556,6 +1673,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_63ad53c7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -1585,6 +1703,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_f8e813ce
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -1716,6 +1835,7 @@ processors:
       if: ctx.aws_securityhub?.finding?.device?.name != null
       allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_device_network_interfaces_13bc6c9f
       field: aws_securityhub.finding.device.network_interfaces
       if: ctx.aws_securityhub?.finding?.device?.network_interfaces instanceof List
       processor:
@@ -1725,6 +1845,7 @@ processors:
           value: '{{{_ingest._value.hostname}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_device_network_interfaces_9019326d
       field: aws_securityhub.finding.device.network_interfaces
       if: ctx.aws_securityhub?.finding?.device?.network_interfaces instanceof List
       processor:
@@ -1788,6 +1909,7 @@ processors:
       if: ctx.aws_securityhub?.finding?.device?.uid_alt != null
       allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_osint_2afadb26
       field: aws_securityhub.finding.osint
       if: ctx.aws_securityhub?.finding?.osint instanceof List
       processor:
@@ -1797,6 +1919,7 @@ processors:
           value: '{{{_ingest._value.creator.display_name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_osint_e322aa42
       field: aws_securityhub.finding.osint
       if: ctx.aws_securityhub?.finding?.osint instanceof List
       processor:
@@ -1806,6 +1929,7 @@ processors:
           value: '{{{_ingest._value.creator.email_addr}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_osint_445fad00
       field: aws_securityhub.finding.osint
       if: ctx.aws_securityhub?.finding?.osint instanceof List
       processor:
@@ -1815,6 +1939,7 @@ processors:
           value: '{{{_ingest._value.creator.forward_addr}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_osint_b6f95740
       field: aws_securityhub.finding.osint
       if: ctx.aws_securityhub?.finding?.osint instanceof List
       processor:
@@ -1824,6 +1949,7 @@ processors:
           value: '{{{_ingest._value.creator.full_name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_osint_05a93408
       field: aws_securityhub.finding.osint
       if: ctx.aws_securityhub?.finding?.osint instanceof List
       processor:
@@ -1833,6 +1959,7 @@ processors:
           value: '{{{_ingest._value.creator.name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_osint_d6b22d20
       field: aws_securityhub.finding.osint
       if: ctx.aws_securityhub?.finding?.osint instanceof List
       processor:
@@ -1842,6 +1969,7 @@ processors:
           value: '{{{_ingest._value.creator.uid}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_osint_d39a1d78
       field: aws_securityhub.finding.osint
       if: ctx.aws_securityhub?.finding?.osint instanceof List
       processor:
@@ -1851,6 +1979,7 @@ processors:
           value: '{{{_ingest._value.creator.uid_alt}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_osint_9bdaa95e
       field: aws_securityhub.finding.osint
       if: ctx.aws_securityhub?.finding?.osint instanceof List
       processor:
@@ -1860,6 +1989,7 @@ processors:
           value: '{{{_ingest._value.whois.email_addr}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_osint_0aefd522
       field: aws_securityhub.finding.osint
       if: ctx.aws_securityhub?.finding?.osint instanceof List
       processor:
@@ -1891,9 +2021,11 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_11999c97
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_aws_securityhub_finding_resources_c8d21433
       field: aws_securityhub.finding.resources
       if: ctx.aws_securityhub?.finding?.resources instanceof List
       processor:
@@ -1903,6 +2035,7 @@ processors:
           value: '{{{_ingest._value.hostname}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_resources_6465c54f
       field: aws_securityhub.finding.resources
       if: ctx.aws_securityhub?.finding?.resources instanceof List
       processor:
@@ -1912,6 +2045,7 @@ processors:
           value: '{{{_ingest._value.ip}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_resources_efa3712e
       field: aws_securityhub.finding.resources
       if: ctx.aws_securityhub?.finding?.resources instanceof List
       processor:
@@ -1921,6 +2055,7 @@ processors:
           value: '{{{_ingest._value.owner.display_name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_resources_9b498f3a
       field: aws_securityhub.finding.resources
       if: ctx.aws_securityhub?.finding?.resources instanceof List
       processor:
@@ -1930,6 +2065,7 @@ processors:
           value: '{{{_ingest._value.owner.email_addr}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_resources_5dca1ba0
       field: aws_securityhub.finding.resources
       if: ctx.aws_securityhub?.finding?.resources instanceof List
       processor:
@@ -1939,6 +2075,7 @@ processors:
           value: '{{{_ingest._value.owner.forward_addr}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_resources_7d6cd902
       field: aws_securityhub.finding.resources
       if: ctx.aws_securityhub?.finding?.resources instanceof List
       processor:
@@ -1948,6 +2085,7 @@ processors:
           value: '{{{_ingest._value.owner.full_name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_resources_b59f2170
       field: aws_securityhub.finding.resources
       if: ctx.aws_securityhub?.finding?.resources instanceof List
       processor:
@@ -1957,6 +2095,7 @@ processors:
           value: '{{{_ingest._value.owner.name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_resources_f0cad7ce
       field: aws_securityhub.finding.resources
       if: ctx.aws_securityhub?.finding?.resources instanceof List
       processor:
@@ -1966,6 +2105,7 @@ processors:
           value: '{{{_ingest._value.owner.uid}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_resources_95cc194e
       field: aws_securityhub.finding.resources
       if: ctx.aws_securityhub?.finding?.resources instanceof List
       processor:
@@ -1975,6 +2115,7 @@ processors:
           value: '{{{_ingest._value.owner.uid_alt}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_resources_fe7b3e2f
       field: aws_securityhub.finding.resources
       if: ctx.aws_securityhub?.finding?.resources instanceof List
       processor:
@@ -1988,6 +2129,7 @@ processors:
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
   - foreach:
+      tag: foreach_aws_securityhub_finding_resources_8b39cb43
       field: aws_securityhub.finding.resources
       if: ctx.aws_securityhub?.finding?.resources instanceof List
       processor:
@@ -2000,7 +2142,7 @@ processors:
               tag: append_resources_data_awsEc2InstanceDetails_ipV6Addresses_to_related_ip
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
-  
+
   - set:
       field: aws_securityhub.finding.transform_unique_id
       tag: set_transform_unique_id
@@ -2067,6 +2209,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
@@ -2077,7 +2220,7 @@ on_failure:
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
