@@ -147,26 +147,29 @@ updateBackportBranchContents() {
 
   # Preserve version pins that are specific to the backport branch (e.g. kubernetes
   # packages pin K8S_VERSION/KIND_VERSION to whatever was compatible at release time).
+  # We capture the full line (including whitespace and quote style) so we can restore
+  # it with sed, which rewrites only that line and leaves blank lines intact — yq -i
+  # rewrites the whole file and strips empty lines as a side effect.
   local pipeline_yml="${BUILDKITE_FOLDER_PATH}/pipeline.yml"
-  local k8s_version=""
-  local kind_version=""
+  local k8s_version_line=""
+  local kind_version_line=""
   if [ -f "${pipeline_yml}" ]; then
-    k8s_version=$(yq -r '.env.K8S_VERSION // ""' "${pipeline_yml}")
-    kind_version=$(yq -r '.env.KIND_VERSION // ""' "${pipeline_yml}")
-    echo "Preserving from backport branch: K8S_VERSION=${k8s_version}, KIND_VERSION=${kind_version}"
+    k8s_version_line=$(grep -E '^\s*K8S_VERSION:' "${pipeline_yml}" || true)
+    kind_version_line=$(grep -E '^\s*KIND_VERSION:' "${pipeline_yml}" || true)
+    echo "Preserving from backport branch: ${k8s_version_line}, ${kind_version_line}"
   fi
 
   echo "--- Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
   git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
 
   # Restore the version pins overwritten by the checkout above.
-  if [ -n "${k8s_version}" ]; then
-    echo "--- Restoring K8S_VERSION=${k8s_version} in ${pipeline_yml}..."
-    yq -i ".env.K8S_VERSION = \"${k8s_version}\"" "${pipeline_yml}"
+  if [ -n "${k8s_version_line}" ]; then
+    echo "--- Restoring K8S_VERSION in ${pipeline_yml}..."
+    sed -i "s|^\s*K8S_VERSION:.*|${k8s_version_line}|" "${pipeline_yml}"
   fi
-  if [ -n "${kind_version}" ]; then
-    echo "--- Restoring KIND_VERSION=${kind_version} in ${pipeline_yml}..."
-    yq -i ".env.KIND_VERSION = \"${kind_version}\"" "${pipeline_yml}"
+  if [ -n "${kind_version_line}" ]; then
+    echo "--- Restoring KIND_VERSION in ${pipeline_yml}..."
+    sed -i "s|^\s*KIND_VERSION:.*|${kind_version_line}|" "${pipeline_yml}"
   fi
 
   git add $BUILDKITE_FOLDER_PATH
