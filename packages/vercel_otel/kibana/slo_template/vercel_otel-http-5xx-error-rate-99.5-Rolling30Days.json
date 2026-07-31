@@ -1,0 +1,58 @@
+{
+  "attributes": {
+    "name": "[Vercel OTel] HTTP 5xx error rate 99.5% rolling 30 days",
+    "description": "This SLO tracks the proportion of lambda and edge function requests that are served without a server-side (5xx) error for production deployments. It ensures that 99.5% of all application-layer requests receive a non-5xx response over a rolling 30-day period. A breach indicates a runtime defect or unhandled exception in serverless functions or edge middleware that is actively degrading the user experience. The SLO is grouped by project so that each Vercel project maintains an independent error budget.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "logs-*",
+        "filter": "data_stream.dataset: \"vercel.logs.otel\" AND vercel.log.source: (\"lambda\" OR \"edge\") AND deployment.environment.name: \"production\"",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": "http.response.status_code >= 100 AND http.response.status_code < 500"
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "B",
+              "aggregation": "doc_count",
+              "filter": "http.response.status_code >= 100 OR http.response.status_code: -1"
+            }
+          ],
+          "equation": "B"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "vercel",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.vercel.project.id"
+    ]
+  },
+  "id": "vercel_otel-http-5xx-error-rate-99.5-Rolling30Days",
+  "type": "slo_template",
+  "artifacts": {
+    "dashboards": [
+      {
+        "id": "vercel_otel-logs"
+      }
+    ]
+  }
+}
