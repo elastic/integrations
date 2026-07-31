@@ -42,6 +42,8 @@ Assign the pack matching each agent's OS to your Osquery Manager policy in Fleet
 
 Inventory queries run in snapshot mode: every scheduled run emits a full, current-state set of rows. Expect the same asset to reappear on each interval, and use latest-per-host aggregation or time-range filters when building dashboards and hunts.
 
+`ai_config_file_changes_*` is the exception. It runs in differential mode, so each run reports only the config files that appeared or disappeared since the previous run rather than the whole set. A host with no config activity produces no rows, and clearing an agent's data directory re-reports the current files once.
+
 `ai_sensitive_file_proximity_*` needs one extra caveat. On macOS and Linux it reports credential paths that an AI process actually holds open. On Windows that evidence is not available, so it pairs AI processes with credential paths belonging to the same user: a row means both exist for that user, **not** that the process read the file.
 
 ### Privacy
