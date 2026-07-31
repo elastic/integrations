@@ -15,10 +15,18 @@ resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
 state:
+{{#if api_key}}
   api_key: {{api_key}}
+{{/if}}
+{{#if username}}
   user: {{username}}
+{{/if}}
+{{#if password}}
   password: {{password}}
+{{/if}}
+{{#if bearer_token}}
   bearer_token: {{bearer_token}}
+{{/if}}
   index: .alerts-security.alerts-{{space_id}}
   batch_size: {{batch_size}}
   initial_interval: {{initial_interval}}
@@ -52,10 +60,10 @@ program: |
         "Header":{
           "Content-Type": ["application/json"],
           "Authorization": [
-            has(state.api_key) && state.api_key != "" ?
+            has(state.api_key) ?
               "Apikey " + state.api_key
             :
-              has(state.user) && has(state.password) && state.user != "" && state.password != "" ?
+              has(state.user) && has(state.password) ?
                 "Basic " + base64(state.user+":"+state.password)
               :
                 "Bearer " + state.bearer_token
