@@ -3,45 +3,47 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
-    "kind": "alert",
-    "metadata": {
-      "name": "[Kubernetes OTel] Container CPU throttling",
-      "description": "Alerts when containers are using more than 90% of their CPU limit. Throttled containers experience increased latency without triggering crashes or OOMKills, making them hard to detect without explicit monitoring.",
-      "tags": [
-        "Kubernetes"
-      ]
-    },
-    "schedule": {
-      "every": "5m",
-      "lookback": "15m"
-    },
-    "state_transition": {
-      "pending_count": 3
-    },
-    "recovery_strategy": "no_breach",
-    "artifacts": [
-      {
-        "id": "kubernetes_otel-container-cpu-throttling-v2-runbook",
-        "type": "runbook",
-        "value": "## Container CPU Throttling\n\n### Triage Steps\n1. Identify the affected container(s) from the alert results.\n2. Open the Pod & Container Detail dashboard to see CPU usage vs limits over time.\n3. Determine if CPU usage is sustained (undersized limit) or spiking (bursty workload).\n4. Check current CPU usage: `kubectl top pods -n <namespace> --containers`.\n5. Review the container's CPU limit — is it set appropriately for the workload?\n\n### Common Causes\n- CPU limit too low for actual workload requirements\n- Bursty workloads that periodically exceed their limit\n- Increased traffic or processing load\n- Inefficient code or unoptimised queries\n\n### Tuning\n- The default threshold is 90% of the CPU limit.\n- Lower to 80% for early warning; raise to 95% to reduce noise.\n- Exclude known CPU-intensive containers that run close to their limits by design.\n\n### Escalation\nThrottled containers cause latency degradation without visible errors. Increase CPU limits or optimise the workload."
-      }
-    ],
     "engine": "v2",
-    "query": {
-      "format": "composed",
-      "base": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.container.cpu_limit_utilization IS NOT NULL\n| STATS\n    avg_util = AVG(k8s.container.cpu_limit_utilization)\n    BY k8s.pod.name, k8s.container.name, k8s.namespace.name, k8s.node.name",
-      "breach": {
-        "segment": "WHERE avg_util > 0.9\n| EVAL util_pct = ROUND(avg_util * 100, 1)\n| SORT util_pct DESC\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.container.name, k8s.node.name, util_pct\n| LIMIT 50"
-      }
-    },
-    "grouping": {
-      "fields": [
-        "k8s.pod.name",
-        "k8s.container.name",
-        "k8s.namespace.name",
-        "k8s.node.name"
-      ]
-    },
-    "time_field": "@timestamp"
+    "rule": {
+      "kind": "alert",
+      "metadata": {
+        "name": "[Kubernetes OTel] Container CPU throttling",
+        "description": "Alerts when containers are using more than 90% of their CPU limit. Throttled containers experience increased latency without triggering crashes or OOMKills, making them hard to detect without explicit monitoring.",
+        "tags": [
+          "Kubernetes"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "15m"
+      },
+      "state_transition": {
+        "pending_count": 3
+      },
+      "recovery_strategy": "no_breach",
+      "artifacts": [
+        {
+          "id": "kubernetes_otel-container-cpu-throttling-v2-runbook",
+          "type": "runbook",
+          "value": "## Container CPU Throttling\n\n### Triage Steps\n1. Identify the affected container(s) from the alert results.\n2. Open the Pod & Container Detail dashboard to see CPU usage vs limits over time.\n3. Determine if CPU usage is sustained (undersized limit) or spiking (bursty workload).\n4. Check current CPU usage: `kubectl top pods -n <namespace> --containers`.\n5. Review the container's CPU limit \u2014 is it set appropriately for the workload?\n\n### Common Causes\n- CPU limit too low for actual workload requirements\n- Bursty workloads that periodically exceed their limit\n- Increased traffic or processing load\n- Inefficient code or unoptimised queries\n\n### Tuning\n- The default threshold is 90% of the CPU limit.\n- Lower to 80% for early warning; raise to 95% to reduce noise.\n- Exclude known CPU-intensive containers that run close to their limits by design.\n\n### Escalation\nThrottled containers cause latency degradation without visible errors. Increase CPU limits or optimise the workload."
+        }
+      ],
+      "query": {
+        "format": "composed",
+        "base": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.container.cpu_limit_utilization IS NOT NULL\n| STATS\n    avg_util = AVG(k8s.container.cpu_limit_utilization)\n    BY k8s.pod.name, k8s.container.name, k8s.namespace.name, k8s.node.name",
+        "breach": {
+          "segment": "WHERE avg_util > 0.9\n| EVAL util_pct = ROUND(avg_util * 100, 1)\n| SORT util_pct DESC\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.container.name, k8s.node.name, util_pct\n| LIMIT 50"
+        }
+      },
+      "grouping": {
+        "fields": [
+          "k8s.pod.name",
+          "k8s.container.name",
+          "k8s.namespace.name",
+          "k8s.node.name"
+        ]
+      },
+      "time_field": "@timestamp"
+    }
   }
 }

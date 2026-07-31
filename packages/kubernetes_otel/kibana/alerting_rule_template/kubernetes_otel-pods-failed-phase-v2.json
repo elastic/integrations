@@ -3,44 +3,46 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
-    "kind": "alert",
-    "metadata": {
-      "name": "[Kubernetes OTel] Pods in Failed phase",
-      "description": "Alerts when pods are in Failed phase (phase == 4). Failed pods have terminated with an error and will not be restarted. May indicate persistent issues requiring operator intervention.",
-      "tags": [
-        "Kubernetes"
-      ]
-    },
-    "schedule": {
-      "every": "1m",
-      "lookback": "5m"
-    },
-    "state_transition": {
-      "pending_count": 2
-    },
-    "recovery_strategy": "no_breach",
-    "artifacts": [
-      {
-        "id": "kubernetes_otel-pods-failed-phase-v2-runbook",
-        "type": "runbook",
-        "value": "## Pods in Failed Phase\n\n### Triage Steps\n1. Identify the affected pod(s) from the alert results.\n2. Check the Cluster Overview dashboard for an increase in Failed phase pods.\n3. Get pod details: `kubectl describe pod <pod_name> -n <namespace>`.\n4. Check container logs: `kubectl logs <pod_name> -n <namespace> --all-containers --previous`.\n5. Review pod events for scheduling failures, image pull errors, or resource issues.\n\n### Common Causes\n- All containers in the pod exited with non-zero exit codes\n- Eviction due to node resource pressure\n- Preemption by higher-priority pods\n- Job pods that failed their task\n\n### Tuning\n- Pods in Failed phase from completed Jobs are expected; exclude Job namespaces if they cause noise.\n- Add namespace filters to focus on production workloads.\n\n### Escalation\nFailed pods that belong to Deployments or StatefulSets should trigger replica replacement. If they don't, the controller may be stuck — investigate the controller logs."
-      }
-    ],
     "engine": "v2",
-    "query": {
-      "format": "composed",
-      "base": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.phase IS NOT NULL\n| STATS observed_phases = VALUES(k8s.pod.phase)\n    BY k8s.pod.name, k8s.namespace.name, k8s.node.name",
-      "breach": {
-        "segment": "WHERE MV_CONTAINS(observed_phases, TO_LONG(4))\n| EVAL status = \"Failed\"\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.node.name, status, observed_phases\n| SORT k8s.namespace.name ASC, k8s.pod.name ASC\n| LIMIT 100"
-      }
-    },
-    "grouping": {
-      "fields": [
-        "k8s.pod.name",
-        "k8s.namespace.name",
-        "k8s.node.name"
-      ]
-    },
-    "time_field": "@timestamp"
+    "rule": {
+      "kind": "alert",
+      "metadata": {
+        "name": "[Kubernetes OTel] Pods in Failed phase",
+        "description": "Alerts when pods are in Failed phase (phase == 4). Failed pods have terminated with an error and will not be restarted. May indicate persistent issues requiring operator intervention.",
+        "tags": [
+          "Kubernetes"
+        ]
+      },
+      "schedule": {
+        "every": "1m",
+        "lookback": "5m"
+      },
+      "state_transition": {
+        "pending_count": 2
+      },
+      "recovery_strategy": "no_breach",
+      "artifacts": [
+        {
+          "id": "kubernetes_otel-pods-failed-phase-v2-runbook",
+          "type": "runbook",
+          "value": "## Pods in Failed Phase\n\n### Triage Steps\n1. Identify the affected pod(s) from the alert results.\n2. Check the Cluster Overview dashboard for an increase in Failed phase pods.\n3. Get pod details: `kubectl describe pod <pod_name> -n <namespace>`.\n4. Check container logs: `kubectl logs <pod_name> -n <namespace> --all-containers --previous`.\n5. Review pod events for scheduling failures, image pull errors, or resource issues.\n\n### Common Causes\n- All containers in the pod exited with non-zero exit codes\n- Eviction due to node resource pressure\n- Preemption by higher-priority pods\n- Job pods that failed their task\n\n### Tuning\n- Pods in Failed phase from completed Jobs are expected; exclude Job namespaces if they cause noise.\n- Add namespace filters to focus on production workloads.\n\n### Escalation\nFailed pods that belong to Deployments or StatefulSets should trigger replica replacement. If they don't, the controller may be stuck \u2014 investigate the controller logs."
+        }
+      ],
+      "query": {
+        "format": "composed",
+        "base": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.phase IS NOT NULL\n| STATS observed_phases = VALUES(k8s.pod.phase)\n    BY k8s.pod.name, k8s.namespace.name, k8s.node.name",
+        "breach": {
+          "segment": "WHERE MV_CONTAINS(observed_phases, TO_LONG(4))\n| EVAL status = \"Failed\"\n| KEEP k8s.namespace.name, k8s.pod.name, k8s.node.name, status, observed_phases\n| SORT k8s.namespace.name ASC, k8s.pod.name ASC\n| LIMIT 100"
+        }
+      },
+      "grouping": {
+        "fields": [
+          "k8s.pod.name",
+          "k8s.namespace.name",
+          "k8s.node.name"
+        ]
+      },
+      "time_field": "@timestamp"
+    }
   }
 }

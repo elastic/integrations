@@ -3,42 +3,44 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
-    "kind": "alert",
-    "metadata": {
-      "name": "[Kubernetes OTel] Node memory pressure",
-      "description": "Alerts when any Kubernetes node reports the MemoryPressure condition. This is a warning signal that the node is running low on memory and may begin evicting pods.",
-      "tags": [
-        "Kubernetes"
-      ]
-    },
-    "schedule": {
-      "every": "1m",
-      "lookback": "1m"
-    },
-    "state_transition": {
-      "pending_count": 3
-    },
-    "recovery_strategy": "no_breach",
-    "artifacts": [
-      {
-        "id": "kubernetes_otel-node-memory-pressure-v2-runbook",
-        "type": "runbook",
-        "value": "## Node Memory Pressure\n\n### Triage Steps\n1. Identify the affected node(s) from the alert results.\n2. Open the Node Performance dashboard filtered to the affected node to see memory usage trends.\n3. Navigate to Pod & Container Detail filtered by node name to find the top memory consumers.\n4. Check for pods without memory limits or with very high limits.\n5. Run `kubectl top pods --sort-by=memory -A` to see current memory consumption.\n\n### Common Causes\n- Memory-intensive workloads without proper limits\n- Memory leaks in application containers\n- Too many pods scheduled on the node\n- Insufficient node memory capacity for the workload mix\n\n### Escalation\nIf memory pressure persists, the node will begin evicting pods. Consider cordoning the node and migrating workloads."
-      }
-    ],
     "engine": "v2",
-    "query": {
-      "format": "composed",
-      "base": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_memory_pressure IS NOT NULL\n| STATS any_pressure = MAX(k8s.node.condition_memory_pressure)\n    BY k8s.node.name",
-      "breach": {
-        "segment": "WHERE any_pressure == 1\n| EVAL status = \"MemoryPressure\""
-      }
-    },
-    "grouping": {
-      "fields": [
-        "k8s.node.name"
-      ]
-    },
-    "time_field": "@timestamp"
+    "rule": {
+      "kind": "alert",
+      "metadata": {
+        "name": "[Kubernetes OTel] Node memory pressure",
+        "description": "Alerts when any Kubernetes node reports the MemoryPressure condition. This is a warning signal that the node is running low on memory and may begin evicting pods.",
+        "tags": [
+          "Kubernetes"
+        ]
+      },
+      "schedule": {
+        "every": "1m",
+        "lookback": "1m"
+      },
+      "state_transition": {
+        "pending_count": 3
+      },
+      "recovery_strategy": "no_breach",
+      "artifacts": [
+        {
+          "id": "kubernetes_otel-node-memory-pressure-v2-runbook",
+          "type": "runbook",
+          "value": "## Node Memory Pressure\n\n### Triage Steps\n1. Identify the affected node(s) from the alert results.\n2. Open the Node Performance dashboard filtered to the affected node to see memory usage trends.\n3. Navigate to Pod & Container Detail filtered by node name to find the top memory consumers.\n4. Check for pods without memory limits or with very high limits.\n5. Run `kubectl top pods --sort-by=memory -A` to see current memory consumption.\n\n### Common Causes\n- Memory-intensive workloads without proper limits\n- Memory leaks in application containers\n- Too many pods scheduled on the node\n- Insufficient node memory capacity for the workload mix\n\n### Escalation\nIf memory pressure persists, the node will begin evicting pods. Consider cordoning the node and migrating workloads."
+        }
+      ],
+      "query": {
+        "format": "composed",
+        "base": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.condition_memory_pressure IS NOT NULL\n| STATS any_pressure = MAX(k8s.node.condition_memory_pressure)\n    BY k8s.node.name",
+        "breach": {
+          "segment": "WHERE any_pressure == 1\n| EVAL status = \"MemoryPressure\""
+        }
+      },
+      "grouping": {
+        "fields": [
+          "k8s.node.name"
+        ]
+      },
+      "time_field": "@timestamp"
+    }
   }
 }
