@@ -28,7 +28,7 @@
                     "layout": "horizontal",
                     "links": [
                         {
-                            "destinationRefName": "link_41c2f6ab-0c93-4377-8b0a-56e5fdce86dc_dashboard",
+                            "destinationRefName": "link_1ca858a9-d16c-4395-ad81-7f1dd4a262d9_dashboard",
                             "label": "Node \u0026 Infrastructure",
                             "options": {
                                 "open_in_new_tab": false,
@@ -38,7 +38,7 @@
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_1b3bd5d0-d5c1-4d5b-9d77-db99f75f2f4c_dashboard",
+                            "destinationRefName": "link_fc16637a-f052-4a59-a79b-d55e96e35e66_dashboard",
                             "label": "Databases \u0026 PostgreSQL",
                             "options": {
                                 "open_in_new_tab": false,
@@ -48,7 +48,7 @@
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_46c8eceb-65ce-4ac2-81f0-94261eefc95c_dashboard",
+                            "destinationRefName": "link_ebb0ba0f-20ba-4bba-a3e5-83e0ad3cf6ec_dashboard",
                             "label": "Services \u0026 API",
                             "options": {
                                 "open_in_new_tab": false,
@@ -1628,12 +1628,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-supabase.metrics.otel-*-ee52f541e2f7f3292ea8bacfe97ff2caeca20c5c76d66ff32ae688281404a0a8": {
+                                "metrics-supabase.metrics.otel-*-1b8a504a1338d3462f8171471ea922b1fed35c26e03ad9dbb126bb8edd2bb636": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldAttrs": {},
                                     "fieldFormats": {},
-                                    "id": "metrics-supabase.metrics.otel-*-ee52f541e2f7f3292ea8bacfe97ff2caeca20c5c76d66ff32ae688281404a0a8",
+                                    "id": "metrics-supabase.metrics.otel-*-1b8a504a1338d3462f8171471ea922b1fed35c26e03ad9dbb126bb8edd2bb636",
                                     "name": "metrics-supabase.metrics.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
@@ -1666,9 +1666,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "metrics-supabase.metrics.otel-*-ee52f541e2f7f3292ea8bacfe97ff2caeca20c5c76d66ff32ae688281404a0a8",
+                                            "index": "metrics-supabase.metrics.otel-*-1b8a504a1338d3462f8171471ea922b1fed35c26e03ad9dbb126bb8edd2bb636",
                                             "query": {
-                                                "esql": "TS metrics-supabase.metrics.otel-*\n| STATS `Idle Rate` = AVG(RATE(node_cpu_seconds_total)) BY `Mode` = attributes.mode\n| WHERE `Mode` == \"idle\"\n| EVAL `CPU Utilisation %` = ROUND((1 - `Idle Rate`) * 100, 1)\n| KEEP `CPU Utilisation %`"
+                                                "esql": "TS metrics-supabase.metrics.otel-*\n| STATS `Idle Rate` = AVG(RATE(node_cpu_seconds_total)) BY `Mode` = attributes.mode\n| WHERE `Mode` == \"idle\"\n| EVAL `CPU Utilisation %` = CASE(\n    `Idle Rate` IS NULL, NULL,\n    `Idle Rate` \u003e= 1, 0.0,\n    `Idle Rate` \u003c= 0, 100.0,\n    ROUND((1 - `Idle Rate`) * 100, 1)\n  )\n| KEEP `CPU Utilisation %`"
                                             }
                                         }
                                     }
@@ -1677,13 +1677,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-supabase.metrics.otel-*-ee52f541e2f7f3292ea8bacfe97ff2caeca20c5c76d66ff32ae688281404a0a8",
+                                    "id": "metrics-supabase.metrics.otel-*-1b8a504a1338d3462f8171471ea922b1fed35c26e03ad9dbb126bb8edd2bb636",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-supabase.metrics.otel-*\n| STATS `Idle Rate` = AVG(RATE(node_cpu_seconds_total)) BY `Mode` = attributes.mode\n| WHERE `Mode` == \"idle\"\n| EVAL `CPU Utilisation %` = ROUND((1 - `Idle Rate`) * 100, 1)\n| KEEP `CPU Utilisation %`"
+                                "esql": "TS metrics-supabase.metrics.otel-*\n| STATS `Idle Rate` = AVG(RATE(node_cpu_seconds_total)) BY `Mode` = attributes.mode\n| WHERE `Mode` == \"idle\"\n| EVAL `CPU Utilisation %` = CASE(\n    `Idle Rate` IS NULL, NULL,\n    `Idle Rate` \u003e= 1, 0.0,\n    `Idle Rate` \u003c= 0, 100.0,\n    ROUND((1 - `Idle Rate`) * 100, 1)\n  )\n| KEEP `CPU Utilisation %`"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -1743,8 +1743,7 @@
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    },
-                    "title": ""
+                    }
                 },
                 "gridData": {
                     "h": 6,
@@ -1931,12 +1930,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-supabase.metrics.otel-*-6cb1b1fc7dc98e8041dc5cf5192310f47b20a75cba478ac480a5d1602de99187": {
+                                "metrics-supabase.metrics.otel-*-e34405332b6451fe9af89933db6c72fc9e7f74bf520f142c814ccea1db08a2e7": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldAttrs": {},
                                     "fieldFormats": {},
-                                    "id": "metrics-supabase.metrics.otel-*-6cb1b1fc7dc98e8041dc5cf5192310f47b20a75cba478ac480a5d1602de99187",
+                                    "id": "metrics-supabase.metrics.otel-*-e34405332b6451fe9af89933db6c72fc9e7f74bf520f142c814ccea1db08a2e7",
                                     "name": "metrics-supabase.metrics.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
@@ -1979,9 +1978,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "metrics-supabase.metrics.otel-*-6cb1b1fc7dc98e8041dc5cf5192310f47b20a75cba478ac480a5d1602de99187",
+                                            "index": "metrics-supabase.metrics.otel-*-e34405332b6451fe9af89933db6c72fc9e7f74bf520f142c814ccea1db08a2e7",
                                             "query": {
-                                                "esql": "TS metrics-supabase.metrics.otel-*\n| STATS `Idle Rate` = AVG(RATE(node_cpu_seconds_total)) BY `Mode` = attributes.mode, `CPU` = attributes.cpu\n| WHERE `Mode` == \"idle\"\n| EVAL `CPU Utilisation %` = ROUND((1 - `Idle Rate`) * 100, 1)\n| KEEP `CPU`, `CPU Utilisation %`\n| SORT `CPU` ASC"
+                                                "esql": "TS metrics-supabase.metrics.otel-*\n| STATS `Idle Rate` = AVG(RATE(node_cpu_seconds_total)) BY `Mode` = attributes.mode, `CPU` = attributes.cpu\n| WHERE `Mode` == \"idle\"\n| EVAL `CPU Utilisation %` = CASE(\n    `Idle Rate` IS NULL, NULL,\n    `Idle Rate` \u003e= 1, 0.0,\n    `Idle Rate` \u003c= 0, 100.0,\n    ROUND((1 - `Idle Rate`) * 100, 1)\n  )\n| KEEP `CPU`, `CPU Utilisation %`\n| SORT `CPU` ASC"
                                             }
                                         }
                                     }
@@ -1990,13 +1989,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-supabase.metrics.otel-*-6cb1b1fc7dc98e8041dc5cf5192310f47b20a75cba478ac480a5d1602de99187",
+                                    "id": "metrics-supabase.metrics.otel-*-e34405332b6451fe9af89933db6c72fc9e7f74bf520f142c814ccea1db08a2e7",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-supabase.metrics.otel-*\n| STATS `Idle Rate` = AVG(RATE(node_cpu_seconds_total)) BY `Mode` = attributes.mode, `CPU` = attributes.cpu\n| WHERE `Mode` == \"idle\"\n| EVAL `CPU Utilisation %` = ROUND((1 - `Idle Rate`) * 100, 1)\n| KEEP `CPU`, `CPU Utilisation %`\n| SORT `CPU` ASC"
+                                "esql": "TS metrics-supabase.metrics.otel-*\n| STATS `Idle Rate` = AVG(RATE(node_cpu_seconds_total)) BY `Mode` = attributes.mode, `CPU` = attributes.cpu\n| WHERE `Mode` == \"idle\"\n| EVAL `CPU Utilisation %` = CASE(\n    `Idle Rate` IS NULL, NULL,\n    `Idle Rate` \u003e= 1, 0.0,\n    `Idle Rate` \u003c= 0, 100.0,\n    ROUND((1 - `Idle Rate`) * 100, 1)\n  )\n| KEEP `CPU`, `CPU Utilisation %`\n| SORT `CPU` ASC"
                             },
                             "visualization": {
                                 "columns": [
@@ -3959,7 +3958,7 @@
                 "title": "Filesystem"
             }
         ],
-        "timeFrom": "now-1h",
+        "timeFrom": "now-24h/h",
         "timeRestore": true,
         "timeTo": "now",
         "title": "[Supabase OTel] Node \u0026 Infrastructure"
@@ -3971,17 +3970,17 @@
     "references": [
         {
             "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228",
-            "name": "474c01de-d9df-4366-85ed-d9bd50b1e033:link_41c2f6ab-0c93-4377-8b0a-56e5fdce86dc_dashboard",
+            "name": "474c01de-d9df-4366-85ed-d9bd50b1e033:link_1ca858a9-d16c-4395-ad81-7f1dd4a262d9_dashboard",
             "type": "dashboard"
         },
         {
             "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b",
-            "name": "474c01de-d9df-4366-85ed-d9bd50b1e033:link_1b3bd5d0-d5c1-4d5b-9d77-db99f75f2f4c_dashboard",
+            "name": "474c01de-d9df-4366-85ed-d9bd50b1e033:link_fc16637a-f052-4a59-a79b-d55e96e35e66_dashboard",
             "type": "dashboard"
         },
         {
             "id": "supabase_otel-0fedaab5-00a9-45ce-8340-fcf6e510d215",
-            "name": "474c01de-d9df-4366-85ed-d9bd50b1e033:link_46c8eceb-65ce-4ac2-81f0-94261eefc95c_dashboard",
+            "name": "474c01de-d9df-4366-85ed-d9bd50b1e033:link_ebb0ba0f-20ba-4bba-a3e5-83e0ad3cf6ec_dashboard",
             "type": "dashboard"
         },
         {

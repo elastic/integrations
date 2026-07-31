@@ -19,7 +19,7 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 
 ### Configuration
 
-Configure the OpenTelemetry Collector (or EDOT Collector) with the Prometheus receiver to scrape your Supabase Observability endpoint and export to Elasticsearch.
+Configure the Supabase Integration Package to scrape your Supabase Prometheus endpoint and export to Elasticsearch.
 
 | Placeholder | Description | Example |
 |-------------|-------------|---------|
