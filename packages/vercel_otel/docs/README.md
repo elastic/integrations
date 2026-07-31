@@ -2,11 +2,11 @@
 
 Vercel is a cloud platform for deploying and hosting frontend applications on a globally distributed edge network.
 
-The Vercel OpenTelemetry assets provide dashboards for runtime logs, audit logs, web analytics, and Speed Insights ingested through Vercel Log Drains into an Elastic Cloud [managed input](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs), covering server-side health, user experience, traffic and engagement, and team governance.
+The Vercel OpenTelemetry assets provide dashboards for Vercel logs, audit logs, Web Analytics, and Speed Insights forwarded through [Vercel Drains](https://vercel.com/docs/drains) into an Elastic Cloud [managed endpoint](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs), covering server-side health, user experience, traffic and engagement, and team governance.
 
 ## Compatibility
 
-The Vercel OpenTelemetry assets have been tested with Vercel Log Drains / Observability drains posting to the Elastic Cloud [Managed OTLP Endpoint](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint) Vercel path (`/vercel`).
+The Vercel OpenTelemetry assets have been tested with Vercel Drains delivering to the Vercel path (`/vercel`) of the Elastic Cloud managed endpoint.
 
 ## Requirements
 
@@ -14,69 +14,75 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage
 the Elastic Stack on your own hardware.
 
-> **Note**: Managed inputs, including the Managed OTLP Endpoint used by this content pack, are available on Elastic Cloud Serverless and Elastic Cloud Hosted. They are not available for self-managed, ECE, or ECK clusters. Refer to [Managed inputs](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs).
+> **Note**: The managed endpoint used by these assets is available on Elastic Cloud Serverless and Elastic Cloud Hosted. It is not available for self-managed, ECE, or ECK clusters. Refer to [Managed inputs](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs).
 
 ## Setup
 
-### Prerequisites
+Vercel data reaches Elasticsearch through a [Vercel drain](https://vercel.com/docs/drains/using-drains) that posts to an Elastic Cloud [managed endpoint](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs). Elastic operates the endpoint, so you do not need to install or run an OpenTelemetry Collector.
 
-Configure the observability features you want to forward on the Vercel side before creating the drain:
+Setup has three parts, done in order:
 
-- **Logs** and **Audit Logs**: Available through [Vercel Drains](https://vercel.com/docs/drains/using-drains). Log drains require a Pro or Enterprise plan. Audit Log drains require an Enterprise plan.
-- **Web Analytics**: Install and enable the [@vercel/analytics](https://vercel.com/docs/analytics) SDK in your application so page views and custom events are emitted.
-- **Speed Insights**: Install and enable the [@vercel/speed-insights](https://vercel.com/docs/speed-insights) SDK in your application so Web Vitals are collected in the browser.
+1. Enable the Vercel features you want to collect.
+2. Gather two values from Elastic: a **drain URL** and an **API key**.
+3. Create the drains in Vercel using those two values.
 
-You also need an Elastic Cloud Serverless project or Elastic Cloud Hosted deployment, plus an API key that can authenticate to the Managed OTLP Endpoint. Refer to [Authentication](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint#authentication) for the required `event:write` privilege on the `apm` application.
+### Step 1: Enable the Vercel features you want to collect
 
-### Configuration
+- **Logs** and **Audit Log**: available through [Vercel Drains](https://vercel.com/docs/drains/using-drains). Log drains require a Pro or Enterprise plan. Audit Log drains require an Enterprise plan.
+- **Web Analytics**: install and enable the [@vercel/analytics](https://vercel.com/docs/analytics) SDK in your application so page views and custom events are emitted.
+- **Speed Insights**: install and enable the [@vercel/speed-insights](https://vercel.com/docs/speed-insights) SDK in your application so Web Vitals are collected in the browser.
 
-Vercel data is ingested through an Elastic Cloud [managed input](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs): the [Managed OTLP Endpoint](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint). Elastic operates the ingest endpoint, so you do not need to install or run an OpenTelemetry Collector yourself.
+### Step 2: Gather the drain URL and API key from Elastic
 
-To send Vercel drains to Elastic, point a custom Vercel drain at the Managed OTLP Endpoint **Vercel path** (`/vercel`), authenticated with an API key from Kibana / Elastic Cloud.
+You need an Elastic Cloud Serverless project or an Elastic Cloud Hosted deployment.
 
-#### 1. Find your Managed OTLP Endpoint
+#### Drain URL
 
-Follow the steps for your environment in [Find your Elastic Cloud Managed OTLP Endpoint](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint#find-your-elastic-cloud-managed-otlp-endpoint), or:
+Find your Elastic Cloud public endpoint:
 
 1. Log in to the [Elastic Cloud Console](https://cloud.elastic.co/).
-2. Open your project or hosted deployment and select **Manage**.
-3. In **Application endpoints, cluster and component IDs**, select **OpenTelemetry** (Serverless) or **Managed OTLP** (Hosted).
-4. Copy the **Public endpoint** value.
+2. Open your project or deployment and select **Manage**.
+3. In **Application endpoints, cluster and component IDs**, select **OpenTelemetry** (Serverless projects) or **Managed OTLP** (Hosted deployments), then copy the public endpoint value.
 
-Alternatively, from within your project, go to **Add data** → **Applications** → **OpenTelemetry** and copy the endpoint. That wizard can also generate a pre-configured API key.
-
-#### 2. Create an API key
-
-Create an API key with the Managed OTLP Endpoint privileges described in the [quickstart](https://www.elastic.co/docs/solutions/observability/get-started/quickstart-elastic-cloud-otel-endpoint) (minimum: `event:write` for the `apm` application). Copy the encoded API key value for use in Vercel.
-
-#### 3. Build the Vercel custom endpoint URL
-
-Append `/vercel` to your Managed OTLP public endpoint:
+The drain URL is that public endpoint plus `/vercel`, which is the path that accepts Vercel drain payloads:
 
 ```text
-https://<motlp-endpoint>/vercel
+https://<managed-endpoint>/vercel
 ```
 
-**Example** (replace with your own public endpoint):
+For example, if your public endpoint is `https://abc123.ingest.us-east-1.aws.elastic.cloud`, then the drain URL is:
 
 ```text
 https://abc123.ingest.us-east-1.aws.elastic.cloud/vercel
 ```
 
-Each deployment has its own host. Always use the public endpoint from your Elastic Cloud project or deployment, then append `/vercel`.
+Every project and deployment has its own host, so always build the drain URL from the endpoint shown in your own Elastic Cloud project or deployment. Refer to [Find your endpoint](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint#find-your-elastic-cloud-managed-otlp-endpoint) for more detail.
 
-#### 4. Configure the drain in Vercel
+#### API key
 
-1. In Vercel, open your team **Drains** settings and create a custom Log Drain / Observability drain.
-2. Set the drain endpoint URL to the full custom endpoint from step 3 (`…/vercel`).
-3. Authenticate using the API key from step 2. The Managed OTLP Endpoint expects `Authorization: ApiKey <your-api-key>` (see [Authentication](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint#authentication)).
-4. Select the data types to forward: Logs, Audit Logs, Web Analytics, and/or Speed Insights.
+Create an API key by following the [Send data to Elastic Cloud](https://www.elastic.co/docs/solutions/observability/get-started/quickstart-elastic-cloud-otel-endpoint) quickstart, then copy the encoded value. Vercel sends it in an `Authorization` header that must use the `ApiKey` scheme, as described in [Authentication](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint#authentication).
 
-> **Note**: The custom endpoint to configure in Vercel is always `<Managed OTLP public endpoint>/vercel`. Do not point the drain at a self-hosted collector for this content pack; the supported path is the Elastic Cloud managed input.
+Alternatively, in your Elastic Cloud Serverless project, go to **Add data** → **Applications** → **OpenTelemetry**. That wizard shows the endpoint and generates a pre-configured API key for you.
+
+### Step 3: Create the drains in Vercel
+
+A Vercel drain carries a single data type, so create a separate drain for each of Logs, Audit Log, Web Analytics, and Speed Insights that you want in Elastic. All of them use the same drain URL and API key.
+
+For each data type, in Vercel:
+
+1. Open your team **Drains** settings and create a drain for that data type.
+2. Choose **Custom Endpoint** as the destination.
+3. Set the **Endpoint URL** to the drain URL, for example `https://abc123.ingest.us-east-1.aws.elastic.cloud/vercel`.
+4. Under **Custom Headers**, add a header named `Authorization` with the value `ApiKey <your-api-key>`, for example `Authorization: ApiKey abc123`.
+5. Save the drain.
+
+For Logs drains, you can also narrow which sources, environments, and sampling rates are forwarded under **Additional configuration for logs**. Refer to [Log Drains reference](https://vercel.com/docs/drains/reference/logs).
+
+> **Note**: The drain URL is always your Elastic Cloud public endpoint plus `/vercel`. Do not point the drain at a self-hosted collector for these assets; the supported path is the Elastic Cloud managed endpoint.
 
 ## Reference
 
-Vercel drain payloads are decoded by the Elastic Cloud Managed OTLP Endpoint and written to the data streams below. For drain configuration and payload types on the Vercel side, see [Using drains](https://vercel.com/docs/drains/using-drains). For Managed OTLP Endpoint behavior, see [Managed inputs](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs).
+Vercel drain payloads are decoded by the Elastic Cloud managed endpoint and written to the data streams below. For drain configuration and payload types on the Vercel side, see [Using drains](https://vercel.com/docs/drains/using-drains). For managed endpoint behavior, see [Managed inputs](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs).
 
 ### Metrics
 
@@ -86,9 +92,11 @@ Speed Insights Web Vitals (LCP, INP, CLS, TTFB, and related attributes) are stor
 
 | Signal | Data stream |
 |--------|-------------|
-| Runtime logs | `logs-vercel.logs.otel-*` |
+| Logs | `logs-vercel.logs.otel-*` |
 | Audit logs | `logs-vercel.auditlog.v1.otel-*` |
 | Web Analytics | `logs-vercel.analytics.v2.otel-*` |
+
+The Logs data stream holds every source selected on the drain, so it covers build output and static asset requests alongside function output from the `lambda` and `edge` runtimes. Use the **Log Source** filter on the Logs dashboard to focus on a single source.
 
 ## Dashboards
 
