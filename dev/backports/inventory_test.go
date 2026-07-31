@@ -850,6 +850,32 @@ func readInventory(t *testing.T, path string) inventory {
 	return inv
 }
 
+func TestListSkipChecklistPackages(t *testing.T) {
+	t.Run("returns listed packages", func(t *testing.T) {
+		path := writeTemp(t, `skip_checklist_packages:
+  - security_detection_engine
+  - other_pkg
+backports: []
+`)
+		got, err := ListSkipChecklistPackages(path)
+		require.NoError(t, err)
+		assert.Equal(t, []string{"security_detection_engine", "other_pkg"}, got)
+	})
+
+	t.Run("returns nil when field is absent", func(t *testing.T) {
+		path := writeTemp(t, "backports: []\n")
+		got, err := ListSkipChecklistPackages(path)
+		require.NoError(t, err)
+		assert.Nil(t, got)
+	})
+
+	t.Run("file not found returns error", func(t *testing.T) {
+		_, err := ListSkipChecklistPackages("/no/such/file.yml")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "reading inventory")
+	})
+}
+
 func TestValidateBranchFormat(t *testing.T) {
 	tests := []struct {
 		branch      string
