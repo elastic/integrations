@@ -144,8 +144,31 @@ updateBackportBranchContents() {
   local files_cached_num=""
 
   git checkout "$BACKPORT_BRANCH_NAME"
+
+  # Preserve version pins that are specific to the backport branch (e.g. kubernetes
+  # packages pin K8S_VERSION/KIND_VERSION to whatever was compatible at release time).
+  local pipeline_yml="${BUILDKITE_FOLDER_PATH}/pipeline.yml"
+  local k8s_version=""
+  local kind_version=""
+  if [ -f "${pipeline_yml}" ]; then
+    k8s_version=$(yq -r '.env.K8S_VERSION // ""' "${pipeline_yml}")
+    kind_version=$(yq -r '.env.KIND_VERSION // ""' "${pipeline_yml}")
+    echo "Preserving from backport branch: K8S_VERSION=${k8s_version}, KIND_VERSION=${kind_version}"
+  fi
+
   echo "--- Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
   git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
+
+  # Restore the version pins overwritten by the checkout above.
+  if [ -n "${k8s_version}" ]; then
+    echo "--- Restoring K8S_VERSION=${k8s_version} in ${pipeline_yml}..."
+    yq -i ".env.K8S_VERSION = \"${k8s_version}\"" "${pipeline_yml}"
+  fi
+  if [ -n "${kind_version}" ]; then
+    echo "--- Restoring KIND_VERSION=${kind_version} in ${pipeline_yml}..."
+    yq -i ".env.KIND_VERSION = \"${kind_version}\"" "${pipeline_yml}"
+  fi
+
   git add $BUILDKITE_FOLDER_PATH
 
   if git ls-tree -d --name-only main:.ci >/dev/null 2>&1; then
