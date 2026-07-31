@@ -1,0 +1,78 @@
+format_version: '3.3.2'
+name: trellix_epo_on_prem
+title: Trellix ePO On-Prem
+version: '0.1.0'
+source:
+  license: Elastic-2.0
+description: Collect compliance history logs from Trellix ePO On-Prem.
+type: integration
+categories:
+  - security
+conditions:
+  kibana:
+    version: '^8.19.0 || ^9.1.0'
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/trellix-logo.svg
+    title: Trellix logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: trellix_epo_on_prem
+    title: Trellix ePO On-Prem
+    description: Collect compliance history logs from Trellix ePO On-Prem.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
+    inputs:
+      - type: cel
+        title: Collect Trellix ePO compliance history logs
+        description: Collect compliance history records from the Trellix ePO REST API.
+        vars:
+          - name: url
+            type: text
+            title: Trellix ePO URL
+            description: Base URL of the Trellix ePO On-Prem instance, for example `https://epo.example.com:8443`.
+            required: true
+            show_user: true
+          - name: username
+            type: text
+            title: Username
+            description: Username for Trellix ePO API authentication.
+            required: true
+            show_user: true
+          - name: password
+            type: password
+            title: Password
+            description: Password for Trellix ePO API authentication.
+            required: true
+            secret: true
+            show_user: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL of the proxy used to connect to Trellix ePO.
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options for the Trellix ePO connection.
+            required: false
+            show_user: false
+            default: |
+              # certificate_authorities:
+              #   - |
+              #     -----BEGIN CERTIFICATE-----
+              #     ...
+              #     -----END CERTIFICATE-----
+              # verification_mode: full
+owner:
+  github: elastic/security-service-integrations
+  type: elastic

@@ -1,0 +1,282 @@
+---
+description: Parse Trellix ePO on-prem compliance history events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.4.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+  - dot_expander:
+      field: '*'
+      path: json
+      tag: dot_expander_json
+      if: ctx.json != null
+  - rename:
+      field: json.EpoComplianceHistory
+      target_field: trellix_epo_on_prem.compliance_history.epo_compliance_history
+      ignore_missing: true
+      tag: rename_json_to_vendor_namespace
+      if: ctx.json?.EpoComplianceHistory != null
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_json
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: state
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: configuration
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - fingerprint:
+      fields:
+        - trellix_epo_on_prem.compliance_history.epo_compliance_history.AutoId
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_event_id
+  - rename:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.CountCompliant
+      target_field: trellix_epo_on_prem.compliance_history.epo_compliance_history.count_compliant
+      ignore_missing: true
+      tag: rename_count_compliant
+  - rename:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.ChartName
+      target_field: trellix_epo_on_prem.compliance_history.epo_compliance_history.chart_name
+      ignore_missing: true
+      tag: rename_chart_name
+  - rename:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.CountComputers
+      target_field: trellix_epo_on_prem.compliance_history.epo_compliance_history.count_computers
+      ignore_missing: true
+      tag: rename_count_computers
+  - rename:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.CountNonCompliant
+      target_field: trellix_epo_on_prem.compliance_history.epo_compliance_history.count_non_compliant
+      ignore_missing: true
+      tag: rename_count_non_compliant
+  - rename:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.PercentCompliant
+      target_field: trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_compliant
+      ignore_missing: true
+      tag: rename_percent_compliant
+  - rename:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.PercentNonCompliant
+      target_field: trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_non_compliant
+      ignore_missing: true
+      tag: rename_percent_non_compliant
+  - rename:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.TaskName
+      target_field: trellix_epo_on_prem.compliance_history.epo_compliance_history.task_name
+      ignore_missing: true
+      tag: rename_task_name
+  - rename:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.TenantId
+      target_field: trellix_epo_on_prem.compliance_history.epo_compliance_history.tenant_id
+      ignore_missing: true
+      tag: rename_tenant_id
+  - convert:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.AutoId
+      type: string
+      ignore_missing: true
+      if: ctx.trellix_epo_on_prem?.compliance_history?.epo_compliance_history?.AutoId != ''
+      tag: convert_auto_id_to_string
+  - set:
+      field: event.id
+      copy_from: trellix_epo_on_prem.compliance_history.epo_compliance_history.AutoId
+      ignore_empty_value: true
+      tag: set_event_id_from_auto_id
+  - date:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.TheTimestamp
+      target_field: trellix_epo_on_prem.compliance_history.epo_compliance_history.TheTimestamp
+      formats:
+        - ISO8601
+      tag: date_TheTimestamp
+      if: ctx.trellix_epo_on_prem?.compliance_history?.epo_compliance_history?.TheTimestamp != null && ctx.trellix_epo_on_prem.compliance_history.epo_compliance_history.TheTimestamp != ''
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.compliance_history.epo_compliance_history.TheTimestamp
+            ignore_missing: true
+            tag: remove_TheTimestamp_on_date_failure
+        - append:
+            field: error.message
+            tag: append_date_TheTimestamp_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: trellix_epo_on_prem.compliance_history.epo_compliance_history.TheTimestamp
+      ignore_empty_value: true
+      tag: set_timestamp_from_TheTimestamp
+  - convert:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.count_compliant
+      type: long
+      ignore_missing: true
+      if: ctx.trellix_epo_on_prem?.compliance_history?.epo_compliance_history?.count_compliant != ''
+      tag: convert_count_compliant
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.compliance_history.epo_compliance_history.count_compliant
+            ignore_missing: true
+            tag: remove_count_compliant_on_convert_failure
+        - append:
+            field: error.message
+            tag: append_count_compliant_convert_failure_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.count_computers
+      type: long
+      ignore_missing: true
+      if: ctx.trellix_epo_on_prem?.compliance_history?.epo_compliance_history?.count_computers != ''
+      tag: convert_count_computers
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.compliance_history.epo_compliance_history.count_computers
+            ignore_missing: true
+            tag: remove_count_computers_on_convert_failure
+        - append:
+            field: error.message
+            tag: append_count_computers_convert_failure_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.count_non_compliant
+      type: long
+      ignore_missing: true
+      if: ctx.trellix_epo_on_prem?.compliance_history?.epo_compliance_history?.count_non_compliant != ''
+      tag: convert_count_non_compliant
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.compliance_history.epo_compliance_history.count_non_compliant
+            ignore_missing: true
+            tag: remove_count_non_compliant_on_convert_failure
+        - append:
+            field: error.message
+            tag: append_count_non_compliant_convert_failure_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.tenant_id
+      type: string
+      ignore_missing: true
+      tag: convert_tenant_id
+  - convert:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_compliant
+      type: double
+      ignore_missing: true
+      if: ctx.trellix_epo_on_prem?.compliance_history?.epo_compliance_history?.percent_compliant != ''
+      tag: convert_percent_compliant
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_compliant
+            ignore_missing: true
+            tag: remove_percent_compliant_on_convert_failure
+        - append:
+            field: error.message
+            tag: append_percent_compliant_convert_failure_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_non_compliant
+      type: double
+      ignore_missing: true
+      if: ctx.trellix_epo_on_prem?.compliance_history?.epo_compliance_history?.percent_non_compliant != ''
+      tag: convert_percent_non_compliant
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_non_compliant
+            ignore_missing: true
+            tag: remove_percent_non_compliant_on_convert_failure
+        - append:
+            field: error.message
+            tag: append_percent_non_compliant_convert_failure_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - trellix_epo_on_prem.compliance_history.epo_compliance_history.AutoId
+        - trellix_epo_on_prem.compliance_history.epo_compliance_history.TheTimestamp
+      ignore_missing: true
+      tag: remove_ecs_mapped_vendor_fields
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
