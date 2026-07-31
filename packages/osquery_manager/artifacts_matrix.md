@@ -139,9 +139,9 @@ Unlike the forensic artifacts above (which are individual `kibana/osquery_saved_
 
 | Pack | OS | Queries | File |
 |------|:--:|:-------:|:----:|
-| `ai-asset-discovery-windows` | Windows | 17 | [win0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-win0-4f6a-8b9c-0d1e2f3a4b5c.json) |
-| `ai-asset-discovery-macos` | macOS | 19 | [mac0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-mac0-4f6a-8b9c-0d1e2f3a4b5c.json) |
-| `ai-asset-discovery-linux` | Linux | 18 | [lin0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-lin0-4f6a-8b9c-0d1e2f3a4b5c.json) |
+| `ai-asset-discovery-windows` | Windows | 15 | [win0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-win0-4f6a-8b9c-0d1e2f3a4b5c.json) |
+| `ai-asset-discovery-macos` | macOS | 17 | [mac0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-mac0-4f6a-8b9c-0d1e2f3a4b5c.json) |
+| `ai-asset-discovery-linux` | Linux | 16 | [lin0](kibana/osquery_pack_asset/osquery_manager-e7a1b2c3-lin0-4f6a-8b9c-0d1e2f3a4b5c.json) |
 
 ### Query coverage matrix
 
@@ -164,15 +164,13 @@ Pack `id`s are platform-suffixed (`_windows`, `_macos`, `_linux`); the shared `e
 | 13 | `ai_homebrew_packages` | `osquery.ai_homebrew_packages` | package | 24h | — | ✅ | — | AI Homebrew packages (macOS) |
 | 14 | `ai_config_files_*` | `osquery.ai_config_files` | file | 24h | ✅ | ✅ | ✅ | AI/MCP config files and tool directories; slice on `labels.config_kind` |
 | 15 | `ai_config_file_changes_*` | `osquery.ai_config_file_changes` | file | 1h | ✅ | ✅ | ✅ | Recently modified MCP/AI config files (metadata only, 7200s lookback) |
-| 16 | `ai_model_files_*` | `osquery.ai_model_files` | file | 24h | ✅ | ✅ | ✅ | Large model files (>100 MiB) by path and extension |
-| 17 | `ai_model_cache_size_*` | `osquery.ai_model_cache_size` | file | 24h | ✅ | ✅ | ✅ | AI model cache disk usage by directory (>100 MiB) |
-| 18 | `ai_docker_containers_*` | `osquery.ai_docker_containers` | host | 1h | — | ✅ | ✅ | Docker containers running AI workloads |
-| 19 | `ai_sensitive_file_proximity_*` | `osquery.ai_sensitive_file_proximity` | process, file | mac/lin 1h · win 24h | ✅ | ✅ | ✅ | AI-process proximity to credential-adjacent paths (metadata only); slice on `labels.process_category`. macOS/Linux use open-file access evidence; Windows is uid co-occurrence inventory, **not** access proof |
-| 20 | `ai_windows_services` | `osquery.ai_windows_services` | configuration | 24h | ✅ | — | — | AI auto-start Windows services |
-| 21 | `ai_scheduled_tasks_windows` | `osquery.ai_scheduled_tasks` | configuration | 24h | ✅ | — | — | AI scheduled tasks (Windows) |
-| 22 | `ai_launchd_services` | `osquery.ai_launchd_services` | configuration | 24h | — | ✅ | — | AI auto-start macOS launchd services |
-| 23 | `ai_systemd_services` | `osquery.ai_systemd_services` | configuration | 24h | — | — | ✅ | AI auto-start Linux systemd services |
-| 24 | `ai_crontab_linux` | `osquery.ai_crontab` | configuration | 24h | — | — | ✅ | AI cron jobs (Linux) |
+| 16 | `ai_docker_containers_*` | `osquery.ai_docker_containers` | host | 1h | — | ✅ | ✅ | Docker containers running AI workloads |
+| 17 | `ai_sensitive_file_proximity_*` | `osquery.ai_sensitive_file_proximity` | process, file | mac/lin 1h · win 24h | ✅ | ✅ | ✅ | AI-process proximity to credential-adjacent paths (metadata only); slice on `labels.process_category`. macOS/Linux use open-file access evidence; Windows is uid co-occurrence inventory, **not** access proof |
+| 18 | `ai_windows_services` | `osquery.ai_windows_services` | configuration | 24h | ✅ | — | — | AI auto-start Windows services |
+| 19 | `ai_scheduled_tasks_windows` | `osquery.ai_scheduled_tasks` | configuration | 24h | ✅ | — | — | AI scheduled tasks (Windows) |
+| 20 | `ai_launchd_services` | `osquery.ai_launchd_services` | configuration | 24h | — | ✅ | — | AI auto-start macOS launchd services |
+| 21 | `ai_systemd_services_linux` | `osquery.ai_systemd_services` | configuration | 24h | — | — | ✅ | AI auto-start Linux systemd services |
+| 22 | `ai_crontab_linux` | `osquery.ai_crontab` | configuration | 24h | — | — | ✅ | AI cron jobs (Linux) |
 
 ---
 

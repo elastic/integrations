@@ -19,7 +19,7 @@ For information about Osquery tables, refer to the [Osquery schema documentation
 
 ## Shadow AI Discovery
 
-The integration ships prebuilt osquery **packs** that inventory AI and LLM tooling across your endpoints, giving security and platform teams a single-policy way to answer "what AI is running in my fleet?" — local model runtimes, AI coding agents, Model Context Protocol (MCP) servers, model files, AI packages, browser and editor extensions, and the network and persistence footprint of AI tools.
+The integration ships prebuilt osquery **packs** that inventory AI and LLM tooling across your endpoints, giving security and platform teams a single-policy way to answer "what AI is running in my fleet?" — local model runtimes, AI coding agents, Model Context Protocol (MCP) servers, AI packages, browser and editor extensions, and the network and persistence footprint of AI tools.
 
 There is one pack per operating system:
 
@@ -35,12 +35,14 @@ Assign the pack matching each agent's OS to your Osquery Manager policy in Fleet
 
 - **Running AI tools** — local LLM runtimes, AI coding agents, and MCP servers, classified by role in `labels.process_category` (`llm_runtime`, `agent`, `mcp`).
 - **Installed AI software** — desktop apps, OS packages, Python and npm packages, and browser/editor extensions (Chrome, Firefox, Safari, VS Code).
-- **AI configuration and models** — MCP and AI tool config files, large model files, and model cache usage.
+- **AI configuration** — MCP and AI tool config files and tool directories, plus recent changes to them.
 - **AI network and persistence footprint** — listening ports, outbound sockets for AI processes, and auto-start entries (Windows services, scheduled tasks, launchd, systemd, cron).
 
 ### Interpreting results
 
 Inventory queries run in snapshot mode: every scheduled run emits a full, current-state set of rows. Expect the same asset to reappear on each interval, and use latest-per-host aggregation or time-range filters when building dashboards and hunts.
+
+`ai_sensitive_file_proximity_*` needs one extra caveat. On macOS and Linux it reports credential paths that an AI process actually holds open. On Windows that evidence is not available, so it pairs AI processes with credential paths belonging to the same user: a row means both exist for that user, **not** that the process read the file.
 
 ### Privacy
 

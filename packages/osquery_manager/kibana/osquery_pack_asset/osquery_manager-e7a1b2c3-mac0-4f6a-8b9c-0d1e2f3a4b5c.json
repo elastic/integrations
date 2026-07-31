@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "description": "Inventory Shadow AI tools on macOS endpoints \u2014 local LLMs, AI coding agents, AI desktop applications, MCP servers (MCP config file presence, metadata only), AI model files, Python/npm AI packages, browser extensions (Chrome, Firefox, Safari), Docker containers, launchd services, Homebrew packages, AI API key exposure, and AI tool configuration directories, vector databases, model cache sizes, and SSH tunnels for AI services.",
+        "description": "Inventory Shadow AI tools on macOS endpoints \u2014 local LLM runtimes, AI coding agents, AI desktop applications, MCP servers (MCP config file presence, metadata only), Homebrew and Python/npm AI packages, browser (Chrome, Firefox, Safari) and editor extensions, Docker containers, launchd services, AI API key variable names, credential-adjacent file access by AI processes, and AI tool configuration files and directories.",
         "name": "ai-asset-discovery-macos",
         "version": 1,
         "queries": [
@@ -349,86 +349,6 @@
                 "snapshot": true
             },
             {
-                "id": "ai_model_files_macos",
-                "query": "SELECT\n    path,\n    filename,\n    size,\n    strftime('%Y-%m-%dT%H:%M:%SZ', mtime, 'unixepoch') AS modified_time,\n    strftime('%Y-%m-%dT%H:%M:%SZ', atime, 'unixepoch') AS accessed_time,\n    CASE\n        WHEN path LIKE '/Users/%/.ollama/models/%' THEN 'ollama'\n        WHEN path LIKE '/Users/%/.lmstudio/%' OR path LIKE '/Users/%/.cache/lm-studio/%' THEN 'lm-studio'\n        WHEN path LIKE '/Users/%/.cache/huggingface/%' THEN 'huggingface'\n        WHEN path LIKE '/Users/%/.cache/llama.cpp/%' THEN 'llama.cpp'\n        WHEN path LIKE '/Users/%/.local/share/nomic.ai/GPT4All/%' THEN 'gpt4all'\n        WHEN path LIKE '/Users/%/jan/models/%' THEN 'jan'\n        WHEN path LIKE '/Users/%/Downloads/%' THEN 'download'\n        ELSE 'other'\n    END AS tool\nFROM file\nWHERE (\n    path LIKE '/Users/%/.ollama/models/blobs/%'\n    OR path LIKE '/Users/%/.cache/huggingface/hub/%/snapshots/%%'\n    OR path LIKE '/Users/%/.lmstudio/models/%%'\n    OR path LIKE '/Users/%/.cache/lm-studio/%%'\n    OR path LIKE '/Users/%/.cache/llama.cpp/%%'\n    OR path LIKE '/Users/%/.local/share/nomic.ai/GPT4All/%%'\n    OR path LIKE '/Users/%/jan/models/%%'\n    OR path LIKE '/Users/%/Downloads/%'\n)\nAND size > 104857600\nAND (\n    path LIKE '%/.ollama/models/blobs/%'\n    OR filename LIKE '%.gguf'\n    OR filename LIKE '%.safetensors'\n    OR filename LIKE '%.llamafile'\n    OR filename LIKE '%.ggml'\n    OR filename LIKE '%.onnx'\n    OR (\n        path NOT LIKE '%/Downloads/%'\n        AND (filename LIKE '%.bin' OR filename LIKE '%.pt' OR filename LIKE '%.pth')\n    )\n);",
-                "interval": 86400,
-                "platform": "darwin",
-                "timeout": 180,
-                "ecs_mapping": [
-                    {
-                        "key": "event.category",
-                        "value": {
-                            "value": [
-                                "file"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.type",
-                        "value": {
-                            "value": [
-                                "info"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "file.path",
-                        "value": {
-                            "field": "path"
-                        }
-                    },
-                    {
-                        "key": "file.name",
-                        "value": {
-                            "field": "filename"
-                        }
-                    },
-                    {
-                        "key": "file.size",
-                        "value": {
-                            "field": "size"
-                        }
-                    },
-                    {
-                        "key": "file.mtime",
-                        "value": {
-                            "field": "modified_time"
-                        }
-                    },
-                    {
-                        "key": "file.accessed",
-                        "value": {
-                            "field": "accessed_time"
-                        }
-                    },
-                    {
-                        "key": "tags",
-                        "value": {
-                            "value": [
-                                "osquery",
-                                "ai_discovery",
-                                "model_files",
-                                "shadow_ai",
-                                "darwin"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "labels.model_tool",
-                        "value": {
-                            "field": "tool"
-                        }
-                    },
-                    {
-                        "key": "event.action",
-                        "value": {
-                            "value": "osquery.ai_model_files"
-                        }
-                    }
-                ],
-                "snapshot": true
-            },
-            {
                 "id": "ai_python_packages_macos",
                 "query": "SELECT\n    p.name,\n    p.version,\n    p.directory,\n    p.summary\nFROM users u\nJOIN python_packages p USING (uid)\nWHERE p.name IN (\n    'torch', 'tensorflow', 'onnxruntime', 'jax', 'flax',\n    'transformers', 'diffusers', 'accelerate', 'peft', 'trl',\n    'huggingface-hub', 'tokenizers', 'datasets', 'sentence-transformers',\n    'safetensors',\n    'openai', 'anthropic', 'google-generativeai', 'cohere', 'replicate',\n    'groq', 'mistralai', 'together', 'fireworks-ai', 'deepseek-sdk',\n    'langchain', 'langchain-core', 'langchain-community',\n    'llama-index', 'llama-index-core',\n    'autogen', 'crewai', 'semantic-kernel', 'haystack-ai', 'dspy-ai',\n    'instructor', 'guidance', 'outlines',\n    'llama-cpp-python', 'ollama', 'vllm', 'ctransformers',\n    'bitsandbytes', 'auto-gptq', 'exllama',\n    'fastmcp', 'mcp',\n    'chromadb', 'qdrant-client', 'weaviate-client', 'pinecone-client',\n    'pymilvus', 'faiss-cpu', 'faiss-gpu',\n    'aider-chat', 'shell-gpt', 'mentat',\n    'gradio', 'streamlit',\n    'openai-whisper', 'elevenlabs', 'bark',\n    'litellm',\n    'llm',\n    'askai',\n    'bentoml',\n    'comfy-cli',\n    'dify-client',\n    'faster-whisper',\n    'gpterm',\n    'gptme',\n    'gptshell',\n    'invokeai',\n    'kimi-cli',\n    'kokoro',\n    'mcp-server-fetch',\n    'mcp-server-sqlite',\n    'modal',\n    'open-interpreter',\n    'open-webui',\n    'openhands-ai',\n    'piper-tts',\n    'suno-bark',\n    'whisperx',\n    'xinference'\n);",
                 "interval": 86400,
@@ -498,7 +418,7 @@
             },
             {
                 "id": "ai_chrome_extensions_macos",
-                "query": "SELECT\n    ce.name,\n    ce.identifier,\n    ce.version,\n    ce.description,\n    ce.path,\n    ce.state,\n    u.username\nFROM users u CROSS JOIN chrome_extensions ce USING(uid)\nWHERE ce.state = 1 AND (\n    ce.name LIKE '%Copilot%' OR ce.name LIKE '%ChatGPT%'\n    OR ce.name LIKE '%Claude%' OR ce.name LIKE '%Gemini%'\n    OR ce.name LIKE '%Perplexity%' OR ce.name LIKE '%DeepSeek%'\n    OR ce.name LIKE '%Monica%' OR ce.name LIKE '%Merlin%'\n    OR ce.name LIKE '%Sider%' OR ce.name LIKE '%MaxAI%'\n    OR ce.name LIKE '%UseChatGPT%' OR ce.name LIKE '%Poe%'\n    OR ce.name LIKE '%Cody%' OR ce.name LIKE '%Codeium%'\n    OR ce.name LIKE '%Tabnine%' OR ce.name LIKE '%Blackbox%'\n    OR ce.name LIKE '%Phind%' OR ce.name LIKE '%Bito%'\n    OR ce.name LIKE '%Grammarly%' OR ce.name LIKE '%Jasper%'\n    OR ce.name LIKE '%Wordtune%' OR ce.name LIKE '%Quillbot%'\n    OR ce.name LIKE '%QuillBot%' OR ce.name LIKE '%Compose AI%'\n    OR ce.name LIKE '%Writesonic%' OR ce.name LIKE '%Copy.ai%'\n    OR ce.name LIKE '%You.com%' OR ce.name LIKE '%AIPRM%'\n    OR ce.name LIKE '%WebChatGPT%'\n    OR ce.name LIKE '%Glasp%' OR ce.name LIKE '%Eightify%'\n    OR ce.name LIKE '%NoteGPT%' OR ce.name LIKE '%tl;dv%'\n    OR ce.name LIKE '%DeepL%' OR ce.name LIKE '%Immersive Translate%'\n    OR ce.identifier IN (\n        'fjoaledfpmneenckfbpdfhkmimnjocfa',\n        'ngjjaadpdmddgbpmipagccngfbpmekei',\n        'hcmjdjeeoimlofdjmfpbpamldmmiifne',\n        'eollffkcakepchajholpcojldgkiikmf',\n        'kbbdabhdfibfiedgpfkhdnbdilnjohlm',\n        'aajjgdpofhhcffcgighomdiodecghjdd',\n        'fhjhmnknmdlphgcofkdldcgkkbedolhg'\n    )\n    OR ce.identifier LIKE '%chatgpt%'\n    OR ce.identifier LIKE '%copilot%'\n    OR ce.identifier LIKE '%claude%'\n    OR ce.identifier LIKE '%perplexity%'\n    OR ce.identifier LIKE '%deepseek%'\n    OR ce.identifier LIKE '%openai%'\n    OR ce.identifier LIKE '%anthropic%'\n    OR ce.identifier LIKE '%codeium%'\n    OR ce.identifier LIKE '%tabnine%'\n    OR ce.identifier LIKE '%grammarly%'\n    OR ce.identifier LIKE '%deepl%'\n    OR ce.identifier LIKE '%monica%'\n    OR ce.identifier LIKE '%sider%'\n);",
+                "query": "SELECT\n    ce.name,\n    ce.identifier,\n    ce.version,\n    ce.description,\n    ce.path,\n    ce.state,\n    u.username\nFROM users u CROSS JOIN chrome_extensions ce USING(uid)\nWHERE ce.state = 1 AND (\n    ce.name LIKE '%Copilot%' OR ce.name LIKE '%ChatGPT%'\n    OR ce.name LIKE '%Claude%' OR ce.name LIKE '%Gemini%'\n    OR ce.name LIKE '%Perplexity%' OR ce.name LIKE '%DeepSeek%'\n    OR ce.name LIKE '%Monica%' OR ce.name LIKE '%Merlin%'\n    OR ce.name LIKE 'Sider%' OR ce.name LIKE '%MaxAI%'\n    OR ce.name LIKE '%UseChatGPT%' OR ce.name LIKE 'Poe%'\n    OR ce.name LIKE '%Cody%' OR ce.name LIKE '%Codeium%'\n    OR ce.name LIKE '%Tabnine%' OR ce.name LIKE '%Blackbox%'\n    OR ce.name LIKE '%Phind%' OR ce.name LIKE '%Bito%'\n    OR ce.name LIKE '%Grammarly%' OR ce.name LIKE '%Jasper%'\n    OR ce.name LIKE '%Wordtune%' OR ce.name LIKE '%Quillbot%'\n    OR ce.name LIKE '%QuillBot%' OR ce.name LIKE '%Compose AI%'\n    OR ce.name LIKE '%Writesonic%' OR ce.name LIKE '%Copy.ai%'\n    OR ce.name LIKE '%You.com%' OR ce.name LIKE '%AIPRM%'\n    OR ce.name LIKE '%WebChatGPT%'\n    OR ce.name LIKE '%Glasp%' OR ce.name LIKE '%Eightify%'\n    OR ce.name LIKE '%NoteGPT%' OR ce.name LIKE '%tl;dv%'\n    OR ce.name LIKE '%DeepL%' OR ce.name LIKE '%Immersive Translate%'\n    OR ce.identifier IN (\n        'fjoaledfpmneenckfbpdfhkmimnjocfa',\n        'ngjjaadpdmddgbpmipagccngfbpmekei',\n        'hcmjdjeeoimlofdjmfpbpamldmmiifne',\n        'eollffkcakepchajholpcojldgkiikmf',\n        'kbbdabhdfibfiedgpfkhdnbdilnjohlm',\n        'aajjgdpofhhcffcgighomdiodecghjdd',\n        'fhjhmnknmdlphgcofkdldcgkkbedolhg'\n    )\n    OR ce.identifier LIKE '%chatgpt%'\n    OR ce.identifier LIKE '%copilot%'\n    OR ce.identifier LIKE '%claude%'\n    OR ce.identifier LIKE '%perplexity%'\n    OR ce.identifier LIKE '%deepseek%'\n    OR ce.identifier LIKE '%openai%'\n    OR ce.identifier LIKE '%anthropic%'\n    OR ce.identifier LIKE '%codeium%'\n    OR ce.identifier LIKE '%tabnine%'\n    OR ce.identifier LIKE '%grammarly%'\n    OR ce.identifier LIKE '%deepl%'\n    OR ce.identifier LIKE '%monica%'\n    OR ce.identifier LIKE '%sider%'\n);",
                 "interval": 86400,
                 "platform": "darwin",
                 "timeout": 180,
@@ -653,7 +573,7 @@
             },
             {
                 "id": "ai_launchd_services",
-                "query": "SELECT\n    label,\n    path,\n    program_arguments,\n    run_at_load\nFROM launchd\nWHERE label LIKE '%ollama%' OR label LIKE '%lmstudio%'\n    OR label LIKE '%gpt4all%' OR label LIKE '%jan%'\n    OR label LIKE '%anythingllm%' OR label LIKE '%pieces%'\n    OR label LIKE '%open-webui%' OR label LIKE '%litellm%'\n    OR label LIKE '%comfyui%' OR label LIKE '%invokeai%'\n    OR program_arguments LIKE '%ollama%'\n    OR program_arguments LIKE '%llama-server%'\n    OR program_arguments LIKE '%litellm%'\n    OR program_arguments LIKE '%mcp-server%';",
+                "query": "SELECT\n    label,\n    path,\n    program_arguments,\n    run_at_load\nFROM launchd\nWHERE label LIKE '%ollama%' OR label LIKE '%lmstudio%'\n    OR label LIKE '%gpt4all%' OR label LIKE '%jan.ai%'\n    OR label LIKE '%anythingllm%' OR label LIKE 'com.pieces%'\n    OR label LIKE '%open-webui%' OR label LIKE '%litellm%'\n    OR label LIKE '%comfyui%' OR label LIKE '%invokeai%'\n    OR program_arguments LIKE '%ollama%'\n    OR program_arguments LIKE '%llama-server%'\n    OR program_arguments LIKE '%litellm%'\n    OR program_arguments LIKE '%mcp-server%';",
                 "interval": 86400,
                 "platform": "darwin",
                 "timeout": 180,
@@ -783,7 +703,7 @@
             },
             {
                 "id": "ai_firefox_extensions_macos",
-                "query": "SELECT\n    fa.name,\n    fa.identifier,\n    fa.version,\n    fa.description,\n    fa.path,\n    fa.active,\n    u.username\nFROM users u CROSS JOIN firefox_addons fa USING(uid)\nWHERE fa.active = 1 AND (\n    fa.name LIKE '%Copilot%' OR fa.name LIKE '%ChatGPT%'\n    OR fa.name LIKE '%Claude%' OR fa.name LIKE '%Gemini%'\n    OR fa.name LIKE '%Perplexity%' OR fa.name LIKE '%DeepSeek%'\n    OR fa.name LIKE '%Monica%' OR fa.name LIKE '%Merlin%'\n    OR fa.name LIKE '%Sider%' OR fa.name LIKE '%MaxAI%'\n    OR fa.name LIKE '%UseChatGPT%' OR fa.name LIKE '%Poe%'\n    OR fa.name LIKE '%Cody%' OR fa.name LIKE '%Codeium%'\n    OR fa.name LIKE '%Tabnine%' OR fa.name LIKE '%Blackbox%'\n    OR fa.name LIKE '%Phind%' OR fa.name LIKE '%Bito%'\n    OR fa.name LIKE '%Grammarly%' OR fa.name LIKE '%Jasper%'\n    OR fa.name LIKE '%Wordtune%' OR fa.name LIKE '%Quillbot%'\n    OR fa.name LIKE '%QuillBot%' OR fa.name LIKE '%Compose AI%'\n    OR fa.name LIKE '%Writesonic%' OR fa.name LIKE '%Copy.ai%'\n    OR fa.name LIKE '%You.com%' OR fa.name LIKE '%AIPRM%'\n    OR fa.name LIKE '%WebChatGPT%'\n    OR fa.name LIKE '%Glasp%' OR fa.name LIKE '%Eightify%'\n    OR fa.name LIKE '%NoteGPT%' OR fa.name LIKE '%tl;dv%'\n    OR fa.name LIKE '%DeepL%' OR fa.name LIKE '%Immersive Translate%'\n    OR fa.identifier LIKE '%chatgpt%'\n    OR fa.identifier LIKE '%copilot%'\n    OR fa.identifier LIKE '%claude%'\n    OR fa.identifier LIKE '%perplexity%'\n    OR fa.identifier LIKE '%deepseek%'\n    OR fa.identifier LIKE '%openai%'\n    OR fa.identifier LIKE '%anthropic%'\n    OR fa.identifier LIKE '%codeium%'\n    OR fa.identifier LIKE '%tabnine%'\n    OR fa.identifier LIKE '%grammarly%'\n    OR fa.identifier LIKE '%deepl%'\n    OR fa.identifier LIKE '%monica%'\n    OR fa.identifier LIKE '%sider%');",
+                "query": "SELECT\n    fa.name,\n    fa.identifier,\n    fa.version,\n    fa.description,\n    fa.path,\n    fa.active,\n    u.username\nFROM users u CROSS JOIN firefox_addons fa USING(uid)\nWHERE fa.active = 1 AND (\n    fa.name LIKE '%Copilot%' OR fa.name LIKE '%ChatGPT%'\n    OR fa.name LIKE '%Claude%' OR fa.name LIKE '%Gemini%'\n    OR fa.name LIKE '%Perplexity%' OR fa.name LIKE '%DeepSeek%'\n    OR fa.name LIKE '%Monica%' OR fa.name LIKE '%Merlin%'\n    OR fa.name LIKE 'Sider%' OR fa.name LIKE '%MaxAI%'\n    OR fa.name LIKE '%UseChatGPT%' OR fa.name LIKE 'Poe%'\n    OR fa.name LIKE '%Cody%' OR fa.name LIKE '%Codeium%'\n    OR fa.name LIKE '%Tabnine%' OR fa.name LIKE '%Blackbox%'\n    OR fa.name LIKE '%Phind%' OR fa.name LIKE '%Bito%'\n    OR fa.name LIKE '%Grammarly%' OR fa.name LIKE '%Jasper%'\n    OR fa.name LIKE '%Wordtune%' OR fa.name LIKE '%Quillbot%'\n    OR fa.name LIKE '%QuillBot%' OR fa.name LIKE '%Compose AI%'\n    OR fa.name LIKE '%Writesonic%' OR fa.name LIKE '%Copy.ai%'\n    OR fa.name LIKE '%You.com%' OR fa.name LIKE '%AIPRM%'\n    OR fa.name LIKE '%WebChatGPT%'\n    OR fa.name LIKE '%Glasp%' OR fa.name LIKE '%Eightify%'\n    OR fa.name LIKE '%NoteGPT%' OR fa.name LIKE '%tl;dv%'\n    OR fa.name LIKE '%DeepL%' OR fa.name LIKE '%Immersive Translate%'\n    OR fa.identifier LIKE '%chatgpt%'\n    OR fa.identifier LIKE '%copilot%'\n    OR fa.identifier LIKE '%claude%'\n    OR fa.identifier LIKE '%perplexity%'\n    OR fa.identifier LIKE '%deepseek%'\n    OR fa.identifier LIKE '%openai%'\n    OR fa.identifier LIKE '%anthropic%'\n    OR fa.identifier LIKE '%codeium%'\n    OR fa.identifier LIKE '%tabnine%'\n    OR fa.identifier LIKE '%grammarly%'\n    OR fa.identifier LIKE '%deepl%'\n    OR fa.identifier LIKE '%monica%'\n    OR fa.identifier LIKE '%sider%');",
                 "interval": 86400,
                 "platform": "darwin",
                 "timeout": 120,
@@ -864,7 +784,7 @@
             },
             {
                 "id": "ai_safari_extensions",
-                "query": "SELECT\n    se.name,\n    se.identifier,\n    se.version,\n    se.description,\n    se.path,\n    u.username\nFROM users u\nCROSS JOIN safari_extensions se USING(uid)\nWHERE\n    se.name LIKE '%Copilot%' OR se.name LIKE '%ChatGPT%'\n    OR se.name LIKE '%Claude%' OR se.name LIKE '%Gemini%'\n    OR se.name LIKE '%Perplexity%' OR se.name LIKE '%DeepSeek%'\n    OR se.name LIKE '%Monica%' OR se.name LIKE '%Grammarly%'\n    OR se.name LIKE '%Quillbot%' OR se.name LIKE '%QuillBot%'\n    OR se.name LIKE '%DeepL%' OR se.name LIKE '%Immersive Translate%'\n    OR se.name LIKE '%Poe%' OR se.name LIKE '%MaxAI%'\n    OR se.name LIKE '%Sider%';",
+                "query": "SELECT\n    se.name,\n    se.identifier,\n    se.version,\n    se.description,\n    se.path,\n    u.username\nFROM users u\nCROSS JOIN safari_extensions se USING(uid)\nWHERE\n    se.name LIKE '%Copilot%' OR se.name LIKE '%ChatGPT%'\n    OR se.name LIKE '%Claude%' OR se.name LIKE '%Gemini%'\n    OR se.name LIKE '%Perplexity%' OR se.name LIKE '%DeepSeek%'\n    OR se.name LIKE '%Monica%' OR se.name LIKE '%Grammarly%'\n    OR se.name LIKE '%Quillbot%' OR se.name LIKE '%QuillBot%'\n    OR se.name LIKE '%DeepL%' OR se.name LIKE '%Immersive Translate%'\n    OR se.name LIKE 'Poe%' OR se.name LIKE '%MaxAI%'\n    OR se.name LIKE 'Sider%';",
                 "interval": 86400,
                 "platform": "darwin",
                 "timeout": 120,
@@ -1086,68 +1006,6 @@
                         "key": "event.action",
                         "value": {
                             "value": "osquery.ai_homebrew_packages"
-                        }
-                    }
-                ],
-                "snapshot": true
-            },
-            {
-                "id": "ai_model_cache_size_macos",
-                "query": "SELECT\n    CASE\n        WHEN path LIKE '%/.ollama/models/%' THEN 'ollama'\n        WHEN path LIKE '%/.cache/huggingface/%' THEN 'huggingface'\n        WHEN path LIKE '%/.lmstudio/%' OR path LIKE '%/.cache/lm-studio/%' THEN 'lm-studio'\n        WHEN path LIKE '%/.cache/llama.cpp/%' THEN 'llama.cpp'\n        WHEN path LIKE '%/.local/share/nomic.ai/GPT4All/%' THEN 'gpt4all'\n    END AS ai_tool,\n    CASE\n        WHEN path LIKE '%/.ollama/models/%' THEN '/Users/*/.ollama/models'\n        WHEN path LIKE '%/.cache/huggingface/%' THEN '/Users/*/.cache/huggingface/hub'\n        WHEN path LIKE '%/.lmstudio/%' OR path LIKE '%/.cache/lm-studio/%' THEN '/Users/*/.lmstudio/models'\n        WHEN path LIKE '%/.cache/llama.cpp/%' THEN '/Users/*/.cache/llama.cpp'\n        WHEN path LIKE '%/.local/share/nomic.ai/GPT4All/%' THEN '/Users/*/.local/share/nomic.ai/GPT4All'\n    END AS cache_path,\n    SUM(size) AS total_bytes\nFROM file\nWHERE (\n    path LIKE '/Users/%/.ollama/models/blobs/%'\n    OR path LIKE '/Users/%/.cache/huggingface/hub/%/blobs/%'\n    OR path LIKE '/Users/%/.lmstudio/models/%%'\n    OR path LIKE '/Users/%/.cache/lm-studio/%%'\n    OR path LIKE '/Users/%/.cache/llama.cpp/%%'\n    OR path LIKE '/Users/%/.local/share/nomic.ai/GPT4All/%%'\n)\nAND type = 'regular'\nGROUP BY ai_tool\nHAVING total_bytes > 104857600;",
-                "interval": 86400,
-                "platform": "darwin",
-                "timeout": 300,
-                "ecs_mapping": [
-                    {
-                        "key": "event.category",
-                        "value": {
-                            "value": [
-                                "file"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.type",
-                        "value": {
-                            "value": [
-                                "info"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "labels.model_tool",
-                        "value": {
-                            "field": "ai_tool"
-                        }
-                    },
-                    {
-                        "key": "file.path",
-                        "value": {
-                            "field": "cache_path"
-                        }
-                    },
-                    {
-                        "key": "file.size",
-                        "value": {
-                            "field": "total_bytes"
-                        }
-                    },
-                    {
-                        "key": "tags",
-                        "value": {
-                            "value": [
-                                "osquery",
-                                "ai_discovery",
-                                "model_storage",
-                                "shadow_ai",
-                                "darwin"
-                            ]
-                        }
-                    },
-                    {
-                        "key": "event.action",
-                        "value": {
-                            "value": "osquery.ai_model_cache_size"
                         }
                     }
                 ],
