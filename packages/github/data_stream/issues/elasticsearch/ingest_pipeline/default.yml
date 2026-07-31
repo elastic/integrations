@@ -58,6 +58,11 @@ processors:
       value: closed
       tag: set_event_action_closed
       if: ctx.github?.issues?.state == 'closed'
+  - set:
+      field: event.reason
+      copy_from: github.issues.state_reason
+      tag: set_event_reason_from_state_reason
+      ignore_empty_value: true
   - date:
       field: github.issues.updated_at
       formats:
