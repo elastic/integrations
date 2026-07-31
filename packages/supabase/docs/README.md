@@ -43,7 +43,7 @@ This integration requires a Supabase **Pro**, **Team**, or **Enterprise** plan. 
 
 ## Dashboards
 
-Kibana dashboards are provided by the **Supabase Dashboards** (`supabase_otel`) content package, which is installed automatically. The following dashboards are included:
+Kibana dashboards are provided by the **Supabase ** OpenTelemetry Assets package, which is installed automatically. The following dashboards are included:
 
 - **Node & Infrastructure** — CPU, memory, load, disk I/O, filesystem, network
 - **Database & Postgres Health** — connections, transactions, cache hit ratio, WAL, replication, bgwriter
