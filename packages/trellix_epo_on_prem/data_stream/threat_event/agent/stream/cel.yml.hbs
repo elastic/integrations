@@ -1,0 +1,189 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+auth.basic:
+  user: {{username}}
+  password: {{password}}
+state:
+  initial_interval: {{initial_interval}}
+  page_size: {{page_size}}
+  columns: >-
+    EPOEvents.AutoID EPOEvents.AutoGUID EPOEvents.ServerID
+    EPOEvents.ReceivedUTC EPOEvents.DetectedUTC EPOEvents.EventTimeLocal
+    EPOEvents.AgentGUID EPOEvents.Analyzer EPOEvents.AnalyzerName
+    EPOEvents.AnalyzerVersion EPOEvents.AnalyzerHostName
+    EPOEvents.AnalyzerIPV4 EPOEvents.AnalyzerIPV6 EPOEvents.AnalyzerMAC
+    EPOEvents.AnalyzerDATVersion EPOEvents.AnalyzerEngineVersion
+    EPOEvents.AnalyzerDetectionMethod EPOEvents.SourceHostName
+    EPOEvents.SourceIPV4 EPOEvents.SourceIPV6 EPOEvents.SourceMAC
+    EPOEvents.SourceUserName EPOEvents.SourceProcessName EPOEvents.SourceURL
+    EPOEvents.TargetHostName EPOEvents.TargetIPV4 EPOEvents.TargetIPV6
+    EPOEvents.TargetMAC EPOEvents.TargetUserName EPOEvents.TargetPort
+    EPOEvents.TargetProtocol EPOEvents.TargetProcessName
+    EPOEvents.TargetFileName EPOEvents.ThreatCategory
+    EPOEvents.ThreatEventID EPOEvents.ThreatSeverity EPOEvents.ThreatName
+    EPOEvents.ThreatType EPOEvents.ThreatActionTaken
+    EPOEvents.ThreatHandled EPOEvents.TenantId
+    EPExtendedEvent.EventAutoID EPExtendedEvent.Location
+    EPExtendedEvent.BladeName EPExtendedEvent.AnalyzerTechnologyVersion
+    EPExtendedEvent.AnalyzerContentCreationDate
+    EPExtendedEvent.AnalyzerContentVersion
+    EPExtendedEvent.AMCoreContentVersion EPExtendedEvent.AnalyzerRuleID
+    EPExtendedEvent.AnalyzerRuleName EPExtendedEvent.AnalyzerRegInfo
+    EPExtendedEvent.AnalyzerGTIQuery
+    EPExtendedEvent.ThreatDetectedOnCreation EPExtendedEvent.ThreatImpact
+    EPExtendedEvent.SourcePort EPExtendedEvent.SourceShareName
+    EPExtendedEvent.SourceProcessHash EPExtendedEvent.SourceProcessSigned
+    EPExtendedEvent.SourceProcessSigner
+    EPExtendedEvent.SourceParentProcessName
+    EPExtendedEvent.SourceParentProcessHash
+    EPExtendedEvent.SourceParentProcessSigned
+    EPExtendedEvent.SourceParentProcessSigner
+    EPExtendedEvent.SourceFilePath EPExtendedEvent.SourceFileSize
+    EPExtendedEvent.SourceHash EPExtendedEvent.SourceSigned
+    EPExtendedEvent.SourceSigner EPExtendedEvent.SourceModifyTime
+    EPExtendedEvent.SourceAccessTime EPExtendedEvent.SourceCreateTime
+    EPExtendedEvent.SourceDeviceDisplayName
+    EPExtendedEvent.SourceDeviceSerialNumber EPExtendedEvent.SourceDeviceVID
+    EPExtendedEvent.SourceDevicePID EPExtendedEvent.SourceDescription
+    EPExtendedEvent.SourceURLRatingCode
+    EPExtendedEvent.SourceURLWebCategory EPExtendedEvent.TargetURL
+    EPExtendedEvent.TargetShareName EPExtendedEvent.TargetHash
+    EPExtendedEvent.TargetSigned EPExtendedEvent.TargetSigner
+    EPExtendedEvent.TargetParentProcessSigned
+    EPExtendedEvent.TargetParentProcessSigner
+    EPExtendedEvent.TargetParentProcessName
+    EPExtendedEvent.TargetParentProcessHash EPExtendedEvent.TargetName
+    EPExtendedEvent.TargetPath EPExtendedEvent.TargetFileSize
+    EPExtendedEvent.TargetModifyTime EPExtendedEvent.TargetAccessTime
+    EPExtendedEvent.TargetCreateTime
+    EPExtendedEvent.TargetDeviceDisplayName
+    EPExtendedEvent.TargetDeviceSerialNumber EPExtendedEvent.TargetDeviceVID
+    EPExtendedEvent.TargetDevicePID EPExtendedEvent.TargetDescription
+    EPExtendedEvent.Cleanable EPExtendedEvent.TaskName
+    EPExtendedEvent.APIName EPExtendedEvent.FirstAttemptedAction
+    EPExtendedEvent.FirstActionStatus
+    EPExtendedEvent.SecondAttemptedAction
+    EPExtendedEvent.SecondActionStatus EPExtendedEvent.Topic
+    EPExtendedEvent.AttackVectorType EPExtendedEvent.AccessRequested
+    EPExtendedEvent.DurationBeforeDetection
+    EPExtendedEvent.NaturalLangDescription EPExtendedEvent.Direction
+redact:
+  fields:
+    - password
+program: |-
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with(
+        {
+          "received_utc": state.?cursor.received_utc.orValue(
+            string(now - duration(state.initial_interval)).substring(0, 19)
+          ),
+        }
+      )
+  ).as(state,
+    state.with(
+      get(
+        state.url.trim_right("/") + "/remote/core.executeQuery?" + {
+          "target": ["EPExtendedEvent"],
+          "select": [
+            "(select (top " + string(int(state.page_size)) + ") " + state.columns + ")",
+          ],
+          "where": [
+            "(where (ge EPOEvents.ReceivedUTC \"" + state.received_utc + "\"))",
+          ],
+          "order": [
+            "(order (asc EPOEvents.ReceivedUTC))",
+          ],
+          ":output": ["json"],
+        }.format_query()
+      ).as(resp,
+        (resp.StatusCode == 200) ?
+          (
+            string(resp.Body).trim_space().startsWith("OK:") ?
+              string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(
+                rows,
+                (
+                  (size(rows) > 0) ?
+                    (string(
+                      timestamp(
+                        int(
+                          timestamp(
+                            string(rows[size(rows) - 1]["EPOEvents.ReceivedUTC"])
+                          )
+                        )
+                      )
+                    ).substring(0, 19))
+                  :
+                    state.received_utc
+                ).as(new_received_utc,
+                  {
+                    "events": rows.map(row, {"message": row.encode_json()}),
+                    "received_utc": new_received_utc,
+                    "cursor": {"received_utc": new_received_utc},
+                    "want_more": size(rows) == int(state.page_size),
+                  }
+                )
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": "unexpected_response",
+                    "id": "missing_ok_prefix",
+                    "message": "GET /remote/core.executeQuery: " + string(resp.Body),
+                  },
+                },
+                "want_more": false,
+              }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /remote/core.executeQuery: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status)
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
