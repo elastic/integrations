@@ -23,7 +23,7 @@ Vercel data reaches Elasticsearch through a [Vercel drain](https://vercel.com/do
 Setup has three parts, done in order:
 
 1. Enable the Vercel features you want to collect.
-2. Gather two values from Elastic: a **drain URL** and an **API key**.
+2. Gather two values from Elastic: a **managed endpoint URL** and an **API key**.
 3. Create the drains in Vercel using those two values.
 
 ### Step 1: Enable the Vercel features you want to collect
@@ -32,31 +32,31 @@ Setup has three parts, done in order:
 - **Web Analytics**: install and enable the [@vercel/analytics](https://vercel.com/docs/analytics) SDK in your application so page views and custom events are emitted.
 - **Speed Insights**: install and enable the [@vercel/speed-insights](https://vercel.com/docs/speed-insights) SDK in your application so Web Vitals are collected in the browser.
 
-### Step 2: Gather the drain URL and API key from Elastic
+### Step 2: Gather the managed endpoint URL and API key from Elastic
 
 You need an Elastic Cloud Serverless project or an Elastic Cloud Hosted deployment.
 
-#### Drain URL
+#### Managed endpoint URL for Vercel
 
 Find your Elastic Cloud public endpoint:
 
 1. Log in to the [Elastic Cloud Console](https://cloud.elastic.co/).
 2. Open your project or deployment and select **Manage**.
-3. In **Application endpoints, cluster and component IDs**, select **OpenTelemetry** (Serverless projects) or **Managed OTLP** (Hosted deployments), then copy the public endpoint value.
+3. In **Application endpoints, cluster and component IDs**, select the Vercel endpoint, then copy the public endpoint value.
 
-The drain URL is that public endpoint plus `/vercel`, which is the path that accepts Vercel drain payloads:
+The managed endpoint URL for Vercel is that public endpoint plus `/vercel`, which is the path that accepts Vercel drain payloads:
 
 ```text
 https://<managed-endpoint>/vercel
 ```
 
-For example, if your public endpoint is `https://abc123.ingest.us-east-1.aws.elastic.cloud`, then the drain URL is:
+For example, if your public endpoint is `https://abc123.ingest.us-east-1.aws.elastic.cloud`, then the managed endpoint URL for Vercel is:
 
 ```text
 https://abc123.ingest.us-east-1.aws.elastic.cloud/vercel
 ```
 
-Every project and deployment has its own host, so always build the drain URL from the endpoint shown in your own Elastic Cloud project or deployment. Refer to [Find your endpoint](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint#find-your-elastic-cloud-managed-otlp-endpoint) for more detail.
+Every project and deployment has its own host, so always build the managed endpoint URL for Vercel from the endpoint shown in your own Elastic Cloud project or deployment. Refer to [Find your endpoint](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint#find-your-elastic-cloud-managed-otlp-endpoint) for more detail.
 
 #### API key
 
@@ -66,37 +66,43 @@ Alternatively, in your Elastic Cloud Serverless project, go to **Add data** → 
 
 ### Step 3: Create the drains in Vercel
 
-A Vercel drain carries a single data type, so create a separate drain for each of Logs, Audit Log, Web Analytics, and Speed Insights that you want in Elastic. All of them use the same drain URL and API key.
+A Vercel drain carries a single data type, so create a separate drain for each of Logs, Audit Log, Web Analytics, and Speed Insights that you want in Elastic. All of them use the same managed endpoint URL and API key.
 
 For each data type, in Vercel:
 
 1. Open your team **Drains** settings and create a drain for that data type.
 2. Choose **Custom Endpoint** as the destination.
-3. Set the **Endpoint URL** to the drain URL, for example `https://abc123.ingest.us-east-1.aws.elastic.cloud/vercel`.
+3. Set the **Endpoint URL** to the managed endpoint URL for Vercel, for example `https://abc123.ingest.us-east-1.aws.elastic.cloud/vercel`.
 4. Under **Custom Headers**, add a header named `Authorization` with the value `ApiKey <your-api-key>`, for example `Authorization: ApiKey abc123`.
 5. Save the drain.
 
 For Logs drains, you can also narrow which sources, environments, and sampling rates are forwarded under **Additional configuration for logs**. Refer to [Log Drains reference](https://vercel.com/docs/drains/reference/logs).
 
-> **Note**: The drain URL is always your Elastic Cloud public endpoint plus `/vercel`. Do not point the drain at a self-hosted collector for these assets; the supported path is the Elastic Cloud managed endpoint.
+> **Note**: The managed endpoint URL for Vercel is always your Elastic Cloud public endpoint plus `/vercel`. Do not point the drain at a self-hosted collector for these assets; the supported path is the Elastic Cloud managed endpoint.
 
 ## Reference
 
-Vercel drain payloads are decoded by the Elastic Cloud managed endpoint and written to the data streams below. For drain configuration and payload types on the Vercel side, see [Using drains](https://vercel.com/docs/drains/using-drains). For managed endpoint behavior, see [Managed inputs](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs).
+Vercel drain payloads are decoded by the Elastic Cloud managed endpoint and written to the data streams below. Each data type has its own payload schema, documented by Vercel, and those fields are what you query in Elastic. For drain configuration on the Vercel side, see [Using drains](https://vercel.com/docs/drains/using-drains). For managed endpoint behavior, see [Managed inputs](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs).
 
 ### Metrics
 
-Speed Insights Web Vitals (LCP, INP, CLS, TTFB, and related attributes) are stored in the `metrics-vercel.speedinsights.v1.otel-*` data stream.
+| Signal | Data stream | Fields |
+|--------|-------------|--------|
+| Speed Insights | `metrics-vercel.speedinsights.v1.otel-*` | [Speed Insights Drains reference](https://vercel.com/docs/drains/reference/speed-insights) |
+
+Speed Insights carries Web Vitals (LCP, INP, CLS, TTFB) and their related attributes, such as route, device, and country.
 
 ### Logs
 
-| Signal | Data stream |
-|--------|-------------|
-| Logs | `logs-vercel.logs.otel-*` |
-| Audit logs | `logs-vercel.auditlog.v1.otel-*` |
-| Web Analytics | `logs-vercel.analytics.v2.otel-*` |
+| Signal | Data stream | Fields |
+|--------|-------------|--------|
+| Logs | `logs-vercel.logs.otel-*` | [Log Drains reference](https://vercel.com/docs/drains/reference/logs) |
+| Audit logs | `logs-vercel.auditlog.v1.otel-*` | [Audit Log Drains reference](https://vercel.com/docs/drains/reference/audit-logs) |
+| Web Analytics | `logs-vercel.analytics.v2.otel-*` | [Analytics Drains reference](https://vercel.com/docs/drains/reference/analytics) |
 
 The Logs data stream holds every source selected on the drain, so it covers build output and static asset requests alongside function output from the `lambda` and `edge` runtimes. Use the **Log Source** filter on the Logs dashboard to focus on a single source.
+
+To see how a payload field is indexed, open the data stream in **Discover** and inspect a document, or check the data stream mappings in **Stack Management** → **Index Management**.
 
 ## Dashboards
 
