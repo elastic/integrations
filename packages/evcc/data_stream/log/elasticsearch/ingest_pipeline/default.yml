@@ -31,13 +31,23 @@ processors:
   #   2. a raw trace from an internal retry/backoff helper, with no component or level:
   #      yyyy-MM-dd HH:mm:ss.ffffff +zzzz TZ m=+<uptime> !! <duration> <text>
   #
+  # Both shapes carry evcc's own timestamp, matched here into unnamed groups and deliberately
+  # discarded: it is written in the host's local time with no UTC offset, so it is ambiguous
+  # across DST transitions. `@timestamp` is taken from journald's __REALTIME_TIMESTAMP instead,
+  # which is an unambiguous UTC epoch value recorded when evcc wrote the line.
+  #
+  # The uptime marker is matched as `m=%{NUMBER}` rather than `m=\+%{NUMBER}`: %{NUMBER} expands
+  # to %{BASE10NUM}, which opens with the negative lookbehind (?<![0-9.+-]). A literal `+` in the
+  # pattern immediately before it makes that lookbehind fail and the alternative unmatchable, so
+  # %{NUMBER} must consume the sign itself via its own optional [+-]? prefix.
+  #
   - grok:
       field: event.original
       tag: grok_envelope
       ignore_failure: true
       patterns:
         - '^\[%{DATA:evcc.log.component}\]\s+%{LOGLEVEL:log.level}\s+%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}(?:\s+%{GREEDYDATA:message})?$'
-        - '^%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME} %{DATA} %{DATA} m=\+%{NUMBER} !!\s*%{NOTSPACE:evcc.log._trace_duration}\s+%{GREEDYDATA:message}$'
+        - '^%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME} %{DATA} %{DATA} m=%{NUMBER} !!\s*%{NOTSPACE:evcc.log._trace_duration}\s+%{GREEDYDATA:message}$'
   - trim:
       field: evcc.log.component
       tag: trim_component
@@ -181,21 +191,38 @@ processors:
           ctx.event.outcome = 'failure';
         } else if (ctx.message != null && ctx.message.startsWith('add[') && ctx.evcc?.log?.error_reason != null) {
           ctx.event.action = 'device-read-failed';
+          ctx.event.category = ['network'];
+          ctx.event.type = ['connection'];
           ctx.event.outcome = 'failure';
         } else if (ctx.evcc?.log?.current_actual != null) {
           ctx.event.action = 'charger-current-mismatch';
+          ctx.event.category = ['configuration'];
+          ctx.event.type = ['info'];
+          ctx.event.outcome = 'failure';
         } else if (ctx.evcc?.log?.phases_actual != null) {
           ctx.event.action = 'charger-phases-mismatch';
+          ctx.event.category = ['configuration'];
+          ctx.event.type = ['info'];
+          ctx.event.outcome = 'failure';
         } else if (ctx.message == 'charger logic error: disabled but charging') {
           ctx.event.action = 'charger-disabled-but-charging';
+          ctx.event.category = ['configuration'];
+          ctx.event.type = ['info'];
+          ctx.event.outcome = 'failure';
         } else if (ctx.message == 'charger enable: timeout') {
           ctx.event.action = 'charger-enable-timeout';
+          ctx.event.category = ['network'];
+          ctx.event.type = ['connection'];
           ctx.event.outcome = 'failure';
         } else if (ctx.evcc?.log?.current_limit != null) {
           ctx.event.action = 'charge-current-limit-timeout';
+          ctx.event.category = ['network'];
+          ctx.event.type = ['connection'];
           ctx.event.outcome = 'failure';
         } else if (ctx.message == 'grid power: outdated') {
           ctx.event.action = 'grid-power-outdated';
+          ctx.event.category = ['network'];
+          ctx.event.type = ['connection'];
           ctx.event.outcome = 'failure';
         } else if (ctx.message == 'energy meter does not respond') {
           ctx.event.action = 'energy-meter-unresponsive';
@@ -231,12 +258,16 @@ processors:
   # Safety net: if the envelope grok did not match at all (an unforeseen future log shape), force-keep
   # the raw line in event.original regardless of the preserve_original_event setting, and fall back to
   # it for `message` too so the field is never empty.
+  #
+  # The condition tests that no envelope was recognised at all, not merely that `message` is empty:
+  # a leveled line with an empty text body (e.g. `[site  ] ERROR 2026/07/22 15:07:04`) parses
+  # correctly into component and log.level and must not be tagged as unparsed.
   - append:
       field: tags
       tag: preserve_original_on_unparsed_envelope
       value: preserve_original_event
       allow_duplicates: false
-      if: ctx.message == null
+      if: ctx.message == null && ctx.evcc?.log?.component == null
   - set:
       field: message
       tag: fallback_message_from_original

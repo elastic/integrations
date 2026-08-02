@@ -19,12 +19,14 @@ This integration uses two collection methods:
 
 The evcc integration collects metrics and logs of the following types:
 * **Site**: home power, grid power, solar (PV) power and energy, home battery power/state of charge, and cost/CO2/solar-share statistics for several reporting periods.
-* **Loadpoint**: per-charge-point mode, charging/connected/enabled state, charge power, charged energy, session duration, effective current/SoC limits, and connected vehicle name/SoC/range.
+* **Loadpoint**: per-charge-point position (`evcc.loadpoint.index`), mode, charging/connected/enabled state, charge power, charged energy, session duration, effective current/SoC limits, and connected vehicle name/SoC/range.
 * **Log**: evcc's own application logs collected via journald. Charging session lifecycle events (car connected/disconnected, charging started/stopped), vehicle API errors (timeouts, HTTP error status codes), device read failures (battery/PV/grid meter connectivity), and charger logic warnings are parsed into dedicated ECS fields (`event.action`, `event.category`, `event.outcome`, `destination.ip`/`port`, `url.*`, `http.response.status_code`, etc.). High-volume DEBUG-level telemetry lines are kept as plain `message` text, since the same readings are already collected in structured form by the site and loadpoint data streams.
 
 ### Supported use cases
 
-This integration enables dashboards and alerts for home energy management, such as tracking how much of your EV charging is solar-powered, monitoring home battery state of charge, being notified when a loadpoint stops charging unexpectedly, or alerting on repeated vehicle API or device read failures surfaced in the logs.
+This integration enables visualizations and alerts for home energy management, such as tracking how much of your EV charging is solar-powered, monitoring home battery state of charge, being notified when a loadpoint stops charging unexpectedly, or alerting on repeated vehicle API or device read failures surfaced in the logs. The integration ships no Kibana assets of its own; build your own visualizations over the data streams listed below.
+
+Logs and loadpoint metrics share a join key: `evcc.loadpoint.index` on the metrics side and `evcc.log.loadpoint` on the log side both hold the loadpoint's 1-based position in your evcc configuration, which is the number evcc uses in its `lp-<N>` log component prefix. Use it to correlate, for example, a charging session with the vehicle API errors logged for the same charge point. Note that the loadpoint data stream collects at most 32 loadpoints.
 
 ## What do I need to use this integration?
 
@@ -49,7 +51,7 @@ For the metrics data streams, Elastic Agent polls the evcc REST API directly ove
 
 ### Validation
 
-After the integration is running, confirm data is arriving by checking the `metrics-evcc.site-*`, `metrics-evcc.loadpoint-*`, and `logs-evcc.log-*` data streams in **Discover**, or by browsing the field values in the installed dashboards.
+After the integration is running, confirm data is arriving by checking the `metrics-evcc.site-*`, `metrics-evcc.loadpoint-*`, and `logs-evcc.log-*` data streams in **Discover**.
 
 ## Troubleshooting
 

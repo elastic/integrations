@@ -5,6 +5,17 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: '9.3.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -32,13 +43,13 @@ processors:
       lang: painless
       if: ctx.json?.battery != null
       description: >-
-        evcc has changed the shape of the top-level `battery` field between versions: older releases (e.g. 0.211.x)
-        return a single battery object directly, newer releases (e.g. 0.312.x) return a list of battery objects.
+        evcc varies the shape of the top-level `battery` field between versions: some releases (e.g. 0.211.x)
+        return a list of battery objects, others (e.g. 0.312.x) return a single battery object directly.
         This normalizes both shapes to the first battery's power/soc/capacity, matching the single-battery fields
         this data stream exposes.
       source: >-
         def batt = ctx.json.battery instanceof List
-          ? (ctx.json.battery.length > 0 ? ctx.json.battery[0] : null)
+          ? (ctx.json.battery.size() > 0 ? ctx.json.battery[0] : null)
           : ctx.json.battery;
         if (batt != null) {
           if (batt.containsKey('power')) {
@@ -56,9 +67,23 @@ processors:
       tag: remove_null_fields
       lang: painless
       if: ctx.json != null
-      description: Removes null-valued fields so optional evcc metrics that are not configured (e.g. no battery) do not appear in the document.
+      description: >-
+        Removes null-valued fields, at any depth, so optional evcc metrics that are not configured
+        (e.g. no battery, or no CO2/price tariff inside `statistics`) do not appear in the document.
+        The nested pass matters because the `statistics` object is passed through by the CEL program
+        verbatim and its leaves are renamed two levels down, where a null value would fail the rename.
       source: >-
-        ctx.json.entrySet().removeIf(e -> e.getValue() == null);
+        def pending = new ArrayList();
+        pending.add(ctx.json);
+        while (!pending.isEmpty()) {
+          Map current = (Map) pending.remove(pending.size() - 1);
+          current.entrySet().removeIf(e -> e.getValue() == null);
+          for (def value : current.values()) {
+            if (value instanceof Map) {
+              pending.add(value);
+            }
+          }
+        }
   - set:
       field: '@timestamp'
       tag: set_timestamp_from_ingest

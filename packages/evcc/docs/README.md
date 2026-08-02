@@ -20,12 +20,14 @@ This integration uses two collection methods:
 
 The evcc integration collects metrics and logs of the following types:
 * **Site**: home power, grid power, solar (PV) power and energy, home battery power/state of charge, and cost/CO2/solar-share statistics for several reporting periods.
-* **Loadpoint**: per-charge-point mode, charging/connected/enabled state, charge power, charged energy, session duration, effective current/SoC limits, and connected vehicle name/SoC/range.
+* **Loadpoint**: per-charge-point position (`evcc.loadpoint.index`), mode, charging/connected/enabled state, charge power, charged energy, session duration, effective current/SoC limits, and connected vehicle name/SoC/range.
 * **Log**: evcc's own application logs collected via journald. Charging session lifecycle events (car connected/disconnected, charging started/stopped), vehicle API errors (timeouts, HTTP error status codes), device read failures (battery/PV/grid meter connectivity), and charger logic warnings are parsed into dedicated ECS fields (`event.action`, `event.category`, `event.outcome`, `destination.ip`/`port`, `url.*`, `http.response.status_code`, etc.). High-volume DEBUG-level telemetry lines are kept as plain `message` text, since the same readings are already collected in structured form by the site and loadpoint data streams.
 
 ### Supported use cases
 
-This integration enables dashboards and alerts for home energy management, such as tracking how much of your EV charging is solar-powered, monitoring home battery state of charge, being notified when a loadpoint stops charging unexpectedly, or alerting on repeated vehicle API or device read failures surfaced in the logs.
+This integration enables visualizations and alerts for home energy management, such as tracking how much of your EV charging is solar-powered, monitoring home battery state of charge, being notified when a loadpoint stops charging unexpectedly, or alerting on repeated vehicle API or device read failures surfaced in the logs. The integration ships no Kibana assets of its own; build your own visualizations over the data streams listed below.
+
+Logs and loadpoint metrics share a join key: `evcc.loadpoint.index` on the metrics side and `evcc.log.loadpoint` on the log side both hold the loadpoint's 1-based position in your evcc configuration, which is the number evcc uses in its `lp-<N>` log component prefix. Use it to correlate, for example, a charging session with the vehicle API errors logged for the same charge point. Note that the loadpoint data stream collects at most 32 loadpoints.
 
 ## What do I need to use this integration?
 
@@ -50,7 +52,7 @@ For the metrics data streams, Elastic Agent polls the evcc REST API directly ove
 
 ### Validation
 
-After the integration is running, confirm data is arriving by checking the `metrics-evcc.site-*`, `metrics-evcc.loadpoint-*`, and `logs-evcc.log-*` data streams in **Discover**, or by browsing the field values in the installed dashboards.
+After the integration is running, confirm data is arriving by checking the `metrics-evcc.site-*`, `metrics-evcc.loadpoint-*`, and `logs-evcc.log-*` data streams in **Discover**.
 
 ## Troubleshooting
 
@@ -80,6 +82,7 @@ The `site` data stream provides site-level metrics from evcc of the following ty
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
 | evcc.site.battery.capacity | Home battery capacity, in kWh. | double |  | gauge |
 | evcc.site.battery.power | Current home battery power, in watts. Positive values indicate discharging, negative values indicate charging. | double |  | gauge |
 | evcc.site.battery.soc | Home battery state of charge, in percent. | double | percent | gauge |
@@ -109,7 +112,9 @@ The `site` data stream provides site-level metrics from evcc of the following ty
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |  |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |  |
 | input.type | Type of input that generated the event. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
 
 
 #### site sample event
@@ -118,26 +123,26 @@ An example event for `site` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-07-23T11:53:22.505158347Z",
+    "@timestamp": "2026-08-02T15:03:49.111803033Z",
     "agent": {
-        "ephemeral_id": "747395b5-6f7f-44c1-a7ee-6b15f524d9d8",
-        "id": "f50ee4c1-cf1a-4f39-af0a-d78d5cd13521",
-        "name": "elastic-agent-89045",
+        "ephemeral_id": "67997be3-cad3-4649-8a09-8a967d8b8c9b",
+        "id": "ca919993-dd34-463c-bae5-b78c1a7886de",
+        "name": "elastic-agent-84937",
         "type": "filebeat",
-        "version": "9.3.1"
+        "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "evcc.site",
-        "namespace": "51725",
+        "namespace": "59093",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "f50ee4c1-cf1a-4f39-af0a-d78d5cd13521",
+        "id": "ca919993-dd34-463c-bae5-b78c1a7886de",
         "snapshot": false,
-        "version": "9.3.1"
+        "version": "9.4.3"
     },
     "evcc": {
         "site": {
@@ -190,7 +195,7 @@ An example event for `site` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.site",
-        "ingested": "2026-07-23T11:53:22Z",
+        "ingested": "2026-08-02T15:03:49Z",
         "kind": "metric",
         "original": "{\"battery\":{\"capacity\":13.4,\"devices\":[{\"capacity\":13.4,\"controllable\":true,\"name\":\"battery\",\"power\":0,\"soc\":76}],\"power\":0,\"soc\":76},\"currency\":\"EUR\",\"grid_power\":-407.8566601636994,\"home_power\":500,\"pv_energy\":24521300,\"pv_power\":8307.59154846352,\"site_title\":\"My Home\",\"statistics\":{\"30d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"365d\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"thisYear\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702},\"total\":{\"avgCo2\":62.14859311838828,\"avgPrice\":0.11162431782896463,\"chargedKWh\":221.77069867393018,\"solarPercentage\":83.70583267207702}},\"version\":\"0.312.1\"}"
     },
@@ -219,6 +224,7 @@ The `loadpoint` data stream provides one event per evcc loadpoint (charge point)
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
 | evcc.loadpoint.charge.duration.sec | Duration of the current charging session, in seconds. | double |  | gauge |
 | evcc.loadpoint.charge.energy | Energy charged during the current charging session, in Wh. | double |  | gauge |
 | evcc.loadpoint.charge.power | Current charging power at the loadpoint, in watts. | double |  | gauge |
@@ -232,6 +238,7 @@ The `loadpoint` data stream provides one event per evcc loadpoint (charge point)
 | evcc.loadpoint.effective.max_current | Effective maximum charging current for this loadpoint, in amperes. | double |  | gauge |
 | evcc.loadpoint.effective.min_current | Effective minimum charging current for this loadpoint, in amperes. | double |  | gauge |
 | evcc.loadpoint.enabled | Whether charging is enabled on the loadpoint. | boolean |  |  |
+| evcc.loadpoint.index | 1-based position of the loadpoint in the evcc configuration. evcc uses the same number to identify loadpoints in its logs, where it appears as the `lp-\<N\>` component prefix and is mapped to `evcc.log.loadpoint`, so this field joins loadpoint metrics to loadpoint logs. | long |  |  |
 | evcc.loadpoint.last_24h_energy | Energy charged at this loadpoint over the last 24 hours, in Wh. | double |  | gauge |
 | evcc.loadpoint.last_7d_energy | Energy charged at this loadpoint over the last 7 days, in Wh. | double |  | gauge |
 | evcc.loadpoint.mode | Charging mode of the loadpoint, e.g. off, now, minpv, or pv. | keyword |  |  |
@@ -243,7 +250,9 @@ The `loadpoint` data stream provides one event per evcc loadpoint (charge point)
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |  |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |  |
 | input.type | Type of input that generated the event. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
 
 
 #### loadpoint sample event
@@ -252,26 +261,26 @@ An example event for `loadpoint` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-07-23T11:54:38.455266302Z",
+    "@timestamp": "2026-08-02T15:03:03.090010619Z",
     "agent": {
-        "ephemeral_id": "abd54fcf-ebf6-4905-bfac-ab7c93350729",
-        "id": "ba614120-0516-456c-8b15-efde815837ff",
-        "name": "elastic-agent-83890",
+        "ephemeral_id": "b8ef183f-d040-49d4-a6af-9b606aaee547",
+        "id": "9718ac0a-2ac0-4f20-b9e1-38057a7672f3",
+        "name": "elastic-agent-51526",
         "type": "filebeat",
-        "version": "9.3.1"
+        "version": "9.4.3"
     },
     "data_stream": {
         "dataset": "evcc.loadpoint",
-        "namespace": "92223",
+        "namespace": "53619",
         "type": "metrics"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "ba614120-0516-456c-8b15-efde815837ff",
+        "id": "9718ac0a-2ac0-4f20-b9e1-38057a7672f3",
         "snapshot": false,
-        "version": "9.3.1"
+        "version": "9.4.3"
     },
     "evcc": {
         "loadpoint": {
@@ -298,6 +307,7 @@ An example event for `loadpoint` looks as following:
                 "min_current": 3
             },
             "enabled": true,
+            "index": 1,
             "last_24h_energy": 88014,
             "last_7d_energy": 190432,
             "mode": "pv",
@@ -315,9 +325,9 @@ An example event for `loadpoint` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "evcc.loadpoint",
-        "ingested": "2026-07-23T11:54:38Z",
+        "ingested": "2026-08-02T15:03:03Z",
         "kind": "metric",
-        "original": "{\"charge_duration\":91241,\"charge_power\":6900,\"charge_remaining_duration\":41739,\"charge_remaining_energy\":40000,\"charged_energy\":103212.794,\"charger_status_reason\":\"unknown\",\"charging\":true,\"connected\":true,\"connected_duration\":3600,\"effective_limit_soc\":95,\"effective_max_current\":13,\"effective_min_current\":3,\"enabled\":true,\"last_24h_energy\":88014,\"last_7d_energy\":190432,\"mode\":\"pv\",\"site_title\":\"My Home\",\"title\":\"Garage\",\"vehicle_name\":\"blue e-Golf\",\"vehicle_range\":210,\"vehicle_soc\":63}"
+        "original": "{\"charge_duration\":91241,\"charge_power\":6900,\"charge_remaining_duration\":41739,\"charge_remaining_energy\":40000,\"charged_energy\":103212.794,\"charger_status_reason\":\"unknown\",\"charging\":true,\"connected\":true,\"connected_duration\":3600,\"effective_limit_soc\":95,\"effective_max_current\":13,\"effective_min_current\":3,\"enabled\":true,\"index\":1,\"last_24h_energy\":88014,\"last_7d_energy\":190432,\"mode\":\"pv\",\"site_title\":\"My Home\",\"title\":\"Garage\",\"vehicle_name\":\"blue e-Golf\",\"vehicle_range\":210,\"vehicle_soc\":63}"
     },
     "input": {
         "type": "cel"
@@ -386,6 +396,7 @@ The `log` data stream provides evcc's own application logs, collected via journa
 | log.syslog.procid | The process name or ID that originated the Syslog message, if available. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | related.ip | All of the IPs seen on your event. | ip |
+| tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |

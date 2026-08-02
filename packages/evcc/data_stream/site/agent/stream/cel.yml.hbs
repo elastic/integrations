@@ -29,9 +29,9 @@ program: |
             "grid_power": body.?grid.power.orValue(null),
             "pv_power": body.?pvPower.orValue(null),
             "pv_energy": body.?pvEnergy.orValue(null),
-            // evcc has changed the shape of this field between versions: older releases return a single
-            // battery object, newer releases return a list of battery objects. Both are passed through
-            // as-is here and normalized in the ingest pipeline, which can do proper type introspection.
+            // evcc varies the shape of this field between versions: some releases (e.g. 0.211.x) return a
+            // list of battery objects, others (e.g. 0.312.x) return a single battery object. Both are passed
+            // through as-is here and normalized in the ingest pipeline, which can do proper type introspection.
             "battery": body.?battery.orValue(null),
             "statistics": body.?statistics.orValue(null),
           }.encode_json(),
