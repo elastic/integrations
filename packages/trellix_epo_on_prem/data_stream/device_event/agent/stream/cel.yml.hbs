@@ -1,0 +1,129 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+auth.basic:
+  user: {{username}}
+  password: {{password}}
+state:
+  initial_interval: {{initial_interval}}
+  page_size: {{page_size}}
+  columns: >-
+    EEFFDeviceAllEventsView.AutoID EEFFDeviceAllEventsView.AgentGUID
+    EEFFDeviceAllEventsView.BackupSize EEFFDeviceAllEventsView.BackupState
+    EEFFDeviceAllEventsView.BackupTime EEFFDeviceAllEventsView.DeviceSize
+    EEFFDeviceAllEventsView.DeviceSN EEFFDeviceAllEventsView.Exempted
+    EEFFDeviceAllEventsView.EventID EEFFDeviceAllEventsView.FileSystem
+    EEFFDeviceAllEventsView.FileSystemVersion
+    EEFFDeviceAllEventsView.InitializationState
+    EEFFDeviceAllEventsView.InitializationTime
+    EEFFDeviceAllEventsView.ProductName EEFFDeviceAllEventsView.Protected
+    EEFFDeviceAllEventsView.ProtectedSize EEFFDeviceAllEventsView.UserName
+    EEFFDeviceAllEventsView.UserResponse EEFFDeviceAllEventsView.VendorName
+    EEFFDeviceAllEventsView.EventGeneratedTime
+    EEFFDeviceAllEventsView.EventReportedTime EEFFDeviceAllEventsView.Key
+    EEFFDeviceAllEventsView.CredentialType
+    EEFFDeviceAllEventsView.MediaType
+redact:
+  fields:
+    - password
+program: |
+  (
+    state.?want_more.orValue(false)
+    ?
+      state
+    :
+      state.with(
+        {
+          "event_generated_time": state.?cursor.last_event_generated_time.orValue(
+            (now - duration(state.initial_interval)).format("2006-01-02T15:04:05")
+          ),
+        }
+      )
+  ).as(state,
+    state.with(
+      get(
+        state.url.trim_right("/") + "/remote/core.executeQuery?" + {
+          "target": ["EEFFDeviceAllEventsView"],
+          "select": [
+            "(select (top " + string(state.page_size) + ") " + state.columns + ")",
+          ],
+          // The inclusive time cursor intentionally overlaps the boundary
+          // timestamp so downstream fingerprinting can remove duplicates.
+          "where": [
+            "(where (ge EEFFDeviceAllEventsView.EventGeneratedTime \"" +
+              state.event_generated_time + "\"))",
+          ],
+          "order": [
+            "(order (asc EEFFDeviceAllEventsView.EventGeneratedTime))",
+          ],
+        }.format_query() + "&:output=json"
+      ).as(resp,
+        (resp.StatusCode == 200)
+        ?
+          string(resp.Body).trim_space().trim_prefix("OK:").trim_space().decode_json().as(rows,
+            (
+              (size(rows) > 0)
+              ?
+                timestamp(
+                  string(
+                    rows[size(rows) - 1]["EEFFDeviceAllEventsView.EventGeneratedTime"]
+                  )
+                ).format("2006-01-02T15:04:05")
+              :
+                state.event_generated_time
+            ).as(new_event_generated_time,
+              {
+                "events": rows.map(e, {"message": e.encode_json()}),
+                "event_generated_time": new_event_generated_time,
+                "cursor": {
+                  "last_event_generated_time": new_event_generated_time,
+                },
+                "want_more": size(rows) == int(state.page_size),
+              }
+            )
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /remote/core.executeQuery: " + (
+                  (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
