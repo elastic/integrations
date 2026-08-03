@@ -172,13 +172,6 @@ updateBackportBranchContents() {
     git checkout "$SOURCE_BRANCH" -- "magefile.go"
     git add magefile.go
 
-    # As this script runs in the context of the main branch (mainly go mod tidy), we need to copy
-    # the .go-version file from the main branch to the backport branch. This avoids failures
-    # installing dependencies in the backport Pull Request.
-    echo "--- Copying .go-version from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- ".go-version"
-    git add .go-version
-
     # Restore workflows from the main branch since modifying them requires extra permissions.
     # > error: GH013: Repository rule violations found for ...
     # > refusing to allow a GitHub App to create or update workflow `.github/workflows/bump-elastic-stack-version.yml` without `workflows` permission
@@ -191,11 +184,17 @@ updateBackportBranchContents() {
     git checkout "$SOURCE_BRANCH" -- "tools.go"
     git add tools.go
 
+    # Switch to the backport branch's Go version so go mod tidy keeps go.mod as-is.
+    eval "$(gvm "$(cat .go-version)")"
+
     # Run go mod tidy to update just the dependencies related to magefile and dev scripts
     echo "--- Running go mod tidy to update dependencies related to magefile and dev scripts..."
     go mod tidy
 
     git add go.mod go.sum
+
+    # Restore the Go version from the source branch for the rest of the script execution.
+    eval "$(gvm "$(git show "${SOURCE_BRANCH}:.go-version")")"
   fi
 
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
