@@ -64,14 +64,16 @@ fi
 
 cd "${REPO_ROOT}"
 
-# *bool params are passed as -flagname; *string params are positional.
-# All optional strings must be passed in declaration order; empty string = nil in mage.
-bool_flags=()
-[[ "$open_pr" == "true" ]] && bool_flags+=("-openPR")
-[[ "$as_json"  == "true" ]] && bool_flags+=("-asJSON")
-[[ "$dry_run"  == "true" ]] && bool_flags+=("-dryRun")
+# *bool and *string params are all passed as -flagname [value]; omitting a
+# flag leaves the param nil in mage, which Apply() treats as "use default".
+flags=()
+[[ "$open_pr"     == "true" ]] && flags+=("-openPR")
+[[ "$as_json"     == "true" ]] && flags+=("-asJSON")
+[[ "$dry_run"     == "true" ]] && flags+=("-dryRun")
+[[ -n "$remote"       ]] && flags+=("-remote=$remote")
+[[ -n "$repository"   ]] && flags+=("-repository=$repository")
+[[ -n "$packages_dir" ]] && flags+=("-packagesDir=$packages_dir")
 
 exec mage ApplyBackport \
     "$sha" "$pkg" "$target" \
-    "${bool_flags[@]+"${bool_flags[@]}"}" \
-    "$remote" "$repository" "$packages_dir"
+    "${flags[@]+"${flags[@]}"}"

@@ -25,18 +25,18 @@ The integration processes these event types:
 | Event | Description | ECS category |
 |-------|-------------|--------------|
 | `tool_result` | Tool execution outcome (success/failure, duration, parameters). | `process` |
-| `tool_decision` | Permission decision for a tool call (accept/reject, source). | `process` |
-| `api_request` | API call to Anthropic (model, cost, tokens, duration). | `web` |
-| `user_prompt` | User prompt submission (length, command, optionally text). | `process` |
-| `api_error` | API request failure (error, status code, retry attempt). | `web` |
-| `api_refusal` | Content safety refusal from the model. | `web` |
+| `tool_decision` | Permission decision for a tool call (accept/reject, source). | `iam` |
+| `api_request` | API call to Anthropic (model, cost, tokens, duration). | `api` |
+| `user_prompt` | User prompt submission (length, command, optionally text). | — |
+| `api_error` | API request failure (error, status code, retry attempt). | `api` |
+| `api_refusal` | Content safety refusal from the model. | `api` |
 | `permission_mode_changed` | Permission mode change (from/to mode, trigger). | `configuration` |
 | `mcp_server_connection` | MCP server connection attempt (status, transport type). | `network` |
-| `hook_registered` | Hook registration (name, event type, matcher). | `process` |
+| `hook_registered` | Hook registration (name, event type, matcher). | `configuration` |
 | `hook_execution_start` | Hook execution start. | `process` |
 | `hook_execution_complete` | Hook execution result (success/failure counts, duration). | `process` |
-| `plugin_loaded` | Plugin loaded (name, scope, paths). | `package` |
-| `skill_activated` | Skill activation (name, source, trigger). | `process` |
+| `plugin_loaded` | Plugin loaded (name, scope, paths). | `library` |
+| `skill_activated` | Skill activation (name, source, trigger). | — |
 
 ## What do I need to use this integration?
 

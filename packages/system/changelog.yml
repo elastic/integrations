@@ -1,4 +1,20 @@
 # later versions go on top
+- version: "2.22.1"
+  changes:
+    - description: Fix `@timestamp` being overwritten by `ClientCreationTime` (process start time) on Windows Security events 5058, 5059, and 5061. The `date_clientcreationtime` processor was missing `target_field`, causing it to default to `@timestamp` instead of writing back to `winlog.event_data.ClientCreationTime`.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20354
+- version: "2.22.0"
+  changes:
+    - description: >-
+        Populate `user.target.name` (and `user.target.id` for useradd) with the affected account for useradd account creation, usermod group membership, userdel deletion, and PAM password change events, and extract `user.target.name` and `group.name` from userdel messages. For backward compatibility these events keep writing the affected account to `user.name`/`user.id`; this duplication is deprecated and will be removed in a future major version — update detection rules, dashboards, and other content that reads the affected account from `user.name` to use `user.target.name` instead.
+      type: enhancement
+      link: https://github.com/elastic/integrations/issues/20105
+- version: "2.21.0"
+  changes:
+    - description: Parse Windows Security scheduled task XML and task names into structured winlog.scheduled_task.* fields for detection and hunting.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19193
 - version: "2.20.0"
   changes:
     - description: Populate event.action and event.type for PAM authentication failure events across all modules.

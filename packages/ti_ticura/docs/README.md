@@ -34,9 +34,8 @@ This integration requires Elastic Agent. If you have none, check the [Elastic Ag
 1. Open Kibana and navigate to **Integrations**.
 2. Search for **Ticura**.
 3. Select **Add Ticura**.
-4. Enter your feed name into **Advanced Options** → **Namespace** — this becomes part of the data-stream name (`logs-ti_ticura.indicator-{namespace}`), so each Ticura feed you configure ends up in its own queryable index. Use lowercase ASCII; the value also appears in the CEL request-tracer filename, the dashboard's `Namespace` control, and any saved searches.
-5. Enter your API key into **Ticura API key**.
-6. Select your **Download Interval** and your **Agent**, then click **Save and continue** to enable the integration.
+4. Enter your API key into **Ticura API key**.
+5. Select your **Download Interval** and your **Agent**, then click **Save and continue** to enable the integration.
 
 After the integration is enabled, indicators are periodically retrieved and ingested into Elastic.
 
@@ -56,6 +55,7 @@ Each ingested event represents a single indicator of compromise (IOC) and includ
 - Domains
 - URLs
 - File hashes (MD5, SHA-1, SHA-256)
+- Email addresses
 
 ### Indicator Removal and Lifecycle
 
@@ -70,6 +70,10 @@ Raw-stream documents are tagged `labels.is_ioc_transform_source: "true"` and the
 **Important — keep the download interval below 24 hours.** Every indicator is re-asserted on each download, and the active view expires on a ~24-hour window, so a longer interval can let still-active indicators briefly drop out of dashboards and Indicator Match rules between downloads. The same interval bounds deletion: an indicator Ticura removes from the feed leaves the active set within roughly a day of its last download, and never faster than one interval — so a shorter interval also removes deleted indicators sooner.
 
 If you need to retain raw indicator history longer (for example, for forensic queries against retired IOCs), increase `delete.min_age` in the ILM policy `logs-ti_ticura.indicator-default_policy`.
+
+### Multiple feeds
+
+If you run more than one Ticura feed, the latest-IOC transform deduplicates across all of them by `ticura.indicator.uuid` into the single `logs-ti_ticura_latest.indicator` index — the unified, deduplicated view every Elastic threat-intel integration provides. An indicator delivered by more than one feed is kept **once**, which avoids duplicate Indicator Match alerts for the same IOC. To break the deduplicated view down by source, slice on `threat.feed.name` (as the Overview's *Indicators by origin* panel does).
 
 ### Operational considerations
 
@@ -93,18 +97,17 @@ Three dashboards are bundled, all scoped to `event.module: ti_ticura` and `label
 
 Strategic view of the current feed: counts and distributions by type, country, industry, actor, malware family, MITRE technique, and feed source.
 
-The dashboard has nine interactive controls at the top, with **hierarchical chaining** — each control's options are filtered by selections made to its left:
+The dashboard has eight interactive controls at the top, with **hierarchical chaining** — each control's options are filtered by selections made to its left:
 
 | Control | Field | Use |
 |---------|-------|-----|
-| Indicator Type | `ticura.indicator.main_type` | IPV4 / IPV6 / DOMAIN / URL / HASH |
+| Indicator Type | `ticura.indicator.main_type` | IPV4 / IPV6 / DOMAIN / URL / HASH / EMAIL |
 | Risk Category | `ticura.indicator.risk_category` | low / medium / high / critical |
 | Threat Type | `ticura.indicator.additional_info.threat_types` | `Command and Control Server`, `Phishing`, `Malware`, … |
 | MITRE Technique | `threat.technique.id` | Filter by ATT&CK technique (T1190, T1486, …) |
 | Country | `threat.indicator.geo.country_iso_code` | Country of origin (GeoIP-derived) |
 | Threat Actor | `ticura.indicator.merged.actors` | Attribution to a known actor |
 | Inbound Only | `ticura.indicator.is_inbound` | Limit to indicators flagged as inbound-only |
-| Namespace | `data_stream.namespace` | Per-feed isolation when multiple feeds are configured |
 | Severity (range slider) | `event.severity` | Slide to a min/max severity window |
 
 ### Triage
@@ -121,11 +124,11 @@ Tactical view focused on what to act on right now:
 | Severity distribution | `event.severity` bucketed 0–100 | Where the volume sits — informs alert thresholds |
 | Hash type breakdown | `ticura.indicator.sub_type` (file indicators only) | SHA-256 / SHA-1 / MD5 mix |
 | Confidence × Risk category | `ticura.indicator.risk_category` × `ticura.indicator.confidence_category` cross-tab | Priority quadrants — high-conf + high-risk indicators feed detection rules; low-conf + high-risk indicators need triage |
-| CVE-referenced indicators | `ticura.indicator.cve` count | Volume of vuln-linked IOCs |
-| Top CVE references | `ticura.indicator.cve` | Which CVEs lead |
+| CVE-referenced indicators | `ticura.indicator.cve` or `ticura.indicator.additional_info.cve` count | Volume of vuln-linked IOCs |
+| Top CVE references | `ticura.indicator.additional_info.cve` | Which CVEs lead |
 | Top 15 ASN organizations | `threat.indicator.as.organization.name` | Pattern recognition — which hosting providers keep showing up |
 | Top 15 MITRE ATT&CK techniques | `threat.technique.{id, name}` | Technique-level prioritization with names |
-| Inbound-only detail | top by severity, with country | Drill into the ~hundred inbound-only IOCs |
+| Inbound-only detail | top by severity, with country | Drill into inbound-only IOCs (populated only when the feed flags indicators as inbound) |
 | Sinkhole-routed indicators | by sinkhole owner | Drill into which indicators are routed where |
 | Online indicators by type | `ticura.indicator.additional_info.online.is_online:true` split by `threat.indicator.type` | Which IOC types are currently live |
 
@@ -156,7 +159,7 @@ The integration ships nine pre-built saved searches under **Discover**. They are
 | Saved search | What it shows |
 |--------------|---------------|
 | `[Ticura] High-risk indicators (last 24h)` | Severity ≥ 70, modified in the last 24 hours, not expired — sorted by severity. |
-| `[Ticura] Active C2 indicators` | `ticura.indicator.additional_info.threat_types` contains `Command and Control`, not expired. Ready for outbound-connection detection. |
+| `[Ticura] Active C2 indicators` | `ticura.indicator.additional_info.threat_types` contains `Command and Control Server`, not expired. Ready for outbound-connection detection. |
 | `[Ticura] Active phishing URLs` | `threat.indicator.type: url` AND `ticura.indicator.additional_info.threat_types` contains *"Phishing"*, not expired. |
 | `[Ticura] Active malware file hashes` | `threat.indicator.type: file`, not expired. Covers SHA-256, SHA-1, MD5. |
 | `[Ticura] Critical-risk indicators in EU` | Severity ≥ 80 attributed to an EU member state via GeoIP. |
@@ -192,6 +195,7 @@ The integration maps indicators to the Elastic Common Schema using the `threat.i
 | Domain | `threat.indicator.url.domain` |
 | URL | `threat.indicator.url.full` (plus `scheme`, `domain`, `path`, … when Ticura supplies them) |
 | File hash | `threat.indicator.file.hash.{md5, sha1, sha256, ...}` |
+| Email address | `threat.indicator.email.address` |
 
 ### File Hash Mapping
 
@@ -239,7 +243,7 @@ The integration maps indicators to the Elastic Common Schema using the `threat.i
 | Hash type | `ticura.indicator.sub_type` (`HASHSHA256` / `HASHMD5` / `HASHSHA1`) | `threat.indicator.file.hash.{sha256, md5, sha1}` (defensive fallback when the source omits the typed field) |
 | Correlation fields | `threat.indicator.ip`, `threat.indicator.file.hash.{sha256, sha1, md5}`, `threat.indicator.url.domain` | `related.ip`, `related.hash`, `related.hosts` (deduplicated, so analysts and Indicator Match rules can pivot on a value without knowing which `threat.indicator.*` field holds it) |
 
-GeoIP and ASN lookups use the GeoLite2 databases bundled with Elasticsearch — no external API calls or keys required.
+GeoIP and ASN lookups use the GeoLite2 databases bundled with Elasticsearch — no external API calls or keys required. They apply only to IP-type indicators (`IPV4` / `IPV6` / `IPV4PORT`), which are usually a minority of a feed dominated by domains, URLs, and hashes; ASN resolves for almost all IPs, but GeoLite2 returns a country/city for only a subset. The geo-based dashboard panels therefore reflect that IP subset, not the whole feed.
 
 ---
 
@@ -254,6 +258,8 @@ The integration mirrors Ticura's MITRE ATT&CK enrichment into the canonical ECS 
 | `threat.software.id` / `name` / `type` / `platforms` / `alias` / `reference` | `ticura.indicator.software.*` |
 | `threat.group.id` / `name` / `reference` | `ticura.indicator.group.*` |
 
+Ticura's ECSV1 feed frequently populates the `threat.*` MITRE fields **directly**; the pipeline mirrors from the `ticura.indicator.*` namespace with `override: false`, so it only fills gaps the feed left (see *Field Provenance*). In practice most `threat.technique.*` and `threat.software.*` values arrive from the feed, and the `ticura.indicator.technique.subtechnique.*` / `software.*` mirrors may be sparse or empty even where their ECS `threat.*` counterparts are set.
+
 ---
 
 ### Indicator Field Shapes by Type
@@ -262,7 +268,7 @@ Different indicator types populate different ECS fields. The integration always 
 
 **IPv4 / IPv6 indicators** (`ticura.indicator.main_type: IPV4` / `IPV6`)
 - `threat.indicator.ip` — the address
-- `threat.indicator.port` — only set when `ticura.indicator.sub_type: IPV4PORT`
+- `threat.indicator.port` — primarily for `ticura.indicator.sub_type: IPV4PORT` (Ticura may also supply a port on other indicator types when relevant)
 - `threat.indicator.geo.{country_iso_code, country_name, city_name, region_name, location}` — GeoIP-enriched
 - `threat.indicator.as.{number, organization.name}` — ASN-enriched
 
@@ -298,7 +304,7 @@ These are preserved alongside the ECS-mapped fields for per-field provenance (se
 | `ticura.indicator.feed_ingest_timestamp` | date | Pipeline-set ingest time. Because an unchanged indicator re-exported on the next poll keeps the same `_id` and is rejected as a duplicate, the stored value reflects when this content version was first ingested; it only advances when the indicator's content changes (new fingerprint → new document). |
 | `ticura.indicator.countries` / `industries` / `actors` | keyword | Ticura-supplied attribution lists. |
 | `ticura.indicator.cve` | keyword | Associated CVE identifiers. |
-| `ticura.indicator.filter_cats` | nested | Filter categorization metadata. |
+| `ticura.indicator.filter_cats` | nested | Filter categorization metadata (populated only when the feed supplies it; frequently empty). |
 | `ticura.indicator.technique.*` / `software.*` / `group.*` | group | MITRE ATT&CK enrichment, mirrored to canonical `threat.*` for Elastic Security. |
 
 ### Supplemental Enrichment Fields (`ticura.indicator.additional_info.*`)

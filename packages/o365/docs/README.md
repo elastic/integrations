@@ -99,9 +99,39 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Troubleshooting
 
-In the case of a permissions issue, it can be useful to enable request tracing and look at request trace logs to inspect the interaction with the server. Token values can be decoded using [https://jwt.ms/](https://jwt.ms/), and should include a `roles` section with the configured permissions.
+Most issues fall into one of the scenarios below. For expected data delays (including the up-to-12-hour wait after first setup) and out-of-order delivery, see [Data latency](#data-latency). To confirm the integration is working, see [Validation](#validation).
 
-When errors occur in the Microsoft Office 365 integration while collecting data, refer to the Office 365 Management Activity API documentation for the full list of error codes and their meanings. See the official [Office 365 Management Activity API — Errors](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference#errors).
+#### Enabling request tracing
+
+When debugging a permissions issue or unexpected API responses, it can be useful to enable request tracing and inspect the request trace logs to see the interaction with the server. Token values can be decoded using [https://jwt.ms/](https://jwt.ms/), and should include a `roles` section with the configured permissions.
+
+For the full list of API error codes and their meanings, see the official [Office 365 Management Activity API — Errors](https://learn.microsoft.com/en-us/office/office-365-management-api/office-365-management-activity-api-reference#errors).
+
+**Security warning:** request trace files are not redacted. They contain the `Authorization` header and, during OAuth2 token exchange, the client secret in clear text. Only enable request tracing in a controlled debugging session, restrict access to the trace files, disable it as soon as you are finished, and rotate the client secret if a trace file that may contain it was exposed. On agentless deployments this setting is not user-configurable.
+
+#### Authentication failures
+
+The integration reports a degraded status in Fleet and logs OAuth2 token or subscription errors (for example, `POST /activity/feed/subscriptions/start?contentType=...`). Confirm that the client secret has not expired, that the Directory (tenant) ID and Application (client) ID are correct, and that admin consent is still granted. Generate a new client secret and update the integration if needed. The degraded status clears on the next successful poll.
+
+#### Missing permissions
+
+A single content type returns `401` while the others keep working when a required API permission is missing. Ensure the Azure application has `ActivityFeed.Read` (and `ActivityFeed.ReadDlp` if the `DLP.All` content type is enabled), grant admin consent, and wait for the next poll. The integration logs the error and skips the affected content type until the permission is granted.
+
+#### No data is collected
+
+If the integration is healthy but no data appears: confirm that at least one content type is enabled, that you are past the initial latency window (see [Data latency](#data-latency)), and that there is audit activity in the tenant for the enabled workloads and time window. Check the logs for successful subscription start and content listing. Subscription start runs on every poll and is idempotent, so a `400` (already subscribed) response is expected and is treated as success.
+
+#### Recovering after an outage
+
+On restart, the integration resumes from its saved position and backfills the missed window. Overlapping events are de-duplicated during ingest, so a resume does not create duplicates. The API retains data for a maximum of 7 days: outages shorter than that backfill automatically, but any window older than 7 days is purged by Microsoft and cannot be recovered.
+
+#### Rate limiting
+
+Repeated `429` responses indicate that the API's per-tenant rate limit has been reached. This is handled automatically by the built-in retry with exponential backoff. Persistent rate limiting across many tenants that share one Azure application may mean the application is over-subscribed; consider using separate application registrations.
+
+#### Unhealthy transforms
+
+If the o365 transforms do not show **Healthy** (see [Validation](#validation)), open the transform to check its messages for the underlying error (for example, permissions or mapping conflicts). Resolve the error, then stop and restart the transform and confirm that it returns to **Healthy**.
 
 ### Migration From the Deprecated o365audit Input
 
@@ -526,7 +556,8 @@ An example event for `audit` looks as following:
 | o365.audit.ResultStatus |  | keyword |
 | o365.audit.RunningTime |  | keyword |
 | o365.audit.SecurityComplianceCenterEventType |  | keyword |
-| o365.audit.Sender |  | object |
+| o365.audit.Sender |  | keyword |
+| o365.audit.SenderEntity |  | object |
 | o365.audit.SenderIP |  | keyword |
 | o365.audit.SenderIp |  | keyword |
 | o365.audit.SensitiveInfoDetectionIsIncluded |  | boolean |

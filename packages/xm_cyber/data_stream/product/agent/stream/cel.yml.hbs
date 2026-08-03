@@ -1,0 +1,205 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+state:
+  api_key: {{api_key}}
+  page_size: {{page_size}}
+redact:
+  fields:
+    - api_key
+    - access_token
+    - refresh_token
+program: |
+  state.url.trim_right("/").as(base,
+    state.with(
+      (
+        (
+          !has(state.?cursor.access_token) || !has(state.?cursor.refresh_token) ||
+          state.?cursor.need_reauth.orValue(false)
+        ) ?
+          post_request(base + "/api/auth", "application/json", "{}").with(
+            {
+              "Header": {
+                "X-Api-Key": [state.api_key],
+                "Content-Type": ["application/json"],
+              },
+            }
+          ).do_request().as(authResp,
+            (authResp.StatusCode == 200) ?
+              authResp.Body.decode_json().as(ao,
+                {
+                  "access": ao.accessToken,
+                  "refresh": ao.refreshToken,
+                }
+              )
+            :
+              {
+                "err_code": string(authResp.StatusCode),
+                "err_status": authResp.Status,
+                "err_body": (size(authResp.Body) != 0) ? string(authResp.Body) : authResp.Status,
+              }
+          )
+        :
+          {
+            ?"access": state.?cursor.access_token,
+            ?"refresh": state.?cursor.refresh_token,
+          }
+      ).as(tok,
+        !has(tok.access) ?
+          {
+            "events": {
+              "error": {
+                "code": tok.err_code,
+                "id": tok.err_status,
+                "message": "POST " + base +
+                  "/api/auth: " + tok.err_body,
+              },
+            },
+            "cursor": {
+              "need_reauth": true,
+            },
+            "next_page": {
+              ?"link": state.?next_page.?link,
+            },
+            "want_more": false,
+          }
+        :
+          (
+            (state.?next_page.?link.orValue("") != "") ?
+              state.next_page.link.replace_all("http://", "https://")
+            :
+              base + "/api/v2/vrm/public/products?" + {
+                "pageSize": [string(int(state.page_size))],
+              }.format_query()
+          ).as(dataUrl,
+            request("GET", dataUrl).with(
+              {
+                "Header": {
+                  "Authorization": ["Bearer " + tok.access],
+                  "Accept": ["application/json"],
+                },
+              }
+            ).do_request().as(resp,
+              (resp.StatusCode == 200) ?
+                resp.Body.decode_json().as(body,
+                  {
+                    "events": body.?data.orValue([]).map(e, {"message": e.encode_json()}),
+                    "cursor": {
+                      "access_token": tok.access,
+                      "refresh_token": tok.refresh,
+                      "need_reauth": false,
+                    },
+                    "next_page": {
+                      ?"link": body.?meta.next.orValue(null) != null ?
+                        optional.of(body.meta.next.replace("http://", "https://", 1)) : optional.none(),
+                    },
+                    "want_more": body.?meta.next.orValue(null) != null,
+                  }
+                )
+              : (resp.StatusCode == 401 || resp.StatusCode == 419) ?
+                post_request(
+                  base + "/api/refresh-token",
+                  "application/json",
+                  {"refreshToken": tok.refresh}.encode_json()
+                ).with(
+                  {
+                    "Header": {"Content-Type": ["application/json"]},
+                  }
+                ).do_request().as(refResp,
+                  refResp.Body.decode_json().as(ro,
+                    {
+                      "events": [
+                        {
+                          "message": "retry",
+                        }
+                      ],
+                      "cursor": (refResp.StatusCode == 200) ?
+                        {
+                          "access_token": ro.accessToken,
+                          "refresh_token": ro.refreshToken,
+                          "need_reauth": false,
+                        }
+                      :
+                        {
+                          "need_reauth": true,
+                        },
+                      "next_page": {
+                        "link": dataUrl,
+                      },
+                      "want_more": true,
+                    }
+                  )
+                )
+              : (resp.StatusCode == 429) ?
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": resp.Status,
+                      "message": "GET vrm/public/products: rate limited",
+                    },
+                  },
+                  "cursor": {
+                    "access_token": tok.access,
+                    "refresh_token": tok.refresh,
+                    "need_reauth": false,
+                  },
+                  "next_page": {
+                    "link": dataUrl,
+                  },
+                  "want_more": false,
+                }
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": resp.Status,
+                      "message": "GET vrm/public/products: " +
+                        ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
+                    },
+                  },
+                  "cursor": {
+                    "access_token": tok.access,
+                    "refresh_token": tok.refresh,
+                    "need_reauth": false,
+                  },
+                  "next_page": {
+                    "link": dataUrl,
+                  },
+                  "want_more": false,
+                }
+            )
+          )
+        )
+      )
+    )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

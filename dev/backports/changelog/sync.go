@@ -13,7 +13,7 @@ import (
 
 	"github.com/cli/go-gh/v2"
 
-	"github.com/elastic/integrations/dev/backports/gitutil"
+	"github.com/elastic/integrations/dev/gitutil"
 )
 
 // SyncResult holds outputs produced by CreateSyncPR.
@@ -34,7 +34,7 @@ func CreateSyncPR(workDir, entriesTSV, workingBranch, backportPRNumber, backport
 		packagesDir = filepath.Join(workDir, packagesDir)
 	}
 
-	if err := git.Run("checkout", "-b", workingBranch, "origin/main"); err != nil {
+	if err := git.RunToStderr("checkout", "-b", workingBranch, "origin/main"); err != nil {
 		return nil, fmt.Errorf("creating working branch: %w", err)
 	}
 
@@ -67,24 +67,24 @@ func CreateSyncPR(workDir, entriesTSV, workingBranch, backportPRNumber, backport
 		if err := InsertEntry(changelogPath, e.version, strings.TrimRight(string(entryBlock), "\n")); err != nil {
 			return nil, fmt.Errorf("inserting entry for %s: %w", e.pkg, err)
 		}
-		if err := git.Run("add", changelogPath); err != nil {
+		if err := git.RunToStderr("add", changelogPath); err != nil {
 			return nil, err
 		}
 		applied = append(applied, e)
 	}
 
 	if len(applied) == 0 {
-		_ = git.Run("checkout", backportBranch)
+		_ = git.RunToStderr("checkout", backportBranch)
 		return &SyncResult{NotFoundPackages: notFound, Outcome: "skipped"}, nil
 	}
 
 	commitMsg := buildCommitMessage(applied, backportPRNumber)
 	prTitle := buildPRTitle(applied, backportPRNumber)
 
-	if err := git.Run("commit", "-m", commitMsg); err != nil {
+	if err := git.RunToStderr("commit", "-m", commitMsg); err != nil {
 		return nil, fmt.Errorf("committing: %w", err)
 	}
-	if err := git.Run("push", "origin", workingBranch); err != nil {
+	if err := git.RunToStderr("push", "origin", workingBranch); err != nil {
 		return nil, fmt.Errorf("pushing: %w", err)
 	}
 
@@ -94,7 +94,8 @@ func CreateSyncPR(workDir, entriesTSV, workingBranch, backportPRNumber, backport
 		"--base", "main",
 		"--head", workingBranch,
 		"--title", prTitle,
-		"--label", "automation",
+		"--label", "backport:sync-changelog",
+		"--label", "changelog-link-check:skip",
 		"--reviewer", "elastic/ecosystem",
 		"--body", body,
 	)
@@ -102,7 +103,7 @@ func CreateSyncPR(workDir, entriesTSV, workingBranch, backportPRNumber, backport
 		return nil, fmt.Errorf("creating PR: %w", err)
 	}
 
-	_ = git.Run("checkout", backportBranch)
+	_ = git.RunToStderr("checkout", backportBranch)
 	return &SyncResult{NotFoundPackages: notFound, Outcome: "success"}, nil
 }
 

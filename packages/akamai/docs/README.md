@@ -35,6 +35,9 @@ See [Akamai API get started](https://techdocs.akamai.com/siem-integration/refere
 | akamai.siem.client_data.telemetry_type | Specifies the telemetry type in use. | long |
 | akamai.siem.client_reputation | Client IP scores for Client Reputation. | keyword |
 | akamai.siem.config_id | ID of the Security Configuration applied to the request. | keyword |
+| akamai.siem.identity.ja4 | A JA4 TLS client fingerprint value. | keyword |
+| akamai.siem.identity.tls_fingerprint_v2 | A client TLS fingerprint V2 value. | keyword |
+| akamai.siem.identity.tls_fingerprint_v3 | A client TLS fingerprint V3 value. | keyword |
 | akamai.siem.policy_id | ID of the Firewall policy applied to the request. | keyword |
 | akamai.siem.request.headers | HTTP Request headers | flattened |
 | akamai.siem.response.headers | HTTP response headers | flattened |
