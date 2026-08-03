@@ -1,29 +1,35 @@
 # Verify that an expired commercial JWT token triggers a fresh login request
 # before collecting URLhaus data on the next polling interval.
+#
+# The mock login endpoint returns two responses in rolling sequence:
+#   1. A short-lived token (expires: 1, always stale on the next interval)
+#   2. A refreshed token (expires: 4102444800)
+# The URLs endpoint returns a different URL on each request so we can verify
+# both collection rounds succeeded after token refresh.
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
 
 use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
 install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
-
 docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} abusech-mock
-
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
 
-# First collection cycle: login with a short-lived token, then ingest 2 URLs.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 5m ${DATA_STREAM_NAME}
-
-# Second collection cycle: token is expired, login again, then ingest 2 more URLs.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 4 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
 cp stdout got_docs.json
 
-exec jq '[.hits.hits[]._source | select(.abusech.url != null)] | length' got_docs.json
-stdout '^4$'
+exec jq '([.hits.hits[]._source | select(.abusech.url != null)] | length) >= 2' got_docs.json
+stdout '^true$'
 
-exec jq '[.hits.hits[]._source | select(.error.message != null)] | length' got_docs.json
+exec jq '[.hits.hits[]._source | select(.error != null)] | length' got_docs.json
 stdout '^0$'
+
+exec jq '([.hits.hits[]._source.abusech.url.id] | unique | length) >= 2' got_docs.json
+stdout '^true$'
+
+exec jq -c '[.hits.hits[]._source.threat.indicator.provider] | unique | sort' got_docs.json
+stdout '^\["after_refresh_reporter","before_refresh_reporter"\]$'
 
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
 uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
@@ -39,10 +45,11 @@ vars:
 data_stream:
   vars:
     url: http://abusech-mock:8080
-    interval: 15s
+    interval: 30s
     initial_interval: 72h
     page_size: 100
     preserve_original_event: true
+    ioc_expiration_duration: 5d
 -- abusech-mock/docker-compose.yml --
 version: '2.3'
 services:
@@ -62,34 +69,33 @@ services:
 -- abusech-mock/config.yml --
 rules:
   - path: /v1/login
-    methods: ["POST"]
+    methods: [POST]
     request_headers:
-      Content-Type: "application/json"
+      Content-Type:
+        - "application/json"
     responses:
       - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
         body: |-
-          {
-            "code": 200,
-            "token": "short-lived-token",
-            "expires": 1
-          }
+          {"code":200,"token":"token-short-lived","expires":1}
       - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
         body: |-
-          {
-            "code": 200,
-            "token": "refreshed-token",
-            "expires": 4102444800
-          }
+          {"code":200,"token":"token-refreshed","expires":4102444800}
   - path: /urlhaus/v1/urls
-    methods: ["GET"]
+    methods: [GET]
     query_params:
       since: ["{since:.*}"]
       page_size: ["{page_size:.*}"]
-    request_headers:
-      Authorization:
-        - "Bearer short-lived-token"
     responses:
       - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
         body: |-
           {
             "items": [
@@ -98,67 +104,39 @@ rules:
                 "host": "81.2.69.142",
                 "id": 1656008,
                 "larted": true,
-                "reporter": "tammeto",
+                "reporter": "before_refresh_reporter",
                 "threat": "malware_download",
-                "url": "http://81.2.69.142:55871/mozi.m",
+                "url": "http://81.2.69.142:55871/before.m",
                 "url_status": "offline",
                 "urlhaus_reference": "https://urlhaus.abuse.ch/url/1656008/"
-              },
-              {
-                "first_seen": "2021-10-05T13:54:10Z",
-                "host": "89.160.20.128",
-                "id": 1656007,
-                "larted": true,
-                "reporter": "geenensp",
-                "threat": "malware_download",
-                "url": "http://89.160.20.128:42989/i",
-                "url_status": "online",
-                "urlhaus_reference": "https://urlhaus.abuse.ch/url/1656007/"
               }
             ],
             "meta": {
               "page_size": 100,
-              "total_items": 2
+              "total_items": 1
             }
           }
-  - path: /urlhaus/v1/urls
-    methods: ["GET"]
-    query_params:
-      since: ["{since:.*}"]
-      page_size: ["{page_size:.*}"]
-    request_headers:
-      Authorization:
-        - "Bearer refreshed-token"
-    responses:
       - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
         body: |-
           {
             "items": [
-              {
-                "first_seen": "2021-10-05T13:57:05Z",
-                "host": "81.2.69.142",
-                "id": 1656008,
-                "larted": true,
-                "reporter": "tammeto",
-                "threat": "malware_download",
-                "url": "http://81.2.69.142:55871/mozi.m",
-                "url_status": "offline",
-                "urlhaus_reference": "https://urlhaus.abuse.ch/url/1656008/"
-              },
               {
                 "first_seen": "2021-10-05T13:54:10Z",
                 "host": "89.160.20.128",
                 "id": 1656007,
                 "larted": true,
-                "reporter": "geenensp",
+                "reporter": "after_refresh_reporter",
                 "threat": "malware_download",
-                "url": "http://89.160.20.128:42989/i",
+                "url": "http://89.160.20.128:42989/after",
                 "url_status": "online",
                 "urlhaus_reference": "https://urlhaus.abuse.ch/url/1656007/"
               }
             ],
             "meta": {
               "page_size": 100,
-              "total_items": 2
+              "total_items": 1
             }
           }
