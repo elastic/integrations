@@ -1,0 +1,51 @@
+# Verify that security.secret_read events are routed from the activity data
+# stream to the dedicated secret_read data stream via routing rules.
+#
+# The mock webhook sender provides 12 events:
+#   - 10 activity events (various types)       → doppler.activity (retained)
+#   - 2 security.secret_read events            → doppler.secret_read
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the webhook sender (waits for SIGHUP before sending).
+exec ln -s ${PACKAGE_ROOT}/_dev/deploy/docker doppler-webhook-http
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} doppler-webhook-http
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy. The agent starts listening on port 9080.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml ACTIVITY_DS
+
+# Signal the mock to begin posting webhook events.
+docker_signal doppler-webhook-http SIGHUP
+
+# Verify activity events stay in the activity data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 10 -confirm 15s -timeout 5m ${ACTIVITY_DS}
+
+# Verify secret_read events were routed to the secret_read data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 2m logs-doppler.secret_read-*
+cp stdout secret_read_docs.json
+exec jq '.hits.hits[0]._source.event.action' secret_read_docs.json
+stdout 'security.secret_read'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${ACTIVITY_DS}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down doppler-webhook-http
+
+-- test_config.yaml --
+input: http_endpoint
+data_stream:
+  vars:
+    listen_address: 0.0.0.0
+    listen_port: 9080
+    url: /doppler
+    secret_value: Bearer abc123
