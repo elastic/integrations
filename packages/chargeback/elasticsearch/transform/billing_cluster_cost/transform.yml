@@ -34,7 +34,9 @@ dest:
 frequency: 60m
 sync:
   time:
-    field: event.ingested
+    # Align with billing_realized_pool: @timestamp is always mapped on billing sources.
+    # event.ingested is often unset/unmapped on On-Prem Billing indices.
+    field: "@timestamp"
     delay: 1h
 pivot:
   group_by:

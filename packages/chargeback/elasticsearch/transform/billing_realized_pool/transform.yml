@@ -59,7 +59,10 @@ dest:
 frequency: 60m
 sync:
   time:
-    field: event.ingested
+    # Use @timestamp (billing day), not event.ingested. On-Prem Billing and some
+    # seeded sources do not map event.ingested, which left this transform at 0 docs
+    # and emptied the Usage & Cost Allocation dashboard.
+    field: "@timestamp"
     delay: 1h
 pivot:
   group_by:
