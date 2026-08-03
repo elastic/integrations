@@ -153,21 +153,16 @@ processors:
           Map result = new HashMap();
           if (raw == null || raw.isEmpty()) return result;
           int commaIdx = raw.indexOf(',');
+          String first = commaIdx > 0 ? raw.substring(0, commaIdx).trim() : raw.trim();
           if (commaIdx > 0) {
-            String first = raw.substring(0, commaIdx).trim();
-            String rest = raw.substring(commaIdx + 1).trim();
-            int eqIdx = first.indexOf('=');
-            if (eqIdx > 0) {
-              result.put('cn', first.substring(eqIdx + 1).trim());
-            }
-            result.put('meta', rest);
+            result.put('meta', raw.substring(commaIdx + 1).trim());
+          }
+          int eqIdx = first.indexOf('=');
+          if (eqIdx > 0) {
+            result.put('attribute', first.substring(0, eqIdx).trim());
+            result.put('value', first.substring(eqIdx + 1).trim());
           } else {
-            int eqIdx = raw.indexOf('=');
-            if (eqIdx > 0) {
-              result.put('cn', raw.substring(eqIdx + 1).trim());
-            } else {
-              result.put('cn', raw);
-            }
+            result.put('value', first);
           }
           return result;
         }
@@ -317,6 +312,7 @@ processors:
       field: event.category
       tag: append_iam_into_event_category
       value: iam
+      allow_duplicates: false
   - append:
       field: event.category
       tag: append_configuration_into_event_category
@@ -329,21 +325,25 @@ processors:
       field: event.type
       tag: append_creation_into_event_type
       value: creation
+      allow_duplicates: false
       if: ctx.ping_directory?.audit?.changetype != null && ['add','ADD'].contains(ctx.ping_directory.audit.changetype)
   - append:
       field: event.type
       tag: append_change_into_event_type
       value: change
+      allow_duplicates: false
       if: ctx.ping_directory?.audit?.changetype != null && ['modify','MODIFY'].contains(ctx.ping_directory.audit.changetype)
   - append:
       field: event.type
       tag: append_deletion_into_event_type
       value: deletion
+      allow_duplicates: false
       if: ctx.ping_directory?.audit?.changetype != null && ['delete','DELETE'].contains(ctx.ping_directory.audit.changetype)
   - append:
       field: event.type
       tag: append_change_into_event_type_for_rename
       value: change
+      allow_duplicates: false
       if: >-
         ctx.ping_directory?.audit?.changetype != null &&
         ['modrdn','moddn','MODRDN','MODDN'].contains(ctx.ping_directory.audit.changetype)
@@ -449,45 +449,45 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_ping_directory_audit_requester_dn_cn_into_related_user
-      if: ctx.ping_directory?.audit?.requester_dn?.cn != null && ctx.ping_directory.audit.requester_dn.cn != ''
-      value: '{{{ping_directory.audit.requester_dn.cn}}}'
+      tag: append_ping_directory_audit_requester_dn_value_into_related_user
+      if: ctx.ping_directory?.audit?.requester_dn?.value != null && ctx.ping_directory.audit.requester_dn.value != ''
+      value: '{{{ping_directory.audit.requester_dn.value}}}'
       allow_duplicates: false
       description: >-
-        Appends the requester DN common name to related.user.
+        Appends the requester DN's first RDN value to related.user.
   - set:
       field: user.name
-      tag: set_user_name_from_audit_requester_dn_cn
-      copy_from: ping_directory.audit.requester_dn.cn
+      tag: set_user_name_from_audit_requester_dn_value
+      copy_from: ping_directory.audit.requester_dn.value
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_ping_directory_audit_modifiers_name_cn_into_related_user
-      if: ctx.ping_directory?.audit?.modifiers_name?.cn != null && ctx.ping_directory.audit.modifiers_name.cn != ''
-      value: '{{{ping_directory.audit.modifiers_name.cn}}}'
+      tag: append_ping_directory_audit_modifiers_name_value_into_related_user
+      if: ctx.ping_directory?.audit?.modifiers_name?.value != null && ctx.ping_directory.audit.modifiers_name.value != ''
+      value: '{{{ping_directory.audit.modifiers_name.value}}}'
       allow_duplicates: false
       description: >-
-        Appends the modifiers name common name to related.user.
+        Appends the modifiers name's first RDN value to related.user.
   - append:
       field: related.user
-      tag: append_ping_directory_audit_creators_name_cn_into_related_user
-      if: ctx.ping_directory?.audit?.creators_name?.cn != null && ctx.ping_directory.audit.creators_name.cn != ''
-      value: '{{{ping_directory.audit.creators_name.cn}}}'
+      tag: append_ping_directory_audit_creators_name_value_into_related_user
+      if: ctx.ping_directory?.audit?.creators_name?.value != null && ctx.ping_directory.audit.creators_name.value != ''
+      value: '{{{ping_directory.audit.creators_name.value}}}'
       allow_duplicates: false
       description: >-
-        Appends the creators name common name to related.user.
+        Appends the creators name's first RDN value to related.user.
   - append:
       field: related.user
-      tag: append_ping_directory_audit_dn_cn_into_related_user
+      tag: append_ping_directory_audit_dn_value_into_related_user
       if: >-
-        ctx.ping_directory?.audit?.dn?.cn != null && ctx.ping_directory.audit.dn.cn != '' &&
+        ctx.ping_directory?.audit?.dn?.value != null && ctx.ping_directory.audit.dn.value != '' &&
         ctx.ping_directory?.audit?.object_classes != null &&
         (ctx.ping_directory.audit.object_classes.contains('inetOrgPerson') ||
          ctx.ping_directory.audit.object_classes.contains('person'))
-      value: '{{{ping_directory.audit.dn.cn}}}'
+      value: '{{{ping_directory.audit.dn.value}}}'
       allow_duplicates: false
       description: >-
-        Appends the target entry DN common name to related.user when the entry represents a person (inetOrgPerson or person object class).
+        Appends the target entry DN's first RDN value to related.user when the entry represents a person (inetOrgPerson or person object class).
   - set:
       field: event.reason
       tag: set_event_reason_from_audit_operation_purpose_code_location
@@ -562,18 +562,12 @@ processors:
       ignore_missing: true
       description: >-
         Converts event.action to lowercase to normalize changetype values such as ADD, MODIFY, DELETE regardless of case in the source log.
-  - set:
-      field: observer.version
-      tag: set_observer_version_from_audit_operation_purpose_application_version
-      copy_from: ping_directory.audit.operation_purpose.application_version
-      ignore_empty_value: true
   - remove:
       field:
         - _tmp
         - _conf
         - ping_directory.audit.client_ip
         - ping_directory.audit.instance_name
-        - ping_directory.audit.operation_purpose.application_version
         - ping_directory.audit.operation_purpose.code_location
         - ping_directory.audit.timestamp
         - ping_directory.audit.timezone

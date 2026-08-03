@@ -63,12 +63,12 @@ Elastic Agent is required to stream data from the log file receiver and ship the
    * **HTTP Access Logs Path**: Specify the path to the PingDirectory HTTP Access log file(s), for example:
 
      ```
-     /opt/pingidentity/pingdirectory/logs/http-access*
+     /opt/pingdirectory/logs/http-access*
      ```
    * **Audit Logs Path**: Specify the path to the PingDirectory Audit log file(s), for example:
 
      ```
-     /opt/pingidentity/pingdirectory/logs/audit*
+     /opt/pingdirectory/logs/audit*
      ```
    * Configure any optional collection settings as required.
 4. Select **Save and continue** to save the integration.
@@ -297,9 +297,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-05-25T18:48:06.786+05:30",
     "agent": {
-        "ephemeral_id": "23886ca7-66d6-48e2-aadf-f6b4fa06af3a",
-        "id": "48789e53-ab1b-46a7-bc92-b0e74ac2910b",
-        "name": "elastic-agent-57389",
+        "ephemeral_id": "7098ebe1-47c4-4fc7-99ff-39e0e4b7ba9f",
+        "id": "3a09451c-2804-463b-8229-1508f517abd7",
+        "name": "elastic-agent-95198",
         "type": "filebeat",
         "version": "8.19.0"
     },
@@ -308,14 +308,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "ping_directory.audit",
-        "namespace": "80633",
+        "namespace": "66704",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "48789e53-ab1b-46a7-bc92-b0e74ac2910b",
+        "id": "3a09451c-2804-463b-8229-1508f517abd7",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -327,7 +327,7 @@ An example event for `audit` looks as following:
             "configuration"
         ],
         "dataset": "ping_directory.audit",
-        "ingested": "2026-07-31T09:35:09Z",
+        "ingested": "2026-08-03T09:15:59Z",
         "kind": "event",
         "original": "# 25/May/2026:18:48:06.786 +0530; conn=13; op=28; instanceName=\"pingdirectory-elastic-test\"; threadID=29; clientIP=10.50.15.29; requesterDN=\"cn=Directory Manager,cn=Root DNs,cn=config\"; usingAdminSessionWorkerThread=true; operationPurpose={ \"applicationName\":\"PingDirectory\", \"applicationVersion\":\"11.0.0.2\", \"codeLocation\":\"DSConfig.getReason:2978 SetPropSubCommandHandler.modifyManagedObject:541 SetPropSubCommandHandler.run:1246 DSConfig.runSubCommand:2574 DSConfig.execute:1698\" }\ndn: cn=File-Based Audit Logger,cn=Loggers,cn=config\nchangetype: modify\nreplace: ds-cfg-enabled\nds-cfg-enabled: true\n-\nreplace: modifiersName\nmodifiersName: cn=Directory Manager,cn=Root DNs,cn=config\n-\nreplace: modifyTimestamp\nmodifyTimestamp: 20260525131806.681Z",
         "reason": "DSConfig.getReason:2978 SetPropSubCommandHandler.modifyManagedObject:541 SetPropSubCommandHandler.run:1246 DSConfig.runSubCommand:2574 DSConfig.execute:1698",
@@ -342,7 +342,7 @@ An example event for `audit` looks as following:
     "log": {
         "file": {
             "device_id": "64768",
-            "inode": "1835226",
+            "inode": "1835218",
             "path": "/tmp/service_logs/test-audit.log"
         },
         "flags": [
@@ -351,31 +351,34 @@ An example event for `audit` looks as following:
         "offset": 2398
     },
     "observer": {
-        "name": "pingdirectory-elastic-test",
-        "version": "11.0.0.2"
+        "name": "pingdirectory-elastic-test"
     },
     "ping_directory": {
         "audit": {
             "conn": 13,
             "dn": {
-                "cn": "File-Based Audit Logger",
-                "meta": "cn=Loggers,cn=config"
+                "attribute": "cn",
+                "meta": "cn=Loggers,cn=config",
+                "value": "File-Based Audit Logger"
             },
             "ds_cfg": {
                 "enabled": true
             },
             "modifiers_name": {
-                "cn": "Directory Manager",
-                "meta": "cn=Root DNs,cn=config"
+                "attribute": "cn",
+                "meta": "cn=Root DNs,cn=config",
+                "value": "Directory Manager"
             },
             "modify_timestamp": "2026-05-25T13:18:06.681Z",
             "op": 28,
             "operation_purpose": {
-                "application_name": "PingDirectory"
+                "application_name": "PingDirectory",
+                "application_version": "11.0.0.2"
             },
             "requester_dn": {
-                "cn": "Directory Manager",
-                "meta": "cn=Root DNs,cn=config"
+                "attribute": "cn",
+                "meta": "cn=Root DNs,cn=config",
+                "value": "Directory Manager"
             },
             "thread_id": "29",
             "using_admin_session_worker_thread": true
@@ -425,25 +428,32 @@ An example event for `audit` looks as following:
 | observer.vendor | The vendor name of the observer that generated the event. | constant_keyword |
 | ping_directory.audit.conn | Connection identifier associated with the operation. | long |
 | ping_directory.audit.create_timestamp | Timestamp when the entry was created. | date |
-| ping_directory.audit.creators_name.cn | Common name component of the creator Distinguished Name. | keyword |
+| ping_directory.audit.creators_name.attribute | Attribute type of the first RDN of the creator Distinguished Name, for example cn or uid. | keyword |
 | ping_directory.audit.creators_name.meta | Remaining path components of the creator Distinguished Name. | keyword |
+| ping_directory.audit.creators_name.value | Value of the first (left-most) RDN of the creator Distinguished Name, regardless of its attribute type (cn, uid, ou, ...). | keyword |
 | ping_directory.audit.delete_old_rdn | Indicates whether the old RDN attribute value was removed during the rename operation. | boolean |
-| ping_directory.audit.dn.cn | Common name component of the target entry Distinguished Name. | keyword |
+| ping_directory.audit.dn.attribute | Attribute type of the first RDN of the target entry Distinguished Name, for example cn or uid. | keyword |
 | ping_directory.audit.dn.meta | Remaining path components of the target entry Distinguished Name. | keyword |
+| ping_directory.audit.dn.value | Value of the first (left-most) RDN of the target entry Distinguished Name, regardless of its attribute type (cn, uid, ou, ...). | keyword |
 | ping_directory.audit.ds_cfg | Dynamic ds-cfg attributes extracted from PingDirectory audit records. | flattened |
 | ping_directory.audit.entry_uuid | Unique identifier assigned to the LDAP entry. | keyword |
-| ping_directory.audit.modifiers_name.cn | Common name component of the modifier Distinguished Name. | keyword |
+| ping_directory.audit.modifiers_name.attribute | Attribute type of the first RDN of the modifier Distinguished Name, for example cn or uid. | keyword |
 | ping_directory.audit.modifiers_name.meta | Remaining path components of the modifier Distinguished Name. | keyword |
+| ping_directory.audit.modifiers_name.value | Value of the first (left-most) RDN of the modifier Distinguished Name, regardless of its attribute type (cn, uid, ou, ...). | keyword |
 | ping_directory.audit.modify_timestamp | Timestamp when the entry was last modified. | date |
-| ping_directory.audit.new_rdn.cn | Common name component of the new relative Distinguished Name for rename operations. | keyword |
-| ping_directory.audit.new_superior.cn | Common name component of the new parent Distinguished Name for move operations. | keyword |
+| ping_directory.audit.new_rdn.attribute | Attribute type of the new relative Distinguished Name for rename operations, for example cn or uid. | keyword |
+| ping_directory.audit.new_rdn.value | Value of the new relative Distinguished Name for rename operations, regardless of its attribute type (cn, uid, ou, ...). | keyword |
+| ping_directory.audit.new_superior.attribute | Attribute type of the first RDN of the new parent Distinguished Name for move operations, for example cn or uid. | keyword |
 | ping_directory.audit.new_superior.meta | Remaining path components of the new parent Distinguished Name. | keyword |
+| ping_directory.audit.new_superior.value | Value of the first (left-most) RDN of the new parent Distinguished Name for move operations, regardless of its attribute type (cn, uid, ou, ...). | keyword |
 | ping_directory.audit.object_classes | List of LDAP objectClass values associated with the entry. | keyword |
 | ping_directory.audit.op | Operation identifier within the connection. | long |
 | ping_directory.audit.operation_purpose.application_name | Name of the application initiating the operation. | keyword |
+| ping_directory.audit.operation_purpose.application_version | Version of the application initiating the operation. | keyword |
 | ping_directory.audit.origin | Origin of the operation. | keyword |
-| ping_directory.audit.requester_dn.cn | Common name component of the requester Distinguished Name. | keyword |
+| ping_directory.audit.requester_dn.attribute | Attribute type of the first RDN of the requester Distinguished Name, for example cn or uid. | keyword |
 | ping_directory.audit.requester_dn.meta | Remaining path components of the requester Distinguished Name. | keyword |
+| ping_directory.audit.requester_dn.value | Value of the first (left-most) RDN of the requester Distinguished Name, regardless of its attribute type (cn, uid, ou, ...). | keyword |
 | ping_directory.audit.thread_id | Thread ID processing the operation. | keyword |
 | ping_directory.audit.triggered_by_conn | Connection ID that triggered the operation. | long |
 | ping_directory.audit.triggered_by_op | Operation ID that triggered the operation. | long |

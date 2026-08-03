@@ -63,12 +63,12 @@ Elastic Agent is required to stream data from the log file receiver and ship the
    * **HTTP Access Logs Path**: Specify the path to the PingDirectory HTTP Access log file(s), for example:
 
      ```
-     /opt/pingidentity/pingdirectory/logs/http-access*
+     /opt/pingdirectory/logs/http-access*
      ```
    * **Audit Logs Path**: Specify the path to the PingDirectory Audit log file(s), for example:
 
      ```
-     /opt/pingidentity/pingdirectory/logs/audit*
+     /opt/pingdirectory/logs/audit*
      ```
    * Configure any optional collection settings as required.
 4. Select **Save and continue** to save the integration.
