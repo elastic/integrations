@@ -22,6 +22,22 @@ processors:
             ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
           }
         }
+
+        // Parse Fleet data stream naming: <type>-<dataset>-<namespace>
+        // first segment → ds_type; last segment → ds_namespace; else other
+        if (ctx.datastream != null && ctx.datastream != '') {
+          def parts = ctx.datastream.splitOnToken('-');
+          if (parts.length >= 2) {
+            ctx.ds_type = parts[0];
+            ctx.ds_namespace = parts[parts.length - 1];
+          } else {
+            ctx.ds_type = 'other';
+            ctx.ds_namespace = 'other';
+          }
+        } else {
+          ctx.ds_type = 'other';
+          ctx.ds_namespace = 'other';
+        }
   - pipeline:
       description: '[Fleet] Global pipeline for all data streams'
       ignore_missing_pipeline: true
