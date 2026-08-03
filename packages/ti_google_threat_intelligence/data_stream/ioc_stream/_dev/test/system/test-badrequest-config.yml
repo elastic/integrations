@@ -1,0 +1,23 @@
+# Exercises recovery from a collection window that the API persistently
+# rejects with HTTP 400 (e.g. a window containing an IOC whose URL identifier
+# exceeds the API's internal 500-byte key limit). The mock (keyed to the
+# `badreq` token) serves page 1 with a next-page cursor and fails every
+# paginated request, so each poll cycle ends in a 400. The expected flow is:
+# three failed cycles increment the failure counter to the skip threshold,
+# the program then emits a skip error event, advances the cursor past the
+# poisoned window, and subsequent polls collect the (empty) healthy pages.
+# Expected hits: 4 IOC documents from page 1 (re-fetches deduplicate via the
+# fingerprint _id) + 2 retry-notice error documents + 1 skip error document.
+input: cel
+service: ti_google_threat_intelligence
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  access_token: badreq
+data_stream:
+  vars:
+    initial_interval: 1h
+    interval: 2s
+    preserve_original_event: true
+wait_for_data_timeout: 1m
+assert:
+  hit_count: 7

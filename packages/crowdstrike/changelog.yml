@@ -1,4 +1,49 @@
 # newer versions go on top
+- version: "4.5.0"
+  changes:
+    - description: Map CommandHistory events to ECS process fields.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20285
+- version: "4.4.4"
+  changes:
+    - description: Raise FDR `total_fields.limit` from 2000 to 5000 to prevent upgrade failures after latest field additions.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20395
+- version: "4.4.3"
+  changes:
+    - description: Add `ignore_above` for flattened attribute blobs in the falcon, fdr, and alert data streams to avoid dropping events. Requires Kibana 8.19.8+ or 9.1.8+ so Fleet applies the mapping option.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/16398
+- version: "4.4.2"
+  changes:
+    - description: Classify FDR aidmaster/userinfo/data object types from aws.s3.object.key when log.file.path is absent.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20331
+    - description: >-
+        Run CSPM pipelines before the deduplication fingerprint and include rule.id
+        (when present) plus a CSPM resource id so distinct Cloud Security findings are
+        retained and re-ingested duplicates are dropped. Because rule.id is also set on
+        EPP, FIM, and Data Protection events, enabling deduplication after upgrade
+        produces a one-time _id change for those event types on re-delivery.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20331
+- version: "4.4.1"
+  changes:
+    - description: Declare the ANODE anomaly-indicator numeric leaves as `float` in the `falcon`, `fdr`, and `alert` data streams. These values are polymorphic (usually fractional, occasionally whole numbers), so leaving them undeclared let dynamic mapping lock them to `long` on integer-first indices and reject later fractional values to the failure store.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20305
+- version: "4.4.0"
+  changes:
+    - description: >-
+        Add ECS categorization for FDR agentic/AI telemetry, Public Cloud asset inventory, on-demand scan (ODS), sensor channel downloads, Custom IOA/AMS/CSA detections, data protection egress, Open Directory IAM, WSL distribution lifecycle, and accessory device events.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20194
+    - description: Map Public Cloud FDR events to `cloud.*` and `host.ip`, DataEgress fields to `file.*`.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20194
+    - description: Derive FDR `event.outcome` from `crowdstrike.Status` using NTSTATUS severity bits.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20194
 - version: "4.3.1"
   changes:
     - description: Use an inclusive lower bound (>=) on the updated_timestamp cursor filter in the vulnerability and alert data streams to prevent records sharing a boundary timestamp from being permanently skipped at page or error boundaries.
