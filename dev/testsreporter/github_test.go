@@ -32,12 +32,12 @@ func (t *testRunner) Exec(ctx context.Context, args ...string) (stdout, stderr b
 func TestCreateIssue(t *testing.T) {
 	cases := []struct {
 		title    string
-		issue    *GithubIssue
+		issue    *githubIssue
 		expected []string
 	}{
 		{
 			title: "issue without labels",
-			issue: NewGithubIssue(GithubIssueOptions{
+			issue: newGithubIssue(githubIssueOptions{
 				Title:       "my issue",
 				Description: "This is my issue",
 				Repository:  "myorg/repo",
@@ -55,7 +55,7 @@ func TestCreateIssue(t *testing.T) {
 		},
 		{
 			title: "issue with labels",
-			issue: NewGithubIssue(GithubIssueOptions{
+			issue: newGithubIssue(githubIssueOptions{
 				Title:       "my issue labels",
 				Description: "This is my issue",
 				Repository:  "myorg/repo",
@@ -81,7 +81,7 @@ func TestCreateIssue(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
 			runner := testRunner{}
-			ghCli := NewGhCli(GithubOptions{
+			ghCli := newGhCli(githubOptions{
 				DryRun: true,
 				Runner: &runner,
 			})
@@ -97,11 +97,11 @@ func TestCreateIssue(t *testing.T) {
 func TestGithubIssueExists(t *testing.T) {
 	cases := []struct {
 		title    string
-		issue    *GithubIssue
+		issue    *githubIssue
 		response string
 		found    bool
 		open     bool
-		expected *GithubIssue
+		expected *githubIssue
 	}{
 		{
 			title: "issue found",
@@ -116,13 +116,13 @@ func TestGithubIssueExists(t *testing.T) {
 			  }
 			]
 			`,
-			issue: NewGithubIssue(GithubIssueOptions{
+			issue: newGithubIssue(githubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
 			}),
 			found: true,
 			open:  true,
-			expected: &GithubIssue{
+			expected: &githubIssue{
 				repository:  "myorg/repo",
 				number:      42,
 				title:       "my issue",
@@ -143,7 +143,7 @@ func TestGithubIssueExists(t *testing.T) {
 			  }
 			]
 			`,
-			issue: NewGithubIssue(GithubIssueOptions{
+			issue: newGithubIssue(githubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
 			}),
@@ -165,14 +165,14 @@ func TestGithubIssueExists(t *testing.T) {
 			  }
 			]
 			`,
-			issue: NewGithubIssue(GithubIssueOptions{
+			issue: newGithubIssue(githubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
 				Number:     42,
 			}),
 			open:  false,
 			found: true,
-			expected: &GithubIssue{
+			expected: &githubIssue{
 				repository:  "myorg/repo",
 				number:      42,
 				title:       "my issue",
@@ -187,7 +187,7 @@ func TestGithubIssueExists(t *testing.T) {
 			runner := testRunner{
 				response: c.response,
 			}
-			ghCli := NewGhCli(GithubOptions{
+			ghCli := newGhCli(githubOptions{
 				DryRun: true,
 				Runner: &runner,
 			})
@@ -203,12 +203,12 @@ func TestGithubIssueExists(t *testing.T) {
 func TestUpdateIssue(t *testing.T) {
 	cases := []struct {
 		title    string
-		issue    *GithubIssue
+		issue    *githubIssue
 		expected []string
 	}{
 		{
 			title: "issue",
-			issue: NewGithubIssue(GithubIssueOptions{
+			issue: newGithubIssue(githubIssueOptions{
 				Title:       "my issue",
 				Description: "This is my new issue",
 				Repository:  "myorg/repo",
@@ -229,7 +229,7 @@ func TestUpdateIssue(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
 			runner := testRunner{}
-			ghCli := NewGhCli(GithubOptions{
+			ghCli := newGhCli(githubOptions{
 				DryRun: true,
 				Runner: &runner,
 			})
