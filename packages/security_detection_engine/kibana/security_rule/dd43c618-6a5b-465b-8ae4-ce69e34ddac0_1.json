@@ -1,0 +1,132 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a non-system identity using the AKS (Azure Kubernetes Service) API server nodes/proxy subresource to reach a node's Kubelet. Proxying through the API server reaches the Kubelet API to enumerate pods or run commands on nodes, a lateral-movement and privilege-escalation vector (kubeletctl, Peirates). Node, control-plane, and kube-system service account identities that routinely proxy for monitoring are excluded, so remaining matches, including compromised workload service accounts, are surfaced for review.",
+        "false_positives": [
+            "Monitoring and log-collection agents that run outside kube-system (for example a metrics agent in its own namespace) proxy to the Kubelet on every scrape and will match repeatedly. Add targeted exclusions for verified monitoring service accounts and namespaces after review."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-azure.platformlogs-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "azure.platformlogs.category",
+                "azure.platformlogs.properties.log.verb",
+                "azure.platformlogs.properties.log.user.username",
+                "azure.platformlogs.properties.log.sourceIPs",
+                "azure.platformlogs.properties.log.requestURI",
+                "azure.platformlogs.properties.log.objectRef.resource",
+                "azure.platformlogs.properties.log.objectRef.subresource",
+                "azure.platformlogs.properties.log.objectRef.name"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Azure AKS API Server Proxying Request to Kubelet",
+        "note": "## Triage and analysis\n\n### Investigating Azure AKS API Server Proxying Request to Kubelet\n\nAKS kube-audit events are carried under the flattened `azure.platformlogs.properties.log.*` subtree and share the ARM\noperation `event.action: Microsoft.ContainerService/managedClusters/diagnosticLogs/Read`. The `nodes/proxy` subresource\ntunnels a request through the API server to a node's Kubelet. An identity with this permission can enumerate pods\n(`/proxy/pods`, `/proxy/runningpods`) or run commands (`/proxy/run`, `/proxy/exec`) on nodes without direct network\naccess to the Kubelet port. This rule excludes the node, control-plane, and kube-system service-account identities that\nroutinely proxy for monitoring, so remaining matches are workload identities or users that should rarely, if ever, reach\nthe Kubelet.\n\n### Possible investigation steps\n\n- Identify the acting identity in `azure.platformlogs.properties.log.user.username` and whether a workload service\n  account or user should reach the Kubelet at all. Compromised pod service accounts (`system:serviceaccount:<ns>:<name>`)\n  are the primary vehicle for this technique.\n- Inspect the proxied Kubelet endpoint in `azure.platformlogs.properties.log.requestURI`. `/metrics` and `/stats` are\n  monitoring; `/pods` and `/runningpods` are reconnaissance; `/run`, `/exec`, `/attach`, and `/portforward` are command\n  execution and warrant immediate escalation.\n- Evaluate `azure.platformlogs.properties.log.sourceIPs`. This is an array; for an externally operated attack the first\n  element is the operator's real client IP, while the trailing entry is the internal API-server/konnectivity hop\n  (`172.31.x`). A first entry that is not the cluster's own egress is a strong signal. In-cluster pivots show only\n  internal addresses, so absence of an external IP does not clear the event.\n- Review the target node in `azure.platformlogs.properties.log.objectRef.name` and correlate with subsequent activity on\n  that node's workloads (secret reads, RBAC changes, new pods).\n\n### False positive analysis\n\n- Monitoring and log-collection agents outside kube-system proxy to the Kubelet on every scrape and will match\n  repeatedly; add targeted exclusions for verified monitoring service accounts and namespaces.\n\n### Response and remediation\n\n- If unauthorized, revoke the acting identity's tokens and review the RBAC that granted `nodes/proxy`.\n- Inspect the target node for command execution, dropped tooling, or credential theft, and rotate credentials reachable\n  from affected pods.\n- Note that direct Kubelet access on port 10250 bypasses the API server and does not appear in kube-audit; treat a\n  confirmed proxy abuse as possible evidence of broader Kubelet access.\n- Collect kube-audit and identity artifacts per incident response procedures.\n",
+        "query": "data_stream.dataset:azure.platformlogs and\n  event.action:\"Microsoft.ContainerService/managedClusters/diagnosticLogs/Read\" and\n  azure.platformlogs.category:\"kube-audit\" and\n  azure.platformlogs.properties.log.objectRef.resource:\"nodes\" and\n  azure.platformlogs.properties.log.objectRef.subresource:\"proxy\" and\n  not azure.platformlogs.properties.log.user.username:(\n    system\\:node\\:* or \"aksService\" or \"hcpService\" or \"readinessChecker\" or\n    system\\:serviceaccount\\:kube-system\\:*\n  )\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/access-authn-authz/kubelet-authn-authz/",
+            "https://stratus-red-team.cloud/attack-techniques/kubernetes/k8s.privilege-escalation.nodes-proxy/",
+            "https://horizon3.ai/attack-research/when-read-only-isnt-k8s-nodes-proxy-get-to-rce/",
+            "https://microsoft.github.io/Threat-Matrix-for-Kubernetes/",
+            "https://github.com/inguardians/peirates"
+        ],
+        "related_integrations": [
+            {
+                "integration": "platformlogs",
+                "package": "azure",
+                "version": ">=1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.objectRef.resource",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.objectRef.subresource",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.user.username",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "dd43c618-6a5b-465b-8ae4-ce69e34ddac0",
+        "setup": "The Azure Fleet integration collecting AKS diagnostic logs with the `kube-audit` category forwarded through Event Hub into the `azure.platformlogs` data stream is required for this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: Azure",
+            "Data Source: Azure Platform Logs",
+            "Data Source: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1210",
+                        "name": "Exploitation of Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1210/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1609",
+                        "name": "Container Administration Command",
+                        "reference": "https://attack.mitre.org/techniques/T1609/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "dd43c618-6a5b-465b-8ae4-ce69e34ddac0_1",
+    "type": "security-rule"
+}
