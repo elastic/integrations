@@ -9,25 +9,27 @@ processors:
       tag: set_event_kind
       value: enrichment
   - set:
-      field: event.kind
-      value: enrichment
-  - set:
       field: event.category
+      tag: set_event_category
       value: [threat]
   - set:
       field: event.type
+      tag: set_event_type
       value: [indicator]
   - set:
       field: event.dataset
+      tag: set_event_dataset
       value: resecurity_risk.alert
   - fingerprint:
       fields:
         - id
+      tag: fingerprint_id
       target_field: _id
       if: ctx.id != null
       ignore_missing: true
   - date:
       field: updated_at
+      tag: date_updated_at
       target_field: '@timestamp'
       formats:
         - ISO8601
@@ -36,129 +38,166 @@ processors:
       ignore_failure: true
   - remove:
       field: updated_at
+      tag: remove_updated_at
       ignore_missing: true
   - set:
       field: event.risk_score
+      tag: set_event_risk_score
       copy_from: risk_score
       if: ctx.risk_score != null
   - remove:
       field: risk_score
+      tag: remove_risk_score
       ignore_missing: true
   - rename:
       field: id
+      tag: rename_id
       target_field: resecurity.alert.id
       ignore_missing: true
   - rename:
       field: subject
+      tag: rename_subject
       target_field: resecurity.alert.subject
       ignore_missing: true
   - rename:
       field: content
+      tag: rename_content
       target_field: resecurity.alert.content
       ignore_missing: true
   - rename:
       field: category.id
+      tag: rename_category_id
       target_field: resecurity.alert.category.id
       ignore_missing: true
   - rename:
       field: category.name
+      tag: rename_category_name
       target_field: resecurity.alert.category.name
       ignore_missing: true
   - remove:
       field: category
+      tag: remove_empty_category
       if: ctx.category instanceof Map && ctx.category.isEmpty()
       ignore_missing: true
   - rename:
       field: confidence_score
+      tag: rename_confidence_score
       target_field: resecurity.alert.confidence_score
       ignore_missing: true
   - rename:
       field: tlp_status
+      tag: rename_tlp_status
       target_field: resecurity.alert.tlp_status
       ignore_missing: true
   - rename:
       field: geography
+      tag: rename_geography
       target_field: resecurity.alert.geography
       ignore_missing: true
   - rename:
       field: ioc
+      tag: rename_ioc
       target_field: resecurity.alert.ioc
       ignore_missing: true
   - rename:
       field: ttp
+      tag: rename_ttp
       target_field: resecurity.alert.ttp
       ignore_missing: true
   - split:
       field: tags
+      tag: split_tags
       separator: ","
       if: ctx.tags != null
       ignore_failure: true
   - rename:
       field: tags
+      tag: rename_tags
       target_field: resecurity.alert.tags
       ignore_missing: true
   - foreach:
       field: resecurity.alert.tags
+      tag: foreach_trim_tags
       if: ctx.resecurity?.alert?.tags != null
       processor:
         trim:
           field: _ingest._value
+          tag: trim_tag_value
       ignore_failure: true
   - foreach:
       field: resecurity.alert.tags
+      tag: foreach_append_tags
       if: ctx.resecurity?.alert?.tags != null
       processor:
         append:
           field: tags
+          tag: append_tag_value
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
       ignore_failure: true
   - split:
       field: threat_actors
+      tag: split_threat_actors
       separator: ","
       if: ctx.threat_actors != null
       ignore_failure: true
   - rename:
       field: threat_actors
+      tag: rename_threat_actors
       target_field: resecurity.alert.threat_actors
       ignore_missing: true
   - foreach:
       field: resecurity.alert.threat_actors
+      tag: foreach_trim_threat_actors
       if: ctx.resecurity?.alert?.threat_actors != null
       processor:
         trim:
           field: _ingest._value
+          tag: trim_threat_actor_value
       ignore_failure: true
   - rename:
       field: for_splunk.email
+      tag: rename_for_splunk_email
       target_field: resecurity.alert.for_splunk.email
       ignore_missing: true
   - foreach:
       field: for_splunk.ip
+      tag: foreach_append_related_ip
       if: ctx.for_splunk?.ip != null
       processor:
         append:
           field: related.ip
+          tag: append_related_ip_value
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
       ignore_failure: true
   - remove:
       field: for_splunk
+      tag: remove_for_splunk
       ignore_missing: true
   - append:
       field: related.hash
+      tag: append_related_hash_md5
       value: "{{{resecurity.alert.ioc.md5}}}"
       if: ctx.resecurity?.alert?.ioc?.md5 != null
       allow_duplicates: false
   - append:
       field: related.hash
+      tag: append_related_hash_sha256
       value: "{{{resecurity.alert.ioc.sha256}}}"
       if: ctx.resecurity?.alert?.ioc?.sha256 != null
       allow_duplicates: false
 on_failure:
   - append:
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'{{/_ingest.on_failure_processor_tag}}
+        failed with message '{{ _ingest.on_failure_message }}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

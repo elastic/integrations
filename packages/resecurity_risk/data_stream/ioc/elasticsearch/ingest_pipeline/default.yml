@@ -9,25 +9,27 @@ processors:
       tag: set_event_kind
       value: enrichment
   - set:
-      field: event.kind
-      value: enrichment
-  - set:
       field: event.category
+      tag: set_event_category
       value: [threat]
   - set:
       field: event.type
+      tag: set_event_type
       value: [indicator]
   - set:
       field: event.dataset
+      tag: set_event_dataset
       value: resecurity_risk.ioc
   - fingerprint:
       fields:
         - id
+      tag: fingerprint_id
       target_field: _id
       if: ctx.id != null
       ignore_missing: true
   - date:
       field: update_date
+      tag: date_update_date_timestamp
       target_field: '@timestamp'
       formats:
         - ISO8601
@@ -36,38 +38,47 @@ processors:
       ignore_failure: true
   - set:
       field: file.name
+      tag: set_file_name
       copy_from: file_name
       if: ctx.file_name != null
   - rename:
       field: id
+      tag: rename_id
       target_field: resecurity.ioc.id
       ignore_missing: true
   - rename:
       field: actor_name
+      tag: rename_actor_name
       target_field: resecurity.ioc.actor_name
       ignore_missing: true
   - rename:
       field: malware_name
+      tag: rename_malware_name
       target_field: resecurity.ioc.malware_name
       ignore_missing: true
   - rename:
       field: file_name
+      tag: rename_file_name
       target_field: resecurity.ioc.file_name
       ignore_missing: true
   - rename:
       field: file_type
+      tag: rename_file_type
       target_field: resecurity.ioc.file_type
       ignore_missing: true
   - rename:
       field: detection_ratio
+      tag: rename_detection_ratio
       target_field: resecurity.ioc.detection_ratio
       ignore_missing: true
   - rename:
       field: item_url
+      tag: rename_item_url
       target_field: resecurity.ioc.item_url
       ignore_missing: true
   - date:
       field: add_date
+      tag: date_add_date
       target_field: resecurity.ioc.add_date
       formats:
         - ISO8601
@@ -76,9 +87,11 @@ processors:
       ignore_failure: true
   - remove:
       field: add_date
+      tag: remove_add_date
       ignore_missing: true
   - date:
       field: analysis_date
+      tag: date_analysis_date
       target_field: resecurity.ioc.analysis_date
       formats:
         - ISO8601
@@ -87,9 +100,11 @@ processors:
       ignore_failure: true
   - remove:
       field: analysis_date
+      tag: remove_analysis_date
       ignore_missing: true
   - date:
       field: update_date
+      tag: date_update_date
       target_field: resecurity.ioc.update_date
       formats:
         - ISO8601
@@ -98,35 +113,49 @@ processors:
       ignore_failure: true
   - remove:
       field: update_date
+      tag: remove_update_date
       ignore_missing: true
   - set:
       field: file.hash.md5
+      tag: set_file_hash_md5
       copy_from: md5
       if: ctx.md5 != null
   - set:
       field: file.hash.sha256
+      tag: set_file_hash_sha256
       copy_from: sha256
       if: ctx.sha256 != null
   - append:
       field: related.hash
+      tag: append_related_hash_md5
       value: "{{{md5}}}"
       if: ctx.md5 != null
       allow_duplicates: false
   - append:
       field: related.hash
+      tag: append_related_hash_sha256
       value: "{{{sha256}}}"
       if: ctx.sha256 != null
       allow_duplicates: false
   - remove:
       field: md5
+      tag: remove_md5
       ignore_missing: true
   - remove:
       field: sha256
+      tag: remove_sha256
       ignore_missing: true
 on_failure:
   - append:
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'{{/_ingest.on_failure_processor_tag}}
+        failed with message '{{ _ingest.on_failure_message }}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

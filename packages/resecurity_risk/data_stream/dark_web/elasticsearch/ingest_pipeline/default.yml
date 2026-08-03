@@ -9,25 +9,27 @@ processors:
       tag: set_event_kind
       value: enrichment
   - set:
-      field: event.kind
-      value: enrichment
-  - set:
       field: event.category
+      tag: set_event_category
       value: [threat]
   - set:
       field: event.type
+      tag: set_event_type
       value: [indicator]
   - set:
       field: event.dataset
+      tag: set_event_dataset
       value: resecurity_risk.dark_web
   - fingerprint:
       fields:
         - id
+      tag: fingerprint_id
       target_field: _id
       if: ctx.id != null
       ignore_missing: true
   - date:
       field: timestamp
+      tag: date_timestamp
       target_field: '@timestamp'
       formats:
         - ISO8601
@@ -36,55 +38,74 @@ processors:
       ignore_failure: true
   - rename:
       field: id
+      tag: rename_id
       target_field: resecurity.dark_web.id
       ignore_missing: true
   - rename:
       field: actor
+      tag: rename_actor
       target_field: resecurity.dark_web.actor
       ignore_missing: true
   - rename:
       field: category
+      tag: rename_category
       target_field: resecurity.dark_web.category
       ignore_missing: true
   - rename:
       field: country
+      tag: rename_country
       target_field: resecurity.dark_web.country
       ignore_missing: true
   - rename:
       field: language
+      tag: rename_language
       target_field: resecurity.dark_web.language
       ignore_missing: true
   - rename:
       field: post
+      tag: rename_post
       target_field: resecurity.dark_web.post
       ignore_missing: true
   - rename:
       field: snippet
+      tag: rename_snippet
       target_field: resecurity.dark_web.snippet
       ignore_missing: true
   - rename:
       field: title
+      tag: rename_title
       target_field: resecurity.dark_web.title
       ignore_missing: true
   - rename:
       field: resource_name
+      tag: rename_resource_name
       target_field: resecurity.dark_web.resource_name
       ignore_missing: true
   - rename:
       field: source
+      tag: rename_source
       target_field: resecurity.dark_web.source
       ignore_missing: true
   - rename:
       field: url
+      tag: rename_url
       target_field: resecurity.dark_web.url
       ignore_missing: true
   - remove:
       field: timestamp
+      tag: remove_timestamp
       ignore_missing: true
 on_failure:
   - append:
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'{{/_ingest.on_failure_processor_tag}}
+        failed with message '{{ _ingest.on_failure_message }}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

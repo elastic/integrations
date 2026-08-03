@@ -9,166 +9,204 @@ processors:
       tag: set_event_kind
       value: enrichment
   - set:
-      field: event.kind
-      value: enrichment
-  - set:
       field: event.category
+      tag: set_event_category
       value: [threat]
   - set:
       field: event.type
+      tag: set_event_type
       value: [indicator]
   - set:
       field: event.dataset
+      tag: set_event_dataset
       value: resecurity_risk.breach
   - fingerprint:
       fields:
         - id
+      tag: fingerprint_id
       target_field: _id
       if: ctx.id != null
       ignore_missing: true
   - date:
       field: source.collect_date
+      tag: date_source_collect_date
       target_field: '@timestamp'
       formats:
         - ISO8601
         - UNIX
-      if: ctx.source != null && ctx.source.collect_date != null
+      if: ctx.source?.collect_date != null
       ignore_failure: true
   - date:
       field: source.add_date
+      tag: date_source_add_date_fallback
       target_field: '@timestamp'
       formats:
         - ISO8601
         - UNIX
-      if: ctx['@timestamp'] == null && ctx.source != null && ctx.source.add_date != null
+      if: ctx.source?.collect_date == null && ctx.source?.add_date != null
       ignore_failure: true
   - rename:
       field: id
+      tag: rename_id
       target_field: resecurity.breach.id
       ignore_missing: true
   - rename:
       field: username
+      tag: rename_username
       target_field: resecurity.breach.username
       ignore_missing: true
   - rename:
       field: email
+      tag: rename_email
       target_field: resecurity.breach.email
       ignore_missing: true
   - set:
       field: user.email
+      tag: set_user_email
       copy_from: resecurity.breach.email
       if: ctx.resecurity?.breach?.email != null
   - rename:
       field: password
+      tag: rename_password
       target_field: resecurity.breach.password
       ignore_missing: true
   - rename:
       field: password_hash
+      tag: rename_password_hash
       target_field: resecurity.breach.password_hash
       ignore_missing: true
   - rename:
       field: salt
+      tag: rename_salt
       target_field: resecurity.breach.salt
       ignore_missing: true
   - rename:
       field: ip
+      tag: rename_ip
       target_field: resecurity.breach.ip
       ignore_missing: true
   - append:
       field: related.ip
+      tag: append_related_ip
       value: "{{{resecurity.breach.ip}}}"
       if: ctx.resecurity?.breach?.ip != null
       allow_duplicates: false
   - rename:
       field: info
+      tag: rename_info
       target_field: resecurity.breach.info
       ignore_missing: true
   - rename:
       field: source_id
+      tag: rename_source_id
       target_field: resecurity.breach.source_id
       ignore_missing: true
   - rename:
       field: source.id
+      tag: rename_source_id_nested
       target_field: resecurity.breach.source.id
       ignore_missing: true
   - rename:
       field: source.name
+      tag: rename_source_name
       target_field: resecurity.breach.source.name
       ignore_missing: true
   - rename:
       field: source.category
+      tag: rename_source_category
       target_field: resecurity.breach.source.category
       ignore_missing: true
   - rename:
       field: source.description
+      tag: rename_source_description
       target_field: resecurity.breach.source.description
       ignore_missing: true
   - rename:
       field: source.url
+      tag: rename_source_url
       target_field: resecurity.breach.source.url
       ignore_missing: true
   - rename:
       field: source.attack_vector
+      tag: rename_source_attack_vector
       target_field: resecurity.breach.source.attack_vector
       ignore_missing: true
   - rename:
       field: source.actor_name
+      tag: rename_source_actor_name
       target_field: resecurity.breach.source.actor_name
       ignore_missing: true
   - rename:
       field: source.accounts
+      tag: rename_source_accounts
       target_field: resecurity.breach.source.accounts
       ignore_missing: true
   - rename:
       field: source.score
+      tag: rename_source_score
       target_field: resecurity.breach.source.score
       ignore_missing: true
   - rename:
       field: source.geography
+      tag: rename_source_geography
       target_field: resecurity.breach.source.geography
       ignore_missing: true
   - rename:
       field: source.compromised_data
+      tag: rename_source_compromised_data
       target_field: resecurity.breach.source.compromised_data
       ignore_missing: true
   - rename:
       field: source.meta
+      tag: rename_source_meta
       target_field: resecurity.breach.source.meta
       ignore_missing: true
   - convert:
       field: source.is_imported
+      tag: convert_source_is_imported
       target_field: resecurity.breach.source.is_imported
       type: boolean
-      if: ctx.source != null && ctx.source.is_imported != null
+      if: ctx.source?.is_imported != null
       ignore_missing: true
       ignore_failure: true
   - date:
       field: source.add_date
+      tag: date_source_add_date
       target_field: resecurity.breach.source.add_date
       formats:
         - ISO8601
         - UNIX
-      if: ctx.source != null && ctx.source.add_date != null
+      if: ctx.source?.add_date != null
       ignore_failure: true
   - date:
       field: source.collect_date
+      tag: date_source_collect_date_field
       target_field: resecurity.breach.source.collect_date
       formats:
         - ISO8601
         - UNIX
-      if: ctx.source != null && ctx.source.collect_date != null
+      if: ctx.source?.collect_date != null
       ignore_failure: true
   - rename:
       field: source.ttp
+      tag: rename_source_ttp
       target_field: resecurity.breach.source.ttp
       ignore_missing: true
   - remove:
       field: source
+      tag: remove_source
       ignore_missing: true
 on_failure:
   - append:
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'{{/_ingest.on_failure_processor_tag}}
+        failed with message '{{ _ingest.on_failure_message }}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
