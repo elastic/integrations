@@ -184,17 +184,21 @@ updateBackportBranchContents() {
     git checkout "$SOURCE_BRANCH" -- "tools.go"
     git add tools.go
 
-    # Switch to the backport branch's Go version so go mod tidy keeps go.mod as-is.
-    eval "$(gvm "$(cat .go-version)")"
-
     # Run go mod tidy to update just the dependencies related to magefile and dev scripts
     echo "--- Running go mod tidy to update dependencies related to magefile and dev scripts..."
+    # Switch to the backport branch's Go version so go mod tidy keeps go.mod as-is.
+    eval "$(gvm "$(cat .go-version)")"
+    echo "Setting go version from backport branch"
+    go version
+
     go mod tidy
 
     git add go.mod go.sum
 
     # Restore the Go version from the source branch for the rest of the script execution.
+    echo "Restoring go version from ${SOURCE_BRANCH} branch"
     eval "$(gvm "$(git show "${SOURCE_BRANCH}:.go-version")")"
+    go version
   fi
 
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
