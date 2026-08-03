@@ -4,9 +4,10 @@
 
 [Google Threat Intelligence](https://gtidocs.virustotal.com/) is a security solution that helps organizations detect, analyze, and mitigate threats. It leverages Google's global telemetry, advanced analytics, and vast infrastructure to provide actionable insights. Key features include threat detection, malware and phishing analysis, and real-time threat alerts.
 
-Google Threat Intelligence integration offers support for two APIs:
+Google Threat Intelligence integration offers support for three APIs:
 1. **[Threat List API](https://gtidocs.virustotal.com/reference/get-hourly-threat-list)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
 2. **[IOC Stream API](https://gtidocs.virustotal.com/reference/get-objects-from-the-ioc-stream)** to deliver various types of **Indicators of Compromise (IOCs)** originating from multiple sources. Depending on the source of the notification, different context-specific attributes are added to the IOCs.
+3. **[Vulnerability API](https://gtidocs.virustotal.com/reference/list-vulnerabilities)** to deliver **Vulnerability** objects enriched with GTI's assessment data, such as CVSS scores, EPSS, exploitation status, and CISA Known Exploited Vulnerabilities (KEV) information. Requires an **Enterprise Plus** subscription.
 
 ## Threat List API Feeds
 
@@ -34,6 +35,8 @@ Customers can access a subset of the available threat lists based on their **Goo
 - **GTI Standard**: Ransomware, Malicious Network Infrastructure
 - **GTI Enterprise**: Ransomware, Malicious Network Infrastructure, Malware, Threat Actor, Daily Top Trending
 - **GTI Enterprise+**: Access to all available threat lists
+
+**Note:** The **Vulnerability** data stream is a separate API from the Threat List API above and requires an **Enterprise Plus** subscription.
 
 ## Data Streams
 
@@ -82,7 +85,7 @@ Users can view the transforms by navigating to **Management > Stack Management >
 
 Here, users can see continuously running transforms and also view the latest transformed GTI data in the **Discover** section.
 
-Currently, 10 transforms are available across all GTI integration data streams.
+Currently, 12 transforms are available across all GTI integration data streams.
 
 The following list contains the transforms and their associated pipelines:
 
@@ -96,10 +99,12 @@ The following list contains the transforms and their associated pipelines:
 | URL IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.url_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_url_ioc_st-transform-pipeline`)                     | Keeps URL entity type data up to date for IOC Stream.                           |
 | Domain IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.domain_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_domain_ioc_st-transform-pipeline`)            | Keeps Domain entity type data up to date for IOC Stream.                        |
 | File IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.file_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_file_ioc_st-transform-pipeline`)                  | Keeps File entity type data up to date for IOC Stream.                          |
+| Vulnerability Transform (ID: `logs-ti_google_threat_intelligence.vulnerability`)                                                                                                    | Keeps Vulnerability data up to date.                                            |
 | Detected IOC Transform (ID: `logs-ti_google_threat_intelligence.rule`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule-pipeline`)                               | Filters and extracts necessary information from Detected IOCs from threat feed. |
 | Detected IOC from IOC stream Transform (ID: `logs-ti_google_threat_intelligence.rule_ioc_st`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule_ioc_st-pipeline`) | Filters and extracts necessary information from Detected IOCs from IOC stream.  |
+| Detected Vulnerability Transform (ID: `logs-ti_google_threat_intelligence.rule_vuln`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule_vulnerability-pipeline`)  | Filters and extracts necessary information from Detected Vulnerabilities.       |
 
-All the GTI transforms are automatically started and the dashboards `Threat Feed Overview` and `IOC Stream Overview` are populated.
+All the GTI transforms are automatically started and the dashboards `Threat Feed Overview`, `IOC Stream Overview`, and `Vulnerability Overview` are populated.
 
 The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
@@ -120,7 +125,7 @@ Detection Rules match the user's data with GTI data, generating an alert if a ma
 
 1. Navigate to **Security > Rules > Detection Rules** and click on **Add Elastic Rules**.
 2. Search for **Google Threat Intelligence** to find prebuilt Elastic detection rules.
-3. Four detection rules are available for **IP, URL, File, and Domain**. Users can install one or more rules as needed.
+3. Detection rules are available for **IP, URL, File, and Domain**, each with a Threat List and an IOC Stream variant. A separate detection rule is also available for **Vulnerability**. Users can install one or more rules as needed.
 
 To customize a rule for your Elastic environment:
 
@@ -136,7 +141,7 @@ To customize a rule for your Elastic environment:
 
 Once saved, successfully executed rules will generate alerts. Users can view these alerts in the **Alerts** section.
 
-The following are the names of the eight sample rules:
+The following are the names of the nine sample rules:
 
 | Sample Rule Name                                             | Description                                                                                                                           |
 | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -148,13 +153,15 @@ The following are the names of the eight sample rules:
 | Google Threat Intelligence Domain IOC Stream Correlation     | Detects and alerts on matches between Domain IOCs collected by GTI IOC Stream data with user's selected Elastic environment data.     |
 | Google Threat Intelligence File IOC Stream Correlation       | Detects and alerts on matches between File IOCs collected by GTI IOC Stream data with user's selected Elastic environment data.       |
 | Google Threat Intelligence IP Address IOC Stream Correlation | Detects and alerts on matches between IP Address IOCs collected by GTI IOC Stream data with user's selected Elastic environment data. |
+| Google Threat Intelligence Vulnerability Correlation         | Detects and alerts on matches between Vulnerabilities collected by GTI data with user's selected Elastic environment data.            |
 
-**Note:** The following two transforms are available to filter relevant data from alerts.
+**Note:** The following three transforms are available to filter relevant data from alerts.
 
 - Detected IOC Transform (ID: `logs-ti_google_threat_intelligence.rule`)
 - Detected IOC from IOC stream Transform (ID: `logs-ti_google_threat_intelligence.rule_ioc_st`)
+- Detected Vulnerability Transform (ID: `logs-ti_google_threat_intelligence.rule_vuln`)
 
-These transforms are automatically started to populate `Threat Intelligence`, `Adversary Intelligence` and `IOC Stream Threat Intelligence` dashboards. The `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc` and `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc_stream` field represents logs for current threat intelligence data, which can be analyzed in the **Discover** section.
+These transforms are automatically started to populate `Threat Intelligence`, `Adversary Intelligence`, `IOC Stream Threat Intelligence`, and `Vulnerability Intelligence` dashboards. The `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc`, `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc_stream`, and `data_stream.dataset: ti_google_threat_intelligence.enriched_vulnerability` fields represent logs for current threat intelligence data, which can be analyzed in the **Discover** section.
 
 ## Limitations
 
@@ -313,6 +320,16 @@ This is the `Daily Top trending` dataset.
 {{event "trending"}}
 
 {{fields "trending"}}
+
+### Vulnerability
+
+This is the `Vulnerability` dataset.
+
+#### Example
+
+{{event "vulnerability"}}
+
+{{fields "vulnerability"}}
 
 ### Vulnerability Weaponization
 
