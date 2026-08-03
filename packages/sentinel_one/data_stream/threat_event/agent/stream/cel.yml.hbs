@@ -64,7 +64,7 @@ program: |-
                 },
                 "fetch_more": body.?pagination.nextCursor.orValue(null) != null,
                 "list_updated_at_gte": state.?cursor.list_updated_at_gte.orValue(
-                  state.?cursor.?last_timestamp.orValue(
+                  state.?cursor.last_timestamp.orValue(
                     (now - duration(state.initial_interval)).format(time_layout.RFC3339)
                   )
                 ),
@@ -111,7 +111,13 @@ program: |-
             },
           }
         ).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 404) ?
-          resp.Body.decode_json().as(body,
+          (
+            (resp.StatusCode == 200) ?
+              resp.Body.decode_json()
+            :
+              // Do not bother getting 404 body since it's not used.
+              {}
+          ).as(body,
             (body.?pagination.nextCursor.orValue(null) != null).as(has_more_events,
               {
                 "data": has_more_events ? state.cursor.worklist.data : tail(state.cursor.worklist.data),
@@ -138,7 +144,16 @@ program: |-
                       ?"token": has_more_events ? optional.of(body.pagination.nextCursor) : optional.none(),
                     },
                     "fetch_more": state.?cursor.fetch_more.orValue(false),
-                    ?"list_updated_at_gte": state.?cursor.list_updated_at_gte,
+                    ?"list_updated_at_gte": (body.?pagination.nextCursor.orValue(null) != null) ?
+                      optional.of(
+                        state.?cursor.list_updated_at_gte.orValue(
+                          state.?cursor.last_timestamp.orValue(
+                            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+                          )
+                        )
+                      )
+                    :
+                      optional.none(),
                     ?"last_timestamp": has_more_events ?
                       state.?cursor.last_timestamp
                     :
