@@ -39,6 +39,8 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 2. Install and start the **Elasticsearch** integration (index pivot + node stats) on monitored deployments.
 3. Install **Chargeback**. The `chargeback_conf_lookup` bootstrap transform uses the billing metrics pattern as its source trigger. If Chargeback starts before any billing backing index exists, that transform can fail to start until billing data appears; start or `_schedule_now` the transform after billing indices exist.
 
+Billing cost transforms (`billing_cluster_cost`, `billing_realized_pool`) sync on `@timestamp`. If the Usage and Cost Allocation dashboard is empty, confirm `billing_realized_pool_lookup` has documents — that index is the primary source for usage panels.
+
 **Data flow:**
 1. ESS Billing data is collected into `metrics-ess_billing.billing-*`.
 2. Elasticsearch index usage data is aggregated into `monitoring-indices*` by the Elasticsearch integration index pivot transform.
