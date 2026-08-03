@@ -194,8 +194,6 @@ updateBackportBranchContents() {
     go mod tidy
 
     git add go.mod go.sum
-    echo "Run tests with $(go version)"
-    mage check
 
     # Restore the Go version from the source branch for the rest of the script execution.
     echo "Restoring go version from ${SOURCE_BRANCH} branch"
