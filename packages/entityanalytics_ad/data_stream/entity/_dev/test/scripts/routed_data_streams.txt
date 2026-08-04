@@ -41,6 +41,8 @@ exec jq '[.hits.hits[]._source.user.name] | unique[]' user_docs.json
 stdout 'Administrator'
 
 # Verify device documents were routed to the device data stream.
+# device.id is the object SID: elastic/beats#50472 fixed the legacy provider so
+# devices emit activedirectory.device.* and device.yml resolves object_sid correctly.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 2m logs-entityanalytics_ad.device-*
 cp stdout device_docs.json
 exec jq '[.hits.hits[]._source.device.id] | unique[]' device_docs.json
