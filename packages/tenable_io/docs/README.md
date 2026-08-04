@@ -18,7 +18,7 @@ The Tenable Vulnerability Management integration collects logs for five types of
 
 **Vulnerability** is used to retrieve all vulnerabilities on each asset, including the vulnerability state. See more details in the API documentation [here](https://developer.tenable.com/reference/exports-vulns-request-export).
 
-**Scan** is used to retrieve details about existing scans and scan details, including scan statuses, assigned targets, and more. See more details in the API documentation for [Scan](https://developer.tenable.com/reference/scans-list) and [Scan Details](https://developer.tenable.com/reference/was-v2-scans-details).
+**Scan** is used to retrieve details about existing scans and scan details, including scan statuses, assigned targets, and more. See more details in the API documentation for [Scan](https://developer.tenable.com/reference/scans-list) and [Scan Details](https://developer.tenable.com/reference/scans-details).
 
 ## Compatibility
 
@@ -95,11 +95,11 @@ An example event for `asset` looks as following:
 {
     "@timestamp": "2018-12-31T22:27:58.599Z",
     "agent": {
-        "ephemeral_id": "f945f2c2-fbaf-4b93-b6ca-7d51e6a0706d",
-        "id": "a0570906-16fc-4c38-821f-7c3aa6ed04bb",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "97df4a41-a78e-442b-9212-d168b712f703",
+        "id": "abcc7180-2171-4c1a-ad67-b74ebf2b8120",
+        "name": "elastic-agent-10114",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.19.0"
     },
     "cloud": {
         "availability_zone": "12",
@@ -112,16 +112,16 @@ An example event for `asset` looks as following:
     },
     "data_stream": {
         "dataset": "tenable_io.asset",
-        "namespace": "ep",
+        "namespace": "56701",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a0570906-16fc-4c38-821f-7c3aa6ed04bb",
+        "id": "abcc7180-2171-4c1a-ad67-b74ebf2b8120",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -129,7 +129,7 @@ An example event for `asset` looks as following:
             "host"
         ],
         "dataset": "tenable_io.asset",
-        "ingested": "2024-04-02T09:13:00Z",
+        "ingested": "2026-07-28T09:04:45Z",
         "kind": "state",
         "original": "{\"acr_score\":\"3\",\"agent_names\":[],\"agent_uuid\":\"22\",\"aws_availability_zone\":null,\"aws_ec2_instance_ami_id\":\"12\",\"aws_ec2_instance_group_name\":null,\"aws_ec2_instance_id\":\"12\",\"aws_ec2_instance_state_name\":null,\"aws_ec2_instance_type\":null,\"aws_ec2_name\":null,\"aws_ec2_product_code\":null,\"aws_owner_id\":\"44\",\"aws_region\":null,\"aws_subnet_id\":null,\"aws_vpc_id\":null,\"azure_resource_id\":\"12\",\"azure_vm_id\":\"12\",\"bigfix_asset_id\":null,\"bios_uuid\":\"33\",\"created_at\":\"2017-12-31T20:40:44.535Z\",\"deleted_at\":\"2017-12-31T20:40:44.535Z\",\"deleted_by\":\"user\",\"exposure_score\":\"721\",\"first_scan_time\":\"2017-12-31T20:40:23.447Z\",\"first_seen\":\"2017-12-31T20:40:23.447Z\",\"fqdns\":[\"example.com\"],\"gcp_instance_id\":\"12\",\"gcp_project_id\":\"12\",\"gcp_zone\":\"12\",\"has_agent\":false,\"has_plugin_results\":true,\"hostnames\":[],\"id\":\"95c2725c-7298-4a44-8a1d-63131ca3f01f\",\"installed_software\":[\"cpe:/a:test:xyz:12.8\",\"cpe:/a:test:abc:7.7.3\",\"cpe:/a:test:pqr:6.9\",\"cpe:/a:test:xyz\"],\"ipv4s\":[\"89.160.20.112\"],\"ipv6s\":[],\"last_authenticated_scan_date\":\"2017-12-31T20:40:44.535Z\",\"last_licensed_scan_date\":\"2018-12-31T22:27:52.869Z\",\"last_scan_id\":\"00283024-afee-44ea-b467-db5a6ed9fd50ab8f7ecb158c480e\",\"last_scan_time\":\"2018-03-31T22:27:52.869Z\",\"last_schedule_id\":\"72284901-7c68-42b2-a0c4-c1e75568849df60557ee0e264228\",\"last_seen\":\"2018-12-31T22:27:52.869Z\",\"mac_addresses\":[],\"manufacturer_tpm_ids\":[],\"mcafee_epo_agent_guid\":null,\"mcafee_epo_guid\":null,\"netbios_names\":[],\"network_interfaces\":[{\"fqdns\":[\"example.com\"],\"ipv4s\":[\"89.160.20.112\",\"81.2.69.144\"],\"ipv6s\":[\"2a02:cf40::\"],\"mac_addresses\":[\"00-00-5E-00-53-00\",\"00-00-5E-00-53-FF\"],\"name\":\"test.0.1234\"}],\"operating_systems\":[],\"qualys_asset_ids\":[],\"qualys_host_ids\":[],\"servicenow_sysid\":null,\"sources\":[{\"first_seen\":\"2017-12-31T20:40:23.447Z\",\"last_seen\":\"2018-12-31T22:27:52.869Z\",\"name\":\"TEST_SCAN\"}],\"ssh_fingerprints\":[],\"symantec_ep_hardware_keys\":[],\"system_types\":[],\"tags\":[{\"added_at\":\"2018-12-31T14:53:13.817Z\",\"added_by\":\"ac2e7ef6-fac9-47bf-9170-617331322885\",\"key\":\"Geographic Area\",\"uuid\":\"47e7f5f6-1013-4401-a705-479bfadc7826\",\"value\":\"APAC\"}],\"terminated_at\":\"2017-12-31T20:40:44.535Z\",\"terminated_by\":\"user\",\"updated_at\":\"2018-12-31T22:27:58.599Z\"}",
         "type": [
@@ -366,24 +366,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2018-12-31T01:40:07.000Z",
     "agent": {
-        "ephemeral_id": "2b353f6e-e21d-4e61-a426-9b582471c1fa",
-        "id": "1a70a431-df2f-4f16-9352-a30f75fb1df2",
-        "name": "elastic-agent-83695",
+        "ephemeral_id": "4e2844f4-6e38-4c19-8fce-e954b0dcaced",
+        "id": "ddff6cac-21d9-48eb-b6b1-89e57cb89e9e",
+        "name": "elastic-agent-26479",
         "type": "filebeat",
-        "version": "8.18.1"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "tenable_io.audit",
-        "namespace": "31446",
+        "namespace": "18159",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1a70a431-df2f-4f16-9352-a30f75fb1df2",
+        "id": "ddff6cac-21d9-48eb-b6b1-89e57cb89e9e",
         "snapshot": false,
-        "version": "8.18.1"
+        "version": "8.19.0"
     },
     "event": {
         "action": "session-delete",
@@ -393,7 +393,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "tenable_io.audit",
         "id": "eaac53481de04f67bc7eeea07d2fb0f5",
-        "ingested": "2025-06-03T16:34:47Z",
+        "ingested": "2026-07-28T09:05:32Z",
         "kind": "event",
         "original": "{\"action\":\"session.delete\",\"actor\":{\"id\":\"d2667922-5a27-4c4a-9207-f591fbdc9d23\",\"name\":\"user2@example.com\"},\"crud\":\"d\",\"description\":null,\"fields\":[{\"key\":\"message\",\"value\":\"session timeout\"}],\"id\":\"eaac53481de04f67bc7eeea07d2fb0f5\",\"is_anonymous\":null,\"is_failure\":false,\"received\":\"2018-12-31T01:40:07Z\",\"target\":{\"id\":\"12d024e\",\"name\":null,\"type\":\"Session\"}}",
         "outcome": "success",
@@ -485,29 +485,29 @@ An example event for `plugin` looks as following:
 {
     "@timestamp": "2018-07-19T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "f945f2c2-fbaf-4b93-b6ca-7d51e6a0706d",
-        "id": "a0570906-16fc-4c38-821f-7c3aa6ed04bb",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "7790c036-669f-4265-a0cb-18c576d12e43",
+        "id": "6fbc20b0-db7c-40f2-899a-cf139a9f7053",
+        "name": "elastic-agent-55932",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "tenable_io.plugin",
-        "namespace": "ep",
+        "namespace": "29095",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a0570906-16fc-4c38-821f-7c3aa6ed04bb",
+        "id": "6fbc20b0-db7c-40f2-899a-cf139a9f7053",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "tenable_io.plugin",
-        "ingested": "2024-04-02T09:13:52Z",
+        "ingested": "2026-07-28T09:06:21Z",
         "kind": "state",
         "original": "{\"attributes\":{\"cpe\":[\"p-cpe:/a:fedoraproject:fedora:kernel-source\",\"cpe:/o:fedoraproject:fedora_core:1\",\"p-cpe:/a:fedoraproject:fedora:kernel-BOOT\",\"p-cpe:/a:fedoraproject:fedora:kernel-debuginfo\",\"p-cpe:/a:fedoraproject:fedora:kernel\",\"p-cpe:/a:fedoraproject:fedora:kernel-doc\",\"p-cpe:/a:fedoraproject:fedora:kernel-smp\"],\"cve\":[\"CVE-2003-0984\"],\"cvss3_base_score\":0,\"cvss3_temporal_score\":0,\"cvss_base_score\":4.6,\"cvss_temporal_score\":0,\"cvss_vector\":{\"AccessComplexity\":\"Low\",\"AccessVector\":\"Local-access\",\"Authentication\":\"None required\",\"Availability-Impact\":\"Partial\",\"Confidentiality-Impact\":\"Partial\",\"Integrity-Impact\":\"Partial\",\"raw\":\"AV:L/AC:L/Au:N/C:P/I:P/A:P\"},\"default_account\":false,\"description\":\"Various RTC drivers had the potential to leak...\",\"exploit_available\":false,\"exploit_framework_canvas\":false,\"exploit_framework_core\":false,\"exploit_framework_d2_elliot\":false,\"exploit_framework_exploithub\":false,\"exploit_framework_metasploit\":false,\"exploited_by_malware\":false,\"exploited_by_nessus\":false,\"has_patch\":true,\"in_the_news\":false,\"malware\":false,\"patch_publication_date\":\"2004-01-07T00:00:00Z\",\"plugin_modification_date\":\"2018-07-19T00:00:00Z\",\"plugin_publication_date\":\"2004-07-23T00:00:00Z\",\"plugin_type\":\"local\",\"plugin_version\":\"1.17\",\"risk_factor\":\"Medium\",\"see_also\":[\"http://example.com/u?07bc9e7f\"],\"solution\":\"Update the affected packages.\",\"synopsis\":\"The remote Fedora Core host is missing a security update.\",\"unsupported_by_vendor\":false,\"vpr\":{\"drivers\":{\"age_of_vuln\":{\"lower_bound\":366,\"upper_bound\":730},\"cvss3_impact_score\":5.9,\"cvss_impact_score_predicted\":false,\"exploit_code_maturity\":\"UNPROVEN\",\"product_coverage\":\"LOW\",\"threat_intensity_last28\":\"VERY_LOW\",\"threat_recency\":{\"lower_bound\":366,\"upper_bound\":730},\"threat_sources_last28\":[\"No recorded events\"]},\"score\":5.5,\"updated\":\"2018-07-19T00:00:00Z\"},\"xref\":[\"FEDORA:2003-047\"],\"xrefs\":[{\"id\":\"2003-047\",\"type\":\"FEDORA\"}]},\"id\":13670,\"name\":\"Fedora Core 1 : kernel-2.4.22-1.2140.nptl (2003-047)\"}",
         "type": [
@@ -749,24 +749,24 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2018-12-31T20:59:47.000Z",
+    "@timestamp": "2026-06-28T09:07:58.000Z",
     "agent": {
-        "ephemeral_id": "63b3ce92-be95-4199-9b67-c74f08e2c74b",
-        "id": "7e8cf2c9-64ff-4492-9ac5-4e1891bf1ba8",
-        "name": "elastic-agent-91222",
+        "ephemeral_id": "319bb7d2-e98b-4168-939a-c3dbd25a5a64",
+        "id": "cee9069f-6bba-4ddf-b1c7-0ad94dad1005",
+        "name": "elastic-agent-93689",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "tenable_io.vulnerability",
-        "namespace": "65767",
+        "namespace": "71261",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7e8cf2c9-64ff-4492-9ac5-4e1891bf1ba8",
+        "id": "cee9069f-6bba-4ddf-b1c7-0ad94dad1005",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -775,11 +775,11 @@ An example event for `vulnerability` looks as following:
         "category": [
             "vulnerability"
         ],
-        "created": "2022-11-30T14:09:12.061Z",
+        "created": "2026-06-29T09:07:58.000Z",
         "dataset": "tenable_io.vulnerability",
-        "ingested": "2025-09-19T09:10:30Z",
+        "ingested": "2026-07-28T09:08:01Z",
         "kind": "state",
-        "original": "{\"asset\":{\"fqdn\":\"example.com\",\"hostname\":\"89.160.20.112\",\"ipv4\":\"81.2.69.142\",\"network_id\":\"00000000-0000-0000-0000-000000000000\",\"operating_system\":[\"Test Demo OS X 10.5.8\"],\"tracked\":true,\"uuid\":\"cf165808-6a31-48e1-9cf3-c6c3174df51d\"},\"first_found\":\"2018-12-31T20:59:47Z\",\"indexed\":\"2022-11-30T14:09:12.061Z\",\"last_found\":\"2018-12-31T20:59:47Z\",\"output\":\"\\n  Path              : /opt/jdk-11.0.2/\\n  Installed version : 11.0.2\\n  Fixed version     : Upgrade to a version greater than 11.0.18\\n\\n\\n\\n  Path              : /usr/java/jdk1.8.0_232-cloudera/\\n  Installed version : 8.0.232\\n  Fixed version     : Upgrade to a version greater than 8u362\\n\",\"plugin\":{\"cve\":[\"CVE-2016-1620\",\"CVE-2016-1614\",\"CVE-2016-1613\",\"CVE-2016-1612\",\"CVE-2016-1618\",\"CVE-2016-1617\",\"CVE-2016-1616\",\"CVE-2016-1615\",\"CVE-2016-1619\"],\"cvss_base_score\":9.3,\"cvss_temporal_score\":6.9,\"cvss_temporal_vector\":{\"exploitability\":\"Unproven\",\"raw\":\"E:U/RL:OF/RC:C\",\"remediation_level\":\"Official-fix\",\"report_confidence\":\"Confirmed\"},\"cvss_vector\":{\"access_complexity\":\"Medium\",\"access_vector\":\"Network\",\"authentication\":\"None required\",\"availability_impact\":\"Complete\",\"confidentiality_impact\":\"Complete\",\"integrity_impact\":\"Complete\",\"raw\":\"AV:N/AC:M/Au:N/C:C/I:C/A:C\"},\"description\":\"The version of Test  on the remote host is prior to 48.0.2564.82 and is affected by the following vulnerabilities: \\n\\n - An unspecified vulnerability exists in Test V8 when handling compatible receiver checks hidden behind receptors.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1612)\\n - A use-after-free error exists in `PDFium` due to improper invalidation of `IPWL_FocusHandler` and `IPWL_Provider` upon destruction.  An attacker can exploit this to dereference already freed memory, resulting in the execution of arbitrary code. (CVE-2016-1613)\\n - An unspecified vulnerability exists in `Blink` that is related to the handling of bitmaps.  An attacker can exploit this to access sensitive information.  No other details are available. (CVE-2016-1614)\\n - An unspecified vulnerability exists in `omnibox` that is related to origin confusion.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1615)\\n - An unspecified vulnerability exists that allows an attacker to spoof a displayed URL.  No other details are available. (CVE-2016-1616)\\n - An unspecified vulnerability exists that is related to history sniffing with HSTS and CSP. No other details are available. (CVE-2016-1617)\\n - A flaw exists in `Blink` due to the weak generation of random numbers by the ARC4-based random number generator.  An attacker can exploit this to gain access to sensitive information.  No other details are available. (CVE-2016-1618)\\n - An out-of-bounds read error exists in `PDFium` in file `fx_codec_jpx_opj.cpp` in the `sycc4{22,44}_to_rgb()` functions. An attacker can exploit this to cause a denial of service by crashing the application linked using the library. (CVE-2016-1619)\\n - Multiple vulnerabilities exist, the most serious of which allow an attacker to execute arbitrary code via a crafted web page. (CVE-2016-1620)\\n - A flaw in `objects.cc` is triggered when handling cleared `WeakCells`, which may allow a context-dependent attacker to have an unspecified impact. No further details have been provided. (CVE-2016-2051)\",\"family\":\"Web Clients\",\"family_id\":1000020,\"has_patch\":false,\"id\":9062,\"name\":\"Test  \\u0026lt; 48.0.2564.82 Multiple Vulnerabilities\",\"risk_factor\":\"HIGH\",\"see_also\":[\"http://testreleases.blogspot.com/2016/01/beta-channel-update_20.html\"],\"solution\":\"Update the  browser to 48.0.2564.82 or later.\",\"synopsis\":\"The remote host is utilizing a web browser that is affected by multiple vulnerabilities.\",\"vpr\":{\"drivers\":{\"age_of_vuln\":{\"lower_bound\":366,\"upper_bound\":730},\"cvss3_impact_score\":5.9,\"cvss_impact_score_predicted\":false,\"exploit_code_maturity\":\"UNPROVEN\",\"product_coverage\":\"LOW\",\"threat_intensity_last28\":\"VERY_LOW\",\"threat_sources_last28\":[\"No recorded events\"]},\"score\":5.9,\"updated\":\"2019-12-31T10:08:58Z\"},\"vuln_publication_date\":\"2023-04-18T00:00:00Z\"},\"port\":{\"port\":\"0\",\"protocol\":\"TCP\"},\"scan\":{\"completed_at\":\"2018-12-31T20:59:47Z\",\"schedule_uuid\":\"6f7db010-9cb6-4870-b745-70a2aea2f81ce1b6640fe8a2217b\",\"started_at\":\"2018-12-31T20:59:47Z\",\"uuid\":\"0e55ec5d-c7c7-4673-a618-438a84e9d1b78af3a9957a077904\"},\"severity\":\"low\",\"severity_default_id\":3,\"severity_id\":3,\"severity_modification_type\":\"NONE\",\"state\":\"OPEN\"}",
+        "original": "{\"asset\":{\"fqdn\":\"example.com\",\"hostname\":\"89.160.20.112\",\"ipv4\":\"81.2.69.142\",\"network_id\":\"00000000-0000-0000-0000-000000000000\",\"operating_system\":[\"Test Demo OS X 10.5.8\"],\"tracked\":true,\"uuid\":\"cf165808-6a31-48e1-9cf3-c6c3174df51d\"},\"first_found\":\"2026-06-28T09:07:58Z\",\"indexed\":\"2026-06-29T09:07:58Z\",\"last_found\":\"2026-06-28T09:07:58Z\",\"output\":\"\\n  Path              : /opt/jdk-11.0.2/\\n  Installed version : 11.0.2\\n  Fixed version     : Upgrade to a version greater than 11.0.18\\n\\n\\n\\n  Path              : /usr/java/jdk1.8.0_232-cloudera/\\n  Installed version : 8.0.232\\n  Fixed version     : Upgrade to a version greater than 8u362\\n\",\"plugin\":{\"cve\":[\"CVE-2016-1620\",\"CVE-2016-1614\",\"CVE-2016-1613\",\"CVE-2016-1612\",\"CVE-2016-1618\",\"CVE-2016-1617\",\"CVE-2016-1616\",\"CVE-2016-1615\",\"CVE-2016-1619\"],\"cvss_base_score\":9.3,\"cvss_temporal_score\":6.9,\"cvss_temporal_vector\":{\"exploitability\":\"Unproven\",\"raw\":\"E:U/RL:OF/RC:C\",\"remediation_level\":\"Official-fix\",\"report_confidence\":\"Confirmed\"},\"cvss_vector\":{\"access_complexity\":\"Medium\",\"access_vector\":\"Network\",\"authentication\":\"None required\",\"availability_impact\":\"Complete\",\"confidentiality_impact\":\"Complete\",\"integrity_impact\":\"Complete\",\"raw\":\"AV:N/AC:M/Au:N/C:C/I:C/A:C\"},\"description\":\"The version of Test  on the remote host is prior to 48.0.2564.82 and is affected by the following vulnerabilities: \\n\\n - An unspecified vulnerability exists in Test V8 when handling compatible receiver checks hidden behind receptors.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1612)\\n - A use-after-free error exists in `PDFium` due to improper invalidation of `IPWL_FocusHandler` and `IPWL_Provider` upon destruction.  An attacker can exploit this to dereference already freed memory, resulting in the execution of arbitrary code. (CVE-2016-1613)\\n - An unspecified vulnerability exists in `Blink` that is related to the handling of bitmaps.  An attacker can exploit this to access sensitive information.  No other details are available. (CVE-2016-1614)\\n - An unspecified vulnerability exists in `omnibox` that is related to origin confusion.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1615)\\n - An unspecified vulnerability exists that allows an attacker to spoof a displayed URL.  No other details are available. (CVE-2016-1616)\\n - An unspecified vulnerability exists that is related to history sniffing with HSTS and CSP. No other details are available. (CVE-2016-1617)\\n - A flaw exists in `Blink` due to the weak generation of random numbers by the ARC4-based random number generator.  An attacker can exploit this to gain access to sensitive information.  No other details are available. (CVE-2016-1618)\\n - An out-of-bounds read error exists in `PDFium` in file `fx_codec_jpx_opj.cpp` in the `sycc4{22,44}_to_rgb()` functions. An attacker can exploit this to cause a denial of service by crashing the application linked using the library. (CVE-2016-1619)\\n - Multiple vulnerabilities exist, the most serious of which allow an attacker to execute arbitrary code via a crafted web page. (CVE-2016-1620)\\n - A flaw in `objects.cc` is triggered when handling cleared `WeakCells`, which may allow a context-dependent attacker to have an unspecified impact. No further details have been provided. (CVE-2016-2051)\",\"family\":\"Web Clients\",\"family_id\":1000020,\"has_patch\":false,\"id\":9062,\"name\":\"Test  \\u0026lt; 48.0.2564.82 Multiple Vulnerabilities\",\"risk_factor\":\"HIGH\",\"see_also\":[\"http://testreleases.blogspot.com/2016/01/beta-channel-update_20.html\"],\"solution\":\"Update the  browser to 48.0.2564.82 or later.\",\"synopsis\":\"The remote host is utilizing a web browser that is affected by multiple vulnerabilities.\",\"vpr\":{\"drivers\":{\"age_of_vuln\":{\"lower_bound\":366,\"upper_bound\":730},\"cvss3_impact_score\":5.9,\"cvss_impact_score_predicted\":false,\"exploit_code_maturity\":\"UNPROVEN\",\"product_coverage\":\"LOW\",\"threat_intensity_last28\":\"VERY_LOW\",\"threat_sources_last28\":[\"No recorded events\"]},\"score\":5.9,\"updated\":\"2019-12-31T10:08:58Z\"},\"vuln_publication_date\":\"2023-04-18T00:00:00Z\"},\"port\":{\"port\":\"0\",\"protocol\":\"TCP\"},\"scan\":{\"completed_at\":\"2018-12-31T20:59:47Z\",\"schedule_uuid\":\"6f7db010-9cb6-4870-b745-70a2aea2f81ce1b6640fe8a2217b\",\"started_at\":\"2018-12-31T20:59:47Z\",\"uuid\":\"0e55ec5d-c7c7-4673-a618-438a84e9d1b78af3a9957a077904\"},\"severity\":\"low\",\"severity_default_id\":3,\"severity_id\":3,\"severity_modification_type\":\"NONE\",\"state\":\"OPEN\"}",
         "type": [
             "info"
         ]
@@ -854,9 +854,9 @@ An example event for `vulnerability` looks as following:
                 "tracked": true,
                 "uuid": "cf165808-6a31-48e1-9cf3-c6c3174df51d"
             },
-            "first_found": "2018-12-31T20:59:47.000Z",
-            "indexed": "2022-11-30T14:09:12.061Z",
-            "last_found": "2018-12-31T20:59:47.000Z",
+            "first_found": "2026-06-28T09:07:58.000Z",
+            "indexed": "2026-06-29T09:07:58.000Z",
+            "last_found": "2026-06-28T09:07:58.000Z",
             "output": "\n  Path              : /opt/jdk-11.0.2/\n  Installed version : 11.0.2\n  Fixed version     : Upgrade to a version greater than 11.0.18\n\n\n\n  Path              : /usr/java/jdk1.8.0_232-cloudera/\n  Installed version : 8.0.232\n  Fixed version     : Upgrade to a version greater than 8u362\n",
             "package_nested": [
                 {
@@ -1203,26 +1203,26 @@ An example event for `scan` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-12-03T09:35:39.290Z",
+    "@timestamp": "2026-07-28T09:07:08.816Z",
     "agent": {
-        "ephemeral_id": "6c6451c2-8450-4887-a9dc-d0a16453249c",
-        "id": "db19321f-465d-4a59-869c-1b771084aa41",
-        "name": "elastic-agent-46431",
+        "ephemeral_id": "5543741f-dde8-4cd3-adab-cf59a4a512b4",
+        "id": "94af07a8-8731-4d68-b38e-85ad88dd5210",
+        "name": "elastic-agent-59842",
         "type": "filebeat",
-        "version": "9.1.3"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "tenable_io.scan",
-        "namespace": "47734",
+        "namespace": "16247",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "db19321f-465d-4a59-869c-1b771084aa41",
+        "id": "94af07a8-8731-4d68-b38e-85ad88dd5210",
         "snapshot": false,
-        "version": "9.1.3"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1230,16 +1230,20 @@ An example event for `scan` looks as following:
             "configuration"
         ],
         "dataset": "tenable_io.scan",
-        "ingested": "2025-12-03T09:35:42Z",
+        "ingested": "2026-07-28T09:07:11Z",
         "kind": "state",
-        "module": "tenable_io",
-        "original": "{\"control\":true,\"creation_date\":1683282785,\"enabled\":true,\"has_triggers\":false,\"id\":195,\"last_modification_date\":1683283158,\"legacy\":false,\"name\":\"Client Discovery\",\"owner\":\"jdoe@contoso.com\",\"permissions\":128,\"policy_id\":194,\"progress\":100,\"read\":false,\"rrules\":\"FREQ=WEEKLY;INTERVAL=1;BYDAY=FR\",\"scan_details\":{\"config_id\":\"a772daba-3d6d-412c-8ee0-3279b19650b2\",\"created_at\":\"2020-02-05T23:11:49.342Z\",\"metadata\":{\"audited_pages\":1,\"crawled_urls\":1,\"queued_pages\":0,\"queued_urls\":0,\"request_count\":74,\"response_time\":0,\"scan_status\":\"stopping\"},\"requested_action\":\"start\",\"scan_id\":\"195\",\"status\":\"completed\",\"target\":\"http://192.0.2.119\",\"updated_at\":\"2020-02-05T23:22:15.510Z\",\"user_id\":\"53e1d711-f18f-4a75-a86e-1c47bccff1b7\"},\"schedule_uuid\":\"11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871\",\"shared\":true,\"starttime\":\"20220708T033000\",\"status\":\"completed\",\"status_times\":{\"initializing\":2623,\"pending\":52799,\"processing\":1853,\"publishing\":300329,\"running\":15759},\"template_uuid\":\"a1efc3b4-cd45-a65d-fbc4-0079ebef4a56cd32a05ec2812bcf\",\"timezone\":\"America/Los_Angeles\",\"total_targets\":21,\"type\":\"remote\",\"user_permissions\":128,\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\",\"wizard_uuid\":\"32cbd657-fe65-a45e-a45f-0079eb89e56a1c23fd5ec2812bcf\"}",
+        "original": "{\"control\":true,\"creation_date\":1683282785,\"enabled\":true,\"has_triggers\":false,\"id\":195,\"last_modification_date\":1683283158,\"legacy\":false,\"name\":\"Client Discovery\",\"owner\":\"jdoe@contoso.com\",\"permissions\":128,\"policy_id\":194,\"progress\":100,\"read\":false,\"rrules\":\"FREQ=WEEKLY;INTERVAL=1;BYDAY=FR\",\"scan_details\":{\"history\":[{\"alt_targets_used\":false,\"creation_date\":1683282785,\"history_id\":1000195,\"is_archived\":false,\"last_modification_date\":1683283158,\"owner_id\":1,\"scheduler\":0,\"status\":\"completed\",\"type\":\"remote\",\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\"}],\"hosts\":[{\"asset_id\":5,\"critical\":0,\"high\":3,\"host_id\":5,\"host_index\":0,\"hostname\":\"192.0.2.57\",\"info\":156,\"low\":1,\"medium\":6,\"numchecksconsidered\":100,\"progress\":\"100-100/200-200\",\"scanprogresscurrent\":100,\"scanprogresstotal\":100,\"score\":3766,\"severity\":166,\"severitycount\":{\"item\":[{\"count\":156,\"severitylevel\":0},{\"count\":1,\"severitylevel\":1},{\"count\":6,\"severitylevel\":2},{\"count\":3,\"severitylevel\":3},{\"count\":0,\"severitylevel\":4}]},\"totalchecksconsidered\":100}],\"info\":{\"acls\":[{\"display_name\":\"jdoe@contoso.com\",\"id\":1,\"name\":\"jdoe@contoso.com\",\"owner\":1,\"permissions\":128,\"type\":\"user\"}],\"alt_targets_used\":false,\"control\":true,\"edit_allowed\":true,\"folder_id\":226,\"hasaudittrail\":true,\"haskb\":true,\"hostcount\":1,\"is_archived\":false,\"name\":\"Client Discovery\",\"no_target\":false,\"object_id\":195,\"owner\":\"jdoe@contoso.com\",\"pci-can-upload\":false,\"policy\":null,\"scan_end\":1683283158,\"scan_start\":1683282785,\"scan_type\":\"remote\",\"scanner_end\":null,\"scanner_name\":null,\"scanner_start\":null,\"schedule_uuid\":\"11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871\",\"shared\":true,\"status\":\"completed\",\"tag_targets\":[],\"targets\":\"192.0.2.57\",\"timestamp\":1683283158,\"user_permissions\":128,\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\"},\"vulnerabilities\":[{\"count\":3,\"plugin_family\":\"Port scanners\",\"plugin_id\":34220,\"plugin_name\":\"Netstat Portscanner (WMI)\",\"severity\":0,\"vuln_index\":1}]},\"schedule_uuid\":\"11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871\",\"shared\":true,\"starttime\":\"20220708T033000\",\"status\":\"completed\",\"status_times\":{\"initializing\":2623,\"pending\":52799,\"processing\":1853,\"publishing\":300329,\"running\":15759},\"template_uuid\":\"a1efc3b4-cd45-a65d-fbc4-0079ebef4a56cd32a05ec2812bcf\",\"timezone\":\"America/Los_Angeles\",\"total_targets\":21,\"type\":\"remote\",\"user_permissions\":128,\"uuid\":\"a456ef1c-cbd4-ad41-f654-119b766ff61f\",\"wizard_uuid\":\"32cbd657-fe65-a45e-a45f-0079eb89e56a1c23fd5ec2812bcf\"}",
         "type": [
             "info"
         ]
     },
     "input": {
         "type": "cel"
+    },
+    "related": {
+        "ip": [
+            "192.0.2.57"
+        ]
     },
     "tags": [
         "preserve_original_event",
@@ -1263,23 +1267,109 @@ An example event for `scan` looks as following:
             "read": false,
             "rrules": "FREQ=WEEKLY;INTERVAL=1;BYDAY=FR",
             "scan_details": {
-                "config_id": "a772daba-3d6d-412c-8ee0-3279b19650b2",
-                "created_at": "2020-02-05T23:11:49.342Z",
-                "metadata": {
-                    "audited_pages": 1,
-                    "crawled_urls": 1,
-                    "queued_pages": 0,
-                    "queued_urls": 0,
-                    "request_count": 74,
-                    "response_time": 0,
-                    "scan_status": "stopping"
+                "history": [
+                    {
+                        "alt_targets_used": false,
+                        "creation_date": "2023-05-05T10:33:05.000Z",
+                        "history_id": 1000195,
+                        "is_archived": false,
+                        "last_modification_date": "2023-05-05T10:39:18.000Z",
+                        "owner_id": 1,
+                        "scheduler": 0,
+                        "status": "completed",
+                        "type": "remote",
+                        "uuid": "a456ef1c-cbd4-ad41-f654-119b766ff61f"
+                    }
+                ],
+                "hosts": [
+                    {
+                        "asset_id": 5,
+                        "critical": 0,
+                        "high": 3,
+                        "host_id": 5,
+                        "host_index": 0,
+                        "hostname": "192.0.2.57",
+                        "info": 156,
+                        "low": 1,
+                        "medium": 6,
+                        "numchecksconsidered": 100,
+                        "progress": "100-100/200-200",
+                        "scanprogresscurrent": 100,
+                        "scanprogresstotal": 100,
+                        "score": 3766,
+                        "severity": 166,
+                        "severitycount": {
+                            "item": [
+                                {
+                                    "count": 156,
+                                    "severitylevel": 0
+                                },
+                                {
+                                    "count": 1,
+                                    "severitylevel": 1
+                                },
+                                {
+                                    "count": 6,
+                                    "severitylevel": 2
+                                },
+                                {
+                                    "count": 3,
+                                    "severitylevel": 3
+                                },
+                                {
+                                    "count": 0,
+                                    "severitylevel": 4
+                                }
+                            ]
+                        },
+                        "totalchecksconsidered": 100
+                    }
+                ],
+                "info": {
+                    "acls": [
+                        {
+                            "display_name": "jdoe@contoso.com",
+                            "id": 1,
+                            "name": "jdoe@contoso.com",
+                            "owner": 1,
+                            "permissions": 128,
+                            "type": "user"
+                        }
+                    ],
+                    "alt_targets_used": false,
+                    "control": true,
+                    "edit_allowed": true,
+                    "folder_id": 226,
+                    "hasaudittrail": true,
+                    "haskb": true,
+                    "hostcount": 1,
+                    "is_archived": false,
+                    "name": "Client Discovery",
+                    "no_target": false,
+                    "object_id": 195,
+                    "owner": "jdoe@contoso.com",
+                    "pci-can-upload": false,
+                    "scan_end": "2023-05-05T10:39:18.000Z",
+                    "scan_start": "2023-05-05T10:33:05.000Z",
+                    "scan_type": "remote",
+                    "schedule_uuid": "11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871",
+                    "shared": true,
+                    "status": "completed",
+                    "targets": "192.0.2.57",
+                    "timestamp": "2023-05-05T10:39:18.000Z",
+                    "user_permissions": 128,
+                    "uuid": "a456ef1c-cbd4-ad41-f654-119b766ff61f"
                 },
-                "requested_action": "start",
-                "scan_id": "195",
-                "status": "completed",
-                "target": "http://192.0.2.119",
-                "updated_at": "2020-02-05T23:22:15.510Z",
-                "user_id": "53e1d711-f18f-4a75-a86e-1c47bccff1b7"
+                "vulnerabilities": [
+                    {
+                        "count": 3,
+                        "plugin_family": "Port scanners",
+                        "plugin_id": 34220,
+                        "plugin_name": "Netstat Portscanner (WMI)",
+                        "severity": 0,
+                        "vuln_index": 1
+                    }
+                ]
             },
             "schedule_uuid": "11c56dea-as5f-65ce-ad45-9978045df65ecade45b6e3a76871",
             "shared": true,
@@ -1334,21 +1424,114 @@ An example event for `scan` looks as following:
 | tenable_io.scan.progress | The progress of the scan ranging from 0 to 100. | long |
 | tenable_io.scan.read | A value indicating whether the user account associated with the request message has viewed the scan in the Tenable Vulnerability Management user interface. If 1, the user account has viewed the scan results. | boolean |
 | tenable_io.scan.rrules | The interval at which the scan repeats. The interval is formatted as a string of three values delimited by semi-colons. These values are the frequency (FREQ=ONETIME or DAILY or WEEKLY or MONTHLY or YEARLY), the interval (INTERVAL=1 or 2 or 3 ... x), and the days of the week (BYDAY=SU,MO,TU,WE,TH,FR,SA). For a scan that runs every three weeks on Monday Wednesday and Friday, the string would be FREQ=WEEKLY;INTERVAL=3;BYDAY=MO,WE,FR. If the scan is not scheduled to recur, this attribute is null. For more information, see rrules Format. | keyword |
-| tenable_io.scan.scan_details.config_id | The unique identifier of the scan configuration. | keyword |
-| tenable_io.scan.scan_details.created_at | The date and time when the scan was created. | date |
-| tenable_io.scan.scan_details.metadata.audited_pages | The number of pages that have been audited. | long |
-| tenable_io.scan.scan_details.metadata.crawled_urls | The number of URLs that have been crawled. | long |
-| tenable_io.scan.scan_details.metadata.queued_pages | The number of pages queued for auditing. | long |
-| tenable_io.scan.scan_details.metadata.queued_urls | The number of URLs queued for scanning. | long |
-| tenable_io.scan.scan_details.metadata.request_count | The total number of requests made during the scan. | long |
-| tenable_io.scan.scan_details.metadata.response_time | The average response time in milliseconds. | long |
-| tenable_io.scan.scan_details.metadata.scan_status | The detailed scan status. | keyword |
-| tenable_io.scan.scan_details.requested_action | The action requested for the scan (e.g., start, stop). | keyword |
-| tenable_io.scan.scan_details.scan_id | The unique identifier for the scan. | keyword |
-| tenable_io.scan.scan_details.status | The current status of the scan. | keyword |
-| tenable_io.scan.scan_details.target | The target URL of the scan. | keyword |
-| tenable_io.scan.scan_details.updated_at | The date and time when the scan was last updated. | date |
-| tenable_io.scan.scan_details.user_id | The unique identifier of the user who created the scan. | keyword |
+| tenable_io.scan.scan_details.comphosts.asset_id | The unique ID of the asset. | long |
+| tenable_io.scan.scan_details.comphosts.critical | The number of critical-severity findings on the host. | long |
+| tenable_io.scan.scan_details.comphosts.high | The number of high-severity findings on the host. | long |
+| tenable_io.scan.scan_details.comphosts.host_id | The unique ID of the host. | long |
+| tenable_io.scan.scan_details.comphosts.host_index | The index for the host. | long |
+| tenable_io.scan.scan_details.comphosts.hostname | The name of the host. | keyword |
+| tenable_io.scan.scan_details.comphosts.info | The number of informational findings on the host. | long |
+| tenable_io.scan.scan_details.comphosts.low | The number of low-severity findings on the host. | long |
+| tenable_io.scan.scan_details.comphosts.medium | The number of medium-severity findings on the host. | long |
+| tenable_io.scan.scan_details.comphosts.numchecksconsidered | The number of checks considered on the host. | long |
+| tenable_io.scan.scan_details.comphosts.progress | The scan progress of the host. | keyword |
+| tenable_io.scan.scan_details.comphosts.scanprogresscurrent | The current scan progress for the host. | long |
+| tenable_io.scan.scan_details.comphosts.scanprogresstotal | The total scan progress for the host. | long |
+| tenable_io.scan.scan_details.comphosts.score | The overall score for the host. | long |
+| tenable_io.scan.scan_details.comphosts.severity | The total severity count for the host. | long |
+| tenable_io.scan.scan_details.comphosts.severitycount.item.count | The number of findings at this severity level. | long |
+| tenable_io.scan.scan_details.comphosts.severitycount.item.severitylevel | The severity level (0=info, 1=low, 2=medium, 3=high, 4=critical). | long |
+| tenable_io.scan.scan_details.comphosts.totalchecksconsidered | The total number of checks considered on the host. | long |
+| tenable_io.scan.scan_details.compliance.count | The number of findings. | long |
+| tenable_io.scan.scan_details.compliance.host_id | The unique ID of the host. | long |
+| tenable_io.scan.scan_details.compliance.hostname | The name of the host. | keyword |
+| tenable_io.scan.scan_details.compliance.plugin_family | The parent family of the compliance plugin. | keyword |
+| tenable_io.scan.scan_details.compliance.plugin_id | The unique ID of the compliance plugin (hash string). | keyword |
+| tenable_io.scan.scan_details.compliance.plugin_name | The name of the compliance plugin. | keyword |
+| tenable_io.scan.scan_details.compliance.severity | The severity rating of the plugin. | long |
+| tenable_io.scan.scan_details.compliance.severity_index | The severity index order of the plugin. | long |
+| tenable_io.scan.scan_details.history.alt_targets_used | If true, the scan was not launched with a target list. | boolean |
+| tenable_io.scan.scan_details.history.creation_date | The creation date for the historical data in Unix time. | date |
+| tenable_io.scan.scan_details.history.history_id | The unique ID of the historical data. | long |
+| tenable_io.scan.scan_details.history.is_archived | Indicates whether the scan results are older than 35 days. | boolean |
+| tenable_io.scan.scan_details.history.last_modification_date | The last modification date for the historical data in Unix time. | date |
+| tenable_io.scan.scan_details.history.owner_id | The unique ID of the owner of the scan. | long |
+| tenable_io.scan.scan_details.history.reporting_mode | Reporting mode for Nessus Agent scans (baseline, differential, or null). | keyword |
+| tenable_io.scan.scan_details.history.scheduler | If true, Tenable Vulnerability Management launched the scan from a schedule. | long |
+| tenable_io.scan.scan_details.history.status | The terminal status of the scan run. | keyword |
+| tenable_io.scan.scan_details.history.type | The type of scan (local, remote, agent, or null). | keyword |
+| tenable_io.scan.scan_details.history.uuid | The UUID of the historical data. | keyword |
+| tenable_io.scan.scan_details.hosts.asset_id | The unique ID of the asset. | long |
+| tenable_io.scan.scan_details.hosts.critical | The number of critical-severity findings on the host. | long |
+| tenable_io.scan.scan_details.hosts.high | The number of high-severity findings on the host. | long |
+| tenable_io.scan.scan_details.hosts.host_id | The unique ID of the host. | long |
+| tenable_io.scan.scan_details.hosts.host_index | The index for the host. | long |
+| tenable_io.scan.scan_details.hosts.hostname | The name of the host. | keyword |
+| tenable_io.scan.scan_details.hosts.info | The number of informational findings on the host. | long |
+| tenable_io.scan.scan_details.hosts.low | The number of low-severity findings on the host. | long |
+| tenable_io.scan.scan_details.hosts.medium | The number of medium-severity findings on the host. | long |
+| tenable_io.scan.scan_details.hosts.numchecksconsidered | The number of checks considered on the host. | long |
+| tenable_io.scan.scan_details.hosts.progress | The scan progress of the host. | keyword |
+| tenable_io.scan.scan_details.hosts.scanprogresscurrent | The current scan progress for the host. | long |
+| tenable_io.scan.scan_details.hosts.scanprogresstotal | The total scan progress for the host. | long |
+| tenable_io.scan.scan_details.hosts.score | The overall score for the host. | long |
+| tenable_io.scan.scan_details.hosts.severity | The total severity count for the host. | long |
+| tenable_io.scan.scan_details.hosts.severitycount.item.count | The number of findings at this severity level. | long |
+| tenable_io.scan.scan_details.hosts.severitycount.item.severitylevel | The severity level (0=info, 1=low, 2=medium, 3=high, 4=critical). | long |
+| tenable_io.scan.scan_details.hosts.totalchecksconsidered | The total number of checks considered on the host. | long |
+| tenable_io.scan.scan_details.info.acls.display_name | The name of the user or group as it appears in the UI. | keyword |
+| tenable_io.scan.scan_details.info.acls.id | A number representing the display order of the user or group. | long |
+| tenable_io.scan.scan_details.info.acls.name | The name of the user or group granted the specified permissions. | keyword |
+| tenable_io.scan.scan_details.info.acls.owner | Indicates whether the user or group owns the scan. | long |
+| tenable_io.scan.scan_details.info.acls.permissions | The scan permission. | long |
+| tenable_io.scan.scan_details.info.acls.type | The type of scan permissions (default, user, or group). | keyword |
+| tenable_io.scan.scan_details.info.alt_targets_used | If true, Tenable Vulnerability Management did not launch the scan with a target list. | boolean |
+| tenable_io.scan.scan_details.info.control | If true, the scan has a schedule and can be launched. | boolean |
+| tenable_io.scan.scan_details.info.edit_allowed | If true, the requesting user can edit this scan configuration. | boolean |
+| tenable_io.scan.scan_details.info.folder_id | The unique ID of the destination folder for the scan. | long |
+| tenable_io.scan.scan_details.info.hasaudittrail | Indicates whether the scan is configured to create an audit trail. | boolean |
+| tenable_io.scan.scan_details.info.haskb | Indicates whether a scan has a Knowledge Base (KB) associated with it. | boolean |
+| tenable_io.scan.scan_details.info.hostcount | The total number of assets scanned for vulnerabilities. | long |
+| tenable_io.scan.scan_details.info.is_archived | Indicates whether the scan results are older than 35 days. | boolean |
+| tenable_io.scan.scan_details.info.name | The name of the scan. | keyword |
+| tenable_io.scan.scan_details.info.no_target | Indicates whether the scan based on this policy can specify targets. | boolean |
+| tenable_io.scan.scan_details.info.object_id | The unique ID of the scan result object. | long |
+| tenable_io.scan.scan_details.info.owner | The owner of the scan. | keyword |
+| tenable_io.scan.scan_details.info.pci-can-upload | If true, you can submit the results of the scan for PCI ASV review. | boolean |
+| tenable_io.scan.scan_details.info.policy | The name of the scan template associated with the scan. | keyword |
+| tenable_io.scan.scan_details.info.scan_end | The Unix timestamp when the scan run finished. | date |
+| tenable_io.scan.scan_details.info.scan_start | The Unix timestamp when the scan run started. | date |
+| tenable_io.scan.scan_details.info.scan_type | The type of scan (ps, remote, agent, or null). | keyword |
+| tenable_io.scan.scan_details.info.scanner_end | The scan's end time, if the scan is imported. | date |
+| tenable_io.scan.scan_details.info.scanner_name | The name of the scanner configured to run the scan. | keyword |
+| tenable_io.scan.scan_details.info.scanner_start | The scan's start time, if the scan is imported. | date |
+| tenable_io.scan.scan_details.info.schedule_uuid | The UUID for a specific instance in the scan schedule. | keyword |
+| tenable_io.scan.scan_details.info.shared | If true, the scan is shared with users other than the owner. | boolean |
+| tenable_io.scan.scan_details.info.status | The status of the scan. | keyword |
+| tenable_io.scan.scan_details.info.tag_targets | The list of asset tag UUIDs the scan uses to determine which assets it evaluates. | keyword |
+| tenable_io.scan.scan_details.info.targets | A comma-delimited list of IPv4 addresses configured as targets for the scan. | keyword |
+| tenable_io.scan.scan_details.info.timestamp | The Unix timestamp when the scan run finished. | date |
+| tenable_io.scan.scan_details.info.user_permissions | The sharing permissions for the scan. | long |
+| tenable_io.scan.scan_details.info.uuid | The UUID of the scan. | keyword |
+| tenable_io.scan.scan_details.notes.message | The specific message of the note. | keyword |
+| tenable_io.scan.scan_details.notes.severity | The severity of the note. | long |
+| tenable_io.scan.scan_details.notes.title | The title of the note. | keyword |
+| tenable_io.scan.scan_details.progress | The progress of the scan ranging from 0 to 100. | long |
+| tenable_io.scan.scan_details.remediations.num_cves | The number of CVEs addressed by the remediations. | long |
+| tenable_io.scan.scan_details.remediations.num_hosts | The number of hosts with remediations. | long |
+| tenable_io.scan.scan_details.remediations.num_impacted_hosts | The number of hosts impacted by the remediations. | long |
+| tenable_io.scan.scan_details.remediations.num_remediated_cves | The number of CVEs that have been remediated. | long |
+| tenable_io.scan.scan_details.remediations.remediations.hosts | The number of hosts affected by this remediation. | long |
+| tenable_io.scan.scan_details.remediations.remediations.remediation | A description of the remediation action. | keyword |
+| tenable_io.scan.scan_details.remediations.remediations.value | The unique identifier of the remediation. | keyword |
+| tenable_io.scan.scan_details.remediations.remediations.vulns | The number of vulnerabilities addressed by this remediation. | long |
+| tenable_io.scan.scan_details.vulnerabilities.count | The number of vulnerabilities found. | long |
+| tenable_io.scan.scan_details.vulnerabilities.plugin_family | The parent family of the vulnerability plugin. | keyword |
+| tenable_io.scan.scan_details.vulnerabilities.plugin_id | The unique ID of the vulnerability plugin. | long |
+| tenable_io.scan.scan_details.vulnerabilities.plugin_name | The name of the vulnerability plugin. | keyword |
+| tenable_io.scan.scan_details.vulnerabilities.severity | The severity rating of the plugin. | long |
+| tenable_io.scan.scan_details.vulnerabilities.severity_index | The severity index order of the plugin. | long |
+| tenable_io.scan.scan_details.vulnerabilities.vuln_index | The index of the vulnerability plugin. | long |
 | tenable_io.scan.schedule_uuid | The UUID for a specific instance in the scan schedule. | keyword |
 | tenable_io.scan.shared | If true, the scan is shared with users other than the scan owner. The level of sharing is specified in the acls attribute of the scan details. | boolean |
 | tenable_io.scan.starttime | For one-time scans, the starting time and date for the scan. For recurrent scans, the first date on which the scan schedule is active and the time that recurring scans launch based on the rrules attribute. | date |
