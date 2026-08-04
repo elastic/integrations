@@ -9,9 +9,8 @@ add_bin_path
 with_yq
 with_mage
 
-pushd packages > /dev/null
+echo "--- List all directories"
 PACKAGE_LIST=$(list_all_directories)
-popd > /dev/null
 
 PIPELINE_FILE="packages_pipeline.yml"
 touch packages_pipeline.yml
@@ -28,12 +27,12 @@ EOF
 echo "--- Get from and to changesets"
 from="$(get_from_changeset)"
 if [[ "${from}" == "" ]]; then
-    echo "Missing \"from\" changset".
+    echo "Missing \"from\" changeset".
     exit 1
 fi
 to="$(get_to_changeset)"
 if [[ "${to}" == "" ]]; then
-    echo "Missing \"to\" changset".
+    echo "Missing \"to\" changeset".
     exit 1
 fi
 
@@ -51,35 +50,24 @@ fi
 
 packages_to_test=0
 
-for package in ${PACKAGE_LIST}; do
+for package_path in ${PACKAGE_LIST}; do
     # check if needed to create an step for this package
-    echo "--- [$package] check if it is required to be tested"
-    pushd "packages/${package}" > /dev/null
-    skip_package="false"
-    failure="false"
-    if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
-        skip_package="true"
-        if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
-            failure=true
-        fi
-    fi
-    popd > /dev/null
-    if [[ "${failure}" == "true" ]]; then
-        echo "Unexpected failure checking ${package}"
-        exit 1
-    fi
-
-    echoerr "${reason}"
-    if [[ "${skip_package}" == "true" ]] ; then
+    echo "--- [$package_path] check if it is required to be tested"
+    if ! should_test_package "${package_path}" "${from}" "${to}"; then
         continue
     fi
 
+    # package names (manifest.yml) are unique, so it can be used as key for the step
+    pushd "${package_path}" > /dev/null
+    package_name=$(package_name_manifest)
+    popd > /dev/null
+
     packages_to_test=$((packages_to_test+1))
     cat << EOF >> ${PIPELINE_FILE}
-    - label: "Check integrations ${package}"
-      key: "test-integrations-${package}"
-      command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
-      timeout_in_minutes: 240
+    - label: "Check integrations ${package_name}"
+      key: "test-integrations-${package_name}"
+      command: ".buildkite/scripts/test_one_package.sh ${package_path} ${from} ${to}"
+      timeout_in_minutes: 300
       agents:
         provider: gcp
         image: ${IMAGE_UBUNTU_X86_64}
@@ -92,11 +80,11 @@ for package in ${PACKAGE_LIST}; do
         # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-aws-buildkite-oidc.tf
         # This plugin creates the environment variables required by the service deployer (AWS_SECRET_ACCESS_KEY and AWS_SECRET_KEY_ID)
         - elastic/oblt-aws-auth#v0.1.0:
-            duration: 10800 # seconds
+            duration: 18000 # seconds
         # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-gcp-buildkite-oidc.tf
         # This plugin authenticates to Google Cloud using the OIDC token.
         - elastic/oblt-google-auth#v1.3.0:
-            lifetime: 10800 # seconds
+            lifetime: 18000 # seconds
             project-id: "elastic-observability-ci"
             project-number: "911195782929"
       artifact_paths:
