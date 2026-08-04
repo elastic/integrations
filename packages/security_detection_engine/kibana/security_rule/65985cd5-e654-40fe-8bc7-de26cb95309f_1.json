@@ -1,0 +1,76 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a single authenticated GKE identity from one source IP issuing a burst of API calls across many distinct actions and resources with a mix of successful and failed outcomes. That pattern is consistent with automated RBAC permission enumeration rather than steady-state controller traffic. Anonymous probing is covered by a separate rule.",
+        "false_positives": [
+            "Administrators troubleshooting RBAC from a workstation or VPN may generate mixed allow/deny results across many APIs in a short window; tune by identity or source IP after validation.",
+            "Newly deployed workloads with incomplete RoleBindings can probe several APIs during startup and encounter intermittent denials; exclude known service accounts if documented."
+        ],
+        "from": "now-6m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GKE Endpoint Permission Enumeration",
+        "note": "## Triage and analysis\n\n### Investigating GKE Endpoint Permission Enumeration\n\nThe rule aggregates GKE audit events per `client.user.email` and `source.ip` over the rule lookback. It alerts when\nthe actor hits more than five distinct `event.action` values and more than three distinct `gcp.audit.resource_name`\nvalues, produces both success and failure outcomes, and stays under 75 total events. Use\n`Esql.earliest_timestamp` and `Esql.latest_timestamp` to bound the burst in Discover.\n\n### Possible investigation steps\n\n- Review `Esql.event_action_values`, `Esql.gcp_audit_resource_name_values`, and `Esql.event_outcome_values` for targeted APIs\n  (secrets, RBAC, pods/exec) and which calls succeeded.\n- Confirm whether `source.ip` and `Esql.user_agent_original_values` match expected admin or automation clients.\n- Hunt for follow-on activity from the same identity: RoleBinding changes, secret reads, privileged pod creates, or\n  exec.\n\n### False positive analysis\n\n- Platform engineers validating least-privilege RBAC can look like enumeration; correlate with change tickets.\n- Chatty operators that occasionally fail authorization may approach the thresholds; raise exclusions only after\n  confirming the identity is expected.\n\n### Response and remediation\n\n- If malicious, revoke or rotate the credential, tighten RBAC, and inspect for data access or persistence after the\n  burst.\n",
+        "query": "from logs-gcp.audit-* metadata _id, _index, _version\n| where data_stream.dataset == \"gcp.audit\"\n    and service.name == \"k8s.io\"\n    and client.user.email is not null\n    and source.ip is not null\n    and to_string(source.ip) != \"127.0.0.1\"\n    and to_string(source.ip) != \"::1\"\n    and client.user.email != \"system:anonymous\"\n    and client.user.email != \"system:unauthenticated\"\n    and gcp.audit.resource_name != \"readyz\"\n    and gcp.audit.resource_name != \"livez\"\n    and gcp.audit.resource_name != \"healthz\"\n    and gcp.audit.resource_name != \"version\"\n| stats\n    Esql.document_count = count(),\n    Esql.event_outcome_count_distinct = count_distinct(event.outcome),\n    Esql.event_action_count_distinct = count_distinct(event.action),\n    Esql.gcp_audit_resource_name_count_distinct = count_distinct(gcp.audit.resource_name),\n    Esql.earliest_timestamp = min(@timestamp),\n    Esql.latest_timestamp = max(@timestamp),\n    Esql.event_action_values = values(event.action),\n    Esql.event_outcome_values = values(event.outcome),\n    Esql.gcp_audit_resource_name_values = values(gcp.audit.resource_name),\n    Esql.user_agent_original_values = values(user_agent.original)\n  by client.user.email, source.ip\n| where Esql.event_outcome_count_distinct == 2\n    and Esql.event_action_count_distinct > 5\n    and Esql.gcp_audit_resource_name_count_distinct > 3\n    and Esql.document_count < 75\n| keep Esql.*, client.user.email, source.ip\n",
+        "references": [
+            "https://heilancoos.github.io/research/2025/12/16/kubernetes.html#unauthenticated-api-access"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "65985cd5-e654-40fe-8bc7-de26cb95309f",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "65985cd5-e654-40fe-8bc7-de26cb95309f_1",
+    "type": "security-rule"
+}
