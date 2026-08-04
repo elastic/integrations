@@ -163,6 +163,7 @@ processors:
         "0x00000035": "Non Unique Name Attribute"
         "0x00000036": "Object Destroyed"
         "0x00000037": "Object Not Found"
+        "0x00000038": "(Reserved))"
         "0x00000039": "Not Authorised"
         "0x0000003a": "Server Limit Exceeded"
         "0x0000003b": "Unknown Enumeration"
@@ -181,7 +182,7 @@ processors:
         "0x00000100": "General Failure"
   - script:
       tag: script_translate_kmip_operation
-      description: Translate operation code to human-readable operation descrption, as per https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497698
+      description: Translate operation code to human-readable operation description, as per https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497698
       lang: painless
       if: ctx.hashicorp_vault?.audit?.request?.data?.BatchItem?.Operation?.value != null
       source: >
@@ -667,7 +668,7 @@ processors:
       value: success
   - set:
       tag: set_event_outcome_eaa01289
-      if: ctx?.hashicorp_vault?.audit?.error != null
+      if: ctx?.hashicorp_vault?.audit?.error != null || ctx.hashicorp_vault?.audit?.response?.data?.BatchItem?.ResultStatus?.value == '0x00000001'
       field: event.outcome
       value: failure
   - set:
