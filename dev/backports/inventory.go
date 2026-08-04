@@ -20,7 +20,8 @@ import (
 )
 
 type inventory struct {
-	Backports []entry `yaml:"backports"`
+	SkipChecklistPackages []string `yaml:"skip_checklist_packages"`
+	Backports             []entry  `yaml:"backports"`
 }
 
 type entry struct {
@@ -107,6 +108,17 @@ func ListAllActiveBackportBranches(path string, packages []string, now time.Time
 		}
 	}
 	return result, nil
+}
+
+// ListSkipChecklistPackages returns the package names that should be excluded
+// from the backport checklist comment. These packages still participate in
+// changelog syncing and other automated backport flows.
+func ListSkipChecklistPackages(path string) ([]string, error) {
+	inv, err := loadInventory(path)
+	if err != nil {
+		return nil, err
+	}
+	return inv.SkipChecklistPackages, nil
 }
 
 // CheckActive looks up branch in the inventory at path and reports whether it
