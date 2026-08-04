@@ -164,6 +164,12 @@ updateBackportBranchContents() {
   local DEV_FOLDER="dev"
 
   if git ls-tree -d --name-only main:${DEV_FOLDER} > /dev/null 2>&1 ; then
+    # Copy the standalone backport CLI tool so backport branches always use the
+    # version from main (same reason as copying .buildkite/ and dev/).
+    echo "--- Copying cmd/backport from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "cmd/backport"
+    git add cmd/backport
+
     echo "--- Copying $DEV_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${DEV_FOLDER}"
 
@@ -257,8 +263,8 @@ updateBackportBranchContents() {
 
   if [ "$DRY_RUN" == "true" ];then
     echo "--- DRY_RUN mode, nothing will be pushed."
-    # Show just the relevant files diff (go.mod, go.sum, .buildkite, dev, .github/CODEOWNERS and package to be backported)
-    git --no-pager diff "$SOURCE_BRANCH...$BACKPORT_BRANCH_NAME" .buildkite/ dev/ go.sum go.mod tools.go .github/CODEOWNERS "${PACKAGE_PATH}"
+    # Show just the relevant files diff (go.mod, go.sum, .buildkite, cmd/backport, dev, .github/CODEOWNERS and package to be backported)
+    git --no-pager diff "$SOURCE_BRANCH...$BACKPORT_BRANCH_NAME" .buildkite/ cmd/backport/ dev/ go.sum go.mod tools.go .github/CODEOWNERS "${PACKAGE_PATH}"
   else
     echo "--- Pushing..."
     git push origin "$BACKPORT_BRANCH_NAME"
