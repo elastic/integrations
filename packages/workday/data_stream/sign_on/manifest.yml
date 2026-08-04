@@ -1,0 +1,83 @@
+title: Sign-on
+type: logs
+ilm_policy: logs-workday.sign_on-default_policy
+streams:
+  - input: cel
+    title: Sign-on logs
+    description: Collect Sign-on logs from Workday.
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: Report URL
+        description: 'Full URL of the Workday Custom Report (Reports as a Service / RaaS JSON endpoint). Example: `https://<your-workday-host>.workday.com/ccx/service/customreport2/<tenant>/<report_owner>/<report_name>?format=json`.'
+        multi: false
+        required: true
+        show_user: true
+      - name: username
+        type: text
+        title: Username
+        description: Username for basic authentication against the Workday Custom Report API (usually the Integration System User).
+        multi: false
+        required: true
+        show_user: true
+      - name: password
+        type: password
+        title: Password
+        description: Password for basic authentication against the Workday Custom Report API.
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the Workday Custom Report API. Supported units for this parameter are h/m/s.
+        default: 24h
+        multi: false
+        required: true
+        show_user: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 5m
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        default: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - workday-sign_on
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field event.original.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
+          This executes in the agent before the logs are parsed.
+          See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
