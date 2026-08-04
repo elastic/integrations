@@ -1,0 +1,130 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the first successful or no-reply Memcached store command from a client to a server. Memcached commonly has no authentication, so an unauthorized writer can overwrite session tokens, poison cached application content, or alter security-sensitive state. This behavior can enable session hijacking such as the exposure described by CVE-2026-29093.",
+        "false_positives": [
+            "New application servers, autoscaled workloads, cache warmers, deployment jobs, administrative tools, and failover systems may legitimately write to Memcached for the first time. Validate the client and server roles, affected keys, deployment context, and application behavior before escalating."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-network_traffic.memcached-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.ip",
+                "server.ip",
+                "server.port",
+                "network.community_id",
+                "network_traffic.memcached.protocol_type",
+                "network_traffic.memcached.request.command",
+                "network_traffic.memcached.request.keys",
+                "network_traffic.memcached.request.noreply",
+                "network_traffic.memcached.response.type",
+                "network_traffic.memcached.response.status_code"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "First Time Seen Memcached Writer",
+        "new_terms_fields": [
+            "client.ip",
+            "server.ip",
+            "network_traffic.memcached.request.command"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating First Time Seen Memcached Writer\n\nMemcached permits store commands without authentication by default. A client with network access can use `set`, `add`, `replace`, `append`, `prepend`, or `cas` to overwrite session objects or inject content consumed by an application. This rule uses a seven-day new-terms history window to surface the first observed client, Memcached server, and store command combination performing a successful operation or issuing a store command with `noreply`.\n\nThe rule does not inspect cached values and does not prove that a session was hijacked. It identifies an unusual writer relationship that requires application and asset context.\n\n### Possible investigation steps\n\n- Review `client.ip`, `server.ip`, `server.port`, `network.community_id`, `network_traffic.memcached.request.command`, `network_traffic.memcached.request.keys`, `network_traffic.memcached.response.type`, and `network_traffic.memcached.response.status_code`.\n- Determine whether the client is an approved application server, cache warmer, administrative host, deployment job, or newly scaled workload.\n- Inspect key names for application-specific session prefixes such as `memc.sess.key`, `PHPSESSID`, or `session`. Do not retrieve or ingest cached values unless incident response requires it and access controls permit it.\n- Search earlier Memcached events from the same client for `get`, `gets`, `stats`, `lru_crawler`, or key enumeration activity that could indicate discovery before modification.\n- Search subsequent events for `flush_all`, delete bursts, privileged web sessions from new source addresses or user agents, and administrative actions without the normal authentication sequence.\n- Review application and identity logs to determine whether the write was followed by session reuse or impersonation.\n\n### False positive analysis\n\n- Autoscaling and deployments can introduce legitimate first-time writers.\n- NAT or proxies can combine multiple application instances under one client address or make a known writer appear new.\n- Add exceptions for validated client and server pairs rather than excluding store commands globally.\n\n### Response and remediation\n\n- Block unauthorized clients and restrict Memcached listeners to approved application and administration networks.\n- Invalidate affected sessions and rotate exposed credentials if session manipulation is suspected.\n- Bind Memcached to private interfaces, enforce network-layer access controls, and disable UDP unless explicitly needed.\n",
+        "query": "data_stream.dataset:network_traffic.memcached and\nclient.ip:* and server.ip:* and\nnetwork_traffic.memcached.request.command:(\"set\" or \"add\" or \"replace\" or \"append\" or \"prepend\" or \"cas\") and\n(\n  network_traffic.memcached.response.type:(\"Success\" or \"success\") or\n  network_traffic.memcached.response.status_code:0 or\n  network_traffic.memcached.request.noreply:true\n)\n",
+        "references": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-29093",
+            "https://attack.mitre.org/techniques/T1565/001/",
+            "https://www.elastic.co/docs/reference/integrations/network_traffic"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "network_traffic.memcached.request.command",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "network_traffic.memcached.request.noreply",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "network_traffic.memcached.response.status_code",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "network_traffic.memcached.response.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "server.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "63c3c736-72e1-4d41-8022-27b5c4935e93",
+        "setup": "## Setup\n\nThis rule requires the Elastic Network Packet Capture integration with the Memcached protocol analyzer enabled and\ncleartext visibility into client-to-server transactions. The sensor must observe responses to confirm successful\noperations, except when the client explicitly uses `noreply`.\n\nKeep value capture disabled unless it is explicitly required and protected. Cached values can contain live session\ntokens, credentials, personal data, and other sensitive application content. Key and command metadata are sufficient\nfor this rule.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Network",
+            "Use Case: Network Security Monitoring",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Data Source: Network Packet Capture",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1565",
+                        "name": "Data Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1565/",
+                        "subtechnique": [
+                            {
+                                "id": "T1565.001",
+                                "name": "Stored Data Manipulation",
+                                "reference": "https://attack.mitre.org/techniques/T1565/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "63c3c736-72e1-4d41-8022-27b5c4935e93_1",
+    "type": "security-rule"
+}

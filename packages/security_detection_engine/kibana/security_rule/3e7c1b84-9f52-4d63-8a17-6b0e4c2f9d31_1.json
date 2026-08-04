@@ -1,0 +1,121 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a principal modifying an S3 bucket ACL to grant public read or write access that has not been observed doing so within the history window, using canned ACLs such as public-read or public-read-write. ACL-based public access is a distinct API path (PutBucketAcl) that can bypass some Block Public Access controls. Monitoring for new identities performing this change helps surface freshly compromised credentials being used to stage data for exfiltration or inadvertently expose sensitive content.",
+        "false_positives": [
+            "Static website hosting configurations may intentionally use a public-read ACL on S3 buckets that serve web content. Validate that the target bucket is a known public-facing asset and that the change was authorized. Consider adding exclusions for specific bucket names used for static hosting."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-aws.cloudtrail-*"
+        ],
+        "interval": "5m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "event.action",
+                "event.outcome",
+                "aws.cloudtrail.request_parameters",
+                "source.ip",
+                "cloud.region",
+                "cloud.account.id"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS S3 Bucket ACL Modified to Allow Public Access by New Identity",
+        "new_terms_fields": [
+            "aws.cloudtrail.user_identity.arn"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating AWS S3 Bucket ACL Modified to Allow Public Access by New Identity\n\nThis rule fires when a `PutBucketAcl` call sets a canned ACL that grants public or broad access. Unlike bucket policies, bucket ACLs are a legacy mechanism that bypasses some newer Block Public Access controls and can inadvertently or deliberately expose bucket contents to unauthenticated internet users.\n\n### Possible investigation steps\n\n- Identify the modifying principal (`aws.cloudtrail.user_identity.arn`) and determine whether they are authorized to modify S3 bucket ACLs.\n- Review `aws.cloudtrail.request_parameters` to confirm the specific canned ACL applied (`public-read`, `public-read-write`).\n- Check whether AWS S3 Block Public Access is enabled at the account or bucket level \u2014 if so, it may still be preventing effective public exposure even though this ACL change succeeded.\n- Enumerate the bucket contents to assess the sensitivity of any exposed data.\n- Check for recent `GetObject` or `ListObjects` calls from unauthenticated sources against the same bucket.\n\n### False positive analysis\n\n- Static website hosting buckets are commonly configured with `public-read` ACLs.\n\n### Response and remediation\n\n- If unauthorized, immediately reset the bucket ACL to `private` using `PutBucketAcl`.\n- Enable S3 Block Public Access at the account level to prevent future ACL-based public exposure across all buckets.\n- Review the bucket's object-level access log for any unauthorized reads that occurred after the ACL change.\n",
+        "query": "data_stream.dataset: \"aws.cloudtrail\"\n    and event.provider: \"s3.amazonaws.com\"\n    and event.action: \"PutBucketAcl\"\n    and event.outcome: \"success\"\n    and not aws.cloudtrail.user_identity.type: \"AWSService\"\n    and aws.cloudtrail.flattened.request_parameters.x-amz-acl: (\"public-read\" or \"public-read-write\")\n    and not user_agent.original: (*Terraform* or *terraform* or \"cloudformation.amazonaws.com\" or *pulumi* or *Pulumi*)\n",
+        "references": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketAcl.html",
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-overview.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^4.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.flattened.request_parameters.x-amz-acl",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "3e7c1b84-9f52-4d63-8a17-6b0e4c2f9d31",
+        "setup": "The AWS CloudTrail integration must be enabled and configured to collect S3 management events (`s3.amazonaws.com`).",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: Amazon S3",
+            "Use Case: Threat Detection",
+            "Tactic: Collection",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1530",
+                        "name": "Data from Cloud Storage",
+                        "reference": "https://attack.mitre.org/techniques/T1530/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "3e7c1b84-9f52-4d63-8a17-6b0e4c2f9d31_1",
+    "type": "security-rule"
+}

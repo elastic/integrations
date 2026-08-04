@@ -1,0 +1,130 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects successful AKS (Azure Kubernetes Service) secret get or list operations where the user agent matches scripting runtimes (python, ruby, perl), command-line HTTP clients (curl, wget, HTTPie), or generic HTTP libraries (Go-http-client, okhttp, Apache-HttpClient, Guzzle, axios, undici) rather than typical kubectl or named controller traffic. Reading Kubernetes secrets with a generic client is a common credential-access step after a token or kubeconfig is stolen, and offensive tooling (for example peirates and kdigger) frequently reaches the API with a default Go HTTP client.",
+        "false_positives": [
+            "Approved scripts, CI jobs, or penetration tests may use generic HTTP clients. Validate change tickets and identity scope before treating as compromise. Internal automation using generic libraries can be excluded by stable service account after review."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-azure.platformlogs-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "azure.platformlogs.category",
+                "azure.platformlogs.properties.log.verb",
+                "azure.platformlogs.properties.log.user.username",
+                "azure.platformlogs.properties.log.userAgent",
+                "azure.platformlogs.properties.log.sourceIPs",
+                "azure.platformlogs.properties.log.objectRef.resource",
+                "azure.platformlogs.properties.log.objectRef.namespace",
+                "azure.platformlogs.properties.log.objectRef.name",
+                "azure.platformlogs.properties.log.responseStatus.code"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Azure AKS Secret get or list with Suspicious User Agent",
+        "note": "## Triage and analysis\n\n### Investigating Azure AKS Secret get or list with Suspicious User Agent\n\nAKS kube-audit events are carried under the flattened `azure.platformlogs.properties.log.*` subtree and share the ARM\noperation `event.action: Microsoft.ContainerService/managedClusters/diagnosticLogs/Read`. This rule fires when a\nsuccessful `get` or `list` against Kubernetes `secrets` is issued with a user agent that matches scripting runtimes\n(python, ruby, perl), command-line HTTP clients (curl, wget, HTTPie), or generic HTTP libraries (Go-http-client, okhttp,\nApache-HttpClient, Guzzle, axios, undici) rather than typical `kubectl` or named controller traffic. The user agent is\ntrivially spoofable (the telemetry shows offensive tooling masquerading as `kubectl`), so this is a corroborating\nindicator, not proof.\n\n### Possible investigation steps\n\n- Identify the acting identity in `azure.platformlogs.properties.log.user.username` and its group memberships in\n  `azure.platformlogs.properties.log.user.groups`. Control-plane and node identities (`system:apiserver`, `aksService`,\n  `system:node:*`, `system:serviceaccount:kube-system:*`) are expected; a human or service-principal identity reading\n  secrets with a scripted client is not.\n- Confirm the request was authorized by checking\n  `azure.platformlogs.properties.log.annotations.authorization.k8s.io/decision` (`allow` vs `forbid`) and the\n  `azure.platformlogs.properties.log.responseStatus.code`.\n- Review the targeted secret via `azure.platformlogs.properties.log.objectRef.namespace` and\n  `azure.platformlogs.properties.log.objectRef.name`, and the exact API path in\n  `azure.platformlogs.properties.log.requestURI`.\n- Evaluate the source in `azure.platformlogs.properties.log.sourceIPs`. In-cluster control-plane traffic uses loopback\n  (`::1`) or node subnet addresses; a public or pod-network source for a secret read is more suspicious. Pivot on the\n  source for other API bursts, exec sessions, or RBAC changes.\n- Correlate with recent Entra ID sign-ins or role assignments for the identity to determine whether the token was\n  recently issued or scoped unusually.\n\n### False positive analysis\n\n- Approved scripts, CI jobs, or penetration tests may use generic HTTP clients. Validate identity scope before treating\n  as compromise.\n- Internal automation using generic libraries can be excluded by stable service account after review.\n- The kubelet and controllers built on client-go can default to a `Go-http-client/2.0` user agent when no custom agent\n  is set (see kubernetes/kubernetes#108726), so an operator or platform component reading secrets may match `Go-http*`.\n  Exclude the specific benign identity (for example `system:serviceaccount:kube-system:*` or a validated operator\n  service account) rather than removing the `Go-http*` pattern, which also catches default-user-agent offensive tooling.\n\n### Response and remediation\n\n- If unauthorized, revoke the identity's tokens and kubeconfig, rotate the exposed secrets, and review RBAC that permits\n  secret reads.\n- Hunt for downstream use of the retrieved secrets, such as new sign-ins, workload deployments, or outbound connections.\n- Collect kube-audit and identity artifacts per incident response procedures.\n",
+        "query": "data_stream.dataset:azure.platformlogs and\n  event.action:\"Microsoft.ContainerService/managedClusters/diagnosticLogs/Read\" and\n  azure.platformlogs.category:\"kube-audit\" and\n  azure.platformlogs.properties.log.responseStatus.code:(\"200\" or \"201\") and\n  azure.platformlogs.properties.log.verb:(\"get\" or \"list\") and\n  azure.platformlogs.properties.log.objectRef.resource:\"secrets\" and\n  azure.platformlogs.properties.log.userAgent:(\n    curl* or python* or Python* or wget* or Wget* or Go-http* or perl* or libwww-perl* or\n    java* or Java* or node* or php* or Guzzle* or Bun* or axios* or undici* or okhttp* or\n    Apache-HttpClient* or HTTPie* or Ruby* or PostmanRuntime* or RestSharp* or *distrib#kali* or *kali-amd64* or *kali-arm64*\n  )\n",
+        "references": [
+            "https://kubernetes.io/docs/concepts/configuration/secret/",
+            "https://microsoft.github.io/Threat-Matrix-for-Kubernetes/",
+            "https://unit42.paloaltonetworks.com/hildegard-malware-teamtnt/",
+            "https://unit42.paloaltonetworks.com/modern-kubernetes-threats/",
+            "https://www.sysdig.com/blog/teamtnt-kubelet-credentials",
+            "https://github.com/kubernetes/kubernetes/issues/108726"
+        ],
+        "related_integrations": [
+            {
+                "integration": "platformlogs",
+                "package": "azure",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.objectRef.resource",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.responseStatus.code",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.userAgent",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.verb",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "4eaf5dd4-c511-4d0e-b66d-e218e6e3da76",
+        "setup": "The Azure Fleet integration collecting AKS diagnostic logs forwarded through Event Hub into the `azure.platformlogs`\ndata stream is required for this rule. The `kube-audit` log category is required specifically: secret get/list are\nread operations, which the `kube-audit-admin` category excludes, so a cluster shipping only `kube-audit-admin` is blind\nto this rule.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: Azure",
+            "Data Source: Azure Platform Logs",
+            "Data Source: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "4eaf5dd4-c511-4d0e-b66d-e218e6e3da76_1",
+    "type": "security-rule"
+}
