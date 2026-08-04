@@ -1,45 +1,96 @@
-interval: '{{interval}}'
-resource.url: '{{url}}'
-resource.retry.max_attempts: 3
-resource.retry.wait_min: 1s
-resource.retry.wait_max: 60s
+config_version: 2
+interval: {{interval}}
+resource:
+  url: {{url}}
+  retry:
+    max_attempts: 3
+    wait_min: 1s
+    wait_max: 60s
+  tracer:
+    enabled: {{enable_request_tracer}}
+    filename: "../../logs/cel/http-request-trace-*.ndjson"
+    maxbackups: 5
+{{#if http_client_timeout}}
+  timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url}}
+  proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+  ssl: {{ssl}}
+{{/if}}
 redact:
   fields:
-    - state.api_key
+    - api_key
 state:
-  api_key: '{{api_key}}'
-  query: '{{search_query}}'
-  max_pages: '{{max_pages_per_poll}}'
+  api_key: {{api_key}}
+  query: "{{search_query}}"
+  max_pages: {{max_pages_per_poll}}
 program: |
-  (has(state.page) ? int(state.page) : 1).as(page,
-    request(
-      "GET",
-      state.url + "/alert/index?page=" + string(page) +
-        (state.query != "" ? "&" + {"query": [state.query]}.format_query() : "")
-    ).with({"Header": {"Accept": ["application/json"], "Authorization": ["Basic " + state.api_key.base64()]}}).do_request().as(resp,
-      resp.StatusCode == 200 ?
-        bytes(resp.Body).decode_json().as(body,
-          (
-            int(resp.Header["X-Pagination-Current-Page"][0]) <
-            int(resp.Header["X-Pagination-Page-Count"][0]) &&
-            page < int(state.max_pages)
-          ).as(want_more, {
-            "events": body.map(item, item),
-            "page": want_more ? page + 1 : 1,
-            "want_more": want_more,
-            "api_key": state.api_key,
-            "query": state.query,
-            "max_pages": state.max_pages
-          })
-        )
-      :
+  state.with(
+    int(state.?page.orValue(1)).as(page,
+      request(
+        "GET",
+        state.url.trim_right("/") + "/alert/index?" + {
+          "page": [string(page)],
+          ?"query": state.query != "" ?
+            optional.of([state.query])
+          :
+            optional.none(),
+        }.format_query()
+      ).with(
         {
-          "events": [{"error": {"code": string(resp.StatusCode), "message": string(resp.Body)}}],
-          "page": 1,
-          "want_more": false,
-          "api_key": state.api_key,
-          "query": state.query,
-          "max_pages": state.max_pages
+          "Header": {
+            "Accept": ["application/json"],
+            "Authorization": ["Basic " + state.api_key.base64()],
+          },
         }
+      ).do_request().as(resp,
+        resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body,
+            (
+              page < int(state.max_pages) &&
+              "X-Pagination-Page-Count" in resp.Header &&
+              page < int(resp.Header["X-Pagination-Page-Count"][0])
+            ).as(want_more,
+              {
+                "events": body.map(e, {"message": e.encode_json()}),
+                "page": want_more ? page + 1 : 1,
+                "want_more": want_more,
+              }
+            )
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/alert/index: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status)
+                ),
+              },
+            },
+            "page": 1,
+            "want_more": false,
+          }
+      )
     )
   )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

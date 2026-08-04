@@ -1,9 +1,31 @@
 ---
+description: Pipeline for processing Resecurity RISK breach records.
 processors:
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null
+      description: error message set and no data to process.
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: '8.11.0'
+      value: '9.4.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: resecurity_risk.breach
+      description: The whole record is kept under its own namespace so that no vendor field collides with an ECS field.
   - set:
       field: event.kind
       tag: set_event_kind
@@ -22,179 +44,81 @@ processors:
       value: resecurity_risk.breach
   - fingerprint:
       fields:
-        - id
+        - resecurity_risk.breach.id
       tag: fingerprint_id
       target_field: _id
-      if: ctx.id != null
-      ignore_missing: true
+      if: ctx.resecurity_risk?.breach?.id != null
   - date:
-      field: source.collect_date
+      field: resecurity_risk.breach.source.add_date
+      tag: date_source_add_date
+      target_field: resecurity_risk.breach.source.add_date
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.resecurity_risk?.breach?.source?.add_date != null
+      on_failure:
+        - remove:
+            field: resecurity_risk.breach.source.add_date
+            tag: remove_unparsable_source_add_date
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_source_add_date
+            value: 'failed to parse source.add_date: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: resecurity_risk.breach.source.collect_date
       tag: date_source_collect_date
-      target_field: '@timestamp'
+      target_field: resecurity_risk.breach.source.collect_date
       formats:
         - ISO8601
         - UNIX
-      if: ctx.source?.collect_date != null
-      ignore_failure: true
-  - date:
-      field: source.add_date
-      tag: date_source_add_date_fallback
-      target_field: '@timestamp'
-      formats:
-        - ISO8601
-        - UNIX
-      if: ctx.source?.collect_date == null && ctx.source?.add_date != null
-      ignore_failure: true
-  - rename:
-      field: id
-      tag: rename_id
-      target_field: resecurity.breach.id
-      ignore_missing: true
-  - rename:
-      field: username
-      tag: rename_username
-      target_field: resecurity.breach.username
-      ignore_missing: true
-  - rename:
-      field: email
-      tag: rename_email
-      target_field: resecurity.breach.email
-      ignore_missing: true
+      if: ctx.resecurity_risk?.breach?.source?.collect_date != null
+      on_failure:
+        - remove:
+            field: resecurity_risk.breach.source.collect_date
+            tag: remove_unparsable_source_collect_date
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_source_collect_date
+            value: 'failed to parse source.collect_date: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_collect_date
+      copy_from: resecurity_risk.breach.source.collect_date
+      if: ctx.resecurity_risk?.breach?.source?.collect_date != null
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_add_date
+      copy_from: resecurity_risk.breach.source.add_date
+      if: ctx.resecurity_risk?.breach?.source?.collect_date == null && ctx.resecurity_risk?.breach?.source?.add_date != null
+      description: Records without a collection date fall back to the date the source was added.
   - set:
       field: user.email
       tag: set_user_email
-      copy_from: resecurity.breach.email
-      if: ctx.resecurity?.breach?.email != null
-  - rename:
-      field: password
-      tag: rename_password
-      target_field: resecurity.breach.password
-      ignore_missing: true
-  - rename:
-      field: password_hash
-      tag: rename_password_hash
-      target_field: resecurity.breach.password_hash
-      ignore_missing: true
-  - rename:
-      field: salt
-      tag: rename_salt
-      target_field: resecurity.breach.salt
-      ignore_missing: true
-  - rename:
-      field: ip
-      tag: rename_ip
-      target_field: resecurity.breach.ip
-      ignore_missing: true
+      copy_from: resecurity_risk.breach.email
+      if: ctx.resecurity_risk?.breach?.email != null
   - append:
       field: related.ip
       tag: append_related_ip
-      value: "{{{resecurity.breach.ip}}}"
-      if: ctx.resecurity?.breach?.ip != null
+      value: '{{{resecurity_risk.breach.ip}}}'
+      if: ctx.resecurity_risk?.breach?.ip != null
       allow_duplicates: false
-  - rename:
-      field: info
-      tag: rename_info
-      target_field: resecurity.breach.info
-      ignore_missing: true
-  - rename:
-      field: source_id
-      tag: rename_source_id
-      target_field: resecurity.breach.source_id
-      ignore_missing: true
-  - rename:
-      field: source.id
-      tag: rename_source_id_nested
-      target_field: resecurity.breach.source.id
-      ignore_missing: true
-  - rename:
-      field: source.name
-      tag: rename_source_name
-      target_field: resecurity.breach.source.name
-      ignore_missing: true
-  - rename:
-      field: source.category
-      tag: rename_source_category
-      target_field: resecurity.breach.source.category
-      ignore_missing: true
-  - rename:
-      field: source.description
-      tag: rename_source_description
-      target_field: resecurity.breach.source.description
-      ignore_missing: true
-  - rename:
-      field: source.url
-      tag: rename_source_url
-      target_field: resecurity.breach.source.url
-      ignore_missing: true
-  - rename:
-      field: source.attack_vector
-      tag: rename_source_attack_vector
-      target_field: resecurity.breach.source.attack_vector
-      ignore_missing: true
-  - rename:
-      field: source.actor_name
-      tag: rename_source_actor_name
-      target_field: resecurity.breach.source.actor_name
-      ignore_missing: true
-  - rename:
-      field: source.accounts
-      tag: rename_source_accounts
-      target_field: resecurity.breach.source.accounts
-      ignore_missing: true
-  - rename:
-      field: source.score
-      tag: rename_source_score
-      target_field: resecurity.breach.source.score
-      ignore_missing: true
-  - rename:
-      field: source.geography
-      tag: rename_source_geography
-      target_field: resecurity.breach.source.geography
-      ignore_missing: true
-  - rename:
-      field: source.compromised_data
-      tag: rename_source_compromised_data
-      target_field: resecurity.breach.source.compromised_data
-      ignore_missing: true
-  - rename:
-      field: source.meta
-      tag: rename_source_meta
-      target_field: resecurity.breach.source.meta
-      ignore_missing: true
-  - convert:
-      field: source.is_imported
-      tag: convert_source_is_imported
-      target_field: resecurity.breach.source.is_imported
-      type: boolean
-      if: ctx.source?.is_imported != null
-      ignore_missing: true
-      ignore_failure: true
-  - date:
-      field: source.add_date
-      tag: date_source_add_date
-      target_field: resecurity.breach.source.add_date
-      formats:
-        - ISO8601
-        - UNIX
-      if: ctx.source?.add_date != null
-      ignore_failure: true
-  - date:
-      field: source.collect_date
-      tag: date_source_collect_date_field
-      target_field: resecurity.breach.source.collect_date
-      formats:
-        - ISO8601
-        - UNIX
-      if: ctx.source?.collect_date != null
-      ignore_failure: true
-  - rename:
-      field: source.ttp
-      tag: rename_source_ttp
-      target_field: resecurity.breach.source.ttp
-      ignore_missing: true
+  - set:
+      field: resecurity_risk.breach.source.is_imported
+      tag: set_source_is_imported_true
+      value: true
+      if: ctx.resecurity_risk?.breach?.source?.is_imported instanceof Number && ctx.resecurity_risk.breach.source.is_imported != 0
+      description: The API reports this flag as 0 or 1.
+  - set:
+      field: resecurity_risk.breach.source.is_imported
+      tag: set_source_is_imported_false
+      value: false
+      if: ctx.resecurity_risk?.breach?.source?.is_imported instanceof Number && ctx.resecurity_risk.breach.source.is_imported == 0
   - remove:
-      field: source
-      tag: remove_source
+      field: event.original
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_missing: true
 on_failure:
   - append:
