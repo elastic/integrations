@@ -1,0 +1,109 @@
+format_version: "3.6.2"
+name: supabase
+title: "Supabase"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: >-
+  Collect metrics from Supabase using the OTel Prometheus receiver.
+  Covers infrastructure, PostgreSQL, Supavisor, PostgREST, Auth,
+  Realtime, and Storage metrics.
+type: integration
+categories:
+  - observability
+  - monitoring
+  - cloud
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/supabase-logo.svg
+    title: Supabase logo
+    size: 256x256
+    type: image/svg+xml
+requires:
+  input:
+    - package: prometheus_input_otel
+      version: "0.1.1"
+  content:
+    - package: supabase_otel
+      version: "0.1.0"
+policy_templates:
+  - name: supabase
+    title: Supabase Metrics
+    description: Collect metrics from Supabase's Prometheus-compatible Metrics API
+    data_streams:
+      - metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        is_default: true
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+    inputs:
+      - package: prometheus_input_otel
+        title: Supabase Metrics
+        description: Scrape Supabase metrics using the OTel Collector Prometheus receiver
+        vars:
+          - name: targets
+            type: text
+            title: Supabase Metrics Endpoint
+            required: true
+            multi: true
+            description: >
+              Supabase Metrics API endpoint in host:port format.
+              Use your project ref: <project-ref>.supabase.co:443
+            default:
+              - "<project-ref>.supabase.co:443"
+            show_user: true
+          - name: scrape_interval
+            type: duration
+            title: Scrape Interval
+            required: false
+            description: How frequently to scrape the Supabase metrics endpoint. Supabase recommends once per minute.
+            default: 60s
+            show_user: true
+          - name: metrics_path
+            type: text
+            title: Metrics Path
+            required: false
+            description: The HTTP resource path to fetch metrics from Supabase.
+            default: /customer/v1/privileged/metrics
+            show_user: true
+          - name: scheme
+            type: select
+            title: Scheme
+            required: false
+            description: Protocol scheme. Supabase Metrics API requires HTTPS.
+            default: https
+            show_user: false
+            options:
+              - text: HTTPS
+                value: https
+              - text: HTTP
+                value: http
+          - name: username
+            type: text
+            title: Username
+            required: true
+            description: >
+              HTTP Basic Auth username for the Supabase Metrics API.
+            default: "service_role"
+            show_user: true
+          - name: password
+            type: password
+            title: Service Role Key
+            required: true
+            description: >
+              The service_role JWT key from the Supabase dashboard
+              (Settings > API > Project API keys > service_role).
+            show_user: true
+owner:
+  type: elastic
+  github: elastic/obs-infraobs-integrations
