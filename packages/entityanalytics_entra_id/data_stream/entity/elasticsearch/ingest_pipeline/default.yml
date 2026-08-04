@@ -18,6 +18,7 @@ processors:
           ctx.event.original = stringified_orig;
         }
   - remove:
+      tag: remove_event_action
       field: event.action
       if: ctx.event?.action != "started" && ctx.event?.action != "completed"
       ignore_missing: true
@@ -78,6 +79,7 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - foreach:
+      tag: foreach_remove_duplicate_device_registered_users
       field: entityanalytics_entra_id.device.registered_users
       if: ctx.entityanalytics_entra_id?.device?.registered_users instanceof List
       ignore_failure: true
@@ -97,6 +99,7 @@ processors:
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - foreach:
+      tag: foreach_remove_duplicate_device_registered_owners
       field: entityanalytics_entra_id.device.registered_owners
       if: ctx.entityanalytics_entra_id?.device?.registered_owners instanceof List
       ignore_failure: true
@@ -116,6 +119,7 @@ processors:
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - foreach:
+      tag: foreach_remove_duplicate_device_group
       field: entityanalytics_entra_id.device.group
       if: ctx.entityanalytics_entra_id?.device?.group instanceof List
       ignore_failure: true
@@ -128,6 +132,7 @@ processors:
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - foreach:
+      tag: foreach_remove_duplicate_user_group
       field: entityanalytics_entra_id.user.group
       if: ctx.entityanalytics_entra_id?.user?.group instanceof List
       ignore_failure: true
@@ -164,6 +169,7 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_preserve_original_event_on_error
       field: tags
       value: preserve_original_event
       allow_duplicates: false
