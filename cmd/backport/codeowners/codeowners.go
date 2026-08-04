@@ -149,4 +149,3 @@ func (codeowners *githubOwners) checkSingleField(field string) error {
 		return fmt.Errorf("unexpected field found: %q", field)
 	}
 }
-

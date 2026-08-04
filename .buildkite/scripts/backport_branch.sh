@@ -166,18 +166,22 @@ updateBackportBranchContents() {
   if git ls-tree -d --name-only main:${DEV_FOLDER} > /dev/null 2>&1 ; then
     echo "--- Copying $DEV_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${DEV_FOLDER}"
+
+    # Remove packages that import go-gh/v2 — they are only needed on main-branch
+    # pipelines and require a modern Go toolchain. Removing them lets go mod tidy
+    # drop the go-gh/v2 dependency so backport branches keep their original Go version.
+    echo "--- Removing dev/testsreporter and dev/requiresupdate (go-gh/v2 not needed on backport branches)..."
+    rm -rf "${DEV_FOLDER}/testsreporter" "${DEV_FOLDER}/requiresupdate"
     git add "${DEV_FOLDER}"
 
-    echo "Copying magefile.go from $SOURCE_BRANCH..."
+    echo "--- Copying magefile.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "magefile.go"
     git add magefile.go
 
-    # As this script runs in the context of the main branch (mainly go mod tidy), we need to copy
-    # the .go-version file from the main branch to the backport branch. This avoids failures
-    # installing dependencies in the backport Pull Request.
-    echo "--- Copying .go-version from $SOURCE_BRANCH..."
-    git checkout "$SOURCE_BRANCH" -- ".go-version"
-    git add .go-version
+    # magefile_main_only.go contains targets that depend on go-gh/v2 and are never
+    # called on backport branches. Exclude it so the dependency is fully dropped.
+    echo "--- Removing magefile_main_only.go (not needed on backport branches)..."
+    git rm --force magefile_main_only.go 2>/dev/null || rm -f magefile_main_only.go
 
     # Restore workflows from the main branch since modifying them requires extra permissions.
     # > error: GH013: Repository rule violations found for ...
@@ -191,9 +195,23 @@ updateBackportBranchContents() {
     git checkout "$SOURCE_BRANCH" -- "tools.go"
     git add tools.go
 
-    # Run go mod tidy to update just the dependencies related to magefile and dev scripts
-    echo "--- Running go mod tidy to update dependencies related to magefile and dev scripts..."
-    go mod tidy
+    # Run go mod tidy inside a subshell using the backport branch's own Go toolchain
+    # so the version change does not leak to subsequent steps. File changes to
+    # go.mod/go.sum persist after the subshell exits.
+    (
+      echo "--- Installing Go $(cat "${WORKSPACE}/.go-version") (from backport branch .go-version) for go mod tidy..."
+      eval "$("${BIN_FOLDER}/gvm" "$(cat "${WORKSPACE}/.go-version")")"
+      go version
+      # go-gh/v2 is intentionally absent so this works with the backport branch's
+      # original Go toolchain version.
+      echo "--- Running go mod tidy to update dependencies related to magefile and dev scripts..."
+      go mod tidy
+    )
+
+    # Restore main's Go version for any steps that follow in the parent shell.
+    echo "--- Restoring Go $(git show "${SOURCE_BRANCH}:.go-version") from ${SOURCE_BRANCH}..."
+    eval "$("${BIN_FOLDER}/gvm" "$(git show "${SOURCE_BRANCH}:.go-version")")"
+    go version
 
     git add go.mod go.sum
   fi
@@ -239,8 +257,8 @@ updateBackportBranchContents() {
 
   if [ "$DRY_RUN" == "true" ];then
     echo "--- DRY_RUN mode, nothing will be pushed."
-    # Show just the relevant files diff (go.mod, go.sum, .buildkite, dev, .go-version, .github/CODEOWNERS and package to be backported)
-    git --no-pager diff "$SOURCE_BRANCH...$BACKPORT_BRANCH_NAME" .buildkite/ dev/ go.sum go.mod .go-version tools.go .github/CODEOWNERS "${PACKAGE_PATH}"
+    # Show just the relevant files diff (go.mod, go.sum, .buildkite, dev, .github/CODEOWNERS and package to be backported)
+    git --no-pager diff "$SOURCE_BRANCH...$BACKPORT_BRANCH_NAME" .buildkite/ dev/ go.sum go.mod tools.go .github/CODEOWNERS "${PACKAGE_PATH}"
   else
     echo "--- Pushing..."
     git push origin "$BACKPORT_BRANCH_NAME"
