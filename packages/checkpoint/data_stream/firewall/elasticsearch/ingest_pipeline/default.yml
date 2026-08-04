@@ -261,27 +261,33 @@ processors:
       if: ctx.checkpoint?.src_user_name != null
       patterns:
         - "^%{DATA:source.user.full_name} \\(%{EMAILADDRESS:source.user.email}\\)$"
-        - "^%{DATA:source.user.full_name} \\(%{DATA:source.user.name}\\)$"
+        - "^%{DATA:source.user.full_name} \\(%{USERNAME_ONLY:source.user.name}\\)$"
         - "^%{EMAILADDRESS:source.user.email}$"
         - "^%{DATA:source.user.name}$"
+      pattern_definitions:
+        USERNAME_ONLY: "[^()@]+"
   - grok:
       tag: grok_administrator
       field: checkpoint.administrator
       if: ctx.checkpoint?.administrator != null && ctx.source?.user?.name == null && ctx.source?.user?.email == null
       patterns:
         - "^%{DATA:source.user.full_name} \\(%{EMAILADDRESS:source.user.email}\\)$"
-        - "^%{DATA:source.user.full_name} \\(%{DATA:source.user.name}\\)$"
+        - "^%{DATA:source.user.full_name} \\(%{USERNAME_ONLY:source.user.name}\\)$"
         - "^%{EMAILADDRESS:source.user.email}$"
         - "^%{DATA:source.user.name}$"
+      pattern_definitions:
+        USERNAME_ONLY: "[^()@]+"
   - grok:
       tag: grok_user
       field: checkpoint.user
       if: ctx.checkpoint?.user != null && ctx.user?.name == null
       patterns:
         - "^%{DATA:user.full_name} \\(%{EMAILADDRESS:user.email}\\)$"
-        - "^%{DATA:user.full_name} \\(%{DATA:user.name}\\)$"
+        - "^%{DATA:user.full_name} \\(%{USERNAME_ONLY:user.name}\\)$"
         - "^%{EMAILADDRESS:user.email}$"
         - "^%{DATA:user.name}$"
+      pattern_definitions:
+        USERNAME_ONLY: "[^()@]+"
   - convert:
       tag: convert_checkpoint_failed_login_factor_num_919842ca
       field: checkpoint.failed_login_factor_num
@@ -390,9 +396,11 @@ processors:
       if: ctx.checkpoint?.dst_user_name != null
       patterns:
         - "^%{DATA:destination.user.full_name} \\(%{EMAILADDRESS:destination.user.email}\\)$"
-        - "^%{DATA:destination.user.full_name} \\(%{DATA:destination.user.name}\\)$"
+        - "^%{DATA:destination.user.full_name} \\(%{USERNAME_ONLY:destination.user.name}\\)$"
         - "^%{EMAILADDRESS:destination.user.email}$"
         - "^%{DATA:destination.user.name}$"
+      pattern_definitions:
+        USERNAME_ONLY: "[^()@]+"
   - set:
       tag: set_destination_user_domain_d38bee06
       field: destination.user.domain
