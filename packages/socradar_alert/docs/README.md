@@ -249,7 +249,7 @@ The `incidents` data stream collects alarm events from the SOCRadar API.
 | alarm.alarm_type_details | Alarm type details | flattened |
 | alarm.alarm_type_id | Alarm type identifier | keyword |
 | alarm.approved_by | Approved by | keyword |
-| alarm.company_id | ID of the company | keyword |
+| alarm.company_id | ID of the company | long |
 | alarm.content | Alarm content details | flattened |
 | alarm.date | The date when the alarm was created | date |
 | alarm.extra | Extra information | flattened |
@@ -264,6 +264,8 @@ The `incidents` data stream collects alarm events from the SOCRadar API.
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
 
 
 ### Inputs used

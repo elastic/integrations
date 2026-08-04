@@ -70,6 +70,12 @@ processors:
       tag: set_alarm_default_risk_level
       ignore_empty_value: true
       ignore_failure: true
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - append:
       field: error.message
