@@ -1,0 +1,117 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects GKE Secrets API activity that should not occur in normal cluster operation: a node identity (system:node:*) performing secrets get or list, or a pod service account failing a secrets get. Kubelet and node credentials are not expected to call the Secrets API for enumeration or direct reads, and a denied service-account secret get could indicate stolen-token probing or over-privileged tooling reaching beyond its RBAC.",
+        "false_positives": [
+            "Rare node maintenance or diagnostic tooling may touch the Secrets API; validate against change windows and approved node management paths.",
+            "Misconfigured workloads can generate repeated denied secret gets during startup; confirm RBAC intent before treating as compromise."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "gcp.audit.resource_name",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Secret Access from Node or Denied Service Account",
+        "note": "## Triage and analysis\n\n### Investigating GKE Secret Access from Node or Denied Service Account\n\nThis rule fires on two high-confidence patterns in GKE audit logs:\n\n- `system:node:*` successfully or unsuccessfully calling `secrets.get` or `secrets.list`\n- `system:serviceaccount:*` receiving `event.outcome:failure` on `secrets.get`\n\nTreat node-originated Secrets API calls as priority. For denied service-account gets, determine whether\nthe identity is probing secrets outside its Role/ClusterRole or using an unexpected client from a\ncompromised token.\n\n### Possible investigation steps\n\n- Resolve `client.user.email` to the node or workload and review RBAC bindings for secret `get`/`list` scope.\n- Inspect `gcp.audit.resource_name`, `source.ip`, and `user_agent.original` for anomalous clients or\n  cross-namespace targets.\n- Correlate with successful secret reads, pod exec, token creation, or RoleBinding changes in the same window.\n- For node events, confirm whether kubelet, CSI, or maintenance tooling on that node should ever call the\n  Secrets API.\n\n### False positive analysis\n\n- Node diagnostics or custom CSI helpers may rarely issue Secrets API calls; allowlist only after confirming\n  the path is approved.\n- Broken RBAC on a newly deployed workload can produce repeated denied gets until permissions are fixed.\n\n### Response and remediation\n\n- If malicious, revoke the node or service-account credentials, isolate the host or workload, rotate exposed\n  secrets, and tighten RBAC to least privilege for the affected identity.\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:k8s.io and\nsource.ip:(* and not (127.0.0.1 or \"::1\")) and\n(\n  (\n    client.user.email:system\\:node\\:* and\n    event.action:(io.k8s.core.v1.secrets.get or io.k8s.core.v1.secrets.list)\n  ) or (\n    client.user.email:system\\:serviceaccount\\:* and\n    event.action:io.k8s.core.v1.secrets.get and\n    event.outcome:failure\n  )\n)\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/access-authn-authz/authentication/#service-account-tokens"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "bedab6b4-f195-45d1-8f97-7d300eb79671",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "bedab6b4-f195-45d1-8f97-7d300eb79671_1",
+    "type": "security-rule"
+}
