@@ -1,0 +1,187 @@
+format_version: 3.5.4
+name: datadog
+title: "Datadog Audit Logs"
+version: "0.1.0"
+description: "Collect and analyze Datadog audit trail logs delivered to S3 by Datadog Log Archives, via SQS notifications, with full ECS mapping"
+type: integration
+categories:
+  - security
+  - observability
+  - custom_logs
+conditions:
+  kibana:
+    version: "^8.0.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/Datadog_Logo.svg
+    title: Datadog logo
+    size: 32x32
+    type: image/svg+xml
+screenshots:
+  - src: /img/Datadog_dashboard.png
+    title: Datadog Audit Logs Dashboard
+    size: 600x600
+    type: image/png
+policy_templates:
+  - name: datadog
+    title: Datadog Audit Logs
+    description: Collect Datadog audit trail logs from an S3 bucket via SQS notifications or bucket polling
+    inputs:
+      - type: aws-s3
+        title: Datadog Audit Logs via S3
+        description: Collect Datadog Log Archives audit objects from S3 using SQS notifications, or bucket polling when no queue is configured
+        required_vars:
+          sqs_mode:
+            - name: collection_mode
+              value: sqs
+            - name: queue_url
+          polling_mode:
+            - name: collection_mode
+              value: polling
+            - name: bucket_arn
+        vars:
+          - name: collection_mode
+            type: select
+            title: Collection Mode
+            description: Choose whether to collect from SQS notifications or S3 bucket polling.
+            required: false
+            show_user: true
+            options:
+              - text: SQS (real-time)
+                value: sqs
+              - text: Polling (interval)
+                value: polling
+            default: sqs
+
+          # === S3 Bucket Configuration ===
+          - name: bucket_arn
+            type: text
+            title: S3 Bucket ARN
+            description: ARN of the S3 bucket Datadog Log Archives writes to. Required in Polling mode.
+            required: false
+            show_user: true
+          - name: bucket_list_prefix
+            type: text
+            title: Bucket Prefix
+            description: >
+              Prefix path for S3 objects. Datadog Log Archives writes to a date-partitioned
+              layout under the archive root, e.g. "datadog-audit/dt=20260731/hour=19/".
+              Set this to the archive root to scope collection. Leave empty to process all objects.
+            required: false
+            show_user: true
+            default: ""
+          - name: region
+            type: text
+            title: AWS Region
+            description: AWS region where the bucket is located (e.g. us-east-1).
+            required: false
+            show_user: true
+            default: "us-east-1"
+
+          # === SQS Configuration (real-time mode) ===
+          - name: queue_url
+            type: text
+            title: SQS Queue URL
+            description: URL of the SQS queue receiving S3 object-created notifications. Required in SQS mode.
+            required: false
+            show_user: true
+          - name: visibility_timeout
+            type: text
+            title: SQS Visibility Timeout
+            description: SQS message visibility timeout (e.g. "300s").
+            required: false
+            show_user: false
+            default: "300s"
+          - name: max_number_of_messages
+            type: integer
+            title: Max SQS Messages
+            description: Maximum number of messages to receive from SQS per batch.
+            required: false
+            show_user: false
+            default: 5
+
+          # === Polling Configuration (fallback if no SQS) ===
+          - name: interval
+            type: text
+            title: Polling Interval
+            description: How often to list the bucket for new objects when SQS is not configured (e.g. "5m").
+            required: false
+            show_user: true
+            default: "5m"
+
+          # === AWS Credentials ===
+          - name: access_key_id
+            type: password
+            title: AWS Access Key ID
+            description: AWS Access Key ID for S3/SQS access.
+            required: false
+            show_user: true
+            secret: true
+          - name: secret_access_key
+            type: password
+            title: AWS Secret Access Key
+            description: AWS Secret Access Key for S3/SQS access.
+            required: false
+            show_user: true
+            secret: true
+          - name: session_token
+            type: password
+            title: AWS Session Token
+            description: AWS Session Token for temporary credentials.
+            required: false
+            show_user: false
+            secret: true
+          - name: role_arn
+            type: text
+            title: IAM Role ARN
+            description: ARN of an IAM role to assume (preferred over static access keys).
+            required: false
+            show_user: false
+
+          # === File Processing ===
+          - name: file_selectors
+            type: yaml
+            title: File Selectors
+            description: |
+              Regex patterns selecting which S3 objects to process. Datadog Log Archives
+              writes gzipped NDJSON, so the default matches `.json.gz`.
+              Example: - regex: '.*\.json\.gz$'
+            required: false
+            show_user: false
+            multi: false
+            default: |
+              - regex: '.*\.json\.gz$'
+          - name: max_bytes
+            type: text
+            title: Max File Size
+            description: Maximum object size to process (e.g. "100MB").
+            required: false
+            show_user: false
+            default: "100MB"
+
+          # === Performance & Concurrency ===
+          - name: number_of_workers
+            type: integer
+            title: Number of Workers
+            description: Number of workers processing S3 objects concurrently.
+            default: 5
+            required: false
+            show_user: false
+          - name: api_timeout
+            type: text
+            title: AWS API Timeout
+            description: Timeout for AWS API calls (e.g. "120s").
+            required: false
+            show_user: false
+            default: "120s"
+          - name: fips_enabled
+            type: bool
+            title: FIPS Enabled
+            description: Use FIPS-compliant AWS endpoints.
+            required: false
+            show_user: false
+            default: false
+owner:
+  github: elastic/integration-experience
+  type: community
