@@ -1,0 +1,133 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects an identity creating or modifying the CoreDNS or kube-dns ConfigMap in the kube-system namespace on AKS (Azure Kubernetes Service), excluding known AKS control-plane and platform identities. Rewriting cluster DNS (by editing coredns/kube-dns or creating and editing coredns-custom) enables cluster-wide adversary-in-the-middle by redirecting internal service resolution to attacker-controlled IPs, allowing credential capture and traffic interception. Coverage includes workload service accounts (system:serviceaccount:*), so a compromised in-cluster token is not excluded.",
+        "false_positives": [
+            "Approved automation, platform controllers, or GitOps may update the CoreDNS ConfigMap (for example custom forward rules). Validate the identity and change window, and add exclusions for verified service accounts."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-azure.platformlogs-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "azure.platformlogs.category",
+                "azure.platformlogs.properties.log.verb",
+                "azure.platformlogs.properties.log.user.username",
+                "azure.platformlogs.properties.log.user.groups",
+                "azure.platformlogs.properties.log.userAgent",
+                "azure.platformlogs.properties.log.sourceIPs",
+                "azure.platformlogs.properties.log.objectRef.namespace",
+                "azure.platformlogs.properties.log.objectRef.name",
+                "azure.platformlogs.properties.log.responseStatus.code"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Azure AKS CoreDNS or Kube-DNS Configuration Modified",
+        "note": "## Triage and analysis\n\n### Investigating Azure AKS CoreDNS or Kube-DNS Configuration Modified\n\nAKS kube-audit events are carried under the flattened `azure.platformlogs.properties.log.*` subtree and share the ARM\noperation `event.action: Microsoft.ContainerService/managedClusters/diagnosticLogs/Read`. CoreDNS resolves in-cluster\nservice names; an attacker who edits `coredns`/`kube-dns` or creates/edits the user-managed `coredns-custom` ConfigMap\ncan inject forward or rewrite rules that redirect service resolution to attacker-controlled endpoints, enabling\ncluster-wide interception of credentials and traffic. `coredns-custom` is the supported customization surface, so\nlegitimate DNS tuning also lands here; the acting identity is excluded when it is an AKS platform reconciler\n(`aksService`), leaving non-platform changes as the signal.\n\n### Possible investigation steps\n\n- Review the submitted ConfigMap body in `azure.platformlogs.properties.log.requestObject.data` for added forward,\n  rewrite, or hosts entries pointing at unexpected IPs or domains. This content, not the act of editing, is what\n  distinguishes malicious DNS redirection from routine customization.\n- Identify the acting identity in `azure.platformlogs.properties.log.user.username` (and its groups in\n  `azure.platformlogs.properties.log.user.groups`) and confirm it should manage the CoreDNS configuration; a workload\n  service account (`system:serviceaccount:<ns>:<sa>`) editing cluster DNS is the higher-concern case.\n- Confirm the operation and object via `azure.platformlogs.properties.log.verb` (a `create` of `coredns-custom` where it\n  did not previously exist is notable) and `azure.platformlogs.properties.log.objectRef.name` (`coredns`,\n  `coredns-custom`, or `kube-dns`), and inspect `azure.platformlogs.properties.log.userAgent`.\n- Evaluate the source in `azure.platformlogs.properties.log.sourceIPs` and pivot on it for related RBAC changes, secret\n  reads, or exec sessions.\n\n### False positive analysis\n\n- `coredns-custom` is the AKS-supported way to add custom forward/stub rules, so approved automation, GitOps, or\n  administrators editing it are expected. The AKS reconciler (`aksService`) that continuously (re)creates\n  `coredns-custom` is excluded by identity. Validate the change content and window, then exclude the specific verified\n  service account rather than re-broadening to all `system:*`.\n\n### Response and remediation\n\n- If unauthorized, restore the CoreDNS ConfigMap from a known-good source, revoke the acting identity's tokens, and\n  review the RBAC that permitted the change.\n- Hunt for credential capture or redirected traffic during the window the malicious configuration was active.\n- Collect kube-audit and identity artifacts per incident response procedures.\n",
+        "query": "data_stream.dataset:azure.platformlogs and\n  event.action:\"Microsoft.ContainerService/managedClusters/diagnosticLogs/Read\" and\n  azure.platformlogs.category:(\"kube-audit\" or \"kube-audit-admin\") and\n  azure.platformlogs.properties.log.stage:\"ResponseComplete\" and\n  azure.platformlogs.properties.log.objectRef.resource:\"configmaps\" and\n  azure.platformlogs.properties.log.objectRef.namespace:\"kube-system\" and\n  azure.platformlogs.properties.log.objectRef.name:(\"coredns\" or \"kube-dns\" or \"coredns-custom\") and\n  azure.platformlogs.properties.log.verb:(\"create\" or \"update\" or \"patch\" or \"delete\") and\n  not azure.platformlogs.properties.log.user.username:(\n    system\\:node\\:* or \"aksService\" or \"hcpService\" or \"readinessChecker\" or\n    system\\:serviceaccount\\:kube-system\\:*\n  )\n",
+        "references": [
+            "https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/",
+            "https://microsoft.github.io/Threat-Matrix-for-Kubernetes/",
+            "https://microsoft.github.io/Threat-Matrix-for-Kubernetes/techniques/CoreDNS%20poisoning/",
+            "https://learn.microsoft.com/en-us/azure/aks/coredns-custom",
+            "https://www.aquasec.com/blog/dns-spoofing-kubernetes-clusters/",
+            "https://hub.armosec.io/docs/c-0037"
+        ],
+        "related_integrations": [
+            {
+                "integration": "platformlogs",
+                "package": "azure",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.objectRef.name",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.objectRef.namespace",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.objectRef.resource",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.stage",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.user.username",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.verb",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1291513f-02f2-48d6-9f9c-06e5c8f23ecb",
+        "setup": "The Azure Fleet integration collecting AKS diagnostic logs forwarded through Event Hub into the `azure.platformlogs`\ndata stream is required for this rule. Enable either the `kube-audit` or the `kube-audit-admin` log category (Microsoft\nrecommends `kube-audit-admin` alone to reduce volume, as it only drops read-only get/list events). ConfigMap writes are\nmutating operations recorded in both categories with the same `auditID`, so clusters that enable both categories may\ngenerate two alerts per change.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: Azure",
+            "Data Source: Azure Platform Logs",
+            "Data Source: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1557",
+                        "name": "Adversary-in-the-Middle",
+                        "reference": "https://attack.mitre.org/techniques/T1557/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "1291513f-02f2-48d6-9f9c-06e5c8f23ecb_1",
+    "type": "security-rule"
+}

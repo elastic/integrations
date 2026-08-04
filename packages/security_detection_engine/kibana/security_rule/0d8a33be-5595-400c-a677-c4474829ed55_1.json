@@ -1,0 +1,86 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the first client IP observed issuing MongoDB commands that can drop databases, collections, indexes, users, or roles within a five-day history window. Adversaries with access to an exposed or compromised MongoDB service may use these commands to destroy data, disrupt applications, or prepare a wipe-and-extort attack.",
+        "false_positives": [
+            "Database administrators, deployment automation, test teardown jobs, and schema migration tools may issue destructive commands legitimately. Validate the client address, target resource, change window, and associated administrator activity before escalating."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-5d",
+        "index": [
+            "logs-network_traffic.mongodb-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "First-Time Destructive MongoDB Command from a Client IP",
+        "new_terms_fields": [
+            "client.ip"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating First-Time Destructive MongoDB Command from a Client IP\n\nMongoDB wipe-and-extort campaigns commonly enumerate databases before dropping databases or collections and inserting a ransom note. This rule detects the first client IP observed issuing decoded MongoDB commands capable of destructive schema, data, identity, or access changes within a five-day history window.\n\n### Possible investigation steps\n\n- Review `client.ip`, `server.ip`, `network.community_id`, `network_traffic.mongodb.method`, `network_traffic.mongodb.query`, `network_traffic.mongodb.resource`, and `network_traffic.mongodb.fullCollectionName`.\n- Determine whether the client is an approved application, DBA workstation, migration host, or automation service.\n- Search earlier events on the same `network.community_id` for `listDatabases`, `listCollections`, `usersInfo`, or `rolesInfo`, which may indicate reconnaissance before destruction.\n- Search subsequent activity for database or collection creation and ransom-related strings such as `README`, `RECOVER`, `bitcoin`, or `meow`.\n- Confirm the operation and affected resources in MongoDB audit logs and assess whether data was deleted.\n\n### False positive analysis\n\n- Schema migrations and test cleanup can legitimately drop collections or indexes.\n- Authorized identity lifecycle operations can drop users or roles.\n- Scope exceptions to approved clients and maintenance windows rather than excluding command names globally.\n\n### Response and remediation\n\n- Block the client and isolate the MongoDB service if the activity is unauthorized.\n- Preserve MongoDB audit logs and packet evidence, identify affected databases, and begin recovery from immutable backups.\n- Rotate database credentials, remove unauthorized users or roles, and restrict MongoDB network access to approved application and administration hosts.\n",
+        "query": "data_stream.dataset:network_traffic.mongodb and\n(\n  network_traffic.mongodb.method:(\n    \"dropDatabase\" or \"drop\" or \"dropIndexes\" or\n    \"dropAllUsersFromDatabase\" or \"dropAllRolesFromDatabase\"\n  ) or\n  (\n    network_traffic.mongodb.method:\"msg\" and\n    network_traffic.mongodb.query:(\n      *dropDatabase* or *dropIndexes* or\n      *dropAllUsersFromDatabase* or *dropAllRolesFromDatabase* or\n      *\\\"drop\\\"*\n    )\n  )\n)\n",
+        "references": [
+            "https://www.bleepingcomputer.com/news/security/mongo-lock-attack-ransoming-deleted-mongodb-databases/",
+            "https://flare.io/learn/resources/blog/mongodb-ransom",
+            "https://attack.mitre.org/techniques/T1485/"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "network_traffic.mongodb.method",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "network_traffic.mongodb.query",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "0d8a33be-5595-400c-a677-c4474829ed55",
+        "setup": "## Setup\n\nThis rule requires the Elastic Network Packet Capture integration with the MongoDB protocol analyzer enabled and\ncleartext visibility into MongoDB transactions. TLS-encrypted or compressed MongoDB wire traffic may not expose\n`network_traffic.mongodb.query`. Modern OP_MSG traffic often reports `network_traffic.mongodb.method` as `msg`, so the\nquery-text branch is required. Use MongoDB audit logs for authoritative user attribution and operation outcomes.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Network",
+            "Use Case: Network Security Monitoring",
+            "Use Case: Threat Detection",
+            "Tactic: Impact",
+            "Data Source: Network Packet Capture",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1485",
+                        "name": "Data Destruction",
+                        "reference": "https://attack.mitre.org/techniques/T1485/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "0d8a33be-5595-400c-a677-c4474829ed55_1",
+    "type": "security-rule"
+}

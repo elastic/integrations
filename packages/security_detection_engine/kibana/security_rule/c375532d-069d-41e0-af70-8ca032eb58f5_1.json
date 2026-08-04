@@ -1,0 +1,83 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies MySQL statements that create a user-defined function backed by a shared library. Adversaries with sufficient database privileges can place a malicious library in the MySQL plugin directory and register it with \"CREATE FUNCTION ... SONAME\", establishing a database-resident primitive for operating-system command execution.",
+        "false_positives": [
+            "Database administrators may install approved native MySQL user-defined functions during planned maintenance. Validate the function and library names, the client address, the maintenance window, and whether the shared library was supplied through an approved software deployment process."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-network_traffic.mysql-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "MySQL User-Defined Function Injection",
+        "note": "## Triage and analysis\n\n### Investigating MySQL User-Defined Function Injection\n\nMySQL can load native user-defined functions from shared libraries. Attackers who obtain the `FILE` privilege and write access to the plugin directory can write a malicious `.so` or `.dll`, register it with `CREATE FUNCTION ... SONAME`, and invoke operating-system commands as the MySQL service account.\n\n### Possible investigation steps\n\n- Review `client.ip`, `server.ip`, `network.community_id`, `network_traffic.mysql.query`, `network_traffic.mysql.path`, and any response error fields.\n- Extract the function and library names and verify whether they belong to an approved MySQL extension.\n- Search prior queries on the same connection for `INTO DUMPFILE`, `INTO OUTFILE`, `LOAD_FILE`, plugin-directory discovery, or hexadecimal payload construction.\n- On the database host, inspect the MySQL plugin directory for newly created `.so`, `.dll`, or other unexpected files.\n- Correlate with child processes spawned by `mysqld` and with outbound connections from the database host.\n\n### False positive analysis\n\n- Approved native UDF installation is uncommon but legitimate. Confirm the package source and change record.\n- Do not exclude all DBA clients permanently; a compromised DBA workstation can perform the same operation.\n\n### Response and remediation\n\n- Terminate unauthorized database sessions and isolate the database host if command execution is suspected.\n- Remove the malicious function and library only after preserving evidence.\n- Rotate database credentials, review grants containing `FILE`, and restrict writes to the plugin directory.\n",
+        "query": "any where data_stream.dataset == \"network_traffic.mysql\" and\n    network_traffic.mysql.query like~ \"*create*function*soname*\"\n",
+        "references": [
+            "https://legalhackers.com/advisories/MySQL-Exploit-Remote-Root-Code-Execution-Privesc-CVE-2016-6662.html",
+            "https://attack.mitre.org/techniques/T1505/001/"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "network_traffic.mysql.query",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c375532d-069d-41e0-af70-8ca032eb58f5",
+        "setup": "## Setup\n\nThis rule requires the Elastic Network Packet Capture integration with the MySQL protocol analyzer enabled and\ncleartext visibility into MySQL query traffic. TLS-encrypted sessions and incomplete or asymmetric capture can hide\nquery text. Use MySQL audit logs and endpoint telemetry for authoritative user attribution and proof of library\ncreation or command execution.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Network",
+            "Use Case: Network Security Monitoring",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Network Packet Capture",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1505",
+                        "name": "Server Software Component",
+                        "reference": "https://attack.mitre.org/techniques/T1505/",
+                        "subtechnique": [
+                            {
+                                "id": "T1505.001",
+                                "name": "SQL Stored Procedures",
+                                "reference": "https://attack.mitre.org/techniques/T1505/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "c375532d-069d-41e0-af70-8ca032eb58f5_1",
+    "type": "security-rule"
+}
