@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 )
 
@@ -74,5 +75,49 @@ func BuildPath() error {
 		return err
 	}
 	fmt.Println(abs)
+	return nil
+}
+
+// Format runs goimports and ensures Elastic license headers are present.
+func Format() {
+	mg.Deps(addLicenseHeaders, goImports)
+}
+
+func addLicenseHeaders() error {
+	return sh.RunV("go", "run", "github.com/elastic/go-licenser", "-license", "Elastic")
+}
+
+func goImports() error {
+	goFiles, err := findGoFiles()
+	if err != nil {
+		return err
+	}
+	if len(goFiles) == 0 {
+		return nil
+	}
+	args := append([]string{"run", "golang.org/x/tools/cmd/goimports", "-local", "github.com/elastic", "-l", "-w"}, goFiles...)
+	return sh.RunV("go", args...)
+}
+
+func findGoFiles() ([]string, error) {
+	var files []string
+	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.Mode().IsRegular() && filepath.Ext(path) == ".go" {
+			files = append(files, filepath.ToSlash(path))
+		}
+		return nil
+	})
+	return files, err
+}
+
+// Check runs Build, Format, Tidy, and Test — the full pre-push validation suite.
+func Check() error {
+	mg.Deps(Build)
+	mg.Deps(Format)
+	mg.Deps(Tidy)
+	mg.Deps(Test)
 	return nil
 }
