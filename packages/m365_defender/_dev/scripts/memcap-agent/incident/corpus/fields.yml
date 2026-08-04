@@ -1,14 +1,24 @@
-# Worst-case m365_defender `incident` record: a Microsoft Graph security
-# `incidents` object expanded with `$expand=alerts`, so each incident carries an
+# Field set for the m365_defender `incident` corpus: a Microsoft Graph security
+# `incidents` object fetched with `$expand=alerts`, so each incident carries an
 # `alerts[]` array of full alert objects. That array has no server-side cap and is
-# the memory driver for this stream (httpjson splits body.value then body.alerts
-# with keep_parent:true). Shape mirrors data_stream/incident + alert test logs.
+# the memory driver for this stream (httpjson splits body.value then body.alerts with
+# keep_parent:true, so the parent incident is re-attached to every child alert).
+#
+# The shape is calibrated against a real tenant response - 21-key incident base, and
+# embedded alerts identical in shape to ../../alert/corpus/fields.yml. See "Record
+# shapes" in ../../README.md for the derived statistics. Only the statistics were
+# used; no customer payload is stored here or anywhere in the repo.
+#
 # Every field here must be referenced by template.ndjson via `generate "<name>"`.
 - name: id
   type: keyword
 - name: tenantId
   type: keyword
 - name: displayName
+  type: keyword
+- name: description
+  type: keyword
+- name: lastModifiedBy
   type: keyword
 - name: status
   type: keyword
@@ -18,6 +28,7 @@
   type: date
 - name: lastUpdateDateTime
   type: date
+
 # nested alert fields (each incident embeds ALERTS_PER_INCIDENT of these).
 - name: alert.id
   type: keyword
@@ -31,6 +42,8 @@
   type: keyword
 - name: alert.category
   type: keyword
+- name: alert.investigationState
+  type: keyword
 - name: alert.title
   type: keyword
 - name: alert.description
@@ -41,21 +54,77 @@
   type: date
 - name: alert.lastUpdateDateTime
   type: date
+
+# embedded alert customDetails (small provider-populated map).
+- name: alert.custom.sourceId
+  type: keyword
+- name: alert.custom.subscriptionId
+  type: keyword
+- name: alert.custom.resourceGroup
+  type: keyword
+- name: alert.custom.workspaceId
+  type: keyword
+
+# embedded alert additionalData (~24 entries on real records).
+- name: alert.additional.productName
+  type: keyword
+- name: alert.additional.providerName
+  type: keyword
+- name: alert.additional.uri
+  type: keyword
+- name: alert.additional.host
+  type: keyword
+- name: alert.additional.processId
+  type: keyword
+- name: alert.additional.commandLine
+  type: keyword
+- name: alert.additional.process
+  type: keyword
+- name: alert.additional.parentProcess
+  type: keyword
+- name: alert.additional.sessionId
+  type: keyword
+- name: alert.additional.userName
+  type: keyword
+- name: alert.additional.resourceId
+  type: keyword
+- name: alert.additional.alertId
+  type: keyword
+- name: alert.additional.sourceAddress
+  type: ip
+- name: alert.additional.principalName
+  type: keyword
+- name: alert.additional.clientApplication
+  type: keyword
+
+# embedded alert evidence[], cycling the four commonest @odata.type variants.
+- name: alert.evidence.createdDateTime
+  type: date
 - name: alert.evidence.verdict
   type: keyword
-- name: alert.evidence.mdeDeviceId
+- name: alert.evidence.resourceType
   type: keyword
-- name: alert.evidence.azureAdDeviceId
+- name: alert.evidence.resourceName
   type: keyword
-- name: alert.evidence.deviceDnsName
+- name: alert.evidence.resourceId
   type: keyword
-- name: alert.evidence.osPlatform
-  type: keyword
-- name: alert.evidence.version
-  type: keyword
-- name: alert.evidence.healthStatus
-  type: keyword
-- name: alert.evidence.riskScore
-  type: keyword
-- name: alert.evidence.ipInterface
+- name: alert.evidence.ipAddress
   type: ip
+- name: alert.evidence.countryLetterCode
+  type: keyword
+- name: alert.evidence.city
+  type: keyword
+- name: alert.evidence.state
+  type: keyword
+- name: alert.evidence.port
+  type: long
+- name: alert.evidence.protocol
+  type: keyword
+- name: alert.evidence.userPrincipalName
+  type: keyword
+- name: alert.evidence.userSid
+  type: keyword
+- name: alert.evidence.accountName
+  type: keyword
+- name: alert.evidence.domainName
+  type: keyword
