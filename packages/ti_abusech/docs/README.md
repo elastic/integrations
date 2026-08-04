@@ -109,6 +109,14 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Troubleshooting
 
+- **Upgrading to v5.0.0**: Version 5.0.0 moves **API Type**, **Username (Commercial)**, and **Password (Commercial)** from the MalwareBazaar data stream to the shared integration input. Fleet does not carry these values across that scope change. If you configured MalwareBazaar Commercial API on 4.2.0, re-enter the credentials after upgrade:
+    1. In Kibana, navigate to **Fleet** > **Agent policies**.
+    2. Select the policy containing the abuse.ch integration.
+    3. Edit the abuse.ch integration.
+    4. Set **API Type** to **Commercial API**, then enter **Username (Commercial)** and **Password (Commercial)** at the integration level (not under the MalwareBazaar data stream).
+    5. Select **Save integration**.
+
+    Community API users who only use an Auth Key are unaffected. After this change, the same Spamhaus credentials apply to all commercial datasets (MalwareBazaar, ThreatFox, and future commercial data streams).
 - **Upgrading to v4.0.0**: Version 4.0.0 switches the URL data stream from the full export ZIP endpoint (`/downloads/json`) to the incremental JSON API (`/v1/urls/recent/`). When upgrading from a previous version, the URL setting in your integration policy retains the old value and must be updated manually:
     1. In Kibana, navigate to **Fleet** > **Agent policies**.
     2. Select the policy containing the abuse.ch integration.
