@@ -52,11 +52,6 @@ processors:
       field: event.kind
       tag: set_event_kind_to_event
       value: event
-  - append:
-      field: event.type
-      tag: append_info_into_event_type
-      value: info
-      allow_duplicates: false
   - set:
       field: observer.vendor
       tag: set_observer_vendor
@@ -372,6 +367,105 @@ processors:
       patterns:
         - '.*.%{WORD:event.action}'
       ignore_missing: true
+  - script:
+      lang: painless
+      tag: painless_ecs_categorization
+      description: Map the Sublime audit `type` to ECS event.category/event.type.
+      if: ctx.sublime_security?.audit?.type != null
+      params:
+        email_resources:
+          - message
+          - message_group
+          - email_bomb
+        iam_resources:
+          - user
+          - rbac
+          - api_key
+          - external_api_credential
+          - api_key_max_duration_set
+          - api_key_max_duration_cleared
+          - generate_password_reset
+        configuration_resources:
+          - rules
+          - list
+          - global_exclusion
+          - auth_settings
+          - org
+          - org_settings
+          - child_org
+          - descendant_org
+          - mailbox
+          - message_source
+          - abuse_mailbox
+          - quarantine_digest
+          - ip_allowlist
+          - trusted_sender_ips
+          - folder_routing
+          - github_app
+          - vendor
+          - logo_image
+          - create_child_organization
+          - dlp_toggled
+          - graymail_user_preference_changed
+          - auto_confirm_discovered_vendors_toggled
+          - synchronous_processing_monitoring_toggled
+          - dlp_alerts_webhook_deleted
+          - dlp_alerts_webhook_upserted
+          - inline_alerts_webhook_deleted
+          - inline_alerts_webhook_upserted
+          - inline_processing_toggled
+          - inline_signing_key_created
+          - inline_signing_key_deleted
+          - inline_signed_headers_retrieved
+          - inline_probe_injected
+        configuration_types:
+          - link_clicks.exceptions_updated
+      source: |-
+        String t = ctx.sublime_security.audit.type;
+        int dot = t.indexOf('.');
+        String res = dot >= 0 ? t.substring(0, dot) : t;
+
+        ArrayList cats = new ArrayList();
+        ArrayList types = new ArrayList();
+
+        if (params.email_resources.contains(res)) {
+          cats.add('email');
+          types.add('info');
+        } else if (res == 'auth') {
+          cats.add('authentication');
+          if (t.startsWith('auth.login')) { types.add('start'); }
+          else if (t == 'auth.logout') { types.add('end'); }
+          else { types.add('info'); }
+        } else if (params.iam_resources.contains(res)) {
+          cats.add('iam');
+          if (res == 'user') { types.add('user'); }
+          if (res == 'rbac') { types.add('group'); }
+          if (t.contains('create') || t.contains('connect') || t.contains('upload')) { types.add('creation'); }
+          else if (t.contains('delete')) { types.add('deletion'); }
+          else { types.add('change'); }
+        } else if (params.configuration_resources.contains(res) || params.configuration_types.contains(t)) {
+          cats.add('configuration');
+          if (t.contains('create') || t.contains('connect') || t.contains('upload')) { types.add('creation'); }
+          else if (t.contains('delete')) { types.add('deletion'); }
+          else if (t == 'inline_signed_headers_retrieved') { types.add('info'); }
+          else { types.add('change'); }
+        }
+
+        if (!cats.isEmpty()) {
+          ctx.event = ctx.event ?: [:];
+          ctx.event.category = cats;
+          ctx.event.type = types;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      allow_duplicates: false
+      if: ctx.event?.type == null
   - remove:
       field:
         - sublime_security.audit.created_at

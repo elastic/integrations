@@ -40,6 +40,11 @@ program: |-
       ).with(
         {
           "Header": {
+            // Include credentials on every request; some API registrations validate them on all calls, not just sign-in.
+            "Authorization": [
+              sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+              (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+            ],
             "Content-Type": ["application/json"],
             "Cookie": state.cursor.cookies,
           },

@@ -393,39 +393,50 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-11T06:28:04.746Z",
+    "@timestamp": "2026-07-29T03:47:37.429Z",
     "agent": {
-        "ephemeral_id": "b5b7849d-c31a-41a6-ad84-82249703023b",
-        "id": "2c65c370-55d1-42f5-a8bb-b4146b13e120",
-        "name": "elastic-agent-66011",
+        "ephemeral_id": "14d3d101-ec1d-4152-be66-ea3a0103cf37",
+        "id": "da3cee98-ea12-42e4-bed8-53fa9ca483e0",
+        "name": "elastic-agent-22239",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.19.2"
     },
     "data_stream": {
         "dataset": "jamf_pro.events",
-        "namespace": "78830",
+        "namespace": "20970",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "2c65c370-55d1-42f5-a8bb-b4146b13e120",
+        "id": "da3cee98-ea12-42e4-bed8-53fa9ca483e0",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.19.2"
     },
     "event": {
         "action": "ComputerAdded",
         "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
         "dataset": "jamf_pro.events",
-        "ingested": "2025-09-11T06:28:05Z",
+        "ingested": "2026-07-29T03:47:38Z",
         "kind": "event",
-        "original": "{\"event\":{\"alternateMacAddress\":\"be:aa:e5:54:94:db\",\"building\":\"1S8NPV\",\"department\":\"XDO4C5\",\"deviceName\":\"VPNYC\",\"emailAddress\":\"kghrqq@email.com\",\"ipAddress\":\"89.160.20.156\",\"jssID\":\"1500747557\",\"macAddress\":\"be:aa:e5:54:94:db\",\"managementId\":\"6319330669\",\"model\":\"LJ68RT\",\"osBuild\":\"26.6913\",\"osVersion\":\"92.5786\",\"phone\":\"2183546\",\"position\":\"B64JIO\",\"realName\":\"CPK79\",\"reportedIpAddress\":\"89.160.20.156\",\"room\":\"HQC6S9\",\"serialNumber\":\"7967177\",\"udid\":\"7265694772\",\"userDirectory_id\":\"0389771137\",\"username\":\"John Doe\"},\"webhook\":{\"eventTimestamp\":1725443872001,\"id\":\"8131946016\",\"name\":\"PU17M\",\"webhookEvent\":\"ComputerAdded\"}}"
+        "original": "{\"event\":{\"alternateMacAddress\":\"be:aa:e5:54:94:db\",\"building\":\"1S8NPV\",\"department\":\"XDO4C5\",\"deviceName\":\"VPNYC\",\"emailAddress\":\"kghrqq@email.com\",\"ipAddress\":\"89.160.20.156\",\"jssID\":\"1500747557\",\"macAddress\":\"be:aa:e5:54:94:db\",\"managementId\":\"6319330669\",\"model\":\"LJ68RT\",\"osBuild\":\"26.6913\",\"osVersion\":\"92.5786\",\"phone\":\"2183546\",\"position\":\"B64JIO\",\"realName\":\"CPK79\",\"reportedIpAddress\":\"89.160.20.156\",\"room\":\"HQC6S9\",\"serialNumber\":\"7967177\",\"udid\":\"7265694772\",\"userDirectory_id\":\"0389771137\",\"username\":\"John Doe\"},\"webhook\":{\"eventTimestamp\":1725443872001,\"id\":\"8131946016\",\"name\":\"PU17M\",\"webhookEvent\":\"ComputerAdded\"}}",
+        "type": [
+            "change"
+        ]
     },
     "host": {
         "address": [
             "89.160.20.156"
         ],
+        "entity": {
+            "lifecycle": {
+                "last_activity": "2024-09-04T09:57:52.001Z"
+            }
+        },
         "geo": {
             "city_name": "Linköping",
             "continent_name": "Europe",
@@ -440,7 +451,10 @@ An example event for `events` looks as following:
         },
         "ip": [
             "89.160.20.156"
-        ]
+        ],
+        "os": {
+            "version": "92.5786"
+        }
     },
     "input": {
         "type": "http_endpoint"
@@ -477,9 +491,6 @@ An example event for `events` looks as following:
                 "webhook_event": "ComputerAdded"
             }
         }
-    },
-    "os": {
-        "version": "92.5786"
     },
     "related": {
         "user": [

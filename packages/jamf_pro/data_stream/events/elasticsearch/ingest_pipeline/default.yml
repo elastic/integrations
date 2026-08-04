@@ -182,6 +182,69 @@ processors:
     copy_from: jamf_pro.events.webhook.webhook_event
     ignore_empty_value: true
 
+# event.category and event.type — keyed on event.action via a lookup table.
+- script:
+    tag: script_set_event_category_and_type
+    lang: painless
+    description: Set event.category and event.type from a table keyed on the Jamf webhook event (event.action).
+    params:
+      actions:
+        ComputerAdded: { category: [host], type: [change] }
+        ComputerCheckIn: { category: [host], type: [] }
+        ComputerInventoryCompleted: { category: [host], type: [] }
+        ComputerPushCapabilityChanged: { category: [host], type: [change] }
+        MobileDeviceEnrolled: { category: [host], type: [change, start] }
+        MobileDeviceUnEnrolled: { category: [host], type: [change, end] }
+        MobileDeviceCheckIn: { category: [host], type: [] }
+        MobileDeviceInventoryCompleted: { category: [host], type: [] }
+        MobileDeviceCommandCompleted: { category: [host], type: [change, end] }
+        MobileDevicePushSent: { category: [host], type: [] }
+        DeviceAddedToDEP: { category: [host], type: [change] }
+        PushSent: { category: [host], type: [] }
+        SCEPChallenge: { category: [host, authentication], type: [start] }
+        SmartGroupComputerMembershipChange: { category: [host, iam], type: [change, group] }
+        SmartGroupMobileDeviceMembershipChange: { category: [host, iam], type: [change, group] }
+        JSSStartup: { category: [host], type: [start] }
+        JSSShutdown: { category: [host], type: [end] }
+        ComputerPolicyFinished: { category: [configuration], type: [change] }
+        ComputerPatchPolicyCompleted: { category: [configuration, package], type: [change] }
+        PatchSoftwareTitleUpdated: { category: [configuration, package], type: [change] }
+        RestAPIOperation: { category: [api], type: [change, admin] }
+        SmartGroupUserMembershipChange: { category: [iam], type: [change, group] }
+    source: |-
+      def action = ctx.event?.action;
+      if (action == null) {
+        return;
+      }
+      def entry = params.actions.get(action);
+      if (entry == null) {
+        return;
+      }
+      def cats = new ArrayList();
+      def types = new ArrayList();
+      if (entry.category != null) { cats.addAll(entry.category); }
+      if (entry.type != null) { types.addAll(entry.type); }
+      if (types.isEmpty()) { types.add('info'); }
+      ctx.event = ctx.event ?: [:];
+      if (!cats.isEmpty()) { ctx.event.category = cats; }
+      ctx.event.type = types;
+
+- set:
+    field: event.outcome
+    tag: set_event_outcome_success
+    value: success
+    if: >-
+      ctx.jamf_pro?.events?.event?.successful == true ||
+      ctx.jamf_pro?.events?.event?.operation_successful == true
+
+- set:
+    field: event.outcome
+    tag: set_event_outcome_failure
+    value: failure
+    if: >-
+      ctx.jamf_pro?.events?.event?.successful == false ||
+      ctx.jamf_pro?.events?.event?.operation_successful == false
+
 - convert:
     target_field: source.ip
     type: ip
