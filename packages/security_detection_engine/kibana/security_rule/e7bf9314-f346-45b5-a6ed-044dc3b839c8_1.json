@@ -1,0 +1,89 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            },
+            "group_by": [
+                "Esql.client_ip",
+                "Esql.server_ip"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies SIP OPTIONS requests targeting many distinct extension values from a single client within two minutes. Attackers and VoIP scanners use OPTIONS sweeps to discover valid users before REGISTER brute force, toll fraud, or registration hijacking attempts.",
+        "false_positives": [
+            "Some legitimate provisioning or monitoring tools enumerate extensions during onboarding. Validate the source against known PBX management systems before closing."
+        ],
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "max_signals": 5,
+        "name": "Potential SIP Extension Enumeration",
+        "note": "## Triage and analysis\n\n### Investigating Potential SIP Extension Enumeration\n\nSIP OPTIONS is commonly used for capability discovery. Attack tools such as SIPvicious send OPTIONS across sequential or randomized extensions to map valid users. High cardinality of `Esql.to_user` values from one client IP is a strong reconnaissance signal on VoIP segments.\n\n### Possible investigation steps\n\n- Review `Esql.sample_extensions` for sequential or patterned usernames indicative of scanning.\n- Inspect `Esql.user_agents` for scanner strings such as `friendly-scanner` or SIPvicious variants.\n- Check for follow-on REGISTER or INVITE activity from the same source within the next hour.\n- Confirm whether `Esql.client_ip` is an expected management or monitoring host for the `Esql.server_ip` PBX/SBC.\n\n### False positive analysis\n\n- PBX auto-provisioning, extension audits, or SBC health checks may generate OPTIONS to many extensions from a fixed management IP. Add exceptions for those sources only after documenting the tool and schedule.\n\n### Response and remediation\n\n- Block the scanning `Esql.client_ip` at the SBC or perimeter firewall if the activity is unauthorized.\n- Enforce SIP authentication and rate limits on the targeted PBX/SBC.\n- Hunt for subsequent credential access or toll-fraud INVITE patterns from the same source.\n",
+        "query": "from logs-network_traffic.sip-*, packetbeat-* metadata _source\n| eval\n    Esql.method = TO_UPPER(COALESCE(\n        JSON_EXTRACT(_source, \"network_traffic.sip.method\"),\n        JSON_EXTRACT(_source, \"sip.method\")\n    )),\n    Esql.to_user = COALESCE(\n        JSON_EXTRACT(_source, \"network_traffic.sip.to.uri.username\"),\n        JSON_EXTRACT(_source, \"sip.to.uri.username\")\n    ),\n    Esql.user_agent = COALESCE(\n        JSON_EXTRACT(_source, \"network_traffic.sip.user_agent.original\"),\n        JSON_EXTRACT(_source, \"sip.user_agent.original\")\n    ),\n    Esql.client_ip = COALESCE(client.ip, source.ip),\n    Esql.server_ip = COALESCE(server.ip, destination.ip)\n| where\n    Esql.method == \"OPTIONS\" and\n    Esql.to_user is not null and\n    Esql.client_ip is not null and\n    Esql.server_ip is not null\n| eval Esql.time_window = DATE_TRUNC(2 minutes, @timestamp)\n| stats\n    Esql.distinct_extensions = COUNT_DISTINCT(Esql.to_user),\n    Esql.request_count = COUNT(*),\n    Esql.sample_extensions = MV_SLICE(VALUES(Esql.to_user), 0, 20),\n    Esql.user_agents = MV_SLICE(VALUES(Esql.user_agent), 0, 10)\n  by Esql.time_window, Esql.client_ip, Esql.server_ip\n| where Esql.distinct_extensions >= 20\n| keep Esql.*\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1595/",
+            "https://attack.mitre.org/techniques/T1046/"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e7bf9314-f346-45b5-a6ed-044dc3b839c8",
+        "setup": "## Setup\n\nThis rule requires the Elastic **network_traffic** integration with the **SIP** protocol module enabled on a sensor that\nobserves VoIP signaling traffic. SIP monitoring uses UDP port 5060 by default. Enable the integration's **Use TCP**\noption when the monitored environment carries plaintext SIP over TCP; Packetbeat monitors the selected transport.\n\nThe rule requires decoded SIP headers. SIP over TLS (commonly TCP 5061) is not visible unless the sensor receives\ndecrypted traffic or observes plaintext SIP after TLS termination. SRTP encryption does not affect this rule when SIP\nsignaling remains visible.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Network",
+            "Use Case: Threat Detection",
+            "Use Case: Network Security Monitoring",
+            "Tactic: Discovery",
+            "Tactic: Reconnaissance",
+            "Data Source: Network Packet Capture",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1046",
+                        "name": "Network Service Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1046/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0043",
+                    "name": "Reconnaissance",
+                    "reference": "https://attack.mitre.org/tactics/TA0043/"
+                },
+                "technique": [
+                    {
+                        "id": "T1595",
+                        "name": "Active Scanning",
+                        "reference": "https://attack.mitre.org/techniques/T1595/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "e7bf9314-f346-45b5-a6ed-044dc3b839c8_1",
+    "type": "security-rule"
+}

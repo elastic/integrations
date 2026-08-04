@@ -1,0 +1,84 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            },
+            "group_by": [
+                "Esql.client_ip",
+                "Esql.server_ip"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies repeated SIP REGISTER authentication rejection responses for one or more extensions from a client to a VoIP server within five minutes. The rule distinguishes repeated failures from the single 401 or 407 challenge expected in a normal digest-authentication flow. Attackers brute-force extension credentials to register rogue endpoints for toll fraud, call interception, or registration hijacking.",
+        "false_positives": [
+            "Misconfigured phones, expired credentials, or provisioning errors can generate repeated REGISTER failures from a single device. Validate the client, affected extensions, and registration state before escalating."
+        ],
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "max_signals": 5,
+        "name": "Potential SIP REGISTER Brute Force",
+        "note": "## Triage and analysis\n\n### Investigating Potential SIP REGISTER Brute Force\n\nSIP REGISTER authenticates endpoints to a PBX or SBC. Attackers iterate extensions and passwords, producing many 401 Unauthorized, 403 Forbidden, or 407 Proxy Authentication Required responses from one external or internal client. A single 401 or 407 challenge is expected during normal digest authentication, so this rule requires either ten failures for one extension or a broader spray affecting at least five repeatedly challenged extensions.\n\n### Possible investigation steps\n\n- Determine whether `Esql.client_ip` is an expected phone, gateway, proxy, or external attacker address and confirm that `Esql.server_ip` is the intended PBX or SBC.\n- Review `Esql.sample_extensions`, `Esql.total_failures`, and `Esql.max_failures_per_extension` to distinguish a targeted password attack from a broader extension spray.\n- Review REGISTER requests corresponding to the rejection responses and confirm whether credentials were supplied after the initial digest challenge.\n- Check for a successful REGISTER (2xx response) from the same client and extension shortly after the burst. Multiple failures followed by success should be escalated as possible credential compromise.\n- Inspect CDR/billing records for anomalous outbound calls if a registration succeeded.\n\n### False positive analysis\n\n- A single misconfigured phone repeatedly attempting REGISTER with a stale password can trigger the targeted-failure branch. Lower severity when only one extension is affected and the client maps to a known device.\n- NAT gateways and SIP proxies can represent many legitimate phones behind one address. The rule requires repeated challenges per extension to reduce alerts caused by one normal digest challenge from each phone.\n\n### Response and remediation\n\n- Block or rate-limit the offending `Esql.client_ip` at the SBC and enforce strong SIP credentials.\n- Rotate compromised extension passwords and audit active registrations for rogue contact bindings.\n- Enable geo-blocking or IP allowlists for REGISTER if the PBX is internal-only.\n",
+        "query": "from logs-network_traffic.sip-*, packetbeat-* metadata _source\n| eval\n    Esql.method = TO_UPPER(COALESCE(\n        JSON_EXTRACT(_source, \"network_traffic.sip.cseq.method\"),\n        JSON_EXTRACT(_source, \"sip.cseq.method\"),\n        JSON_EXTRACT(_source, \"network_traffic.sip.method\"),\n        JSON_EXTRACT(_source, \"sip.method\")\n    )),\n    Esql.sip_type = TO_LOWER(COALESCE(\n        JSON_EXTRACT(_source, \"network_traffic.sip.type\"),\n        JSON_EXTRACT(_source, \"sip.type\")\n    )),\n    Esql.code = COALESCE(\n        JSON_EXTRACT(_source, \"network_traffic.sip.code\"),\n        JSON_EXTRACT(_source, \"sip.code\")\n    ),\n    Esql.client_ip = COALESCE(client.ip, destination.ip),\n    Esql.server_ip = COALESCE(server.ip, source.ip),\n    Esql.extension = COALESCE(\n        JSON_EXTRACT(_source, \"network_traffic.sip.to.uri.username\"),\n        JSON_EXTRACT(_source, \"sip.to.uri.username\")\n    )\n| where\n    Esql.method == \"REGISTER\" and\n    Esql.sip_type == \"response\" and\n    Esql.code in (\"401\", \"403\", \"407\") and\n    Esql.client_ip is not null and\n    Esql.server_ip is not null and\n    Esql.extension is not null\n| eval Esql.time_window = DATE_TRUNC(5 minutes, @timestamp)\n| stats\n    Esql.failures_per_extension = COUNT(*)\n  by Esql.time_window, Esql.client_ip, Esql.server_ip, Esql.extension\n| eval Esql.repeated_extension = CASE(Esql.failures_per_extension >= 2, 1, 0)\n| stats\n    Esql.total_failures = SUM(Esql.failures_per_extension),\n    Esql.max_failures_per_extension = MAX(Esql.failures_per_extension),\n    Esql.distinct_extensions = COUNT_DISTINCT(Esql.extension),\n    Esql.repeated_extensions = SUM(Esql.repeated_extension),\n    Esql.sample_extensions = MV_SLICE(VALUES(Esql.extension), 0, 20)\n  by Esql.time_window, Esql.client_ip, Esql.server_ip\n| where\n    Esql.max_failures_per_extension >= 10 or\n    (\n      Esql.total_failures >= 25 and\n      Esql.distinct_extensions >= 5 and\n      Esql.repeated_extensions >= 5\n    )\n| keep Esql.*\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1110/"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1ca59146-7386-4033-a010-1c32717e9321",
+        "setup": "## Setup\n\nThis rule requires the Elastic **network_traffic** integration with the **SIP** protocol module enabled on a sensor that\nobserves VoIP REGISTER signaling to or from the PBX/SBC.\n\nThe rule requires decoded SIP headers and responses. SIP over TLS (commonly TCP 5061) is not visible unless the sensor\nreceives decrypted traffic or observes plaintext SIP after TLS termination. SRTP encryption does not affect this rule\nwhen SIP signaling remains visible.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Network",
+            "Use Case: Threat Detection",
+            "Use Case: Network Security Monitoring",
+            "Tactic: Credential Access",
+            "Data Source: Network Packet Capture",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.001",
+                                "name": "Password Guessing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/001/"
+                            },
+                            {
+                                "id": "T1110.003",
+                                "name": "Password Spraying",
+                                "reference": "https://attack.mitre.org/techniques/T1110/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "1ca59146-7386-4033-a010-1c32717e9321_1",
+    "type": "security-rule"
+}

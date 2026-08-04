@@ -1,0 +1,131 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects an identity injecting an ephemeral (debug) container into a running AKS (Azure Kubernetes Service) pod via the pods/ephemeralcontainers subresource, excluding known AKS control-plane and platform identities. Ephemeral containers share the target pod's namespaces and give stealthy interactive access to its processes and mounted secrets without creating a new pod. Coverage includes workload service accounts (system:serviceaccount:*), so a compromised in-cluster token used to attach a debug container is not excluded.",
+        "false_positives": [
+            "Operators and support tooling use ephemeral containers (kubectl debug) for legitimate troubleshooting. Baseline expected users and exclude verified break-glass or platform identities after review."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-azure.platformlogs-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "azure.platformlogs.category",
+                "azure.platformlogs.properties.log.verb",
+                "azure.platformlogs.properties.log.user.username",
+                "azure.platformlogs.properties.log.user.groups",
+                "azure.platformlogs.properties.log.userAgent",
+                "azure.platformlogs.properties.log.sourceIPs",
+                "azure.platformlogs.properties.log.objectRef.namespace",
+                "azure.platformlogs.properties.log.objectRef.name",
+                "azure.platformlogs.properties.log.objectRef.subresource",
+                "azure.platformlogs.properties.log.requestObject.spec.ephemeralContainers.name",
+                "azure.platformlogs.properties.log.requestObject.spec.ephemeralContainers.image",
+                "azure.platformlogs.properties.log.requestObject.spec.ephemeralContainers.command",
+                "azure.platformlogs.properties.log.requestObject.spec.ephemeralContainers.targetContainerName",
+                "azure.platformlogs.properties.log.requestObject.spec.ephemeralContainers.securityContext.capabilities.add",
+                "azure.platformlogs.properties.log.responseStatus.code"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Azure AKS Ephemeral Container Added to Pod",
+        "note": "## Triage and analysis\n\n### Investigating Azure AKS Ephemeral Container Added to Pod\n\nAKS kube-audit events are carried under the flattened `azure.platformlogs.properties.log.*` subtree and share the ARM\noperation `event.action: Microsoft.ContainerService/managedClusters/diagnosticLogs/Read`. An ephemeral container is\nattached to a running pod (via `kubectl debug`) and shares that pod's process and network namespaces. Adversaries use it\nas a stealthier alternative to `exec` to read mounted secrets and interact with the workload.\n\n### Possible investigation steps\n\n- Identify the acting identity in `azure.platformlogs.properties.log.user.username` (and its groups in\n  `azure.platformlogs.properties.log.user.groups`) and whether it should debug pods. A username of `masterclient` with\n  the `system:masters` group is the AKS local cluster-admin certificate (`az aks get-credentials --admin`); on clusters\n  with local accounts disabled it should not appear at all, so its presence is itself notable. Entra-integrated admins\n  appear as their UPN/objectId instead.\n- Inspect the injected container in the `azure.platformlogs.properties.log.requestObject.spec.ephemeralContainers.*`\n  fields: the `image`, `command`, and `targetContainerName` show what was run and against which container, and\n  `securityContext.capabilities.add` (e.g. `SYS_PTRACE`, `SYS_ADMIN`) or a privileged context indicates offensive\n  debugging.\n- Review `azure.platformlogs.properties.log.userAgent` to distinguish an interactive `kubectl debug` from automation or\n  custom tooling, and `azure.platformlogs.properties.log.responseStatus.code` to tell a successful injection (200) from\n  a denied attempt (403) by an identity lacking RBAC.\n- Identify the target pod in `azure.platformlogs.properties.log.objectRef.name` /\n  `azure.platformlogs.properties.log.objectRef.namespace`.\n- Evaluate the source in `azure.platformlogs.properties.log.sourceIPs` and pivot on it for related exec sessions, secret\n  reads, or RBAC changes.\n\n### False positive analysis\n\n- Operators and support tooling use ephemeral containers for legitimate troubleshooting; baseline expected users and\n  exclude verified break-glass or platform identities.\n\n### Response and remediation\n\n- If unauthorized, remove the ephemeral container (delete or replace the pod), revoke the acting identity's tokens, and\n  review the RBAC that permitted the injection.\n- Inspect the target pod for accessed secrets or tampering and rotate any exposed credentials.\n- Collect kube-audit and identity artifacts per incident response procedures.\n",
+        "query": "data_stream.dataset:azure.platformlogs and\n  event.action:\"Microsoft.ContainerService/managedClusters/diagnosticLogs/Read\" and\n  azure.platformlogs.category:(\"kube-audit\" or \"kube-audit-admin\") and\n  azure.platformlogs.properties.log.stage:\"ResponseComplete\" and\n  azure.platformlogs.properties.log.objectRef.resource:\"pods\" and\n  azure.platformlogs.properties.log.objectRef.subresource:\"ephemeralcontainers\" and\n  azure.platformlogs.properties.log.verb:(\"update\" or \"patch\") and\n  not azure.platformlogs.properties.log.user.username:(\n    system\\:node\\:* or \"aksService\" or \"hcpService\" or \"readinessChecker\" or\n    system\\:serviceaccount\\:kube-system\\:*\n  )\n",
+        "references": [
+            "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/#ephemeral-container",
+            "https://microsoft.github.io/Threat-Matrix-for-Kubernetes/",
+            "https://unit42.paloaltonetworks.com/hildegard-malware-teamtnt/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "platformlogs",
+                "package": "azure",
+                "version": "^1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.objectRef.resource",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.objectRef.subresource",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.stage",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.user.username",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.verb",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "d4209683-ee18-439f-b816-1bbe6ee6bbc8",
+        "setup": "The Azure Fleet integration collecting AKS diagnostic logs forwarded through Event Hub into the `azure.platformlogs`\ndata stream is required for this rule. Enable either the `kube-audit` or the `kube-audit-admin` log category (Microsoft\nrecommends `kube-audit-admin` alone to reduce volume, as it only drops read-only get/list events). Mutating\nephemeral-container writes are recorded in both categories with the same `auditID`, so clusters that enable both\ncategories may generate two alerts per injection.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: Azure",
+            "Data Source: Azure Platform Logs",
+            "Data Source: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1610",
+                        "name": "Deploy Container",
+                        "reference": "https://attack.mitre.org/techniques/T1610/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "d4209683-ee18-439f-b816-1bbe6ee6bbc8_1",
+    "type": "security-rule"
+}
