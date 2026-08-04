@@ -3,15 +3,16 @@ env:
   SETUP_GVM_VERSION: "v0.6.0"
   DOCKER_COMPOSE_VERSION: "v2.24.1"
   DOCKER_VERSION: "26.1.2"
-  KIND_VERSION: 'v0.27.0'
-  K8S_VERSION: 'v1.33.0'
+  KIND_VERSION: 'v0.32.0'
+  K8S_VERSION: 'v1.36.1'
   YQ_VERSION: 'v4.35.2'
   JQ_VERSION: '1.7'
   GH_CLI_VERSION: "2.29.0"
+  CHANGELOG_SKIP_LABEL: "changelog-link-check:skip"
 
   # Agent images used in pipeline steps
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
-  IMAGE_UBUNTU_X86_64: "family/core-ubuntu-2204"
+  IMAGE_UBUNTU_X86_64: "family/platform-obs-integrations-ubuntu-2204"
 
   # Elastic package settings
   # Manage docker output/logs
@@ -60,6 +61,47 @@ steps:
     artifact_paths:
       - tests-report.xml
 
+  - label: ":bash: :snake: Buildkite scripts unit tests"
+    key: "check-buildkite-scripts"
+    command: ".buildkite/scripts/run_buildkite_scripts_tests.sh"
+    agents:
+      # GCP VM used to match the same Python 3 version available in the steps that test packages
+      provider: gcp
+      image: "${IMAGE_UBUNTU_X86_64}"
+
+  - label: ":bash: Dev scripts unit tests"
+    key: "check-dev-scripts"
+    command: ".buildkite/scripts/run_dev_scripts_tests.sh"
+
+  - label: ":ballot_box_with_check: Backports inventory validation"
+    key: "check-backports-inventory"
+    command: ".buildkite/scripts/check_backports_inventory.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+    if_changed:
+      - ".backports.yml"
+      - ".buildkite/scripts/run_dev_scripts_tests.sh"
+      - "dev/scripts/**.sh"
+      - "dev/backports/**"
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
+      build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main"
+
+  - label: ":git: Trigger backport dry-runs"
+    key: "trigger-backport-dryrun"
+    command: ".buildkite/scripts/trigger_backport.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+    depends_on:
+      - step: "check-backports-inventory"
+        allow_failure: false
+    if_changed:
+      - ".backports.yml"
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
+      build.env('BUILDKITE_PIPELINE_SLUG') == "integrations" &&
+      build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main"
+
   - label: ":junit: Sources Junit annotate"
     agents:
       # requires at least "bash", "curl" and "git"
@@ -76,6 +118,62 @@ steps:
           run-in-docker: false
           context: junit-sources
 
+  - label: ":scroll: Check changelog versions not in main"
+    key: "check-changelog-versions-in-main"
+    command: ".buildkite/scripts/check_changelog_versions_in_main.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "2"
+      memory: "1G"
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
+      build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') =~ /^backport-/
+    if_changed:
+      - "**/changelog.yml"
+
+  - label: ":scroll: Check changelog PR links"
+    key: "check-changelog-pr-links"
+    command: ".buildkite/scripts/check_changelog_entries.sh"
+    soft_fail:
+      - exit_status: 2
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "2"
+      memory: "1G"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
+    depends_on:
+      - step: "check-buildkite-scripts"
+        allow_failure: false
+    # CHANGELOG_SKIP_LABEL is substituted into the regex at pipeline upload time.
+    # This works because the variable is defined in the global env section above;
+    # step-level env vars are not available at upload time and cannot be used here.
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
+      !(build.env("GITHUB_PR_LABELS") =~ /${CHANGELOG_SKIP_LABEL}/)
+    if_changed:
+      - "**/changelog.yml"
+
+  - label: ":busts_in_silhouette: Check backport package owners"
+    key: "check-backport-owners"
+    command: ".buildkite/scripts/check_backport_owners.sh"
+    soft_fail: true
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "2"
+      memory: "1G"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
+    depends_on:
+      - step: "check-buildkite-scripts"
+        allow_failure: false
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
+      build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') =~ /^backport-/
+    if_changed:
+      - "packages/**"
+      - ".github/CODEOWNERS"
+
   - label: "Trigger integrations"
     key: "test-integrations"
     command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
@@ -83,6 +181,8 @@ steps:
       UPLOAD_SAFE_LOGS: 1
     depends_on:
       - step: "check"
+        allow_failure: false
+      - step: "check-buildkite-scripts"
         allow_failure: false
 
   - wait: ~
