@@ -7,7 +7,7 @@ package changelog
 import (
 	"fmt"
 
-	"github.com/elastic/integrations/dev/citools"
+	"github.com/elastic/integrations/cmd/backport/citools"
 )
 
 // BuildPackageIndex returns a map of package name → directory for every

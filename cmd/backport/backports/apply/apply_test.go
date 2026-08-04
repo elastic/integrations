@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/elastic/integrations/dev/backports/owners"
+	"github.com/elastic/integrations/cmd/backport/backports/owners"
 )
 
 func TestSentinelURL(t *testing.T) {

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/elastic/integrations/dev/codeowners"
+	"github.com/elastic/integrations/cmd/backport/codeowners"
 )
 
 func TestManifestOwnerFn(t *testing.T) {

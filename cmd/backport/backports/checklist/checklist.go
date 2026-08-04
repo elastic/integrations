@@ -14,7 +14,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/elastic/integrations/dev/backports"
+	"github.com/elastic/integrations/cmd/backport/backports"
 )
 
 // marker is the HTML comment embedded at the start of every checklist comment.

@@ -15,8 +15,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/elastic/integrations/dev/citools"
-	"github.com/elastic/integrations/dev/codeowners"
+	"github.com/elastic/integrations/cmd/backport/citools"
+	"github.com/elastic/integrations/cmd/backport/codeowners"
 )
 
 // parseEntryLine parses a single CODEOWNERS line. Returns ok=true only for

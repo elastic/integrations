@@ -18,7 +18,10 @@
 
 set -euo pipefail
 
-ITEMS=$(mage -d "$GITHUB_WORKSPACE" parseBackportChecklist "$BODY_FILE")
+# Reuse the binary already built in the workflow's "Build backport tool" step.
+export BACKPORT_BIN="$GITHUB_WORKSPACE/backport"
+
+ITEMS=$("$GITHUB_WORKSPACE/backport" parse-checklist "$BODY_FILE")
 SHORT_SHA="${MERGE_SHA:0:8}"
 
 echo "$ITEMS" | jq -c '.[]' | while IFS= read -r item; do
@@ -73,7 +76,7 @@ echo "$ITEMS" | jq -c '.[]' | while IFS= read -r item; do
   fi
 
   # Update the in-memory checklist body and patch the GitHub comment
-  NEW_BODY=$(mage -d "$GITHUB_WORKSPACE" updateChecklistBranchStatus "$BODY_FILE" "$BRANCH" "$STATUS")
+  NEW_BODY=$("$GITHUB_WORKSPACE/backport" update-checklist-status "$BODY_FILE" "$BRANCH" "$STATUS")
   printf '%s' "$NEW_BODY" > "$BODY_FILE"
 
   echo "Updating checklist comment for $BRANCH → $STATUS"

@@ -30,10 +30,11 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v7
         with:
-          go-version-file: .go-version
+          # Use the backport tool's own Go version (pinned to main's version).
+          go-version-file: cmd/backport/.go-version
 
-      - name: Install mage
-        run: go install github.com/magefile/mage
+      - name: Build backport tool
+        run: go build -C cmd/backport -o "$GITHUB_WORKSPACE/backport" .
 
       - name: Download artifact
         # continue-on-error so a missing artifact (e.g. detect job was skipped due to
@@ -96,10 +97,10 @@ jobs:
           fi
 
           # Render the new comment body. The existing body is piped into stdin so
-          # the mage target can parse previously-checked branches and preserve their
-          # state. Prints nothing when no package has any active branch.
+          # the backport tool can parse previously-checked branches and preserve
+          # their state. Prints nothing when no package has any active branch.
           NEW_BODY=$(printf '%s' "$EXISTING_BODY" | \
-            mage -d "$GITHUB_WORKSPACE" renderBackportChecklist "$ARTIFACT")
+            "$GITHUB_WORKSPACE/backport" render-checklist "$ARTIFACT")
 
           if [[ -z "$NEW_BODY" ]]; then
             echo "No active backport branches — nothing to post"
