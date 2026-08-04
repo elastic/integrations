@@ -49,18 +49,9 @@ program: |
               "show_igs": [state.show_igs? "1" : "0"],
               "host_metadata": ["all"],
               "truncation_limit": [string(state.batch_size)],
-            }).with(
-              // Qualys rejects show_qds and show_qds_factors with error 1901
-              // when they are not available in the subscription,
-              // so they must be omitted entirely rather than sent as 0.
-              state.?show_qds.orValue(true) ?
-                {
-                  "show_qds": ["1"],
-                  "show_qds_factors": ["1"],
-                }
-              :
-                {}
-            ).format_query()
+              ?"show_qds": state.show_qds ? optional.of(["1"]) : optional.none(),
+              ?"show_qds_factors": state.show_qds ? optional.of(["1"]) : optional.none(),
+            }).format_query()
         ).with({
             "Header":{
                 "X-Requested-With": ["curl"],
