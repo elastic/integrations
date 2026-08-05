@@ -33,6 +33,15 @@ processors:
       field: event.original
       target_field: socradar_alert
       tag: json_decode_event_original
+  - fingerprint:
+      fields:
+        - socradar_alert.alarm_id
+      target_field: _id
+      tag: fingerprint_id
+      ignore_missing: true
+      description: >-
+        Derive a stable document id from the alarm id so a re-fetched alarm
+        overwrites its existing document instead of creating a duplicate.
   - set:
       field: ecs.version
       tag: set_ecs_version

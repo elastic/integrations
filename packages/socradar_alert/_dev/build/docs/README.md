@@ -5,7 +5,7 @@
 
 The SOCRadar integration collects security alarms from the [SOCRadar](https://socradar.io) platform via its REST API and ingests them into Elasticsearch. Each alarm is stored as a log event in the `logs-socradar_alert.incidents-*` data stream.
 
-The integration also ships a Detection Rule (`SOCRadar - Alarm Detection`) that automatically creates Kibana Security Alerts for every incoming alarm, enabling bidirectional status synchronization between Kibana and SOCRadar.
+The integration also ships a Detection Rule (`SOCRadar - Alarm Detection`) that automatically creates Kibana Security Alerts for every incoming alarm, and can optionally sync alert status changes made in Kibana back to SOCRadar.
 
 ### Compatibility
 
@@ -27,7 +27,7 @@ Each event represents a single SOCRadar alarm and includes details such as risk 
 
 - **Centralized alarm visibility** — View all SOCRadar alarms in Kibana Discover and the included dashboard.
 - **Security alerting** — Automatically create Kibana Security Alerts for every alarm using the included Detection Rule.
-- **Bidirectional status sync** — Optionally sync alert status changes made in Kibana back to SOCRadar using an Elasticsearch Watcher.
+- **Status sync to SOCRadar** — Optionally sync alert status changes made in Kibana back to SOCRadar using an Elasticsearch Watcher.
 
 ## What do I need to use this integration?
 
