@@ -228,6 +228,10 @@ GET .watcher-history-*/_search
 
 The `incidents` data stream collects alarm events from the SOCRadar API.
 
+An example event for `incidents` looks as following:
+
+{{event "incidents"}}
+
 #### Incidents fields
 
 {{ fields "incidents" }}
