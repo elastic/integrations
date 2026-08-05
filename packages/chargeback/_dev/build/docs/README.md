@@ -200,12 +200,12 @@ Answers: *which data streams and tiers drive cost, and how efficiently are we us
 Sections:
 - **Deployment cost allocation (usage-based)**: normalized cost per deployment split by data tier (usage-weighted). Shows which deployments consume the most of their chargeable pool across tiers.
 - **Datatiers / utilization**: provisioned capacity vs chargeable pool, utilization p95 per deployment.
-- **Data tier and data stream overview**: top-20 data streams by indexing / query / storage cost, blended cost totals, blended cost by data stream **namespace** (`ds_namespace`) and **type** (`ds_type`), and workload breakdown by tier.
+- **Data tier and data stream overview**: top-20 data streams by indexing / query / storage cost, blended cost totals, and the **Workload Breakdown by Data Tier** table with columns **Data stream type**, **Namespace**, **Data stream**, **Data tier**, then indexing / querying / storage / blended cost.
 - **Data tier and data stream per day**: time-series panels (indexing, querying, storage, blended) broken out by data stream and data tier (usage-based), including absolute cost and percentage share.
 
 #### Namespace-based ownership on shared deployments
 
-When several teams share one deployment, assign each team a unique Fleet **namespace** so their data lands in distinct data streams (`<type>-<dataset>-<namespace>`). Chargeback parses `ds_namespace` and `ds_type` from the full data stream name for breakdown panels. Interactive control-bar filters on those fields are not part of this release line; use the namespace and type panels (or a KQL/ES|QL query) until a later package that ships ES|QL variable controls.
+When several teams share one deployment, assign each team a unique Fleet **namespace** so their data lands in distinct data streams (`<type>-<dataset>-<namespace>`). Chargeback parses `ds_namespace` and `ds_type` from the full data stream name and shows them on the Workload Breakdown table. Interactive control-bar filters on those fields are not part of this release line; use the table columns (or a KQL/ES|QL query) until a later package that ships ES|QL variable controls.
 
 ![Usage and Cost Allocation](../img/chargeback-usage-allocation.png)
 
