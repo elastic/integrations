@@ -1136,6 +1136,8 @@ process_package() {
         fi
     fi
 
+    eval "$(${ELASTIC_PACKAGE_BIN} stack shellinit)"
+
     if ! run_tests_package "${package_name}" ; then
         exit_code=1
         # Ensure that the group where the failure happened is opened.
