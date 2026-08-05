@@ -145,6 +145,7 @@ updateBackportBranchContents() {
 
   git checkout "$BACKPORT_BRANCH_NAME"
   echo "--- Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
+  echo "Deleting first ${BUILDKITE_FOLDER_PATH} folder"
   git rm -r --cached "${BUILDKITE_FOLDER_PATH}" 2>/dev/null || true
   git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
   git add $BUILDKITE_FOLDER_PATH
@@ -166,6 +167,7 @@ updateBackportBranchContents() {
 
   if git ls-tree -d --name-only main:${DEV_FOLDER} > /dev/null 2>&1 ; then
     echo "--- Copying $DEV_FOLDER from $SOURCE_BRANCH..."
+    echo "Deleting first ${DEV_FOLDER} folder"
     git rm -r --cached "${DEV_FOLDER}" 2>/dev/null || true
     git checkout "$SOURCE_BRANCH" -- "${DEV_FOLDER}"
     git add "${DEV_FOLDER}"
@@ -185,6 +187,7 @@ updateBackportBranchContents() {
     # > error: GH013: Repository rule violations found for ...
     # > refusing to allow a GitHub App to create or update workflow `.github/workflows/bump-elastic-stack-version.yml` without `workflows` permission
     echo "--- Copying .github/workflows from $SOURCE_BRANCH..."
+    echo "Deleting first .github/workflows folder"
     git rm -r --cached ".github/workflows" 2>/dev/null || true
     git checkout "$SOURCE_BRANCH" -- ".github/workflows"
     git add .github/workflows
