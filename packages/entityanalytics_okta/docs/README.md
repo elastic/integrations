@@ -21,11 +21,17 @@ The Okta Entity Analytics integration collects two types of data: user and devic
 
 ## Requirements
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+Elastic Agent must be installed for standard deployments. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 The minimum **kibana.version** required is **9.2.6** or **9.3.1**.
 
 ## Setup
+
+### Agentless deployment
+
+This integration supports agentless deployment, where the collection agent runs in Elastic's cloud rather than inside your network. The Okta API is a public HTTPS endpoint, so no special connectivity configuration is required.
+
+When deploying agentlessly, the **JWK file** authentication option is not available because it relies on a file on the agent's local filesystem. Use **API token** or **JWK JSON** (inline key) authentication instead.
 
 ### Collect data from Okta
 
@@ -64,7 +70,9 @@ The minimum **kibana.version** required is **9.2.6** or **9.3.1**.
 
 The Okta provider periodically contacts the Okta API, retrieving updates for users and devices, updates its internal cache of user/device metadata, and ships the updated metadata to Elasticsearch.
 
-Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations will send the entire list of users and devices in state, along with write markers to indicate the start and end of the synchronization event. Incremental updates will only send data for changed users/devices during that event. Changes can come in many forms, whether it be a change to the user’s or device’s metadata, or a user or device was added or deleted. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
+Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations send the entire list of users and devices in state. Incremental updates send only records that changed since the last sync. Changes include metadata updates, additions, and deletions. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
+
+By default this integration uses **minimal-state sync**, which routes user and device documents directly to the `user` and `device` data streams. Existing policies are updated to use minimal-state sync on upgrade.
 
 This integration provides an **asset inventory**, a point-in-time snapshot of which users and devices exist and their current properties. It does not provide an audit trail of who changed what, or when. If you need to track administrative changes to Okta objects, use the [Okta integration's](https://docs.elastic.co/integrations/okta) system log data stream, which collects the [Okta System Log](https://developer.okta.com/docs/reference/api/system-log/).
 
@@ -207,21 +215,6 @@ A device document:
     },
     "device": {
         "id": "deviceid",
-    },
-    "labels": {
-        "identity_source": "okta-1"
-    }
-}
-```
-
-Full synchronizations will be bounded on either side by "write marker" documents.
-
-```json
-{
-    "@timestamp": "2022-11-04T09:57:19.786056-05:00",
-    "event": {
-        "action": "started",
-        "start": "2022-11-04T09:57:19.786056-05:00"
     },
     "labels": {
         "identity_source": "okta-1"

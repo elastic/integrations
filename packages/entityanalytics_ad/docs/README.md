@@ -55,13 +55,11 @@ For on-premises AD that is not internet-accessible, use standard agent-based dep
 
 ## Usage
 
-The Active Directory provider periodically contacts the server, retrieves updates for users and devices, updates its internal cache of metadata, and ships updated records to Elasticsearch.
+The Active Directory provider periodically contacts the server, retrieves updates for users, devices, and groups, updates its internal cache of metadata, and ships updated records to Elasticsearch.
 
-Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations send the entire list of users and devices in state. Incremental updates send only records that changed since the last sync. Changes include metadata updates, additions, and deletions. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
+Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations send the entire list of users, devices, and groups in state. Incremental updates send only records that changed since the last sync. Changes include metadata updates, additions, and deletions. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
 
-By default this integration uses **minimal-state sync**, which routes user and device documents directly to the `user` and `device` data streams without writing synchronization marker events to the `entity` data stream. Existing policies that were created before this default was introduced are updated to use minimal-state sync on upgrade.
-
-If you require synchronization marker events — start and end markers written to the `entity` data stream around each full synchronization — you can enable the legacy sync mode by setting the **Use minimal state** option to `false` in the integration configuration. Note that this option is not available when the integration is deployed in agentless mode.
+By default this integration uses **minimal-state sync**, which routes user, device, and group documents directly to the `user`, `device`, and `group` data streams. Existing policies are updated to use minimal-state sync on upgrade.
 
 This integration provides an **asset inventory**, a point-in-time snapshot of which users and devices exist and their current properties. It does not provide an audit trail of who changed what, or when. If you need to track administrative changes to Active Directory objects, consider collecting Windows Security event logs (e.g., Event IDs 4720, 4722, 4738, 4743) via the [System integration](https://docs.elastic.co/integrations/system).
 
