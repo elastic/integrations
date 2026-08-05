@@ -70,9 +70,7 @@ access, no sample file, no network beyond the image pulls.
 
 Go's JSON decode cost tracks the **number of keys and containers** it allocates, not just
 the byte count, so a template that hits the right size with the wrong shape gets the
-memory wrong. Measured here: holding page bytes constant and changing only the evidence
-array from 6 items to the real average of 3.5 moved the sustained peak by 4%, and an
-earlier template with 6 items over-stated it by 9%.
+memory wrong: nested object counts move the peak independently of page bytes.
 
 So the templates in `<stream>/corpus/` are calibrated against a real tenant response on
 four axes at once. The flow was one-way and ended outside the repo: the response was
