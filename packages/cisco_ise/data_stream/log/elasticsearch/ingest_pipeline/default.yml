@@ -207,6 +207,12 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx.client?.user?.name == null
+  - set:
+      tag: set_user_name_from_client_user_name_split_4b81ce07
+      field: user.name
+      copy_from: client.user.name
+      if: ctx.cisco_ise?.log?.category?.name == 'CISE_Administrative_and_Operational_Audit' && ctx.user?.name == null && ctx.client?.user?.name != null
+      ignore_failure: true
   - append:
       tag: append_related_user_2353f6bb
       field: related.user
