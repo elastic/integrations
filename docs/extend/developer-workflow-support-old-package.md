@@ -297,4 +297,14 @@ Packages in `skip_checklist_packages` are excluded from the checklist comment (n
 
         * Example: [https://github.com/elastic/integrations/blob/0daff27f0e0195a483771a50d60ab28ca2830f75/.buildkite/pipeline.yml#L17](https://github.com/elastic/integrations/blob/0daff27f0e0195a483771a50d60ab28ca2830f75/.buildkite/pipeline.yml#L17)
 
+3. Unknown flag `--coverage-format` in backport branch:
+
+    * Example of the error:
+
+        `Error: unknown flag: --coverage-format`
+
+    * **Cause**: The `--coverage-format` flag was introduced in `elastic-package` v0.96.0 (2024-01-18). Backport branches based on commits predating that release use an older `elastic-package` version that does not recognise the flag.
+
+    * **Solution**: Remove the `--coverage-format` flag from the relevant script on the backport branch.
+
 
