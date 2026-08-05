@@ -184,10 +184,10 @@ updateBackportBranchContents() {
     git checkout "$SOURCE_BRANCH" -- "magefile.go"
     git add magefile.go
 
-    # magefile_main_only.go contains targets that depend on go-gh/v2 and are never
+    # magefile_daily_jobs.go contains targets that depend on go-gh/v2 and are never
     # called on backport branches. Exclude it so the dependency is fully dropped.
-    echo "--- Removing magefile_main_only.go (not needed on backport branches)..."
-    git rm --force magefile_main_only.go 2>/dev/null || rm -f magefile_main_only.go
+    echo "--- Removing magefile_daily_jobs.go (not needed on backport branches)..."
+    git rm --force magefile_daily_jobs.go 2>/dev/null || rm -f magefile_daily_jobs.go
 
     # Restore workflows from the main branch since modifying them requires extra permissions.
     # > error: GH013: Repository rule violations found for ...
