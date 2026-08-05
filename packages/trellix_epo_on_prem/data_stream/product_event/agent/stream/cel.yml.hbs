@@ -1,0 +1,123 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+auth.basic:
+  user: {{username}}
+  password: {{password}}
+state:
+  initial_interval: {{initial_interval}}
+  page_size: {{page_size}}
+  columns: >-
+    EPOProductEvents.AutoID EPOProductEvents.AgentGUID
+    EPOProductEvents.NodeID EPOProductEvents.TVDEventID 
+    EPOProductEvents.TVDSeverity EPOProductEvents.DetectedUTC
+    EPOProductEvents.ReceivedUTC EPOProductEvents.HostName
+    EPOProductEvents.UserName EPOProductEvents.IPV6
+    EPOProductEvents.ProductCode EPOProductEvents.SPHotFix
+    EPOProductEvents.ExtraDATNames EPOProductEvents.Type
+    EPOProductEvents.Error EPOProductEvents.SiteName EPOProductEvents.InitiatorID
+    EPOProductEvents.InitiatorType EPOProductEvents.Locale EPOProductEvents.TenantId
+redact:
+  fields:
+    - password
+program: |
+  (
+    state.?want_more.orValue(false)
+    ?
+      state
+    :
+      state.with(
+        {
+          "update_time": state.?cursor.last_update_time.orValue(
+            (now - duration(state.initial_interval)).format("2006-01-02T15:04:05")
+          ),
+        }
+      )
+  ).as(state,
+    state.with(
+      get(
+        state.url.trim_right("/") + "/remote/core.executeQuery?" + {
+          "target": ["EPOProductEvents"],
+          "select": [
+            "(select (top " + string(state.page_size) + ") " + state.columns + ")",
+          ],
+          // The inclusive time cursor intentionally overlaps the boundary
+          // timestamp so downstream fingerprinting can remove duplicates.
+          "where": [
+            "(where (ge EPOProductEvents.ReceivedUTC \"" +
+              state.update_time + "\"))",
+          ],
+          "order": [
+            "(order (asc EPOProductEvents.ReceivedUTC))",
+          ],
+        }.format_query() + "&:output=json"
+      ).as(resp,
+        (resp.StatusCode == 200)
+        ?
+          string(resp.Body).trim_space().trim_prefix("OK:").trim_space().decode_json().as(rows,
+            (
+              (size(rows) > 0)
+              ?
+                timestamp(
+                  string(
+                    rows[size(rows) - 1]["EPOProductEvents.ReceivedUTC"]
+                  )
+                ).format("2006-01-02T15:04:05")
+              :
+                state.update_time
+            ).as(new_update_time,
+              {
+                "events": rows.map(e, {"message": e.encode_json()}),
+                "update_time": new_update_time,
+                "cursor": {
+                  "last_update_time": new_update_time,
+                },
+                "want_more": size(rows) == int(state.page_size),
+              }
+            )
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /remote/core.executeQuery: " + (
+                  (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
