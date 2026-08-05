@@ -23,7 +23,7 @@ The Okta Entity Analytics integration collects two types of data: user and devic
 
 Elastic Agent must be installed for standard deployments. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-The minimum **kibana.version** required is **9.2.6** or **9.3.1**.
+The minimum **kibana.version** required is **9.5.0**, and the minimum Elastic Agent version is **9.5.0**.
 
 ## Setup
 

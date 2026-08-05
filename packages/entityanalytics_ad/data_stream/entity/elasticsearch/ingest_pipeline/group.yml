@@ -104,8 +104,15 @@ processors:
 
 on_failure:
   - append:
+      tag: pipeline_error
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: pipeline_error_kind
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: pipeline_error_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
