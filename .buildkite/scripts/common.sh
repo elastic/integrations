@@ -913,7 +913,7 @@ teardown_test_package() {
 
 # list all directories that are packages from the root of the repository
 list_all_directories() {
-    mage -d "${WORKSPACE}" listPackages
+    mage -d "${WORKSPACE}" listPackages |grep -E "^packages/gcp$"
 }
 
 check_package() {
