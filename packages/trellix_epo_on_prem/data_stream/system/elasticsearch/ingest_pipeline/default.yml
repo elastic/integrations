@@ -1,0 +1,390 @@
+---
+description: Pipeline for processing system logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.4.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      ignore_missing: true
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: trellix_epo_on_prem.system
+  - fingerprint:
+      tag: fingerprint_with_id
+      fields:
+        - trellix_epo_on_prem.system.EPOLeafNode.AutoID
+      target_field: _id
+      ignore_missing: true
+  - script:
+      description: Nest flat fields with dots into objects.
+      tag: script_nest_flat_fields
+      lang: painless
+      source: |-
+        Map nested = [:];
+        List keysToRemove = [];
+        for (entry in ctx.trellix_epo_on_prem.system.entrySet()) {
+          String key = entry.getKey();
+          Object value = entry.getValue();
+          if (key.contains(".")) {
+            int dotIndex = key.indexOf(".");
+            String objName = key.substring(0, dotIndex);
+            String fieldName = key.substring(dotIndex + 1);
+            if (!nested.containsKey(objName)) {
+              nested[objName] = [:];
+            }
+            nested[objName][fieldName] = value;
+            keysToRemove.add(key);
+          }
+        }
+        // Add nested objects
+        for (entry in nested.entrySet()) {
+          ctx.trellix_epo_on_prem.system[entry.getKey()] = entry.getValue();
+        }
+        // Remove flat fields
+        for (key in keysToRemove) {
+          ctx.trellix_epo_on_prem.system.remove(key);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: >
+        Convert field names from camelCase to snake_case recursively.
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      source: |-
+        String camelToSnake(String str) {
+            def result = "";
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (Character.isUpperCase(c)) {
+                    if (i > 0 && (!Character.isUpperCase(str.charAt(i - 1))
+                        || (i + 1 < str.length() && Character.isLowerCase(str.charAt(i + 1))))) {
+                        result += "_";
+                    }
+                    result += Character.toLowerCase(c);
+                } else {
+                    result += c;
+                }
+            }
+            return result;
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              String newKey = camelToSnake(entry.getKey());
+              newObj[newKey] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        if (ctx.trellix_epo_on_prem?.system != null) {
+          ctx.trellix_epo_on_prem.system = convertToSnakeCase(ctx.trellix_epo_on_prem.system);
+        }
+      on_failure:
+        - append:
+            tag: append_script_convert_camelcase_to_snake_case_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      tag: fingerprint_with_id
+      fields:
+        - trellix_epo_on_prem.system.epo_leaf_node.auto_id
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - append:
+      field: event.category
+      tag: append_host_into_event_category
+      value: host
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - append:
+      field: entity.type
+      tag: append_host_into_entity_type
+      value: host
+  - set:
+      field: entity.id
+      tag: set_entity_id_from_system_epo_leaf_node_agent_guid
+      copy_from: trellix_epo_on_prem.system.epo_leaf_node.agent_guid
+      ignore_empty_value: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_system_epo_leaf_node_agent_guid
+      copy_from: trellix_epo_on_prem.system.epo_leaf_node.agent_guid
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_system_epo_leaf_node_agent_guid_into_related_hosts
+      if: ctx.trellix_epo_on_prem?.system?.epo_leaf_node?.agent_guid != null
+      value: '{{{trellix_epo_on_prem.system.epo_leaf_node.agent_guid}}}'
+      allow_duplicates: false
+  - convert:
+      field: trellix_epo_on_prem.system.epo_leaf_node.auto_id
+      tag: convert_EPOLeafNode_AutoID_to_string
+      type: string
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_system_epo_leaf_node_auto_id
+      copy_from: trellix_epo_on_prem.system.epo_leaf_node.auto_id
+      ignore_empty_value: true
+  - date:
+      field: trellix_epo_on_prem.system.epo_leaf_node.last_update
+      tag: date_EPOLeafNode_LastUpdate
+      if: ctx.trellix_epo_on_prem?.system?.epo_leaf_node?.last_update != null && ctx.trellix_epo_on_prem.system.epo_leaf_node.last_update != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_last_update_on_date_failure
+            field: trellix_epo_on_prem.system.epo_leaf_node.last_update
+            ignore_missing: true
+        - append:
+            tag: append_date_last_update_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_system_epo_leaf_node_last_update
+      copy_from: trellix_epo_on_prem.system.epo_leaf_node.last_update
+      ignore_empty_value: true
+  - convert:
+      field: trellix_epo_on_prem.system.epo_leaf_node.managed_state
+      tag: convert_EPOLeafNode_ManagedState_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_managed_state_on_convert_failure
+            field: trellix_epo_on_prem.system.epo_leaf_node.managed_state
+            ignore_missing: true
+        - append:
+            tag: append_convert_managed_state_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: entity.name
+      tag: set_entity_name_from_system_epo_leaf_node_node_name
+      copy_from: trellix_epo_on_prem.system.epo_leaf_node.node_name
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_system_epo_leaf_node_node_name
+      copy_from: trellix_epo_on_prem.system.epo_leaf_node.node_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_system_epo_leaf_node_node_name_into_related_hosts
+      if: ctx.trellix_epo_on_prem?.system?.epo_leaf_node?.node_name != null
+      value: '{{{trellix_epo_on_prem.system.epo_leaf_node.node_name}}}'
+      allow_duplicates: false
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_system_epo_leaf_node_node_name
+      copy_from: trellix_epo_on_prem.system.epo_leaf_node.node_name
+      ignore_empty_value: true
+  - convert:
+      field: trellix_epo_on_prem.system.epo_leaf_node.parent_id
+      tag: convert_EPOLeafNode_ParentID_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_parent_id_on_convert_failure
+            field: trellix_epo_on_prem.system.epo_leaf_node.parent_id
+            ignore_missing: true
+        - append:
+            tag: append_convert_parent_id_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.system.epo_leaf_node.sequence_error_count
+      tag: convert_EPOLeafNode_SequenceErrorCount_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_sequence_error_count_on_convert_failure
+            field: trellix_epo_on_prem.system.epo_leaf_node.sequence_error_count
+            ignore_missing: true
+        - append:
+            tag: append_convert_sequence_error_count_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: trellix_epo_on_prem.system.epo_leaf_node.sequence_error_count_last_update
+      tag: date_EPOLeafNode_SequenceErrorCountLastUpdate
+      if: ctx.trellix_epo_on_prem?.system?.epo_leaf_node?.sequence_error_count_last_update != null && ctx.trellix_epo_on_prem.system.epo_leaf_node.sequence_error_count_last_update != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_sequence_error_count_last_update_on_date_failure
+            field: trellix_epo_on_prem.system.epo_leaf_node.sequence_error_count_last_update
+            ignore_missing: true
+        - append:
+            tag: append_date_sequence_error_count_last_update_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_system_epo_leaf_node_server_key_hash_into_related_hash
+      if: ctx.trellix_epo_on_prem?.system?.epo_leaf_node?.server_key_hash != null
+      value: '{{{trellix_epo_on_prem.system.epo_leaf_node.server_key_hash}}}'
+      allow_duplicates: false
+  - append:
+      field: tags
+      tag: append_system_epo_leaf_node_tags_into_tags
+      if: ctx.trellix_epo_on_prem?.system?.epo_leaf_node?.tags != null
+      value: '{{{trellix_epo_on_prem.system.epo_leaf_node.tags}}}'
+      allow_duplicates: false
+  - convert:
+      field: trellix_epo_on_prem.system.epo_leaf_node.tenant_id
+      tag: convert_EPOLeafNode_TenantId_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_tenant_id_on_convert_failure
+            field: trellix_epo_on_prem.system.epo_leaf_node.tenant_id
+            ignore_missing: true
+        - append:
+            tag: append_convert_tenant_id_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.system.epo_leaf_node.transfer_site_lists_id
+      tag: convert_EPOLeafNode_TransferSiteListsID_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_transfer_site_lists_id_on_convert_failure
+            field: trellix_epo_on_prem.system.epo_leaf_node.transfer_site_lists_id
+            ignore_missing: true
+        - append:
+            tag: append_convert_transfer_site_lists_id_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.system.epo_leaf_node.type
+      tag: convert_EPOLeafNode_Type_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_type_on_convert_failure
+            field: trellix_epo_on_prem.system.epo_leaf_node.type
+            ignore_missing: true
+        - append:
+            tag: append_convert_type_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - trellix_epo_on_prem.system.epo_leaf_node.agent_guid
+        - trellix_epo_on_prem.system.epo_leaf_node.auto_id
+        - trellix_epo_on_prem.system.epo_leaf_node.last_update
+        - trellix_epo_on_prem.system.epo_leaf_node.node_name
+        - trellix_epo_on_prem.system.epo_leaf_node.tags
+      tag: remove_fields_mapped_to_ecs
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      if: ctx.error?.message != null
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_pipeline_failure_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
