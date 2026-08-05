@@ -609,6 +609,7 @@
       type: flattened
       description: |
         A JSON blob with all resource attributes.
+      ignore_above: 8191
     - name: ResourceId
       type: keyword
       description: |
@@ -743,6 +744,7 @@
       type: flattened
       description: |
         JSON objects containing additional information about the event.
+      ignore_above: 8191
     - name: SessionId
       type: keyword
       description: |
@@ -889,6 +891,41 @@
         Commands run in a remote session.
     - name: AnodeIndicators
       type: nested
+      fields:
+        - name: Detected
+          type: boolean
+        - name: Destination
+          type: keyword
+        - name: Entity
+          type: keyword
+        - name: Explanation
+          type: keyword
+        - name: Name
+          type: keyword
+        - name: Type
+          type: keyword
+        - name: Score
+          type: float
+          description: Anomaly score for the indicator.
+        - name: DataVolumeIncreasePercentage
+          type: float
+          description: Observed data volume as a multiple of the entity's baseline.
+        - name: FileCountIncreasePercentage
+          type: float
+          description: Observed file count as a multiple of the entity's baseline.
+        - name: FileCategoryDistributions
+          type: group
+          fields:
+            - name: ID
+              type: keyword
+            - name: Name
+              type: keyword
+            - name: CurrentPercentage
+              type: float
+            - name: ExpectedPercentage
+              type: float
+            - name: IncreasePercentage
+              type: float
     - name: ContentPatterns
       type: group
       fields:
@@ -942,6 +979,7 @@
           type: keyword
     - name: OriginWebLocations
       type: flattened
+      ignore_above: 8191
     - name: RelatedClassifications
       type: group
       fields:

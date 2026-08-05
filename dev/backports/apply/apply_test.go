@@ -15,6 +15,21 @@ import (
 	"github.com/elastic/integrations/dev/backports/owners"
 )
 
+func TestSentinelURL(t *testing.T) {
+	tests := []struct {
+		repository string
+		want       string
+	}{
+		{"elastic/integrations", "https://github.com/elastic/integrations/pull/REPLACE_ME"},
+		{"elastic/elastic-agent", "https://github.com/elastic/elastic-agent/pull/REPLACE_ME"},
+		{"", "https://github.com/elastic/integrations/pull/REPLACE_ME"},
+	}
+	for _, tc := range tests {
+		got := sentinelURL(tc.repository)
+		assert.Equal(t, tc.want, got)
+	}
+}
+
 func TestResolveBranchName(t *testing.T) {
 	tests := []struct {
 		target  string
