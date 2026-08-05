@@ -103,7 +103,7 @@ PUT _watcher/watch/socradar_alarm_status_sync
       "request": {
         "indices": [".alerts-security.alerts-*"],
         "body": {
-          "size": 1,
+          "size": 100,
           "_source": ["kibana.alert.workflow_status", "alarm.alarm_id", "alarm.company_id"],
           "query": {
             "bool": {
@@ -125,7 +125,7 @@ PUT _watcher/watch/socradar_alarm_status_sync
   "transform": {
     "script": {
       "lang": "painless",
-      "source": "Map statusMap = new HashMap(); statusMap.put('acknowledged', 'INVESTIGATING'); statusMap.put('in-progress', 'INVESTIGATING'); statusMap.put('investigating', 'INVESTIGATING'); statusMap.put('pending_info', 'PENDING_INFO'); statusMap.put('legal_review', 'LEGAL_REVIEW'); statusMap.put('vendor_assessment', 'VENDOR_ASSESSMENT'); statusMap.put('closed', 'RESOLVED'); statusMap.put('resolved', 'RESOLVED'); statusMap.put('false-positive', 'FALSE_POSITIVE'); statusMap.put('duplicate', 'DUPLICATE'); statusMap.put('processed_internally', 'PROCESSED_INTERNALLY'); statusMap.put('mitigated', 'MITIGATED'); statusMap.put('not_applicable', 'NOT_APPLICABLE'); def hit = ctx.payload.hits.hits[0]; def src = hit._source; def elasticStatus = src.get('kibana.alert.workflow_status'); def alarmObj = src.get('alarm'); def alarmId = alarmObj.get('alarm_id').toString(); def companyId = alarmObj.get('company_id').toString(); def mappedStatus = statusMap.containsKey(elasticStatus) ? statusMap.get(elasticStatus) : 'OPEN'; return ['alarm_id': alarmId, 'company_id': companyId, 'status': mappedStatus];"
+      "source": "Map statusMap = new HashMap(); statusMap.put('acknowledged', 'INVESTIGATING'); statusMap.put('in-progress', 'INVESTIGATING'); statusMap.put('investigating', 'INVESTIGATING'); statusMap.put('pending_info', 'PENDING_INFO'); statusMap.put('legal_review', 'LEGAL_REVIEW'); statusMap.put('vendor_assessment', 'VENDOR_ASSESSMENT'); statusMap.put('closed', 'RESOLVED'); statusMap.put('resolved', 'RESOLVED'); statusMap.put('false-positive', 'FALSE_POSITIVE'); statusMap.put('duplicate', 'DUPLICATE'); statusMap.put('processed_internally', 'PROCESSED_INTERNALLY'); statusMap.put('mitigated', 'MITIGATED'); statusMap.put('not_applicable', 'NOT_APPLICABLE'); def hits = ctx.payload.hits.hits; def newest = hits[0]._source; def targetElastic = newest.get('kibana.alert.workflow_status'); def targetStatus = statusMap.containsKey(targetElastic) ? statusMap.get(targetElastic) : 'OPEN'; def companyId = newest.get('alarm').get('company_id').toString(); def ids = new ArrayList(); for (def h : hits) { def src = h._source; def es = src.get('kibana.alert.workflow_status'); def mapped = statusMap.containsKey(es) ? statusMap.get(es) : 'OPEN'; if (mapped == targetStatus) { ids.add(src.get('alarm').get('alarm_id').toString()); } } def sb = new StringBuilder(); sb.append('{\"alarm_ids\":['); for (int i = 0; i < ids.size(); i++) { if (i > 0) { sb.append(','); } sb.append('\"').append(ids.get(i)).append('\"'); } sb.append('],\"company_id\":').append(companyId).append(',\"status\":\"').append(targetStatus).append('\"}'); return ['body': sb.toString()];"
     }
   },
   "actions": {
@@ -137,7 +137,7 @@ PUT _watcher/watch/socradar_alarm_status_sync
           "Content-Type": "application/json",
           "Api-Key": "<your-api-key>"
         },
-        "body": "{\"alarm_ids\": [\"{{ctx.payload.alarm_id}}\"], \"company_id\": {{ctx.payload.company_id}}, \"status\": \"{{ctx.payload.status}}\"}"
+        "body": "{{{ctx.payload.body}}}"
       }
     }
   }
@@ -165,6 +165,8 @@ POST _watcher/watch/socradar_alarm_status_sync/_execute
 2. Select one or more alerts using the checkbox on the left.
 3. Click **Change status** in the toolbar and select the new status.
 4. SOCRadar will be notified within 1 minute.
+
+> **Note:** Each Watcher run batches every alert that shares the most recent status change, so selecting several alerts and changing them to the same status syncs them to SOCRadar in a single request.
 
 ### Supported status mappings
 
