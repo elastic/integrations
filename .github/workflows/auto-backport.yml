@@ -1,0 +1,177 @@
+---
+name: Backport — auto create PRs
+
+on:
+  push:
+    branches:
+      - main
+  issue_comment:
+    types: [edited]
+
+permissions:
+  contents: read
+
+jobs:
+  auto-backport:
+    runs-on: ubuntu-latest
+    # Skip bot-authored edits to break the infinite self-trigger loop:
+    # patching the checklist comment (✅ / ⚠️ suffix) fires another
+    # issue_comment edited event — filtering on actor stops it here.
+    # For issue_comment events also require:
+    #   - the event is on a pull request (not a plain issue)
+    #   - the edited comment contains the checklist marker (zero-cost body check,
+    #     no API call needed — the full comment body is in the event payload)
+    if: >-
+      ${{
+        github.actor != 'github-actions[bot]' &&
+        (
+          github.event_name == 'push' ||
+          (
+            github.event.issue.pull_request != null &&
+            contains(github.event.comment.body, '<!-- backport-checklist -->')
+          )
+        )
+      }}
+    concurrency:
+      # Serialise runs per PR:
+      # - push to main:          keyed on merge SHA (one run per merge)
+      # - issue_comment edited:  keyed on PR number (serialises re-checklist runs)
+      group: auto-backport-${{ github.event_name == 'push' && github.sha || github.event.issue.number }}
+      cancel-in-progress: true
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Check PR is merged
+        id: pr-check
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          STATE=$(gh pr view "$ISSUE_NUMBER" --repo "$REPOSITORY" --json state --jq '.state')
+          if [[ "$STATE" == "MERGED" ]]; then
+            echo "merged=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "PR #$ISSUE_NUMBER is not merged (state: $STATE) — skipping"
+          fi
+
+      - name: Check actor permission
+        id: actor-check
+        if: github.event_name == 'issue_comment' && steps.pr-check.outputs.merged == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          PERMISSION=$(gh api "repos/$REPOSITORY/collaborators/$ACTOR/permission" \
+            --jq '.permission' 2>/dev/null || echo "none")
+          if [[ "$PERMISSION" == "write" || "$PERMISSION" == "admin" ]]; then
+            echo "permitted=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Actor $ACTOR lacks write/admin permission ($PERMISSION) — skipping"
+          fi
+
+      - name: Resolve merge SHA and PR metadata
+        id: resolve
+        if: >-
+          ${{
+            github.event_name == 'push' ||
+            steps.actor-check.outputs.permitted == 'true'
+          }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_SHA: ${{ github.sha }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          if [[ "$EVENT_NAME" == "push" ]]; then
+            MERGE_SHA="$PUSH_SHA"
+            PR_DATA=$(gh api "repos/$REPOSITORY/commits/$MERGE_SHA/pulls" \
+              --jq 'map(select(.base.ref == "main")) | first // empty')
+            if [[ -z "$PR_DATA" ]]; then
+              echo "No PR found for commit $MERGE_SHA — skipping"
+              exit 0
+            fi
+            PR_NUMBER=$(jq -r '.number'          <<< "$PR_DATA")
+            LABELS=$(jq -r  '[.labels[].name] | join(",")' <<< "$PR_DATA")
+            PR_AUTHOR=$(jq -r '.user.login'      <<< "$PR_DATA")
+          else
+            PR_NUMBER="$ISSUE_NUMBER"
+            PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$REPOSITORY" \
+              --json mergeCommit,labels,author)
+            MERGE_SHA=$(jq -r '.mergeCommit.oid'            <<< "$PR_DATA")
+            LABELS=$(jq -r   '[.labels[].name] | join(",")' <<< "$PR_DATA")
+            PR_AUTHOR=$(jq -r '.author.login'               <<< "$PR_DATA")
+          fi
+
+          if [[ "$LABELS" == *"backport:sync-changelog"* ]]; then
+            echo "PR carries backport:sync-changelog label — skipping"
+            exit 0
+          fi
+
+          echo "merge_sha=$MERGE_SHA" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "pr_author=$PR_AUTHOR" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v7
+        if: steps.resolve.outputs.pr_number != ''
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        if: steps.resolve.outputs.pr_number != ''
+        uses: actions/setup-go@v7
+        with:
+          # Use the backport tool's own Go version (pinned to main's version).
+          go-version-file: cmd/backport/.go-version
+
+      - name: Build backport tool
+        if: steps.resolve.outputs.pr_number != ''
+        run: mkdir -p "$GITHUB_WORKSPACE/build" && go build -C cmd/backport -o "$GITHUB_WORKSPACE/build/backport" .
+
+      - name: Find checklist comment
+        id: find-comment
+        if: steps.resolve.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+        run: |
+          MATCHING=$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
+            --paginate \
+            --jq '.[] | select(.body | contains("<!-- backport-checklist -->"))' \
+            | jq -s '.')
+
+          COUNT=$(jq 'length' <<< "$MATCHING")
+          if [[ "$COUNT" -eq 0 ]]; then
+            echo "No checklist comment found on PR #$PR_NUMBER — skipping"
+            exit 0
+          fi
+
+          BODY_FILE="$RUNNER_TEMP/checklist-body.txt"
+          jq -r '.[0].body' <<< "$MATCHING" > "$BODY_FILE"
+
+          echo "comment_id=$(jq -r '.[0].id' <<< "$MATCHING")" >> "$GITHUB_OUTPUT"
+          echo "body_file=$BODY_FILE"                          >> "$GITHUB_OUTPUT"
+
+      - name: Configure git
+        if: steps.find-comment.outputs.comment_id != ''
+        uses: elastic/oblt-actions/git/setup@v1
+        with:
+          username: 'github-actions[bot]'
+          email: '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Process checked branches
+        if: steps.find-comment.outputs.comment_id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          MERGE_SHA: ${{ steps.resolve.outputs.merge_sha }}
+          PR_AUTHOR: ${{ steps.resolve.outputs.pr_author }}
+          COMMENT_ID: ${{ steps.find-comment.outputs.comment_id }}
+          BODY_FILE: ${{ steps.find-comment.outputs.body_file }}
+        run: .github/scripts/backport/process-checked-branches.sh
