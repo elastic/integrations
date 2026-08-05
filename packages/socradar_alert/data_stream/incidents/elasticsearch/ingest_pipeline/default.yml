@@ -5,21 +5,24 @@ processors:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: Skip pipeline processing for CEL input collection errors.
-  - set:
-      field: event.original
-      copy_from: message
-      tag: set_event_original
-      ignore_empty_value: true
-      if: ctx.event?.original == null
-  - json:
+  - rename:
       field: message
-      target_field: alarm
-      tag: json_decode_message
-      ignore_failure: true
+      target_field: event.original
+      tag: rename_message_to_event_original
+      ignore_missing: true
+      if: ctx.event?.original == null
+      description: Renames the original message to event.original to store a copy of the raw event.
   - remove:
       field: message
       tag: remove_message
       ignore_missing: true
+      if: ctx.event?.original != null
+      description: The message field is no longer required once event.original is set.
+  - json:
+      field: event.original
+      target_field: alarm
+      tag: json_decode_event_original
+      ignore_failure: true
   - set:
       field: ecs.version
       tag: set_ecs_version
