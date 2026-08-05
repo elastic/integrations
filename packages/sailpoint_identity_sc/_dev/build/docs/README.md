@@ -22,7 +22,7 @@ This integration uses OAuth2 `client_credentials` to authenticate against the Sa
 1. Log in to the SailPoint ISC admin console.
 2. Navigate to **Admin → Security Settings → API Management**.
 3. Click **Create API Client**, select **Client Credentials** as grant type, and grant the following scopes:
-   - `sp:search:read` — required for the `events` and `identities` data streams
+   - `sp:search:read` — required for the `events` data stream
    - `idn:mis-identity:read` and `idn:mis-identity:manage` — required for the `machine_identities` data stream (experimental API)
 4. Note the generated **Client ID** and **Client Secret** for use in the integration configuration.
 
@@ -39,7 +39,7 @@ Event documents can be found by setting the following filter:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in events documents:
 
@@ -56,7 +56,7 @@ Machine identity documents carry ECS entity fields (`service.entity.*`) that ena
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in machine_identities documents:
 
