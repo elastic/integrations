@@ -1,0 +1,54 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            agentVersion: ^9.4.0
+            name: aws
+      name: test-s3-aws
+      streams:
+        - access_key_id: ${SECRET_0}
+          content_type: application/json
+          data_stream:
+            dataset: aws.cloudtrail
+          default_region: us-east-1
+          expand_event_list_from_field: Records
+          fields:
+            _conf:
+                retain: all
+          fields_under_root: true
+          file_selectors:
+            - expand_event_list_from_field: Records
+              regex: /CloudTrail/
+            - regex: /CloudTrail-Digest/
+            - expand_event_list_from_field: Records
+              regex: /CloudTrail-Insight/
+          max_number_of_messages: 5
+          number_of_workers: 5
+          publisher_pipeline.disable_host: true
+          queue_url: https://sqs.us-east-1.amazonaws.com/123456789012/cloudtrail-queue
+          secret_access_key: ${SECRET_1}
+          tags:
+            - preserve_original_event
+            - actor_target_mapping
+            - forwarded
+            - aws-cloudtrail
+      type: aws-s3
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-aws.cloudtrail-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
+    - {}
