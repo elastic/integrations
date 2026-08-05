@@ -91,18 +91,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: >
-        Calculate event.duration from start_time and end_time in milliseconds.
+        Calculate event.duration from start_time and end_time in nanoseconds.
       tag: calculate_event_duration
       lang: painless
       source: |
         def startTime = ctx.lite_llm?.spend_tracking?.start_time;
         def endTime = ctx.lite_llm?.spend_tracking?.end_time;
-
         if (startTime != null && endTime != null) {
           try {
             def startMs = ZonedDateTime.parse(startTime).toInstant().toEpochMilli();
             def endMs = ZonedDateTime.parse(endTime).toInstant().toEpochMilli();
-            ctx.event.duration = endMs - startMs;
+            ctx.event.duration = (endMs - startMs) * 1000000L;
           } catch(Exception e) {
             ctx.event.duration = 0;
           }
@@ -170,6 +169,11 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      field: gen_ai.usage.output_tokens
+      tag: set_gen_ai_usage_output_tokens_from_spend_tracking_completion_tokens
+      copy_from: lite_llm.spend_tracking.completion_tokens
+      ignore_empty_value: true
+  - set:
       field: gen_ai.system
       tag: set_gen_ai_system_from_spend_tracking_custom_llm_provider
       copy_from: lite_llm.spend_tracking.custom_llm_provider
@@ -230,6 +234,1742 @@ processors:
             tag: append_convert_metadata_attempted_retries_error
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.cost_breakdown.input_cost
+      tag: convert_metadata_cost_breakdown_input_cost_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_cost_breakdown_input_cost_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.cost_breakdown.input_cost
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_cost_breakdown_input_cost_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.cost_breakdown.output_cost
+      tag: convert_metadata_cost_breakdown_output_cost_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_cost_breakdown_output_cost_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.cost_breakdown.output_cost
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_cost_breakdown_output_cost_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.cost_breakdown.total_cost
+      tag: convert_metadata_cost_breakdown_total_cost_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_cost_breakdown_total_cost_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.cost_breakdown.total_cost
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_cost_breakdown_total_cost_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.cost_breakdown.tool_usage_cost
+      tag: convert_metadata_cost_breakdown_tool_usage_cost_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_cost_breakdown_tool_usage_cost_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.cost_breakdown.tool_usage_cost
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_cost_breakdown_tool_usage_cost_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.cost_breakdown.original_cost
+      tag: convert_metadata_cost_breakdown_original_cost_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_cost_breakdown_original_cost_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.cost_breakdown.original_cost
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_cost_breakdown_original_cost_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.cost_breakdown.discount_percent
+      tag: convert_metadata_cost_breakdown_discount_percent_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_cost_breakdown_discount_percent_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.cost_breakdown.discount_percent
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_cost_breakdown_discount_percent_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.cost_breakdown.discount_amount
+      tag: convert_metadata_cost_breakdown_discount_amount_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_cost_breakdown_discount_amount_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.cost_breakdown.discount_amount
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_cost_breakdown_discount_amount_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.cost_breakdown.margin_percent
+      tag: convert_metadata_cost_breakdown_margin_percent_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_cost_breakdown_margin_percent_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.cost_breakdown.margin_percent
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_cost_breakdown_margin_percent_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.cost_breakdown.margin_fixed_amount
+      tag: convert_metadata_cost_breakdown_margin_fixed_amount_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_cost_breakdown_margin_fixed_amount_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.cost_breakdown.margin_fixed_amount
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_cost_breakdown_margin_fixed_amount_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.cost_breakdown.margin_total_amount
+      tag: convert_metadata_cost_breakdown_margin_total_amount_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_cost_breakdown_margin_total_amount_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.cost_breakdown.margin_total_amount
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_cost_breakdown_margin_total_amount_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.rpm
+      tag: convert_metadata_model_map_value_rpm_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_rpm_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.rpm
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_rpm_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.tpm
+      tag: convert_metadata_model_map_value_tpm_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_tpm_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.tpm
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_tpm_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.max_tokens
+      tag: convert_metadata_model_map_value_max_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_max_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.max_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_max_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_vision
+      tag: convert_metadata_model_map_value_supports_vision_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_vision_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_vision
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_vision_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.max_input_tokens
+      tag: convert_metadata_model_map_value_max_input_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_max_input_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.max_input_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_max_input_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.max_output_tokens
+      tag: convert_metadata_model_map_value_max_output_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_max_output_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.max_output_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_max_output_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.ocr_cost_per_page
+      tag: convert_metadata_model_map_value_ocr_cost_per_page_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_ocr_cost_per_page_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.ocr_cost_per_page
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_ocr_cost_per_page_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_vector_size
+      tag: convert_metadata_model_map_value_output_vector_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_vector_size_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_vector_size
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_vector_size_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_pdf_input
+      tag: convert_metadata_model_map_value_supports_pdf_input_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_pdf_input_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_pdf_input
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_pdf_input_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_reasoning
+      tag: convert_metadata_model_map_value_supports_reasoning_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_reasoning_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_reasoning
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_reasoning_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.uses_embed_content
+      tag: convert_metadata_model_map_value_uses_embed_content_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_uses_embed_content_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.uses_embed_content
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_uses_embed_content_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.ocr_cost_per_credit
+      tag: convert_metadata_model_map_value_ocr_cost_per_credit_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_ocr_cost_per_credit_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.ocr_cost_per_credit
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_ocr_cost_per_credit_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_image_size
+      tag: convert_metadata_model_map_value_supports_image_size_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_image_size_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_image_size
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_image_size_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_web_search
+      tag: convert_metadata_model_map_value_supports_web_search_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_web_search_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_web_search
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_web_search_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_image
+      tag: convert_metadata_model_map_value_input_cost_per_image_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_image_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_image
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_image_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_query
+      tag: convert_metadata_model_map_value_input_cost_per_query_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_query_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_query
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_query_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token
+      tag: convert_metadata_model_map_value_input_cost_per_token_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_token_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_token_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_audio_input
+      tag: convert_metadata_model_map_value_supports_audio_input_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_audio_input_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_audio_input
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_audio_input_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_tool_choice
+      tag: convert_metadata_model_map_value_supports_tool_choice_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_tool_choice_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_tool_choice
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_tool_choice_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_url_context
+      tag: convert_metadata_model_map_value_supports_url_context_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_url_context_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_url_context
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_url_context_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_second
+      tag: convert_metadata_model_map_value_input_cost_per_second_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_second_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_second
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_second_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_image
+      tag: convert_metadata_model_map_value_output_cost_per_image_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_image_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_image
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_image_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token
+      tag: convert_metadata_model_map_value_output_cost_per_token_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_token_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_token_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_audio_output
+      tag: convert_metadata_model_map_value_supports_audio_output_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_audio_output_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_audio_output
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_audio_output_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_computer_use
+      tag: convert_metadata_model_map_value_supports_computer_use_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_computer_use_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_computer_use
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_computer_use_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_second
+      tag: convert_metadata_model_map_value_output_cost_per_second_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_second_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_second
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_second_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.citation_cost_per_token
+      tag: convert_metadata_model_map_value_citation_cost_per_token_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_citation_cost_per_token_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.citation_cost_per_token
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_citation_cost_per_token_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_prompt_caching
+      tag: convert_metadata_model_map_value_supports_prompt_caching_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_prompt_caching_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_prompt_caching
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_prompt_caching_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.annotation_cost_per_page
+      tag: convert_metadata_model_map_value_annotation_cost_per_page_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_annotation_cost_per_page_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.annotation_cost_per_page
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_annotation_cost_per_page_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_character
+      tag: convert_metadata_model_map_value_input_cost_per_character_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_character_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_character
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_character_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_response_schema
+      tag: convert_metadata_model_map_value_supports_response_schema_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_response_schema_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_response_schema
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_response_schema_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_system_messages
+      tag: convert_metadata_model_map_value_supports_system_messages_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_system_messages_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_system_messages
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_system_messages_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_flex
+      tag: convert_metadata_model_map_value_input_cost_per_token_flex_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_token_flex_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_flex
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_token_flex_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_character
+      tag: convert_metadata_model_map_value_output_cost_per_character_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_character_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_character
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_character_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_function_calling
+      tag: convert_metadata_model_map_value_supports_function_calling_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_function_calling_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_function_calling
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_function_calling_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_native_streaming
+      tag: convert_metadata_model_map_value_supports_native_streaming_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_native_streaming_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_native_streaming
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_native_streaming_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_audio_token
+      tag: convert_metadata_model_map_value_input_cost_per_audio_token_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_audio_token_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_audio_token
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_audio_token_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_image_token
+      tag: convert_metadata_model_map_value_input_cost_per_image_token_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_image_token_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_image_token
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_image_token_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_flex
+      tag: convert_metadata_model_map_value_output_cost_per_token_flex_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_token_flex_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_flex
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_token_flex_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_assistant_prefill
+      tag: convert_metadata_model_map_value_supports_assistant_prefill_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_assistant_prefill_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_assistant_prefill
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_assistant_prefill_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost
+      tag: convert_metadata_model_map_value_cache_read_input_token_cost_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_cache_read_input_token_cost_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_cache_read_input_token_cost_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_audio_token
+      tag: convert_metadata_model_map_value_output_cost_per_audio_token_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_audio_token_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_audio_token
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_audio_token_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_image_token
+      tag: convert_metadata_model_map_value_output_cost_per_image_token_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_image_token_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_image_token
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_image_token_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_batches
+      tag: convert_metadata_model_map_value_input_cost_per_token_batches_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_token_batches_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_batches
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_token_batches_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_second_1080p
+      tag: convert_metadata_model_map_value_output_cost_per_second_1080p_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_second_1080p_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_second_1080p
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_second_1080p_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_priority
+      tag: convert_metadata_model_map_value_input_cost_per_token_priority_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_token_priority_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_priority
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_token_priority_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_batches
+      tag: convert_metadata_model_map_value_output_cost_per_token_batches_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_token_batches_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_batches
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_token_batches_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.search_context_cost_per_query.search_context_size_low
+      tag: convert_metadata_model_map_value_search_context_cost_per_query_search_context_size_low_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_search_context_cost_per_query_search_context_size_low_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.search_context_cost_per_query.search_context_size_low
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_search_context_cost_per_query_search_context_size_low_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.search_context_cost_per_query.search_context_size_medium
+      tag: convert_metadata_model_map_value_search_context_cost_per_query_search_context_size_medium_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_search_context_cost_per_query_search_context_size_medium_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.search_context_cost_per_query.search_context_size_medium
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_search_context_cost_per_query_search_context_size_medium_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.search_context_cost_per_query.search_context_size_high
+      tag: convert_metadata_model_map_value_search_context_cost_per_query_search_context_size_high_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_search_context_cost_per_query_search_context_size_high_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.search_context_cost_per_query.search_context_size_high
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_search_context_cost_per_query_search_context_size_high_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_low_reasoning_effort
+      tag: convert_metadata_model_map_value_supports_low_reasoning_effort_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_low_reasoning_effort_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_low_reasoning_effort
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_low_reasoning_effort_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_max_reasoning_effort
+      tag: convert_metadata_model_map_value_supports_max_reasoning_effort_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_max_reasoning_effort_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_max_reasoning_effort
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_max_reasoning_effort_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_priority
+      tag: convert_metadata_model_map_value_output_cost_per_token_priority_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_token_priority_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_priority
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_token_priority_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_embedding_image_input
+      tag: convert_metadata_model_map_value_supports_embedding_image_input_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_embedding_image_input_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_embedding_image_input
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_embedding_image_input_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_none_reasoning_effort
+      tag: convert_metadata_model_map_value_supports_none_reasoning_effort_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_none_reasoning_effort_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_none_reasoning_effort
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_none_reasoning_effort_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_creation_input_token_cost
+      tag: convert_metadata_model_map_value_cache_creation_input_token_cost_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_cache_creation_input_token_cost_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_creation_input_token_cost
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_cache_creation_input_token_cost_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_audio_per_second
+      tag: convert_metadata_model_map_value_input_cost_per_audio_per_second_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_audio_per_second_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_audio_per_second
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_audio_per_second_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_video_per_second
+      tag: convert_metadata_model_map_value_input_cost_per_video_per_second_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_video_per_second_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_video_per_second
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_video_per_second_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_reasoning_token
+      tag: convert_metadata_model_map_value_output_cost_per_reasoning_token_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_reasoning_token_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_reasoning_token
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_reasoning_token_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_xhigh_reasoning_effort
+      tag: convert_metadata_model_map_value_supports_xhigh_reasoning_effort_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_xhigh_reasoning_effort_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_xhigh_reasoning_effort
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_xhigh_reasoning_effort_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_flex
+      tag: convert_metadata_model_map_value_cache_read_input_token_cost_flex_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_cache_read_input_token_cost_flex_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_flex
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_cache_read_input_token_cost_flex_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_video_per_second
+      tag: convert_metadata_model_map_value_output_cost_per_video_per_second_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_video_per_second_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_video_per_second
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_video_per_second_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_minimal_reasoning_effort
+      tag: convert_metadata_model_map_value_supports_minimal_reasoning_effort_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_minimal_reasoning_effort_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_minimal_reasoning_effort
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_minimal_reasoning_effort_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_native_structured_output
+      tag: convert_metadata_model_map_value_supports_native_structured_output_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_supports_native_structured_output_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.supports_native_structured_output
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_supports_native_structured_output_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_priority
+      tag: convert_metadata_model_map_value_cache_read_input_token_cost_priority_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_cache_read_input_token_cost_priority_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_priority
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_cache_read_input_token_cost_priority_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_above_128k_tokens
+      tag: convert_metadata_model_map_value_input_cost_per_token_above_128k_tokens_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_token_above_128k_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_above_128k_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_token_above_128k_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_above_200k_tokens
+      tag: convert_metadata_model_map_value_input_cost_per_token_above_200k_tokens_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_token_above_200k_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_above_200k_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_token_above_200k_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_above_272k_tokens
+      tag: convert_metadata_model_map_value_input_cost_per_token_above_272k_tokens_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_token_above_272k_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_above_272k_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_token_above_272k_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_above_512k_tokens
+      tag: convert_metadata_model_map_value_input_cost_per_token_above_512k_tokens_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_token_above_512k_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_above_512k_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_token_above_512k_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_above_128k_tokens
+      tag: convert_metadata_model_map_value_output_cost_per_token_above_128k_tokens_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_token_above_128k_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_above_128k_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_token_above_128k_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_above_200k_tokens
+      tag: convert_metadata_model_map_value_output_cost_per_token_above_200k_tokens_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_token_above_200k_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_above_200k_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_token_above_200k_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_above_272k_tokens
+      tag: convert_metadata_model_map_value_output_cost_per_token_above_272k_tokens_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_token_above_272k_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_above_272k_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_token_above_272k_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_above_512k_tokens
+      tag: convert_metadata_model_map_value_output_cost_per_token_above_512k_tokens_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_token_above_512k_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_above_512k_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_token_above_512k_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.regional_processing_uplift_multiplier_eu
+      tag: convert_metadata_model_map_value_regional_processing_uplift_multiplier_eu_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_regional_processing_uplift_multiplier_eu_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.regional_processing_uplift_multiplier_eu
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_regional_processing_uplift_multiplier_eu_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.regional_processing_uplift_multiplier_us
+      tag: convert_metadata_model_map_value_regional_processing_uplift_multiplier_us_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_regional_processing_uplift_multiplier_us_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.regional_processing_uplift_multiplier_us
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_regional_processing_uplift_multiplier_us_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_creation_input_token_cost_above_1hr
+      tag: convert_metadata_model_map_value_cache_creation_input_token_cost_above_1hr_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_cache_creation_input_token_cost_above_1hr_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_creation_input_token_cost_above_1hr
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_cache_creation_input_token_cost_above_1hr_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_character_above_128k_tokens
+      tag: convert_metadata_model_map_value_output_cost_per_character_above_128k_tokens_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_character_above_128k_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_character_above_128k_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_character_above_128k_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_above_200k_tokens
+      tag: convert_metadata_model_map_value_cache_read_input_token_cost_above_200k_tokens_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_cache_read_input_token_cost_above_200k_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_above_200k_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_cache_read_input_token_cost_above_200k_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_above_272k_tokens
+      tag: convert_metadata_model_map_value_cache_read_input_token_cost_above_272k_tokens_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_cache_read_input_token_cost_above_272k_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_above_272k_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_cache_read_input_token_cost_above_272k_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_above_512k_tokens
+      tag: convert_metadata_model_map_value_cache_read_input_token_cost_above_512k_tokens_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_cache_read_input_token_cost_above_512k_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_above_512k_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_cache_read_input_token_cost_above_512k_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_above_200k_tokens_priority
+      tag: convert_metadata_model_map_value_input_cost_per_token_above_200k_tokens_priority_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_token_above_200k_tokens_priority_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_above_200k_tokens_priority
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_token_above_200k_tokens_priority_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_above_272k_tokens_priority
+      tag: convert_metadata_model_map_value_input_cost_per_token_above_272k_tokens_priority_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_input_cost_per_token_above_272k_tokens_priority_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.input_cost_per_token_above_272k_tokens_priority
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_input_cost_per_token_above_272k_tokens_priority_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_above_200k_tokens_priority
+      tag: convert_metadata_model_map_value_output_cost_per_token_above_200k_tokens_priority_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_token_above_200k_tokens_priority_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_above_200k_tokens_priority
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_token_above_200k_tokens_priority_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_above_272k_tokens_priority
+      tag: convert_metadata_model_map_value_output_cost_per_token_above_272k_tokens_priority_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_output_cost_per_token_above_272k_tokens_priority_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.output_cost_per_token_above_272k_tokens_priority
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_output_cost_per_token_above_272k_tokens_priority_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_creation_input_token_cost_above_200k_tokens
+      tag: convert_metadata_model_map_value_cache_creation_input_token_cost_above_200k_tokens_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_cache_creation_input_token_cost_above_200k_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_creation_input_token_cost_above_200k_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_cache_creation_input_token_cost_above_200k_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_above_200k_tokens_priority
+      tag: convert_metadata_model_map_value_cache_read_input_token_cost_above_200k_tokens_priority_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_cache_read_input_token_cost_above_200k_tokens_priority_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_above_200k_tokens_priority
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_cache_read_input_token_cost_above_200k_tokens_priority_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_above_272k_tokens_priority
+      tag: convert_metadata_model_map_value_cache_read_input_token_cost_above_272k_tokens_priority_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_model_map_value_cache_read_input_token_cost_above_272k_tokens_priority_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.model_map_information.model_map_value.cache_read_input_token_cost_above_272k_tokens_priority
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_model_map_value_cache_read_input_token_cost_above_272k_tokens_priority_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.total_tokens
+      tag: convert_metadata_usage_object_total_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_total_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.total_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_total_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.prompt_tokens
+      tag: convert_metadata_usage_object_prompt_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_prompt_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.prompt_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_prompt_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens
+      tag: convert_metadata_usage_object_completion_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_completion_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_completion_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.prompt_tokens_details.text_tokens
+      tag: convert_metadata_usage_object_prompt_tokens_details_text_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_prompt_tokens_details_text_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.prompt_tokens_details.text_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_prompt_tokens_details_text_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.prompt_tokens_details.audio_tokens
+      tag: convert_metadata_usage_object_prompt_tokens_details_audio_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_prompt_tokens_details_audio_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.prompt_tokens_details.audio_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_prompt_tokens_details_audio_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.prompt_tokens_details.image_tokens
+      tag: convert_metadata_usage_object_prompt_tokens_details_image_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_prompt_tokens_details_image_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.prompt_tokens_details.image_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_prompt_tokens_details_image_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.prompt_tokens_details.video_tokens
+      tag: convert_metadata_usage_object_prompt_tokens_details_video_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_prompt_tokens_details_video_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.prompt_tokens_details.video_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_prompt_tokens_details_video_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.prompt_tokens_details.cached_tokens
+      tag: convert_metadata_usage_object_prompt_tokens_details_cached_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_prompt_tokens_details_cached_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.prompt_tokens_details.cached_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_prompt_tokens_details_cached_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.text_tokens
+      tag: convert_metadata_usage_object_completion_tokens_details_text_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_completion_tokens_details_text_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.text_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_completion_tokens_details_text_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.audio_tokens
+      tag: convert_metadata_usage_object_completion_tokens_details_audio_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_completion_tokens_details_audio_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.audio_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_completion_tokens_details_audio_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.image_tokens
+      tag: convert_metadata_usage_object_completion_tokens_details_image_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_completion_tokens_details_image_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.image_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_completion_tokens_details_image_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.video_tokens
+      tag: convert_metadata_usage_object_completion_tokens_details_video_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_completion_tokens_details_video_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.video_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_completion_tokens_details_video_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.reasoning_tokens
+      tag: convert_metadata_usage_object_completion_tokens_details_reasoning_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_completion_tokens_details_reasoning_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.reasoning_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_completion_tokens_details_reasoning_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.accepted_prediction_tokens
+      tag: convert_metadata_usage_object_completion_tokens_details_accepted_prediction_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_completion_tokens_details_accepted_prediction_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.accepted_prediction_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_completion_tokens_details_accepted_prediction_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.rejected_prediction_tokens
+      tag: convert_metadata_usage_object_completion_tokens_details_rejected_prediction_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_usage_object_completion_tokens_details_rejected_prediction_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.usage_object.completion_tokens_details.rejected_prediction_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_usage_object_completion_tokens_details_rejected_prediction_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.additional_usage_values.prompt_tokens_details.text_tokens
+      tag: convert_metadata_additional_usage_values_prompt_tokens_details_text_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_additional_usage_values_prompt_tokens_details_text_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.additional_usage_values.prompt_tokens_details.text_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_additional_usage_values_prompt_tokens_details_text_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.additional_usage_values.prompt_tokens_details.audio_tokens
+      tag: convert_metadata_additional_usage_values_prompt_tokens_details_audio_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_additional_usage_values_prompt_tokens_details_audio_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.additional_usage_values.prompt_tokens_details.audio_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_additional_usage_values_prompt_tokens_details_audio_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.additional_usage_values.prompt_tokens_details.image_tokens
+      tag: convert_metadata_additional_usage_values_prompt_tokens_details_image_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_additional_usage_values_prompt_tokens_details_image_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.additional_usage_values.prompt_tokens_details.image_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_additional_usage_values_prompt_tokens_details_image_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.additional_usage_values.prompt_tokens_details.video_tokens
+      tag: convert_metadata_additional_usage_values_prompt_tokens_details_video_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_additional_usage_values_prompt_tokens_details_video_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.additional_usage_values.prompt_tokens_details.video_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_additional_usage_values_prompt_tokens_details_video_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.additional_usage_values.prompt_tokens_details.cached_tokens
+      tag: convert_metadata_additional_usage_values_prompt_tokens_details_cached_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_additional_usage_values_prompt_tokens_details_cached_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.additional_usage_values.prompt_tokens_details.cached_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_additional_usage_values_prompt_tokens_details_cached_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.text_tokens
+      tag: convert_metadata_additional_usage_values_completion_tokens_details_text_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_additional_usage_values_completion_tokens_details_text_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.text_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_additional_usage_values_completion_tokens_details_text_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.audio_tokens
+      tag: convert_metadata_additional_usage_values_completion_tokens_details_audio_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_additional_usage_values_completion_tokens_details_audio_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.audio_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_additional_usage_values_completion_tokens_details_audio_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.image_tokens
+      tag: convert_metadata_additional_usage_values_completion_tokens_details_image_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_additional_usage_values_completion_tokens_details_image_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.image_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_additional_usage_values_completion_tokens_details_image_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.video_tokens
+      tag: convert_metadata_additional_usage_values_completion_tokens_details_video_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_additional_usage_values_completion_tokens_details_video_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.video_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_additional_usage_values_completion_tokens_details_video_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.reasoning_tokens
+      tag: convert_metadata_additional_usage_values_completion_tokens_details_reasoning_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_additional_usage_values_completion_tokens_details_reasoning_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.reasoning_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_additional_usage_values_completion_tokens_details_reasoning_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.accepted_prediction_tokens
+      tag: convert_metadata_additional_usage_values_completion_tokens_details_accepted_prediction_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_additional_usage_values_completion_tokens_details_accepted_prediction_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.accepted_prediction_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_additional_usage_values_completion_tokens_details_accepted_prediction_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.rejected_prediction_tokens
+      tag: convert_metadata_additional_usage_values_completion_tokens_details_rejected_prediction_tokens_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_metadata_additional_usage_values_completion_tokens_details_rejected_prediction_tokens_on_convert_failure
+            field: lite_llm.spend_tracking.metadata.additional_usage_values.completion_tokens_details.rejected_prediction_tokens
+            ignore_missing: true
+        - append:
+            tag: append_convert_metadata_additional_usage_values_completion_tokens_details_rejected_prediction_tokens_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: error.type
       tag: set_error_type_from_spend_tracking_metadata_error_information_error_class
@@ -240,6 +1980,17 @@ processors:
       tag: set_error_stack_trace_from_spend_tracking_metadata_error_information_traceback
       copy_from: lite_llm.spend_tracking.metadata.error_information.traceback
       ignore_empty_value: true
+  - set:
+      field: error.code
+      tag: set_error_code_from_spend_tracking_metadata_error_information_error_code
+      copy_from: lite_llm.spend_tracking.metadata.error_information.error_code
+      ignore_empty_value: true
+  - gsub:
+      field: lite_llm.spend_tracking.metadata.error_information.error_message
+      tag: redact_api_keys_from_metadata_error_information_error_message
+      pattern: '(sk-\S{6,}|AKIA[0-9A-Z]{16}\S*|AIza[0-9A-Za-z_-]{20,}|Bearer\s+\S+)'
+      replacement: 'REDACTED'
+      ignore_missing: true
   - foreach:
       field: lite_llm.spend_tracking.metadata.guardrail_information
       tag: foreach_metadata_guardrail_information_guardrail_name
@@ -319,8 +2070,8 @@ processors:
       copy_from: lite_llm.spend_tracking.metadata.user_api_key_team_alias
       ignore_empty_value: true
   - set:
-      field: user.email
-      tag: set_user_email_from_spend_tracking_metadata_user_api_key_user_id
+      field: user.name
+      tag: set_user_name_from_spend_tracking_metadata_user_api_key_user_id
       copy_from: lite_llm.spend_tracking.metadata.user_api_key_user_id
       ignore_empty_value: true
   - append:
@@ -329,12 +2080,6 @@ processors:
       if: ctx.lite_llm?.spend_tracking?.metadata?.user_api_key_user_id != null
       value: '{{{lite_llm.spend_tracking.metadata.user_api_key_user_id}}}'
       allow_duplicates: false
-  - dissect:
-      tag: dissect_extract_domain_from_email
-      description: Extract domain from user email address.
-      field: user.email
-      pattern: '%{}@%{user.domain}'
-      if: ctx.user?.email != null && ctx.user.email.contains('@')
   - set:
       field: gen_ai.request.model
       tag: set_gen_ai_request_model_from_spend_tracking_model
@@ -359,6 +2104,11 @@ processors:
             tag: append_convert_prompt_tokens_error
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: gen_ai.usage.input_tokens
+      tag: set_gen_ai_usage_input_tokens_from_spend_tracking_prompt_tokens
+      copy_from: lite_llm.spend_tracking.prompt_tokens
+      ignore_empty_value: true
   - convert:
       field: lite_llm.spend_tracking.request_duration_ms
       tag: convert_request_duration_ms_to_long
@@ -408,6 +2158,30 @@ processors:
       tag: set_client_ip_from_spend_tracking_requester_ip_address
       copy_from: lite_llm.spend_tracking.requester_ip_address
       ignore_empty_value: true
+  - geoip:
+      field: client.ip
+      tag: geoip_client_ip
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      tag: geoip_client_asn
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      tag: rename_client_asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      tag: rename_client_as_org
+      target_field: client.as.organization.name
+      ignore_missing: true
   - append:
       field: related.ip
       tag: append_spend_tracking_requester_ip_address_into_related_ip
@@ -563,6 +2337,9 @@ processors:
         - lite_llm.spend_tracking.team_id
         - lite_llm.spend_tracking.trace_id
         - lite_llm.spend_tracking.user
+        - lite_llm.spend_tracking.completion_tokens
+        - lite_llm.spend_tracking.prompt_tokens
+        - lite_llm.spend_tracking.metadata.error_information.error_code
       tag: remove_fields_mapped_to_ecs
       ignore_missing: true
   - script:

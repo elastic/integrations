@@ -14,7 +14,7 @@ The LiteLLM integration is compatible with **LiteLLM version 1.91.0 and above**.
 
 This integration supports two collection methods:
 
-- **Direct API polling** via CEL input, which periodically queries the LiteLLM API using API key authentication with cursor-based pagination.
+- **Direct API polling** via the CEL input, which periodically queries the LiteLLM API using API key authentication with cursor-based pagination.
 - **Cloud storage** via AWS S3/SQS, for organizations that export logs from LiteLLM to an AWS S3 bucket.
 
 ## What data does this integration collect?
@@ -173,10 +173,9 @@ These inputs are used in the integration:
 
 ### API usage
 
-This integration uses the following API:
+This integration uses the following APIs:
 
 - `Spend Tracking`: Collects spend tracking records via the **LiteLLM Spend Tracking API** (endpoint: `/spend/logs/v2`) or via **AWS S3/SQS** for organizations that export spend tracking data from LiteLLM to an S3 bucket.
-This integration dataset uses the following API:
 
 - `Audit`: Collects audit logs via the **LiteLLM Audit API** (endpoint: `/audit`) or via **AWS S3/SQS** for organizations that export logs from LiteLLM to an S3 bucket.
 

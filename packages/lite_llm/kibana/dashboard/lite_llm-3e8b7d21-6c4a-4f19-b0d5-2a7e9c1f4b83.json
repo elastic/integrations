@@ -13,6 +13,8 @@
                 "ctrl-call-type": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
                         "fieldName": "gen_ai.operation.name",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
@@ -31,6 +33,8 @@
                 "ctrl-model": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
                         "fieldName": "gen_ai.request.model",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
@@ -49,6 +53,8 @@
                 "ctrl-status": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
                         "fieldName": "event.outcome",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
@@ -110,148 +116,43 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-layer-total-spend",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "8c50abcb-ac58-4c03-8088-2fcbabff2daf",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "layer-total-spend": {
-                                            "columnOrder": [
-                                                "col-total-spend"
-                                            ],
-                                            "columns": {
-                                                "col-total-spend": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Total Spend (USD)",
-                                                    "operationType": "sum",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "lite_llm.spend_tracking.response_cost"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "data_stream.dataset",
-                                        "index": "8c50abcb-ac58-4c03-8088-2fcbabff2daf",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "lite_llm.spend_tracking"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "lite_llm.spend_tracking"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "layer-total-spend",
-                                "layerType": "data",
-                                "metricAccessor": "col-total-spend",
-                                "showBar": false
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
                     "enhancements": {
                         "dynamicActions": {
                             "events": []
                         }
                     },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "data_stream.dataset",
-                                "index": "logs-*",
-                                "key": "data_stream.dataset",
-                                "negate": false,
-                                "params": {
-                                    "query": "lite_llm.spend_tracking"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "data_stream.dataset": "lite_llm.spend_tracking"
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
                                 }
                             }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "#### Overview\n\nThis dashboard provides visibility into LiteLLM spend tracking activity collected from the LiteLLM proxy server. It highlights LiteLLM request trends, spending patterns, and resource utilization across the environment, helping administrators monitor API usage, track costs, and troubleshoot failures.\n\nVisualizations include LiteLLM operations over time, operation type distribution by model and provider, and outcome distribution showing successful versus failed requests. Interactive filters on status and model allow scoping the view to relevant records for focused troubleshooting.\n\nTotal Requests and Spend metrics provide overall API usage and cost overview. Requests by Models breaks down events by model type (Gemini, Claude, GPT-4, etc.). Top Requests by IP Address surfaces the top source IPs generating traffic and their activity volume. Request Volume over Time tracks operation activity per minute, helping identify usage spikes or periods of inactivity. Requests by Status shows the split of successful versus failed operations. Failure Breakdown lists the most common failure reasons with their error class and request count.\n\nToken Usage Analysis provides granular visibility into input tokens, output tokens, and total token consumption per request, enabling cost optimization and performance monitoring across all API calls.\n\n**[Integration Page](/app/integrations/detail/lite_llm/overview)**\n",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
                 },
                 "gridData": {
-                    "h": 9,
-                    "i": "panel-total-spend",
-                    "w": 6,
-                    "x": 16,
+                    "h": 44,
+                    "i": "lite-llm-spend-overview-md",
+                    "w": 10,
+                    "x": 0,
                     "y": 0
                 },
-                "panelIndex": "panel-total-spend",
-                "title": "",
-                "type": "lens"
+                "panelIndex": "lite-llm-spend-overview-md",
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -389,7 +290,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
                     "h": 9,
@@ -399,7 +301,6 @@
                     "y": 0
                 },
                 "panelIndex": "panel-total-requests",
-                "title": "",
                 "type": "lens"
             },
             {
@@ -408,12 +309,12 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-layer-requests-by-status",
+                                "name": "indexpattern-datasource-layer-layer-total-spend",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "156b3b4e-d278-48f0-a2bd-0e1c9f6641b4",
+                                "name": "8c50abcb-ac58-4c03-8088-2fcbabff2daf",
                                 "type": "index-pattern"
                             }
                         ],
@@ -422,45 +323,28 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "layer-requests-by-status": {
+                                        "layer-total-spend": {
                                             "columnOrder": [
-                                                "col-status",
-                                                "col-status-count"
+                                                "col-total-spend"
                                             ],
                                             "columns": {
-                                                "col-status": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Status",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "col-status-count",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "event.outcome"
-                                                },
-                                                "col-status-count": {
+                                                "col-total-spend": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
+                                                    "label": "Total Spend (USD)",
+                                                    "operationType": "sum",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "lite_llm.spend_tracking.response_cost"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -484,7 +368,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "156b3b4e-d278-48f0-a2bd-0e1c9f6641b4",
+                                        "index": "8c50abcb-ac58-4c03-8088-2fcbabff2daf",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -505,29 +389,16 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "layerId": "layer-requests-by-status",
-                                        "layerType": "data",
-                                        "legendDisplay": "show",
-                                        "metrics": [
-                                            "col-status-count"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "col-status"
-                                        ],
-                                        "truncateLegend": false
-                                    }
-                                ],
-                                "shape": "pie"
+                                "color": "#6092C0",
+                                "layerId": "layer-total-spend",
+                                "layerType": "data",
+                                "metricAccessor": "col-total-spend",
+                                "showBar": false
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsPie"
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {
                         "dynamicActions": {
@@ -564,17 +435,183 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": ""
                 },
                 "gridData": {
-                    "h": 16,
-                    "i": "panel-requests-by-status",
-                    "w": 18,
-                    "x": 10,
-                    "y": 28
+                    "h": 9,
+                    "i": "panel-total-spend",
+                    "w": 6,
+                    "x": 16,
+                    "y": 0
                 },
-                "panelIndex": "panel-requests-by-status",
-                "title": "Requests by Status",
+                "panelIndex": "panel-total-spend",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-layer-request-volume",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "3b8ecd88-4a9d-489b-afa7-ee9488572ccc",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "layer-request-volume": {
+                                            "columnOrder": [
+                                                "col-rv-time",
+                                                "col-rv-count"
+                                            ],
+                                            "columns": {
+                                                "col-rv-count": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Requests",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "col-rv-time": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "3b8ecd88-4a9d-489b-afa7-ee9488572ccc",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "lite_llm.spend_tracking"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "lite_llm.spend_tracking"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "col-rv-count"
+                                        ],
+                                        "layerId": "layer-request-volume",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "col-rv-time"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "line",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "lite_llm.spend_tracking"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "lite_llm.spend_tracking"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Request Volume over Time"
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "panel-request-volume",
+                    "w": 26,
+                    "x": 22,
+                    "y": 0
+                },
+                "panelIndex": "panel-request-volume",
                 "type": "lens"
             },
             {
@@ -739,7 +776,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Requests by Models"
                 },
                 "gridData": {
                     "h": 19,
@@ -749,173 +787,6 @@
                     "y": 9
                 },
                 "panelIndex": "panel-requests-by-models",
-                "title": "Requests by Models",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-layer-request-volume",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "3b8ecd88-4a9d-489b-afa7-ee9488572ccc",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "layer-request-volume": {
-                                            "columnOrder": [
-                                                "col-rv-time",
-                                                "col-rv-count"
-                                            ],
-                                            "columns": {
-                                                "col-rv-count": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Requests",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "col-rv-time": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "data_stream.dataset",
-                                        "index": "3b8ecd88-4a9d-489b-afa7-ee9488572ccc",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "lite_llm.spend_tracking"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "lite_llm.spend_tracking"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "col-rv-count"
-                                        ],
-                                        "layerId": "layer-request-volume",
-                                        "layerType": "data",
-                                        "seriesType": "line",
-                                        "xAccessor": "col-rv-time"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": false,
-                                    "position": "right",
-                                    "shouldTruncate": false
-                                },
-                                "preferredSeriesType": "line",
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "data_stream.dataset",
-                                "index": "logs-*",
-                                "key": "data_stream.dataset",
-                                "negate": false,
-                                "params": {
-                                    "query": "lite_llm.spend_tracking"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "data_stream.dataset": "lite_llm.spend_tracking"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "panel-request-volume",
-                    "w": 26,
-                    "x": 22,
-                    "y": 0
-                },
-                "panelIndex": "panel-request-volume",
-                "title": "Request Volume over Time",
                 "type": "lens"
             },
             {
@@ -1043,7 +914,7 @@
                                 "layerType": "data"
                             }
                         },
-                        "title": "Requests by IP Address",
+                        "title": "Top Requests by IP Address",
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {
@@ -1081,7 +952,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Top Requests by IP Address"
                 },
                 "gridData": {
                     "h": 19,
@@ -1091,7 +963,181 @@
                     "y": 9
                 },
                 "panelIndex": "50a63c60-d214-4215-b041-a717c3d1c9e6",
-                "title": "Top Requests by IP Address",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-layer-requests-by-status",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "156b3b4e-d278-48f0-a2bd-0e1c9f6641b4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "layer-requests-by-status": {
+                                            "columnOrder": [
+                                                "col-status",
+                                                "col-status-count"
+                                            ],
+                                            "columns": {
+                                                "col-status": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Status",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "col-status-count",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.outcome"
+                                                },
+                                                "col-status-count": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "156b3b4e-d278-48f0-a2bd-0e1c9f6641b4",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "lite_llm.spend_tracking"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "lite_llm.spend_tracking"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "layer-requests-by-status",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "col-status-count"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "col-status"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "data_stream.dataset",
+                                "index": "logs-*",
+                                "key": "data_stream.dataset",
+                                "negate": false,
+                                "params": {
+                                    "query": "lite_llm.spend_tracking"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "data_stream.dataset": "lite_llm.spend_tracking"
+                                }
+                            }
+                        }
+                    ],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Requests by Status"
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "panel-requests-by-status",
+                    "w": 18,
+                    "x": 10,
+                    "y": 28
+                },
+                "panelIndex": "panel-requests-by-status",
                 "type": "lens"
             },
             {
@@ -1209,7 +1255,7 @@
                                 "layerType": "data"
                             }
                         },
-                        "title": "Failure by Error Class",
+                        "title": "Failure Breakdown",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -1248,7 +1294,8 @@
                     },
                     "syncColors": false,
                     "syncCursor": true,
-                    "syncTooltips": false
+                    "syncTooltips": false,
+                    "title": "Failure Breakdown"
                 },
                 "gridData": {
                     "h": 16,
@@ -1258,68 +1305,21 @@
                     "y": 28
                 },
                 "panelIndex": "e2c6b772-0154-41dc-a8ba-782fa12ffb01",
-                "title": "Failure Breakdown",
                 "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "id": "",
-                        "params": {
-                            "fontSize": 12,
-                            "markdown": "#### Overview\n\nThis dashboard provides visibility into LiteLLM spend tracking activity collected from the LiteLLM proxy server. It highlights LiteLLM request trends, spending patterns, and resource utilization across the environment, helping administrators monitor API usage, track costs, and troubleshoot failures.\n\nVisualizations include LiteLLM operations over time, operation type distribution by model and provider, and outcome distribution showing successful versus failed requests. Interactive filters on status and model allow scoping the view to relevant records for focused troubleshooting.\n\nTotal Requests and Spend metrics provide overall API usage and cost overview. Requests by Models breaks down events by model type (Gemini, Claude, GPT-4, etc.). Top Requests by IP Address surfaces the top source IPs generating traffic and their activity volume. Request Volume over Time tracks operation activity per minute, helping identify usage spikes or periods of inactivity. Distribution of Request Types shows the split by model, provider, and call type. Requests by Status shows the split of successful versus failed operations. Failure Breakdown lists the most common failure reasons with their error class and request count.\n\nToken Usage Analysis provides granular visibility into input tokens, output tokens, and total token consumption per request, enabling cost optimization and performance monitoring across all API calls.\n\n**[Integration Page](/app/integrations/detail/lite_llm/overview)**\n",
-                            "openLinksInNewTab": false
-                        },
-                        "title": "",
-                        "type": "markdown",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 44,
-                    "i": "lite-llm-spend-overview-md",
-                    "w": 10,
-                    "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "lite-llm-spend-overview-md",
-                "type": "visualization"
-            },
-            {
-                "embeddableConfig": {
-                    "description": "",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    }
+                    "savedObjectId": "9ccf2a3d-765c-42b2-8b15-06fa3d1b1fd2"
                 },
                 "gridData": {
                     "h": 13,
-                    "i": "d90b5591-68aa-44ac-98a9-61e35944485e",
+                    "i": "5ebff807-1301-47c6-838d-62d9473640a2",
                     "w": 48,
                     "x": 0,
                     "y": 44
                 },
-                "panelIndex": "d90b5591-68aa-44ac-98a9-61e35944485e",
-                "panelRefName": "panel_d90b5591-68aa-44ac-98a9-61e35944485e",
-                "title": "Token Usage Analysis",
+                "panelIndex": "5ebff807-1301-47c6-838d-62d9473640a2",
+                "panelRefName": "panel_5ebff807-1301-47c6-838d-62d9473640a2",
                 "type": "search"
             }
         ],
@@ -1328,27 +1328,12 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-07-19T04:50:12.289Z",
+    "created_at": "2026-07-29T11:30:33.683Z",
     "id": "lite_llm-3e8b7d21-6c4a-4f19-b0d5-2a7e9c1f4b83",
     "references": [
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "lite_llm-28fdb9eb-55ec-46ab-855a-396065bd445b",
-            "name": "d90b5591-68aa-44ac-98a9-61e35944485e:panel_d90b5591-68aa-44ac-98a9-61e35944485e",
-            "type": "search"
-        },
-        {
-            "id": "logs-*",
-            "name": "panel-total-spend:indexpattern-datasource-layer-layer-total-spend",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "panel-total-spend:8c50abcb-ac58-4c03-8088-2fcbabff2daf",
             "type": "index-pattern"
         },
         {
@@ -1363,22 +1348,12 @@
         },
         {
             "id": "logs-*",
-            "name": "panel-requests-by-status:indexpattern-datasource-layer-layer-requests-by-status",
+            "name": "panel-total-spend:indexpattern-datasource-layer-layer-total-spend",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "panel-requests-by-status:156b3b4e-d278-48f0-a2bd-0e1c9f6641b4",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "panel-requests-by-models:indexpattern-datasource-layer-layer-requests-by-models",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "panel-requests-by-models:9d9af1e5-a813-4d55-8da1-6f9d9db91a4a",
+            "name": "panel-total-spend:8c50abcb-ac58-4c03-8088-2fcbabff2daf",
             "type": "index-pattern"
         },
         {
@@ -1393,12 +1368,32 @@
         },
         {
             "id": "logs-*",
+            "name": "panel-requests-by-models:indexpattern-datasource-layer-layer-requests-by-models",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-requests-by-models:9d9af1e5-a813-4d55-8da1-6f9d9db91a4a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "50a63c60-d214-4215-b041-a717c3d1c9e6:indexpattern-datasource-layer-26b068cf-2dfe-4892-8282-0ef177ee5f35",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "50a63c60-d214-4215-b041-a717c3d1c9e6:40da34cb-b567-4e81-88ac-72daae7055b8",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-requests-by-status:indexpattern-datasource-layer-layer-requests-by-status",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "panel-requests-by-status:156b3b4e-d278-48f0-a2bd-0e1c9f6641b4",
             "type": "index-pattern"
         },
         {
@@ -1410,6 +1405,16 @@
             "id": "logs-*",
             "name": "e2c6b772-0154-41dc-a8ba-782fa12ffb01:8d0621ad-d5f6-4d0b-bcaf-404277aaeae1",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5ebff807-1301-47c6-838d-62d9473640a2:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "lite_llm-9ccf2a3d-765c-42b2-8b15-06fa3d1b1fd2",
+            "name": "5ebff807-1301-47c6-838d-62d9473640a2:panel_5ebff807-1301-47c6-838d-62d9473640a2",
+            "type": "search"
         },
         {
             "id": "logs-*",
@@ -1433,5 +1438,5 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0"
+    "typeMigrationVersion": "10.3.0"
 }
