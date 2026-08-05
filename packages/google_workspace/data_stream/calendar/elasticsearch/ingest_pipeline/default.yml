@@ -110,7 +110,7 @@ processors:
         change_calendar_description: configuration
         change_calendar_location: configuration
         change_calendar_timezone: configuration
-        change_calendar_title: configuration	
+        change_calendar_title: configuration
         add_subscription: configuration
         delete_subscription: configuration
         change_appointment_schedule: configuration
@@ -120,20 +120,23 @@ processors:
         delete_event: configuration
         add_event_guest: configuration
         change_event_guest_response_auto: configuration
-        remove_event_guest:	configuration
+        remove_event_guest: configuration
         change_event_guest_response: configuration
         change_event: configuration
         remove_event_from_trash: configuration
         restore_event: configuration
         change_event_start_time: configuration
-        change_event_title:	configuration
+        change_event_title: configuration
         transfer_event_completed: configuration
         transfer_event_requested: configuration
       source: |-
         ctx.event = ctx.event ?: [:];
-        def category = [];
-        category.add(params.get(ctx.google_workspace.calendar.name));
-        ctx.event.category = category;
+        def category = params.get(ctx.google_workspace.calendar.name);
+        if (category == null) {
+          ctx.event.remove('category');
+        } else {
+          ctx.event.category = [category];
+        }
       on_failure:
         - append:
             field: error.message
@@ -151,7 +154,7 @@ processors:
         change_calendar_description: change
         export_calendar: info
         change_calendar_location: change
-        print_preview_calendar:	info
+        print_preview_calendar: info
         change_calendar_timezone: change
         change_calendar_title: change
         notification_triggered: info
@@ -164,29 +167,32 @@ processors:
         delete_event: deletion
         add_event_guest: change
         change_event_guest_response_auto: change
-        remove_event_guest:	change
+        remove_event_guest: change
         change_event_guest_response: change
         change_event: change
         print_preview_event: info
         remove_event_from_trash: change
         restore_event: change
         change_event_start_time: change
-        change_event_title:	change
+        change_event_title: change
         transfer_event_completed: change
         transfer_event_requested: info
         interop_freebusy_lookup_outbound_successful: info
-        interop_freebusy_lookup_inbound_successful:	info
+        interop_freebusy_lookup_inbound_successful: info
         interop_exchange_resource_availability_lookup_successful: info
         interop_exchange_resource_list_lookup_successful: info
         interop_freebusy_lookup_outbound_unsuccessful: info
         interop_freebusy_lookup_inbound_unsuccessful: info
-        interop_exchange_resource_availability_lookup_unsuccessful:	info
-        interop_exchange_resource_list_lookup_unsuccessful:	info
+        interop_exchange_resource_availability_lookup_unsuccessful: info
+        interop_exchange_resource_list_lookup_unsuccessful: info
       source: |-
         ctx.event = ctx.event ?: [:];
-        def type = [];
-        type.add(params.get(ctx.google_workspace.calendar.name));
-        ctx.event.type = type;
+        def type = params.get(ctx.google_workspace.calendar.name);
+        if (type == null) {
+          ctx.event.remove('type');
+        } else {
+          ctx.event.type = [type];
+        }
       on_failure:
         - append:
             field: error.message

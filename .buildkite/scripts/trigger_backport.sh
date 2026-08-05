@@ -36,6 +36,10 @@ main() {
             echo "Not on main branch (branch: ${BUILDKITE_BRANCH}), skipping"
             exit 0
         fi
+        if [[ "${BUILDKITE_PIPELINE_SLUG}" != "integrations-backport-dispatch" ]]; then
+            echo "Backport branch creation can only run from the 'integrations-backport-dispatch' pipeline (got: ${BUILDKITE_PIPELINE_SLUG})"
+            exit 1
+        fi
         dry_run="false"
         label="create"
         diff_from="HEAD^"

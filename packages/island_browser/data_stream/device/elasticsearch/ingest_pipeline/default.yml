@@ -261,28 +261,58 @@ processors:
             tag: rename_internalIpAddress
             target_field: island_browser.device.internal_ip
             ignore_missing: true
-  - dissect:
-      if: ctx.island_browser?.device?.internal_ip != null && ctx.island_browser.device.internal_ip.contains('/')
+  - gsub:
       field: island_browser.device.internal_ip
-      tag: dissect_internalIpAddress
-      pattern: '%{_temp1}/%{island_browser.device.internal_ip_address}'
-      ignore_failure: true
+      target_field: _temp1
+      tag: gsub_strip_internal_ip_adapters
+      pattern: '\s*\|\s*[^/]*'
+      replacement: ''
+      ignore_missing: true
+      description: >-
+        The Island API can return internalIpAddress as a "/"-separated list of
+        "<ip> | <adapter>" pairs (one per NIC). Strip the adapter labels so only
+        the IP addresses remain.
+  - split:
+      field: _temp1
+      target_field: island_browser.device.internal_ip_address
+      tag: split_internal_ip_address
+      separator: '\s*/\s*'
+      ignore_missing: true
+      description: Split the cleaned "/"-separated list into individual IP addresses.
   - convert:
       field: island_browser.device.internal_ip_address
       tag: convert_internal_ip_address_to_ip
       type: ip
       ignore_missing: true
-      if: ctx.island_browser?.device?.internal_ip_address != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_flatten_single_internal_ip
+      description: >-
+        Represent a single internal IP as a scalar rather than a single-element
+        list, so devices with one NIC match the shape used for devices that
+        report a single IP directly.
+      if: ctx.island_browser?.device?.internal_ip_address instanceof List && ctx.island_browser.device.internal_ip_address.size() == 1
+      source: >-
+        ctx.island_browser.device.internal_ip_address = ctx.island_browser.device.internal_ip_address.get(0);
+  - foreach:
+      field: island_browser.device.internal_ip_address
+      tag: foreach_append_internal_ips_to_related_ip
+      if: ctx.island_browser?.device?.internal_ip_address instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       field: related.ip
       tag: append_device_internal_ip_address_into_related_ip
       value: '{{{island_browser.device.internal_ip_address}}}'
       allow_duplicates: false
-      if: ctx.island_browser?.device?.internal_ip_address != null
+      if: ctx.island_browser?.device?.internal_ip_address != null && !(ctx.island_browser.device.internal_ip_address instanceof List)
   - convert:
       field: json.isArchived
       tag: convert_isArchived_to_boolean

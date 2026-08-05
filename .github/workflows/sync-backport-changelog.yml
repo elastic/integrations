@@ -38,13 +38,20 @@ jobs:
 
       - name: Set up Go
         if: steps.guard.outputs.proceed == 'true'
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: .go-version
 
       - name: Install mage
         if: steps.guard.outputs.proceed == 'true'
         run: go install github.com/magefile/mage
+
+      - name: Configure git
+        if: steps.guard.outputs.proceed == 'true'
+        uses: elastic/oblt-actions/git/setup@v1
+        with:
+          username: 'github-actions[bot]'
+          email: '41898282+github-actions[bot]@users.noreply.github.com'
 
       - name: Sync backport changelog
         id: sync
@@ -57,8 +64,6 @@ jobs:
           BACKPORT_BRANCH: ${{ github.ref_name }}
           PACKAGES_DIR: ${{ github.workspace }}/packages
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           mage -d "$GITHUB_WORKSPACE" syncBackportChangelog
 
       - name: Comment on backport PR
