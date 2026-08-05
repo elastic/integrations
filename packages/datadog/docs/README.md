@@ -54,3 +54,9 @@ sibling fields for that reason.
 ## Dashboard
 
 ![Datadog Audit Logs Dashboard](../img/Datadog_dashboard.png)
+
+### Audit
+
+{{event "audit"}}
+
+{{fields "audit"}}

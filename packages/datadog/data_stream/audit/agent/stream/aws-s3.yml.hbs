@@ -26,7 +26,7 @@ max_number_of_messages: {{max_number_of_messages}}
 bucket_arn: {{bucket_arn}}
 {{/if}}
 {{#if interval}}
-interval: {{interval}}
+bucket_list_interval: {{bucket_list_interval}}
 {{/if}}
 {{/contains}}
 {{else}}
@@ -43,7 +43,7 @@ max_number_of_messages: {{max_number_of_messages}}
 {{else}}
 # Polling Configuration (interval mode)
 {{#if interval}}
-interval: {{interval}}
+bucket_list_interval: {{bucket_list_interval}}
 {{/if}}
 {{/if}}
 {{/if}}
@@ -69,9 +69,9 @@ file_selectors:
 {{else}}
 file_selectors:
   - regex: '.*\.json\.gz$'
-{{/if}}
 {{#if max_bytes}}
-max_bytes: {{max_bytes}}
+    max_bytes: {{max_bytes}}
+{{/if}}
 {{/if}}
 
 # Performance & Concurrency
@@ -94,14 +94,8 @@ tags:
 {{/if}}
 
 processors:
-{{#if preserve_original_event}}
-- copy_fields:
-    fields:
-      - from: message
-        to: event.original
 {{#if processors}}
 {{processors}}
-{{/if}}
 {{/if}}
 
 # Disable host enrichment
