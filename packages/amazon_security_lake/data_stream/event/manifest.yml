@@ -69,6 +69,13 @@ streams:
         required: false
         show_user: true
         description: ARN of the AWS S3 Access Point that will be polled for list operation. Mandatory if the "Collect logs via S3 Bucket" switch is on. It is a required parameter for collecting logs via the AWS S3 Bucket unless you set a Bucket ARN.
+      - name: non_aws_bucket_name
+        type: text
+        title: "[S3] Non-AWS Bucket Name"
+        multi: false
+        required: false
+        show_user: false
+        description: Name of the S3-compatible bucket for 3rd-party providers. Required when not using `bucket_arn` or `access_point_arn`.
       - name: bucket_list_prefix
         type: text
         title: "[S3] Bucket Prefix"
@@ -252,6 +259,20 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: endpoint
+        type: text
+        title: Endpoint
+        multi: false
+        required: false
+        show_user: false
+        description: URL of the endpoint for 3rd-party S3-compatible services such as MinIO. Not required when using AWS S3.
+      - name: path_style
+        type: bool
+        title: Path Style
+        multi: false
+        required: false
+        show_user: false
+        description: Sets the bucket name as a path rather than a subdomain. Required for MinIO and similar non-AWS S3 providers.
       - name: ssl
         type: yaml
         title: SSL Configuration
