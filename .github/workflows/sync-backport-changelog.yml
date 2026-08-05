@@ -46,7 +46,7 @@ jobs:
 
       - name: Build backport tool
         if: steps.guard.outputs.proceed == 'true'
-        run: go build -C cmd/backport -o "$GITHUB_WORKSPACE/backport" .
+        run: mkdir -p "$GITHUB_WORKSPACE/build" && go build -C cmd/backport -o "$GITHUB_WORKSPACE/build/backport" .
 
       - name: Configure git
         if: steps.guard.outputs.proceed == 'true'
@@ -66,7 +66,7 @@ jobs:
           BACKPORT_BRANCH: ${{ github.ref_name }}
           PACKAGES_DIR: ${{ github.workspace }}/packages
         run: |
-          "$GITHUB_WORKSPACE/backport" sync-changelog
+          "$GITHUB_WORKSPACE/build/backport" sync-changelog
 
       - name: Comment on backport PR
         if: always() && steps.guard.outputs.proceed == 'true'
@@ -78,4 +78,4 @@ jobs:
           CREATE_OUTCOME: ${{ steps.sync.outputs.create_outcome }}
           RUN_ID: ${{ github.run_id }}
           REPOSITORY: ${{ github.repository }}
-        run: "$GITHUB_WORKSPACE/backport" post-comment
+        run: "$GITHUB_WORKSPACE/build/backport" post-comment

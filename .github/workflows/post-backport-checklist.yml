@@ -34,7 +34,7 @@ jobs:
           go-version-file: cmd/backport/.go-version
 
       - name: Build backport tool
-        run: go build -C cmd/backport -o "$GITHUB_WORKSPACE/backport" .
+        run: mkdir -p "$GITHUB_WORKSPACE/build" && go build -C cmd/backport -o "$GITHUB_WORKSPACE/build/backport" .
 
       - name: Download artifact
         # continue-on-error so a missing artifact (e.g. detect job was skipped due to
@@ -100,7 +100,7 @@ jobs:
           # the backport tool can parse previously-checked branches and preserve
           # their state. Prints nothing when no package has any active branch.
           NEW_BODY=$(printf '%s' "$EXISTING_BODY" | \
-            "$GITHUB_WORKSPACE/backport" render-checklist "$ARTIFACT")
+            "$GITHUB_WORKSPACE/build/backport" render-checklist "$ARTIFACT")
 
           if [[ -z "$NEW_BODY" ]]; then
             echo "No active backport branches — nothing to post"

@@ -34,7 +34,7 @@ jobs:
           go-version-file: cmd/backport/.go-version
 
       - name: Build backport tool
-        run: go build -C cmd/backport -o "$GITHUB_WORKSPACE/backport" .
+        run: mkdir -p "$GITHUB_WORKSPACE/build" && go build -C cmd/backport -o "$GITHUB_WORKSPACE/build/backport" .
 
       - name: Detect packages touched by this PR
         env:
@@ -42,7 +42,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          PACKAGES_JSON=$("$GITHUB_WORKSPACE/backport" detect-packages "$BASE_SHA" "$HEAD_SHA" --json)
+          PACKAGES_JSON=$("$GITHUB_WORKSPACE/build/backport" detect-packages "$BASE_SHA" "$HEAD_SHA" --json)
 
           jq -n \
             --argjson pkgs "$PACKAGES_JSON" \
