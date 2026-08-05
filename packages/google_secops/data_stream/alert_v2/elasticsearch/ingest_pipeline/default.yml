@@ -210,6 +210,72 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
+  # threat.*
+  - foreach:
+      field: google_secops.alert_v2.event.security_result
+      tag: foreach_append_attack_details_tactics_id_into_threat_tactic_id
+      if: ctx.google_secops?.alert_v2?.event?.security_result instanceof List
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.attack_details.tactics
+          tag: foreach_foreach_append_attack_details_tactics_id_into_threat_tactic_id
+          ignore_missing: true
+          processor:
+            append:
+              field: threat.tactic.id
+              tag: append_attack_details_tactics_id_into_threat_tactic_id
+              value: '{{{_ingest._value.id}}}'
+              allow_duplicates: false
+  - foreach:
+      field: google_secops.alert_v2.event.security_result
+      tag: foreach_append_attack_details_tactics_name_into_threat_tactic_name
+      if: ctx.google_secops?.alert_v2?.event?.security_result instanceof List
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.attack_details.tactics
+          tag: foreach_foreach_append_attack_details_tactics_name_into_threat_tactic_name
+          ignore_missing: true
+          processor:
+            append:
+              field: threat.tactic.name
+              tag: append_attack_details_tactics_name_into_threat_tactic_name
+              value: '{{{_ingest._value.name}}}'
+              allow_duplicates: false
+  - foreach:
+      field: google_secops.alert_v2.event.security_result
+      tag: foreach_append_attack_details_techniques_id_into_threat_technique_id
+      if: ctx.google_secops?.alert_v2?.event?.security_result instanceof List
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.attack_details.techniques
+          tag: foreach_foreach_append_attack_details_techniques_id_into_threat_technique_id
+          ignore_missing: true
+          processor:
+            append:
+              field: threat.technique.id
+              tag: append_attack_details_techniques_id_into_threat_technique_id
+              value: '{{{_ingest._value.id}}}'
+              allow_duplicates: false
+  - foreach:
+      field: google_secops.alert_v2.event.security_result
+      tag: foreach_append_attack_details_techniques_name_into_threat_technique_name
+      if: ctx.google_secops?.alert_v2?.event?.security_result instanceof List
+      ignore_missing: true
+      processor:
+        foreach:
+          field: _ingest._value.attack_details.techniques
+          tag: foreach_foreach_append_attack_details_techniques_name_into_threat_technique_name
+          ignore_missing: true
+          processor:
+            append:
+              field: threat.technique.name
+              tag: append_attack_details_techniques_name_into_threat_technique_name
+              value: '{{{_ingest._value.name}}}'
+              allow_duplicates: false
+
   # rule.*
   - foreach:
       field: google_secops.alert_v2.detection
@@ -223,6 +289,23 @@ processors:
       ignore_missing: true
   - foreach:
       field: google_secops.alert_v2.detection
+      tag: foreach_convert_detection_risk_score_to_long
+      processor:
+        convert:
+          field: _ingest._value.risk_score
+          tag: convert_detection_risk_score_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.risk_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+  - foreach:
+      field: google_secops.alert_v2.detection
       tag: foreach_convert_detection_variables_risk_score_int64_val_to_long
       processor:
         convert:
@@ -230,7 +313,6 @@ processors:
           tag: convert_detection_variables_risk_score_int64_val_to_long
           type: long
           ignore_missing: true
-          if: ctx._ingest?._value?.variables?.risk_score?.int64_val != ''
           on_failure:
             - remove:
                 field: _ingest._value.variables.risk_score.int64_val
@@ -248,14 +330,10 @@ processors:
           tag: convert_detection_variables_risk_score_value_to_long
           type: long
           ignore_missing: true
-          if: ctx._ingest?._value?.variables?.risk_score?.value != ''
           on_failure:
             - remove:
                 field: _ingest._value.variables.risk_score.value
                 ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
   - foreach:
       field: google_secops.alert_v2.detection
@@ -1763,19 +1841,6 @@ processors:
           ignore_missing: true
       ignore_missing: true
   - foreach:
-      field: google_secops.alert_v2.event.principal.ip_geo_artifact
-      tag: foreach_remove_ip_geo_artifact
-      if: ctx.google_secops?.alert_v2?.event?.principal?.ip_geo_artifact instanceof List
-      processor:
-        remove:
-          field:
-            - _ingest._value.location.country_or_region
-            - _ingest._value.location.state
-            - _ingest._value.ip
-          tag: remove_custom_duplicate_fields_from_google_secops_alert_event_principal_ip_geo_artifact
-          ignore_missing: true
-      ignore_missing: true
-  - foreach:
       field: google_secops.alert_v2.event.principal.user.attribute.roles
       tag: foreach_remove_user_attribute_roles
       if: ctx.google_secops?.alert_v2?.event?.principal?.user?.attribute?.roles instanceof List
@@ -1792,7 +1857,6 @@ processors:
         remove:
           field:
             - _ingest._value.description
-            - _ingest._value.risk_score
             - _ingest._value.rule_id
             - _ingest._value.rule_name
             - _ingest._value.rule_version

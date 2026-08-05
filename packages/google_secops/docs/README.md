@@ -684,15 +684,15 @@ An example event for `alert_v2` looks as following:
 {
     "@timestamp": "2025-02-01T03:23:28.000Z",
     "agent": {
-        "ephemeral_id": "fd21fb42-c1ea-4a8b-96d3-9ecff6358da8",
-        "id": "873f2fe5-db71-4795-8b1b-9c49a6580398",
-        "name": "elastic-agent-52293",
+        "ephemeral_id": "7f57fb27-f703-4318-bbfc-d361053495e5",
+        "id": "f1516981-56cf-42c7-80f3-d3537a2a810d",
+        "name": "elastic-agent-87206",
         "type": "filebeat",
         "version": "8.18.5"
     },
     "data_stream": {
         "dataset": "google_secops.alert_v2",
-        "namespace": "81153",
+        "namespace": "77854",
         "type": "logs"
     },
     "destination": {
@@ -710,7 +710,7 @@ An example event for `alert_v2` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "873f2fe5-db71-4795-8b1b-9c49a6580398",
+        "id": "f1516981-56cf-42c7-80f3-d3537a2a810d",
         "snapshot": false,
         "version": "8.18.5"
     },
@@ -723,7 +723,7 @@ An example event for `alert_v2` looks as following:
         "dataset": "google_secops.alert_v2",
         "end": "2025-02-03T03:23:28.000Z",
         "id": "de_66bf2e94-f97e-2564-1a75-2fdbf8cb6403",
-        "ingested": "2026-07-29T11:02:30Z",
+        "ingested": "2026-08-04T13:42:51Z",
         "kind": "alert",
         "original": "{\"createdTime\":\"2025-02-01T03:12:54.177084Z\",\"detection\":[{\"alertState\":\"NOT_ALERTING\",\"description\":\"This rule is to generate alerts when the event_type is STATUS_UPDATE\",\"outcomes\":[{\"key\":\"risk_score\",\"value\":\"60\"}],\"riskScore\":60,\"ruleId\":\"ru_123873a9a-170d-1234-a63d-9874f33ee011\",\"ruleLabels\":[{\"key\":\"author\",\"value\":\"John\"},{\"key\":\"description\",\"value\":\"This rule is to generate alerts when the event_type is STATUS_UPDATE\"},{\"key\":\"severity\",\"value\":\"Medium\"}],\"ruleName\":\"rule_to_detect_status_update\",\"ruleType\":\"SINGLE_EVENT\",\"ruleVersion\":\"ru_123873a9a-170d-1234-a63d-9874f33ee011@v_1732873302_954607000\",\"urlBackToProduct\":\"https://example.com\",\"variables\":{\"risk_score\":{\"int64Val\":\"60\",\"type\":\"OUTCOME\",\"value\":\"60\"}}}],\"detectionTime\":\"2025-02-01T03:23:28Z\",\"event\":{\"about\":[{\"labels\":[{\"key\":\"header_time_milliseconds_offset\",\"value\":\"612\"}]}],\"additional\":{\"arguments_fd\":\"8\",\"event_modifier\":\"0\",\"exec_chain_thread_uuid\":\"5AB2623F-F6EF-4A6C-B2E4-CC7E28BEB515\",\"header_time_milliseconds_offset\":\"612\",\"header_version\":\"11\",\"identity_cd_hash\":\"a70ddfe3eb75dd35005a9c863c4174d63148406c\",\"identity_signer_id\":\"com.apple.curl\",\"identity_signer_id_truncated\":\"false\",\"identity_signer_type\":\"1\",\"identity_team_id_truncated\":\"false\",\"key\":\"6CC2ABE4-385C-4444-8BC0-FD5B618BA1C1\",\"subject_audit_id\":\"4294967295\",\"subject_terminal_id_type\":\"4-IPv4\"},\"metadata\":{\"baseLabels\":{\"allowScopedAccess\":true,\"logTypes\":[\"JAMF_TELEMETRY\"]},\"enrichmentLabels\":{\"allowScopedAccess\":true},\"eventTimestamp\":\"2025-02-03T03:23:28Z\",\"eventType\":\"STATUS_UPDATE\",\"id\":\"AAAAAByuGF66kDlZ79NglQZk0cQPPPPPBgSSSSSSSSS=\",\"ingestedTimestamp\":\"2025-02-01T06:00:42.443096Z\",\"logType\":\"JAMF_TELEMETRY\",\"productEventType\":\"AUE_CONNECT-32\",\"productName\":\"JAMF_TELEMETRY\",\"vendorName\":\"JAMF\"},\"network\":{\"sessionId\":\"100001\"},\"principal\":{\"asset\":{\"hardware\":[{\"serialNumber\":\"PPX94A9874\"}],\"hostname\":\"TEST-PPX94A9874\",\"productObjectId\":\"45DE0BEE-8056-5B41-B09A-08E259E49317\",\"software\":[{\"version\":\"Version 15.2 (Build 24C101)\"}]},\"group\":{\"groupDisplayName\":\"wheel\"},\"hostname\":\"TEST-PPX94A9874\",\"ip\":[\"89.160.20.128\"],\"labels\":[{\"key\":\"arguments_fd\",\"value\":\"8\"}],\"process\":{\"file\":{\"fullPath\":\"/bin/bash\",\"md5\":\"b14dba7fe27186f216037a3b60599582\",\"sha1\":\"47bba82e8a43cfa14a1124a477090f9fbd0e026a\",\"sha256\":\"4d8b9a54a2077c1457410843a9842ef29e0f371fb4061097095758012c031809\"},\"pid\":\"47203\"},\"processAncestors\":[{\"file\":{\"fullPath\":\"/usr/bin/curl\"},\"pid\":\"47325\"}],\"user\":{\"groupIdentifiers\":[\"0\"],\"userDisplayName\":\"root\",\"userid\":\"0\"}},\"securityResult\":[{\"description\":\"0-success\",\"detectionFields\":[{\"key\":\"return_value\",\"value\":\"0\"}]}],\"target\":{\"group\":{\"groupDisplayName\":\"wheel\"},\"user\":{\"groupIdentifiers\":[\"0\"],\"userDisplayName\":\"root\",\"userid\":\"0\"}}},\"id\":\"de_66bf2e94-f97e-2564-1a75-2fdbf8cb6403\",\"label\":\"e\",\"timeWindow\":{\"endTime\":\"2025-02-03T03:23:28Z\",\"startTime\":\"2025-02-01T03:23:28Z\"},\"type\":\"RULE_DETECTION\"}",
         "start": "2025-02-01T03:23:28.000Z",
@@ -739,6 +739,7 @@ An example event for `alert_v2` looks as following:
                     "outcomes": {
                         "risk_score": "60"
                     },
+                    "risk_score": 60,
                     "rule_labels": {
                         "author": "John",
                         "description": "This rule is to generate alerts when the event_type is STATUS_UPDATE",
@@ -936,22 +937,16 @@ An example event for `alert_v2` looks as following:
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| google_secops.alert_v2.created_time | Time the detection was created. | date |
 | google_secops.alert_v2.detection.alert_state | Indicates whether the rule generating this detection currently has alerting enabled or disabled. | keyword |
-| google_secops.alert_v2.detection.description | Description of the rule that generated the detection. This description is copied from the rule metadata's `description` key, if it is set. | keyword |
 | google_secops.alert_v2.detection.detection_fields | Fields specified in the rule for "MULTI_EVENT" rules, keyed by field name. | flattened |
 | google_secops.alert_v2.detection.outcomes | Outcome variables from the detection rule, keyed by outcome name. | flattened |
-| google_secops.alert_v2.detection.risk_score |  | long |
-| google_secops.alert_v2.detection.rule_id | Identifier for the rule generating the detection. | keyword |
+| google_secops.alert_v2.detection.risk_score | Risk score from the detection rule. | long |
 | google_secops.alert_v2.detection.rule_labels | Rule metadata labels from the detection, keyed by label name. | flattened |
-| google_secops.alert_v2.detection.rule_name | Name of the rule generating the detection, as parsed from `ruleText`. | keyword |
 | google_secops.alert_v2.detection.rule_type | Whether the rule generating this detection is a single event or multi-event rule ("SINGLE_EVENT" or "MULTI_EVENT"). | keyword |
-| google_secops.alert_v2.detection.rule_version | Identifier for the rule version generating the detection. | keyword |
 | google_secops.alert_v2.detection.url_back_to_product | URL pointing to the Google Security Operations application page for this detection. | keyword |
 | google_secops.alert_v2.detection.variables.risk_score.int64_val |  | long |
 | google_secops.alert_v2.detection.variables.risk_score.type |  | keyword |
 | google_secops.alert_v2.detection.variables.risk_score.value |  | long |
-| google_secops.alert_v2.detection_time | String representing the time period the detection was found in. | date |
 | google_secops.alert_v2.event.about.file.full_path | The full path identifying the location of the file on the system. | keyword |
 | google_secops.alert_v2.event.about.group.group_display_name | Group display name. e.g. "Finance". | keyword |
 | google_secops.alert_v2.event.about.labels.key | The key. | keyword |
@@ -967,7 +962,6 @@ An example event for `alert_v2` looks as following:
 | google_secops.alert_v2.event.metadata.base_labels.ingestion_kv_labels.key |  | keyword |
 | google_secops.alert_v2.event.metadata.base_labels.ingestion_kv_labels.value |  | keyword |
 | google_secops.alert_v2.event.metadata.base_labels.log_types |  | keyword |
-| google_secops.alert_v2.event.metadata.description | A human-readable unparsable description of the event. | keyword |
 | google_secops.alert_v2.event.metadata.enrichment_labels.allow_scoped_access |  | boolean |
 | google_secops.alert_v2.event.metadata.enrichment_labels.ingestion_kv_labels.key |  | keyword |
 | google_secops.alert_v2.event.metadata.enrichment_labels.ingestion_kv_labels.value |  | keyword |
@@ -982,28 +976,12 @@ An example event for `alert_v2` looks as following:
 | google_secops.alert_v2.event.metadata.product_deployment_id | The deployment identifier assigned by the vendor for a product deployment. | keyword |
 | google_secops.alert_v2.event.metadata.product_event_type | A short, descriptive, human-readable, product-specific event name or type (for example: "Scanned X", "User account created", "process_start"). | keyword |
 | google_secops.alert_v2.event.metadata.product_log_id | A vendor-specific event identifier to uniquely identify the event (for example: a GUID). | keyword |
-| google_secops.alert_v2.event.metadata.product_name | The name of the product. | keyword |
 | google_secops.alert_v2.event.metadata.url_back_to_product | A URL that takes the user to the source product console for this event. | keyword |
-| google_secops.alert_v2.event.metadata.vendor_name | The name of the product vendor. | keyword |
 | google_secops.alert_v2.event.network.application_protocol | The application protocol. | keyword |
-| google_secops.alert_v2.event.network.dns.answers.data | The payload or response to the DNS question for all responses encoded in UTF-8 format. | keyword |
-| google_secops.alert_v2.event.network.dns.answers.name | The name of the owner of the resource record. | keyword |
-| google_secops.alert_v2.event.network.dns.answers.type | The code specifying the type of the resource record. | keyword |
-| google_secops.alert_v2.event.network.dns.questions.name | The domain name. | keyword |
-| google_secops.alert_v2.event.network.dns.questions.type | The code specifying the type of the query. | keyword |
 | google_secops.alert_v2.event.network.dns_domain | DNS domain name. | keyword |
-| google_secops.alert_v2.event.network.email.bcc | A list of 'bcc' addresses. | keyword |
-| google_secops.alert_v2.event.network.email.cc | A list of 'cc' addresses. | keyword |
-| google_secops.alert_v2.event.network.email.from | The 'from' address. | keyword |
-| google_secops.alert_v2.event.network.email.reply_to | The 'reply to' address. | keyword |
 | google_secops.alert_v2.event.network.email.subject | The subject line(s) of the email. | keyword |
-| google_secops.alert_v2.event.network.email.to | A list of 'to' addresses. | keyword |
 | google_secops.alert_v2.event.network.ftp.command | The FTP command. | keyword |
-| google_secops.alert_v2.event.network.http.method | The HTTP request method (e.g. "GET", "POST", "PATCH", "DELETE"). | keyword |
 | google_secops.alert_v2.event.network.http.referral_url | The URL for the HTTP referer. | keyword |
-| google_secops.alert_v2.event.network.http.response_code | The response status code, for example 200, 302, 404, or 500. | long |
-| google_secops.alert_v2.event.network.http.user_agent | The User-Agent request header which includes the application type, operating system, software vendor or software version of the requesting software user agent. | keyword |
-| google_secops.alert_v2.event.network.ip_protocol | The IP protocol. | keyword |
 | google_secops.alert_v2.event.network.session_id | The ID of the network session. | keyword |
 | google_secops.alert_v2.event.principal.asset.asset_id | The asset ID. | keyword |
 | google_secops.alert_v2.event.principal.asset.attribute.labels.key | The key. | keyword |
@@ -1020,17 +998,9 @@ An example event for `alert_v2` looks as following:
 | google_secops.alert_v2.event.principal.asset.type | The type of the asset (e.g. workstation or laptop or server). | keyword |
 | google_secops.alert_v2.event.principal.asset_id | The asset ID. | keyword |
 | google_secops.alert_v2.event.principal.cloud.environment | The Cloud environment. | keyword |
-| google_secops.alert_v2.event.principal.file.full_path | The full path identifying the location of the file on the system. | keyword |
-| google_secops.alert_v2.event.principal.file.md5 | The MD5 hash of the file, as a hex-encoded string. | keyword |
-| google_secops.alert_v2.event.principal.file.sha1 | The SHA1 hash of the file, as a hex-encoded string. | keyword |
-| google_secops.alert_v2.event.principal.file.sha256 | The SHA256 hash of the file, as a hex-encoded string. | keyword |
-| google_secops.alert_v2.event.principal.group.group_display_name | Group display name. e.g. "Finance". | keyword |
-| google_secops.alert_v2.event.principal.hostname | Client hostname or domain name field. Hostname also doubles as the domain for remote entities. | keyword |
-| google_secops.alert_v2.event.principal.ip | A list of IP addresses associated with a network connection. | ip |
-| google_secops.alert_v2.event.principal.ip_geo_artifact.ip | IP address of the artifact. | ip |
+| google_secops.alert_v2.event.principal.ip_geo_artifact.ip | IP address associated with the geo artifact. | ip |
 | google_secops.alert_v2.event.principal.ip_geo_artifact.location.country_or_region | The country or region. | keyword |
-| google_secops.alert_v2.event.principal.ip_geo_artifact.location.region_coordinates.lat | The latitude in degrees. . | double |
-| google_secops.alert_v2.event.principal.ip_geo_artifact.location.region_coordinates.lon | The longitude in degrees. . | double |
+| google_secops.alert_v2.event.principal.ip_geo_artifact.location.region_coordinates | Coordinates of the region associated with the IP address. | geo_point |
 | google_secops.alert_v2.event.principal.ip_geo_artifact.location.state | The state. | keyword |
 | google_secops.alert_v2.event.principal.ip_geo_artifact.network.asn | Autonomous system number. | keyword |
 | google_secops.alert_v2.event.principal.ip_geo_artifact.network.carrier_name | Carrier identification. | keyword |
@@ -1040,20 +1010,10 @@ An example event for `alert_v2` looks as following:
 | google_secops.alert_v2.event.principal.mac | List of MAC addresses associated with a device. | keyword |
 | google_secops.alert_v2.event.principal.platform | Platform. | keyword |
 | google_secops.alert_v2.event.principal.port | Source or destination network port number when a specific network connection is described within an event. | long |
-| google_secops.alert_v2.event.principal.process.command_line | The command line command that created the process. | keyword |
-| google_secops.alert_v2.event.principal.process.file.full_path | The full path identifying the location of the file on the system. | keyword |
-| google_secops.alert_v2.event.principal.process.file.md5 | The MD5 hash of the file, as a hex-encoded string. | keyword |
 | google_secops.alert_v2.event.principal.process.file.names | Names fields. | keyword |
-| google_secops.alert_v2.event.principal.process.file.sha1 | The SHA1 hash of the file, as a hex-encoded string. | keyword |
-| google_secops.alert_v2.event.principal.process.file.sha256 | The SHA256 hash of the file, as a hex-encoded string. | keyword |
 | google_secops.alert_v2.event.principal.process.file.signature_info.sigcheck.signers.name | Common name of the signers/certificate. The order of the signers matters. Each element is a higher level authority, the last being the root authority. | keyword |
 | google_secops.alert_v2.event.principal.process.file.signature_info.sigcheck.verification_message | Status of the certificate. Valid values are "Signed", "Unsigned" or a description of the certificate anomaly, if found. | keyword |
-| google_secops.alert_v2.event.principal.process.parent_process.command_line | The command line command that created the process. | keyword |
-| google_secops.alert_v2.event.principal.process.parent_process.file.full_path | The full path identifying the location of the file on the system. | keyword |
-| google_secops.alert_v2.event.principal.process.parent_process.file.md5 | The MD5 hash of the file, as a hex-encoded string. | keyword |
 | google_secops.alert_v2.event.principal.process.parent_process.file.names | Names fields. | keyword |
-| google_secops.alert_v2.event.principal.process.parent_process.file.sha1 | The SHA1 hash of the file, as a hex-encoded string. | keyword |
-| google_secops.alert_v2.event.principal.process.parent_process.file.sha256 | The SHA256 hash of the file, as a hex-encoded string. | keyword |
 | google_secops.alert_v2.event.principal.process.parent_process.file.signature_info.sigcheck.signers.name | Common name of the signers/certificate. The order of the signers matters. Each element is a higher level authority, the last being the root authority. | keyword |
 | google_secops.alert_v2.event.principal.process.parent_process.file.signature_info.sigcheck.verification_message | Status of the certificate. Valid values are "Signed", "Unsigned" or a description of the certificate anomaly, if found. | keyword |
 | google_secops.alert_v2.event.principal.process.parent_process.parent_process.command_line | The command line command that created the process. | keyword |
@@ -1083,9 +1043,7 @@ An example event for `alert_v2` looks as following:
 | google_secops.alert_v2.event.principal.process.parent_process.parent_process.parent_process.product_specific_process_id | A product specific id for the parent process. Please use parentProcess.productSpecificProcessId instead. | keyword |
 | google_secops.alert_v2.event.principal.process.parent_process.parent_process.pid | The process ID. | keyword |
 | google_secops.alert_v2.event.principal.process.parent_process.parent_process.product_specific_process_id | A product specific id for the parent process. Please use parentProcess.productSpecificProcessId instead. | keyword |
-| google_secops.alert_v2.event.principal.process.parent_process.pid | The process ID. | long |
 | google_secops.alert_v2.event.principal.process.parent_process.product_specific_process_id | A product specific id for the parent process. Please use parentProcess.productSpecificProcessId instead. | keyword |
-| google_secops.alert_v2.event.principal.process.pid | The process ID. | long |
 | google_secops.alert_v2.event.principal.process.product_specific_process_id | A product specific id for the parent process. Please use parentProcess.productSpecificProcessId instead. | keyword |
 | google_secops.alert_v2.event.principal.process_ancestors.file.full_path | The full path identifying the location of the file on the system. | keyword |
 | google_secops.alert_v2.event.principal.process_ancestors.parent_process.command_line | The command line command that created the process. | keyword |
@@ -1109,22 +1067,17 @@ An example event for `alert_v2` looks as following:
 | google_secops.alert_v2.event.principal.user.attribute.permissions.name | Name of the permission (e.g. chronicle.analyst.updateRule). | keyword |
 | google_secops.alert_v2.event.principal.user.attribute.permissions.type | Type of the permission. | keyword |
 | google_secops.alert_v2.event.principal.user.attribute.roles.description | System role description for user. | keyword |
-| google_secops.alert_v2.event.principal.user.attribute.roles.name | System role name for user. | keyword |
-| google_secops.alert_v2.event.principal.user.email_addresses | Email addresses of the user. | keyword |
-| google_secops.alert_v2.event.principal.user.group_identifiers | Product object identifiers of the group(s) the user belongs to A vendor-specific identifier to uniquely identify the group(s) the user belongs to (a GUID, LDAP OID, or similar). | keyword |
 | google_secops.alert_v2.event.principal.user.product_object_id | A vendor-specific identifier to uniquely identify the entity (e.g. a GUID, LDAP, OID, or similar). | keyword |
-| google_secops.alert_v2.event.principal.user.user_display_name | The display name of the user (e.g. "John Locke"). | keyword |
-| google_secops.alert_v2.event.principal.user.userid | The ID of the user. | keyword |
 | google_secops.alert_v2.event.principal.user.windows_sid | The Microsoft Windows SID of the user. | keyword |
 | google_secops.alert_v2.event.security_result.about.resource.name |  | keyword |
 | google_secops.alert_v2.event.security_result.about.user.attribute.roles.name | System role name for user. | keyword |
 | google_secops.alert_v2.event.security_result.about.user.email_addresses | Email addresses of the user. | keyword |
 | google_secops.alert_v2.event.security_result.action | Actions taken for this event. | keyword |
 | google_secops.alert_v2.event.security_result.alert_state | The alerting types of this security result. | keyword |
-| google_secops.alert_v2.event.security_result.attack_details.tactics.id | The tactic ID. | keyword |
-| google_secops.alert_v2.event.security_result.attack_details.tactics.name | The tactic name. | keyword |
-| google_secops.alert_v2.event.security_result.attack_details.techniques.id | The technique ID. | keyword |
-| google_secops.alert_v2.event.security_result.attack_details.techniques.name | The technique name. | keyword |
+| google_secops.alert_v2.event.security_result.attack_details.tactics.id | MITRE ATT&CK tactic ID. | keyword |
+| google_secops.alert_v2.event.security_result.attack_details.tactics.name | MITRE ATT&CK tactic name. | keyword |
+| google_secops.alert_v2.event.security_result.attack_details.techniques.id | MITRE ATT&CK technique ID. | keyword |
+| google_secops.alert_v2.event.security_result.attack_details.techniques.name | MITRE ATT&CK technique name. | keyword |
 | google_secops.alert_v2.event.security_result.category | The security category. | keyword |
 | google_secops.alert_v2.event.security_result.category_details | For vendor-specific categories. For web categorization, put type in here such as "gambling" or "porn". | keyword |
 | google_secops.alert_v2.event.security_result.description | A human readable description (e.g. "user password was wrong").' | keyword |
@@ -1153,13 +1106,9 @@ An example event for `alert_v2` looks as following:
 | google_secops.alert_v2.event.src.file.md5 | The MD5 hash of the file, as a hex-encoded string. | keyword |
 | google_secops.alert_v2.event.src.file.sha1 | The SHA1 hash of the file, as a hex-encoded string. | keyword |
 | google_secops.alert_v2.event.src.file.sha256 | The SHA256 hash of the file, as a hex-encoded string. | keyword |
-| google_secops.alert_v2.event.src.hostname | Client hostname or domain name field. Hostname also doubles as the domain for remote entities. | keyword |
-| google_secops.alert_v2.event.src.ip | A list of IP addresses associated with a network connection. | ip |
 | google_secops.alert_v2.event.src.mac | List of MAC addresses associated with a device. | keyword |
 | google_secops.alert_v2.event.src.process.product_specific_process_id | A product specific id for the parent process. Please use parentProcess.productSpecificProcessId instead. | keyword |
-| google_secops.alert_v2.event.src.user.email_addresses | Email addresses of the user. | keyword |
 | google_secops.alert_v2.event.src.user.product_object_id | A vendor-specific identifier to uniquely identify the entity (e.g. a GUID, LDAP, OID, or similar). | keyword |
-| google_secops.alert_v2.event.src.user.userid | The ID of the user. | keyword |
 | google_secops.alert_v2.event.src.user.windows_sid | The Microsoft Windows SID of the user. | keyword |
 | google_secops.alert_v2.event.target.application | The name of an application or service. Some SSO solutions only capture the name of a target application such as "Atlassian" or "Google". | keyword |
 | google_secops.alert_v2.event.target.asset.asset_id | The asset ID. Value must contain the ':' character. For example, cs:abcdd23434. | keyword |
@@ -1168,7 +1117,6 @@ An example event for `alert_v2` looks as following:
 | google_secops.alert_v2.event.target.asset.mac | List of MAC addresses associated with an asset. | keyword |
 | google_secops.alert_v2.event.target.asset_id | The asset ID. | keyword |
 | google_secops.alert_v2.event.target.cloud.environment | The Cloud environment. | keyword |
-| google_secops.alert_v2.event.target.cloud.project.name | The full name of the resource. For example, Google Cloud: //cloudresourcemanager.googleapis.com/projects/wombat-123, and AWS: arn:aws:iam::123456789012:user/johndoe. | keyword |
 | google_secops.alert_v2.event.target.file.full_path | The full path identifying the location of the file on the system. | keyword |
 | google_secops.alert_v2.event.target.file.last_modification_time | Timestamp when the file was last updated. | date |
 | google_secops.alert_v2.event.target.file.md5 | The MD5 hash of the file, as a hex-encoded string. | keyword |
@@ -1177,12 +1125,9 @@ An example event for `alert_v2` looks as following:
 | google_secops.alert_v2.event.target.file.sha256 | The SHA256 hash of the file, as a hex-encoded string. | keyword |
 | google_secops.alert_v2.event.target.file.size | The size of the file in bytes. | keyword |
 | google_secops.alert_v2.event.target.group.group_display_name | Group display name. e.g. "Finance". | keyword |
-| google_secops.alert_v2.event.target.hostname | Client hostname or domain name field. Hostname also doubles as the domain for remote entities. | keyword |
-| google_secops.alert_v2.event.target.ip | A list of IP addresses associated with a network connection. | ip |
 | google_secops.alert_v2.event.target.labels.key |  | keyword |
 | google_secops.alert_v2.event.target.labels.value |  | keyword |
 | google_secops.alert_v2.event.target.mac | List of MAC addresses associated with a device. | keyword |
-| google_secops.alert_v2.event.target.port | Source or destination network port number when a specific network connection is described within an event. | long |
 | google_secops.alert_v2.event.target.process.command_line | The command line command that created the process. | keyword |
 | google_secops.alert_v2.event.target.process.file.first_seen_time | Timestamp the file was first seen in the customer's environment. | date |
 | google_secops.alert_v2.event.target.process.file.full_path | The full path identifying the location of the file on the system. | keyword |
@@ -1201,17 +1146,10 @@ An example event for `alert_v2` looks as following:
 | google_secops.alert_v2.event.target.resource.resource_type | Resource type. | keyword |
 | google_secops.alert_v2.event.target.resource_ancestors.name | The full name of the resource. For example, Google Cloud: //cloudresourcemanager.googleapis.com/projects/wombat-123, and AWS: arn:aws:iam::123456789012:user/johndoe. | keyword |
 | google_secops.alert_v2.event.target.resource_ancestors.product_object_id | A vendor-specific identifier to uniquely identify the entity (a GUID, OID, or similar). | keyword |
-| google_secops.alert_v2.event.target.user.email_addresses | Email addresses of the user. | keyword |
-| google_secops.alert_v2.event.target.user.group_identifiers | Product object identifiers of the group(s) the user belongs to A vendor-specific identifier to uniquely identify the group(s) the user belongs to (a GUID, LDAP OID, or similar). | keyword |
 | google_secops.alert_v2.event.target.user.product_object_id | A vendor-specific identifier to uniquely identify the entity (e.g. a GUID, LDAP, OID, or similar). | keyword |
-| google_secops.alert_v2.event.target.user.user_display_name | The display name of the user (e.g. "John Locke"). | keyword |
-| google_secops.alert_v2.event.target.user.userid | The ID of the user. | keyword |
 | google_secops.alert_v2.event.target.user.windows_sid | The Microsoft Windows SID of the user. | keyword |
 | google_secops.alert_v2.friendly_name | Alert Rule Name. | keyword |
-| google_secops.alert_v2.id | Identifier for the detection. Same as "detection_id". | keyword |
 | google_secops.alert_v2.label | The variable a given set of UDM events belongs to. | keyword |
-| google_secops.alert_v2.time_window.end_time | String representing the end of the time window in which the detection was found, in RFC 3339 format. | date |
-| google_secops.alert_v2.time_window.start_time | String representing the start of the time window in which the detection was found, in RFC 3339 format. | date |
 | google_secops.alert_v2.type | Type of detection (type is always `RULE_DETECTION`). | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | tags | User defined tags. | keyword |
