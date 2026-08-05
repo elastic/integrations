@@ -206,6 +206,9 @@ updateBackportBranchContents() {
     # drop the go-gh/v2 dependency so backport branches keep their original Go version.
     echo "--- Removing dev/testsreporter and dev/requiresupdate (go-gh/v2 not needed on backport branches)..."
     rm -rf "${DEV_FOLDER}/testsreporter" "${DEV_FOLDER}/requiresupdate"
+    echo "--- Removing dev/backports (in favor of cmd/backport)..."
+    # Remove the previous backport code from dev/backport, it should be used from cmd/backport instead.
+    rm -rf "${DEV_FOLDER}/backports"
     git add "${DEV_FOLDER}"
 
     echo "--- Copying magefile.go from $SOURCE_BRANCH..."
