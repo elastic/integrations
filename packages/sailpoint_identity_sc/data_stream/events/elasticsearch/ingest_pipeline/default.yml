@@ -160,6 +160,38 @@ processors:
       target_field: host.geo
       ignore_missing: true
       ignore_failure: true
+ ################### Entity fields ###################
+  - set:
+      field: user.entity.id
+      tag: set_user_entity_id
+      copy_from: sailpoint_identity_sc.events.actor.id
+      if: ctx.sailpoint_identity_sc?.events?.actor?.id != null
+  - set:
+      field: user.entity.name
+      tag: set_user_entity_name_from_display_name
+      copy_from: sailpoint_identity_sc.events.actor.display_name
+      if: ctx.sailpoint_identity_sc?.events?.actor?.display_name != null
+  - set:
+      field: user.entity.name
+      tag: set_user_entity_name_from_name
+      copy_from: sailpoint_identity_sc.events.actor.name
+      if: ctx.sailpoint_identity_sc?.events?.actor?.display_name == null && ctx.sailpoint_identity_sc?.events?.actor?.name != null
+  - set:
+      field: user.entity.name
+      tag: set_user_entity_name_from_actor_name_no_id
+      copy_from: sailpoint_identity_sc.events.actor.name
+      if: ctx.sailpoint_identity_sc?.events?.actor?.name != null
+  - append:
+      field: user.entity.type
+      tag: append_user_entity_type
+      value: user
+      allow_duplicates: false
+      if: ctx.sailpoint_identity_sc?.events?.actor?.id != null || ctx.sailpoint_identity_sc?.events?.actor?.name != null
+  - set:
+      field: user.entity.lifecycle.last_activity
+      tag: set_user_entity_lifecycle_last_activity
+      copy_from: '@timestamp'
+      if: ctx.sailpoint_identity_sc?.events?.actor?.id != null || ctx.sailpoint_identity_sc?.events?.actor?.name != null
  ################### Error Log fields ###################
   - set:
       field: event.kind
