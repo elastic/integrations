@@ -70,6 +70,7 @@ NON_PACKAGE_PATHS=(
     "cmd/backport/backports/apply/apply.go"
     "magefile_daily_jobs.go"
     "dev/codeowners/codeowners.go"
+    "dev/packagenames/packagenames.go"
     "dev/gitutil/git.go"
     "dev/requiresupdate/requiresupdate.go"
     "dev/scripts/foo.sh"
