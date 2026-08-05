@@ -108,7 +108,7 @@ PUT _watcher/watch/socradar_alarm_status_sync
         "indices": [".alerts-security.alerts-*"],
         "body": {
           "size": 100,
-          "_source": ["kibana.alert.workflow_status", "alarm.alarm_id", "alarm.company_id"],
+          "_source": ["kibana.alert.workflow_status", "socradar_alert.alarm_id", "socradar_alert.company_id"],
           "query": {
             "bool": {
               "must": [{ "term": { "kibana.alert.rule.rule_id": "socradar_alert-alarm-detection-rule" } }],
@@ -129,7 +129,7 @@ PUT _watcher/watch/socradar_alarm_status_sync
   "transform": {
     "script": {
       "lang": "painless",
-      "source": "Map statusMap = new HashMap(); statusMap.put('acknowledged', 'INVESTIGATING'); statusMap.put('in-progress', 'INVESTIGATING'); statusMap.put('investigating', 'INVESTIGATING'); statusMap.put('pending_info', 'PENDING_INFO'); statusMap.put('legal_review', 'LEGAL_REVIEW'); statusMap.put('vendor_assessment', 'VENDOR_ASSESSMENT'); statusMap.put('closed', 'RESOLVED'); statusMap.put('resolved', 'RESOLVED'); statusMap.put('false-positive', 'FALSE_POSITIVE'); statusMap.put('duplicate', 'DUPLICATE'); statusMap.put('processed_internally', 'PROCESSED_INTERNALLY'); statusMap.put('mitigated', 'MITIGATED'); statusMap.put('not_applicable', 'NOT_APPLICABLE'); def hits = ctx.payload.hits.hits; def newest = hits[0]._source; def targetElastic = newest.get('kibana.alert.workflow_status'); def targetStatus = statusMap.containsKey(targetElastic) ? statusMap.get(targetElastic) : 'OPEN'; def companyId = newest.get('alarm').get('company_id').toString(); def ids = new ArrayList(); for (def h : hits) { def src = h._source; def es = src.get('kibana.alert.workflow_status'); def mapped = statusMap.containsKey(es) ? statusMap.get(es) : 'OPEN'; if (mapped == targetStatus) { ids.add(src.get('alarm').get('alarm_id').toString()); } } def sb = new StringBuilder(); sb.append('{\"alarm_ids\":['); for (int i = 0; i < ids.size(); i++) { if (i > 0) { sb.append(','); } sb.append('\"').append(ids.get(i)).append('\"'); } sb.append('],\"company_id\":').append(companyId).append(',\"status\":\"').append(targetStatus).append('\"}'); return ['body': sb.toString()];"
+      "source": "Map statusMap = new HashMap(); statusMap.put('acknowledged', 'INVESTIGATING'); statusMap.put('in-progress', 'INVESTIGATING'); statusMap.put('investigating', 'INVESTIGATING'); statusMap.put('pending_info', 'PENDING_INFO'); statusMap.put('legal_review', 'LEGAL_REVIEW'); statusMap.put('vendor_assessment', 'VENDOR_ASSESSMENT'); statusMap.put('closed', 'RESOLVED'); statusMap.put('resolved', 'RESOLVED'); statusMap.put('false-positive', 'FALSE_POSITIVE'); statusMap.put('duplicate', 'DUPLICATE'); statusMap.put('processed_internally', 'PROCESSED_INTERNALLY'); statusMap.put('mitigated', 'MITIGATED'); statusMap.put('not_applicable', 'NOT_APPLICABLE'); def hits = ctx.payload.hits.hits; def newest = hits[0]._source; def targetElastic = newest.get('kibana.alert.workflow_status'); def targetStatus = statusMap.containsKey(targetElastic) ? statusMap.get(targetElastic) : 'OPEN'; def companyId = newest.get('socradar_alert').get('company_id').toString(); def ids = new ArrayList(); for (def h : hits) { def src = h._source; def es = src.get('kibana.alert.workflow_status'); def mapped = statusMap.containsKey(es) ? statusMap.get(es) : 'OPEN'; if (mapped == targetStatus) { ids.add(src.get('socradar_alert').get('alarm_id').toString()); } } def sb = new StringBuilder(); sb.append('{\"alarm_ids\":['); for (int i = 0; i < ids.size(); i++) { if (i > 0) { sb.append(','); } sb.append('\"').append(ids.get(i)).append('\"'); } sb.append('],\"company_id\":').append(companyId).append(',\"status\":\"').append(targetStatus).append('\"}'); return ['body': sb.toString()];"
     }
   },
   "actions": {
@@ -239,36 +239,11 @@ An example event for `incidents` looks as following:
 {
     "@timestamp": "2024-02-03T08:15:42.000Z",
     "agent": {
-        "ephemeral_id": "e487ccb6-74ff-4306-9dbc-821a487b3cea",
-        "id": "3303623c-f374-4306-b9a3-5d2ac281578c",
-        "name": "elastic-agent-78746",
+        "ephemeral_id": "e417fc2e-6879-442d-8b6a-21c1cd4882a9",
+        "id": "205fe089-c340-40d5-904b-59ed521ced73",
+        "name": "elastic-agent-75436",
         "type": "filebeat",
         "version": "9.4.4"
-    },
-    "alarm": {
-        "alarm_asset": "corp.example.org",
-        "alarm_default_risk_level": "MEDIUM",
-        "alarm_generic_title": "Leaked Credentials Detected",
-        "alarm_id": "a1b2c3d4-0000-0000-0000-000000000002",
-        "alarm_main_type": "Digital Risk Protection",
-        "alarm_risk_level": "MEDIUM",
-        "alarm_sub_type": "Credential Leak",
-        "alarm_text": "Leaked credentials referencing your domain were found on a paste site.",
-        "alarm_type_details": {
-            "alarm_default_risk_level": "MEDIUM",
-            "alarm_generic_title": "Leaked Credentials Detected",
-            "alarm_main_type": "Digital Risk Protection",
-            "alarm_sub_type": "Credential Leak"
-        },
-        "approved_by": "analyst",
-        "company_id": 330,
-        "date": "2024-02-03 08:15:42",
-        "is_approved": true,
-        "notification_id": 1002,
-        "status": "RESOLVED",
-        "tags": [
-            "credential-leak"
-        ]
     },
     "data_stream": {
         "dataset": "socradar_alert.incidents",
@@ -279,7 +254,7 @@ An example event for `incidents` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "3303623c-f374-4306-b9a3-5d2ac281578c",
+        "id": "205fe089-c340-40d5-904b-59ed521ced73",
         "snapshot": false,
         "version": "9.4.4"
     },
@@ -289,8 +264,10 @@ An example event for `incidents` looks as following:
             "threat"
         ],
         "dataset": "socradar_alert.incidents",
-        "ingested": "2026-08-05T06:48:59Z",
+        "id": "a1b2c3d4-0000-0000-0000-000000000002",
+        "ingested": "2026-08-05T13:34:27Z",
         "kind": "alert",
+        "severity": 47,
         "type": [
             "indicator"
         ]
@@ -298,16 +275,16 @@ An example event for `incidents` looks as following:
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "elastic-agent-78746",
+        "hostname": "elastic-agent-75436",
         "ip": [
             "172.20.0.2",
             "172.19.0.5"
         ],
         "mac": [
-            "1A-20-74-E5-A9-84",
-            "5A-45-70-82-8A-EA"
+            "16-13-EF-BE-B1-4F",
+            "FE-97-B3-6B-81-76"
         ],
-        "name": "elastic-agent-78746",
+        "name": "elastic-agent-75436",
         "os": {
             "family": "",
             "kernel": "6.12.54-linuxkit",
@@ -319,6 +296,31 @@ An example event for `incidents` looks as following:
     },
     "input": {
         "type": "cel"
+    },
+    "message": "Leaked credentials referencing your domain were found on a paste site.",
+    "related": {
+        "hosts": [
+            "corp.example.org"
+        ]
+    },
+    "socradar_alert": {
+        "alarm_asset": "corp.example.org",
+        "alarm_default_risk_level": "MEDIUM",
+        "alarm_generic_title": "Leaked Credentials Detected",
+        "alarm_id": "a1b2c3d4-0000-0000-0000-000000000002",
+        "alarm_main_type": "Digital Risk Protection",
+        "alarm_risk_level": "MEDIUM",
+        "alarm_sub_type": "Credential Leak",
+        "alarm_text": "Leaked credentials referencing your domain were found on a paste site.",
+        "approved_by": "analyst",
+        "company_id": 330,
+        "date": "2024-02-03 08:15:42",
+        "is_approved": true,
+        "notification_id": 1002,
+        "status": "RESOLVED",
+        "tags": [
+            "credential-leak"
+        ]
     }
 }
 ```
@@ -330,36 +332,40 @@ An example event for `incidents` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| alarm.alarm_asset | Asset name | keyword |
-| alarm.alarm_assignees | Assigned users | keyword |
-| alarm.alarm_default_risk_level | Default risk level (extracted) | keyword |
-| alarm.alarm_generic_title | Alarm generic title | keyword |
-| alarm.alarm_id | Unique alarm identifier | keyword |
-| alarm.alarm_main_type | Alarm main type (extracted) | keyword |
-| alarm.alarm_related_assets | Related assets | flattened |
-| alarm.alarm_related_entities | Related entities | flattened |
-| alarm.alarm_risk_level | Risk level | keyword |
-| alarm.alarm_sub_type | Alarm sub type (extracted) | keyword |
-| alarm.alarm_text | Alarm description | text |
-| alarm.alarm_text.keyword | Multi-field of `alarm.alarm_text`. | keyword |
-| alarm.alarm_type_id | Alarm type identifier | keyword |
-| alarm.approved_by | Approved by | keyword |
-| alarm.company_id | ID of the company | long |
-| alarm.content | Alarm content details | flattened |
-| alarm.date | The date when the alarm was created | date |
-| alarm.extra | Extra information | flattened |
-| alarm.history | Alarm history | flattened |
-| alarm.is_approved | Approval status | boolean |
-| alarm.notification_id | Notification ID | long |
-| alarm.status | Alarm status | keyword |
-| alarm.tags | Alarm tags | keyword |
-| alarm.title | Alarm title | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | input.type | Type of filebeat input. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| socradar_alert.alarm_asset | Asset name | keyword |
+| socradar_alert.alarm_assignees | Assigned users | keyword |
+| socradar_alert.alarm_default_risk_level | Default risk level (extracted) | keyword |
+| socradar_alert.alarm_generic_title | Alarm generic title | keyword |
+| socradar_alert.alarm_id | Unique alarm identifier | keyword |
+| socradar_alert.alarm_main_type | Alarm main type (extracted) | keyword |
+| socradar_alert.alarm_related_assets | Related assets | flattened |
+| socradar_alert.alarm_related_entities | Related entities | flattened |
+| socradar_alert.alarm_risk_level | Risk level | keyword |
+| socradar_alert.alarm_sub_type | Alarm sub type (extracted) | keyword |
+| socradar_alert.alarm_text | Alarm description | text |
+| socradar_alert.alarm_text.keyword | Multi-field of `socradar_alert.alarm_text`. | keyword |
+| socradar_alert.alarm_type_id | Alarm type identifier | keyword |
+| socradar_alert.approved_by | Approved by | keyword |
+| socradar_alert.company_id | ID of the company | long |
+| socradar_alert.content | Alarm content details | flattened |
+| socradar_alert.date | The date when the alarm was created | date |
+| socradar_alert.extra | Extra information | flattened |
+| socradar_alert.history | Alarm history | flattened |
+| socradar_alert.is_approved | Approval status | boolean |
+| socradar_alert.notification_id | Notification ID | long |
+| socradar_alert.status | Alarm status | keyword |
+| socradar_alert.tags | Alarm tags | keyword |
+| socradar_alert.title | Alarm title | keyword |
 
 
 ### Inputs used
