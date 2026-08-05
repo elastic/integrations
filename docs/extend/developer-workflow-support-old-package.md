@@ -277,6 +277,8 @@ Packages in `skip_checklist_packages` are excluded from the checklist comment (n
 
 1. Missing `elastic-package stack shellinit` in backport branch:
 
+    * **Affected versions**: `elastic-package` < v0.86.0. From v0.86.0 onward, `elastic-package` reads the stack connection settings (Elasticsearch host, username, password, CA cert) automatically from the current profile, so `shellinit` is no longer required.
+
     * Example of the error:
 
         `Error: could not create kibana client: undefined environment variable: ELASTIC_PACKAGE_KIBANA_HOST. If you have started the Elastic stack using the elastic-package tool, please load stack environment variables using 'eval "$(elastic-package stack shellinit)"' or set their values manually`
