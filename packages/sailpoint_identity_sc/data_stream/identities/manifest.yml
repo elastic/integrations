@@ -21,11 +21,21 @@ streams:
         show_user: false
         required: true
         default: 500
+      - name: token_scopes
+        type: text
+        title: Token Scopes
+        multi: true
+        description: Scopes for OAuth2 token.
+        required: true
+        show_user: false
+        secret: false
+        default:
+          - "sp:search:read"
       - name: enable_supervises_enrichment
         type: bool
         title: Enable Supervises Enrichment
         description: >-
-          When enabled, performs a secondary API call for each manager identity to fetch their direct reports and populate the `user.entity.relationships.supervises` field. This adds one additional API request per manager identity per collection cycle. Disabled by default to avoid extra API request volume.
+          When enabled, performs a secondary API call for each manager identity to fetch their direct reports (up to 250) and populate the `user.entity.relationships.supervises` field. Managers with more than 250 direct reports will have the surplus omitted. This adds one additional API request per manager identity per collection cycle. Disabled by default to avoid extra API request volume.
         required: true
         show_user: true
         default: false

@@ -38,7 +38,7 @@ Event documents can be found by setting the following filter:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in events documents:
 
@@ -54,7 +54,7 @@ Identity documents carry ECS entity fields (`user.entity.*`) that enable Entity 
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in identities documents:
 

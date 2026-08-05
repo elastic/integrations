@@ -62,32 +62,26 @@ program: |-
   					"indices": ["identities"],
   					"queryType": "SAILPOINT",
   					"query": {"query": "*"},
-  					?"filters": cursor.search_after_modified.hasValue() ?
-  						optional.of(
-  							{
-  								"modified": {
-  									"type": "RANGE",
-  									"range": {
-  										"lower": {
-  											"value": cursor.search_after_modified.orValue(""),
-  											"inclusive": true,
-  										},
+  					?"filters": cursor.search_after_modified.optMap(v,
+  						{
+  							"modified": {
+  								"type": "RANGE",
+  								"range": {
+  									"lower": {
+  										"value": v,
+  										"inclusive": true,
   									},
   								},
-  							}
-  						)
-  					:
-  						optional.none(),
+  							},
+  						}
+  					),
   					"sort": ["modified", "+id"],
-  					?"searchAfter": cursor.search_after_modified.hasValue() ?
-  						optional.of(
-  							[
-  								cursor.search_after_modified.orValue(""),
-  								cursor.search_after_id.orValue(""),
-  							]
-  						)
-  					:
-  						optional.none(),
+  					?"searchAfter": cursor.search_after_modified.optMap(v,
+  						[
+  							v,
+  							cursor.search_after_id.value(),
+  						]
+  					),
   				}.encode_json(),
   			}
   		).do_request().as(resp,
@@ -95,23 +89,17 @@ program: |-
   				resp.Body.decode_json().as(body,
   					body.map(e,
   						(state.enable_supervises_enrichment && e.?isManager.orValue(false)) ?
-  							request(
-  								"POST",
+  							post_request(
   								state.url.trim_right("/") + "/" + state.api_version + "/search?" + {
   									"limit": ["250"],
-  								}.format_query()
-  							).with(
+  								}.format_query(),
+  								"application/json",
   								{
-  									"Header": {
-  										"Content-Type": ["application/json"],
-  									},
-  									"Body": {
-  										"indices": ["identities"],
-  										"queryType": "SAILPOINT",
-  										"query": {"query": "manager.id:" + e.id},
-  										"sort": ["+id"],
-  									}.encode_json(),
-  								}
+  									"indices": ["identities"],
+  									"queryType": "SAILPOINT",
+  									"query": {"query": "manager.id:" + e.id},
+  									"sort": ["+id"],
+  								}.encode_json()
   							).do_request().as(sresp,
   								(sresp.StatusCode == 200) ?
   									e.with(
@@ -122,7 +110,7 @@ program: |-
   														"user": {
   															"id": reports.map(dr, dr.id),
   															"name": reports.map(dr, dr.name),
-  															"email": reports.map(dr, dr.?email.orValue("")).filter(e, e != ""),
+  															"email": reports.map(dr, dr.?email.orValue("")),
   														},
   													})
   												:

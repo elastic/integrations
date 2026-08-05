@@ -40,24 +40,24 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2024-12-12T10:58:27.962Z",
     "agent": {
-        "ephemeral_id": "c66d99e7-2d3b-4b3a-98ea-d64d114e37fe",
-        "id": "e8f2e5b9-6585-49bd-9022-eb2edfc745c1",
-        "name": "elastic-agent-98705",
+        "ephemeral_id": "17a6f4a6-8e89-4f6b-86d4-a71a034f6498",
+        "id": "94de5972-7582-430e-89b2-19092651d2e5",
+        "name": "elastic-agent-83614",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "sailpoint_identity_sc.events",
-        "namespace": "71277",
+        "namespace": "63466",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e8f2e5b9-6585-49bd-9022-eb2edfc745c1",
+        "id": "94de5972-7582-430e-89b2-19092651d2e5",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "9.4.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -65,7 +65,7 @@ An example event for `events` looks as following:
             "iam"
         ],
         "dataset": "sailpoint_identity_sc.events",
-        "ingested": "2025-02-11T15:12:05Z",
+        "ingested": "2026-08-05T11:29:13Z",
         "kind": "event",
         "module": "sailpoint_identity_sc",
         "type": [
@@ -79,8 +79,11 @@ An example event for `events` looks as following:
             "country_iso_code": "US",
             "country_name": "United States",
             "location": {
-                "lat": 47.2513,
-                "lon": -122.3149
+                "coordinates": [
+                    -122.31490007601678,
+                    47.25129998289049
+                ],
+                "type": "Point"
             },
             "region_iso_code": "US-WA",
             "region_name": "Washington"
@@ -114,9 +117,7 @@ An example event for `events` looks as following:
                 "info": "Password workflow invoked successfully. Request Id :923169315cab448cac82091dc4827f38",
                 "org": "ta-partner14055",
                 "pod": "se01-useast1",
-                "scope": [
-                    "sp:scopes:all"
-                ],
+                "scope": "sp:scopes:all",
                 "source_name": "IdentityNow"
             },
             "created": "2024-12-12T10:58:27.962Z",
@@ -151,7 +152,7 @@ An example event for `events` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in events documents:
 
@@ -233,24 +234,24 @@ An example event for `identities` looks as following:
 {
     "@timestamp": "2025-01-10T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "61d473b8-6cbe-474b-a081-d46a2f1ad3fb",
-        "id": "752760a0-41e7-446c-8401-dcc7827df29c",
-        "name": "elastic-agent-82029",
+        "ephemeral_id": "d9dcb106-bbfb-453f-b738-4fa89589e0f2",
+        "id": "82ce3b1d-a774-4f6f-8590-f11489481551",
+        "name": "elastic-agent-61229",
         "type": "filebeat",
-        "version": "9.4.1"
+        "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "sailpoint_identity_sc.identities",
-        "namespace": "57408",
+        "namespace": "49652",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "752760a0-41e7-446c-8401-dcc7827df29c",
+        "id": "82ce3b1d-a774-4f6f-8590-f11489481551",
         "snapshot": false,
-        "version": "9.4.1"
+        "version": "9.4.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -259,7 +260,7 @@ An example event for `identities` looks as following:
         ],
         "created": "2024-04-04T21:36:00.000Z",
         "dataset": "sailpoint_identity_sc.identities",
-        "ingested": "2026-07-15T18:16:47Z",
+        "ingested": "2026-08-05T11:30:51Z",
         "kind": "asset",
         "module": "sailpoint_identity_sc",
         "original": "{\"_type\":\"identity\",\"created\":\"2024-04-04T21:36:00.000Z\",\"disabled\":false,\"displayName\":\"Alice Johnson\",\"email\":\"alice.johnson@example.com\",\"firstName\":\"Alice\",\"id\":\"identity-id-001\",\"inactive\":false,\"isManager\":true,\"lastName\":\"Johnson\",\"locked\":false,\"modified\":\"2025-01-10T00:00:00.000Z\",\"name\":\"alice.johnson\",\"protected\":false,\"status\":\"ACTIVE\",\"synced\":\"2025-01-10T01:00:00.000Z\",\"type\":\"identity\"}",
@@ -310,7 +311,7 @@ An example event for `identities` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in identities documents:
 
@@ -360,7 +361,7 @@ The following non-ECS fields are used in identities documents:
 | sailpoint_identity_sc.identity.accounts.accountId | Account identifier on the source system. | keyword |
 | sailpoint_identity_sc.identity.accounts.created | When the account was created. | date |
 | sailpoint_identity_sc.identity.accounts.disabled | Indicates whether the account is disabled. | boolean |
-| sailpoint_identity_sc.identity.accounts.entitlementAttributes | Entitlement attributes on the account (e.g. memberOf groups). | flattened |
+| sailpoint_identity_sc.identity.accounts.entitlementAttributes | Entitlement attributes on the account (for example, memberOf groups). | flattened |
 | sailpoint_identity_sc.identity.accounts.id | Account ID. | keyword |
 | sailpoint_identity_sc.identity.accounts.locked | Indicates whether the account is locked. | boolean |
 | sailpoint_identity_sc.identity.accounts.manuallyCorrelated | Indicates whether the account was manually correlated to this identity. | boolean |
@@ -389,7 +390,7 @@ The following non-ECS fields are used in identities documents:
 | sailpoint_identity_sc.identity.manager.display_name | Display name of the identity's manager. | keyword |
 | sailpoint_identity_sc.identity.manager.id | ID of the identity's manager. | keyword |
 | sailpoint_identity_sc.identity.manager.name | Username of the identity's manager. | keyword |
-| sailpoint_identity_sc.identity.org | Organisation (tenant) identifier for this identity. | keyword |
+| sailpoint_identity_sc.identity.org | Organization (tenant) identifier for this identity. | keyword |
 | sailpoint_identity_sc.identity.owns.accessProfiles.id | ID of an owned access profile. | keyword |
 | sailpoint_identity_sc.identity.owns.accessProfiles.name | Name of an owned access profile. | keyword |
 | sailpoint_identity_sc.identity.owns.apps.id | ID of an owned application. | keyword |
@@ -409,7 +410,7 @@ The following non-ECS fields are used in identities documents:
 | sailpoint_identity_sc.identity.role_count | Number of roles assigned to this identity. | long |
 | sailpoint_identity_sc.identity.source.id | ID of the authoritative source for this identity. | keyword |
 | sailpoint_identity_sc.identity.source.name | Name of the authoritative source for this identity. | keyword |
-| sailpoint_identity_sc.identity.status | Identity lifecycle status (e.g. ACTIVE). | keyword |
+| sailpoint_identity_sc.identity.status | Identity lifecycle status (for example, ACTIVE). | keyword |
 | sailpoint_identity_sc.identity.tags | Tags applied to this identity. | keyword |
 | sailpoint_identity_sc.identity.visible_segments | List of segment names visible to this identity. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
