@@ -1,0 +1,120 @@
+- name: ping_directory.audit
+  type: group
+  fields:
+    - name: conn
+      type: long
+      description: Connection identifier associated with the operation.
+    - name: create_timestamp
+      type: date
+      description: Timestamp when the entry was created.
+    - name: creators_name
+      type: group
+      fields:
+        - name: value
+          type: keyword
+          description: Value of the first (left-most) RDN of the creator Distinguished Name, regardless of its attribute type (cn, uid, ou, ...).
+        - name: attribute
+          type: keyword
+          description: Attribute type of the first RDN of the creator Distinguished Name, for example cn or uid.
+        - name: meta
+          type: keyword
+          description: Remaining path components of the creator Distinguished Name.
+    - name: delete_old_rdn
+      type: boolean
+      description: Indicates whether the old RDN attribute value was removed during the rename operation.
+    - name: dn
+      type: group
+      fields:
+        - name: value
+          type: keyword
+          description: Value of the first (left-most) RDN of the target entry Distinguished Name, regardless of its attribute type (cn, uid, ou, ...).
+        - name: attribute
+          type: keyword
+          description: Attribute type of the first RDN of the target entry Distinguished Name, for example cn or uid.
+        - name: meta
+          type: keyword
+          description: Remaining path components of the target entry Distinguished Name.
+    - name: ds_cfg
+      type: flattened
+      description: Dynamic ds-cfg attributes extracted from PingDirectory audit records.
+    - name: entry_uuid
+      type: keyword
+      description: Unique identifier assigned to the LDAP entry.
+    - name: modifiers_name
+      type: group
+      fields:
+        - name: value
+          type: keyword
+          description: Value of the first (left-most) RDN of the modifier Distinguished Name, regardless of its attribute type (cn, uid, ou, ...).
+        - name: attribute
+          type: keyword
+          description: Attribute type of the first RDN of the modifier Distinguished Name, for example cn or uid.
+        - name: meta
+          type: keyword
+          description: Remaining path components of the modifier Distinguished Name.
+    - name: modify_timestamp
+      type: date
+      description: Timestamp when the entry was last modified.
+    - name: new_rdn
+      type: group
+      fields:
+        - name: value
+          type: keyword
+          description: Value of the new relative Distinguished Name for rename operations, regardless of its attribute type (cn, uid, ou, ...).
+        - name: attribute
+          type: keyword
+          description: Attribute type of the new relative Distinguished Name for rename operations, for example cn or uid.
+    - name: new_superior
+      type: group
+      fields:
+        - name: value
+          type: keyword
+          description: Value of the first (left-most) RDN of the new parent Distinguished Name for move operations, regardless of its attribute type (cn, uid, ou, ...).
+        - name: attribute
+          type: keyword
+          description: Attribute type of the first RDN of the new parent Distinguished Name for move operations, for example cn or uid.
+        - name: meta
+          type: keyword
+          description: Remaining path components of the new parent Distinguished Name.
+    - name: object_classes
+      type: keyword
+      description: List of LDAP objectClass values associated with the entry.
+    - name: op
+      type: long
+      description: Operation identifier within the connection.
+    - name: operation_purpose
+      type: group
+      fields:
+        - name: application_name
+          type: keyword
+          description: Name of the application initiating the operation.
+        - name: application_version
+          type: keyword
+          description: Version of the application initiating the operation.
+    - name: origin
+      type: keyword
+      description: Origin of the operation.
+    - name: requester_dn
+      type: group
+      fields:
+        - name: value
+          type: keyword
+          description: Value of the first (left-most) RDN of the requester Distinguished Name, regardless of its attribute type (cn, uid, ou, ...).
+        - name: attribute
+          type: keyword
+          description: Attribute type of the first RDN of the requester Distinguished Name, for example cn or uid.
+        - name: meta
+          type: keyword
+          description: Remaining path components of the requester Distinguished Name.
+    - name: thread_id
+      type: long
+      description: Thread ID processing the operation.
+    - name: triggered_by_conn
+      type: long
+      description: Connection ID that triggered the operation.
+    - name: triggered_by_op
+      type: long
+      description: Operation ID that triggered the operation.
+    - name: using_admin_session_worker_thread
+      type: boolean
+      description: Indicates whether an admin session worker thread processed the operation.
