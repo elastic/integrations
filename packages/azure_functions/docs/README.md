@@ -96,6 +96,12 @@ Instead of a connection string, you can authenticate using a Microsoft Entra ID 
 4. **Configure the integration**  
    Set **Authentication type** to **Client Secret**. Provide **Tenant ID**, **Client ID**, **Client Secret**, and the fully qualified **Event Hub namespace** (for example `yournamespace.servicebus.windows.net`). Use the same Storage Account and container as for connection string authentication; the integration will use the client secret to access both Event Hubs and Storage.
 
+#### AMQP-over-WebSockets and proxy support
+
+By default, the integration uses AMQP ports `5671` and `5672` to communicate with Event Hubs. If these ports are blocked, set **Event Hubs transport protocol** to **AMQP-over-WebSockets** in the advanced options. This tunnels AMQP over HTTPS on port `443` and enables proxy support through the `HTTPS_PROXY` environment variable.
+
+This option requires processor v2 and Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
+
 #### Configuration options
 
 `auth_type` :
@@ -143,6 +149,10 @@ _string_
 `authority_host` :
 _string_
 (Optional, for client secret authentication.) Microsoft Entra ID authority endpoint. Defaults to `https://login.microsoftonline.com` (Azure Public Cloud). Use a different endpoint for other clouds (for example Azure Government, China, Germany).
+
+`transport` :
+_string_
+(Processor v2 only) The transport protocol to use when connecting to Event Hubs. `amqp` (default) uses ports `5671` and `5672`. `websocket` uses AMQP-over-WebSockets on port `443` and enables proxy support through the `HTTPS_PROXY` environment variable.
 
 `storage_account_container` :
 _string_

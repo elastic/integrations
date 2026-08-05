@@ -36,6 +36,12 @@ Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for m
 
 **Authentication (Event Hub):** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
 
+#### AMQP-over-WebSockets and proxy support
+
+By default, the integration uses AMQP ports `5671` and `5672` to communicate with Event Hubs. If these ports are blocked, set **Event Hubs transport protocol** to **AMQP-over-WebSockets** in the advanced options. This tunnels AMQP over HTTPS on port `443` and enables proxy support through the `HTTPS_PROXY` environment variable.
+
+This option requires processor v2 and Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
+
 #### Native logging
 
 The Microsoft Foundry provides native logging and monitoring to track the telemetry of the service. The `Audit` and `RequestResponse` log categories come under the native logging. However, the default logging doesn't log the inputs and outputs of the service. This is useful to ensure that the services operates as expected.
@@ -501,6 +507,5 @@ The following alert rule templates are available:
 
 
 **[Microsoft Foundry] Provisioned Utilization above threshold**
-
 
 
