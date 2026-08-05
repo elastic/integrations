@@ -2,7 +2,7 @@
 name: integrations-schedule-daily
 
 env:
-  SETUP_GVM_VERSION: "v0.5.1"
+  SETUP_GVM_VERSION: "v0.6.0"
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
 
 # The pipeline is triggered by the scheduler every day
@@ -20,24 +20,85 @@ steps:
     build:
       env:
         SERVERLESS: "false"
-        SKIP_PUBLISHING: "true"
         FORCE_CHECK_ALL: "true"
-        STACK_VERSION: 7.17-SNAPSHOT
+        STACK_VERSION: 7.17.29
     depends_on:
       - step: "check"
         allow_failure: false
+    if: |
+      build.env('TEST_PACKAGES_7_BRANCH') == "true"
 
-  - label: "Check integrations local stacks - Stack Version v8.12"
+  - label: "Check integrations local stacks - Stack Version v8.19"
     trigger: "integrations"
     build:
       env:
         SERVERLESS: "false"
-        SKIP_PUBLISHING: "true"
         FORCE_CHECK_ALL: "true"
-        STACK_VERSION: 8.12-SNAPSHOT
+        STACK_VERSION: 8.19.20-SNAPSHOT
+        PUBLISH_COVERAGE_REPORTS: "true"
     depends_on:
       - step: "check"
         allow_failure: false
+    if: |
+      build.env('TEST_PACKAGES_8_BRANCH') == "true"
+
+  - label: "Check integrations local stacks - Stack Version v8.19 - LogsDB"
+    trigger: "integrations"
+    build:
+      env:
+        SERVERLESS: "false"
+        FORCE_CHECK_ALL: "true"
+        STACK_VERSION: 8.19.20-SNAPSHOT
+        STACK_LOGSDB_ENABLED: "true"
+        PUBLISH_COVERAGE_REPORTS: "false"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+    if: |
+      build.env('TEST_PACKAGES_8_BRANCH') == "true"
+
+  - label: "Check integrations local stacks and basic subscription and LogsDB"
+    trigger: "integrations"
+    build:
+      env:
+        SERVERLESS: "false"
+        FORCE_CHECK_ALL: "true"
+        PUBLISH_COVERAGE_REPORTS: "false"
+        ELASTIC_SUBSCRIPTION: "basic"
+        STACK_LOGSDB_ENABLED: "true"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+    if: |
+      build.env('TEST_PACKAGES_BASIC_SUBSCRIPTION') == "true"
+
+  - label: "Check integrations local stacks and basic subscription"
+    trigger: "integrations"
+    build:
+      env:
+        SERVERLESS: "false"
+        FORCE_CHECK_ALL: "true"
+        PUBLISH_COVERAGE_REPORTS: "false"
+        ELASTIC_SUBSCRIPTION: "basic"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+    if: |
+      build.env('TEST_PACKAGES_BASIC_SUBSCRIPTION') == "true"
+
+  - label: "Check integrations local stacks - Stack Version v9.6"
+    trigger: "integrations"
+    build:
+      env:
+        SERVERLESS: "false"
+        FORCE_CHECK_ALL: "true"
+        STACK_VERSION: 9.6.0-SNAPSHOT
+        PUBLISH_COVERAGE_REPORTS: "false"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+    if: |
+      build.env('TEST_PACKAGES_9_BRANCH') == "true"
 
   - label: "Check integrations in serverless - project: Observability"
     key: "trigger-integrations-serverless-obs"
@@ -48,6 +109,8 @@ steps:
     depends_on:
       - step: "check"
         allow_failure: false
+    if: |
+      build.env('TEST_PACKAGES_SERVERLESS') == "true"
 
   - label: "Check integrations in serverless - project: Security"
     key: "trigger-integrations-serverless-security"
@@ -58,3 +121,14 @@ steps:
     depends_on:
       - step: "check"
         allow_failure: false
+    if: |
+      build.env('TEST_PACKAGES_SERVERLESS') == "true"
+
+  - label: ":package: Publish missing packages"
+    key: "trigger-integrations-publish"
+    trigger: "integrations-publish"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+    if: |
+      build.env('REPUBLISH_PACKAGES') == "true"

@@ -22,10 +22,18 @@ if running_on_buildkite; then
 fi
 
 SERVERLESS_PROJECT=${SERVERLESS_PROJECT:-"observability"}
-echo "Running packages on Serverles project type: ${SERVERLESS_PROJECT}"
+echo "Running packages on Serverless project type: ${SERVERLESS_PROJECT}"
 if running_on_buildkite; then
     buildkite-agent annotate "Serverless Project: ${SERVERLESS_PROJECT}" --context "ctx-info-${SERVERLESS_PROJECT}" --style "info"
 fi
+
+# Download config files from kibana
+kibana_url="https://raw.githubusercontent.com/elastic/kibana/main/config/serverless.oblt.yml"
+if [[ "$SERVERLESS_PROJECT" == "security" ]]; then
+    kibana_url="https://raw.githubusercontent.com/elastic/kibana/main/config/serverless.security.yml"
+fi
+export KIBANA_CONFIG_FILE_PATH="${WORKSPACE}/kibana.serverless.config.yml"
+curl -sSL -o "${KIBANA_CONFIG_FILE_PATH}" "${kibana_url}"
 
 if [ ! -d packages ]; then
     echo "Missing packages folder"
@@ -35,11 +43,13 @@ if [ ! -d packages ]; then
     exit 1
 fi
 
+echo "--- Install requirements"
 add_bin_path
 
 with_yq
 with_mage
-with_docker_compose
+with_docker
+with_docker_compose_plugin
 with_kubernetes
 
 use_elastic_package
@@ -51,25 +61,43 @@ sleep 120
 echo "Done."
 
 # setting range of changesets to check differences
+echo "--- Get from and to changesets"
 from="$(get_from_changeset)"
+if [[ "${from}" == "" ]]; then
+    echo "Missing \"from\" changeset".
+    exit 1
+fi
 to="$(get_to_changeset)"
+if [[ "${to}" == "" ]]; then
+    echo "Missing \"to\" changeset".
+    exit 1
+fi
+echo "Checking with commits: from: '${from}' to: '${to}'"
 
 any_package_failing=0
 
-pushd packages > /dev/null
-for package in $(list_all_directories); do
-    if ! process_package "${package}" "${from}" "${to}"; then
+echo "--- List all directories"
+PACKAGE_LIST=$(list_all_directories)
+for package_path in ${PACKAGE_LIST}; do
+    echo "--- [$package_path] check if it is required to be tested"
+    if ! should_test_package "${package_path}" "${from}" "${to}"; then
+        echo "- ${package_path}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
+        continue
+    fi
+
+    if ! process_package "${package_path}" "${FAILED_PACKAGES_FILE_PATH}" ; then
         any_package_failing=1
     fi
 done
-popd > /dev/null
 
 if running_on_buildkite ; then
     if [ -f "${SKIPPED_PACKAGES_FILE_PATH}" ]; then
+        echo "--- Create Skip Buildkite annotation"
         create_collapsed_annotation "Skipped packages in ${SERVERLESS_PROJECT}" "${SKIPPED_PACKAGES_FILE_PATH}" "info" "ctx-skipped-packages-${SERVERLESS_PROJECT}"
     fi
 
     if [ -f "${FAILED_PACKAGES_FILE_PATH}" ]; then
+        echo "--- Create Failed Buildkite annotation"
         create_collapsed_annotation "Failed packages in ${SERVERLESS_PROJECT}" "${FAILED_PACKAGES_FILE_PATH}" "error" "ctx-failed-packages-${SERVERLESS_PROJECT}"
     fi
 fi
