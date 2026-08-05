@@ -1029,6 +1029,368 @@ func TestApplyIntegration_ContinuesWhenMainOwnerUnreadable(t *testing.T) {
 	assert.Contains(t, lines[1], "Add backports config")
 }
 
+// setupIntegrationRepoWithOtherPackageConflict creates a repo where the fix
+// commit touches both the target package (kubernetes) and a second package
+// (security_detection_engine) that was removed from the backport branch.
+// Cherry-picking such a commit produces a modify/delete conflict for
+// security_detection_engine/manifest.yml: the file was modified by the
+// commit but is absent from the backport branch HEAD. Apply() must succeed
+// by scoping the cherry-pick to the target package only, discarding the
+// conflict in the other package.
+func setupIntegrationRepoWithOtherPackageConflict(t *testing.T) (workDir, fixSHA string) {
+	t.Helper()
+
+	run := func(dir string, args ...string) string {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = dir
+		out, err := cmd.CombinedOutput()
+		require.NoError(t, err, "git %v: %s", args, out)
+		return strings.TrimRight(string(out), "\n")
+	}
+
+	remoteDir := t.TempDir()
+	run(remoteDir, "init", "--bare", "-q")
+
+	workDir = t.TempDir()
+	run(workDir, "clone", "-q", remoteDir, ".")
+	run(workDir, "config", "user.email", "test@test.com")
+	run(workDir, "config", "user.name", "Test")
+	run(workDir, "config", "commit.gpgsign", "false")
+
+	write := func(rel, content string) {
+		t.Helper()
+		require.NoError(t, os.WriteFile(filepath.Join(workDir, rel), []byte(content), 0o644))
+	}
+
+	require.NoError(t, os.MkdirAll(filepath.Join(workDir, "packages", "kubernetes"), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(workDir, "packages", "security_detection_engine"), 0o755))
+
+	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.0\n")
+	write("packages/kubernetes/changelog.yml", "- version: \"1.0.0\"\n"+
+		"  changes:\n"+
+		"    - description: Initial release.\n"+
+		"      type: enhancement\n"+
+		"      link: https://github.com/elastic/integrations/pull/1\n")
+	write("packages/security_detection_engine/manifest.yml", "format_version: \"3.0.0\"\nname: security_detection_engine\ntype: integration\nversion: 1.0.0\n")
+
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Initial release")
+	baseCommit := run(workDir, "rev-parse", "--short=10", "HEAD")
+
+	write(".backports.yml", "backports:\n"+
+		"  - package: kubernetes\n"+
+		"    branch: backport-kubernetes-1.x\n"+
+		"    base_version: \"1.0.0\"\n"+
+		"    base_commit: \""+baseCommit+"\"\n"+
+		"    maintained_until: null\n"+
+		"    archived: false\n"+
+		"    remove_other_packages: false\n")
+
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Add backports config")
+	run(workDir, "push", "-q", "origin", "HEAD:main")
+
+	// Create the backport branch without security_detection_engine: it is not
+	// part of this backport, so it is removed from the branch, leaving its
+	// manifest.yml absent from the branch HEAD.
+	run(workDir, "checkout", "-q", "-b", "backport-kubernetes-1.x")
+	run(workDir, "rm", "-r", "-q", "packages/security_detection_engine")
+	run(workDir, "commit", "-q", "-m", "Remove non-backported packages")
+	run(workDir, "push", "-q", "origin", "backport-kubernetes-1.x")
+	run(workDir, "checkout", "-q", "main")
+
+	// Fix commit on main touches both packages. When cherry-picked onto
+	// backport-kubernetes-1.x, the kubernetes changes apply cleanly but
+	// security_detection_engine/manifest.yml produces a modify/delete conflict.
+	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.1\n")
+	write("packages/kubernetes/changelog.yml", "- version: \"1.0.1\"\n"+
+		"  changes:\n"+
+		"    - description: Fix timeout in metrics collection.\n"+
+		"      type: bugfix\n"+
+		"      link: https://github.com/elastic/integrations/pull/999\n"+
+		"- version: \"1.0.0\"\n"+
+		"  changes:\n"+
+		"    - description: Initial release.\n"+
+		"      type: enhancement\n"+
+		"      link: https://github.com/elastic/integrations/pull/1\n")
+	write("packages/security_detection_engine/manifest.yml", "format_version: \"3.0.0\"\nname: security_detection_engine\ntype: integration\nversion: 1.0.1\n")
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Fix timeout in metrics collection")
+	fixSHA = run(workDir, "rev-parse", "HEAD")
+
+	return workDir, fixSHA
+}
+
+func TestApplyIntegration_IgnoresConflictsInOtherPackages(t *testing.T) {
+	workDir, fixSHA := setupIntegrationRepoWithOtherPackageConflict(t)
+
+	result, err := Apply(Options{
+		SHA:         fixSHA,
+		Package:     "kubernetes",
+		Target:      "backport-kubernetes-1.x",
+		Remote:      "origin",
+		DryRun:      true,
+		PackagesDir: "packages",
+		Repository:  "elastic/integrations",
+		WorkDir:     workDir,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	// The modify/delete conflict in security_detection_engine must not block
+	// the backport — Apply() scopes the cherry-pick to the target package only.
+	assert.Equal(t, "success", result.Status)
+	assert.Equal(t, "1.0.1", result.NewVersion)
+
+	// The kubernetes package must be correctly backported.
+	manifestData, err := os.ReadFile(filepath.Join(workDir, "packages", "kubernetes", "manifest.yml"))
+	require.NoError(t, err)
+	assert.Contains(t, string(manifestData), "version: 1.0.1")
+
+	// security_detection_engine must remain absent from the backport branch —
+	// the conflict was resolved in favor of the branch state (deleted).
+	_, statErr := os.Stat(filepath.Join(workDir, "packages", "security_detection_engine"))
+	assert.True(t, os.IsNotExist(statErr), "security_detection_engine must not be present on the backport branch")
+}
+
+// setupIntegrationRepoWithOtherPackageRegularConflict creates a repo where
+// both packages exist on the backport branch, but the backport branch has an
+// independent change to security_detection_engine/manifest.yml (description
+// changed) that conflicts with the fix commit's change to the same field.
+// This produces a UU (both modified) conflict in the other package.
+// Apply() must succeed by resetting that file to HEAD, keeping only the
+// kubernetes changes.
+func setupIntegrationRepoWithOtherPackageRegularConflict(t *testing.T) (workDir, fixSHA string) {
+	t.Helper()
+
+	run := func(dir string, args ...string) string {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = dir
+		out, err := cmd.CombinedOutput()
+		require.NoError(t, err, "git %v: %s", args, out)
+		return strings.TrimRight(string(out), "\n")
+	}
+
+	remoteDir := t.TempDir()
+	run(remoteDir, "init", "--bare", "-q")
+
+	workDir = t.TempDir()
+	run(workDir, "clone", "-q", remoteDir, ".")
+	run(workDir, "config", "user.email", "test@test.com")
+	run(workDir, "config", "user.name", "Test")
+	run(workDir, "config", "commit.gpgsign", "false")
+
+	write := func(rel, content string) {
+		t.Helper()
+		require.NoError(t, os.WriteFile(filepath.Join(workDir, rel), []byte(content), 0o644))
+	}
+
+	require.NoError(t, os.MkdirAll(filepath.Join(workDir, "packages", "kubernetes"), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(workDir, "packages", "security_detection_engine"), 0o755))
+
+	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.0\n")
+	write("packages/kubernetes/changelog.yml", "- version: \"1.0.0\"\n"+
+		"  changes:\n"+
+		"    - description: Initial release.\n"+
+		"      type: enhancement\n"+
+		"      link: https://github.com/elastic/integrations/pull/1\n")
+	write("packages/security_detection_engine/manifest.yml",
+		"format_version: \"3.0.0\"\nname: security_detection_engine\ntype: integration\nversion: 1.0.0\ndescription: Base description.\n")
+
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Initial release")
+	baseCommit := run(workDir, "rev-parse", "--short=10", "HEAD")
+
+	write(".backports.yml", "backports:\n"+
+		"  - package: kubernetes\n"+
+		"    branch: backport-kubernetes-1.x\n"+
+		"    base_version: \"1.0.0\"\n"+
+		"    base_commit: \""+baseCommit+"\"\n"+
+		"    maintained_until: null\n"+
+		"    archived: false\n"+
+		"    remove_other_packages: false\n")
+
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Add backports config")
+	run(workDir, "push", "-q", "origin", "HEAD:main")
+
+	// The backport branch keeps security_detection_engine but changes its
+	// description independently, setting up a genuine UU conflict later.
+	run(workDir, "checkout", "-q", "-b", "backport-kubernetes-1.x")
+	write("packages/security_detection_engine/manifest.yml",
+		"format_version: \"3.0.0\"\nname: security_detection_engine\ntype: integration\nversion: 1.0.0\ndescription: Branch description.\n")
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Branch-specific change to security_detection_engine")
+	run(workDir, "push", "-q", "origin", "backport-kubernetes-1.x")
+	run(workDir, "checkout", "-q", "main")
+
+	// Fix commit on main modifies both packages; it also changes the description
+	// of security_detection_engine — conflicting with the branch's own edit.
+	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.1\n")
+	write("packages/kubernetes/changelog.yml", "- version: \"1.0.1\"\n"+
+		"  changes:\n"+
+		"    - description: Fix timeout in metrics collection.\n"+
+		"      type: bugfix\n"+
+		"      link: https://github.com/elastic/integrations/pull/999\n"+
+		"- version: \"1.0.0\"\n"+
+		"  changes:\n"+
+		"    - description: Initial release.\n"+
+		"      type: enhancement\n"+
+		"      link: https://github.com/elastic/integrations/pull/1\n")
+	write("packages/security_detection_engine/manifest.yml",
+		"format_version: \"3.0.0\"\nname: security_detection_engine\ntype: integration\nversion: 1.0.0\ndescription: Main description.\n")
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Fix timeout in metrics collection")
+	fixSHA = run(workDir, "rev-parse", "HEAD")
+
+	return workDir, fixSHA
+}
+
+func TestApplyIntegration_IgnoresRegularConflictInOtherPackage(t *testing.T) {
+	workDir, fixSHA := setupIntegrationRepoWithOtherPackageRegularConflict(t)
+
+	result, err := Apply(Options{
+		SHA:         fixSHA,
+		Package:     "kubernetes",
+		Target:      "backport-kubernetes-1.x",
+		Remote:      "origin",
+		DryRun:      true,
+		PackagesDir: "packages",
+		Repository:  "elastic/integrations",
+		WorkDir:     workDir,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	// The UU conflict in security_detection_engine must not block the backport.
+	assert.Equal(t, "success", result.Status)
+	assert.Equal(t, "1.0.1", result.NewVersion)
+
+	// security_detection_engine must be reset to the branch's own state, not the
+	// cherry-picked version — the conflict is resolved in favor of HEAD.
+	sdeData, err := os.ReadFile(filepath.Join(workDir, "packages", "security_detection_engine", "manifest.yml"))
+	require.NoError(t, err)
+	assert.Contains(t, string(sdeData), "Branch description")
+	assert.NotContains(t, string(sdeData), "Main description")
+}
+
+// setupIntegrationRepoWithOtherPackageCleanApply creates a repo where both
+// packages exist on the backport branch and the fix commit modifies
+// security_detection_engine cleanly (no conflict). Apply() must discard the
+// clean change to the other package and succeed using only the kubernetes
+// changes.
+func setupIntegrationRepoWithOtherPackageCleanApply(t *testing.T) (workDir, fixSHA string) {
+	t.Helper()
+
+	run := func(dir string, args ...string) string {
+		t.Helper()
+		cmd := exec.Command("git", args...)
+		cmd.Dir = dir
+		out, err := cmd.CombinedOutput()
+		require.NoError(t, err, "git %v: %s", args, out)
+		return strings.TrimRight(string(out), "\n")
+	}
+
+	remoteDir := t.TempDir()
+	run(remoteDir, "init", "--bare", "-q")
+
+	workDir = t.TempDir()
+	run(workDir, "clone", "-q", remoteDir, ".")
+	run(workDir, "config", "user.email", "test@test.com")
+	run(workDir, "config", "user.name", "Test")
+	run(workDir, "config", "commit.gpgsign", "false")
+
+	write := func(rel, content string) {
+		t.Helper()
+		require.NoError(t, os.WriteFile(filepath.Join(workDir, rel), []byte(content), 0o644))
+	}
+
+	require.NoError(t, os.MkdirAll(filepath.Join(workDir, "packages", "kubernetes"), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(workDir, "packages", "security_detection_engine"), 0o755))
+
+	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.0\n")
+	write("packages/kubernetes/changelog.yml", "- version: \"1.0.0\"\n"+
+		"  changes:\n"+
+		"    - description: Initial release.\n"+
+		"      type: enhancement\n"+
+		"      link: https://github.com/elastic/integrations/pull/1\n")
+	write("packages/security_detection_engine/manifest.yml",
+		"format_version: \"3.0.0\"\nname: security_detection_engine\ntype: integration\nversion: 1.0.0\n")
+
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Initial release")
+	baseCommit := run(workDir, "rev-parse", "--short=10", "HEAD")
+
+	write(".backports.yml", "backports:\n"+
+		"  - package: kubernetes\n"+
+		"    branch: backport-kubernetes-1.x\n"+
+		"    base_version: \"1.0.0\"\n"+
+		"    base_commit: \""+baseCommit+"\"\n"+
+		"    maintained_until: null\n"+
+		"    archived: false\n"+
+		"    remove_other_packages: false\n")
+
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Add backports config")
+	run(workDir, "push", "-q", "origin", "HEAD:main")
+
+	// The backport branch keeps security_detection_engine unchanged.
+	run(workDir, "checkout", "-q", "-b", "backport-kubernetes-1.x")
+	run(workDir, "push", "-q", "origin", "backport-kubernetes-1.x")
+	run(workDir, "checkout", "-q", "main")
+
+	// Fix commit on main modifies both packages; security_detection_engine
+	// applies cleanly (no conflict) because the branch didn't change it.
+	write("packages/kubernetes/manifest.yml", "format_version: \"3.0.0\"\nname: kubernetes\ntype: integration\nversion: 1.0.1\n")
+	write("packages/kubernetes/changelog.yml", "- version: \"1.0.1\"\n"+
+		"  changes:\n"+
+		"    - description: Fix timeout in metrics collection.\n"+
+		"      type: bugfix\n"+
+		"      link: https://github.com/elastic/integrations/pull/999\n"+
+		"- version: \"1.0.0\"\n"+
+		"  changes:\n"+
+		"    - description: Initial release.\n"+
+		"      type: enhancement\n"+
+		"      link: https://github.com/elastic/integrations/pull/1\n")
+	write("packages/security_detection_engine/manifest.yml",
+		"format_version: \"3.0.0\"\nname: security_detection_engine\ntype: integration\nversion: 1.0.1\n")
+	run(workDir, "add", ".")
+	run(workDir, "commit", "-q", "-m", "Fix timeout in metrics collection")
+	fixSHA = run(workDir, "rev-parse", "HEAD")
+
+	return workDir, fixSHA
+}
+
+func TestApplyIntegration_DiscardsCleanChangesInOtherPackage(t *testing.T) {
+	workDir, fixSHA := setupIntegrationRepoWithOtherPackageCleanApply(t)
+
+	result, err := Apply(Options{
+		SHA:         fixSHA,
+		Package:     "kubernetes",
+		Target:      "backport-kubernetes-1.x",
+		Remote:      "origin",
+		DryRun:      true,
+		PackagesDir: "packages",
+		Repository:  "elastic/integrations",
+		WorkDir:     workDir,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	// The clean cherry-pick change to security_detection_engine must be discarded.
+	assert.Equal(t, "success", result.Status)
+	assert.Equal(t, "1.0.1", result.NewVersion)
+
+	// security_detection_engine must remain at the branch's HEAD version (1.0.0),
+	// not the cherry-picked version (1.0.1).
+	sdeData, err := os.ReadFile(filepath.Join(workDir, "packages", "security_detection_engine", "manifest.yml"))
+	require.NoError(t, err)
+	assert.Contains(t, string(sdeData), "version: 1.0.0")
+	assert.NotContains(t, string(sdeData), "version: 1.0.1")
+}
+
 func TestApplyIntegration_DryRun(t *testing.T) {
 	workDir, fixSHA := setupIntegrationRepo(t)
 
