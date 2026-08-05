@@ -18,9 +18,27 @@ The Active Directory Entity Analytics integration collects identity data.
 
 ## Requirements
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+Elastic Agent must be installed for standard deployments. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
+
+### Agentless deployment
+
+This integration supports agentless deployment, where the collection agent runs in Elastic's cloud rather than inside your network. Because the agent must still speak LDAP to an Active Directory server, the server must be reachable over the public internet on TCP port 636 (LDAPS). Plain LDAP on port 389 is not accepted in this configuration.
+
+Agentless deployment works with:
+
+- **Microsoft Entra Domain Services (Azure AD DS)** — when the "Allow secure LDAP access over the internet" option is enabled on the managed domain, the domain is assigned a public IP address on port 636. Microsoft recommends restricting inbound access to known source IP ranges using an NSG rule. See [Configure secure LDAP for Microsoft Entra Domain Services](https://learn.microsoft.com/en-us/entra/identity/domain-services/tutorial-configure-ldaps) for setup instructions. Check Elastic's documentation for the current agentless egress IP ranges to use in your NSG rule.
+- **JumpCloud Cloud LDAP** — `ldap.jumpcloud.com:636` is a public endpoint and requires no additional configuration.
+- **Okta LDAP Interface** — `<org>.ldap.okta.com:636` is a public endpoint and requires no additional configuration.
+
+Agentless deployment does **not** work without additional network connectivity for:
+
+- Traditional on-premises Active Directory domain controllers (not internet-exposed)
+- AWS Managed Microsoft AD (VPC-internal only)
+- Google Cloud Managed Microsoft AD (private network only)
+
+For on-premises AD that is not internet-accessible, use standard agent-based deployment with an Elastic Agent running inside your network.
 
 ### Collect data from Active Directory
 
@@ -37,9 +55,13 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Usage
 
-The Active Directory provider periodically contacts the server, retrieving updates for users, updates its internal cache of user metadata, and ships updated user metadata to Elasticsearch.
+The Active Directory provider periodically contacts the server, retrieves updates for users and devices, updates its internal cache of metadata, and ships updated records to Elasticsearch.
 
-Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations will send the entire list of users in state, along with write markers to indicate the start and end of the synchronization event. Incremental updates will only send data for changed users during that event. Changes on a user can come in many forms, whether it be a change to the user’s metadata, or a user was added or deleted. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
+Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations send the entire list of users and devices in state. Incremental updates send only records that changed since the last sync. Changes include metadata updates, additions, and deletions. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
+
+By default this integration uses **minimal-state sync**, which routes user and device documents directly to the `user` and `device` data streams without writing synchronization marker events to the `entity` data stream. Existing policies that were created before this default was introduced are updated to use minimal-state sync on upgrade.
+
+If you require synchronization marker events — start and end markers written to the `entity` data stream around each full synchronization — you can enable the legacy sync mode by setting the **Use minimal state** option to `false` in the integration configuration. Note that this option is not available when the integration is deployed in agentless mode.
 
 This integration provides an **asset inventory**, a point-in-time snapshot of which users and devices exist and their current properties. It does not provide an audit trail of who changed what, or when. If you need to track administrative changes to Active Directory objects, consider collecting Windows Security event logs (e.g., Event IDs 4720, 4722, 4738, 4743) via the [System integration](https://docs.elastic.co/integrations/system).
 
