@@ -68,7 +68,7 @@ NON_PACKAGE_PATHS=(
     ".mergify.yml"
     "catalog-info.yaml"
     "cmd/backport/backports/apply/apply.go"
-    "magefile_main_only.go"
+    "magefile_daily_jobs.go"
     "dev/codeowners/codeowners.go"
     "dev/gitutil/git.go"
     "dev/requiresupdate/requiresupdate.go"
