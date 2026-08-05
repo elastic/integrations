@@ -130,23 +130,30 @@ processors:
       tag: set_event_category_from_chrome_name
       lang: painless
       params:
+        browser_extension_install: package
         chrome_os_add_user: iam
         chrome_os_remove_user: iam
-        device_boot_state_change: configuration
         chrome_os_login_failure_event: authentication
         chrome_os_login_logout_event: authentication
         chrome_os_login_event: authentication
         chrome_os_logout_event: authentication
+        content_transfer: file
+        device_boot_state_change: configuration
         extension_request: configuration
         login_event: authentication
         malware_transfer: malware
+        sensitive_data_transfer: file
+        unsafe_site_visit: web
       source: |-
         if (ctx.event == null) {
           ctx.event = new HashMap();
         }
-        def category = new ArrayList();
-        category.add(params.get(ctx.google_workspace.chrome.name.toLowerCase()));
-        ctx.event.put('category', category);
+        def category = params.get(ctx.google_workspace.chrome.name.toLowerCase());
+        if (category == null) {
+          ctx.event.remove('category');
+        } else {
+          ctx.event.put('category', [category]);
+        }
       on_failure:
         - append:
             field: error.message
@@ -157,23 +164,31 @@ processors:
       tag: set_event_type_from_chrome_name
       lang: painless
       params:
+        browser_extension_install: installation
         chrome_os_add_user: creation
         chrome_os_remove_user: deletion
-        device_boot_state_change: change
         chrome_os_login_failure_event: info
         chrome_os_login_logout_event: info
         chrome_os_login_event: start
         chrome_os_logout_event: end
+        content_transfer: info
+        device_boot_state_change: change
         extension_request: info
         login_event: info
         malware_transfer: info
+        password_breach: info
+        sensitive_data_transfer: info
+        unsafe_site_visit: info
       source: |-
         if (ctx.event == null) {
           ctx.event = new HashMap();
         }
-        def type = new ArrayList();
-        type.add(params.get(ctx.google_workspace.chrome.name.toLowerCase()));
-        ctx.event.put('type', type);
+        def type = params.get(ctx.google_workspace.chrome.name.toLowerCase());
+        if (type == null) {
+          ctx.event.remove('type');
+        } else {
+          ctx.event.put('type', [type]);
+        }
       on_failure:
         - append:
             field: error.message
