@@ -7,7 +7,8 @@
 package main
 
 import (
-	_ "github.com/elastic/go-licenser"
 	_ "github.com/magefile/mage"
 	_ "golang.org/x/tools/cmd/goimports"
+
+	_ "github.com/elastic/go-licenser"
 )
