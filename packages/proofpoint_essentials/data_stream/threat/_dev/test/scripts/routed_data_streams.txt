@@ -1,0 +1,223 @@
+# Verify that events from the threat data stream are routed to event-type-specific
+# data streams via routing rules.
+#
+# The mock HTTP server returns one sample event in each of the four categories
+# returned by the /v2/siem/all endpoint:
+#   - clicksBlocked    → proofpoint_essentials.clicks_blocked (rerouted)
+#   - clicksPermitted  → proofpoint_essentials.clicks_permitted (rerouted)
+#   - messagesBlocked  → proofpoint_essentials.message_blocked (rerouted)
+#   - messagesDelivered → proofpoint_essentials.message_delivered (rerouted)
+#
+# The sample data is drawn from the existing pipeline test fixtures and from
+# the Proofpoint Essentials SIEM API documentation.
+
+[!external_stack] skip 'Skipping external stack test.'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock HTTP server.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} ppe-mock
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy pointing at the mock server.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml THREAT_DS
+
+# Each event type should route to its own data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-proofpoint_essentials.clicks_blocked-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-proofpoint_essentials.clicks_permitted-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-proofpoint_essentials.message_blocked-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m logs-proofpoint_essentials.message_delivered-*
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${THREAT_DS}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down ppe-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://svc-ppe-mock:8080
+  api_key: testkey
+  api_key_secret: testsecret
+data_stream:
+  vars:
+    initial_interval: 2h
+    interval: 15s
+    collect_customer_data: true
+    collect_own_data: true
+    preserve_original_event: false
+
+-- ppe-mock/docker-compose.yml --
+services:
+  ppe-mock:
+    image: docker.elastic.co/observability/stream:v0.19.0
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+
+-- ppe-mock/config.yml --
+rules:
+  - path: /health
+    methods: [GET]
+    responses:
+      - status_code: 200
+        body: OK
+  - path: /v2/siem/all
+    methods: [GET]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `{
+            "queryEndTime": "2022-04-01 00:00:00 +0000 UTC",
+            "clicksBlocked": [
+              {
+                "url": "https://www.example.com/?name=john",
+                "classification": "phish",
+                "clickTime": "2022-03-21T07:52:11.000Z",
+                "threatTime": "2022-03-18T14:54:20.000Z",
+                "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36 Edg/99.0.1150.39",
+                "id": "8760d0fc-1234-1234-1234-2exxfxxxxx1xd",
+                "clickIP": "89.160.20.112",
+                "sender": "abc123@example.com",
+                "recipient": "123abc@example.com",
+                "senderIP": "81.2.69.143",
+                "GUID": "x11xxxx1-12f9-111x-x12x-1x1x123456xx",
+                "threatID": "3xx97xx852c66a7xx761450xxxxxx9f4ffaxxxxxxxxxxxxxxx7a76481xx",
+                "threatStatus": "active",
+                "messageID": "12345678912345.12345.mail@example.com"
+              }
+            ],
+            "clicksPermitted": [
+              {
+                "url": "http://example.com/ixxxx464xxx6x6xxd_cXxxxT_kxxTuQx_xIhxlx2qxxnxvxPxn",
+                "classification": "spam",
+                "clickTime": "2022-03-30T10:51:53.000Z",
+                "threatTime": "2022-02-26T00:36:25.000Z",
+                "userAgent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36",
+                "id": "90dd54bc-1234-1234-1234-cxxxxxxxxx4",
+                "clickIP": "89.160.20.112",
+                "sender": "abc123@example.com",
+                "recipient": "exxxxxxx8x2xxxx2x6x6xxxxx6xxxx5@example.com",
+                "senderIP": "81.2.69.143",
+                "GUID": "QUWXXxXXJHlYXRXXXXVXUXXk",
+                "threatID": "xxxxxxbx1cxcxx0xcx5xxxxdx5xex8xbx7xxxeexxxxxxxx9",
+                "threatStatus": "cleared",
+                "messageID": "12345678912345.12345.mail@example.com"
+              }
+            ],
+            "messagesBlocked": [
+              {
+                "GUID": "PE10US31763448305Iuh6KWTOOjEJV01",
+                "completelyRewritten": "false",
+                "customerEid": "1234567",
+                "customerName": "Plan ABC",
+                "fromAddress": "john@example.com",
+                "headerFrom": "john@example.com",
+                "impostorScore": 0,
+                "malwareScore": 0,
+                "messageID": "<20251118064504.GA125698@m1234567.ppops.net>",
+                "messageParts": [
+                  {
+                    "contentType": "text/html",
+                    "disposition": "inline",
+                    "filename": "text.html",
+                    "md5": "7d793037a0760186574b0282f2f435e7",
+                    "oContentType": "text/html",
+                    "sandboxStatus": "notrequested",
+                    "sha256": "486ea46224d1bb4fb680f34f7c9ad96a8f24ec88be73ea8e5a6c65260e9cb8a7"
+                  }
+                ],
+                "messageSize": 52944,
+                "messageTime": "2025-11-18T06:45:05.000000Z",
+                "parentEid": "12365",
+                "parentName": "QA Test Account - example.net",
+                "phishScore": 0,
+                "quarantineRule": "malware",
+                "recipient": ["bob@example.org"],
+                "sender": "test@example.org",
+                "senderIP": "1.128.0.1",
+                "spamScore": 0,
+                "stackName": "us3",
+                "subject": "attachment threat",
+                "threatsInfoMap": [
+                  {
+                    "classification": "malware",
+                    "threat": "ab4a368d0a65467ad6177ec6ae407f83d8e046ef34113fd89a2c7dd182e57c8e",
+                    "threatId": "ABCD1234-1234-5678-ABEF-80123456789D",
+                    "threatStatus": "active",
+                    "threatTime": "2025-11-18T06:47:26.915Z",
+                    "threatType": "attachment"
+                  }
+                ],
+                "toAddresses": ["bob@example.org"]
+              }
+            ],
+            "messagesDelivered": [
+              {
+                "GUID": "GBCJHVbvfdjHIVBDBbliuvsvoehfb64V9SFgvuvhVUYVbi-abcd",
+                "completelyRewritten": "true",
+                "customerEid": "1234567",
+                "customerName": "Customer 1",
+                "fromAddress": "not_a_badguy@example.com",
+                "headerFrom": "not_a_badguy@example.com",
+                "impostorScore": 0,
+                "malwareScore": 0,
+                "messageID": "<20251118073503.GA12345@m1234567.ppops.net>",
+                "messageParts": [
+                  {
+                    "contentType": "text/html",
+                    "disposition": "inline",
+                    "filename": "text.html",
+                    "md5": "5d41402abc4b2a76b9719d911017c592",
+                    "oContentType": "text/html",
+                    "sandboxStatus": "notrequested",
+                    "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+                  }
+                ],
+                "messageSize": 2319,
+                "messageTime": "2025-11-18T07:35:04.000000Z",
+                "parentEid": "56890",
+                "parentName": "QA Test Account - example.net",
+                "phishScore": 0,
+                "quarantineRule": "N/A",
+                "recipient": ["qa@example.org"],
+                "sender": "www-data@example.com",
+                "senderIP": "175.16.199.1",
+                "spamScore": 0,
+                "stackName": "us3",
+                "subject": "URL threat",
+                "threatsInfoMap": [
+                  {
+                    "classification": "malware",
+                    "threat": "https://example.com/files/demo_1234567890.docx",
+                    "threatId": "6abcdef4-1234-5678-9012-dabcdef12314",
+                    "threatStatus": "active",
+                    "threatTime": "2025-11-18T07:37:18Z",
+                    "threatType": "URL"
+                  }
+                ],
+                "toAddresses": ["qa@example.org"]
+              }
+            ]
+          }` }}
