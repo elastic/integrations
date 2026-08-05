@@ -297,9 +297,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-05-25T18:48:06.786+05:30",
     "agent": {
-        "ephemeral_id": "7098ebe1-47c4-4fc7-99ff-39e0e4b7ba9f",
-        "id": "3a09451c-2804-463b-8229-1508f517abd7",
-        "name": "elastic-agent-95198",
+        "ephemeral_id": "f9fd8c65-9bf7-498b-950d-52d1d972ae41",
+        "id": "36dead45-8cf1-413c-b122-4bcf6cf6b519",
+        "name": "elastic-agent-83658",
         "type": "filebeat",
         "version": "8.19.0"
     },
@@ -308,14 +308,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "ping_directory.audit",
-        "namespace": "66704",
+        "namespace": "49604",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "3a09451c-2804-463b-8229-1508f517abd7",
+        "id": "36dead45-8cf1-413c-b122-4bcf6cf6b519",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -323,11 +323,10 @@ An example event for `audit` looks as following:
         "action": "modify",
         "agent_id_status": "verified",
         "category": [
-            "iam",
             "configuration"
         ],
         "dataset": "ping_directory.audit",
-        "ingested": "2026-08-03T09:15:59Z",
+        "ingested": "2026-08-05T09:52:36Z",
         "kind": "event",
         "original": "# 25/May/2026:18:48:06.786 +0530; conn=13; op=28; instanceName=\"pingdirectory-elastic-test\"; threadID=29; clientIP=10.50.15.29; requesterDN=\"cn=Directory Manager,cn=Root DNs,cn=config\"; usingAdminSessionWorkerThread=true; operationPurpose={ \"applicationName\":\"PingDirectory\", \"applicationVersion\":\"11.0.0.2\", \"codeLocation\":\"DSConfig.getReason:2978 SetPropSubCommandHandler.modifyManagedObject:541 SetPropSubCommandHandler.run:1246 DSConfig.runSubCommand:2574 DSConfig.execute:1698\" }\ndn: cn=File-Based Audit Logger,cn=Loggers,cn=config\nchangetype: modify\nreplace: ds-cfg-enabled\nds-cfg-enabled: true\n-\nreplace: modifiersName\nmodifiersName: cn=Directory Manager,cn=Root DNs,cn=config\n-\nreplace: modifyTimestamp\nmodifyTimestamp: 20260525131806.681Z",
         "reason": "DSConfig.getReason:2978 SetPropSubCommandHandler.modifyManagedObject:541 SetPropSubCommandHandler.run:1246 DSConfig.runSubCommand:2574 DSConfig.execute:1698",
@@ -342,7 +341,7 @@ An example event for `audit` looks as following:
     "log": {
         "file": {
             "device_id": "64768",
-            "inode": "1835218",
+            "inode": "1453914",
             "path": "/tmp/service_logs/test-audit.log"
         },
         "flags": [
@@ -380,7 +379,7 @@ An example event for `audit` looks as following:
                 "meta": "cn=Root DNs,cn=config",
                 "value": "Directory Manager"
             },
-            "thread_id": "29",
+            "thread_id": 29,
             "using_admin_session_worker_thread": true
         }
     },
@@ -454,7 +453,7 @@ An example event for `audit` looks as following:
 | ping_directory.audit.requester_dn.attribute | Attribute type of the first RDN of the requester Distinguished Name, for example cn or uid. | keyword |
 | ping_directory.audit.requester_dn.meta | Remaining path components of the requester Distinguished Name. | keyword |
 | ping_directory.audit.requester_dn.value | Value of the first (left-most) RDN of the requester Distinguished Name, regardless of its attribute type (cn, uid, ou, ...). | keyword |
-| ping_directory.audit.thread_id | Thread ID processing the operation. | keyword |
+| ping_directory.audit.thread_id | Thread ID processing the operation. | long |
 | ping_directory.audit.triggered_by_conn | Connection ID that triggered the operation. | long |
 | ping_directory.audit.triggered_by_op | Operation ID that triggered the operation. | long |
 | ping_directory.audit.using_admin_session_worker_thread | Indicates whether an admin session worker thread processed the operation. | boolean |

@@ -30,7 +30,7 @@ processors:
       field: event.original
       tag: parse_audit_header
       patterns:
-        - '^# (?<ping_directory.audit.timestamp>\d{2}\/[A-Za-z]{3}\/\d{4}:\d{2}:\d{2}:\d{2}\.\d{3}) (?<ping_directory.audit.timezone>[+-]\d{4});(?: conn=%{INT:ping_directory.audit.conn:long};?)?(?: op=%{NUMBER:ping_directory.audit.op:long};?)?(?: triggeredByConn=%{NUMBER:ping_directory.audit.triggered_by_conn:long};?)?(?: triggeredByOp=%{NUMBER:ping_directory.audit.triggered_by_op:long};?)?(?: origin="%{DATA:ping_directory.audit.origin}";?)?(?: instanceName="%{DATA:ping_directory.audit.instance_name}";?)?(?: threadID=%{NUMBER:ping_directory.audit.thread_id};?)?(?: clientIP=%{IP:ping_directory.audit.client_ip};?)?(?: requesterDN="%{DATA:ping_directory.audit.requester_dn_raw}";?)?(?: usingAdminSessionWorkerThread=%{WORD:ping_directory.audit.using_admin_session_worker_thread};?)?'
+        - '^# (?<ping_directory.audit.timestamp>\d{2}\/[A-Za-z]{3}\/\d{4}:\d{2}:\d{2}:\d{2}\.\d{3}) (?<ping_directory.audit.timezone>[+-]\d{4});(?: conn=%{INT:ping_directory.audit.conn:long};?)?(?: op=%{NUMBER:ping_directory.audit.op:long};?)?(?: triggeredByConn=%{NUMBER:ping_directory.audit.triggered_by_conn:long};?)?(?: triggeredByOp=%{NUMBER:ping_directory.audit.triggered_by_op:long};?)?(?: origin="%{DATA:ping_directory.audit.origin}";?)?(?: instanceName="%{DATA:ping_directory.audit.instance_name}";?)?(?: threadID=%{NUMBER:ping_directory.audit.thread_id:long};?)?(?: clientIP=%{IP:ping_directory.audit.client_ip};?)?(?: requesterDN="%{DATA:ping_directory.audit.requester_dn_raw}";?)?(?: usingAdminSessionWorkerThread=%{WORD:ping_directory.audit.using_admin_session_worker_thread};?)?'
       if: ctx.event?.original != null
   - gsub:
       field: event.original
@@ -313,6 +313,11 @@ processors:
       tag: append_iam_into_event_category
       value: iam
       allow_duplicates: false
+      if: >-
+        ctx.ping_directory?.audit?.dn?.meta == null ||
+        !ctx.ping_directory.audit.dn.meta.endsWith('cn=config')
+      description: >-
+        Categorizes the record as iam unless the target entry lives under cn=config, in which case it is a server configuration change rather than an identity or access-management event.
   - append:
       field: event.category
       tag: append_configuration_into_event_category
@@ -488,6 +493,17 @@ processors:
       allow_duplicates: false
       description: >-
         Appends the target entry DN's first RDN value to related.user when the entry represents a person (inetOrgPerson or person object class).
+  - append:
+      field: related.user
+      tag: append_ping_directory_audit_dn_value_into_related_user_by_attribute
+      if: >-
+        ctx.ping_directory?.audit?.dn?.value != null && ctx.ping_directory.audit.dn.value != '' &&
+        ctx.ping_directory?.audit?.dn?.attribute != null &&
+        ['uid','userid','sAMAccountName'].contains(ctx.ping_directory.audit.dn.attribute)
+      value: '{{{ping_directory.audit.dn.value}}}'
+      allow_duplicates: false
+      description: >-
+        Appends the target entry's RDN value to related.user when the DN is keyed on a user attribute, covering delete and rename records that carry no objectClass lines.
   - set:
       field: event.reason
       tag: set_event_reason_from_audit_operation_purpose_code_location
@@ -498,13 +514,6 @@ processors:
       tag: set_event_timezone_from_audit_timezone
       copy_from: ping_directory.audit.timezone
       ignore_empty_value: true
-  - set:
-      field: event.timezone
-      tag: set_event_timezone_from_tz_offset
-      copy_from: _conf.tz_offset
-      if: ctx._conf?.tz_offset != null && ctx.event?.timezone == null
-      ignore_empty_value: true
-      override: false
   - date:
       field: ping_directory.audit.timestamp
       tag: date_timestamp_with_timezone
