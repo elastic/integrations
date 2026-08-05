@@ -84,8 +84,8 @@ steps:
       - "dev/scripts/**.sh"
       - "dev/backports/**"
     if: |
-      (build.env('BUILDKITE_PULL_REQUEST') != "false" && build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main") ||
-      (build.env('BUILDKITE_PULL_REQUEST') == "false" && build.branch == "main")
+      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
+      build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main"
 
   - label: ":git: Trigger backport dry-runs"
     key: "trigger-backport-dryrun"
@@ -101,23 +101,6 @@ steps:
       build.env('BUILDKITE_PULL_REQUEST') != "false" &&
       build.env('BUILDKITE_PIPELINE_SLUG') == "integrations" &&
       build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main"
-
-  - label: ":git: Create backport branches for new entries"
-    key: "trigger-backport-create"
-    command: ".buildkite/scripts/trigger_backport.sh"
-    agents:
-      image: "${LINUX_AGENT_IMAGE}"
-    plugins:
-      - elastic/vault-github-token#v0.1.0:
-    depends_on:
-      - step: "check-backports-inventory"
-        allow_failure: false
-    if_changed:
-      - ".backports.yml"
-    if: |
-      build.env('BUILDKITE_PULL_REQUEST') == "false" &&
-      build.branch == "main" &&
-      build.env('BUILDKITE_PIPELINE_SLUG') == "integrations"
 
   - label: ":junit: Sources Junit annotate"
     agents:
@@ -135,10 +118,24 @@ steps:
           run-in-docker: false
           context: junit-sources
 
+  - label: ":scroll: Check changelog versions not in main"
+    key: "check-changelog-versions-in-main"
+    command: ".buildkite/scripts/check_changelog_versions_in_main.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "2"
+      memory: "1G"
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
+      build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') =~ /^backport-/
+    if_changed:
+      - "**/changelog.yml"
+
   - label: ":scroll: Check changelog PR links"
     key: "check-changelog-pr-links"
     command: ".buildkite/scripts/check_changelog_entries.sh"
-    soft_fail: true
+    soft_fail:
+      - exit_status: 2
     agents:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "2"

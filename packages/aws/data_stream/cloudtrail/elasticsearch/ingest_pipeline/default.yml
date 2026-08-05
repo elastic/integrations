@@ -1101,18 +1101,48 @@ processors:
       field: json.userIdentity.sessionContext.sessionIssuer.principalId
       target_field: aws.cloudtrail.user_identity.session_context.session_issuer.principal_id
       ignore_missing: true
+  # Extract the session name from the ARN into a scratch field. The session name
+  # is an actor label, not a user-account modification, so it must not go into
+  # user.changes.* (ECS defines that fieldset for modifications made to a user
+  # account during the event). It is added to related.user for cross-source
+  # correlation. When it is an email (SSO/Identity Center), both the full email
+  # and the local-part prefix are added so it correlates with sources that store
+  # only the short username. user.name is left as the IAM role name. (issue #18346)
   - grok:
       field: aws.cloudtrail.user_identity.arn
       patterns:
-        - '^arn:[a-z0-9-]+:sts:.*/%{GREEDYDATA:user.changes.name}$'
+        - '^arn:[a-z0-9-]+:sts:.*/%{GREEDYDATA:_tmp.session_name}$'
       ignore_missing: true
       if: ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' || ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser'
-      tag: extract_user_name_from_arn
+      tag: extract_session_name_from_arn
       on_failure:
         - append:
-            tag: append_error_message_extract_user_name_from_arn
+            tag: append_error_message_extract_session_name_from_arn
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      tag: append_related_user_session_name
+      field: related.user
+      value: '{{{_tmp.session_name}}}'
+      if: ctx._tmp?.session_name != null
+      allow_duplicates: false
+  - dissect:
+      tag: extract_session_name_email_prefix
+      field: _tmp.session_name
+      pattern: '%{_tmp.session_name_prefix}@%{}'
+      if: ctx._tmp?.session_name != null && ctx._tmp.session_name.contains('@')
+  - append:
+      tag: append_related_user_session_name_prefix
+      field: related.user
+      value: '{{{_tmp.session_name_prefix}}}'
+      if: ctx._tmp?.session_name_prefix != null
+      allow_duplicates: false
+  - set:
+      tag: set_user_email_from_session_name
+      field: user.email
+      copy_from: _tmp.session_name
+      if: ctx.user?.email == null && ctx._tmp?.session_name_prefix != null
+      ignore_empty_value: true
   - rename:
       field: json.userIdentity.onBehalfOf.userId
       target_field: user.id
@@ -2219,6 +2249,7 @@ processors:
       field:
         - json
         - _conf
+        - _tmp
       ignore_missing: true
   - script:
       tag: script_remove_nulls
@@ -2276,4 +2307,5 @@ on_failure:
       field:
         - json
         - _conf
+        - _tmp
       ignore_missing: true

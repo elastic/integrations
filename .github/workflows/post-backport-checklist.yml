@@ -112,13 +112,9 @@ jobs:
           printf '%s' "$NEW_BODY" > "$BODY_FILE"
 
           if [[ -n "$COMMENT_ID" ]]; then
-            gh api --method PATCH \
-              "repos/$REPOSITORY/issues/comments/$COMMENT_ID" \
-              --field body=@"$BODY_FILE"
-            echo "Updated checklist comment #$COMMENT_ID on PR #$PR_NUMBER"
-          else
-            gh api --method POST \
-              "repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
-              --field body=@"$BODY_FILE"
-            echo "Created checklist comment on PR #$PR_NUMBER"
+            gh api --method DELETE "repos/$REPOSITORY/issues/comments/$COMMENT_ID"
           fi
+          gh api --method POST \
+            "repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
+            --field body=@"$BODY_FILE"
+          echo "Recreated checklist comment on PR #$PR_NUMBER"

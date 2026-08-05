@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/cli/go-gh/v2"
 
@@ -34,6 +35,7 @@ func Collect(before, after, repository string) (*CollectResult, error) {
 		return nil, fmt.Errorf("resolving backport PR number: %w", err)
 	}
 	if prNumber == "" {
+		fmt.Fprintf(os.Stderr, "no backport PR found for commit %s\n", after)
 		return &CollectResult{HasChanges: false}, nil
 	}
 
@@ -43,7 +45,7 @@ func Collect(before, after, repository string) (*CollectResult, error) {
 		return nil, fmt.Errorf("checking for existing sync PR: %w", err)
 	}
 	if exists {
-		return &CollectResult{HasChanges: false}, nil
+		return &CollectResult{HasChanges: false, BackportPRNumber: prNumber, WorkingBranch: workingBranch}, nil
 	}
 
 	git := gitutil.Git{}
@@ -65,7 +67,8 @@ func Collect(before, after, repository string) (*CollectResult, error) {
 	}
 
 	if len(lines) == 0 {
-		return &CollectResult{HasChanges: false}, nil
+		fmt.Fprintf(os.Stderr, "no changelog entry found for backport PR %s or already present in main branch\n", prNumber)
+		return &CollectResult{HasChanges: false, BackportPRNumber: prNumber, WorkingBranch: workingBranch}, nil
 	}
 
 	tsvFile, err := os.CreateTemp("", "changelog-entries-*.tsv")
@@ -83,6 +86,39 @@ func Collect(before, after, repository string) (*CollectResult, error) {
 		WorkingBranch:    workingBranch,
 		BackportPRNumber: prNumber,
 	}, nil
+}
+
+// CheckVersionsAgainstMain finds changelog files that changed between before
+// and after and reports any versions that already exist in origin/main.
+// Each conflict is returned as a human-readable string "path: version X.Y.Z".
+// Intended for use in PR checks to catch duplicate version entries early.
+func CheckVersionsAgainstMain(git gitutil.Git, before, after string) ([]string, error) {
+	changelogs, err := changedChangelogs(git, before, after)
+	if err != nil {
+		return nil, err
+	}
+	var conflicts []string
+	for _, cl := range changelogs {
+		diff, err := gitDiff(git, before, after, cl)
+		if err != nil {
+			return nil, fmt.Errorf("diffing %s: %w", cl, err)
+		}
+		ver, _, err := ExtractFromDiff(diff)
+		if err != nil {
+			return nil, err
+		}
+		if ver == "" {
+			continue
+		}
+		inMain, err := versionInMain(git, cl, ver)
+		if err != nil {
+			return nil, err
+		}
+		if inMain {
+			conflicts = append(conflicts, fmt.Sprintf("%s: version %s", cl, ver))
+		}
+	}
+	return conflicts, nil
 }
 
 // collectChangelogEntry processes a single changelog path cl and returns the
@@ -132,16 +168,28 @@ func collectChangelogEntry(git gitutil.Git, before, after, cl string) (string, e
 }
 
 // backportPRNumber returns the PR number associated with the given commit SHA,
-// or "" if none is found.
+// or "" if none is found after retries. The GitHub API association between a
+// merge commit and its PR may not be immediately available after the push
+// event fires, so we retry a few times with exponential backoff.
 func backportPRNumber(repository, sha string) (string, error) {
-	stdout, _, err := gh.Exec("api",
-		fmt.Sprintf("repos/%s/commits/%s/pulls", repository, sha),
-		"--jq", ".[0].number // empty",
-	)
-	if err != nil {
-		return "", err
+	delays := []time.Duration{0, 5 * time.Second, 15 * time.Second, 30 * time.Second}
+	for i, d := range delays {
+		if d > 0 {
+			fmt.Fprintf(os.Stderr, "backportPRNumber: attempt %d/%d — waiting %s\n", i+1, len(delays), d)
+			time.Sleep(d)
+		}
+		stdout, _, err := gh.Exec("api",
+			fmt.Sprintf("repos/%s/commits/%s/pulls", repository, sha),
+			"--jq", ".[0].number // empty",
+		)
+		if err != nil {
+			return "", err
+		}
+		if n := strings.TrimSpace(stdout.String()); n != "" {
+			return n, nil
+		}
 	}
-	return strings.TrimSpace(stdout.String()), nil
+	return "", nil
 }
 
 // syncPRExists returns true if a PR (open or closed) already exists with the
@@ -162,10 +210,12 @@ func syncPRExists(workingBranch string) (bool, error) {
 	return len(prs) > 0, nil
 }
 
-// changedChangelogs returns the paths of changelog.yml files that changed
-// between before and after.
+// changedChangelogs returns the paths of changelog.yml files introduced
+// between the common ancestor of before/after and after — scoping the result
+// to what the PR itself adds, ignoring commits pushed to the base branch
+// after the PR was branched.
 func changedChangelogs(git gitutil.Git, before, after string) ([]string, error) {
-	out, err := git.Output("diff", "--name-only", before+".."+after, "--", "**/changelog.yml")
+	out, err := git.Output("diff", "--name-only", before+"..."+after, "--", "**/changelog.yml")
 	if err != nil {
 		return nil, err
 	}
@@ -187,9 +237,11 @@ func manifestName(pkgDir string) (string, error) {
 	return manifest.Name, nil
 }
 
-// gitDiff returns the unified diff for path between before and after.
+// gitDiff returns the unified diff for path using the three-dot notation
+// (git diff before...after), which diffs against the common ancestor of
+// before and after rather than before itself.
 func gitDiff(git gitutil.Git, before, after, path string) (string, error) {
-	out, err := git.Output("diff", before+".."+after, "--", path)
+	out, err := git.Output("diff", before+"..."+after, "--", path)
 	if err != nil {
 		return "", err
 	}

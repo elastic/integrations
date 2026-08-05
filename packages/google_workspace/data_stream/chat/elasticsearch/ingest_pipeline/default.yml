@@ -107,6 +107,8 @@ processors:
       lang: painless
       params:
         add_room_member: configuration
+        attachment_download: file
+        attachment_upload: file
         block_room: configuration
         block_user: configuration
         emoji_created: configuration
@@ -125,9 +127,12 @@ processors:
         role_updated: iam
       source: |-
         ctx.event = ctx.event ?: [:];
-        def category = [];
-        category.add(params.get(ctx.google_workspace.chat.name));
-        ctx.event.category = category;
+        def category = params.get(ctx.google_workspace.chat.name);
+        if (category == null) {
+          ctx.event.remove('category');
+        } else {
+          ctx.event.category = [category];
+        }
       on_failure:
         - append:
             field: error.message
@@ -172,9 +177,12 @@ processors:
         user_unblocked: change
       source: |-
         ctx.event = ctx.event ?: [:];
-        def type = [];
-        type.add(params.get(ctx.google_workspace.chat.name));
-        ctx.event.type = type;
+        def type = params.get(ctx.google_workspace.chat.name);
+        if (type == null) {
+          ctx.event.remove('type');
+        } else {
+          ctx.event.type = [type];
+        }
       on_failure:
         - append:
             field: error.message
