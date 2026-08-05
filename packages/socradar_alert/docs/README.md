@@ -88,7 +88,9 @@ If the response contains `"watcher_state"`, Watcher is available.
 2. Search for `SOCRadar - Alarm Detection`.
 3. If the rule is disabled, click the toggle to enable it.
 
-Once enabled, the rule scans your entire alarm history (up to 90 days) and creates Security Alerts for all existing alarms. New alarms are detected every 5 minutes.
+Once enabled, the rule runs every 5 minutes and creates a Security Alert for each new alarm ingested since the previous run.
+
+To create alerts for alarms that were ingested **before** the rule was enabled, run a one-time manual backfill from **Security → Rules → SOCRadar - Alarm Detection → ⋯ → Manual run** and select the time range to cover (for example the last 90 days).
 
 ### Step 2 — Install the Watcher
 
@@ -340,7 +342,6 @@ An example event for `incidents` looks as following:
 | alarm.alarm_sub_type | Alarm sub type (extracted) | keyword |
 | alarm.alarm_text | Alarm description | text |
 | alarm.alarm_text.keyword | Multi-field of `alarm.alarm_text`. | keyword |
-| alarm.alarm_type_details | Alarm type details | flattened |
 | alarm.alarm_type_id | Alarm type identifier | keyword |
 | alarm.approved_by | Approved by | keyword |
 | alarm.company_id | ID of the company | long |
