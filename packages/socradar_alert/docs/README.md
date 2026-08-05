@@ -94,6 +94,8 @@ Once enabled, the rule scans your entire alarm history (up to 90 days) and creat
 
 Open **Kibana → Dev Tools** and run the following, replacing `<your-api-key>` with your SOCRadar API key:
 
+> **Security note:** The API key is stored in clear text inside the watch definition (in the `.watches` index). Restrict access to that index and to Dev Tools, and rotate the key if it may have been exposed.
+
 ```json
 PUT _watcher/watch/socradar_alarm_status_sync
 {
@@ -228,8 +230,6 @@ GET .watcher-history-*/_search
 ### Incidents
 
 The `incidents` data stream collects alarm events from the SOCRadar API.
-
-An example event for `incidents` looks as following:
 
 An example event for `incidents` looks as following:
 
